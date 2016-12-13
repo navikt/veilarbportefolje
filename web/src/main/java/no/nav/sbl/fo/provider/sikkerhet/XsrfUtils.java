@@ -49,7 +49,7 @@ public class XsrfUtils {
     }
 
     public static Cookie xsrfCookie(HttpSession session) {
-        Cookie xsrfCookie = new Cookie("XSRF-TOKEN-xmlstilling-admin", genererXsrfToken(session));
+        Cookie xsrfCookie = new Cookie("XSRF-TOKEN-Portefølje-serverside", genererXsrfToken(session));
         xsrfCookie.setPath(session.getServletContext().getContextPath());
         xsrfCookie.setMaxAge(-1);
         xsrfCookie.setSecure(true);

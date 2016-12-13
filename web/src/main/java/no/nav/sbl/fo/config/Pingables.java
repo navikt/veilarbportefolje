@@ -1,5 +1,7 @@
 package no.nav.sbl.fo.config;
 
-//@Configuration
-//public class Pingables {
-//}
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class Pingables {
+}

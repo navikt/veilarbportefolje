@@ -1,16 +1,23 @@
 package no.nav.sbl.fo.config;
 
+import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
+import no.nav.sbl.dialogarena.types.Pingable;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jndi.JndiTemplate;
+import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
 
-/*
 @Configuration
 public class DatabaseConfig {
     @Bean
     public DataSource oracleDataSource() throws ClassNotFoundException, NamingException {
-        return new JndiTemplate().lookup("java:/jboss/datasources/xmlstillingadminDS", DataSource.class);
+        return new JndiTemplate().lookup("java:/jboss/datasources/Portefølje-serverside", DataSource.class);
     }
 
     @Bean
@@ -32,11 +39,10 @@ public class DatabaseConfig {
                     SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
                     return Ping.lyktes("DATABASE");
                 } catch (Exception e) {
-                    return Ping.feilet("DATABASE", e);
+                    return Pingable.Ping.feilet("DATABASE", e);
                 }
             }
         };
     }
 
 }
-*/

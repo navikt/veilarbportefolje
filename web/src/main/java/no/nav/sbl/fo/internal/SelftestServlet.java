@@ -10,7 +10,7 @@ public class SelftestServlet extends SelfTestBaseServlet {
 
     @Override
     protected String getApplicationName() {
-        return "xmlstilling-admin";
+        return "Portefølje-serverside";
     }
 
     @Override

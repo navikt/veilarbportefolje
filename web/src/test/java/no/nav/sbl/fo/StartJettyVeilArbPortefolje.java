@@ -6,15 +6,15 @@ import no.nav.sbl.dialogarena.test.SystemProperties;
 import static no.nav.modig.testcertificates.TestCertificates.setupKeyAndTrustStore;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
-public class StartJettyXMLStillingAdmin {
+public class StartJettyVeilArbPortefolje {
 
     public static void main(String[] args) {
-        SystemProperties.setFrom("jetty-xmlstillingadmin.properties");
+        SystemProperties.setFrom("jetty-Portefølje-serverside.properties");
         setupKeyAndTrustStore();
 
         //Må ha https for csrf-token
         final Jetty jetty = Jetty.usingWar()
-                .at("xmlstilling-admin")
+                .at("Portefølje-serverside")
                 .sslPort(9594)
                 .port(9595)
                 .buildJetty();

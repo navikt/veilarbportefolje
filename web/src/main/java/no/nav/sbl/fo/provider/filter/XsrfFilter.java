@@ -8,8 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static no.nav.sbl.fo.provider.sikkerhet.XsrfUtils.sjekkXsrfToken;
+import static no.nav.sbl.fo.provider.sikkerhet.XsrfUtils.xsrfCookie;
 
-/*public class XsrfFilter implements Filter {
+public class XsrfFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -47,4 +49,4 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
     @Override
     public void destroy() {
     }
-}*/
+}

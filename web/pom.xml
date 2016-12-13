@@ -111,11 +111,11 @@
             <artifactId>common-types</artifactId>
             <version>${common-types.version}</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>common-integrasjonsutils</artifactId>
             <version>0.0.11</version>
-        </dependency>-->
+        </dependency>
 
         <!--Modig-->
         <!--<dependency>
@@ -232,11 +232,11 @@
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <version>${spring.version}</version>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc6</artifactId>
@@ -256,11 +256,11 @@
             <artifactId>javax.ws.rs-api</artifactId>
             <version>${javax.ws.rs-api.version}</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
             <version>${jersey.version}</version>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
