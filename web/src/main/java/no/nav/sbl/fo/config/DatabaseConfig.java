@@ -17,7 +17,7 @@ import java.sql.SQLException;
 public class DatabaseConfig {
     @Bean
     public DataSource oracleDataSource() throws ClassNotFoundException, NamingException {
-        return new JndiTemplate().lookup("java:/jboss/datasources/Portefølje-serverside", DataSource.class);
+        return new JndiTemplate().lookup("java:/jboss/datasources/VeilArbPortefolje", DataSource.class);
     }
 
     @Bean

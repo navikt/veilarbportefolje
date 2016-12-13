@@ -9,7 +9,7 @@ import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 public class StartJettyVeilArbPortefolje {
 
     public static void main(String[] args) {
-        SystemProperties.setFrom("jetty-Portefølje-serverside.properties");
+        SystemProperties.setFrom("jetty-VeilArbPortefolje.properties");
         setupKeyAndTrustStore();
 
         //Må ha https for csrf-token

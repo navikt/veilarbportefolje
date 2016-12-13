@@ -9,7 +9,7 @@
         <version>3.2</version>
     </parent>
 
-    <name>Portefølje-serverside</name>
+    <name>VeilArbPortefolje</name>
 
     <groupId>no.nav.sbl.portefolje</groupId>
     <artifactId>VeilArbPortefolje</artifactId>
