@@ -12,6 +12,6 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>no.nav.sbl.xmlstillingadmin.config.MockApplicationConfig</param-value>
+        <param-value>no.nav.sbl.fo.config.MockApplicationConfig</param-value>
     </context-param>
 </web-app>

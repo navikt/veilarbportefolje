@@ -17,6 +17,7 @@ public class StartJettyVeilArbPortefolje {
                 .at("Portefølje-serverside")
                 .sslPort(9594)
                 .port(9595)
+                .overrideWebXml()
                 .buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }

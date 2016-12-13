@@ -5,22 +5,13 @@ import no.nav.sbl.fo.internal.IsAliveServlet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-
 
 @Configuration
 @Import({
         Pingables.class,
-        DatabaseConfig.class
+        MockDatabaseConfig.class
 })
-public class ApplicationConfig {
-
-    /*@Bean
-    public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
-        return new PropertySourcesPlaceholderConfigurer();
-    }*/
-
+public class MockApplicationConfig {
     @Bean
     public IsAliveServlet isAliveServlet() {
         return new IsAliveServlet();
@@ -30,4 +21,5 @@ public class ApplicationConfig {
     public HealthCheckService healthCheckService() {
         return new HealthCheckService();
     }
+
 }
