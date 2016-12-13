@@ -10,12 +10,12 @@
     </selftest>
 
     <artifacts>
-        <ear groupId="no.nav.sbl.xmlstilling" artifactId="xmlstilling-admin-jee"/>
+        <ear groupId="no.nav.sbl.portefolje" artifactId="VeilArbPortefolje-jee"/>
     </artifacts>
 
     <resources>
         <ldap alias="ldap" />
-        <datasource alias="aetatnoXmlStillingAdminDS" jndi="java:/jboss/datasources/VeilArbPortefolje">
+        <datasource alias="" jndi="java:/jboss/datasources/VeilArbPortefolje">
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
     </resources>
