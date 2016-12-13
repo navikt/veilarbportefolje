@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://appconfig.aura.nav.no" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://appconfig.aura.nav.no http://maven.adeo.no/xsd/appconfig.xsd">
+
+    <name>VeilArbPortefolje</name>
+
+    <selftest>
+        <path>VeilArbPortefolje/internal/selftest.json</path>
+        <humanReadablePath>VeilArbPortefolje/internal/selftest</humanReadablePath>
+    </selftest>
+
+    <!--<artifacts>
+        <ear groupId="no.nav.sbl.xmlstilling" artifactId="xmlstilling-admin-jee"/>
+    </artifacts>-->
+
+    <resources>
+        <ldap alias="ldap" />
+        <datasource alias="aetatnoXmlStillingAdminDS" jndi="java:/jboss/datasources/VeilArbPortefolje">
+            <pool maxPoolSize="300" minPoolSize="1"/>
+        </datasource>
+    </resources>
+
+    <loadBalancer isAlive="/VeilArbPortefolje/internal/isAlive" />
+    <security>
+        <logins/>
+        <!--<roleMapping resourceAlias="xmlstilling-admin.lesetilgang" toRole="ROLE_LESETILGANG"/>-->
+        <!--<roleMapping resourceAlias="xmlstilling-admin.admin" toRole="ROLE_ADMIN"/>-->
+    </security>
+</application>

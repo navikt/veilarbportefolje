@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>VeilArbPortefolje</artifactId>
+        <groupId>no.nav.sbl.portefolje</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>VeilArbPortefolje-config</artifactId>
+    <packaging>jar</packaging>
+    <name>${project.artifactId} metadata artifact</name>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>no.nav.maven.plugins</groupId>
+                <artifactId>aura-maven-plugin</artifactId>
+                <version>6.1.50</version>
+                <configuration>
+                    <!-- enten url eller fil -->
+                    <envConfigUrl>https://envconfig.adeo.no/conf</envConfigUrl>
+                    <username>***REMOVED***</username>
+                    <password>***REMOVED***</password>
+                    <apps>VeilArbPortefolje:${project.version}</apps>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -18,6 +18,7 @@
 
     <modules>
         <module>web</module>
+        <module>config</module>
     </modules>
 
     <build>
