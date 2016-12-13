@@ -14,7 +14,6 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
         Pingables.class,
         DatabaseConfig.class
 })
-@ImportResource({"classpath:spring-security.xml", "classpath:spring-security-web.xml"})
 public class ApplicationConfig {
 
     @Bean

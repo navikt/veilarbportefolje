@@ -23,7 +23,5 @@
     <loadBalancer isAlive="/VeilArbPortefolje/internal/isAlive" />
     <security>
         <logins/>
-        <!--<roleMapping resourceAlias="xmlstilling-admin.lesetilgang" toRole="ROLE_LESETILGANG"/>-->
-        <!--<roleMapping resourceAlias="xmlstilling-admin.admin" toRole="ROLE_ADMIN"/>-->
     </security>
 </application>
