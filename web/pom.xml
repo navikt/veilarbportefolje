@@ -54,11 +54,6 @@
     </properties>
 
     <dependencies>
-        <!--<dependency>-->
-        <!--<groupId>net.sf.ehcache</groupId>-->
-        <!--<artifactId>ehcache-core</artifactId>-->
-        <!--<version>${ehcache.version}</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-loginmodule</artifactId>
@@ -330,19 +325,12 @@
             <version>9.3.0.M2</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>1</version>
             <scope>runtime</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${joda.version}</version>
-        </dependency>-->
-        <!--Testing-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -367,12 +355,6 @@
             <version>${hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>20.0-hal</version>
-        </dependency>-->
-
     </dependencies>
 
     <build>
