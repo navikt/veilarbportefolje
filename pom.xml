@@ -19,6 +19,7 @@
     <modules>
         <module>web</module>
         <module>config</module>
+        <module>jee</module>
     </modules>
 
     <build>
