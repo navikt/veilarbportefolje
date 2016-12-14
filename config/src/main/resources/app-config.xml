@@ -5,22 +5,22 @@
     <name>VeilArbPortefolje</name>
 
     <selftest>
-        <path>VeilArbPortefolje/internal/selftest.json</path>
-        <humanReadablePath>VeilArbPortefolje/internal/selftest</humanReadablePath>
+        <path>veilarbportefolje/internal/selftest.json</path>
+        <humanReadablePath>veilarbportefolje/internal/selftest</humanReadablePath>
     </selftest>
 
     <artifacts>
-        <ear groupId="no.nav.sbl.portefolje" artifactId="VeilArbPortefolje-jee"/>
+        <ear groupId="no.nav.sbl.portefolje" artifactId="veilarbportefolje-jee"/>
     </artifacts>
 
     <resources>
         <ldap alias="ldap" />
-        <datasource alias="" jndi="java:/jboss/datasources/VeilArbPortefolje">
+        <datasource alias="" jndi="java:/jboss/datasources/veilarbportefolje">
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
     </resources>
 
-    <loadBalancer isAlive="/VeilArbPortefolje/internal/isAlive" />
+    <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
     <security>
         <logins/>
     </security>
