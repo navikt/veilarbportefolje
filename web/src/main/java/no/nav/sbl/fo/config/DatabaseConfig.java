@@ -32,15 +32,12 @@ public class DatabaseConfig {
 
     @Bean
     public Pingable dbPinger(final DataSource ds) {
-        return new Pingable() {
-            @Override
-            public Pingable.Ping ping() {
-                try {
-                    SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
-                    return Ping.lyktes("DATABASE");
-                } catch (Exception e) {
-                    return Pingable.Ping.feilet("DATABASE", e);
-                }
+        return () -> {
+            try {
+                SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
+                return Pingable.Ping.lyktes("DATABASE");
+            } catch (Exception e) {
+                return Pingable.Ping.feilet("DATABASE", e);
             }
         };
     }
