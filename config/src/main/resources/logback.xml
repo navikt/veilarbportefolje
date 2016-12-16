@@ -87,7 +87,7 @@
 
     <logger name="org.apache.cxf" level="OFF"/>
 
-    <logger name="no.nav.sbl" level="info">
+    <logger name="no.nav.fo" level="info">
         <appender-ref ref="infolog"/>
     </logger>
 
