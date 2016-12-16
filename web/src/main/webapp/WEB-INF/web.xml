@@ -61,6 +61,15 @@
     </filter-mapping>
 
     <servlet>
+        <servlet-name>hentEnheter</servlet-name>
+        <servlet-class>no.nav.sbl.fo.servlet.HentEnheter</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>hentEnheter</servlet-name>
+        <url-pattern>/tjenester/hentenheter</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>selftest</servlet-name>
         <servlet-class>no.nav.sbl.fo.servlet.SelfTestServlet</servlet-class>
     </servlet>
