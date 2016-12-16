@@ -25,6 +25,8 @@
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-loginmodule</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
 
         <!--Dialogarena tjenestespesifikasjon-->
@@ -58,6 +60,7 @@
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-core</artifactId>
+            <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
