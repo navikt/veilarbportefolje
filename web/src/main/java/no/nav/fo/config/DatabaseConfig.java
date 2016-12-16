@@ -15,7 +15,7 @@ import java.sql.SQLException;
 
 @Configuration
 public class DatabaseConfig {
-    @Bean
+    /*@Bean
     public DataSource oracleDataSource() throws ClassNotFoundException, NamingException {
         return new JndiTemplate().lookup("java:/jboss/datasources/veilarbportefolje", DataSource.class);
     }
@@ -23,14 +23,14 @@ public class DatabaseConfig {
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) throws NamingException, SQLException, IOException {
         return new JdbcTemplate(dataSource);
-    }
+    }*/
 
 //    @Bean
 //    public DataSourceTransactionManager transactionManager(DataSource dataSource) throws IOException, SQLException {
 //        return new DataSourceTransactionManager(dataSource);
 //    }
 
-    @Bean
+   /* @Bean
     public Pingable dbPinger(final DataSource ds) {
         return () -> {
             try {
@@ -40,6 +40,6 @@ public class DatabaseConfig {
                 return Pingable.Ping.feilet("DATABASE", e);
             }
         };
-    }
+    }*/
 
 }
