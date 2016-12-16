@@ -10,7 +10,7 @@ public class SelftestServlet extends SelfTestBaseServlet {
 
     @Override
     protected String getApplicationName() {
-        return "Portefølje-serverside";
+        return "veilarbportefolje";
     }
 
     @Override
