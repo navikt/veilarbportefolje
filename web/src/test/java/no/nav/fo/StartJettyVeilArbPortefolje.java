@@ -15,8 +15,8 @@ public class StartJettyVeilArbPortefolje {
         //Må ha https for csrf-token
         final Jetty jetty = Jetty.usingWar()
                 .at("veilarbportefolje")
-                .sslPort(9594)
-                .port(9595)
+                .sslPort(9798)
+                .port(9799)
                 .overrideWebXml()
                 .buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
