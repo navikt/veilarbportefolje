@@ -5,7 +5,7 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
-    <display-name>Portefølje-serverside</display-name>
+    <display-name>veilarbportefolje</display-name>
     <session-config>
         <session-timeout>30</session-timeout>
         <cookie-config>
@@ -30,7 +30,7 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>no.nav.sbl.fo.config.ApplicationConfig</param-value>
+        <param-value>no.nav.fo.config.ApplicationConfig</param-value>
     </context-param>
 
     <filter>
@@ -53,7 +53,7 @@
 
     <filter>
         <filter-name>xsrf</filter-name>
-        <filter-class>no.nav.sbl.fo.provider.filter.XsrfFilter</filter-class>
+        <filter-class>no.nav.fo.provider.filter.XsrfFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>xsrf</filter-name>
@@ -62,7 +62,7 @@
 
     <servlet>
         <servlet-name>selftest</servlet-name>
-        <servlet-class>no.nav.sbl.fo.servlet.SelfTestServlet</servlet-class>
+        <servlet-class>no.nav.fo.servlet.SelfTestServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>selftest</servlet-name>
@@ -70,7 +70,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>selftest-json</servlet-name>
-        <servlet-class>no.nav.sbl.fo.servlet.SelfTestJsonServlet</servlet-class>
+        <servlet-class>no.nav.fo.servlet.SelfTestJsonServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>selftest-json</servlet-name>
@@ -78,7 +78,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>isAlive</servlet-name>
-        <servlet-class>no.nav.sbl.fo.servlet.IsAliveServlet</servlet-class>
+        <servlet-class>no.nav.fo.servlet.IsAliveServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>isAlive</servlet-name>
@@ -90,7 +90,7 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>no.nav.sbl.fo.provider.rest.RestConfig</param-value>
+            <param-value>no.nav.fo.provider.rest.RestConfig</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
