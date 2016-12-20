@@ -408,7 +408,7 @@
             <plugin>
                 <groupId>no.nav.maven.plugins</groupId>
                 <artifactId>modig-scm-plugin</artifactId>
-                <version>1.1.9</version>
+                <version>1.1.10</version>
                 <reportSets>
                     <reportSet>
                         <reports>
