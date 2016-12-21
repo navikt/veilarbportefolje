@@ -1,5 +1,6 @@
 package no.nav.sbl.fo.config;
 
+import no.nav.sbl.fo.config.endpoints.VirksomhetEnhetMOCK;
 import no.nav.sbl.fo.internal.HealthCheckService;
 import no.nav.sbl.fo.internal.IsAliveServlet;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +10,8 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({
         Pingables.class,
-        MockDatabaseConfig.class
+        MockDatabaseConfig.class,
+        VirksomhetEnhetMOCK.class
 })
 public class MockApplicationConfig {
     @Bean
