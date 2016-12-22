@@ -11,15 +11,10 @@ import javax.xml.namespace.QName;
 @Configuration
 public class VirksomhetEnhetEndpointConfig {
 
-
-
     @Bean
     public Pingable virksomhetEnhetPing() {
         Enhet virksomhetEnhet = new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .wsdl("wsdl/no/nav/virksomhet/tjenester/enhet/v1/Binding.wsdl")
-                .endpointName(new QName("http://nav.no/virksomhet/tjenester/enhet/v1/Binding", "EnhetPort"))
-                .serviceName(new QName("http://nav.no/virksomhet/tjenester/enhet/v1/Binding", "Enhet"))
                 .configureStsForSystemUser()
                 .build();
 
