@@ -55,11 +55,6 @@ public class VirksomhetEnhetMOCK {
             ressurs.setFornavn("Navn");
             return ressurs;
         }
-
-
-
     };
-
     }
-
 }

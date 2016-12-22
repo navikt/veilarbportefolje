@@ -1,24 +1,19 @@
 package no.nav.sbl.fo.config;
 
+import no.nav.sbl.fo.config.endpoint.norg.VirksomhetEnhetEndpointConfig;
 import no.nav.sbl.fo.internal.HealthCheckService;
 import no.nav.sbl.fo.internal.IsAliveServlet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-
 
 @Configuration
 @Import({
         Pingables.class,
-        DatabaseConfig.class
+        DatabaseConfig.class,
+        VirksomhetEnhetEndpointConfig.class
 })
 public class ApplicationConfig {
-
-    /*@Bean
-    public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
-        return new PropertySourcesPlaceholderConfigurer();
-    }*/
 
     @Bean
     public IsAliveServlet isAliveServlet() {
