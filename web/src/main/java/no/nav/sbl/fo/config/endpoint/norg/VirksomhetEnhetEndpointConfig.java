@@ -6,10 +6,16 @@ import no.nav.virksomhet.tjenester.enhet.v1.binding.Enhet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.xml.namespace.QName;
-
 @Configuration
 public class VirksomhetEnhetEndpointConfig {
+
+    @Bean
+    public Enhet virksomhetEnhet() {
+        return new CXFClient<>(Enhet.class)
+                .address(System.getProperty("norg.virksomhet_enhet.url"))
+                .configureStsForExternalSSO()
+                .build();
+    }
 
     @Bean
     public Pingable virksomhetEnhetPing() {

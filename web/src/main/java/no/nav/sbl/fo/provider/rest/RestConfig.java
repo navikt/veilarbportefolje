@@ -10,7 +10,8 @@ public class RestConfig extends ResourceConfig {
     public RestConfig() {
         super(
                 DateTimeObjectMapperProvider.class,
-                JSLoggerController.class
+                JSLoggerController.class,
+                HentEnheterController.class
         );
     }
 }
