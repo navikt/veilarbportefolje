@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds">
-    <property name="MAIN_APPLICATION" value="xmlstilling-admin" />
+    <property name="MAIN_APPLICATION" value="veilarbportefolje" />
     <property name="loggingPattern" value="%d [%-5level] [%thread] %logger{5} %replace(- [%X{consumerId}, %X{callId}, %X{userId}] ){'- \[, , \] ',''}- %m%n"/>
 
     <appender name="errorlog" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -74,7 +74,7 @@
         </filter>
         <syslogHost>localhost</syslogHost>
         <facility>LOCAL1</facility>
-        <suffixPattern>xmlstilling-admin %mdc %logger {30} %m %n%rEx</suffixPattern>
+        <suffixPattern>veilarbportefolje %mdc %logger {30} %m %n%rEx</suffixPattern>
         <throwableExcluded>true</throwableExcluded>
     </appender>
 
@@ -87,7 +87,7 @@
 
     <logger name="org.apache.cxf" level="OFF"/>
 
-    <logger name="no.nav.sbl" level="info">
+    <logger name="no.nav.fo" level="info">
         <appender-ref ref="infolog"/>
     </logger>
 
