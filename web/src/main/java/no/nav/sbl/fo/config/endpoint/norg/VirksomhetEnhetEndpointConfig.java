@@ -13,7 +13,7 @@ public class VirksomhetEnhetEndpointConfig {
     public Enhet virksomhetEnhet() {
         return new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .configureStsForExternalSSO()
+                .configureStsForSystemUser()
                 .build();
     }
 
