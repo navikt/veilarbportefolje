@@ -29,8 +29,8 @@ public class HentEnheterController {
     @GET
     public Map<String, HentEnhetListeResponse> hentEnheter() {
         HentEnhetListeResponse response = null;
-        String ident = securityContex.getUserPrincipal().getName();
-
+//        String ident = securityContex.getUserPrincipal().getName();
+            String ident = "B100719";
         try {
             response = virksomhetEnhetService.hentEnhetListe(ident);
         } catch (Exception e) {
