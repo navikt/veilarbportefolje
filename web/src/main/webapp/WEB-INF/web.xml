@@ -104,9 +104,6 @@
         <web-resource-collection>
             <web-resource-name>selftest</web-resource-name>
             <url-pattern>/internal/selftest</url-pattern>
-            <url-pattern>/css/*</url-pattern>
-            <url-pattern>/js/*</url-pattern>
-            <url-pattern>/font/*</url-pattern>
         </web-resource-collection>
     </security-constraint>
     <security-constraint>

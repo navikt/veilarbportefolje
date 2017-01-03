@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 
 @Configuration
-public class VirksomhetEnhetMOCK {
+public class VirksomhetEnhetMock {
 
     @Bean
     public static Enhet virksomhetEnhet() {
