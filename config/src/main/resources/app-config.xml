@@ -15,9 +15,6 @@
 
     <resources>
         <ldap alias="ldap" />
-        <!--<datasource alias="" jndi="java:/jboss/datasources/veilarbportefolje">
-            <pool maxPoolSize="300" minPoolSize="1"/>
-        </datasource>-->
     </resources>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
