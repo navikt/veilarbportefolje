@@ -14,7 +14,6 @@
     </artifacts>
 
     <resources>
-        <ldap alias="ldap" />
     </resources>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
