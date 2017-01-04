@@ -135,6 +135,12 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-cxf</artifactId>
                 <version>${common-cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!--Modig-->
