@@ -14,14 +14,12 @@
     </artifacts>
 
     <resources>
-        <ldap alias="ldap" />
-        <!--<datasource alias="" jndi="java:/jboss/datasources/veilarbportefolje">
-            <pool maxPoolSize="300" minPoolSize="1"/>
-        </datasource>-->
+        <credential alias="***REMOVED***" mapToProperty="systembruker"/>
+        <webservice mapToProperty="norg.virksomhet_enhet.url" alias="virksomhet:Enhet_v1"/>
     </resources>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
-    <security>
+    <security serviceUserResourceAlias="***REMOVED***">
         <logins/>
     </security>
 </application>
