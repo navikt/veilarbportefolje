@@ -13,7 +13,8 @@ import org.springframework.context.annotation.Import;
         Pingables.class,
         MockDatabaseConfig.class,
         VirksomhetEnhetEndpointConfig.class,
-        ServiceConfig.class
+        ServiceConfig.class,
+        PortefoljeMock.class
 })
 public class MockApplicationConfig {
     @Bean

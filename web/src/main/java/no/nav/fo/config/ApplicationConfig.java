@@ -13,7 +13,8 @@ import org.springframework.context.annotation.Import;
         Pingables.class,
         DatabaseConfig.class,
         VirksomhetEnhetEndpointConfig.class,
-        ServiceConfig.class
+        ServiceConfig.class,
+        PortefoljeMock.class
 })
 public class ApplicationConfig {
 
