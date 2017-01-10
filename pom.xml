@@ -26,7 +26,7 @@
         <skip.js-tests>false</skip.js-tests>
 
         <!-- Egenlagde -->
-        <modig.security.version>1.0.24</modig.security.version>
+        <modig.security.version>1.0.30</modig.security.version>
         <common-jetty.version>1.0.23</common-jetty.version>
         <common-types.version>1.2</common-types.version>
         <common-web.version>2.0.4</common-web.version>
