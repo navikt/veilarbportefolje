@@ -1,10 +1,10 @@
 package no.nav.fo.service;
 
-import no.nav.virksomhet.tjenester.enhet.meldinger.v1.HentEnhetListeRequest;
-import no.nav.virksomhet.tjenester.enhet.meldinger.v1.HentEnhetListeResponse;
-import no.nav.virksomhet.tjenester.enhet.v1.binding.Enhet;
-import no.nav.virksomhet.tjenester.enhet.v1.binding.HentEnhetListeRessursIkkeFunnet;
-import no.nav.virksomhet.tjenester.enhet.v1.binding.HentEnhetListeUgyldigInput;
+import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeRequest;
+import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeResponse;
+import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
+import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeRessursIkkeFunnet;
+import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeUgyldigInput;
 import org.slf4j.Logger;
 import java.lang.Exception;
 
@@ -19,25 +19,25 @@ public class VirksomhetEnhetServiceImpl {
     @Inject
     private Enhet virksomhetEnhet;
 
-    public HentEnhetListeResponse hentEnhetListe(String ident) throws Exception{
+    public WSHentEnhetListeResponse hentEnhetListe(String ident) throws Exception{
 
         try {
-            HentEnhetListeRequest request = new HentEnhetListeRequest();
+            WSHentEnhetListeRequest request = new WSHentEnhetListeRequest();
             request.setRessursId(ident);
-            HentEnhetListeResponse response = virksomhetEnhet.hentEnhetListe(request);
+            WSHentEnhetListeResponse response = virksomhetEnhet.hentEnhetListe(request);
             return response;
         } catch (HentEnhetListeUgyldigInput e) {
             String feil = String.format("Kunne ikke hente ansattopplysnigner for %s", ident);
             logger.error(feil, e);
-            throw new Exception(feil ,e);
+            throw e;
         } catch (HentEnhetListeRessursIkkeFunnet e) {
             String feil = String.format("Kunne ikke hente ansattopplysnigner for %s", ident);
             logger.error(feil,e);
-            throw new Exception(e);
+            throw e;
         } catch (java.lang.Exception e) {
             String feil = String.format("Kunne ikke hente ansattopplysnigner for %s: Ukjent Feil", ident);
             logger.error(feil, e);
-            throw new Exception(e);
+            throw e;
         }
     }
 }

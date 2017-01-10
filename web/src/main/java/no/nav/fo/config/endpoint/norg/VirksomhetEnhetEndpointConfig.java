@@ -1,8 +1,9 @@
 package no.nav.fo.config.endpoint.norg;
 
+import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
-import no.nav.virksomhet.tjenester.enhet.v1.binding.Enhet;
+import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,7 +14,7 @@ public class VirksomhetEnhetEndpointConfig {
     public Enhet virksomhetEnhet() {
         return new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .configureStsForSystemUser()
+                .withOutInterceptor(new SystemSAMLOutInterceptor())
                 .build();
     }
 
@@ -21,7 +22,7 @@ public class VirksomhetEnhetEndpointConfig {
     public Pingable virksomhetEnhetPing() {
         Enhet virksomhetEnhet = new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .configureStsForSystemUser()
+                .withOutInterceptor(new SystemSAMLOutInterceptor())
                 .build();
 
         return () -> {

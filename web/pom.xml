@@ -71,6 +71,10 @@
         </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
+            <artifactId>modig-security-ws</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.modig</groupId>
             <artifactId>modig-lang</artifactId>
         </dependency>
         <dependency>
@@ -200,6 +204,10 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-api</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -230,9 +238,8 @@
             <artifactId>hamcrest-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.tjenester</groupId>
-            <artifactId>nav-enhet-tjenestespesifikasjon</artifactId>
-            <classifier>jaxws</classifier>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
