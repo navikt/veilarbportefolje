@@ -1,7 +1,6 @@
 package no.nav.fo.service;
 
-import no.nav.fo.config.endpoints.VirksomhetEnhetMockConfig;
-import no.nav.virksomhet.organisering.enhetogressurs.v1.Ressurs;
+import no.nav.fo.config.ApplicationTestConfig;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeRequest;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeResponse;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
@@ -18,6 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.domene.Utils.createRessurs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Matchers.any;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,7 +25,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { VirksomhetEnhetMockConfig.class})
+@ContextConfiguration(classes = { ApplicationTestConfig.class})
 public class VirksomhetEnhetTest {
 
     @Rule
@@ -99,14 +99,5 @@ public class VirksomhetEnhetTest {
         when(enhet.getEnhetId()).thenReturn(enhetId);
         when(enhet.getNavn()).thenReturn(navn);
         return enhet;
-    }
-
-    private Ressurs createRessurs() {
-        Ressurs ressurs = new Ressurs();
-        ressurs.setRessursId("ressurs id");
-        ressurs.setNavn("fornavn etternavn");
-        ressurs.setEtternavn("etternavn");
-        ressurs.setFornavn("fornavn");
-        return ressurs;
     }
 }
