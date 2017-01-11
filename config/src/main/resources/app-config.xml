@@ -14,8 +14,8 @@
     </artifacts>
 
     <resources>
-        <credential alias="***REMOVED***" mapToProperty="systembruker"/>
-        <webservice mapToProperty="norg.virksomhet_enhet.url" alias="virksomhet:Enhet_v1"/>
+        <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
+        <applicationCertificate alias="***REMOVED***"/>
     </resources>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />

@@ -19,15 +19,13 @@ public class SjekkBrukertilgang {
     VirksomhetEnhetServiceImpl virksomhetEnhetService;
 
     public boolean harBrukerTilgangTilEnhet(String ident, String enhet) throws Exception {
-        WSHentEnhetListeRequest request = new WSHentEnhetListeRequest();
-        request.setRessursId(ident);
-
+        if(ident == null) { return false; }
         try {
             logger.debug(String.format("Sjekker om %s har tilgang til enhet %S", ident, enhet));
             WSHentEnhetListeResponse response = virksomhetEnhetService.hentEnhetListe(ident);
             Boolean harBrukerTilgang = finnesEnhetIListe(response.getEnhetListe(), enhet);
             if(!harBrukerTilgang){
-                String message = String.format("Bruker %s har ikke tilgang til enhet", ident, enhet);
+                String message = String.format("Bruker %s har ikke tilgang til %s", ident, enhet);
                 logger.warn(message);
             }
             return harBrukerTilgang;
