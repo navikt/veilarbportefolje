@@ -441,6 +441,13 @@
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
+
+            <!--Brukes bare for å mock data. Fjernes når reelle data tas i bruk-->
+            <dependency>
+                <groupId>org.fluttercode.datafactory</groupId>
+                <artifactId>datafactory</artifactId>
+                <version>0.8</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
