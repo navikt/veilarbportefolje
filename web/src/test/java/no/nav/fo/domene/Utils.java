@@ -2,9 +2,6 @@ package no.nav.fo.domene;
 
 import no.nav.virksomhet.organisering.enhetogressurs.v1.Ressurs;
 
-/**
- * Created by ***REMOVED*** on 10.01.2017.
- */
 public class Utils {
 
     public static Ressurs createRessurs() {

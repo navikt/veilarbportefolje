@@ -2,7 +2,6 @@ package no.nav.fo.service;
 
 
 import no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet;
-import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeRequest;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeResponse;
 import org.slf4j.Logger;
 
@@ -11,9 +10,9 @@ import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class SjekkBrukertilgang {
+public class BrukertilgangService {
 
-    private static final Logger logger =  getLogger(SjekkBrukertilgang.class);
+    private static final Logger logger =  getLogger(BrukertilgangService.class);
 
     @Inject
     VirksomhetEnhetServiceImpl virksomhetEnhetService;

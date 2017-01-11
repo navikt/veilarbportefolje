@@ -1,17 +1,17 @@
 package no.nav.fo.config;
 
-import no.nav.fo.config.endpoints.VirksomhetEnhetTestConfig;
-import no.nav.fo.service.SjekkBrukertilgang;
+import no.nav.fo.config.endpoints.VirksomhetEnhetConfigTest;
+import no.nav.fo.service.BrukertilgangService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
 @Import({
-        VirksomhetEnhetTestConfig.class
+        VirksomhetEnhetConfigTest.class
 })
 public class ApplicationTestConfig {
 
     @Bean
-    public SjekkBrukertilgang sjekkBrukertilgang() { return new SjekkBrukertilgang(); }
+    public BrukertilgangService brukertilgangService() { return new BrukertilgangService(); }
 }

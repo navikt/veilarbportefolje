@@ -1,7 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import no.nav.fo.domene.Portefolje;
-import no.nav.fo.service.SjekkBrukertilgang;
+import no.nav.fo.service.BrukertilgangService;
 import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeRessursIkkeFunnet;
 import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeUgyldigInput;
 
@@ -20,7 +20,7 @@ public class HentPortefoljeController {
     Portefolje portefoljeMock;
 
     @Inject
-    SjekkBrukertilgang sjekkBrukertilgang;
+    BrukertilgangService brukertilgangService;
 
     @GET
     @Path("/{enhet}")
@@ -28,8 +28,9 @@ public class HentPortefoljeController {
             @PathParam("enhet") String enhet,
             @QueryParam("ident") String ident){
 
+
         try {
-            Boolean brukerHarTilgangTilEnhet = sjekkBrukertilgang.harBrukerTilgangTilEnhet(ident, enhet);
+            Boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgangTilEnhet(ident, enhet);
             if(brukerHarTilgangTilEnhet) {
                 return Response.ok().entity(new PortefoljeOgEnhet(enhet, portefoljeMock)).build();
             } else {

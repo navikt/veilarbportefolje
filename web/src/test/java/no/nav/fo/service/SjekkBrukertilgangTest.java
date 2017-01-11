@@ -42,7 +42,7 @@ public class SjekkBrukertilgangTest {
     private VirksomhetEnhetServiceImpl virksomhetEnhetServiceImpl;
 
     @Inject
-    private SjekkBrukertilgang sjekkBrukertilgang;
+    private BrukertilgangService brukertilgangService;
 
     @Before
     public void before() throws Exception {
@@ -53,14 +53,14 @@ public class SjekkBrukertilgangTest {
 
     @Test
     public void brukerSkalIkkeHaTilgangTilEnhet() throws Exception {
-        boolean harBrukerTilgang = sjekkBrukertilgang.harBrukerTilgangTilEnhet("X123456", "5555");
-        assertThat(harBrukerTilgang, is(false));
+        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgangTilEnhet("X123456", "5555");
+        assertThat(brukerHarTilgang, is(false));
     }
 
     @Test
     public void brukerSkalHaTilgangTilEnhet() throws Exception {
-        boolean harBrukerTilgang = sjekkBrukertilgang.harBrukerTilgangTilEnhet("X123456", "1111");
-        assertThat(harBrukerTilgang, is(true));
+        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgangTilEnhet("X123456", "1111");
+        assertThat(brukerHarTilgang, is(true));
     }
 
     private WSHentEnhetListeResponse createWSHentEnhetListeResponse() {

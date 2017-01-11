@@ -12,5 +12,5 @@ public class ServiceConfig {
     }
 
     @Bean
-    public SjekkBrukertilgang sjekkBrukertilgang() { return new SjekkBrukertilgang(); }
+    public BrukertilgangService sjekkBrukertilgang() { return new BrukertilgangService(); }
 }
