@@ -10,4 +10,7 @@ public class ServiceConfig {
     public VirksomhetEnhetServiceImpl virksomhetEnhetServiceImpl() {
         return new VirksomhetEnhetServiceImpl();
     }
+
+    @Bean
+    public BrukertilgangService sjekkBrukertilgang() { return new BrukertilgangService(); }
 }
