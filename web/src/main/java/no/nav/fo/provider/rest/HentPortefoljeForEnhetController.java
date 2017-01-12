@@ -26,13 +26,15 @@ public class HentPortefoljeForEnhetController {
     @Path("/{enhet}")
     public Response hentPortefolje(
             @PathParam("enhet") String enhet,
-            @QueryParam("ident") String ident){
+            @QueryParam("ident") String ident,
+            @QueryParam("fra") int fra,
+            @QueryParam("antall") int antall){
 
 
         try {
             Boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgangTilEnhet(ident, enhet);
             if(brukerHarTilgangTilEnhet) {
-                return Response.ok().entity(new PortefoljeOgEnhet(enhet, portefoljeMock)).build();
+                return Response.ok().entity(new PortefoljeOgEnhet(enhet, new Portefolje().withBrukere(portefoljeMock.getBrukerFrom(fra, antall)))).build();
             } else {
                 return Response.status(FORBIDDEN).build();
             }

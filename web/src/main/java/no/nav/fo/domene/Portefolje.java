@@ -15,4 +15,9 @@ public class Portefolje {
     public List<Bruker> getBrukere() {
         return brukere;
     }
+
+    public List<Bruker> getBrukerFrom(int fra, int antall) {
+
+        return brukere.subList(fra, fra+antall);
+    }
 }
