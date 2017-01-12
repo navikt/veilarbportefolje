@@ -12,9 +12,9 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.*;
 
-@Path("/hentportefolje")
+@Path("/hentportefoljeforenhet")
 @Produces(APPLICATION_JSON)
-public class HentPortefoljeController {
+public class HentPortefoljeForEnhetController {
 
     @Inject
     Portefolje portefoljeMock;
