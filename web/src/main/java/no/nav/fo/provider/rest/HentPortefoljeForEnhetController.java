@@ -26,13 +26,23 @@ public class HentPortefoljeForEnhetController {
     @Path("/{enhet}")
     public Response hentPortefolje(
             @PathParam("enhet") String enhet,
-            @QueryParam("ident") String ident){
+            @QueryParam("ident") String ident,
+            @QueryParam("fra") int fra,
+            @QueryParam("antall") int antall){
 
+        int brukerMockSize = portefoljeMock.getBrukere().size();
+
+        if(antall > brukerMockSize - fra) { antall = brukerMockSize - fra; }
 
         try {
             Boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgangTilEnhet(ident, enhet);
             if(brukerHarTilgangTilEnhet) {
-                return Response.ok().entity(new PortefoljeOgEnhet(enhet, portefoljeMock)).build();
+                return Response.ok().entity(new PortefoljeOgEnhet(enhet,
+                                            new Portefolje().withBrukere(portefoljeMock.getBrukerFrom(fra, antall)),
+                                            brukerMockSize,
+                                            antall,
+                                            fra)
+                                            ).build();
             } else {
                 return Response.status(FORBIDDEN).build();
             }
@@ -48,10 +58,16 @@ public class HentPortefoljeForEnhetController {
     private class PortefoljeOgEnhet {
         private Portefolje portefolje;
         private String enhet;
+        private int antallTotalt;
+        private int antallReturnert;
+        private int fraIndex;
 
-        PortefoljeOgEnhet(String enhet, Portefolje portefolje) {
+        PortefoljeOgEnhet(String enhet, Portefolje portefolje, int antallTotalt, int antallReturnet, int fraIndex) {
             this.portefolje = portefolje;
             this.enhet =  enhet;
+            this.antallReturnert = portefolje.getBrukere().size();
+            this.antallTotalt = antallTotalt;
+            this.fraIndex = fraIndex;
         }
 
         public Portefolje getPortefolje() {
@@ -61,6 +77,12 @@ public class HentPortefoljeForEnhetController {
         public String getEnhet() {
             return enhet;
         }
+
+        public int getAntallTotalt() { return antallTotalt; }
+
+        public int getAntallReturnert() { return  antallReturnert; }
+
+        public int getFraIndex() { return fraIndex; }
 
     }
 }

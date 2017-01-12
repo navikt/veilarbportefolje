@@ -1,6 +1,7 @@
 package no.nav.fo.domene;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Portefolje {
@@ -14,5 +15,10 @@ public class Portefolje {
 
     public List<Bruker> getBrukere() {
         return brukere;
+    }
+
+    public List<Bruker> getBrukerFrom(int fra, int antall) {
+        if(fra >= brukere.size()) { return new ArrayList<>(); }
+        return brukere.subList(fra, fra+antall);
     }
 }

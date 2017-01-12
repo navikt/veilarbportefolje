@@ -16,7 +16,7 @@ public class PortefoljeMock {
 
     @Bean
     public Portefolje portefoljeMock() {
-        List<Bruker> brukere = createBrukerListe(100);
+        List<Bruker> brukere = createBrukerListe(1000);
 
         return new Portefolje().withBrukere(brukere);
     }
