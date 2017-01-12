@@ -9,9 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Configuration
 public class PortefoljeMock {
@@ -30,8 +28,14 @@ public class PortefoljeMock {
         Date minDate = new Date(-1893459600000L);
         Date maxDate = new Date(915145200000L);
 
+        Map<String, String> veileder = new HashMap<>();
+        veileder.put("fornavn", "Arne");
+        veileder.put("etternavn", "Olsen");
+        veileder.put("ident", "X123456");
+
         for(int i=0; i < antallBrukere; i++) {
             Bruker bruker = new Bruker()
+                                .withVeileder(veileder)
                                 .withFornavn(df.getFirstName())
                                 .withEtternavn(df.getLastName())
                                 .withFnr(dateToFnr(df.getDateBetween(minDate, maxDate)));
