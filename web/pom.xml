@@ -195,6 +195,12 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
         </dependency>
 
+        <!--Solr-->
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+        </dependency>
+
         <!--Diverse-->
         <dependency>
             <groupId>commons-codec</groupId>
