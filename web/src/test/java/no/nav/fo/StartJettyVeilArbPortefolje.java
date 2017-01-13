@@ -23,8 +23,8 @@ public class StartJettyVeilArbPortefolje {
         //Må ha https for csrf-token
         final Jetty jetty = Jetty.usingWar(WEBAPP_SOURCE)
                 .at("veilarbportefolje")
-                .sslPort(9592)
-                .port(9593)
+                .sslPort(9594)
+                .port(9595)
                 .overrideWebXml(new File(TEST_RESOURCES,"override-web.xml" ))
                 .withLoginService(createLoginService())
                 .buildJetty();
