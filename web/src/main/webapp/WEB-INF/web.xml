@@ -62,7 +62,7 @@
 
     <servlet>
         <servlet-name>selftest</servlet-name>
-        <servlet-class>no.nav.fo.servlet.SelfTestServlet</servlet-class>
+        <servlet-class>no.nav.fo.internal.SelftestServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>selftest</servlet-name>
@@ -70,7 +70,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>selftest-json</servlet-name>
-        <servlet-class>no.nav.fo.servlet.SelfTestJsonServlet</servlet-class>
+        <servlet-class>no.nav.fo.internal.SelftestJsonServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>selftest-json</servlet-name>
@@ -78,7 +78,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>isAlive</servlet-name>
-        <servlet-class>no.nav.fo.servlet.IsAliveServlet</servlet-class>
+        <servlet-class>no.nav.fo.internal.IsAliveServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>isAlive</servlet-name>
