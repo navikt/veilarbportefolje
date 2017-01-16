@@ -17,7 +17,7 @@ import static no.nav.modig.testcertificates.TestCertificates.setupKeyAndTrustSto
 public class StartJettyVeilArbPortefolje {
 
     public static void main(String[] args) {
-        SystemProperties.setFrom("jetty-VeilArbPortefolje.properties");
+        SystemProperties.setFrom("jetty-local.properties");
         setupKeyAndTrustStore();
 
         //Må ha https for csrf-token
