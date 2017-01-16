@@ -15,8 +15,14 @@
 
     <resources>
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
+        <rest alias="no.nav.fo.brukercore" mapToProperty="no.nav.fo.brukercore"/>
         <applicationCertificate alias="***REMOVED***"/>
     </resources>
+
+    <exposed-services>
+        <exposedRest name="no.nav.fo.solrindeks.oppdater" path="/veilarbportefolje/tjenester/solr/oppdater"/>
+        <exposedRest name="no.nav.fo.solrindeks.slett" path="/veilarbportefolje/tjenester/solr/slett"/>
+    </exposed-services>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
     <security serviceUserResourceAlias="***REMOVED***">

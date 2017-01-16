@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Import;
         MockDatabaseConfig.class,
         VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
+        SolrConfig.class,
         PortefoljeMock.class
 })
 public class MockApplicationConfig {
