@@ -65,6 +65,7 @@ public class SolrService {
         logger.info("Solrindeks har blitt slettet");
     }
 
+//    @Scheduled(fixedDelay = 5000)
     private void scheduledFullOppdatering() {
         slettAlleDokumenter();
         leggTilDokumenter();
