@@ -45,9 +45,9 @@ public class SolrService {
             server.add(documents);
             server.commit();
         } catch (SolrServerException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         logger.info("Solrindeks har blitt oppdatert");
@@ -58,9 +58,9 @@ public class SolrService {
             server.deleteByQuery("*:*");
             server.commit();
         } catch (SolrServerException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         logger.info("Solrindeks har blitt slettet");
     }
