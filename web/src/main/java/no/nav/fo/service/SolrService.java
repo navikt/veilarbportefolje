@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -36,7 +36,7 @@ public class SolrService {
         document3.addField("etternavn", "Bull");
         document3.addField("fnr", "111111111");
 
-        Collection<SolrInputDocument> documents = new ArrayList();
+        List<SolrInputDocument> documents = new ArrayList();
         documents.add(document1);
         documents.add(document2);
         documents.add(document3);
