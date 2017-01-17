@@ -36,7 +36,7 @@ public class SolrService {
         document3.addField("etternavn", "Bull");
         document3.addField("fnr", "111111111");
 
-        List<SolrInputDocument> documents = new ArrayList();
+        List<SolrInputDocument> documents = new ArrayList<>();
         documents.add(document1);
         documents.add(document2);
         documents.add(document3);
