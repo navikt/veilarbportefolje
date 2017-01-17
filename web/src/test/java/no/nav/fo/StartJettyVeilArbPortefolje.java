@@ -17,14 +17,14 @@ import static no.nav.modig.testcertificates.TestCertificates.setupKeyAndTrustSto
 public class StartJettyVeilArbPortefolje {
 
     public static void main(String[] args) {
-        SystemProperties.setFrom("jetty-VeilArbPortefolje.properties");
+        SystemProperties.setFrom("jetty-local.properties");
         setupKeyAndTrustStore();
 
         //Må ha https for csrf-token
         final Jetty jetty = Jetty.usingWar(WEBAPP_SOURCE)
                 .at("veilarbportefolje")
-                .sslPort(9592)
-                .port(9593)
+                .sslPort(9594)
+                .port(9595)
                 .overrideWebXml(new File(TEST_RESOURCES,"override-web.xml" ))
                 .withLoginService(createLoginService())
                 .buildJetty();

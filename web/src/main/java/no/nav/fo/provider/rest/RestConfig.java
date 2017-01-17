@@ -11,7 +11,8 @@ public class RestConfig extends ResourceConfig {
         super(
                 DateTimeObjectMapperProvider.class,
                 JSLoggerController.class,
-                HentPortefoljeForEnhetController.class
+                HentPortefoljeForEnhetController.class,
+                SolrController.class
         );
     }
 }

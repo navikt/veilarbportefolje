@@ -58,6 +58,7 @@
         <jsoup.version>1.7.2</jsoup.version>
         <joda.version>2.9.4</joda.version>
         <mockito.version>1.9.5</mockito.version>
+        <solr.version>4.10.4</solr.version>
 
         <!-- Kan ikke uppes -->
         <jetty.version>9.0.5.v20130815</jetty.version>
@@ -368,6 +369,13 @@
                 <artifactId>jackson-jaxrs-json-provider</artifactId>
                 <version>${jackson.version}</version>
                 <scope>runtime</scope>
+            </dependency>
+
+            <!--Solr-->
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-solrj</artifactId>
+                <version>${solr.version}</version>
             </dependency>
 
             <!--Diverse-->
