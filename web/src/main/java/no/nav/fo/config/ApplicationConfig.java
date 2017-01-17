@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @Configuration
 @Import({
-        Pingables.class,
         DatabaseConfig.class,
         VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
