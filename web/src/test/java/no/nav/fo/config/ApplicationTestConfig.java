@@ -1,6 +1,5 @@
 package no.nav.fo.config;
 
-import no.nav.fo.config.endpoints.VirksomhetEnhetConfigTest;
 import no.nav.fo.service.BrukertilgangService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

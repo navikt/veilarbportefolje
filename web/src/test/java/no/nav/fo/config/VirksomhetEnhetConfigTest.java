@@ -1,4 +1,4 @@
-package no.nav.fo.config.endpoints;
+package no.nav.fo.config;
 
 import no.nav.fo.service.VirksomhetEnhetServiceImpl;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;

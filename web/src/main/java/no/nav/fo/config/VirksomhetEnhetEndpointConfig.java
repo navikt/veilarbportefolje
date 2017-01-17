@@ -1,4 +1,4 @@
-package no.nav.fo.config.endpoint.norg;
+package no.nav.fo.config;
 
 import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
