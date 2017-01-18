@@ -17,6 +17,9 @@
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
         <rest alias="no.nav.fo.brukercore" mapToProperty="no.nav.fo.brukercore"/>
         <applicationCertificate alias="***REMOVED***"/>
+        <datasource alias="veilarbportefoljeDB" jndi="java:/jboss/datasources/veilarbportefoljeDB">
+            <pool maxPoolSize="300" minPoolSize="1"/>
+        </datasource>
     </resources>
 
     <exposed-services>

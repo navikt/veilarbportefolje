@@ -7,6 +7,7 @@ import org.eclipse.jetty.jaas.JAASLoginService;
 
 import java.io.File;
 
+import static no.nav.fo.config.JndiLocalContextConfig.setupJndiLocalContext;
 import static no.nav.modig.core.test.FilesAndDirs.TEST_RESOURCES;
 import static no.nav.modig.core.test.FilesAndDirs.WEBAPP_SOURCE;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
@@ -19,6 +20,7 @@ public class StartJettyVeilArbPortefolje {
     public static void main(String[] args) {
         SystemProperties.setFrom("jetty-local.properties");
         setupKeyAndTrustStore();
+        setupJndiLocalContext();
 
         //Må ha https for csrf-token
         final Jetty jetty = Jetty.usingWar(WEBAPP_SOURCE)
