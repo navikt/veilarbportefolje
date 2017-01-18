@@ -23,7 +23,4 @@ public class ApplicationConfig {
     public IsAliveServlet isAliveServlet() {
         return new IsAliveServlet();
     }
-
-    @Bean
-    public SolrService solrService() { return new SolrService(); }
 }
