@@ -16,7 +16,7 @@ public class SolrController {
     @Path("hovedindeksering")
     @GET
     public boolean hovedIndeksering() {
-        solrService.fullOppdateringAvSolrIndeks();
+        solrService.hovedindeksering();
         return true;
     }
 }
