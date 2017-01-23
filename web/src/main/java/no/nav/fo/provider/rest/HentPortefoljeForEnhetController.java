@@ -28,7 +28,14 @@ public class HentPortefoljeForEnhetController {
             @PathParam("enhet") String enhet,
             @QueryParam("ident") String ident,
             @QueryParam("fra") int fra,
-            @QueryParam("antall") int antall){
+            @QueryParam("antall") int antall,
+            @QueryParam("sortByLastName") String sortDirection){
+
+        if(sortDirection.equals("ascending")) {
+            portefoljeMock.sortByLastName("ascending");
+        } else if(sortDirection.equals("descending")) {
+            portefoljeMock.sortByLastName("descending");
+        }
 
         int brukerMockSize = portefoljeMock.getBrukere().size();
 

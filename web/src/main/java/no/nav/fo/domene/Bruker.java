@@ -2,6 +2,7 @@ package no.nav.fo.domene;
 
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -72,4 +73,20 @@ public class Bruker {
         this.egenAnsatt = true;
         return this;
     }
+
+    public static Comparator<Bruker> SORT_BY_LAST_NAME_ASCENDING = new Comparator<Bruker>() {
+        @Override
+        public int compare(Bruker bruker1, Bruker bruker2) {
+            return bruker1.getEtternavn().compareTo(bruker2.getEtternavn());
+        }
+    };
+
+    public static Comparator<Bruker> SORT_BY_LAST_NAME_DESCENDING = new Comparator<Bruker>() {
+        @Override
+        public int compare(Bruker bruker1, Bruker bruker2) {
+            return bruker2.getEtternavn().compareTo(bruker1.getEtternavn());
+        }
+    };
+
+
 }

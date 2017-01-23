@@ -21,4 +21,12 @@ public class Portefolje {
         if(fra >= brukere.size()) { return new ArrayList<>(); }
         return brukere.subList(fra, fra+antall);
     }
+
+    public void sortByLastName(String sortDirection) {
+        if(sortDirection == "ascending") {
+            brukere.sort(Bruker.SORT_BY_LAST_NAME_ASCENDING);
+        } else if(sortDirection == "descending") {
+            brukere.sort(Bruker.SORT_BY_LAST_NAME_DESCENDING);
+        }
+    }
 }
