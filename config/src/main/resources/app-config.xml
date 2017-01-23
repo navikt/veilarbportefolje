@@ -25,7 +25,7 @@
 
     <exposed-services>
         <exposedRest name="no.nav.fo.solrindeks.oppdater" path="/veilarbportefolje/tjenester/solr/oppdater"/>
-        <exposedRest name="no.nav.fo.solrindeks.slett" path="/veilarbportefolje/tjenester/solr/slett"/>
+        <exposedRest name="no.nav.fo.solrindeks.deltaindeksering" path="/veilarbportefolje/tjenester/solr/deltaindeksering"/>
     </exposed-services>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />

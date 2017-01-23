@@ -19,4 +19,11 @@ public class SolrController {
         solrService.fullOppdateringAvSolrIndeks();
         return true;
     }
+
+    @Path("deltaindeksering")
+    @GET
+    public boolean deltaIndeksering() {
+        solrService.deltaindeksering();
+        return true;
+    }
 }

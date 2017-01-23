@@ -41,6 +41,21 @@ public class SolrService {
         logger.info("Hovedindeksering fullført!");
     }
 
+    @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
+    public void deltaindeksering() {
+        List<Map<String, Object>> rader = brukerRepository.retrieveNyeBrukere();
+        List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
+        try {
+            server.add(dokumenter);
+            server.commit();
+        } catch (SolrServerException e) {
+            logger.error(e.getMessage(), e);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        logger.info("Deltaindeksering fullført!");
+    }
+
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("person_id", rad.get("person_id").toString());
