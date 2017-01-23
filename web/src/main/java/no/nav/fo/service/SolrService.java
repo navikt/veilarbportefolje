@@ -26,6 +26,7 @@ public class SolrService {
     @Inject
     BrukerRepository brukerRepository;
 
+    @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void fullOppdateringAvSolrIndeks() {
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());

@@ -20,6 +20,7 @@
         <datasource alias="veilarbportefoljeDB" jndi="java:/jboss/datasources/veilarbportefoljeDB">
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
+        <applicationProperties alias="veilarbportefolje.properties"/>
     </resources>
 
     <exposed-services>
