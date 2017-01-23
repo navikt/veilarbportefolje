@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.fo.database.BrukerRepository;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,9 @@ public class DatabaseConfig {
     public JdbcTemplate jdbcTemplate(DataSource dataSource) throws NamingException, SQLException, IOException {
         return new JdbcTemplate(dataSource);
     }
+
+    @Bean
+    public BrukerRepository brukerRepository() { return new BrukerRepository(); }
 
     @Bean
     public Pingable dbPinger(final DataSource ds) {
