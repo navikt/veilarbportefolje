@@ -27,7 +27,7 @@ public class SolrConfig {
                 server.ping();
                 return Pingable.Ping.lyktes("SolrServer");
             } catch (Exception e) {
-                return Pingable.Ping.feilet("Feilet", e);
+                return Pingable.Ping.feilet("SolrServer", e);
             }
         };
     }
