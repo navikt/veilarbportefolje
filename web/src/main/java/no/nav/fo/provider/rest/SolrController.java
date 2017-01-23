@@ -1,7 +1,6 @@
 package no.nav.fo.provider.rest;
 
 import no.nav.fo.service.SolrService;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -16,7 +15,7 @@ public class SolrController {
     @Path("hovedindeksering")
     @GET
     public boolean hovedIndeksering() {
-        solrService.fullOppdateringAvSolrIndeks();
+        solrService.hovedindeksering();
         return true;
     }
 

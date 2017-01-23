@@ -38,8 +38,7 @@ public class BrukerRepository {
                     "fr_kode, " +
                     "sperret_ansatt, " +
                     "er_doed, " +
-                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS.FF') || 'Z' AS doed_fra_dato, " +
-                    "TO_CHAR(tidsstempel, 'YYYY-MM-DD') || 'T' || TO_CHAR(tidsstempel, 'HH24:MI:SS.FF') || 'Z' AS tidsstempel " +
+                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS.FF') || 'Z' AS doed_fra_dato " +
                 "FROM " +
                     "oppfolgingsbruker";
     }

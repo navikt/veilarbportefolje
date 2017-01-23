@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ public class SolrService {
     BrukerRepository brukerRepository;
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
-    public void fullOppdateringAvSolrIndeks() {
+    public void hovedindeksering() {
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
         try {
