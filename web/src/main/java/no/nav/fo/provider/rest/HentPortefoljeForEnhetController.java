@@ -1,5 +1,6 @@
 package no.nav.fo.provider.rest;
 
+import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeRessursIkkeFunnet;
@@ -8,6 +9,9 @@ import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeUgyldigInput;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.*;
@@ -31,13 +35,22 @@ public class HentPortefoljeForEnhetController {
             @QueryParam("antall") int antall,
             @QueryParam("sortByLastName") String sortDirection){
 
-        if(sortDirection.equals("ascending")) {
-            portefoljeMock.sortByLastName("ascending");
-        } else if(sortDirection.equals("descending")) {
-            portefoljeMock.sortByLastName("descending");
+
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.addAll(portefoljeMock.getBrukere());
+        Portefolje portefolje = new Portefolje().withBrukere(brukere);
+
+        if(sortDirection == null) {
+            sortDirection = "";
         }
 
-        int brukerMockSize = portefoljeMock.getBrukere().size();
+        if(sortDirection.equals("ascending")) {
+            portefolje.sortByLastName("ascending");
+        } else if(sortDirection.equals("descending")) {
+            portefolje.sortByLastName("descending");
+        }
+
+        int brukerMockSize = portefolje.getBrukere().size();
 
         if(antall > brukerMockSize - fra) { antall = brukerMockSize - fra; }
 
@@ -45,7 +58,7 @@ public class HentPortefoljeForEnhetController {
             Boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgangTilEnhet(ident, enhet);
             if(brukerHarTilgangTilEnhet) {
                 return Response.ok().entity(new PortefoljeOgEnhet(enhet,
-                                            new Portefolje().withBrukere(portefoljeMock.getBrukerFrom(fra, antall)),
+                                            new Portefolje().withBrukere(portefolje.getBrukerFrom(fra, antall)),
                                             brukerMockSize,
                                             antall,
                                             fra)
