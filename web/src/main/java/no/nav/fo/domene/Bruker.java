@@ -74,19 +74,10 @@ public class Bruker {
         return this;
     }
 
-    public static Comparator<Bruker> SORT_BY_LAST_NAME_ASCENDING = new Comparator<Bruker>() {
-        @Override
-        public int compare(Bruker bruker1, Bruker bruker2) {
-            return bruker1.getEtternavn().compareTo(bruker2.getEtternavn());
-        }
-    };
+    public static Comparator<Bruker> SORT_BY_LAST_NAME_ASCENDING = Comparator.comparing(Bruker::getEtternavn);
 
-    public static Comparator<Bruker> SORT_BY_LAST_NAME_DESCENDING = new Comparator<Bruker>() {
-        @Override
-        public int compare(Bruker bruker1, Bruker bruker2) {
-            return bruker2.getEtternavn().compareTo(bruker1.getEtternavn());
-        }
-    };
+    public static Comparator<Bruker> SORT_BY_LAST_NAME_DESCENDING =
+            (Bruker bruker1, Bruker bruker2) -> bruker2.getEtternavn().compareTo(bruker1.getEtternavn());
 
 
 }

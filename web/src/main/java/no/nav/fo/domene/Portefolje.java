@@ -23,9 +23,9 @@ public class Portefolje {
     }
 
     public void sortByLastName(String sortDirection) {
-        if(sortDirection == "ascending") {
+        if(sortDirection.equals("ascending")) {
             brukere.sort(Bruker.SORT_BY_LAST_NAME_ASCENDING);
-        } else if(sortDirection == "descending") {
+        } else if(sortDirection.equals("descending")) {
             brukere.sort(Bruker.SORT_BY_LAST_NAME_DESCENDING);
         }
     }
