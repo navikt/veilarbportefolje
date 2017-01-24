@@ -4,14 +4,10 @@ import no.nav.fo.service.SolrService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
-@ComponentScan(basePackages = {"no.nav.fo.service"})
-@PropertySource("classpath:veilarbportefolje.properties")
 @Configuration
 public class SolrConfig {
 
