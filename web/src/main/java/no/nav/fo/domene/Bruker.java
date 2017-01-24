@@ -2,6 +2,7 @@ package no.nav.fo.domene;
 
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -72,4 +73,11 @@ public class Bruker {
         this.egenAnsatt = true;
         return this;
     }
+
+    public static Comparator<Bruker> SORT_BY_LAST_NAME_ASCENDING = Comparator.comparing(Bruker::getEtternavn);
+
+    public static Comparator<Bruker> SORT_BY_LAST_NAME_DESCENDING =
+            (Bruker bruker1, Bruker bruker2) -> bruker2.getEtternavn().compareTo(bruker1.getEtternavn());
+
+
 }
