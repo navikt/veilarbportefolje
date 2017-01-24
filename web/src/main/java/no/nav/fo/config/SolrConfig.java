@@ -6,10 +6,21 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.io.ClassPathResource;
+
+import java.util.Properties;
 
 @Configuration
 public class SolrConfig {
+
+    @Bean
+    public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        PropertySourcesPlaceholderConfigurer propertiesConfig = new PropertySourcesPlaceholderConfigurer();
+        Properties properties = new Properties();
+        properties.put("veilarbportefolje.cron.hovedindeksering", System.getProperty("veilarbportefolje.cron.hovedindeksering"));
+        properties.put("veilarbportefolje.cron.deltaindeksering", System.getProperty("veilarbportefolje.cron.deltaindeksering"));
+        propertiesConfig.setProperties(properties);
+        return propertiesConfig;
+    }
 
     @Bean
     public HttpSolrServer httpSolrServer() {
@@ -19,14 +30,6 @@ public class SolrConfig {
     @Bean
     public SolrService solrService() {
         return new SolrService();
-    }
-
-    @Bean
-    public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-        PropertySourcesPlaceholderConfigurer properties = new PropertySourcesPlaceholderConfigurer();
-        properties.setLocation(new ClassPathResource("veilarbportefolje.properties"));
-        properties.setIgnoreResourceNotFound(false);
-        return properties;
     }
 
     @Bean
