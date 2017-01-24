@@ -15,12 +15,15 @@
 
     <resources>
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
-        <rest alias="no.nav.fo.brukercore" mapToProperty="no.nav.fo.brukercore"/>
         <applicationCertificate alias="***REMOVED***"/>
+        <datasource alias="veilarbportefoljeDB" jndi="java:/jboss/datasources/veilarbportefoljeDB">
+            <pool maxPoolSize="300" minPoolSize="1"/>
+        </datasource>
+        <applicationProperties alias="veilarbportefolje.properties"/>
     </resources>
 
     <exposed-services>
-        <exposedRest name="no.nav.fo.solrindeks.oppdater" path="/veilarbportefolje/tjenester/solr/oppdater"/>
+        <exposedRest name="no.nav.fo.solrindeks.hovedindeksering" path="/veilarbportefolje/tjenester/solr/hovedindeksering"/>
         <exposedRest name="no.nav.fo.solrindeks.slett" path="/veilarbportefolje/tjenester/solr/slett"/>
     </exposed-services>
 

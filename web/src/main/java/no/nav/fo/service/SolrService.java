@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import no.nav.fo.database.BrukerRepository;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrInputDocument;
@@ -8,8 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -20,56 +22,53 @@ public class SolrService {
     @Inject
     HttpSolrServer server;
 
-    public void leggTilDokumenter() {
-        SolrInputDocument document1 = new SolrInputDocument();
-        document1.addField("fornavn", "Ola");
-        document1.addField("etternavn", "Normann");
-        document1.addField("fnr", "***REMOVED***");
+    @Inject
+    BrukerRepository brukerRepository;
 
-        SolrInputDocument document2 = new SolrInputDocument();
-        document2.addField("fornavn", "Edward");
-        document2.addField("etternavn", "Grieg");
-        document2.addField("fnr", "222222222");
-
-        SolrInputDocument document3 = new SolrInputDocument();
-        document3.addField("fornavn", "Ole");
-        document3.addField("etternavn", "Bull");
-        document3.addField("fnr", "111111111");
-
-        List<SolrInputDocument> documents = new ArrayList<>();
-        documents.add(document1);
-        documents.add(document2);
-        documents.add(document3);
-
+    @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
+    public void hovedindeksering() {
+        List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
+        List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
         try {
-            server.add(documents);
+            server.add(dokumenter);
             server.commit();
         } catch (SolrServerException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-
-        logger.info("Solrindeks har blitt oppdatert");
+        logger.info("Hovedindeksering fullført!");
     }
 
-    public void slettAlleDokumenter() {
-        try {
-            server.deleteByQuery("*:*");
-            server.commit();
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+    private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
+        SolrInputDocument document = new SolrInputDocument();
+        document.addField("person_id", rad.get("person_id").toString());
+        document.addField("fodselsnr", rad.get("fodselsnr").toString());
+        document.addField("fornavn", rad.get("fornavn").toString());
+        document.addField("etternavn", rad.get("etternavn").toString());
+        document.addField("nav_kontor", rad.get("nav_kontor").toString());
+        document.addField("formidlingsgruppekode", rad.get("formidlingsgruppekode").toString());
+        document.addField("iserv_fra_dato", parseDato(rad.get("iserv_fra_dato")));
+        document.addField("kvalifiseringsgruppekode", rad.get("kvalifiseringsgruppekode").toString());
+        document.addField("rettighetsgruppekode", rad.get("rettighetsgruppekode").toString());
+        document.addField("hovedmaalkode", rad.get("hovedmaalkode") != null ? rad.get("hovedmaalkode").toString() : null);
+        document.addField("sikkerhetstiltak_type_kode", rad.get("sikkerhetstiltak_type_kode") != null ? rad.get("sikkerhetstiltak_type_kode").toString() : null);
+        document.addField("fr_kode", rad.get("fr_kode") != null ? rad.get("fr_kode").toString() : null);
+        document.addField("sperret_ansatt", rad.get("sperret_ansatt").toString());
+        document.addField("er_doed", rad.get("er_doed").toString());
+        document.addField("doed_fra_dato", parseDato(rad.get("doed_fra_dato")));
+        return document;
+    }
+
+    private String parseDato(Object dato) {
+        if(dato == null) {
+            return null;
         }
-        logger.info("Solrindeks har blitt slettet");
+        else if(dato.equals("TZ")) {
+            return null;
+        }
+        else {
+            return dato.toString();
+        }
     }
-
-//    @Scheduled(fixedDelay = 5000)
-    private void scheduledFullOppdatering() {
-        slettAlleDokumenter();
-        leggTilDokumenter();
-        System.out.println("Scheduledtask completed");
-    }
-
 }

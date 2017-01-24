@@ -12,17 +12,10 @@ public class SolrController {
     @Inject
     SolrService solrService;
 
-    @Path("oppdater")
+    @Path("hovedindeksering")
     @GET
-    public boolean oppdaterSolrIndeks() {
-        solrService.leggTilDokumenter();
-        return true;
-    }
-
-    @Path("slett")
-    @GET
-    public boolean slettAlt() {
-        solrService.slettAlleDokumenter();
+    public boolean hovedIndeksering() {
+        solrService.hovedindeksering();
         return true;
     }
 }
