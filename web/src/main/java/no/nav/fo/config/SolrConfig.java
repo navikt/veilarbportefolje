@@ -17,7 +17,7 @@ public class SolrConfig {
 
     @Bean
     public HttpSolrServer httpSolrServer() {
-        return new HttpSolrServer(System.getProperty("no.nav.fo.brukercore.url"));
+        return new HttpSolrServer(System.getProperty("veilarbportefolje.solr.masternode"));
     }
 
     @Bean
@@ -35,7 +35,7 @@ public class SolrConfig {
 
     @Bean
     public Pingable solrServerPing() {
-        HttpSolrServer server = new HttpSolrServer(System.getProperty("no.nav.fo.brukercore.url"));
+        HttpSolrServer server = new HttpSolrServer(System.getProperty("veilarbportefolje.solr.masternode"));
         return () -> {
             try {
                 server.ping();
