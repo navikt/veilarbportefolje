@@ -6,7 +6,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-public class JndiLocalContextConfig {
+public class LocalJndiContextConfig {
     public static void setupJndiLocalContext() {
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.eclipse.jetty.jndi.InitialContextFactory");
         System.setProperty(Context.URL_PKG_PREFIXES, "org.apache.naming");
