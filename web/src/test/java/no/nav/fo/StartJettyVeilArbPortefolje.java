@@ -7,7 +7,7 @@ import org.eclipse.jetty.jaas.JAASLoginService;
 
 import java.io.File;
 
-import static no.nav.fo.config.JndiLocalContextConfig.setupJndiLocalContext;
+import static no.nav.fo.config.LocalJndiContextConfig.setupJndiLocalContext;
 import static no.nav.modig.core.test.FilesAndDirs.TEST_RESOURCES;
 import static no.nav.modig.core.test.FilesAndDirs.WEBAPP_SOURCE;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
