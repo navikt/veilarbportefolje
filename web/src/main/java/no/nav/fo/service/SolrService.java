@@ -53,7 +53,7 @@ public class SolrService {
             if(updateResponseAdd.getStatus() == 0) {
                 UpdateResponse updateResponseCommit = server.commit();
                 if(updateResponseCommit.getStatus() == 0) {
-                    Timestamp tidsstempel = (Timestamp) nyesteRad(rader).get("tidsstempel");
+                    Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
                     brukerRepository.updateTidsstempel(tidsstempel);
                 }
             }
@@ -65,8 +65,8 @@ public class SolrService {
         logger.info("Deltaindeksering fullført!");
     }
 
-    private Map<String, Object> nyesteRad(List<Map<String, Object>> rader) {
-        return rader.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
+    protected Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
+        return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
     }
 
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
