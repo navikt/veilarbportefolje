@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -21,7 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
 
-    private static final Logger logger =  getLogger(SolrService.class);
+    private static final Logger logger = getLogger(SolrService.class);
 
     @Inject
     HttpSolrServer server;
@@ -31,14 +32,19 @@ public class SolrService {
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void hovedindeksering() {
+        if (isSlaveNode()) {
+            logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            return;
+        }
+
+        logger.info("Starter hovedindeksering");
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
-        List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
+        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
+            server.deleteByQuery("<delete><query>*:*<query><delete>");
             server.add(dokumenter);
             server.commit();
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         }
         logger.info("Hovedindeksering fullført!");
@@ -73,6 +79,11 @@ public class SolrService {
         return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
     }
 
+    static boolean isSlaveNode() {
+        String isMasterString = System.getProperty("cluster.ismasternode", "false");
+        return !BooleanUtils.toBoolean(isMasterString);
+    }
+
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("person_id", rad.get("person_id").toString());
@@ -96,11 +107,9 @@ public class SolrService {
     protected String parseDato(Object dato) {
         if(dato == null) {
             return null;
-        }
-        else if(dato.equals("TZ")) {
+        } else if (dato.equals("TZ")) {
             return null;
-        }
-        else {
+        } else {
             return dato.toString();
         }
     }

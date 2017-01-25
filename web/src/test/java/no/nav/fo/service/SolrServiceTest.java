@@ -1,6 +1,8 @@
 package no.nav.fo.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -47,4 +49,13 @@ public class SolrServiceTest {
         Object dato = "2017-01-01'T'23:23:23.23'Z'";
         assertThat(solrService.parseDato(dato)).isEqualTo(dato);
     }
+
+    @Test
+    public void shouldCorrectlyDetermineIfSlaveNode() throws Exception {
+        System.setProperty("cluster.ismasternode", "false");
+        assertTrue(SolrService.isSlaveNode());
+        System.setProperty("cluster.ismasternode", "true");
+        assertFalse(SolrService.isSlaveNode());
+    }
 }
+
