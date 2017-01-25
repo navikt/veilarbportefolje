@@ -29,8 +29,10 @@ public class SolrService {
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void hovedindeksering() {
         if (isSlaveNode()) {
-            logger.info("Noden er en slave. Kan ikke iverksette indeksering");
+            logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            return;
         }
+
         logger.info("Starter hovedindeksering");
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
