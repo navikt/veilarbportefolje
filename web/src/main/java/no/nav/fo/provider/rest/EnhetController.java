@@ -16,9 +16,9 @@ import java.util.List;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.*;
 
-@Path("/hentportefoljeforenhet")
+@Path("/enhet")
 @Produces(APPLICATION_JSON)
-public class HentPortefoljeForEnhetController {
+public class EnhetController {
 
     @Inject
     Portefolje portefoljeMock;
@@ -27,7 +27,7 @@ public class HentPortefoljeForEnhetController {
     BrukertilgangService brukertilgangService;
 
     @GET
-    @Path("/{enhet}")
+    @Path("/{enhet}/portefolje")
     public Response hentPortefolje(
             @PathParam("enhet") String enhet,
             @QueryParam("ident") String ident,
