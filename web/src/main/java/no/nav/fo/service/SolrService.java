@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrInputDocument;
@@ -17,7 +18,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
 
-    private static final Logger logger =  getLogger(SolrService.class);
+    private static final Logger logger = getLogger(SolrService.class);
 
     @Inject
     HttpSolrServer server;
@@ -27,8 +28,12 @@ public class SolrService {
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void hovedindeksering() {
+        if (isSlaveNode()) {
+            logger.info("Noden er en slave. Kan ikke iverksette indeksering");
+        }
+        logger.info("Starter hovedindeksering");
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
-        List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
+        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
             server.deleteByQuery("<delete><query>*:*<query><delete>");
             server.add(dokumenter);
@@ -37,6 +42,11 @@ public class SolrService {
             logger.error(e.getMessage(), e);
         }
         logger.info("Hovedindeksering fullført!");
+    }
+
+    static boolean isSlaveNode() {
+        String isMasterString = System.getProperty("cluster.ismasternode", "false");
+        return !BooleanUtils.toBoolean(isMasterString);
     }
 
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
@@ -60,13 +70,11 @@ public class SolrService {
     }
 
     private String parseDato(Object dato) {
-        if(dato == null) {
+        if (dato == null) {
             return null;
-        }
-        else if(dato.equals("TZ")) {
+        } else if (dato.equals("TZ")) {
             return null;
-        }
-        else {
+        } else {
             return dato.toString();
         }
     }
