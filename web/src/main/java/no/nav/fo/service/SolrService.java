@@ -93,7 +93,7 @@ public class SolrService {
         return document;
     }
 
-    private String parseDato(Object dato) {
+    protected String parseDato(Object dato) {
         if(dato == null) {
             return null;
         }
