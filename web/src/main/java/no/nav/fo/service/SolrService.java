@@ -25,10 +25,10 @@ public class SolrService {
     private static final Logger logger = getLogger(SolrService.class);
 
     @Inject
-    HttpSolrServer server;
+    private HttpSolrServer server;
 
     @Inject
-    BrukerRepository brukerRepository;
+    private BrukerRepository brukerRepository;
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void hovedindeksering() {
@@ -41,9 +41,13 @@ public class SolrService {
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
-            server.deleteByQuery("<delete><query>*:*<query><delete>");
-            server.add(dokumenter);
-            server.commit();
+            UpdateResponse updateResponseDelete = server.deleteByQuery("<delete><query>*:*<query><delete>");
+            if(updateResponseDelete.getStatus() == 0) {
+                UpdateResponse updateResponseAdd = server.add(dokumenter);
+                if(updateResponseAdd.getStatus() == 0) {
+                    server.commit();
+                }
+            }
         } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         }
@@ -52,12 +56,18 @@ public class SolrService {
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
     public void deltaindeksering() {
+        if (isSlaveNode()) {
+            logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            return;
+        }
+
+        logger.info("Starter deltaindeksering");
         List<Map<String, Object>> rader = brukerRepository.retrieveNyeBrukere();
         if(rader.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
         }
-        List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
+        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
             UpdateResponse updateResponseAdd = server.add(dokumenter);
             if(updateResponseAdd.getStatus() == 0) {
@@ -67,15 +77,13 @@ public class SolrService {
                     brukerRepository.updateTidsstempel(tidsstempel);
                 }
             }
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         }
         logger.info("Deltaindeksering fullført!");
     }
 
-    protected Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
+    Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
         return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
     }
 
@@ -104,7 +112,7 @@ public class SolrService {
         return document;
     }
 
-    protected String parseDato(Object dato) {
+    String parseDato(Object dato) {
         if(dato == null) {
             return null;
         } else if (dato.equals("TZ")) {
