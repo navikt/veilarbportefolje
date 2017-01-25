@@ -3,6 +3,7 @@ package no.nav.fo.database;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,10 @@ public class BrukerRepository {
     public List<Map<String, Object>> retrieveNyeBrukere() {
         List<Map<String, Object>> rader = db.queryForList(retrieveNyeBrukereSQL());
         return rader;
+    }
+
+    public void updateTidsstempel(Timestamp tidsstempel) {
+        db.update(updateTidsstempelSQL(), tidsstempel);
     }
 
     private String retrieveBrukereSQL() {
@@ -61,10 +66,15 @@ public class BrukerRepository {
                     "sperret_ansatt, " +
                     "er_doed, " +
                     "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS.FF') || 'Z' AS doed_fra_dato, " +
-                    "TO_CHAR(tidsstempel, 'YYYY-MM-DD') || 'T' || TO_CHAR(tidsstempel, 'HH24:MI:SS.FF') || 'Z' AS tidsstempel " +
+                    "tidsstempel " +
                 "FROM " +
                     "oppfolgingsbruker " +
                 "WHERE " +
                     "tidsstempel > (SELECT sist_indeksert FROM indeksering_logg)";
+    }
+
+    private String updateTidsstempelSQL() {
+        return
+                "UPDATE indeksering_logg SET sist_indeksert = ?";
     }
 }

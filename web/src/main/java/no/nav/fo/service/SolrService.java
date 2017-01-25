@@ -3,12 +3,16 @@ package no.nav.fo.service;
 import no.nav.fo.database.BrukerRepository;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,14 +49,24 @@ public class SolrService {
         List<Map<String, Object>> rader = brukerRepository.retrieveNyeBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
         try {
-            server.add(dokumenter);
-            server.commit();
+            UpdateResponse updateResponseAdd = server.add(dokumenter);
+            if(updateResponseAdd.getStatus() == 0) {
+                UpdateResponse updateResponseCommit = server.commit();
+                if(updateResponseCommit.getStatus() == 0) {
+                    Timestamp tidsstempel = (Timestamp) nyesteRad(rader).get("tidsstempel");
+                    brukerRepository.updateTidsstempel(tidsstempel);
+                }
+            }
         } catch (SolrServerException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
         logger.info("Deltaindeksering fullført!");
+    }
+
+    private Map<String, Object> nyesteRad(List<Map<String, Object>> rader) {
+        return rader.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
     }
 
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
