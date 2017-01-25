@@ -47,6 +47,10 @@ public class SolrService {
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
     public void deltaindeksering() {
         List<Map<String, Object>> rader = brukerRepository.retrieveNyeBrukere();
+        if(rader.isEmpty()) {
+            logger.info("Ingen nye dokumenter i databasen");
+            return;
+        }
         List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
         try {
             UpdateResponse updateResponseAdd = server.add(dokumenter);
