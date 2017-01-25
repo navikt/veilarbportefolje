@@ -30,11 +30,10 @@ public class SolrService {
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(rad -> mapRadTilDokument(rad)).collect(Collectors.toList());
         try {
+            server.deleteByQuery("<delete><query>*:*<query><delete>");
             server.add(dokumenter);
             server.commit();
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         }
         logger.info("Hovedindeksering fullført!");
