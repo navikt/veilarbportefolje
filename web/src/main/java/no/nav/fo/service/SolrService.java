@@ -34,31 +34,37 @@ public class SolrService {
         }
 
         logger.info("Starter hovedindeksering");
+        try {
+            deleteAllDocuments();
+            addAllDocuments();
+            server.commit();
+        } catch (SolrServerException | IOException e) {
+            logger.error("Hovedindeksering feilet. Kunne ikke utføre commit. ", e.getMessage(), e);
+        }
+        logger.info("Hovedindeksering fullført!");
+    }
+
+    private void addAllDocuments() {
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
-            deleteAllDocuments();
-            logger.info("Legger til alle dokumenter til indeksen på nytt...");
             server.add(dokumenter);
-            server.commit();
         } catch (SolrServerException | IOException e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Kunne ikke legge til dokumenter i indeks: ", e.getMessage(), e);
         }
-        logger.info("Hovedindeksering fullført!");
+    }
+
+    private void deleteAllDocuments() {
+        try {
+            server.deleteByQuery("*:*");
+        } catch (SolrServerException | IOException e) {
+            logger.error("Sletting av dokumenter i indeksen feilet: ", e.getMessage(), e);
+        }
     }
 
     static boolean isSlaveNode() {
         String isMasterString = System.getProperty("cluster.ismasternode", "false");
         return !BooleanUtils.toBoolean(isMasterString);
-    }
-
-    private void deleteAllDocuments() {
-        try {
-            logger.info("Sletter alle dokumenter fra indeksen...");
-            server.deleteByQuery("*:*");
-        } catch (SolrServerException | IOException e) {
-            logger.error("Sletting av dokumenter i indeksen feilet: " + e.getMessage(), e);
-        }
     }
 
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
