@@ -17,7 +17,7 @@ public class SolrServiceTest {
     private SolrService solrService = new SolrService();
 
     @Test
-    public void finnerNyesteBruker() {
+    public void skalFinneNyesteBruker() {
         List<Map<String, Object>> brukere = new ArrayList<>();
         Map<String, Object> bruker1 = new HashMap<>();
         Map<String, Object> bruker2 = new HashMap<>();
@@ -35,23 +35,23 @@ public class SolrServiceTest {
     }
 
     @Test
-    public void returnererNullHvisDatoenErNull() {
+    public void skalReturnereNullHvisDatoenErNull() {
         assertThat(solrService.parseDato(null)).isEqualTo(null);
     }
 
     @Test
-    public void returnererNullHvisDatoenErUfullstendig() {
+    public void skalReturnereNullHvisDatoenErUfullstendig() {
         assertThat(solrService.parseDato("TZ")).isEqualTo(null);
     }
 
     @Test
-    public void returnererDatostrengenHvisDatoenErOk() {
+    public void skalReturnereDatostrengenHvisDatoenErOk() {
         Object dato = "2017-01-01'T'23:23:23.23'Z'";
         assertThat(solrService.parseDato(dato)).isEqualTo(dato);
     }
 
     @Test
-    public void shouldCorrectlyDetermineIfSlaveNode() throws Exception {
+    public void skalKorrektAvgjoreOmErSlaveNode() throws Exception {
         System.setProperty("cluster.ismasternode", "false");
         assertTrue(SolrService.isSlaveNode());
         System.setProperty("cluster.ismasternode", "true");
