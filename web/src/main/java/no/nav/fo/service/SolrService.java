@@ -1,7 +1,6 @@
 package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -89,7 +88,7 @@ public class SolrService {
 
     static boolean isSlaveNode() {
         String isMasterString = System.getProperty("cluster.ismasternode", "false");
-        return !BooleanUtils.toBoolean(isMasterString);
+        return !Boolean.parseBoolean(isMasterString);
     }
 
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
