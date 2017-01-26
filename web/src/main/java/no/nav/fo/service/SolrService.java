@@ -1,15 +1,23 @@
 package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.Bruker;
+import no.nav.virksomhet.organisering.enhet.v1.Enhet;
+import no.nav.virksomhet.organisering.enhet.v1.EnhetUtvidelse1;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.SolrParams;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,6 +50,19 @@ public class SolrService {
             logger.error("Hovedindeksering feilet. Kunne ikke utføre commit. ", e.getMessage(), e);
         }
         logger.info("Hovedindeksering fullført!");
+    }
+
+    public List<Bruker> hentBrukere(String enhetId) {
+        String queryString = "nav_kontor: " + enhetId;
+        List<Bruker> brukere = new ArrayList<>();
+        try {
+            QueryResponse response = server.query(new SolrQuery(queryString));
+            SolrDocumentList results = response.getResults();
+            logger.debug(results.toString());
+        } catch (SolrServerException e) {
+            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+        }
+        return brukere;
     }
 
     private void addAllDocuments() {
