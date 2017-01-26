@@ -212,6 +212,11 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>javax.servlet</groupId>
