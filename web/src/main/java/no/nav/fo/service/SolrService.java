@@ -40,7 +40,7 @@ public class SolrService {
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
         List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
-            UpdateResponse updateResponseDelete = server.deleteByQuery("<delete><query>*:*<query><delete>");
+            UpdateResponse updateResponseDelete = server.deleteByQuery("*:*");
             if(updateResponseDelete.getStatus() == 0) {
                 UpdateResponse updateResponseAdd = server.add(dokumenter);
                 if(updateResponseAdd.getStatus() == 0) {
