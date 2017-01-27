@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -54,9 +55,13 @@ public class SolrService {
 
     public List<Bruker> hentBrukere(String enhetId) {
         String queryString = "nav_kontor: " + enhetId;
+        SolrQuery solrQuery = new SolrQuery(queryString);
+        solrQuery.addSort("etternavn", asc);
+        solrQuery.addSort("fornavn", asc);
+
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(new SolrQuery(queryString));
+            QueryResponse response = server.query(solrQuery);
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
         } catch (SolrServerException e) {
