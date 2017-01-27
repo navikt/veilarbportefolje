@@ -26,7 +26,7 @@ public class BrukerRepository {
         db.update(updateTidsstempelSQL(), tidsstempel);
     }
 
-    private String retrieveBrukereSQL() {
+    String retrieveBrukereSQL() {
         return
                 "SELECT " +
                     "person_id, " +
@@ -48,7 +48,7 @@ public class BrukerRepository {
                     "oppfolgingsbruker";
     }
 
-    private String retrieveNyeBrukereSQL() {
+    String retrieveNyeBrukereSQL() {
         return
                 "SELECT " +
                     "person_id, " +
@@ -70,10 +70,14 @@ public class BrukerRepository {
                 "FROM " +
                     "oppfolgingsbruker " +
                 "WHERE " +
-                    "tidsstempel > (SELECT sist_indeksert FROM indeksering_logg)";
+                    "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
 
-    private String updateTidsstempelSQL() {
+    String retrieveSistIndeksertSQL() {
+        return "SELECT sist_indeksert FROM indeksering_logg";
+    }
+
+    String updateTidsstempelSQL() {
         return
                 "UPDATE indeksering_logg SET sist_indeksert = ?";
     }
