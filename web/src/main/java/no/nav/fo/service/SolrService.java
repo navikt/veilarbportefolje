@@ -1,9 +1,13 @@
 package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.Bruker;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -12,11 +16,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -86,6 +93,29 @@ public class SolrService {
         }
         logger.info("Deltaindeksering fullført!");
         logger.info(dokumenter.size() + "dokumenter ble oppdatert/lagt til i solrindeksen");
+    }
+
+    public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
+        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
+        if ("descending".equals(sortOrder)) {
+            order = desc;
+        }
+
+        String queryString = "nav_kontor: " + enhetId;
+        SolrQuery solrQuery = new SolrQuery(queryString);
+        solrQuery.addSort("etternavn", order);
+        solrQuery.addSort("fornavn", order);
+
+        List<Bruker> brukere = new ArrayList<>();
+        try {
+            QueryResponse response = server.query(solrQuery);
+            SolrDocumentList results = response.getResults();
+            logger.debug(results.toString());
+            brukere = results.stream().map(Bruker::of).collect(toList());
+        } catch (SolrServerException e) {
+            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+        }
+        return brukere;
     }
 
     Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
