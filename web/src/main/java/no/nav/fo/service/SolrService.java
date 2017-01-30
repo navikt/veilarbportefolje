@@ -2,8 +2,6 @@ package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
-import no.nav.virksomhet.organisering.enhet.v1.Enhet;
-import no.nav.virksomhet.organisering.enhet.v1.EnhetUtvidelse1;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -11,7 +9,6 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.params.SolrParams;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -20,9 +17,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
+import static java.util.stream.Collectors.toList;
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -56,7 +52,7 @@ public class SolrService {
 
     public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
         SolrQuery.ORDER order = SolrQuery.ORDER.asc;
-        if (sortOrder.equals("descending")) {
+        if ("descending".equals(sortOrder)) {
             order = desc;
         }
 
@@ -70,6 +66,7 @@ public class SolrService {
             QueryResponse response = server.query(solrQuery);
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
+            brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
@@ -78,7 +75,7 @@ public class SolrService {
 
     private void addAllDocuments() {
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
-        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
+        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(toList());
         try {
             server.add(dokumenter);
         } catch (SolrServerException | IOException e) {

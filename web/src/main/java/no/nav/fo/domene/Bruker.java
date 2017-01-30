@@ -1,10 +1,9 @@
 package no.nav.fo.domene;
 
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import org.apache.solr.common.SolrDocument;
+
+import java.util.*;
 
 public class Bruker {
     private String fnr;
@@ -37,6 +36,19 @@ public class Bruker {
 
     public Bruker() {
         sikkerhetstiltak = new ArrayList<>();
+    }
+
+    public static Bruker of(SolrDocument document) {
+        Map<String, String> veileder = new HashMap<>();
+        veileder.put("fornavn", "Arne");
+        veileder.put("etternavn", "Olsen");
+        veileder.put("ident", "X123456");
+
+        return new Bruker()
+                .withFnr((String) document.get("fodselsnr"))
+                .withFornavn((String) document.get("fornavn"))
+                .withEtternavn((String) document.get("etternavn"))
+                .withVeileder(veileder);
     }
 
     public Bruker withFnr(String fnr) {
