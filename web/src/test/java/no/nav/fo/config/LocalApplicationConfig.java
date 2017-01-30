@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         SolrConfig.class,
         PortefoljeMock.class
 })
-public class MockApplicationConfig {
+public class LocalApplicationConfig {
     @Bean
     public IsAliveServlet isAliveServlet() {
         return new IsAliveServlet();

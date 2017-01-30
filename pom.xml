@@ -268,7 +268,7 @@
             <dependency>
                 <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
-                <version>2.2.9</version>
+                <version>2.3.4</version>
                 <scope>test</scope>
             </dependency>
 
@@ -396,11 +396,6 @@
                 <artifactId>cxf-api</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -433,6 +428,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>3.6.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-library</artifactId>
                 <version>${hamcrest.version}</version>
@@ -449,6 +450,16 @@
                 <artifactId>mockito-all</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>2.9.6</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>20.0-hal</version>
             </dependency>
 
             <!--Brukes bare for å mock data. Fjernes når reelle data tas i bruk-->

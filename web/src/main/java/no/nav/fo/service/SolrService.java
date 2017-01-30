@@ -1,25 +1,22 @@
 package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.Bruker;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -27,10 +24,10 @@ public class SolrService {
     private static final Logger logger = getLogger(SolrService.class);
 
     @Inject
-    HttpSolrServer server;
+    private HttpSolrServer server;
 
     @Inject
-    BrukerRepository brukerRepository;
+    private BrukerRepository brukerRepository;
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void hovedindeksering() {
@@ -40,60 +37,64 @@ public class SolrService {
         }
 
         logger.info("Starter hovedindeksering");
+        List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
+        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
-            deleteAllDocuments();
-            addAllDocuments();
-            server.commit();
+            UpdateResponse updateResponseDelete = server.deleteByQuery("*:*");
+            if(updateResponseDelete.getStatus() == 0) {
+                UpdateResponse updateResponseAdd = server.add(dokumenter);
+                if(updateResponseAdd.getStatus() == 0) {
+                    UpdateResponse updateResponseCommit = server.commit();
+                    if(updateResponseCommit.getStatus() == 0) {
+                        Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
+                        brukerRepository.updateTidsstempel(tidsstempel);
+                    }
+                }
+            }
         } catch (SolrServerException | IOException e) {
-            logger.error("Hovedindeksering feilet. Kunne ikke utføre commit. ", e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
         logger.info("Hovedindeksering fullført!");
+        logger.info(dokumenter.size() + "dokumenter ble lagt til i solrindeksen");
     }
 
-    public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
-        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
-        if ("descending".equals(sortOrder)) {
-            order = desc;
+    @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
+    public void deltaindeksering() {
+        if (isSlaveNode()) {
+            logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            return;
         }
 
-        String queryString = "nav_kontor: " + enhetId;
-        SolrQuery solrQuery = new SolrQuery(queryString);
-        solrQuery.addSort("etternavn", order);
-        solrQuery.addSort("fornavn", order);
-
-        List<Bruker> brukere = new ArrayList<>();
-        try {
-            QueryResponse response = server.query(solrQuery);
-            SolrDocumentList results = response.getResults();
-            logger.debug(results.toString());
-            brukere = results.stream().map(Bruker::of).collect(toList());
-        } catch (SolrServerException e) {
-            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+        logger.info("Starter deltaindeksering");
+        List<Map<String, Object>> rader = brukerRepository.retrieveOppdaterteBrukere();
+        if(rader.isEmpty()) {
+            logger.info("Ingen nye dokumenter i databasen");
+            return;
         }
-        return brukere;
-    }
-
-    private void addAllDocuments() {
-        List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
-        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(toList());
+        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
         try {
-            server.add(dokumenter);
+            UpdateResponse updateResponseAdd = server.add(dokumenter);
+            if(updateResponseAdd.getStatus() == 0) {
+                UpdateResponse updateResponseCommit = server.commit();
+                if(updateResponseCommit.getStatus() == 0) {
+                    Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
+                    brukerRepository.updateTidsstempel(tidsstempel);
+                }
+            }
         } catch (SolrServerException | IOException e) {
-            logger.error("Kunne ikke legge til dokumenter i indeks: ", e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
+        logger.info("Deltaindeksering fullført!");
+        logger.info(dokumenter.size() + "dokumenter ble oppdatert/lagt til i solrindeksen");
     }
 
-    private void deleteAllDocuments() {
-        try {
-            server.deleteByQuery("*:*");
-        } catch (SolrServerException | IOException e) {
-            logger.error("Sletting av dokumenter i indeksen feilet: ", e.getMessage(), e);
-        }
+    Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
+        return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
     }
 
     static boolean isSlaveNode() {
         String isMasterString = System.getProperty("cluster.ismasternode", "false");
-        return !BooleanUtils.toBoolean(isMasterString);
+        return !Boolean.parseBoolean(isMasterString);
     }
 
     private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
@@ -116,8 +117,8 @@ public class SolrService {
         return document;
     }
 
-    private String parseDato(Object dato) {
-        if (dato == null) {
+    String parseDato(Object dato) {
+        if(dato == null) {
             return null;
         } else if (dato.equals("TZ")) {
             return null;
