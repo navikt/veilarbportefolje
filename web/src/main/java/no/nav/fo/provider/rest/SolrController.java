@@ -18,4 +18,11 @@ public class SolrController {
         solrService.hovedindeksering();
         return true;
     }
+
+    @Path("deltaindeksering")
+    @GET
+    public boolean deltaIndeksering() {
+        solrService.deltaindeksering();
+        return true;
+    }
 }

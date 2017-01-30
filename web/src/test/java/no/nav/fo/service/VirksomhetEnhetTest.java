@@ -1,6 +1,6 @@
 package no.nav.fo.service;
 
-import no.nav.fo.config.ApplicationTestConfig;
+import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeRequest;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeResponse;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
@@ -25,7 +25,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ApplicationTestConfig.class})
+@ContextConfiguration(classes = { ApplicationConfigTest.class})
 public class VirksomhetEnhetTest {
 
     @Rule
