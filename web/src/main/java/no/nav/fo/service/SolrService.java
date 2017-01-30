@@ -44,13 +44,18 @@ public class SolrService {
             if(updateResponseDelete.getStatus() == 0) {
                 UpdateResponse updateResponseAdd = server.add(dokumenter);
                 if(updateResponseAdd.getStatus() == 0) {
-                    server.commit();
+                    UpdateResponse updateResponseCommit = server.commit();
+                    if(updateResponseCommit.getStatus() == 0) {
+                        Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
+                        brukerRepository.updateTidsstempel(tidsstempel);
+                    }
                 }
             }
         } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         }
         logger.info("Hovedindeksering fullført!");
+        logger.info(dokumenter.size() + "dokumenter ble lagt til i solrindeksen");
     }
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
@@ -61,7 +66,7 @@ public class SolrService {
         }
 
         logger.info("Starter deltaindeksering");
-        List<Map<String, Object>> rader = brukerRepository.retrieveNyeBrukere();
+        List<Map<String, Object>> rader = brukerRepository.retrieveOppdaterteBrukere();
         if(rader.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
@@ -80,6 +85,7 @@ public class SolrService {
             logger.error(e.getMessage(), e);
         }
         logger.info("Deltaindeksering fullført!");
+        logger.info(dokumenter.size() + "dokumenter ble oppdatert/lagt til i solrindeksen");
     }
 
     Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {

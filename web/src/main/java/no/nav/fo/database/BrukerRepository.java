@@ -17,8 +17,8 @@ public class BrukerRepository {
         return rader;
     }
 
-    public List<Map<String, Object>> retrieveNyeBrukere() {
-        List<Map<String, Object>> rader = db.queryForList(retrieveNyeBrukereSQL());
+    public List<Map<String, Object>> retrieveOppdaterteBrukere() {
+        List<Map<String, Object>> rader = db.queryForList(retrieveOppdaterteBrukereSQL());
         return rader;
     }
 
@@ -48,7 +48,7 @@ public class BrukerRepository {
                     "oppfolgingsbruker";
     }
 
-    String retrieveNyeBrukereSQL() {
+    String retrieveOppdaterteBrukereSQL() {
         return
                 "SELECT " +
                     "person_id, " +
