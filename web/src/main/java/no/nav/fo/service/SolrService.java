@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -53,11 +54,16 @@ public class SolrService {
         logger.info("Hovedindeksering fullført!");
     }
 
-    public List<Bruker> hentBrukere(String enhetId) {
+    public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
+        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
+        if (sortOrder.equals("descending")) {
+            order = desc;
+        }
+
         String queryString = "nav_kontor: " + enhetId;
         SolrQuery solrQuery = new SolrQuery(queryString);
-        solrQuery.addSort("etternavn", asc);
-        solrQuery.addSort("fornavn", asc);
+        solrQuery.addSort("etternavn", order);
+        solrQuery.addSort("fornavn", order);
 
         List<Bruker> brukere = new ArrayList<>();
         try {
