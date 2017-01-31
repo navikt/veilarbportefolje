@@ -1,4 +1,5 @@
 Portefølje-serverside
 
-### For å utføre hoveddindeksering
-`http://<hostnam>.devillo.no:9595/veilarbportefolje/tjenester/solr/hovedindeksering`
+### For å utføre hoved- og deltaindeksering
+`http://$(hostname).devillo.no:9595/veilarbportefolje/tjenester/solr/hovedindeksering`
+`http://$(hostname).devillo.no:9595/veilarbportefolje/tjenester/solr/deltaindeksering`
