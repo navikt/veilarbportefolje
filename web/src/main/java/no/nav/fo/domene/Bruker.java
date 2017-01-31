@@ -12,7 +12,7 @@ public class Bruker {
     private List<String> sikkerhetstiltak;
     private String diskresjonskode;
     private boolean egenAnsatt;
-    private Map<String, String> veileder;
+    private String veilderId;
 
     public String getFnr() {
         return fnr;
@@ -32,7 +32,7 @@ public class Bruker {
 
     public List<String> getSikkerhetstiltak() { return sikkerhetstiltak; }
 
-    public Map<String, String> getVeileder() { return veileder;}
+    public String getVeilderId() { return veilderId;}
 
     public Bruker() {
         sikkerhetstiltak = new ArrayList<>();
@@ -42,7 +42,8 @@ public class Bruker {
         return new Bruker()
                 .withFnr((String) document.get("fodselsnr"))
                 .withFornavn((String) document.get("fornavn"))
-                .withEtternavn((String) document.get("etternavn"));
+                .withEtternavn((String) document.get("etternavn"))
+                .withVeilederId((String)document.get("veileder_id"));
     }
 
     public Bruker withFnr(String fnr) {
@@ -70,8 +71,8 @@ public class Bruker {
         return this;
     }
 
-    public Bruker withVeileder(Map<String, String> veileder) {
-        this.veileder = veileder;
+    public Bruker withVeilederId(String veilederId) {
+        this.veilderId = veilederId;
         return this;
     }
 

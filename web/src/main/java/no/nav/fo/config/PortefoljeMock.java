@@ -28,14 +28,9 @@ public class PortefoljeMock {
         Date minDate = new Date(-1893459600000L);
         Date maxDate = new Date(915145200000L);
 
-        Map<String, String> veileder = new HashMap<>();
-        veileder.put("fornavn", "Arne");
-        veileder.put("etternavn", "Olsen");
-        veileder.put("ident", "X123456");
-
         for(int i=0; i < antallBrukere; i++) {
             Bruker bruker = new Bruker()
-                                .withVeileder(veileder)
+                                .withVeilederId("X123456")
                                 .withFornavn(df.getFirstName())
                                 .withEtternavn(df.getLastName())
                                 .withFnr(dateToFnr(df.getDateBetween(minDate, maxDate)));

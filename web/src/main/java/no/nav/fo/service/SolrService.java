@@ -144,6 +144,7 @@ public class SolrService {
         document.addField("sperret_ansatt", rad.get("sperret_ansatt").toString());
         document.addField("er_doed", rad.get("er_doed").toString());
         document.addField("doed_fra_dato", parseDato(rad.get("doed_fra_dato")));
+        document.addField("veileder_id", null);
         return document;
     }
 
