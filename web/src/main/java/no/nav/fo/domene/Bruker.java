@@ -39,16 +39,10 @@ public class Bruker {
     }
 
     public static Bruker of(SolrDocument document) {
-        Map<String, String> veileder = new HashMap<>();
-        veileder.put("fornavn", "Arne");
-        veileder.put("etternavn", "Olsen");
-        veileder.put("ident", "X123456");
-
         return new Bruker()
                 .withFnr((String) document.get("fodselsnr"))
                 .withFornavn((String) document.get("fornavn"))
-                .withEtternavn((String) document.get("etternavn"))
-                .withVeileder(veileder);
+                .withEtternavn((String) document.get("etternavn"));
     }
 
     public Bruker withFnr(String fnr) {
