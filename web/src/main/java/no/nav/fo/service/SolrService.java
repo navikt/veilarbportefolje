@@ -62,7 +62,7 @@ public class SolrService {
             logger.error(e.getMessage(), e);
         }
         logger.info("Hovedindeksering fullført!");
-        logger.info(dokumenter.size() + "dokumenter ble lagt til i solrindeksen");
+        logger.info(dokumenter.size() + " dokumenter ble lagt til i solrindeksen");
     }
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
@@ -92,7 +92,7 @@ public class SolrService {
             logger.error(e.getMessage(), e);
         }
         logger.info("Deltaindeksering fullført!");
-        logger.info(dokumenter.size() + "dokumenter ble oppdatert/lagt til i solrindeksen");
+        logger.info(dokumenter.size() + " dokumenter ble oppdatert/lagt til i solrindeksen");
     }
 
     public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
