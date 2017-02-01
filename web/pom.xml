@@ -29,6 +29,16 @@
             <scope>test</scope>
         </dependency>
 
+        <!--Obligatoriske/Funksjonelle biblioteker-->
+        <dependency>
+            <groupId>com.javaslang</groupId>
+            <artifactId>javaslang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
         <!--Dialogarena tjenestespesifikasjon-->
 
         <!--Dialogarena-->

@@ -43,7 +43,7 @@
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
 
 
-        <!-- Tredjepars -->
+        <!-- Tredjeparts -->
         <!--<ehcache.version>2.6.11</ehcache.version>-->
         <cxf.version>2.7.6</cxf.version>
         <cxf.version>2.7.6</cxf.version>
@@ -59,6 +59,8 @@
         <joda.version>2.9.4</joda.version>
         <mockito.version>1.9.5</mockito.version>
         <solr.version>4.10.4</solr.version>
+        <javaslang.version>2.0.0-RC4</javaslang.version>
+        <lombok.version>1.12.6</lombok.version>
 
         <!-- Kan ikke uppes -->
         <jetty.version>9.0.5.v20130815</jetty.version>
@@ -80,6 +82,16 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.javaslang</groupId>
+                <artifactId>javaslang</artifactId>
+                <version>${javaslang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
             <dependency>
                 <groupId>no.nav.modig</groupId>
                 <artifactId>modig-security-loginmodule</artifactId>
