@@ -34,13 +34,14 @@ public class PortefoljeController {
             @QueryParam("antall") int antall,
             @QueryParam("sortByLastName") String sortDirection){
 
-        List<Bruker> brukere = solrService.hentBrukere(enhet, sortDirection);
-        List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
-        PortefoljeViewModel viewModel = new PortefoljeViewModel(enhet, brukereSublist, brukere.size(), fra);
 
         try {
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgangTilEnhet(ident, enhet);
+
             if(brukerHarTilgangTilEnhet) {
+                List<Bruker> brukere = solrService.hentBrukere(enhet, sortDirection);
+                List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
+                PortefoljeViewModel viewModel = new PortefoljeViewModel(enhet, brukereSublist, brukere.size(), fra);
                 return Response.ok().entity(viewModel).build();
             } else {
                 return Response.status(FORBIDDEN).build();
