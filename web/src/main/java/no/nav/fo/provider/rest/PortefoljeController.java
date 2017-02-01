@@ -17,7 +17,7 @@ import static javax.ws.rs.core.Response.Status.*;
 
 @Path("/enhet")
 @Produces(APPLICATION_JSON)
-public class EnhetController {
+public class PortefoljeController {
 
     @Inject
     BrukertilgangService brukertilgangService;
