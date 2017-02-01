@@ -13,8 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         DatabaseConfig.class,
         VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
-        SolrConfig.class,
-        PortefoljeMock.class
+        SolrConfig.class
 })
 public class LocalApplicationConfig {
     @Bean

@@ -6,78 +6,21 @@ import org.apache.solr.common.SolrDocument;
 import java.util.*;
 
 public class Bruker {
-    private String fnr;
-    private String fornavn;
-    private String etternavn;
-    private List<String> sikkerhetstiltak;
-    private String diskresjonskode;
-    private boolean egenAnsatt;
-    private String veilderId;
+    public final String fodselsnr;
+    public final String fornavn;
+    public final String etternavn;
+    public final String sikkerhetstiltak;
+    public final String diskresjonskode;
+    public final boolean sperretAnsatt;
+    public final String veilderId;
 
-    public String getFnr() {
-        return fnr;
-    }
-
-    public String getFornavn() {
-        return fornavn;
-    }
-
-    public String getEtternavn() {
-        return etternavn;
-    }
-
-    public String getDiskresjonskode() { return diskresjonskode; }
-
-    public boolean getEgenAnsatt() { return egenAnsatt; }
-
-    public List<String> getSikkerhetstiltak() { return sikkerhetstiltak; }
-
-    public String getVeilderId() { return veilderId;}
-
-    public Bruker() {
-        sikkerhetstiltak = new ArrayList<>();
-    }
-
-    public static Bruker of(SolrDocument document) {
-        return new Bruker()
-                .withFnr((String) document.get("fodselsnr"))
-                .withFornavn((String) document.get("fornavn"))
-                .withEtternavn((String) document.get("etternavn"))
-                .withVeilederId((String)document.get("veileder_id"));
-    }
-
-    public Bruker withFnr(String fnr) {
-        this.fnr = fnr;
-        return this;
-    }
-
-    public Bruker withFornavn(String fornavn) {
-        this.fornavn = fornavn;
-        return this;
-    }
-
-    public Bruker withEtternavn(String etternavn) {
-        this.etternavn = etternavn;
-        return this;
-    }
-
-    public Bruker withDiskresjonskode(String diskresjonskode) {
-        this.diskresjonskode = diskresjonskode;
-        return this;
-    }
-
-    public Bruker addSikkerhetstiltak(String sikkerhetstiltak) {
-        this.sikkerhetstiltak.add(sikkerhetstiltak);
-        return this;
-    }
-
-    public Bruker withVeilederId(String veilederId) {
-        this.veilderId = veilederId;
-        return this;
-    }
-
-    public Bruker erEgenAnsatt() {
-        this.egenAnsatt = true;
-        return this;
+    public Bruker(SolrDocument document) {
+        this.fodselsnr = (String)document.get("fodselsnr");
+        this.fornavn = (String)document.get("fornavn");
+        this.etternavn = (String)document.get("etternavn");
+        this.sikkerhetstiltak = (String) document.get("sikkerhetstiltak_type_kode");
+        this.diskresjonskode = (String)document.get("diskresjonskode");
+        this.sperretAnsatt = (boolean) document.get("sperret_ansatt");
+        this.veilderId = (String)document.get("veilder_id");
     }
 }

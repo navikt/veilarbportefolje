@@ -20,9 +20,6 @@ import static javax.ws.rs.core.Response.Status.*;
 public class EnhetController {
 
     @Inject
-    Portefolje portefoljeMock;
-
-    @Inject
     BrukertilgangService brukertilgangService;
 
     @Inject
