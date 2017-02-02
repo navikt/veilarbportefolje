@@ -20,7 +20,15 @@
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
         <applicationProperties alias="veilarbportefolje.properties"/>
+
+        <queueManager xaEnabled="true" alias="mqGateway02" jndi="java:/jboss/mqConnectionFactory">
+            <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
+        </queueManager>
+
     </resources>
+
+
+
 
     <exposed-services>
         <exposedRest name="no.nav.fo.solrindeks.hovedindeksering" path="/veilarbportefolje/tjenester/solr/hovedindeksering"/>
