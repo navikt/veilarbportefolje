@@ -1,24 +1,17 @@
 package no.nav.fo.domene;
 
 
-import java.util.ArrayList;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import java.util.List;
 
+@Data
+@Accessors(chain = true)
 public class Portefolje {
-
-    private List<Bruker> brukere;
-
-    public Portefolje withBrukere(List<Bruker> brukere) {
-        this.brukere = brukere;
-        return this;
-    }
-
-    public List<Bruker> getBrukere() {
-        return brukere;
-    }
-
-    public List<Bruker> getBrukerFrom(int fra, int antall) {
-        if(fra >= brukere.size()) { return new ArrayList<>(); }
-        return brukere.subList(fra, fra+antall);
-    }
+    String enhet;
+    int antallTotalt;
+    int antallReturnert;
+    int fraIndex;
+    List<Bruker> brukere;
 }

@@ -90,7 +90,7 @@ public class SolrService {
             QueryResponse response = server.query(solrQuery);
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
-            brukere = results.stream().map(Bruker::new).collect(toList());
+            brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }

@@ -1,28 +1,31 @@
 package no.nav.fo.domene;
 
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
-import java.util.*;
+import java.util.List;
 
 import static java.util.Collections.singletonList;
 
+@Data
+@Accessors(chain = true)
 public class Bruker {
-    public final String fodselsnr;
-    public final String fornavn;
-    public final String etternavn;
-    public final List<String> sikkerhetstiltak;
-    public final String diskresjonskode;
-    public final boolean sperretAnsatt;
-    public final String veilderId;
+    String fodselsnr;
+    String fornavn;
+    String etternavn;
+    String veilderId;
+    List<String> sikkerhetstiltak;
+    String diskresjonskode;
+    boolean sperretAnsatt;
 
-    public Bruker(SolrDocument document) {
-        this.fodselsnr = (String)document.get("fodselsnr");
-        this.fornavn = (String)document.get("fornavn");
-        this.etternavn = (String)document.get("etternavn");
-        this.sikkerhetstiltak = singletonList((String) document.get("sikkerhetstiltak_type_kode"));
-        this.diskresjonskode = (String)document.get("diskresjonskode");
-        this.sperretAnsatt = Boolean.parseBoolean((String) document.get("sperret_ansatt"));
-        this.veilderId = (String)document.get("veilder_id");
+    public static Bruker of(SolrDocument document) {
+        return new Bruker()
+                .setFodselsnr((String) document.get("fodselsnr"))
+                .setFornavn((String) document.get("fornavn"))
+                .setVeilderId((String) document.get("veileder_id"))
+                .setSperretAnsatt(Boolean.parseBoolean((String) document.get("sperret_ansatt")))
+                .setSikkerhetstiltak(singletonList((String) document.get("sikkerhetstiltak_type_kode")));
     }
 }
