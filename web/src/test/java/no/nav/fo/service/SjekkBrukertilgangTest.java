@@ -39,7 +39,7 @@ public class SjekkBrukertilgangTest {
     private Enhet virksomhetEnhet;
 
     @Inject
-    private VirksomhetEnhetServiceImpl virksomhetEnhetServiceImpl;
+    private VirksomhetEnhetService virksomhetEnhetService;
 
     @Inject
     private BrukertilgangService brukertilgangService;

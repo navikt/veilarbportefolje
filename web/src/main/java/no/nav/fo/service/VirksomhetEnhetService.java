@@ -12,9 +12,9 @@ import javax.inject.Inject;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class VirksomhetEnhetServiceImpl {
+public class VirksomhetEnhetService {
 
-    private static final Logger logger = getLogger(VirksomhetEnhetServiceImpl.class);
+    private static final Logger logger = getLogger(VirksomhetEnhetService.class);
 
     @Inject
     private Enhet virksomhetEnhet;

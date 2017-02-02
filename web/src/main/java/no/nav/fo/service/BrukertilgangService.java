@@ -15,7 +15,7 @@ public class BrukertilgangService {
     private static final Logger logger =  getLogger(BrukertilgangService.class);
 
     @Inject
-    VirksomhetEnhetServiceImpl virksomhetEnhetService;
+    VirksomhetEnhetService virksomhetEnhetService;
 
     public boolean harBrukerTilgangTilEnhet(String ident, String enhet) throws Exception {
         if(ident == null) { return false; }

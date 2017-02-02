@@ -37,7 +37,7 @@ public class VirksomhetEnhetTest {
     private Enhet virksomhetEnhet;
 
     @Inject
-    private VirksomhetEnhetServiceImpl virksomhetEnhetServiceImpl;
+    private VirksomhetEnhetService virksomhetEnhetService;
 
     @Before
     public void before() throws Exception {
@@ -48,7 +48,7 @@ public class VirksomhetEnhetTest {
 
     @Test
     public void hentEnhetListeOk() throws Exception {
-        WSHentEnhetListeResponse response = virksomhetEnhetServiceImpl.hentEnhetListe("X123456");
+        WSHentEnhetListeResponse response = virksomhetEnhetService.hentEnhetListe("X123456");
         verify(virksomhetEnhet).hentEnhetListe(any(WSHentEnhetListeRequest.class));
         assertThat(response.getEnhetListe().get(0).getEnhetId(), is("1"));
     }
@@ -61,7 +61,7 @@ public class VirksomhetEnhetTest {
         expectedException.expect(HentEnhetListeRessursIkkeFunnet.class);
         expectedException.expectMessage(containsString("msg"));
 
-        virksomhetEnhetServiceImpl.hentEnhetListe("ident");
+        virksomhetEnhetService.hentEnhetListe("ident");
     }
 
     @Test
@@ -72,7 +72,7 @@ public class VirksomhetEnhetTest {
         expectedException.expect(HentEnhetListeUgyldigInput.class);
         expectedException.expectMessage(containsString("msg"));
 
-        virksomhetEnhetServiceImpl.hentEnhetListe("ident");
+        virksomhetEnhetService.hentEnhetListe("ident");
     }
 
     @Test
@@ -83,7 +83,7 @@ public class VirksomhetEnhetTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(containsString("feil"));
 
-        virksomhetEnhetServiceImpl.hentEnhetListe("ident");
+        virksomhetEnhetService.hentEnhetListe("ident");
     }
 
 
