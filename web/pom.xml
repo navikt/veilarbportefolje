@@ -29,11 +29,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!--Obligatoriske/Funksjonelle biblioteker-->
-        <dependency>
-            <groupId>com.javaslang</groupId>
-            <artifactId>javaslang</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -288,13 +283,6 @@
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
         </dependency>
-
-        <!--Brukes bare for å mock data. Fjernes når reelle data tas i bruk-->
-        <dependency>
-            <groupId>org.fluttercode.datafactory</groupId>
-            <artifactId>datafactory</artifactId>
-        </dependency>
-
     </dependencies>
 
 
