@@ -8,7 +8,7 @@ import static org.junit.Assert.assertThat;
 
 public class BrukerTest {
     @Test
-    public void bruker_har_alle_obligatoriske_felt() throws Exception {
+    public void skalFylleUtAlleObligatoriskeFeltPaaBruker() throws Exception {
         SolrDocument document = new SolrDocument();
         document.addField("fodselsnr", "99999999999");
         document.addField("fornavn", "Rudolf");
