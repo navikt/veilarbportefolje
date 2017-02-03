@@ -22,7 +22,7 @@ public class BrukerTest {
         assertThat(bruker.getFornavn(), notNullValue());
         assertThat(bruker.getEtternavn(), notNullValue());
         assertThat(bruker.getVeilderId(), notNullValue());
-        assertThat(bruker.getSperretAnsatt(), notNullValue());
+        assertThat(bruker.getEgenAnsatt(), notNullValue());
         assertThat(bruker.getSikkerhetstiltak(), notNullValue());
     }
 }
