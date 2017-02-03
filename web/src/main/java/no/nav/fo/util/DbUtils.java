@@ -21,7 +21,7 @@ public class DbUtils {
         document.addField("sikkerhetstiltak", rad.get("sikkerhetstiltak_type_kode") != null ? rad.get("sikkerhetstiltak_type_kode").toString() : null);
         document.addField("diskresjonskode", rad.get("fr_kode") != null ? rad.get("fr_kode").toString() : null);
         document.addField("egen_ansatt", parseJaNei(rad.get("sperret_ansatt")));
-        document.addField("er_doed", parseJaNei("er_doed"));
+        document.addField("er_doed", parseJaNei(rad.get("er_doed")));
         document.addField("doed_fra_dato", parseDato(rad.get("doed_fra_dato")));
         document.addField("veileder_id", null);
         return document;

@@ -4,6 +4,7 @@ import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
+import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -14,10 +15,13 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Path("/enhet")
 @Produces(APPLICATION_JSON)
 public class PortefoljeController {
+
+    private static final Logger logger = getLogger(PortefoljeController.class);
 
     @Inject
     BrukertilgangService brukertilgangService;
@@ -54,6 +58,7 @@ public class PortefoljeController {
                 return Response.status(FORBIDDEN).build();
             }
         } catch (Exception e) {
+            logger.error("Kall mot tredjeparts service feilet", e);
             return Response.status(BAD_GATEWAY).build();
         }
     }

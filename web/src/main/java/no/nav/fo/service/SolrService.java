@@ -84,7 +84,7 @@ public class SolrService {
             order = desc;
         }
 
-        String queryString = "nav_kontor: " + enhetId;
+        String queryString = "enhet_id: " + enhetId;
         SolrQuery solrQuery = new SolrQuery(queryString);
         solrQuery.addSort("etternavn", order);
         solrQuery.addSort("fornavn", order);

@@ -27,13 +27,13 @@ public class Bruker {
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilderId((String) document.get("veileder_id"))
-                .setDiskresjonskode((String) document.get("fr_kode"))
+                .setDiskresjonskode((String) document.get("diskresjonskode"))
                 .setEgenAnsatt(Boolean.parseBoolean((String) document.get("sperret_ansatt")))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document));
     }
 
     private static List<String> getSikkerhetstiltak(SolrDocument document) {
-        String kode = (String) document.get("sikkerhetstiltak_type_kode");
+        String kode = (String) document.get("sikkerhetstiltak");
         if (kode == null) {
             return emptyList();
         } else {
