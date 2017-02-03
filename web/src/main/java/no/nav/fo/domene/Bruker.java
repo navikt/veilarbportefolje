@@ -27,6 +27,7 @@ public class Bruker {
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilderId((String) document.get("veileder_id"))
+                .setDiskresjonskode((String) document.get("fr_kode"))
                 .setEgenAnsatt(Boolean.parseBoolean((String) document.get("sperret_ansatt")))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document));
     }
