@@ -1,9 +1,5 @@
 package no.nav.fo.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 import java.sql.Date;
@@ -11,6 +7,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SolrServiceTest {
 
@@ -32,22 +32,6 @@ public class SolrServiceTest {
         Map<String, Object> nyesteBruker = solrService.nyesteBruker(brukere);
 
         assertThat(nyesteBruker).isEqualTo(bruker3);
-    }
-
-    @Test
-    public void skalReturnereNullHvisDatoenErNull() {
-        assertThat(solrService.parseDato(null)).isEqualTo(null);
-    }
-
-    @Test
-    public void skalReturnereNullHvisDatoenErUfullstendig() {
-        assertThat(solrService.parseDato("TZ")).isEqualTo(null);
-    }
-
-    @Test
-    public void skalReturnereDatostrengenHvisDatoenErOk() {
-        Object dato = "2017-01-01'T'23:23:23.23'Z'";
-        assertThat(solrService.parseDato(dato)).isEqualTo(dato);
     }
 
     @Test
