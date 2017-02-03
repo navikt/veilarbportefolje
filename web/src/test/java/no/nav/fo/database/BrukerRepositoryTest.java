@@ -52,7 +52,7 @@ public class BrukerRepositoryTest {
     public void skalHenteUtAlleBrukereFraDatabasen() {
         List<Map<String, Object>> brukere = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL());
 
-        assertThat(brukere.size()).isEqualTo(70);
+        assertThat(brukere.size()).isEqualTo(72);
     }
 
     @Test
@@ -68,8 +68,8 @@ public class BrukerRepositoryTest {
     @Test
     public void skalHenteKunNyesteBrukereFraDatabasen() {
         List<Map<String, Object>> nyeBrukere = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL());
-
-        assertThat(nyeBrukere.size()).isEqualTo(7);
+        jdbcTemplate.queryForList(brukerRepository.retrieveSistIndeksertSQL());
+        assertThat(nyeBrukere.size()).isEqualTo(4);
     }
 
     @Test
