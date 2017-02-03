@@ -7,6 +7,7 @@ import org.apache.solr.common.SolrDocument;
 
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 @Data
@@ -27,6 +28,15 @@ public class Bruker {
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilderId((String) document.get("veileder_id"))
                 .setEgenAnsatt(Boolean.parseBoolean((String) document.get("sperret_ansatt")))
-                .setSikkerhetstiltak(singletonList((String) document.get("sikkerhetstiltak_type_kode")));
+                .setSikkerhetstiltak(getSikkerhetstiltak(document));
+    }
+
+    private static List<String> getSikkerhetstiltak(SolrDocument document) {
+        String kode = (String) document.get("sikkerhetstiltak_type_kode");
+        if (kode == null) {
+            return emptyList();
+        } else {
+            return singletonList(kode);
+        }
     }
 }
