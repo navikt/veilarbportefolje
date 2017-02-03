@@ -14,8 +14,8 @@ public class BrukerTest {
         document.addField("fornavn", "Rudolf");
         document.addField("etternavn", "Blodstrupmoen");
         document.addField("veileder_id", "XXXXXX");
-        document.addField("sperret_ansatt", "false");
-        document.addField("sikkerhetstiltak_type_kode", "foo");
+        document.addField("egen_ansatt", "false");
+        document.addField("sikkerhetstiltak", "foo");
 
         Bruker bruker = Bruker.of(document);
         assertThat(bruker.getFodselsnr(), notNullValue());

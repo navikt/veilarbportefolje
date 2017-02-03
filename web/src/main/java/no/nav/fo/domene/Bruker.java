@@ -20,6 +20,7 @@ public class Bruker {
     List<String> sikkerhetstiltak;
     String diskresjonskode;
     Boolean egenAnsatt;
+    Boolean erDoed;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -28,7 +29,8 @@ public class Bruker {
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilderId((String) document.get("veileder_id"))
                 .setDiskresjonskode((String) document.get("diskresjonskode"))
-                .setEgenAnsatt(Boolean.parseBoolean((String) document.get("sperret_ansatt")))
+                .setEgenAnsatt( (Boolean) document.get("egen_ansatt"))
+                .setErDoed( (Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document));
     }
 
