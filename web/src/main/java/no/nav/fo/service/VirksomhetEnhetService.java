@@ -19,23 +19,6 @@ public class VirksomhetEnhetService {
     @Inject
     private Enhet virksomhetEnhet;
 
-    public WSHentEnhetListeResponse hentEnhetListe(String ident) throws Exception{
-
-        try {
-            WSHentEnhetListeRequest request = new WSHentEnhetListeRequest();
-            request.setRessursId(ident);
-            return virksomhetEnhet.hentEnhetListe(request);
-        } catch (HentEnhetListeUgyldigInput | HentEnhetListeRessursIkkeFunnet e) {
-            String feil = String.format("Kunne ikke hente ansattopplysninger for %s", ident);
-            logger.error(feil, e);
-            throw e;
-        } catch (java.lang.Exception e) {
-            String feil = String.format("Kunne ikke hente ansattopplysninger for %s: Ukjent Feil", ident);
-            logger.error(feil, e);
-            throw e;
-        }
-    }
-
     public Try<WSHentEnhetListeResponse> hentEnheter(String ident) {
         WSHentEnhetListeRequest request = new WSHentEnhetListeRequest();
         request.setRessursId(ident);
