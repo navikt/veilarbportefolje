@@ -37,13 +37,13 @@ public class DbUtilsTest {
 
     @Test
     public void skalIkkeParseUgyldigJaNeiType() throws Exception {
-        expectedException.expect(RuntimeException.class);
+        expectedException.expect(IllegalArgumentException.class);
         DbUtils.parseJaNei(new Object());
     }
 
     @Test
     public void skalIkkeParseUgyldigJaNeiInput() throws Exception {
-        expectedException.expect(RuntimeException.class);
+        expectedException.expect(IllegalArgumentException.class);
         DbUtils.parseJaNei("foo");
     }
 }

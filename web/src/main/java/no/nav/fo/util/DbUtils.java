@@ -44,7 +44,7 @@ public class DbUtils {
             case "N":
                 return false;
             default:
-                throw new RuntimeException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
+                throw new IllegalArgumentException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
         }
     }
 }
