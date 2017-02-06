@@ -21,7 +21,6 @@ import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 @Configuration
 public class MQMockConfig {
 
-
     @Bean(name = "jmsListenerContainerFactory")
     public DefaultJmsListenerContainerFactory jmsListenerContainerFactory() throws NamingException {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
