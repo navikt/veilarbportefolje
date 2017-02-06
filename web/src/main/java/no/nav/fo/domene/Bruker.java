@@ -13,7 +13,7 @@ import static java.util.Collections.singletonList;
 @Data
 @Accessors(chain = true)
 public class Bruker {
-    String fodselsnr;
+    String fnr;
     String fornavn;
     String etternavn;
     String veilderId;
@@ -24,7 +24,7 @@ public class Bruker {
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
-                .setFodselsnr((String) document.get("fodselsnr"))
+                .setFnr((String) document.get("fnr"))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilderId((String) document.get("veileder_id"))

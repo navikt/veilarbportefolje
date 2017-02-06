@@ -10,7 +10,7 @@ public class BrukerTest {
     @Test
     public void skalFylleUtAlleObligatoriskeFeltPaaBruker() throws Exception {
         SolrDocument document = new SolrDocument();
-        document.addField("fodselsnr", "99999999999");
+        document.addField("fnr", "99999999999");
         document.addField("fornavn", "Rudolf");
         document.addField("etternavn", "Blodstrupmoen");
         document.addField("veileder_id", "XXXXXX");
@@ -20,7 +20,7 @@ public class BrukerTest {
         document.addField("diskresjonskode", "6");
 
         Bruker bruker = Bruker.of(document);
-        assertThat(bruker.getFodselsnr(), notNullValue());
+        assertThat(bruker.getFnr(), notNullValue());
         assertThat(bruker.getFornavn(), notNullValue());
         assertThat(bruker.getEtternavn(), notNullValue());
         assertThat(bruker.getVeilderId(), notNullValue());

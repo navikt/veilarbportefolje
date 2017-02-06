@@ -9,7 +9,7 @@ public class DbUtils {
     public static SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("person_id", rad.get("person_id").toString());
-        document.addField("fodselsnr", rad.get("fodselsnr").toString());
+        document.addField("fnr", rad.get("fodselsnr").toString());
         document.addField("fornavn", rad.get("fornavn").toString());
         document.addField("etternavn", rad.get("etternavn").toString());
         document.addField("enhet_id", rad.get("nav_kontor").toString());
