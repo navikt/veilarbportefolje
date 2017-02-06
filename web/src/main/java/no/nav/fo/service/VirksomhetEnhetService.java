@@ -24,18 +24,13 @@ public class VirksomhetEnhetService {
         try {
             WSHentEnhetListeRequest request = new WSHentEnhetListeRequest();
             request.setRessursId(ident);
-            WSHentEnhetListeResponse response = virksomhetEnhet.hentEnhetListe(request);
-            return response;
-        } catch (HentEnhetListeUgyldigInput e) {
-            String feil = String.format("Kunne ikke hente ansattopplysnigner for %s", ident);
+            return virksomhetEnhet.hentEnhetListe(request);
+        } catch (HentEnhetListeUgyldigInput | HentEnhetListeRessursIkkeFunnet e) {
+            String feil = String.format("Kunne ikke hente ansattopplysninger for %s", ident);
             logger.error(feil, e);
             throw e;
-        } catch (HentEnhetListeRessursIkkeFunnet e) {
-            String feil = String.format("Kunne ikke hente ansattopplysnigner for %s", ident);
-            logger.error(feil,e);
-            throw e;
         } catch (java.lang.Exception e) {
-            String feil = String.format("Kunne ikke hente ansattopplysnigner for %s: Ukjent Feil", ident);
+            String feil = String.format("Kunne ikke hente ansattopplysninger for %s: Ukjent Feil", ident);
             logger.error(feil, e);
             throw e;
         }

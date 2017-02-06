@@ -58,7 +58,7 @@ public class PortefoljeController {
                 return Response.status(FORBIDDEN).build();
             }
         } catch (Exception e) {
-            logger.error("Kall mot tredjeparts service feilet", e);
+            logger.error("Kall mot upstream service feilet", e);
             return Response.status(BAD_GATEWAY).build();
         }
     }
