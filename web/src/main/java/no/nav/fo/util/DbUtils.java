@@ -27,7 +27,7 @@ public class DbUtils {
         return document;
     }
 
-    public static String parseDato(Object dato) {
+    static String parseDato(Object dato) {
         if (dato == null) {
             return null;
         } else if (dato.equals("TZ")) {
@@ -37,7 +37,7 @@ public class DbUtils {
         }
     }
 
-    public static boolean parseJaNei(Object janei) {
+     static boolean parseJaNei(Object janei) {
         switch (janei.toString()) {
             case "J":
                 return true;
