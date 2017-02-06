@@ -43,7 +43,7 @@ public class MQMockConfig {
     }
 
     @Bean(name = "endreveilederqueue")
-    public JmsTemplate endreVeilederueue() throws NamingException {
+    public JmsTemplate endreVeilederQueue() throws NamingException {
         JmsTemplate jmsTemplate = new JmsTemplate();
         jmsTemplate.setDefaultDestination(endreVeilederKo());
         jmsTemplate.setDefaultDestinationName("endreveilederqueue");
