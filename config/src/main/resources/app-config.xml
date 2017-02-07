@@ -20,6 +20,8 @@
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
         <applicationProperties alias="veilarbportefolje.properties"/>
+
+        <baseUrl alias="certificateService" mapToProperty="certificateService" />
     </resources>
 
     <exposed-services>

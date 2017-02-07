@@ -2,6 +2,9 @@ package no.nav.fo.provider.rest;
 
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
+import no.nav.fo.security.jwt.context.SubjectHandler;
+import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
+import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeRessursIkkeFunnet;
 import no.nav.virksomhet.tjenester.enhet.v1.HentEnhetListeUgyldigInput;
@@ -16,6 +19,9 @@ import java.util.List;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.*;
 
+
+@JWTInAuthorizationHeaderJAAS
+@SessionTerminator
 @Path("/enhet")
 @Produces(APPLICATION_JSON)
 public class EnhetController {
@@ -30,12 +36,12 @@ public class EnhetController {
     @Path("/{enhet}/portefolje")
     public Response hentPortefolje(
             @PathParam("enhet") String enhet,
-            @QueryParam("ident") String ident,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
             @QueryParam("sortByLastName") String sortDirection){
 
 
+        String ident = SubjectHandler.getSubjectHandler().getUid();
         List<Bruker> brukere = new ArrayList<>();
         brukere.addAll(portefoljeMock.getBrukere());
         Portefolje portefolje = new Portefolje().withBrukere(brukere);
