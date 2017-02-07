@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -57,6 +60,23 @@ public class SolrServiceTest {
     public void skalKasteExceptionHvisStatusIkkeErNull() throws Exception {
         expectedException.expect(SolrUpdateResponseCodeException.class);
         solrService.checkSolrResponseCode(1);
+    }
+
+    @Test
+    public void skalByggSolrQueryMedAlleFelterUtfylt() throws Exception {
+        String enhetId = "0713";
+        SolrQuery query = solrService.buildSolrQuery(enhetId, "ascending");
+        assertThat(query.getQuery()).contains(enhetId);
+        assertThat(query.getSortField().contains("fornavn")).isTrue();
+        assertThat(query.getSortField().contains("etternavn")).isTrue();
+        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(asc);
+    }
+
+    @Test
+    public void skalByggeSolrQueryMedDescendingSort() throws Exception {
+        String enhetId = "0713";
+        SolrQuery query = solrService.buildSolrQuery(enhetId, "descending");
+        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(desc);
     }
 }
 

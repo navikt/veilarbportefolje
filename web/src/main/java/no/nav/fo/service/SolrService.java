@@ -79,19 +79,9 @@ public class SolrService {
     }
 
     public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
-        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
-        if ("descending".equals(sortOrder)) {
-            order = desc;
-        }
-
-        String queryString = "enhet_id: " + enhetId;
-        SolrQuery solrQuery = new SolrQuery(queryString);
-        solrQuery.addSort("etternavn", order);
-        solrQuery.addSort("fornavn", order);
-
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(solrQuery);
+            QueryResponse response = server.query(buildSolrQuery(enhetId , sortOrder));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
@@ -99,6 +89,18 @@ public class SolrService {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return brukere;
+    }
+
+    SolrQuery buildSolrQuery(String enhetId, String sortOrder) {
+        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
+        if ("descending".equals(sortOrder)) {
+            order = desc;
+        }
+        String queryString = "enhet_id: " + enhetId;
+        SolrQuery solrQuery = new SolrQuery(queryString);
+        solrQuery.addSort("etternavn", order);
+        solrQuery.addSort("fornavn", order);
+        return solrQuery;
     }
 
     Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
