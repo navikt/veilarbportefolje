@@ -1,6 +1,9 @@
 package no.nav.fo.service;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -14,7 +17,15 @@ import static org.junit.Assert.assertTrue;
 
 public class SolrServiceTest {
 
-    private SolrService solrService = new SolrService();
+    private SolrService solrService;
+
+    @Rule
+    public ExpectedException expectedException =ExpectedException.none();
+
+    @Before
+    public void setUp() throws Exception {
+        solrService = new SolrService();
+    }
 
     @Test
     public void skalFinneNyesteBruker() {
@@ -40,6 +51,12 @@ public class SolrServiceTest {
         assertTrue(SolrService.isSlaveNode());
         System.setProperty("cluster.ismasternode", "true");
         assertFalse(SolrService.isSlaveNode());
+    }
+
+    @Test
+    public void skalKasteExceptionHvisStatusIkkeErNull() throws Exception {
+        expectedException.expect(SolrUpdateResponseCodeException.class);
+        solrService.checkSolrResponseCode(1);
     }
 }
 

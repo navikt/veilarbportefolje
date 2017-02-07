@@ -120,7 +120,7 @@ public class SolrService {
         UpdateResponse response = null;
         try {
             response = server.add(dokumenter);
-            checkSolrUpdateResponseCode(response);
+            checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
@@ -133,7 +133,7 @@ public class SolrService {
         UpdateResponse response = null;
         try {
             response = server.deleteByQuery("*:*");
-            checkSolrUpdateResponseCode(response);
+            checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
@@ -142,9 +142,9 @@ public class SolrService {
         return response;
     }
 
-    private void checkSolrUpdateResponseCode(UpdateResponse response) {
-        if (response.getStatus() != 0) {
-            throw new SolrUpdateResponseCodeException(String.format("Solr returnerte med responskode %s", response.getStatus()));
+    void checkSolrResponseCode(int statusCode) {
+        if (statusCode != 0) {
+            throw new SolrUpdateResponseCodeException(String.format("Solr returnerte med statuskode %s", statusCode));
         }
     }
 
