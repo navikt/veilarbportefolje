@@ -1,15 +1,13 @@
 package no.nav.fo;
 
-import no.nav.modig.security.loginmodule.DummyRole;
+import no.nav.fo.security.jwt.context.JettySubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.eclipse.jetty.jaas.JAASLoginService;
 
-import java.io.File;
 
+import static java.lang.System.setProperty;
 import static no.nav.fo.config.LocalJndiContextConfig.setupJndiLocalContext;
-import static no.nav.modig.core.test.FilesAndDirs.TEST_RESOURCES;
-import static no.nav.modig.core.test.FilesAndDirs.WEBAPP_SOURCE;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
 import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
@@ -21,6 +19,9 @@ public class StartJettyVeilArbPortefolje {
         SystemProperties.setFrom("veilarbportefolje.properties");
         setupKeyAndTrustStore();
         setupJndiLocalContext();
+        setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", JettySubjectHandler.class.getName());
+        JAASLoginService jaasLoginService = new JAASLoginService("JWT Realm");
+        jaasLoginService.setLoginModuleName("jwtLogin");
 
         //Må ha https for csrf-token
         final Jetty jetty = Jetty.usingWar()
@@ -28,19 +29,8 @@ public class StartJettyVeilArbPortefolje {
                 .sslPort(9594)
                 .port(9595)
                 .overrideWebXml()
-                .withLoginService(createLoginService())
+                .withLoginService(jaasLoginService)
                 .buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
-
-
-
-    public static JAASLoginService createLoginService() {
-        JAASLoginService jaasLoginService = new JAASLoginService("Simple Login Realm");
-        jaasLoginService.setLoginModuleName("simplelogin");
-        jaasLoginService.setRoleClassNames(new String[]{DummyRole.class.getName()});
-        return jaasLoginService;
-    }
-
-
 }

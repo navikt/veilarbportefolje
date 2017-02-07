@@ -60,6 +60,8 @@
         <mockito.version>1.9.5</mockito.version>
         <solr.version>4.10.4</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
+        <jwt-security.version>1.0.6</jwt-security.version>
+
 
         <!-- Java -->
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -72,24 +74,28 @@
 
     <dependencyManagement>
         <dependencies>
+            <!--Jwt-security-->
             <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-loginmodule</artifactId>
-                <version>${loginmodule.version}</version>
-                <scope>runtime</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-common</artifactId>
+                <version>${jwt-security.version}</version>
+                <type>test-jar</type>
             </dependency>
             <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-loginmodule</artifactId>
-                <version>${modig.security.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-common</artifactId>
+                <version>${jwt-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-loginmodule</artifactId>
+                <version>${jwt-security.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-filter</artifactId>
+                <version>${jwt-security.version}</version>
             </dependency>
 
             <!--Dialogarena-->
