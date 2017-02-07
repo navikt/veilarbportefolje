@@ -23,11 +23,11 @@ public class StartJettyVeilArbPortefolje {
         setupJndiLocalContext();
 
         //Må ha https for csrf-token
-        final Jetty jetty = Jetty.usingWar(WEBAPP_SOURCE)
+        final Jetty jetty = Jetty.usingWar()
                 .at("veilarbportefolje")
                 .sslPort(9594)
                 .port(9595)
-                .overrideWebXml(new File(TEST_RESOURCES,"override-web.xml" ))
+                .overrideWebXml()
                 .withLoginService(createLoginService())
                 .buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
