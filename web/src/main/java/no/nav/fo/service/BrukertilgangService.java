@@ -2,16 +2,11 @@ package no.nav.fo.service;
 
 
 import no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet;
-import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import java.util.List;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 public class BrukertilgangService {
-
-    private static final Logger logger =  getLogger(BrukertilgangService.class);
 
     @Inject
     VirksomhetEnhetService virksomhetEnhetService;
