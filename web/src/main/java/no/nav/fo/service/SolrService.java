@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.util.DbUtils;
@@ -51,11 +52,13 @@ public class SolrService {
 
         deleteAllDocuments();
         addDocuments(dokumenter);
+        commit();
         updateTimestamp(rader);
 
         logger.info("Hovedindeksering fullført!");
         logger.info(dokumenter.size() + " dokumenter ble lagt til i solrindeksen");
     }
+
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
     public void deltaindeksering() {
@@ -74,6 +77,7 @@ public class SolrService {
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
         addDocuments(dokumenter);
         updateTimestamp(rader);
+        commit();
         logger.info("Deltaindeksering fullført!");
         logger.info(dokumenter.size() + " dokumenter ble oppdatert/lagt til i solrindeksen");
     }
@@ -111,6 +115,11 @@ public class SolrService {
     static boolean isSlaveNode() {
         String isMasterString = System.getProperty("cluster.ismasternode", "false");
         return !Boolean.parseBoolean(isMasterString);
+    }
+
+    private Try<UpdateResponse> commit() {
+        return Try.of(() -> server.commit())
+                .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
     private void updateTimestamp(List<Map<String, Object>> rader) {
