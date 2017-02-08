@@ -61,6 +61,10 @@
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
+        <javaslang.version>2.0.0-RC4</javaslang.version>
+        <lombok.version>1.12.6</lombok.version>
+        <activemq.version>5.7.0</activemq.version>
+
 
 
 
@@ -79,6 +83,20 @@
         <dependencies>
             <!--Jwt-security-->
             <dependency>
+                <groupId>com.javaslang</groupId>
+                <artifactId>javaslang</artifactId>
+                <version>${javaslang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-loginmodule</artifactId>
+                <version>${loginmodule.version}</version>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>jwt-security-common</artifactId>
                 <version>${jwt-security.version}</version>
