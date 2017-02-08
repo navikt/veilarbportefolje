@@ -13,7 +13,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +20,7 @@ import static no.nav.fo.domene.Utils.createRessurs;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -39,7 +36,7 @@ public class SjekkBrukertilgangTest {
     private Enhet virksomhetEnhet;
 
     @Inject
-    private VirksomhetEnhetServiceImpl virksomhetEnhetServiceImpl;
+    private VirksomhetEnhetService virksomhetEnhetService;
 
     @Inject
     private BrukertilgangService brukertilgangService;
@@ -53,13 +50,13 @@ public class SjekkBrukertilgangTest {
 
     @Test
     public void brukerSkalIkkeHaTilgangTilEnhet() throws Exception {
-        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgangTilEnhet("X123456", "5555");
+        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgang("X123456", "5555");
         assertThat(brukerHarTilgang, is(false));
     }
 
     @Test
     public void brukerSkalHaTilgangTilEnhet() throws Exception {
-        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgangTilEnhet("X123456", "1111");
+        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgang("X123456", "1111");
         assertThat(brukerHarTilgang, is(true));
     }
 

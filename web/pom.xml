@@ -36,6 +36,16 @@
             <artifactId>jwt-security-filter</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.javaslang</groupId>
+            <artifactId>javaslang</artifactId>
+        </dependency>
+
+
         <!--Dialogarena tjenestespesifikasjon-->
 
         <!--Dialogarena-->
@@ -85,6 +95,14 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -186,6 +204,10 @@
 
         <!--Diverse-->
         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
@@ -242,11 +264,13 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-
-        <!--Brukes bare for å mock data. Fjernes når reelle data tas i bruk-->
         <dependency>
-            <groupId>org.fluttercode.datafactory</groupId>
-            <artifactId>datafactory</artifactId>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
         </dependency>
     </dependencies>
 

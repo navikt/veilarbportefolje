@@ -1,9 +1,14 @@
 package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.Bruker;
+import no.nav.fo.util.DbUtils;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -12,11 +17,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -37,23 +45,14 @@ public class SolrService {
         }
 
         logger.info("Starter hovedindeksering");
+
         List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
-        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
-        try {
-            UpdateResponse updateResponseDelete = server.deleteByQuery("*:*");
-            if(updateResponseDelete.getStatus() == 0) {
-                UpdateResponse updateResponseAdd = server.add(dokumenter);
-                if(updateResponseAdd.getStatus() == 0) {
-                    UpdateResponse updateResponseCommit = server.commit();
-                    if(updateResponseCommit.getStatus() == 0) {
-                        Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
-                        brukerRepository.updateTidsstempel(tidsstempel);
-                    }
-                }
-            }
-        } catch (SolrServerException | IOException e) {
-            logger.error(e.getMessage(), e);
-        }
+        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+
+        deleteAllDocuments();
+        addDocuments(dokumenter);
+        updateTimestamp(rader);
+
         logger.info("Hovedindeksering fullført!");
         logger.info(dokumenter.size() + " dokumenter ble lagt til i solrindeksen");
     }
@@ -67,63 +66,88 @@ public class SolrService {
 
         logger.info("Starter deltaindeksering");
         List<Map<String, Object>> rader = brukerRepository.retrieveOppdaterteBrukere();
-        if(rader.isEmpty()) {
+        if (rader.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
         }
-        List<SolrInputDocument> dokumenter = rader.stream().map(this::mapRadTilDokument).collect(Collectors.toList());
-        try {
-            UpdateResponse updateResponseAdd = server.add(dokumenter);
-            if(updateResponseAdd.getStatus() == 0) {
-                UpdateResponse updateResponseCommit = server.commit();
-                if(updateResponseCommit.getStatus() == 0) {
-                    Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
-                    brukerRepository.updateTidsstempel(tidsstempel);
-                }
-            }
-        } catch (SolrServerException | IOException e) {
-            logger.error(e.getMessage(), e);
-        }
+
+        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+        addDocuments(dokumenter);
+        updateTimestamp(rader);
         logger.info("Deltaindeksering fullført!");
         logger.info(dokumenter.size() + " dokumenter ble oppdatert/lagt til i solrindeksen");
+    }
+
+    public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
+        List<Bruker> brukere = new ArrayList<>();
+        try {
+            QueryResponse response = server.query(buildSolrQuery(enhetId , sortOrder));
+            SolrDocumentList results = response.getResults();
+            logger.debug(results.toString());
+            brukere = results.stream().map(Bruker::of).collect(toList());
+        } catch (SolrServerException e) {
+            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+        }
+        return brukere;
+    }
+
+    SolrQuery buildSolrQuery(String enhetId, String sortOrder) {
+        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
+        if ("descending".equals(sortOrder)) {
+            order = desc;
+        }
+        String queryString = "enhet_id: " + enhetId;
+        SolrQuery solrQuery = new SolrQuery(queryString);
+        solrQuery.addSort("etternavn", order);
+        solrQuery.addSort("fornavn", order);
+        return solrQuery;
     }
 
     Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
         return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
     }
 
+
     static boolean isSlaveNode() {
         String isMasterString = System.getProperty("cluster.ismasternode", "false");
         return !Boolean.parseBoolean(isMasterString);
     }
 
-    private SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
-        SolrInputDocument document = new SolrInputDocument();
-        document.addField("person_id", rad.get("person_id").toString());
-        document.addField("fodselsnr", rad.get("fodselsnr").toString());
-        document.addField("fornavn", rad.get("fornavn").toString());
-        document.addField("etternavn", rad.get("etternavn").toString());
-        document.addField("nav_kontor", rad.get("nav_kontor").toString());
-        document.addField("formidlingsgruppekode", rad.get("formidlingsgruppekode").toString());
-        document.addField("iserv_fra_dato", parseDato(rad.get("iserv_fra_dato")));
-        document.addField("kvalifiseringsgruppekode", rad.get("kvalifiseringsgruppekode").toString());
-        document.addField("rettighetsgruppekode", rad.get("rettighetsgruppekode").toString());
-        document.addField("hovedmaalkode", rad.get("hovedmaalkode") != null ? rad.get("hovedmaalkode").toString() : null);
-        document.addField("sikkerhetstiltak_type_kode", rad.get("sikkerhetstiltak_type_kode") != null ? rad.get("sikkerhetstiltak_type_kode").toString() : null);
-        document.addField("fr_kode", rad.get("fr_kode") != null ? rad.get("fr_kode").toString() : null);
-        document.addField("sperret_ansatt", rad.get("sperret_ansatt").toString());
-        document.addField("er_doed", rad.get("er_doed").toString());
-        document.addField("doed_fra_dato", parseDato(rad.get("doed_fra_dato")));
-        return document;
+    private void updateTimestamp(List<Map<String, Object>> rader) {
+        Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
+        brukerRepository.updateTidsstempel(tidsstempel);
     }
 
-    String parseDato(Object dato) {
-        if(dato == null) {
-            return null;
-        } else if (dato.equals("TZ")) {
-            return null;
-        } else {
-            return dato.toString();
+    private UpdateResponse addDocuments(List<SolrInputDocument> dokumenter) {
+        UpdateResponse response = null;
+        try {
+            response = server.add(dokumenter);
+            checkSolrResponseCode(response.getStatus());
+        } catch (SolrServerException | IOException e) {
+            logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
+        } catch (SolrUpdateResponseCodeException e) {
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+    private UpdateResponse deleteAllDocuments() {
+        UpdateResponse response = null;
+        try {
+            response = server.deleteByQuery("*:*");
+            checkSolrResponseCode(response.getStatus());
+        } catch (SolrServerException | IOException e) {
+            logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
+        } catch (SolrUpdateResponseCodeException e) {
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+    void checkSolrResponseCode(int statusCode) {
+        if (statusCode != 0) {
+            throw new SolrUpdateResponseCodeException(String.format("Solr returnerte med statuskode %s", statusCode));
         }
     }
+
 }

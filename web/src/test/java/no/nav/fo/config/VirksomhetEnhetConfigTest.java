@@ -1,6 +1,6 @@
 package no.nav.fo.config;
 
-import no.nav.fo.service.VirksomhetEnhetServiceImpl;
+import no.nav.fo.service.VirksomhetEnhetService;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 public class VirksomhetEnhetConfigTest {
 
     @Bean
-    public VirksomhetEnhetServiceImpl virksomhetEnhetServiceImpl() { return new VirksomhetEnhetServiceImpl(); }
+    public VirksomhetEnhetService virksomhetEnhetServiceImpl() { return new VirksomhetEnhetService(); }
 
     @Bean
     public Enhet virksomhetEnhet() { return mock(Enhet.class);}
