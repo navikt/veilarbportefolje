@@ -17,7 +17,7 @@ import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Path("/enhet")
+@Path("/portefolje")
 @Produces(APPLICATION_JSON)
 public class PortefoljeController {
 
@@ -30,8 +30,8 @@ public class PortefoljeController {
     SolrService solrService;
 
     @GET
-    @Path("/{enhet}/portefolje")
-    public Response hentPortefolje(
+    @Path("/enhet/{enhet}")
+    public Response hentPortefoljeForEnhet(
             @PathParam("enhet") String enhet,
             @QueryParam("ident") String ident,
             @QueryParam("fra") int fra,
@@ -43,7 +43,7 @@ public class PortefoljeController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukere(enhet, sortDirection);
+                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection);
                 List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
 
                 Portefolje portefolje = new Portefolje()
@@ -57,6 +57,35 @@ public class PortefoljeController {
             } else {
                 return Response.status(FORBIDDEN).build();
             }
+        } catch (Exception e) {
+            logger.error("Kall mot upstream service feilet", e);
+            return Response.status(BAD_GATEWAY).build();
+        }
+    }
+
+    @GET
+    @Path("/veileder/{veilederident}")
+    public Response hentPortefoljeForVeileder(
+            @PathParam("veilederident") String veilederIdent,
+            @QueryParam("ident") String ident,
+            @QueryParam("fra") int fra,
+            @QueryParam("antall") int antall,
+            @QueryParam("sortByLastName") String sortDirection) {
+
+        try {
+            //Sjekk tilgang?
+
+            List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, sortDirection);
+            List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
+
+            Portefolje portefolje = new Portefolje()
+                    .setEnhet("ikke_satt")
+                    .setBrukere(brukereSublist)
+                    .setAntallTotalt(brukere.size())
+                    .setAntallReturnert(brukereSublist.size())
+                    .setFraIndex(fra);
+
+            return Response.ok().entity(portefolje).build();
         } catch (Exception e) {
             logger.error("Kall mot upstream service feilet", e);
             return Response.status(BAD_GATEWAY).build();
