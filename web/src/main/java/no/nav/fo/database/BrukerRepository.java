@@ -35,7 +35,7 @@ public class BrukerRepository {
                     "etternavn, " +
                     "nav_kontor, " +
                     "formidlingsgruppekode, " +
-                    "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS.FF') || 'Z' AS iserv_fra_dato, " +
+                    "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
                     "kvalifiseringsgruppekode, " +
                     "rettighetsgruppekode, " +
                     "hovedmaalkode, " +
@@ -43,7 +43,7 @@ public class BrukerRepository {
                     "fr_kode, " +
                     "sperret_ansatt, " +
                     "er_doed, " +
-                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS.FF') || 'Z' AS doed_fra_dato, " +
+                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
                     "tidsstempel " +
                 "FROM " +
                     "oppfolgingsbruker";
@@ -58,7 +58,7 @@ public class BrukerRepository {
                     "etternavn, " +
                     "nav_kontor, " +
                     "formidlingsgruppekode, " +
-                    "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS.FF') || 'Z' AS iserv_fra_dato, " +
+                    "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
                     "kvalifiseringsgruppekode, " +
                     "rettighetsgruppekode, " +
                     "hovedmaalkode, " +
@@ -66,7 +66,7 @@ public class BrukerRepository {
                     "fr_kode, " +
                     "sperret_ansatt, " +
                     "er_doed, " +
-                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS.FF') || 'Z' AS doed_fra_dato, " +
+                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
                     "tidsstempel " +
                 "FROM " +
                     "oppfolgingsbruker " +
