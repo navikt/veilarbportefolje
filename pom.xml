@@ -97,6 +97,8 @@
                 <groupId>no.nav.modig</groupId>
                 <artifactId>modig-security-loginmodule</artifactId>
                 <version>${loginmodule.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>jwt-security-common</artifactId>
                 <version>${jwt-security.version}</version>
