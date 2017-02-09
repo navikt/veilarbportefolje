@@ -61,12 +61,6 @@
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
-        <javaslang.version>2.0.0-RC4</javaslang.version>
-        <lombok.version>1.12.6</lombok.version>
-        <activemq.version>5.7.0</activemq.version>
-
-
-
 
         <!-- Java -->
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
