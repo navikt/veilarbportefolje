@@ -83,9 +83,9 @@ public class SolrService {
         return hentBrukere(queryString, sortOrder);
     }
 
-    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String sortOrder) {
-//        String queryString = "veileder_id: " + veilederIdent;
-        String mockString ="enhet_id: 0106"; //Brukes som mock inntil søk på veileder_id ligger klart i indeksen
+    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder) {
+//      String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
+        String mockString ="enhet_id: " + enhetId; //Brukes som mock inntil søk på veileder_id ligger klart i indeksen
         return hentBrukere(mockString, sortOrder);
     }
 
