@@ -25,13 +25,7 @@
             <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
         </queueManager>
 
-
         <baseUrl alias="certificateService" mapToProperty="certificateService" />
-
-        <queueManager xaEnabled="true" alias="mqGateway02" jndi="java:/jboss/mqConnectionFactory">
-            <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
-        </queueManager>
-
     </resources>
 
     <exposed-services>
