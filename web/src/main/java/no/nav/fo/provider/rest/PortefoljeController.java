@@ -2,6 +2,9 @@ package no.nav.fo.provider.rest;
 
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
+import no.nav.fo.security.jwt.context.SubjectHandler;
+import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
+import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
 import org.slf4j.Logger;
@@ -17,6 +20,8 @@ import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@JWTInAuthorizationHeaderJAAS
+@SessionTerminator
 @Path("/enhet")
 @Produces(APPLICATION_JSON)
 public class PortefoljeController {
@@ -33,12 +38,12 @@ public class PortefoljeController {
     @Path("/{enhet}/portefolje")
     public Response hentPortefolje(
             @PathParam("enhet") String enhet,
-            @QueryParam("ident") String ident,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
             @QueryParam("sortByLastName") String sortDirection) {
 
         try {
+            String ident = SubjectHandler.getSubjectHandler().getUid();
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
 
             if (brukerHarTilgangTilEnhet) {

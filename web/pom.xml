@@ -19,15 +19,32 @@
 
     <dependencies>
         <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-loginmodule</artifactId>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>jwt-security-loginmodule</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-loginmodule</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>jwt-security-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>jwt-security-common</artifactId>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>jwt-security-filter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.javaslang</groupId>
+            <artifactId>javaslang</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -68,19 +85,6 @@
         </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
-            <artifactId>modig-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-core</artifactId>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-sts</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-ws</artifactId>
         </dependency>
         <dependency>
@@ -89,17 +93,8 @@
         </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
-            <artifactId>modig-log-filter</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
             <artifactId>modig-testcertificates</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-core</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
@@ -223,18 +218,13 @@
             <artifactId>activemq-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-api</artifactId>
+            <artifactId>cxf-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -287,6 +277,10 @@
         <dependency>
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
         </dependency>
     </dependencies>
 

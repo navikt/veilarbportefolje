@@ -14,7 +14,7 @@ public class VirksomhetEnhetEndpointConfig {
     public Enhet virksomhetEnhet() {
         return new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForOnBehalfOfWithJWT()
                 .build();
     }
 
