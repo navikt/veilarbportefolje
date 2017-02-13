@@ -27,3 +27,11 @@ Plugin for IntelliJ ligger på følgende path (testet med IntelliJ 2016.3):
 ```
 F:\programvare\idea\plugin\lombok-plugin-0.14.16
 ```
+
+## Sjekk at materialiserte views i databasen oppdateres (replikering)
+
+Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppdateringen av materialiserte views 
+
+```
+SELECT * from dba_jobs;
+```
