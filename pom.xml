@@ -27,51 +27,40 @@
 
         <!-- Egenlagde -->
         <modig.security.version>1.0.30</modig.security.version>
-        <common-jetty.version>1.0.23</common-jetty.version>
+        <common-jetty.version>2.0.11</common-jetty.version>
         <common-types.version>1.2</common-types.version>
         <common-web.version>2.0.4</common-web.version>
         <common-test.version>1.2</common-test.version>
-        <modig-security.version>1.0.24</modig-security.version>
+        <modig-security.version>3.0.0</modig-security.version>
         <modig-content.version>2.0.9</modig-content.version>
         <modig-lang.version>1.1.0</modig-lang.version>
         <modig-core.version>1.0.1</modig-core.version>
-        <modig-log-filter.version>1.1.3</modig-log-filter.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
         <modig-core-test.version>1.0.0</modig-core-test.version>
-        <loginmodule.version>1.0.30</loginmodule.version>
-        <common-cxf.version>3.2.18</common-cxf.version>
+        <common-cxf.version>3.1.32</common-cxf.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
+        <javax.jms.version>1.1</javax.jms.version>
 
 
         <!-- Tredjeparts -->
         <!--<ehcache.version>2.6.11</ehcache.version>-->
-        <cxf.version>2.7.6</cxf.version>
-        <cxf.version>2.7.6</cxf.version>
+        <cxf.version>3.1.6</cxf.version>
         <hamcrest.version>1.3</hamcrest.version>
         <slf4j.version>1.7.21</slf4j.version>
         <spring.version>4.2.6.RELEASE</spring.version>
         <jersey.version>2.22.2</jersey.version>
         <jackson.version>2.7.4</jackson.version>
         <logback.version>1.1.7</logback.version>
-        <commons-codec.version>1.9</commons-codec.version>
         <commons-lang3.version>3.1</commons-lang3.version>
         <jsoup.version>1.7.2</jsoup.version>
         <joda.version>2.9.4</joda.version>
         <mockito.version>1.9.5</mockito.version>
         <solr.version>4.10.4</solr.version>
+        <jetty.version>9.3.0.M2</jetty.version>
+        <jwt-security.version>1.0.6</jwt-security.version>
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
-
-
-        <!-- Kan ikke uppes -->
-        <jetty.version>9.0.5.v20130815</jetty.version>
-        <!--Kan ikke oppgraderes pga. serlvet 3.1 speccen sier at role-name=* ikke er tillatt.
-        Dette blir oppfylt fra Jetty 9.1. I SimpleLoginModule som vi bruker lokalt får man satt rollen DummyRole uansett.
-        Her overrides getName() og "*" returneres. Dette gjør at i sjekken isUserinRole i Jetty sin ConstraintSecurityHandler
-        feiler da den finner "*" som navn på rollen. For å fikse dette må rollenavnet som blir overridet i DummyRole endres
-        til f. eks dobbelstjerne "**" og SecurityConstrainten må bli overridet i override-web.xml og satt tilsvarende role-name
-        der som i DummyRole.  -->
 
         <!-- Java -->
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -86,6 +75,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!--Jwt-security-->
             <dependency>
                 <groupId>com.javaslang</groupId>
                 <artifactId>javaslang</artifactId>
@@ -101,20 +91,39 @@
                 <groupId>no.nav.modig</groupId>
                 <artifactId>modig-security-loginmodule</artifactId>
                 <version>${loginmodule.version}</version>
-                <scope>runtime</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-loginmodule</artifactId>
-                <version>${modig.security.version}</version>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-common</artifactId>
+                <version>${jwt-security.version}</version>
                 <type>test-jar</type>
-                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-common</artifactId>
+                <version>${jwt-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-loginmodule</artifactId>
+                <version>${jwt-security.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.javaslang</groupId>
+                <artifactId>javaslang</artifactId>
+                <version>${javaslang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-filter</artifactId>
+                <version>${jwt-security.version}</version>
             </dependency>
 
             <!--Dialogarena-->
@@ -176,29 +185,6 @@
             </dependency>
             <dependency>
                 <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-core</artifactId>
-                <version>${modig-security.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-log-filter</artifactId>
-                <scope>runtime</scope>
-                <version>${modig-log-filter.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-sts</artifactId>
-                <version>${modig.security.version}</version>
-                <scope>runtime</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
                 <artifactId>modig-security-ws</artifactId>
                 <version>${modig-security.version}</version>
                 <exclusions>
@@ -220,13 +206,6 @@
                 <groupId>no.nav.modig</groupId>
                 <artifactId>modig-testcertificates</artifactId>
                 <version>${modig-testcertificates.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-core</artifactId>
-                <version>${modig-security.version}</version>
-                <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -414,11 +393,6 @@
                 <version>${enhet.tjenestespesifikasjon.versjon}</version>
             </dependency>
             <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>${commons-codec.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.4</version>
@@ -426,7 +400,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-api</artifactId>
+                <artifactId>cxf-core</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
 
@@ -440,6 +414,12 @@
                 <groupId>javax.jms</groupId>
                 <artifactId>javax.jms-api</artifactId>
                 <version>${javax.jms-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.jms</groupId>
+                <artifactId>jms</artifactId>
+                <version>${javax.jms.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>

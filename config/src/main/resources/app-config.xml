@@ -25,10 +25,8 @@
             <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
         </queueManager>
 
+        <baseUrl alias="certificateService" mapToProperty="certificateService" />
     </resources>
-
-
-
 
     <exposed-services>
         <exposedRest name="no.nav.fo.solrindeks.hovedindeksering" path="/veilarbportefolje/tjenester/solr/hovedindeksering"/>

@@ -33,33 +33,6 @@
         <param-value>no.nav.fo.config.ApplicationConfig</param-value>
     </context-param>
 
-    <filter>
-        <filter-name>xframeoptions</filter-name>
-        <filter-class>no.nav.sbl.dialogarena.common.web.security.XFrameOptionsFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>xframeoptions</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter>
-        <filter-name>MDCFilter</filter-name>
-        <filter-class>no.nav.modig.presentation.logging.session.MDCFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>MDCFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter>
-        <filter-name>xsrf</filter-name>
-        <filter-class>no.nav.fo.provider.filter.XsrfFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>xsrf</filter-name>
-        <servlet-name>restservlet</servlet-name>
-    </filter-mapping>
-
     <servlet>
         <servlet-name>selftest</servlet-name>
         <servlet-class>no.nav.fo.internal.SelftestServlet</servlet-class>
@@ -91,6 +64,10 @@
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>no.nav.fo.provider.rest.RestConfig</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>no.nav.fo.security.jwt.filter</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>

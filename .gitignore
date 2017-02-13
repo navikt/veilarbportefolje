@@ -8,6 +8,7 @@
 *.log
 
 target
+classes
 
 **/webapp/css/**/*
 **/webapp/img/**/*
