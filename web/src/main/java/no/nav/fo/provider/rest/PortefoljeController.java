@@ -73,12 +73,12 @@ public class PortefoljeController {
     public Response hentPortefoljeForVeileder(
             @PathParam("veilederident") String veilederIdent,
             @QueryParam("enhet") String enhet,
-            @QueryParam("ident") String ident,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
             @QueryParam("sortByLastName") String sortDirection) {
 
         try {
+            String ident = SubjectHandler.getSubjectHandler().getUid();
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
 
             if (brukerHarTilgangTilEnhet) {
