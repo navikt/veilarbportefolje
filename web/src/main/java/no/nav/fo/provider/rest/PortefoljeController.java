@@ -64,7 +64,7 @@ public class PortefoljeController {
     }
 
     @GET
-    @Path("/veileder/{veilederident}/")
+    @Path("/veileder/{veilederident}")
     public Response hentPortefoljeForVeileder(
             @PathParam("veilederident") String veilederIdent,
             @QueryParam("enhet") String enhet,
@@ -78,7 +78,7 @@ public class PortefoljeController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, sortDirection);
+                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection);
                 List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
 
                 Portefolje portefolje = new Portefolje()
