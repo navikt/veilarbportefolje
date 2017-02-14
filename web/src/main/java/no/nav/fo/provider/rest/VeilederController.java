@@ -7,6 +7,7 @@ import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
 import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
+import no.nav.fo.util.PortefoljeUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -50,14 +51,9 @@ public class VeilederController {
             if (brukerHarTilgangTilEnhet) {
 
                 List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection);
-                List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
+                List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
 
-                Portefolje portefolje = new Portefolje()
-                        .setEnhet(enhet)
-                        .setBrukere(brukereSublist)
-                        .setAntallTotalt(brukere.size())
-                        .setAntallReturnert(brukereSublist.size())
-                        .setFraIndex(fra);
+                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, brukereSublist, enhet, fra);
 
                 return Response.ok().entity(portefolje).build();
             } else {
