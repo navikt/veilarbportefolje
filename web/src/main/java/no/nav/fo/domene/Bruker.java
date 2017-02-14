@@ -16,7 +16,7 @@ public class Bruker {
     String fnr;
     String fornavn;
     String etternavn;
-    String veilderId;
+    String veilederId;
     List<String> sikkerhetstiltak;
     String diskresjonskode;
     Boolean egenAnsatt;
@@ -27,7 +27,7 @@ public class Bruker {
                 .setFnr((String) document.get("fnr"))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
-                .setVeilderId((String) document.get("veileder_id"))
+                .setVeilederId((String) document.get("veileder_id"))
                 .setDiskresjonskode((String) document.get("diskresjonskode"))
                 .setEgenAnsatt( (Boolean) document.get("egen_ansatt"))
                 .setErDoed( (Boolean) document.get("er_doed"))
