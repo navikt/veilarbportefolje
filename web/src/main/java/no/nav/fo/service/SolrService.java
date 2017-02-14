@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import javaslang.collection.List;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
@@ -11,20 +12,16 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -46,14 +43,13 @@ public class SolrService {
         }
 
         logger.info("Starter hovedindeksering");
+        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
 
-        List<Map<String, Object>> rader = brukerRepository.retrieveAlleBrukere();
-        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
-
+        List<SolrInputDocument> dokumenter = brukerRepository.retrieveAlleBrukere();
         deleteAllDocuments();
         addDocuments(dokumenter);
         commit();
-        updateTimestamp(rader);
+        brukerRepository.updateTidsstempel(timestamp);
 
         logger.info("Hovedindeksering fullført!");
         logger.info(dokumenter.size() + " dokumenter ble lagt til i solrindeksen");
@@ -68,27 +64,30 @@ public class SolrService {
         }
 
         logger.info("Starter deltaindeksering");
-        List<Map<String, Object>> rader = brukerRepository.retrieveOppdaterteBrukere();
+        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+
+        java.util.List<Map<String, Object>> rader = brukerRepository.retrieveOppdaterteBrukere();
         if (rader.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
         }
 
-        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
-        addDocuments(dokumenter);
-        updateTimestamp(rader);
+        java.util.List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+        addDocuments(List.ofAll(dokumenter));
+        brukerRepository.updateTidsstempel(timestamp);
         commit();
+
         logger.info("Deltaindeksering fullført!");
         logger.info(dokumenter.size() + " dokumenter ble oppdatert/lagt til i solrindeksen");
     }
 
     public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
-        List<Bruker> brukere = new ArrayList<>();
+        List<Bruker> brukere = List.empty();
         try {
-            QueryResponse response = server.query(buildSolrQuery(enhetId , sortOrder));
+            QueryResponse response = server.query(buildSolrQuery(enhetId, sortOrder));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
-            brukere = results.stream().map(Bruker::of).collect(toList());
+            brukere = List.ofAll(results).map(Bruker::of);
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
@@ -107,11 +106,6 @@ public class SolrService {
         return solrQuery;
     }
 
-    Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
-        return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
-    }
-
-
     static boolean isSlaveNode() {
         String isMasterString = System.getProperty("cluster.ismasternode", "false");
         return !Boolean.parseBoolean(isMasterString);
@@ -122,35 +116,29 @@ public class SolrService {
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
-    private void updateTimestamp(List<Map<String, Object>> rader) {
-        Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
-        brukerRepository.updateTidsstempel(tidsstempel);
+    private List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
+        dokumenter
+                .sliding(10000, 10000)
+                .forEach(docs -> {
+                    try {
+                        server.add(docs.toJavaList());
+                        logger.info(String.format("Legger til %d dokumenter i indeksen", docs.length()));
+                    } catch (SolrServerException | IOException e) {
+                        logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
+                    }
+                });
+        return dokumenter;
     }
 
-    private UpdateResponse addDocuments(List<SolrInputDocument> dokumenter) {
-        UpdateResponse response = null;
+    private void deleteAllDocuments() {
         try {
-            response = server.add(dokumenter);
-            checkSolrResponseCode(response.getStatus());
-        } catch (SolrServerException | IOException e) {
-            logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
-        } catch (SolrUpdateResponseCodeException e) {
-            logger.error(e.getMessage());
-        }
-        return response;
-    }
-
-    private UpdateResponse deleteAllDocuments() {
-        UpdateResponse response = null;
-        try {
-            response = server.deleteByQuery("*:*");
+            UpdateResponse response = server.deleteByQuery("*:*");
             checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
             logger.error(e.getMessage());
         }
-        return response;
     }
 
     void checkSolrResponseCode(int statusCode) {
