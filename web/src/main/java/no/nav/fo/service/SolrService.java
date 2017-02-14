@@ -3,10 +3,14 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
+import no.nav.fo.domene.Facet;
+import no.nav.fo.domene.FacetResults;
 import no.nav.fo.util.DbUtils;
+import no.nav.fo.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
@@ -93,6 +97,26 @@ public class SolrService {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return brukere;
+    }
+
+    public FacetResults hentPortefoljestorrelser(String enhetId) {
+
+        // Må endres fra "hovedmaalkode" til "veileder_id" når denne blir tilgjengelig
+        String facetFieldString = "hovedmaalkode";
+
+        SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
+
+        QueryResponse response = new QueryResponse();
+        try {
+            response = server.query(solrQuery);
+            logger.debug(response.toString());
+        } catch (SolrServerException e) {
+            logger.error("Spørring mot indeks feilet", e.getMessage(), e);
+        }
+
+        FacetField facetField = response.getFacetField(facetFieldString);
+
+        return SolrUtils.mapFacetResults(facetField);
     }
 
     SolrQuery buildSolrQuery(String enhetId, String sortOrder) {
