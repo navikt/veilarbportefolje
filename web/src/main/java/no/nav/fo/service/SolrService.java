@@ -3,7 +3,6 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
-import no.nav.fo.domene.Facet;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
@@ -15,7 +14,6 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -23,13 +21,11 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -44,7 +40,7 @@ public class SolrService {
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void hovedindeksering() {
-        if (isSlaveNode()) {
+        if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
@@ -66,7 +62,7 @@ public class SolrService {
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
     public void deltaindeksering() {
-        if (isSlaveNode()) {
+        if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
@@ -89,7 +85,7 @@ public class SolrService {
     public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(buildSolrQuery(enhetId , sortOrder));
+            QueryResponse response = server.query(SolrUtils.buildSolrQuery(enhetId , sortOrder));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
@@ -119,26 +115,10 @@ public class SolrService {
         return SolrUtils.mapFacetResults(facetField);
     }
 
-    SolrQuery buildSolrQuery(String enhetId, String sortOrder) {
-        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
-        if ("descending".equals(sortOrder)) {
-            order = desc;
-        }
-        String queryString = "enhet_id: " + enhetId;
-        SolrQuery solrQuery = new SolrQuery(queryString);
-        solrQuery.addSort("etternavn", order);
-        solrQuery.addSort("fornavn", order);
-        return solrQuery;
-    }
 
-    Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
-        return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
-    }
-
-
-    static boolean isSlaveNode() {
-        String isMasterString = System.getProperty("cluster.ismasternode", "false");
-        return !Boolean.parseBoolean(isMasterString);
+    private void updateTimestamp(List<Map<String, Object>> rader) {
+        Timestamp tidsstempel = (Timestamp) SolrUtils.nyesteBruker(rader).get("tidsstempel");
+        brukerRepository.updateTidsstempel(tidsstempel);
     }
 
     private Try<UpdateResponse> commit() {
@@ -146,16 +126,11 @@ public class SolrService {
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
-    private void updateTimestamp(List<Map<String, Object>> rader) {
-        Timestamp tidsstempel = (Timestamp) nyesteBruker(rader).get("tidsstempel");
-        brukerRepository.updateTidsstempel(tidsstempel);
-    }
-
     private UpdateResponse addDocuments(List<SolrInputDocument> dokumenter) {
         UpdateResponse response = null;
         try {
             response = server.add(dokumenter);
-            checkSolrResponseCode(response.getStatus());
+            SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
@@ -168,7 +143,7 @@ public class SolrService {
         UpdateResponse response = null;
         try {
             response = server.deleteByQuery("*:*");
-            checkSolrResponseCode(response.getStatus());
+            SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
@@ -176,11 +151,4 @@ public class SolrService {
         }
         return response;
     }
-
-    void checkSolrResponseCode(int statusCode) {
-        if (statusCode != 0) {
-            throw new SolrUpdateResponseCodeException(String.format("Solr returnerte med statuskode %s", statusCode));
-        }
-    }
-
 }

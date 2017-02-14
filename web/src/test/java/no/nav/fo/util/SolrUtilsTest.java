@@ -1,18 +1,32 @@
 package no.nav.fo.util;
 
 import no.nav.fo.domene.FacetResults;
+import no.nav.fo.service.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
+import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolrUtilsTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
 
     @Test
     public void skalGjoreMappingFraFacetFieldTilFacetResultsKorrekt() {
@@ -52,5 +66,54 @@ public class SolrUtilsTest {
         assertThat(solrQuery.getQuery()).isEqualTo(query);
         assertThat(solrQuery.getFacetFields()[0]).isEqualTo("value");
         assertThat(Boolean.parseBoolean(solrQuery.get("facet"))).isEqualTo(true);
+    }
+
+    @Test
+    public void skalFinneNyesteBruker() {
+        List<Map<String, Object>> brukere = new ArrayList<>();
+        Map<String, Object> bruker1 = new HashMap<>();
+        Map<String, Object> bruker2 = new HashMap<>();
+        Map<String, Object> bruker3 = new HashMap<>();
+        bruker1.put("tidsstempel", new Date(System.currentTimeMillis()));
+        bruker2.put("tidsstempel", new Date(System.currentTimeMillis() + 100000));
+        bruker3.put("tidsstempel", new Date(System.currentTimeMillis() + 10000000));
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+
+        Map<String, Object> nyesteBruker = SolrUtils.nyesteBruker(brukere);
+
+        assertThat(nyesteBruker).isEqualTo(bruker3);
+    }
+
+    @Test
+    public void skalKorrektAvgjoreOmErSlaveNode() throws Exception {
+        System.setProperty("cluster.ismasternode", "false");
+        assertTrue(SolrUtils.isSlaveNode());
+        System.setProperty("cluster.ismasternode", "true");
+        assertFalse(SolrUtils.isSlaveNode());
+    }
+
+    @Test
+    public void skalKasteExceptionHvisStatusIkkeErNull() throws Exception {
+        expectedException.expect(SolrUpdateResponseCodeException.class);
+        SolrUtils.checkSolrResponseCode(1);
+    }
+
+    @Test
+    public void skalByggSolrQueryMedAlleFelterUtfylt() throws Exception {
+        String enhetId = "0713";
+        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, "ascending");
+        assertThat(query.getQuery()).contains(enhetId);
+        assertThat(query.getSortField().contains("fornavn")).isTrue();
+        assertThat(query.getSortField().contains("etternavn")).isTrue();
+        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(asc);
+    }
+
+    @Test
+    public void skalByggeSolrQueryMedDescendingSort() throws Exception {
+        String enhetId = "0713";
+        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, "descending");
+        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(desc);
     }
 }
