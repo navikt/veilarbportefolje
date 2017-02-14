@@ -22,11 +22,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @JWTInAuthorizationHeaderJAAS
 @SessionTerminator
-@Path("/portefolje")
+@Path("/veileder")
 @Produces(APPLICATION_JSON)
-public class PortefoljeController {
+public class VeilederController {
 
-    private static final Logger logger = getLogger(PortefoljeController.class);
+    private static final Logger logger = getLogger(VeilederController.class);
 
     @Inject
     BrukertilgangService brukertilgangService;
@@ -35,41 +35,7 @@ public class PortefoljeController {
     SolrService solrService;
 
     @GET
-    @Path("/enhet/{enhet}")
-    public Response hentPortefoljeForEnhet(
-            @PathParam("enhet") String enhet,
-            @QueryParam("fra") int fra,
-            @QueryParam("antall") int antall,
-            @QueryParam("sortByLastName") String sortDirection) {
-
-        try {
-            String ident = SubjectHandler.getSubjectHandler().getUid();
-            boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
-
-            if (brukerHarTilgangTilEnhet) {
-
-                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection);
-                List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
-
-                Portefolje portefolje = new Portefolje()
-                        .setEnhet(enhet)
-                        .setBrukere(brukereSublist)
-                        .setAntallTotalt(brukere.size())
-                        .setAntallReturnert(brukereSublist.size())
-                        .setFraIndex(fra);
-
-                return Response.ok().entity(portefolje).build();
-            } else {
-                return Response.status(FORBIDDEN).build();
-            }
-        } catch (Exception e) {
-            logger.error("Kall mot upstream service feilet", e);
-            return Response.status(BAD_GATEWAY).build();
-        }
-    }
-
-    @GET
-    @Path("/veileder/{veilederident}")
+    @Path("/{veilederident}/portefolje")
     public Response hentPortefoljeForVeileder(
             @PathParam("veilederident") String veilederIdent,
             @QueryParam("enhet") String enhet,
