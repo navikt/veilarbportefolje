@@ -49,7 +49,7 @@ public class EnhetController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection);
+                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection).toJavaList();
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, brukereSublist, enhet, fra);
