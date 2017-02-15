@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class DbUtils {
 
-    static Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private static Logger logger = LoggerFactory.getLogger(DbUtils.class);
 
     public static SolrInputDocument mapResultSetTilDokument(ResultSet rs) {
         SolrInputDocument document = new SolrInputDocument();
