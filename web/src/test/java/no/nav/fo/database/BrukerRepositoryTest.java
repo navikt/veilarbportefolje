@@ -34,9 +34,9 @@ public class BrukerRepositoryTest {
     public void setUp() {
         try {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-oppfolgingsbruker.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-indeksering_logg.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-metadata.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-indeksering_logg.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-metadata-sist-indeksert.sql"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,7 +45,7 @@ public class BrukerRepositoryTest {
     @After
     public void tearDown() {
         jdbcTemplate.execute("drop table oppfolgingsbruker");
-        jdbcTemplate.execute("drop table indeksering_logg");
+        jdbcTemplate.execute("drop table metadata");
     }
 
     @Test
@@ -84,10 +84,10 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalKunHaEnCelleIIndekseringLogg() {
-        List<Map<String, Object>> indeksering_logg = jdbcTemplate.queryForList("SELECT * FROM indeksering_logg");
+        List<Map<String, Object>> sistIndeksert = jdbcTemplate.queryForList("SELECT SIST_INDEKSERT FROM metadata");
 
-        assertThat(indeksering_logg.size()).isEqualTo(1);
-        assertThat(indeksering_logg.get(0).size()).isEqualTo(1);
+        assertThat(sistIndeksert.size()).isEqualTo(1);
+        assertThat(sistIndeksert.get(0).size()).isEqualTo(1);
     }
 
     @Test
