@@ -9,9 +9,9 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 public class Portefolje {
-    String enhet;
-    int antallTotalt;
-    int antallReturnert;
-    int fraIndex;
-    List<Bruker> brukere;
+    public String enhet;
+    public int antallTotalt;
+    public int antallReturnert;
+    public int fraIndex;
+    public List<Bruker> brukere;
 }
