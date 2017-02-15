@@ -72,7 +72,7 @@ public class DbUtils {
     static boolean parseJaNei(Object janei, String name) {
         boolean defaultValue  = false;
         if (janei == null) {
-            logger.warn(String.format("%s er ikke satt i databasen, defaulter til ", defaultValue));
+            logger.warn(String.format("%s er ikke satt i databasen, defaulter til %s", defaultValue));
             return defaultValue;
         }
 
