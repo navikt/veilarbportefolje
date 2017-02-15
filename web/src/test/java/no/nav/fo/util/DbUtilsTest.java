@@ -29,27 +29,27 @@ public class DbUtilsTest {
 
     @Test
     public void skalParseJaNei() throws Exception {
-        boolean shouldBeTrue = DbUtils.parseJaNei("J");
-        boolean shouldBeFalse = DbUtils.parseJaNei("N");
+        boolean shouldBeTrue = DbUtils.parseJaNei("J", "test");
+        boolean shouldBeFalse = DbUtils.parseJaNei("N", "test");
         assertThat(shouldBeTrue).isTrue();
         assertThat(shouldBeFalse).isFalse();
     }
 
     @Test
     public void skalTakleNull() throws Exception {
-        boolean shouldBeFalse = DbUtils.parseJaNei(null);
+        boolean shouldBeFalse = DbUtils.parseJaNei(null, "test");
         assertThat(shouldBeFalse).isFalse();
     }
 
     @Test
     public void skalIkkeParseUgyldigJaNeiType() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
-        DbUtils.parseJaNei(new Object());
+        DbUtils.parseJaNei(new Object(), "test");
     }
 
     @Test
     public void skalIkkeParseUgyldigJaNeiInput() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
-        DbUtils.parseJaNei("foo");
+        DbUtils.parseJaNei("foo", "test");
     }
 }
