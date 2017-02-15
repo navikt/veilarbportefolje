@@ -1,12 +1,16 @@
 package no.nav.fo.util;
 
 import org.apache.solr.common.SolrInputDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
 public class DbUtils {
+
+    static Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     public static SolrInputDocument mapResultSetTilDokument(ResultSet rs) {
         SolrInputDocument document = new SolrInputDocument();
@@ -23,8 +27,8 @@ public class DbUtils {
             document.addField("hovedmaalkode", rs.getString("hovedmaalkode"));
             document.addField("sikkerhetstiltak", rs.getString("sikkerhetstiltak_type_kode"));
             document.addField("diskresjonskode", rs.getString("fr_kode"));
-            document.addField("egen_ansatt", parseJaNei(rs.getString("sperret_ansatt")));
-            document.addField("er_doed", parseJaNei(rs.getString("er_doed")));
+            document.addField("egen_ansatt", parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"));
+            document.addField("er_doed", parseJaNei(rs.getString("er_doed"), "er_doed"));
             document.addField("doed_fra_dato", parseDato(rs.getString("doed_fra_dato")));
             document.addField("veileder_id", null);
         } catch (SQLException e) {
@@ -48,8 +52,8 @@ public class DbUtils {
         document.addField("hovedmaalkode", rad.get("hovedmaalkode") != null ? rad.get("hovedmaalkode").toString() : null);
         document.addField("sikkerhetstiltak", rad.get("sikkerhetstiltak_type_kode") != null ? rad.get("sikkerhetstiltak_type_kode").toString() : null);
         document.addField("diskresjonskode", rad.get("fr_kode") != null ? rad.get("fr_kode").toString() : null);
-        document.addField("egen_ansatt", parseJaNei(rad.get("sperret_ansatt")));
-        document.addField("er_doed", parseJaNei(rad.get("er_doed")));
+        document.addField("egen_ansatt", parseJaNei(rad.get("sperret_ansatt"), "sperret_ansatt"));
+        document.addField("er_doed", parseJaNei(rad.get("er_doed"), "er_doed"));
         document.addField("doed_fra_dato", parseDato(rad.get("doed_fra_dato")));
         document.addField("veileder_id", null);
         return document;
@@ -65,9 +69,11 @@ public class DbUtils {
         }
     }
 
-    static boolean parseJaNei(Object janei) {
+    static boolean parseJaNei(Object janei, String name) {
+        boolean defaultValue  = true;
         if (janei == null) {
-            return false;
+            logger.warn(String.format("%s er ikke satt i databasen, defaulter til ", defaultValue));
+            return defaultValue;
         }
 
         switch (janei.toString()) {
