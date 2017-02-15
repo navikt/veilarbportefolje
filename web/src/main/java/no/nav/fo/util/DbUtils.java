@@ -65,7 +65,11 @@ public class DbUtils {
         }
     }
 
-     static boolean parseJaNei(Object janei) {
+    static boolean parseJaNei(Object janei) {
+        if (janei == null) {
+            return false;
+        }
+
         switch (janei.toString()) {
             case "J":
                 return true;

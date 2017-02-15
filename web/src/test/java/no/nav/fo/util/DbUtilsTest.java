@@ -36,6 +36,12 @@ public class DbUtilsTest {
     }
 
     @Test
+    public void skalTakleNull() throws Exception {
+        boolean shouldBeFalse = DbUtils.parseJaNei(null);
+        assertThat(shouldBeFalse).isFalse();
+    }
+
+    @Test
     public void skalIkkeParseUgyldigJaNeiType() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         DbUtils.parseJaNei(new Object());
