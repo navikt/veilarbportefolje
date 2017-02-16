@@ -28,10 +28,21 @@ public class Bruker {
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilderId((String) document.get("veileder_id"))
-                .setDiskresjonskode((String) document.get("diskresjonskode"))
+                .setDiskresjonskode(getDiskresjonskode(document))
                 .setEgenAnsatt( (Boolean) document.get("egen_ansatt"))
                 .setErDoed( (Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document));
+    }
+
+    private static String getDiskresjonskode(SolrDocument document) {
+        String kode6 = "6";
+        String kode7 = "7";
+
+        String diskresjonskode = (String) document.get("diskresjonskode");
+        if (!(kode6.equals(diskresjonskode) || kode7.equals(diskresjonskode))) {
+            diskresjonskode = null;
+        }
+        return diskresjonskode;
     }
 
     private static List<String> getSikkerhetstiltak(SolrDocument document) {
