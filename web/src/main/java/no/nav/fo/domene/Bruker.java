@@ -13,14 +13,14 @@ import static java.util.Collections.singletonList;
 @Data
 @Accessors(chain = true)
 public class Bruker {
-    public String fnr;
-    public String fornavn;
-    public String etternavn;
-    public String veilderId;
-    public List<String> sikkerhetstiltak;
-    public String diskresjonskode;
-    public Boolean egenAnsatt;
-    public Boolean erDoed;
+    String fnr;
+    String fornavn;
+    String etternavn;
+    String veilderId;
+    List<String> sikkerhetstiltak;
+    String diskresjonskode;
+    Boolean egenAnsatt;
+    Boolean erDoed;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()

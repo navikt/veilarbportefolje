@@ -21,11 +21,11 @@ public class PortefoljeUtilsTest {
     public void skalGiKorrektSublisteAvBrukere() {
         List<Bruker> subListe = PortefoljeUtils.getSublist(brukere, 2, 2);
         assertThat(subListe.size()).isEqualTo(2);
-        assertThat(subListe.get(0).fornavn).isEqualTo("Peder");
+        assertThat(subListe.get(0).getFornavn()).isEqualTo("Peder");
 
         subListe = PortefoljeUtils.getSublist(brukere, 0, 3);
         assertThat(subListe.size()).isEqualTo(3);
-        assertThat(subListe.get(1).fornavn).isEqualTo("Christian");
+        assertThat(subListe.get(1).getFornavn()).isEqualTo("Christian");
     }
 
     @Test
@@ -34,10 +34,10 @@ public class PortefoljeUtilsTest {
         List<Bruker> subListe = PortefoljeUtils.getSublist(brukere, fra, 3);
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, subListe,"0106", fra );
 
-        assertThat(portefolje.brukere.size()).isEqualTo(subListe.size());
-        assertThat(portefolje.antallReturnert).isEqualTo(subListe.size());
-        assertThat(portefolje.antallTotalt).isEqualTo(5);
-        assertThat(portefolje.brukere.get(0).fornavn).isEqualTo("Christian");
+        assertThat(portefolje.getBrukere().size()).isEqualTo(subListe.size());
+        assertThat(portefolje.getAntallReturnert()).isEqualTo(subListe.size());
+        assertThat(portefolje.getAntallTotalt()).isEqualTo(5);
+        assertThat(portefolje.getBrukere().get(0).getFornavn()).isEqualTo("Christian");
     }
 
     List<Bruker> createBrukere() {
