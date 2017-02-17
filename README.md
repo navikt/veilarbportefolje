@@ -11,10 +11,10 @@ Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering 
 
 ## URL-er å utføre hoved- og deltaindeksering
 ```
-http://$(hostname).devillo.no:9595/veilarbportefolje/tjenester/solr/hovedindeksering
+http://localhost:9595/veilarbportefolje/tjenester/solr/hovedindeksering
 ```
 ```
-http://$(hostname).devillo.no:9595/veilarbportefolje/tjenester/solr/deltaindeksering
+http://localhost:9595/veilarbportefolje/tjenester/solr/deltaindeksering
 ```
 
 !! OBS OBS Om det er gjort endringer i schemaet til indeksen må man kanskje restarte indeksen !!
@@ -26,4 +26,12 @@ Plugin for IntelliJ ligger på følgende path (testet med IntelliJ 2016.3):
 
 ```
 F:\programvare\idea\plugin\lombok-plugin-0.14.16
+```
+
+## Sjekk at materialiserte views i databasen oppdateres (replikering)
+
+Les i jobbtabellen til oracle for å undersøke statusen på den automatisk refreshingen av materialiserte views 
+
+```
+SELECT * from dba_jobs;
 ```

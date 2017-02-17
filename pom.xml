@@ -57,7 +57,7 @@
         <mockito.version>1.9.5</mockito.version>
         <solr.version>4.10.4</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
-        <jwt-security.version>1.0.6</jwt-security.version>
+        <jwt-security.version>1.0.8</jwt-security.version>
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>

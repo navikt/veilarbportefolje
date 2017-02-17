@@ -49,7 +49,7 @@ public class PortefoljeController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukere(enhet, sortDirection);
+                List<Bruker> brukere = solrService.hentBrukere(enhet, sortDirection).toJavaList();
                 List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
 
                 Portefolje portefolje = new Portefolje()
