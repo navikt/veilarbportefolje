@@ -39,10 +39,10 @@ public class Bruker {
         String kode7 = "7";
 
         String diskresjonskode = (String) document.get("diskresjonskode");
-        if (!(kode6.equals(diskresjonskode) || kode7.equals(diskresjonskode))) {
-            diskresjonskode = null;
+        if (kode6.equals(diskresjonskode) || kode7.equals(diskresjonskode)) {
+            return diskresjonskode;
         }
-        return diskresjonskode;
+        return null;
     }
 
     private static List<String> getSikkerhetstiltak(SolrDocument document) {
