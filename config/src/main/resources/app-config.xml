@@ -25,7 +25,7 @@
             <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
         </queueManager>
 
-        <baseUrl alias="certificateService" mapToProperty="certificateService" />
+        <baseUrl alias="openAMHost" mapToProperty="issoHost" />
     </resources>
 
     <exposed-services>
