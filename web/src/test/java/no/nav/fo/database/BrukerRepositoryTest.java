@@ -3,6 +3,7 @@ package no.nav.fo.database;
 import com.google.common.base.Joiner;
 import no.nav.fo.config.ApplicationConfigTest;
 import org.apache.commons.io.IOUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,10 @@ public class BrukerRepositoryTest {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-indeksering_logg.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-indeksering_logg.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-aktoerid-to-personid-mapping.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-bruker-data-test.sql"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,5 +103,31 @@ public class BrukerRepositoryTest {
         Object sist_indeksert = jdbcTemplate.queryForList(brukerRepository.retrieveSistIndeksertSQL()).get(0).get("sist_indeksert");
 
         assertThat(sist_indeksert).isEqualTo(nyttTidsstempel);
+    }
+
+    @Test
+    public void skalReturnerePersonidFraDB() {
+        List<Map<String,Object>> mapping = brukerRepository.retrievePersonid("11111111");
+        String personid = (String) mapping.get(0).get("PERSONID");
+        Assertions.assertThat(personid).isEqualTo("222222");
+    }
+
+    @Test
+    public void skalOppdatereOmBrukerFinnes() {
+        String aktoerid = (String) jdbcTemplate.queryForList("SELECT * FROM BRUKER_DATA").get(0).get("AKTOERID");
+        brukerRepository.insertOrUpdateBrukerdata(aktoerid,"555555","X444444","2017-01-14 09:59:56.000000");
+        String veilederident = (String) jdbcTemplate.queryForList("SELECT VEILEDERIDENT FROM BRUKER_DATA WHERE AKTOERID='111111'").get(0).get("VEILEDERIDENT");
+        Assertions.assertThat(veilederident).isEqualTo("X444444");
+    }
+
+    @Test
+    public void skalInserteOmBrukerIkkeFinnes() {
+        String aktoerid = "999999"; //aktoerid som ikke finnes i databasen.
+        List<Map<String,Object>> brukere = brukerRepository.retrieveBruker(aktoerid);
+        Assertions.assertThat(brukere).isEmpty();
+
+        brukerRepository.insertOrUpdateBrukerdata("999999","555555","X444444","2017-01-14 09:59:56.000000");
+        String veilederident = (String) brukerRepository.retrieveBruker(aktoerid).get(0).get("VEILEDERIDENT");
+        Assertions.assertThat(veilederident).isEqualTo("X444444");
     }
 }

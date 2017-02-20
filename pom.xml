@@ -39,6 +39,7 @@
         <modig-core-test.version>1.0.0</modig-core-test.version>
         <common-cxf.version>3.1.32</common-cxf.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
+        <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <javax.jms.version>1.1</javax.jms.version>
 
 
@@ -391,6 +392,11 @@
                 <groupId>no.nav.fo</groupId>
                 <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
                 <version>${enhet.tjenestespesifikasjon.versjon}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
+                <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
