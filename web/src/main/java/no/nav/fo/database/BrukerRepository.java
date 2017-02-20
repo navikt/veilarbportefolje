@@ -1,13 +1,12 @@
 package no.nav.fo.database;
 
-import javaslang.collection.List;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 
@@ -17,17 +16,21 @@ public class BrukerRepository {
     private JdbcTemplate db;
 
     public List<SolrInputDocument> retrieveAlleBrukere() {
-        java.util.List<SolrInputDocument> brukere = new ArrayList<>();
+        List<SolrInputDocument> brukere = new ArrayList<>();
         db.setFetchSize(10000);
         db.query(retrieveBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return List.ofAll(brukere);
+        return brukere;
     }
 
-    public java.util.List<Map<String, Object>> retrieveOppdaterteBrukere() {
-        java.util.List<Map<String, Object>> rader = db.queryForList(retrieveOppdaterteBrukereSQL());
-        return rader;
+    public List<SolrInputDocument> retrieveOppdaterteBrukere() {
+        List<SolrInputDocument> brukere = new ArrayList<>();
+        db.setFetchSize(10000);
+        db.query(retrieveOppdaterteBrukereSQL(), rs -> {
+            brukere.add(mapResultSetTilDokument(rs));
+        });
+        return brukere;
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
