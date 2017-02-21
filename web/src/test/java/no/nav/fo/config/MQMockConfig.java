@@ -39,7 +39,7 @@ public class MQMockConfig {
 
     @Bean
     public ConnectionFactory connectionFactory() throws NamingException {
-        return new ActiveMQConnectionFactory("tcp://localhost:61616");
+        return new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
     }
 
     @Bean(name = "endreveilederqueue")
