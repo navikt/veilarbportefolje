@@ -72,6 +72,7 @@
         <!-- Test -->
         <junit.version>4.11</junit.version>
         <mockito.version>1.10.19</mockito.version>
+        <mq-jms.version>6.0</mq-jms.version>
     </properties>
 
     <dependencyManagement>
@@ -496,6 +497,12 @@
                         <artifactId>geronimo-jms_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.mq</groupId>
+                <artifactId>mq-jms</artifactId>
+                <version>${mq-jms.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

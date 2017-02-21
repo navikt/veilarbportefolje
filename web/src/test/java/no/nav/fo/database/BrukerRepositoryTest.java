@@ -38,7 +38,6 @@ public class BrukerRepositoryTest {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-metadata.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-metadata-sist-indeksert.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-indeksering_logg.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-aktoerid-to-personid-mapping.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
@@ -52,6 +51,8 @@ public class BrukerRepositoryTest {
     public void tearDown() {
         jdbcTemplate.execute("drop table oppfolgingsbruker");
         jdbcTemplate.execute("drop table metadata");
+        jdbcTemplate.execute("drop table aktoerid_to_personid");
+        jdbcTemplate.execute("drop table bruker_data");
     }
 
     @Test

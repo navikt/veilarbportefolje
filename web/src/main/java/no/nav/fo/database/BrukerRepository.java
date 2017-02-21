@@ -2,6 +2,7 @@ package no.nav.fo.database;
 
 import javaslang.collection.List;
 import org.apache.solr.common.SolrInputDocument;
+import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 

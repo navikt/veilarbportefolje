@@ -282,6 +282,10 @@
             <groupId>javax.jms</groupId>
             <artifactId>jms</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ibm.mq</groupId>
+            <artifactId>mq-jms</artifactId>
+        </dependency>
     </dependencies>
 
 
