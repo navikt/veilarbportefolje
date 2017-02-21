@@ -1,13 +1,16 @@
 package no.nav.fo.database;
 
-import org.slf4j.Logger;
+import javaslang.collection.List;
+import org.apache.solr.common.SolrInputDocument;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+
+import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -20,27 +23,35 @@ public class BrukerRepository {
 
     private String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
 
-    public List<Map<String, Object>> retrieveAlleBrukere() {
-        List<Map<String, Object>> rader = db.queryForList(retrieveBrukereSQL());
+    public List<SolrInputDocument> retrieveAlleBrukere() {
+        java.util.List<SolrInputDocument> brukere = new ArrayList<>();
+        db.setFetchSize(10000);
+        db.query(retrieveBrukereSQL(), rs -> {
+            brukere.add(mapResultSetTilDokument(rs));
+        });
+        return List.ofAll(brukere);
+    }
+
+    public java.util.List<Map<String, Object>> retrieveOppdaterteBrukere() {
+        java.util.List<Map<String, Object>> rader = db.queryForList(retrieveOppdaterteBrukereSQL());
         return rader;
     }
 
-    public List<Map<String, Object>> retrieveOppdaterteBrukere() {
-        List<Map<String, Object>> rader = db.queryForList(retrieveOppdaterteBrukereSQL());
-        return rader;
+    public int updateTidsstempel(Timestamp tidsstempel) {
+        return db.update(updateTidsstempelSQL(), tidsstempel);
     }
-    public List<Map<String,Object>> retrieveBruker(String aktoerid) {
+    public java.util.List<Map<String,Object>> retrieveBruker(String aktoerid) {
         return db.queryForList(retrieveBrukerSQL(),aktoerid);
     }
 
-    public List<Map<String,Object>> retrievePersonid(String aktoerid) {
+    public java.util.List<Map<String,Object>> retrievePersonid(String aktoerid) {
         return db.queryForList(getPersonidFromAktoeridSQL(),aktoerid);
     }
-    public List<Map<String,Object>> retrievePersonidFromFnr(String fnr) {
+    public java.util.List<Map<String,Object>> retrievePersonidFromFnr(String fnr) {
         return db.queryForList(getPersonIdFromFnrSQL(),fnr);
     }
     public void insertBrukerdata(String aktoerid, String personid, String veilederident, String tilordnetTidsstempel) throws DuplicateKeyException {
-            db.update(insertBrukerdataSQL(), aktoerid, veilederident, tilordnetTidsstempel, personid);
+        db.update(insertBrukerdataSQL(), aktoerid, veilederident, tilordnetTidsstempel, personid);
     }
     public void updateBrukerdata(String aktoerid, String personid, String veilederident, String tilordnetTidsstempel) {
         db.update(updateBrukerdataSQL(),veilederident,tilordnetTidsstempel,personid,aktoerid);
@@ -60,11 +71,6 @@ public class BrukerRepository {
         } catch (DuplicateKeyException e) {
             LOG.info("Aktoerid %s personid %s mapping finnes i databasen", aktoerid, personid);
         }
-    }
-
-
-    public void updateTidsstempel(Timestamp tidsstempel) {
-        db.update(updateTidsstempelSQL(), tidsstempel);
     }
 
     String retrieveBrukereSQL() {
@@ -116,12 +122,12 @@ public class BrukerRepository {
     }
 
     String retrieveSistIndeksertSQL() {
-        return "SELECT sist_indeksert FROM indeksering_logg";
+        return "SELECT SIST_INDEKSERT FROM METADATA";
     }
 
     String updateTidsstempelSQL() {
         return
-                "UPDATE indeksering_logg SET sist_indeksert = ?";
+                "UPDATE METADATA SET SIST_INDEKSERT = ?";
     }
 
     String getPersonidFromAktoeridSQL() {
