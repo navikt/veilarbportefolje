@@ -92,9 +92,14 @@ public class BrukerRepository {
                     "sperret_ansatt, " +
                     "er_doed, " +
                     "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
-                    "tidsstempel " +
+                    "oppfolgingsbruker.tidsstempel, " +
+                    "veilederident " +
                 "FROM " +
-                    "oppfolgingsbruker";
+                    "oppfolgingsbruker " +
+                "LEFT JOIN bruker_data " +
+                "ON " +
+                    "bruker_data.personid = TO_CHAR(oppfolgingsbruker.person_id)";
+
     }
 
     String retrieveOppdaterteBrukereSQL() {
