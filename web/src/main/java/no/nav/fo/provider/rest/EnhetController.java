@@ -1,6 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import no.nav.fo.domene.Bruker;
+import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.security.jwt.context.SubjectHandler;
 import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
@@ -62,5 +63,12 @@ public class EnhetController {
             logger.error("Kall mot upstream service feilet", e);
             return Response.status(BAD_GATEWAY).build();
         }
+    }
+
+    @GET
+    @Path("/{enhet}/portefoljestorrelser")
+    public Response hentPortefoljestorrelser(@PathParam("enhet") String enhet) {
+        FacetResults facetResult = solrService.hentPortefoljestorrelser(enhet);
+        return Response.ok().entity(facetResult).build();
     }
 }
