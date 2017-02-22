@@ -25,10 +25,15 @@ public class OppdaterBrukerdataFletter {
     @Inject
     BrukerRepository brukerRepository;
 
+    @Inject
+    SolrService solrService;
+
     public void tilordneVeilederTilPersonid(BrukerOppdatertInformasjon bruker) {
         String personid = getPersonidFromDBorAktoer(bruker.getAktoerid());
         String aktoerid = bruker.getAktoerid();
         brukerRepository.insertOrUpdateBrukerdata(aktoerid, personid, bruker.getVeileder(),bruker.getOppdatert());
+        solrService.indekserBrukerMedVeileder(personid);
+
     }
 
     private String getPersonidFromDBorAktoer(String aktoerid) {

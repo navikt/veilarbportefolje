@@ -81,6 +81,15 @@ public class SolrService {
         logger.info(dokumenter.size() + " dokumenter ble oppdatert/lagt til i solrindeksen");
     }
 
+    public void indekserBrukerMedVeileder(String personid) {
+        logger.info("Legger bruker med personid % til i indeks ",personid);
+        java.util.List<Map<String,Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personid);
+        java.util.List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+        addDocuments(List.ofAll(dokumenter));
+        commit();
+        logger.info("Bruker med personid %s lagt til i indeksen",personid);
+    }
+
     public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
         List<Bruker> brukere = List.empty();
         try {

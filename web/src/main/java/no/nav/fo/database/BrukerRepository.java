@@ -37,6 +37,9 @@ public class BrukerRepository {
         java.util.List<Map<String, Object>> rader = db.queryForList(retrieveOppdaterteBrukereSQL());
         return rader;
     }
+    public java.util.List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personid) {
+        return db.queryForList(retrieveBrukerSomHarVeilederSQL(),personid);
+    }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
         return db.update(updateTidsstempelSQL(), tidsstempel);
@@ -98,11 +101,11 @@ public class BrukerRepository {
                     "oppfolgingsbruker " +
                 "LEFT JOIN bruker_data " +
                 "ON " +
-                    "bruker_data.personid = TO_CHAR(oppfolgingsbruker.person_id)";
+                    "bruker_data.personid = oppfolgingsbruker.person_id";
 
     }
 
-    String retrieveOppdaterteBrukereSQL() {
+    String retrieveBrukerSomHarVeilederSQL() {
         return
                 "SELECT " +
                     "person_id, " +
@@ -120,11 +123,44 @@ public class BrukerRepository {
                     "sperret_ansatt, " +
                     "er_doed, " +
                     "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
-                    "tidsstempel " +
+                    "tidsstempel, " +
+                    "veilederident " +
                 "FROM " +
                     "oppfolgingsbruker " +
+                "LEFT JOIN bruker_data " +
+                "ON " +
+                    "bruker_data.personid = oppfolgingsbruker.person_id " +
                 "WHERE " +
-                    "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
+                    "person_id = ? ";
+    }
+
+    String retrieveOppdaterteBrukereSQL() {
+        return
+                "SELECT " +
+                        "person_id, " +
+                        "fodselsnr, " +
+                        "fornavn, " +
+                        "etternavn, " +
+                        "nav_kontor, " +
+                        "formidlingsgruppekode, " +
+                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "kvalifiseringsgruppekode, " +
+                        "rettighetsgruppekode, " +
+                        "hovedmaalkode, " +
+                        "sikkerhetstiltak_type_kode, " +
+                        "fr_kode, " +
+                        "sperret_ansatt, " +
+                        "er_doed, " +
+                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "tidsstempel, " +
+                        "veilederident " +
+                        "FROM " +
+                        "oppfolgingsbruker " +
+                        "LEFT JOIN bruker_data " +
+                        "ON " +
+                        "bruker_data.personid = oppfolgingsbruker.person_id " +
+                        "WHERE " +
+                        "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
 
     String retrieveSistIndeksertSQL() {
