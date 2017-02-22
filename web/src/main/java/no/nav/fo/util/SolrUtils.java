@@ -34,12 +34,11 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String enhetId, String sortOrder) {
+    public static SolrQuery buildSolrQuery(String queryString, String sortOrder) {
         SolrQuery.ORDER order = SolrQuery.ORDER.asc;
         if ("descending".equals(sortOrder)) {
             order = desc;
         }
-        String queryString = "enhet_id: " + enhetId;
         SolrQuery solrQuery = new SolrQuery(queryString);
         solrQuery.addSort("etternavn", order);
         solrQuery.addSort("fornavn", order);
