@@ -82,10 +82,21 @@ public class SolrService {
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
 
-    public List<Bruker> hentBrukere(String enhetId, String sortOrder) {
+    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder) {
+        String queryString = "enhet_id: " + enhetId;
+        return hentBrukere(queryString, sortOrder);
+    }
+
+    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder) {
+//      String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
+        String mockString ="enhet_id: " + enhetId; //Brukes som mock inntil søk på veileder_id ligger klart i indeksen
+        return hentBrukere(mockString, sortOrder);
+    }
+
+    public List<Bruker> hentBrukere(String queryString, String sortOrder) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(buildSolrQuery(enhetId, sortOrder));
+            QueryResponse response = server.query(buildSolrQuery(queryString , sortOrder));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
@@ -95,12 +106,12 @@ public class SolrService {
         return brukere;
     }
 
-    SolrQuery buildSolrQuery(String enhetId, String sortOrder) {
+
+    SolrQuery buildSolrQuery(String queryString, String sortOrder) {
         SolrQuery.ORDER order = SolrQuery.ORDER.asc;
         if ("descending".equals(sortOrder)) {
             order = desc;
         }
-        String queryString = "enhet_id: " + enhetId;
         SolrQuery solrQuery = new SolrQuery(queryString);
         solrQuery.addSort("etternavn", order);
         solrQuery.addSort("fornavn", order);

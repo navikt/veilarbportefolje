@@ -7,6 +7,7 @@ import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
 import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
+import no.nav.fo.util.PortefoljeUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -24,9 +25,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 @SessionTerminator
 @Path("/enhet")
 @Produces(APPLICATION_JSON)
-public class PortefoljeController {
+public class EnhetController {
 
-    private static final Logger logger = getLogger(PortefoljeController.class);
+    private static final Logger logger = getLogger(EnhetController.class);
 
     @Inject
     BrukertilgangService brukertilgangService;
@@ -36,7 +37,7 @@ public class PortefoljeController {
 
     @GET
     @Path("/{enhet}/portefolje")
-    public Response hentPortefolje(
+    public Response hentPortefoljeForEnhet(
             @PathParam("enhet") String enhet,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
@@ -48,15 +49,10 @@ public class PortefoljeController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukere(enhet, sortDirection);
-                List<Bruker> brukereSublist = brukere.stream().skip(fra).limit(antall).collect(toList());
+                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection);
+                List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
 
-                Portefolje portefolje = new Portefolje()
-                        .setEnhet(enhet)
-                        .setBrukere(brukereSublist)
-                        .setAntallTotalt(brukere.size())
-                        .setAntallReturnert(brukereSublist.size())
-                        .setFraIndex(fra);
+                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, brukereSublist, enhet, fra);
 
                 return Response.ok().entity(portefolje).build();
             } else {
