@@ -3,6 +3,7 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
+import no.nav.fo.util.DbUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -20,6 +21,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
@@ -104,6 +107,15 @@ public class SolrService {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return brukere;
+    }
+
+    public void indekserBrukerMedVeileder(String personid) {
+        logger.info("Legger bruker med personid % til i indeks ",personid);
+        List<Map<String,Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personid);
+        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+        addDocuments(dokumenter);
+        commit();
+        logger.info("Bruker med personid %s lagt til i indeksen",personid);
     }
 
 

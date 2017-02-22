@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 
@@ -40,7 +41,7 @@ public class BrukerRepository {
         });
         return brukere;
     }
-    public java.util.List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personid) {
+    public List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personid) {
         return db.queryForList(retrieveBrukerSomHarVeilederSQL(),personid);
     }
 
