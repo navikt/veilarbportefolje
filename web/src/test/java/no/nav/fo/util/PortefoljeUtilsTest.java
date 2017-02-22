@@ -61,7 +61,7 @@ public class PortefoljeUtilsTest {
                 .setFnr("123456")
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
-                .setVeilderId("112233")
+                .setVeilederId("112233")
                 .setDiskresjonskode("")
                 .setEgenAnsatt(false)
                 .setErDoed(false)

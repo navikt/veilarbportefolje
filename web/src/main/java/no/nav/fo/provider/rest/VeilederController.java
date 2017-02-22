@@ -50,7 +50,7 @@ public class VeilederController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection).toJavaList();
+                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, brukereSublist, enhet, fra);
