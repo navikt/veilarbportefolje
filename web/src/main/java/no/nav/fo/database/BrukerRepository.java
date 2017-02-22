@@ -92,7 +92,7 @@ public class BrukerRepository {
                     "sperret_ansatt, " +
                     "er_doed, " +
                     "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
-                    "oppfolgingsbruker.tidsstempel, " +
+                    "tidsstempel, " +
                     "veilederident " +
                 "FROM " +
                     "oppfolgingsbruker " +
@@ -149,14 +149,13 @@ public class BrukerRepository {
     }
 
     String insertBrukerdataSQL() {
-        return "INSERT INTO BRUKER_DATA VALUES(?,?,TO_TIMESTAMP(?,"+dateFormat+"),CURRENT_TIMESTAMP,?)";
+        return "INSERT INTO BRUKER_DATA VALUES(?,?,TO_TIMESTAMP(?,"+dateFormat+"),?)";
     }
 
     String updateBrukerdataSQL() {
         return "UPDATE BRUKER_DATA" +
                 "   SET VEILEDERIDENT=?," +
                 "   TILDELT_TIDSPUNKT=TO_TIMESTAMP(?,"+dateFormat+")," +
-                "   TIDSSTEMPEL=CURRENT_TIMESTAMP," +
                 "   PERSONID=?" +
                 "   WHERE AKTOERID=?";
     }
