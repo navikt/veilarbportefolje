@@ -1,10 +1,8 @@
 package no.nav.fo.service;
 
-import javaslang.collection.List;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
-import no.nav.fo.util.DbUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -18,16 +16,21 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
 
     private static final Logger logger = getLogger(SolrService.class);
+
+    private static final String HOVEDINDEKSERING = "Hovedindeksering";
+    private static final String DELTAINDEKSERING = "Deltaindeksering";
 
     @Inject
     private HttpSolrServer server;
@@ -43,16 +46,15 @@ public class SolrService {
         }
 
         logger.info("Starter hovedindeksering");
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        LocalDateTime t0 = LocalDateTime.now();
 
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveAlleBrukere();
         deleteAllDocuments();
         addDocuments(dokumenter);
         commit();
-        brukerRepository.updateTidsstempel(timestamp);
+        brukerRepository.updateTidsstempel(Timestamp.valueOf(t0));
 
-        logger.info("Hovedindeksering fullført!");
-        logger.info(dokumenter.size() + " dokumenter ble lagt til i solrindeksen");
+        logFerdig(t0, dokumenter.size(), HOVEDINDEKSERING);
     }
 
 
@@ -64,21 +66,20 @@ public class SolrService {
         }
 
         logger.info("Starter deltaindeksering");
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        LocalDateTime t0 = LocalDateTime.now();
+        Timestamp timestamp = Timestamp.valueOf(t0);
 
-        java.util.List<Map<String, Object>> rader = brukerRepository.retrieveOppdaterteBrukere();
-        if (rader.isEmpty()) {
+        List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
+        if (dokumenter.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
         }
 
-        java.util.List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
-        addDocuments(List.ofAll(dokumenter));
+        addDocuments(dokumenter);
         brukerRepository.updateTidsstempel(timestamp);
         commit();
 
-        logger.info("Deltaindeksering fullført!");
-        logger.info(dokumenter.size() + " dokumenter ble oppdatert/lagt til i solrindeksen");
+        logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
 
     public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder) {
@@ -93,12 +94,12 @@ public class SolrService {
     }
 
     public List<Bruker> hentBrukere(String queryString, String sortOrder) {
-        List<Bruker> brukere = List.empty();
+        List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = server.query(buildSolrQuery(queryString , sortOrder));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
-            brukere = List.ofAll(results).map(Bruker::of);
+            brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
@@ -128,7 +129,8 @@ public class SolrService {
     }
 
     private List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
-        dokumenter
+        // javaslang.collection-API brukes her pga sliding-metoden
+        javaslang.collection.List.ofAll(dokumenter)
                 .sliding(10000, 10000)
                 .forEach(docs -> {
                     try {
@@ -156,6 +158,15 @@ public class SolrService {
         if (statusCode != 0) {
             throw new SolrUpdateResponseCodeException(String.format("Solr returnerte med statuskode %s", statusCode));
         }
+    }
+
+    private void logFerdig(LocalDateTime t0, int antall, String indekseringstype) {
+        Duration duration = Duration.between(t0, LocalDateTime.now());
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes();
+        long seconds = duration.getSeconds();
+        String logString = String.format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
+        logger.info(logString);
     }
 
 }
