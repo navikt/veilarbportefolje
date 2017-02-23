@@ -142,11 +142,6 @@ public class SolrService {
         logger.info("Bruker med personId %s lagt til i indeksen",personId);
     }
 
-    static boolean isSlaveNode() {
-        String isMasterString = System.getProperty("cluster.ismasternode", "false");
-        return !Boolean.parseBoolean(isMasterString);
-    }
-
     private Try<UpdateResponse> commit() {
         return Try.of(() -> server.commit())
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
