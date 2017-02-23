@@ -4,9 +4,12 @@ import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.util.DbUtils;
+import no.nav.fo.domene.FacetResults;
+import no.nav.fo.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
@@ -17,15 +20,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.Duration;
+
 import java.time.LocalDateTime;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -43,7 +47,7 @@ public class SolrService {
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void hovedindeksering() {
-        if (isSlaveNode()) {
+        if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
@@ -63,7 +67,7 @@ public class SolrService {
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
     public void deltaindeksering() {
-        if (isSlaveNode()) {
+        if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
@@ -99,7 +103,7 @@ public class SolrService {
     public List<Bruker> hentBrukere(String queryString, String sortOrder) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(buildSolrQuery(queryString , sortOrder));
+            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString , sortOrder));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
@@ -107,6 +111,26 @@ public class SolrService {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return brukere;
+    }
+
+    public FacetResults hentPortefoljestorrelser(String enhetId) {
+
+        // Må endres fra "hovedmaalkode" til "veileder_id" når denne blir tilgjengelig
+        String facetFieldString = "hovedmaalkode";
+
+        SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
+
+        QueryResponse response = new QueryResponse();
+        try {
+            response = server.query(solrQuery);
+            logger.debug(response.toString());
+        } catch (SolrServerException e) {
+            logger.error("Spørring mot indeks feilet", e.getMessage(), e);
+        }
+
+        FacetField facetField = response.getFacetField(facetFieldString);
+
+        return SolrUtils.mapFacetResults(facetField);
     }
 
     public void indekserBrukerMedVeileder(String personid) {
@@ -158,17 +182,11 @@ public class SolrService {
     private void deleteAllDocuments() {
         try {
             UpdateResponse response = server.deleteByQuery("*:*");
-            checkSolrResponseCode(response.getStatus());
+            SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
             logger.error(e.getMessage());
-        }
-    }
-
-    void checkSolrResponseCode(int statusCode) {
-        if (statusCode != 0) {
-            throw new SolrUpdateResponseCodeException(String.format("Solr returnerte med statuskode %s", statusCode));
         }
     }
 
@@ -180,5 +198,4 @@ public class SolrService {
         String logString = String.format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         logger.info(logString);
     }
-
 }
