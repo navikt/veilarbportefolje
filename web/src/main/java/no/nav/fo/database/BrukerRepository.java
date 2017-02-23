@@ -17,12 +17,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
 
-    private Logger LOG = getLogger(BrukerRepository.class);
+    static final private Logger LOG = getLogger(BrukerRepository.class);
 
     @Inject
     private JdbcTemplate db;
 
-    private String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
+    static final private String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
 
     public List<SolrInputDocument> retrieveAlleBrukere() {
         List<SolrInputDocument> brukere = new ArrayList<>();
@@ -41,43 +41,43 @@ public class BrukerRepository {
         });
         return brukere;
     }
-    public List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personid) {
-        return db.queryForList(retrieveBrukerSomHarVeilederSQL(),personid);
+    public List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personId) {
+        return db.queryForList(retrieveBrukerSomHarVeilederSQL(),personId);
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
         return db.update(updateTidsstempelSQL(), tidsstempel);
     }
-    public java.util.List<Map<String,Object>> retrieveBruker(String aktoerid) {
-        return db.queryForList(retrieveBrukerSQL(),aktoerid);
+    public java.util.List<Map<String,Object>> retrieveBruker(String aktoerId) {
+        return db.queryForList(retrieveBrukerSQL(),aktoerId);
     }
 
-    public java.util.List<Map<String,Object>> retrievePersonid(String aktoerid) {
-        return db.queryForList(getPersonidFromAktoeridSQL(),aktoerid);
+    public java.util.List<Map<String,Object>> retrievePersonid(String aktoerId) {
+        return db.queryForList(getPersonidFromAktoeridSQL(),aktoerId);
     }
     public java.util.List<Map<String,Object>> retrievePersonidFromFnr(String fnr) {
         return db.queryForList(getPersonIdFromFnrSQL(),fnr);
     }
-    public void insertBrukerdata(String aktoerid, String personid, String veilederident, String tilordnetTidsstempel) throws DuplicateKeyException {
-        db.update(insertBrukerdataSQL(), aktoerid, veilederident, tilordnetTidsstempel, personid);
+    public void insertBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) throws DuplicateKeyException {
+        db.update(insertBrukerdataSQL(), aktoerId, veilederident, tilordnetTidsstempel, personId);
     }
-    public void updateBrukerdata(String aktoerid, String personid, String veilederident, String tilordnetTidsstempel) {
-        db.update(updateBrukerdataSQL(),veilederident,tilordnetTidsstempel,personid,aktoerid);
+    public void updateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
+        db.update(updateBrukerdataSQL(),veilederident,tilordnetTidsstempel,personId,aktoerId);
     }
 
-    public void insertOrUpdateBrukerdata(String aktoerid, String personid, String veilederident, String tilordnetTidsstempel) {
+    public void insertOrUpdateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
         try {
-            insertBrukerdata(aktoerid, personid, veilederident, tilordnetTidsstempel);
+            insertBrukerdata(aktoerId, personId, veilederident, tilordnetTidsstempel);
         } catch(DuplicateKeyException e) {
-            updateBrukerdata(aktoerid, personid, veilederident, tilordnetTidsstempel);
+            updateBrukerdata(aktoerId, personId, veilederident, tilordnetTidsstempel);
         }
     }
 
-    public void insertAktoeridToPersonidMapping(String aktoerid, String personid) {
+    public void insertAktoeridToPersonidMapping(String aktoerId, String personId) {
         try {
-            db.update(insertPersonidAktoeridMappingSQL(),aktoerid,personid);
+            db.update(insertPersonidAktoeridMappingSQL(),aktoerId,personId);
         } catch (DuplicateKeyException e) {
-            LOG.info("Aktoerid %s personid %s mapping finnes i databasen", aktoerid, personid);
+            LOG.info("Aktoerid %s personId %s mapping finnes i databasen", aktoerId, personId);
         }
     }
 

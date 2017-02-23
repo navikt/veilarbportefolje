@@ -31,9 +31,8 @@ public class OppdaterBrukerdataListener {
 
         try {
             String melding = textMessage.getText();
-            BrukerOppdatertInformasjon bruker = konverterJSONTilBruker(melding);
             LOG.debug(String.format("Melding motatt: %s", melding));
-            oppdaterBrukerdataFletter.tilordneVeilederTilPersonid(konverterJSONTilBruker(melding));
+            oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(konverterJSONTilBruker(melding));
         } catch (JMSException e) {
             LOG.error("Kunne ikke lese melding fra kø", e);
         }

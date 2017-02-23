@@ -133,25 +133,13 @@ public class SolrService {
         return SolrUtils.mapFacetResults(facetField);
     }
 
-    public void indekserBrukerMedVeileder(String personid) {
-        logger.info("Legger bruker med personid % til i indeks ",personid);
-        List<Map<String,Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personid);
+    public void indekserBrukerMedVeileder(String personId) {
+        logger.info("Legger bruker med personId % til i indeks ",personId);
+        List<Map<String,Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personId);
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
         addDocuments(dokumenter);
         commit();
-        logger.info("Bruker med personid %s lagt til i indeksen",personid);
-    }
-
-
-    SolrQuery buildSolrQuery(String queryString, String sortOrder) {
-        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
-        if ("descending".equals(sortOrder)) {
-            order = desc;
-        }
-        SolrQuery solrQuery = new SolrQuery(queryString);
-        solrQuery.addSort("etternavn", order);
-        solrQuery.addSort("fornavn", order);
-        return solrQuery;
+        logger.info("Bruker med personId %s lagt til i indeksen",personId);
     }
 
     static boolean isSlaveNode() {

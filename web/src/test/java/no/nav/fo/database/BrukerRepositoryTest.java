@@ -116,32 +116,32 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalOppdatereOmBrukerFinnes() {
-        String aktoerid = (String) jdbcTemplate.queryForList("SELECT * FROM BRUKER_DATA").get(0).get("AKTOERID");
-        brukerRepository.insertOrUpdateBrukerdata(aktoerid,"555555","X444444","2017-01-14 09:59:56.000000");
+        String aktoerId = (String) jdbcTemplate.queryForList("SELECT * FROM BRUKER_DATA").get(0).get("AKTOERID");
+        brukerRepository.insertOrUpdateBrukerdata(aktoerId,"555555","X444444","2017-01-14 09:59:56.000000");
         String veilederident = (String) jdbcTemplate.queryForList("SELECT VEILEDERIDENT FROM BRUKER_DATA WHERE AKTOERID='111111'").get(0).get("VEILEDERIDENT");
         Assertions.assertThat(veilederident).isEqualTo("X444444");
     }
 
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
-        String aktoerid = "999999"; //aktoerid som ikke finnes i databasen.
-        List<Map<String,Object>> brukere = brukerRepository.retrieveBruker(aktoerid);
+        String aktoerId = "999999"; //aktoerId som ikke finnes i databasen.
+        List<Map<String,Object>> brukere = brukerRepository.retrieveBruker(aktoerId);
         Assertions.assertThat(brukere).isEmpty();
 
         brukerRepository.insertOrUpdateBrukerdata("999999","555555","X444444","2017-01-14 09:59:56.000000");
-        String veilederident = (String) brukerRepository.retrieveBruker(aktoerid).get(0).get("VEILEDERIDENT");
+        String veilederident = (String) brukerRepository.retrieveBruker(aktoerId).get(0).get("VEILEDERIDENT");
         Assertions.assertThat(veilederident).isEqualTo("X444444");
     }
-    private void updateBrukerData(String aktoerid, String veilederident, String personid) {
-        jdbcTemplate.execute("INSERT INTO BRUKER_DATA VALUES ('"+aktoerid + "', '"+veilederident +
-                "',TO_TIMESTAMP('2017-01-13 14:59:29.000000', 'YYYY-MM-DD HH24:MI:SS.FF'),'"+personid+"')");
+    private void updateBrukerData(String aktoerId, String veilederident, String personId) {
+        jdbcTemplate.execute("INSERT INTO BRUKER_DATA VALUES ('"+aktoerId + "', '"+veilederident +
+                "',TO_TIMESTAMP('2017-01-13 14:59:29.000000', 'YYYY-MM-DD HH24:MI:SS.FF'),'"+personId+"')");
     }
 
-    private void updateDBWithPersonidbruker(String personid, String fnr) {
+    private void updateDBWithPersonidbruker(String personId, String fnr) {
         jdbcTemplate.execute("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR, ETTERNAVN, FORNAVN, NAV_KONTOR, FORMIDLINGSGRUPPEKODE, " +
                 "ISERV_FRA_DATO, KVALIFISERINGSGRUPPEKODE, RETTIGHETSGRUPPEKODE, HOVEDMAALKODE, SIKKERHETSTILTAK_TYPE_KODE, FR_KODE, " +
                 "SPERRET_ANSATT, ER_DOED, DOED_FRA_DATO, TIDSSTEMPEL) VALUES " +
-                "("+personid+", '"+fnr+"', 'GAASEN', 'GUNNAR', '0713', 'ARBS', null, 'BATT', 'IYT', 'SKAFFEA', 'TOAN', '7', 'J', 'N', null, " +
+                "("+personId+", '"+fnr+"', 'GAASEN', 'GUNNAR', '0713', 'ARBS', null, 'BATT', 'IYT', 'SKAFFEA', 'TOAN', '7', 'J', 'N', null, " +
                 "TO_TIMESTAMP('2017-01-13 14:59:29.000000', 'YYYY-MM-DD HH24:MI:SS.FF'));\n");
     }
 

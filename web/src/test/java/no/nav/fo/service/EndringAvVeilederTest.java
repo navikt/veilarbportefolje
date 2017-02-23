@@ -78,7 +78,7 @@ public class EndringAvVeilederTest {
                 .setVeileder("X111111")
                 .setOppdatert("2017-01-14 13:33:16.000000");
 
-        oppdaterBrukerdataFletter.tilordneVeilederTilPersonid(bruker);
+        oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker);
         try {
             verify(aktoerV2, never()).hentIdentForAktoerId(any(WSHentIdentForAktoerIdRequest.class));
         } catch (HentIdentForAktoerIdPersonIkkeFunnet hentIdentForAktoerIdPersonIkkeFunnet) {
@@ -115,7 +115,7 @@ public class EndringAvVeilederTest {
                 .setVeileder("X111111")
                 .setOppdatert("2017-01-14 13:33:16.000000");
 
-        oppdaterBrukerdataFletter.tilordneVeilederTilPersonid(bruker);
+        oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker);
 
         try {
             verify(aktoerV2, times(1)).hentIdentForAktoerId(any(WSHentIdentForAktoerIdRequest.class));

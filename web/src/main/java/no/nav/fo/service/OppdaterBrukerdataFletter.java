@@ -28,32 +28,32 @@ public class OppdaterBrukerdataFletter {
     @Inject
     SolrService solrService;
 
-    public void tilordneVeilederTilPersonid(BrukerOppdatertInformasjon bruker) {
-        String personid = getPersonidFromDBorAktoer(bruker.getAktoerid());
-        String aktoerid = bruker.getAktoerid();
-        brukerRepository.insertOrUpdateBrukerdata(aktoerid, personid, bruker.getVeileder(),bruker.getOppdatert());
-        solrService.indekserBrukerMedVeileder(personid);
+    public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
+        String personId = hentPersonIdFromDBorAktoer(bruker.getAktoerid());
+        String aktoerId = bruker.getAktoerid();
+        brukerRepository.insertOrUpdateBrukerdata(aktoerId, personId, bruker.getVeileder(),bruker.getOppdatert());
+        solrService.indekserBrukerMedVeileder(personId);
 
     }
 
-    private String getPersonidFromDBorAktoer(String aktoerid) {
-        LOG.debug(String.format("Henter personid for aktoerid%s fra database", aktoerid));
-        String personid = null;
-        List<Map<String,Object>> aktoerIdToPersonId = brukerRepository.retrievePersonid(aktoerid);
+    private String hentPersonIdFromDBorAktoer(String aktoerId) {
+        LOG.debug(String.format("Henter personId for aktoerId%s fra database", aktoerId));
+        String personId = null;
+        List<Map<String,Object>> aktoerIdToPersonId = brukerRepository.retrievePersonid(aktoerId);
         if(aktoerIdToPersonId.size() > 0) {
             return (String) aktoerIdToPersonId.get(0).get("PERSONID");
         }
-        return hentPersonIdOgOppdaterDB(aktoerid);
+        return hentPersonIdOgOppdaterDB(aktoerId);
     }
 
-    private String hentPersonIdOgOppdaterDB(String aktoerid) {
-        LOG.debug(String.format("Personid ikke funnet i database. Henter personid for aktoerid %s og lagrer det til database", aktoerid));
-        String personid;
+    private String hentPersonIdOgOppdaterDB(String aktoerId) {
+        LOG.debug(String.format("Personid ikke funnet i database. Henter personId for aktoerId %s og lagrer det til database", aktoerId));
+        String personId;
 
         try {
             String fnr = aktoerV2.hentIdentForAktoerId(
                     new WSHentIdentForAktoerIdRequest()
-                            .withAktoerId(aktoerid)
+                            .withAktoerId(aktoerId)
             ).getIdent();
 
             List<Map<String,Object>> fnrToPersonid = brukerRepository.retrievePersonidFromFnr(fnr);
@@ -63,21 +63,21 @@ public class OppdaterBrukerdataFletter {
                 return null;
             }
 
-            personid = getPersonidFromBigDecimal((BigDecimal) fnrToPersonid.get(0).get("PERSON_ID"));
+            personId = getPersonidFromBigDecimal((BigDecimal) fnrToPersonid.get(0).get("PERSON_ID"));
 
-            brukerRepository.insertAktoeridToPersonidMapping(aktoerid, personid);
-            LOG.debug(String.format("Personid %s og aktoerid %s lagret til database", personid, aktoerid));
+            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
+            LOG.debug(String.format("Personid %s og aktoerId %s lagret til database", personId, aktoerId));
         } catch (HentIdentForAktoerIdPersonIkkeFunnet e) {
-            LOG.error(String.format("Kunne ikke finne ident for aktoerid %s", aktoerid));
+            LOG.error(String.format("Kunne ikke finne ident for aktoerId %s", aktoerId));
             return null;
         } catch (Exception e) {
-            LOG.error("Kunne ikke hente personid og skrive det til database");
+            LOG.error("Kunne ikke hente personId og skrive det til database");
             return null;
         }
-        return personid;
+        return personId;
     }
 
-    public String getPersonidFromBigDecimal(BigDecimal personid) {
-        return Integer.toString(personid.intValue());
+    String getPersonidFromBigDecimal(BigDecimal personId) {
+        return Integer.toString(personId.intValue());
     }
 }
