@@ -107,7 +107,7 @@ public class SolrService {
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-        return brukere;
+        return SolrUtils.sortBrukere(brukere, sortOrder);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
