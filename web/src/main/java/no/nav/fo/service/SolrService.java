@@ -97,7 +97,7 @@ public class SolrService {
         return hentBrukere(mockString, sortOrder);
     }
 
-    public List<Bruker> hentBrukere(String queryString, String sortOrder) {
+    private List<Bruker> hentBrukere(String queryString, String sortOrder) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString , sortOrder));
