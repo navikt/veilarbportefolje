@@ -31,6 +31,10 @@ public class DbUtils {
             document.addField("er_doed", parseJaNei(rs.getString("er_doed"), "er_doed"));
             document.addField("doed_fra_dato", parseDato(rs.getString("doed_fra_dato")));
             document.addField("veileder_id", null);
+            document.addField("fodselsdag_i_mnd", FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")));
+            document.addField("fodselsdato", FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")));
+            document.addField("kjonn", FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")));
+//            document.addField("ny_bruker", FodselsnummerUtils.erNyBruker(rs.getString("veilederident")));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -85,4 +89,5 @@ public class DbUtils {
                 throw new IllegalArgumentException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
         }
     }
+
 }
