@@ -107,7 +107,13 @@ public class SolrService {
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-        return SolrUtils.sortBrukere(brukere, sortOrder);
+
+        if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+            return SolrUtils.sortBrukere(brukere, sortOrder);
+        }
+        else {
+            return brukere;
+        }
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
