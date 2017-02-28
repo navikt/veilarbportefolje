@@ -101,20 +101,12 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalByggSolrQueryMedAlleFelterUtfylt() throws Exception {
-        String enhetId = "0713";
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, "ascending");
-        assertThat(query.getQuery()).contains(enhetId);
-        assertThat(query.getSortField().contains("fornavn")).isTrue();
-        assertThat(query.getSortField().contains("etternavn")).isTrue();
-        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(asc);
-    }
+    public void skalByggSolrQueryMedRiktigQueryString() throws Exception {
+        String queryString = "enhetId: 0713";
 
-    @Test
-    public void skalByggeSolrQueryMedDescendingSort() throws Exception {
-        String enhetId = "0713";
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, "descending");
-        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(desc);
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString);
+
+        assertThat(query.getQuery()).isEqualTo(queryString);
     }
 
     @Test
