@@ -34,15 +34,8 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String queryString, String sortOrder) {
-        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
-        if ("descending".equals(sortOrder)) {
-            order = desc;
-        }
-        SolrQuery solrQuery = new SolrQuery(queryString);
-        solrQuery.addSort("etternavn", order);
-        solrQuery.addSort("fornavn", order);
-        return solrQuery;
+    public static SolrQuery buildSolrQuery(String queryString) {
+        return new SolrQuery(queryString);
     }
 
     public static Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {

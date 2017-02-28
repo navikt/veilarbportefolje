@@ -100,7 +100,7 @@ public class SolrService {
     private List<Bruker> hentBrukere(String queryString, String sortOrder) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString , sortOrder));
+            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
