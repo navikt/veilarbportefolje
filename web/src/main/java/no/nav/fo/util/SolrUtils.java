@@ -6,13 +6,11 @@ import no.nav.fo.domene.FacetResults;
 import no.nav.fo.service.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
-import org.joda.time.DateTime;
 
 import java.text.Collator;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 
 public class SolrUtils {
 
