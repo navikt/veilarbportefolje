@@ -38,10 +38,6 @@ public class SolrUtils {
         return new SolrQuery(queryString);
     }
 
-    public static Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
-        return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
-    }
-
     public static boolean isSlaveNode() {
         String isMasterString = System.getProperty("cluster.ismasternode", "false");
         return !Boolean.parseBoolean(isMasterString);
