@@ -34,12 +34,13 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String queryString, String sortOrder) {
+    public static SolrQuery buildSolrQuery(String filterQuery, String sortOrder) {
         SolrQuery.ORDER order = SolrQuery.ORDER.asc;
         if ("descending".equals(sortOrder)) {
             order = desc;
         }
-        SolrQuery solrQuery = new SolrQuery(queryString);
+        SolrQuery solrQuery = new SolrQuery("*:*");
+        solrQuery.addFilterQuery(filterQuery);
         solrQuery.addSort("etternavn", order);
         solrQuery.addSort("fornavn", order);
         return solrQuery;

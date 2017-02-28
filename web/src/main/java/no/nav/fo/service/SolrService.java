@@ -92,8 +92,8 @@ public class SolrService {
             return hentBrukereMedFiltrering(filtervalg);
         }
 
-        String queryString = "enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder);
+        String filterQueryString = "enhet_id: " + enhetId;
+        return hentBrukere(filterQueryString, sortOrder);
     }
 
     private List<Bruker> hentBrukereMedFiltrering(Filtervalg filtervalg) {
@@ -125,10 +125,10 @@ public class SolrService {
         return hentBrukere(mockString, sortOrder);
     }
 
-    public List<Bruker> hentBrukere(String queryString, String sortOrder) {
+    public List<Bruker> hentBrukere(String filterQuery, String sortOrder) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString , sortOrder));
+            QueryResponse response = server.query(SolrUtils.buildSolrQuery(filterQuery , sortOrder));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
