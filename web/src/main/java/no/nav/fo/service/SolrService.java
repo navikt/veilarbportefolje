@@ -4,6 +4,7 @@ import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.FacetResults;
+import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -86,9 +87,36 @@ public class SolrService {
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
 
-    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder) {
+    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, Filtervalg filtervalg) {
+        if(filtervalg.harAktiveFilter()) {
+            return hentBrukereMedFiltrering(filtervalg);
+        }
+
         String queryString = "enhet_id: " + enhetId;
         return hentBrukere(queryString, sortOrder);
+    }
+
+    private List<Bruker> hentBrukereMedFiltrering(Filtervalg filtervalg) {
+        List<Bruker> brukere = new ArrayList<>();
+        try {
+        SolrQuery query = new SolrQuery("*:*");
+        if(filtervalg.nyeBrukere) {
+            query.addFilterQuery("-veileder_id:*");
+        }
+
+        if(filtervalg.inaktiveBrukere) {
+            query.addFilterQuery("er_inaktiv:" + true);
+        }
+
+        QueryResponse response = server.query(query);
+        SolrDocumentList results = response.getResults();
+        logger.debug(results.toString());
+
+        brukere = results.stream().map(Bruker::of).collect(toList());
+        } catch (SolrServerException e) {
+            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+        }
+        return brukere;
     }
 
     public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder) {
