@@ -35,6 +35,8 @@
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
     <security serviceUserResourceAlias="***REMOVED***">
-        <logins/>
+        <logins>
+            <openIdConnect moduleClass="no.nav.fo.security.jwt.loginModule.JWTLoginModule"/>
+        </logins>
     </security>
 </application>
