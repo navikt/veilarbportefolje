@@ -17,7 +17,7 @@ class FodselsnummerUtils {
 
         String maaned = fnr.substring(2,4);
 
-        return lagAarstallFraIndividnummer(fnr) + "-" + maaned + "-" + lagFodselsdagIMnd(fnr) + DATO_POSTFIX;
+        return lagAarstallFraFodselsnummer(fnr) + "-" + maaned + "-" + lagFodselsdagIMnd(fnr) + DATO_POSTFIX;
     }
 
     static String lagKjonn(String fnr) {
@@ -26,26 +26,23 @@ class FodselsnummerUtils {
     }
 
     static boolean erNyBruker(String veilederid) {
-        if(veilederid == null) {
-            return true;
-        }
-        return false;
+        return veilederid == null;
     }
 
-    private static boolean erDNummer(String fnr) {
+    static boolean erDNummer(String fnr) {
          return Integer.parseInt(fnr.substring(0,1)) > 3;
     }
 
-    private static String konverterDNummerTilFodselsnummer(String dnr) {
+    static String konverterDNummerTilFodselsnummer(String dnr) {
         int forsteSiffer = Integer.parseInt(dnr.substring(0,1));
         forsteSiffer -= 4;
         return forsteSiffer + dnr.substring(1);
      }
 
-    private static int lagAarstallFraIndividnummer(String fnr) {
+    static int lagAarstallFraFodselsnummer(String fnr) {
          int individnummer = Integer.parseInt(fnr.substring(6,9));
          int aarstall = Integer.parseInt(fnr.substring(4,6));
 
-         return individnummer > 499 && aarstall < 40 ? aarstall + 2000 : aarstall + 1900;
+         return individnummer > 499 && aarstall < 40 ? 2000 + aarstall : 1900 + aarstall;
     }
 }

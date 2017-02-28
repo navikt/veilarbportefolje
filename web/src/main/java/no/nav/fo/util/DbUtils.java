@@ -41,7 +41,6 @@ public class DbUtils {
         return document;
     }
 
-
     public static SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("person_id", rad.get("person_id").toString());
@@ -89,5 +88,4 @@ public class DbUtils {
                 throw new IllegalArgumentException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
         }
     }
-
 }
