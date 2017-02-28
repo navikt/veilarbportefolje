@@ -70,7 +70,7 @@ public class SolrUtils {
             Locale locale = new Locale("no", "NO");
 
             Collator collator = Collator.getInstance(locale);
-            collator.setStrength(Collator.SECONDARY);
+            collator.setStrength(Collator.PRIMARY);
 
             String etternavnA = brukerA.getEtternavn();
             String etternavnB = brukerB.getEtternavn();
