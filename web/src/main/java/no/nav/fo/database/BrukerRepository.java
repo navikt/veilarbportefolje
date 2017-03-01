@@ -99,6 +99,10 @@ public class BrukerRepository {
         if (bruker.get("formidlingsgruppekode").getValue().equals("ISERV")) {
             return false;
         }
-        return true;
+        String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
+
+        return !(bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
+                || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
+                || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI")));
     }
 }
