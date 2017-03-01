@@ -38,8 +38,8 @@ public class Bruker {
                 .setErDoed( (Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdag_i_mnd((int) document.get("fodselsdag_i_mnd"))
-                .setFodselsdato((String) document.get("fodselsdato"))
-                .setKjonn((String) document.get("fodselsdato"))
+                .setFodselsdato(document.get("fodselsdato").toString())
+                .setKjonn((String) document.get("kjonn"))
                 .setErInaktiv(erInaktivEllerDoed(document));
     }
 
