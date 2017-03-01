@@ -68,6 +68,6 @@ public class Bruker {
     }
 
     private static boolean erInaktivEllerDoed(SolrDocument document) {
-        return document.get("formidlingsgruppekode").equals("ISERV") && !erNyBruker(document);
+        return "ISERV".equals(document.get("formidlingsgruppekode")) && !erNyBruker(document);
     }
 }
