@@ -206,13 +206,13 @@ public class BrukerRepository {
     }
 
     private boolean skalBrukerHaOppfolging(SolrInputDocument bruker) {
-        if (bruker.get("formidlingsgruppekode").getValue().equals("ISERV")) {
-            return false;
-        }
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
 
-        return !(bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
+        boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
+                (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
                 || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
-                || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI")));
+                || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
+
+        return aktivStatus || bruker.get("veileder_id").getValue() != null;
     }
 }
