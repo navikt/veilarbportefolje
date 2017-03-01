@@ -3,6 +3,7 @@ package no.nav.fo.database;
 import com.google.common.base.Joiner;
 import no.nav.fo.config.ApplicationConfigTest;
 import org.apache.commons.io.IOUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,10 @@ public class BrukerRepositoryTest {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-metadata.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-metadata-sist-indeksert.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-aktoerid-to-personid-mapping.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-bruker-data-test.sql"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -46,6 +51,8 @@ public class BrukerRepositoryTest {
     public void tearDown() {
         jdbcTemplate.execute("drop table oppfolgingsbruker");
         jdbcTemplate.execute("drop table metadata");
+        jdbcTemplate.execute("drop table aktoerid_to_personid");
+        jdbcTemplate.execute("drop table bruker_data");
     }
 
     @Test
@@ -60,7 +67,7 @@ public class BrukerRepositoryTest {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL"};
+                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -77,7 +84,7 @@ public class BrukerRepositoryTest {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL"};
+                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -99,4 +106,56 @@ public class BrukerRepositoryTest {
 
         assertThat(sist_indeksert).isEqualTo(nyttTidsstempel);
     }
+
+    @Test
+    public void skalReturnerePersonidFraDB() {
+        List<Map<String,Object>> mapping = brukerRepository.retrievePersonid("11111111");
+        String personid = (String) mapping.get(0).get("PERSONID");
+        Assertions.assertThat(personid).isEqualTo("222222");
+    }
+
+    @Test
+    public void skalOppdatereOmBrukerFinnes() {
+        String aktoerId = (String) jdbcTemplate.queryForList("SELECT * FROM BRUKER_DATA").get(0).get("AKTOERID");
+        brukerRepository.insertOrUpdateBrukerdata(aktoerId,"555555","X444444","2017-01-14 09:59:56.000000");
+        String veilederident = (String) jdbcTemplate.queryForList("SELECT VEILEDERIDENT FROM BRUKER_DATA WHERE AKTOERID='111111'").get(0).get("VEILEDERIDENT");
+        Assertions.assertThat(veilederident).isEqualTo("X444444");
+    }
+
+    @Test
+    public void skalInserteOmBrukerIkkeFinnes() {
+        String aktoerId = "999999"; //aktoerId som ikke finnes i databasen.
+        List<Map<String,Object>> brukere = brukerRepository.retrieveBruker(aktoerId);
+        Assertions.assertThat(brukere).isEmpty();
+
+        brukerRepository.insertOrUpdateBrukerdata("999999","555555","X444444","2017-01-14 09:59:56.000000");
+        String veilederident = (String) brukerRepository.retrieveBruker(aktoerId).get(0).get("VEILEDERIDENT");
+        Assertions.assertThat(veilederident).isEqualTo("X444444");
+    }
+    private void updateBrukerData(String aktoerId, String veilederident, String personId) {
+        jdbcTemplate.execute("INSERT INTO BRUKER_DATA VALUES ('"+aktoerId + "', '"+veilederident +
+                "',TO_TIMESTAMP('2017-01-13 14:59:29.000000', 'YYYY-MM-DD HH24:MI:SS.FF'),'"+personId+"')");
+    }
+
+    private void updateDBWithPersonidbruker(String personId, String fnr) {
+        jdbcTemplate.execute("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR, ETTERNAVN, FORNAVN, NAV_KONTOR, FORMIDLINGSGRUPPEKODE, " +
+                "ISERV_FRA_DATO, KVALIFISERINGSGRUPPEKODE, RETTIGHETSGRUPPEKODE, HOVEDMAALKODE, SIKKERHETSTILTAK_TYPE_KODE, FR_KODE, " +
+                "SPERRET_ANSATT, ER_DOED, DOED_FRA_DATO, TIDSSTEMPEL) VALUES " +
+                "("+personId+", '"+fnr+"', 'GAASEN', 'GUNNAR', '0713', 'ARBS', null, 'BATT', 'IYT', 'SKAFFEA', 'TOAN', '7', 'J', 'N', null, " +
+                "TO_TIMESTAMP('2017-01-13 14:59:29.000000', 'YYYY-MM-DD HH24:MI:SS.FF'));\n");
+    }
+
+    @Test
+    public void skalOppdatereBrukerMedTilordnetVeileder() {
+        updateDBWithPersonidbruker("154154","11111111111");
+        updateBrukerData("164132165132","X484848","154154");
+
+        List<Map<String,Object>> bruker = brukerRepository.retrieveBrukerSomHarVeileder("154154");
+        String veilederident = (String) bruker.get(0).get("VEILEDERIDENT");
+
+        assertThat(veilederident).isEqualTo("X484848");
+
+
+    }
+
 }
