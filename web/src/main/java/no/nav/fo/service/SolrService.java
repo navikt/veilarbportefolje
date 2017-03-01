@@ -3,6 +3,7 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -25,6 +26,8 @@ import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -128,6 +131,15 @@ public class SolrService {
         FacetField facetField = response.getFacetField(facetFieldString);
 
         return SolrUtils.mapFacetResults(facetField);
+    }
+
+    public void indekserBrukerMedVeileder(String personId) {
+        logger.info("Legger bruker med personId % til i indeks ",personId);
+        List<Map<String,Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personId);
+        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+        addDocuments(dokumenter);
+        commit();
+        logger.info("Bruker med personId %s lagt til i indeksen",personId);
     }
 
     private Try<UpdateResponse> commit() {
