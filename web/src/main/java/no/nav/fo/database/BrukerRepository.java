@@ -31,7 +31,7 @@ public class BrukerRepository {
         db.query(retrieveBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere.stream().filter(this::skalBrukerHaOppfolging).collect(toList());
+        return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
     }
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
@@ -40,7 +40,7 @@ public class BrukerRepository {
         db.query(retrieveOppdaterteBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere.stream().filter(this::skalBrukerHaOppfolging).collect(toList());
+        return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
     }
     public List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personId) {
         return db.queryForList(retrieveBrukerSomHarVeilederSQL(),personId);
@@ -205,7 +205,7 @@ public class BrukerRepository {
         return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
     }
 
-    private boolean skalBrukerHaOppfolging(SolrInputDocument bruker) {
+    private boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
 
         boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
