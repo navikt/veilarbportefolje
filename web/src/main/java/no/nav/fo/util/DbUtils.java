@@ -30,11 +30,10 @@ public class DbUtils {
             document.addField("egen_ansatt", parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"));
             document.addField("er_doed", parseJaNei(rs.getString("er_doed"), "er_doed"));
             document.addField("doed_fra_dato", parseDato(rs.getString("doed_fra_dato")));
-            document.addField("veileder_id", null);
+            document.addField("veileder_id", rs.getString("veilederident"));
             document.addField("fodselsdag_i_mnd", FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")));
             document.addField("fodselsdato", FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")));
             document.addField("kjonn", FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")));
-//            document.addField("ny_bruker", FodselsnummerUtils.erNyBruker(rs.getString("veilederident")));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -58,7 +57,7 @@ public class DbUtils {
         document.addField("egen_ansatt", parseJaNei(rad.get("sperret_ansatt"), "sperret_ansatt"));
         document.addField("er_doed", parseJaNei(rad.get("er_doed"), "er_doed"));
         document.addField("doed_fra_dato", parseDato(rad.get("doed_fra_dato")));
-        document.addField("veileder_id", null);
+        document.addField("veileder_id", rad.get("veilederident").toString());
         return document;
     }
 
