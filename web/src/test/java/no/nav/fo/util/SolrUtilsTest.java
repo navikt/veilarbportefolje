@@ -1,6 +1,7 @@
 package no.nav.fo.util;
 
 import no.nav.fo.domene.FacetResults;
+import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -102,18 +103,13 @@ public class SolrUtilsTest {
 
     @Test
     public void skalByggSolrQueryMedAlleFelterUtfylt() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.inaktiveBrukere = true;
+        String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
         String enhetId = "0713";
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, "ascending");
-        assertThat(query.getQuery()).contains(enhetId);
-        assertThat(query.getSortField().contains("fornavn")).isTrue();
-        assertThat(query.getSortField().contains("etternavn")).isTrue();
-        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(asc);
-    }
 
-    @Test
-    public void skalByggeSolrQueryMedDescendingSort() throws Exception {
-        String enhetId = "0713";
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, "descending");
-        assertThat(query.getSorts().get(0).getOrder()).isEqualTo(desc);
+        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
     }
 }

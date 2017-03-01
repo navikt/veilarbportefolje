@@ -2,17 +2,19 @@ package no.nav.fo.util;
 
 import no.nav.fo.domene.Facet;
 import no.nav.fo.domene.FacetResults;
+import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.SolrUpdateResponseCodeException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 
 public class SolrUtils {
 
@@ -34,15 +36,10 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String filterQuery, String sortOrder) {
-        SolrQuery.ORDER order = SolrQuery.ORDER.asc;
-        if ("descending".equals(sortOrder)) {
-            order = desc;
-        }
+    public static SolrQuery buildSolrQuery(String enhetId, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
-        solrQuery.addFilterQuery(filterQuery);
-        solrQuery.addSort("etternavn", order);
-        solrQuery.addSort("fornavn", order);
+        solrQuery.addFilterQuery("enhet_id:" + enhetId);
+        leggTilFiltervalg(solrQuery, filtervalg);
         return solrQuery;
     }
 
@@ -61,5 +58,19 @@ public class SolrUtils {
         }
     }
 
+    private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
+        List<String> statements = new ArrayList<>();
 
+        if(filtervalg.nyeBrukere) {
+            statements.add("-veileder_id:*");
+        }
+
+        if(filtervalg.inaktiveBrukere) {
+            statements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
+        }
+
+        if(!statements.isEmpty()) {
+            query.addFilterQuery(StringUtils.join(statements, " OR "));
+        }
+    }
 }
