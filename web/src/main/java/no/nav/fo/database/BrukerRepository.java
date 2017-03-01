@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 
 public class BrukerRepository {
@@ -21,7 +22,7 @@ public class BrukerRepository {
         db.query(retrieveBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere;
+        return brukere.stream().filter(this::skalBrukerHaOppfolging).collect(toList());
     }
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
@@ -30,7 +31,7 @@ public class BrukerRepository {
         db.query(retrieveOppdaterteBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere;
+        return brukere.stream().filter(this::skalBrukerHaOppfolging).collect(toList());
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
@@ -92,5 +93,12 @@ public class BrukerRepository {
     String updateTidsstempelSQL() {
         return
                 "UPDATE METADATA SET SIST_INDEKSERT = ?";
+    }
+
+    private boolean skalBrukerHaOppfolging(SolrInputDocument bruker) {
+        if (bruker.get("formidlingsgruppekode").getValue().equals("ISERV")) {
+            return false;
+        }
+        return true;
     }
 }
