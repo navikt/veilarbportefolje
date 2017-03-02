@@ -286,10 +286,6 @@
             <groupId>com.ibm.mq</groupId>
             <artifactId>mq-jms</artifactId>
         </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
     </dependencies>
 
 

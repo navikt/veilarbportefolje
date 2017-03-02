@@ -100,17 +100,23 @@ public class SolrService {
         return hentBrukere(mockString, sortOrder);
     }
 
-    public List<Bruker> hentBrukere(String queryString, String sortOrder) {
+    private List<Bruker> hentBrukere(String queryString, String sortOrder) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString , sortOrder));
+            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-        return brukere;
+
+        if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+            return SolrUtils.sortBrukere(brukere, sortOrder);
+        }
+        else {
+            return brukere;
+        }
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
