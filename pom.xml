@@ -39,6 +39,7 @@
         <modig-core-test.version>1.0.0</modig-core-test.version>
         <common-cxf.version>3.1.32</common-cxf.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
+        <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <javax.jms.version>1.1</javax.jms.version>
 
 
@@ -71,6 +72,7 @@
         <!-- Test -->
         <junit.version>4.11</junit.version>
         <mockito.version>1.10.19</mockito.version>
+        <mq-jms.version>6.0</mq-jms.version>
     </properties>
 
     <dependencyManagement>
@@ -393,6 +395,11 @@
                 <version>${enhet.tjenestespesifikasjon.versjon}</version>
             </dependency>
             <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
+                <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.4</version>
@@ -485,6 +492,12 @@
                         <artifactId>geronimo-jms_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.mq</groupId>
+                <artifactId>mq-jms</artifactId>
+                <version>${mq-jms.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

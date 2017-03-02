@@ -262,6 +262,10 @@
             <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
@@ -277,6 +281,10 @@
         <dependency>
             <groupId>javax.jms</groupId>
             <artifactId>jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.mq</groupId>
+            <artifactId>mq-jms</artifactId>
         </dependency>
     </dependencies>
 
