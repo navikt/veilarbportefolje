@@ -95,9 +95,8 @@ public class SolrService {
     }
 
     public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder) {
-//      String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
-        String mockString ="enhet_id: " + enhetId; //Brukes som mock inntil søk på veileder_id ligger klart i indeksen
-        return hentBrukere(mockString, sortOrder);
+        String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
+        return hentBrukere(queryString, sortOrder);
     }
 
     private List<Bruker> hentBrukere(String queryString, String sortOrder) {
@@ -111,10 +110,9 @@ public class SolrService {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
 
-        if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+        if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
             return SolrUtils.sortBrukere(brukere, sortOrder);
-        }
-        else {
+        } else {
             return brukere;
         }
     }
@@ -139,12 +137,12 @@ public class SolrService {
     }
 
     public void indekserBrukerMedVeileder(String personId) {
-        logger.info("Legger bruker med personId % til i indeks ",personId);
-        List<Map<String,Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personId);
+        logger.info("Legger bruker med personId % til i indeks ", personId);
+        List<Map<String, Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personId);
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
         addDocuments(dokumenter);
         commit();
-        logger.info("Bruker med personId %s lagt til i indeksen",personId);
+        logger.info("Bruker med personId %s lagt til i indeksen", personId);
     }
 
     private Try<UpdateResponse> commit() {
