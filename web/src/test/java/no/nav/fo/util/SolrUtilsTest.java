@@ -1,5 +1,6 @@
 package no.nav.fo.util;
 
+import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.SolrUpdateResponseCodeException;
@@ -10,10 +11,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;

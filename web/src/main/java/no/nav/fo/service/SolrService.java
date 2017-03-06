@@ -90,13 +90,13 @@ public class SolrService {
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
 
-    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, Filtervalg filtervalg) {
+    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, Filtervalg filtervalg, String sortOrder) {
 //      String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
         String mockString ="enhet_id: " + enhetId; //Brukes som mock inntil søk på veileder_id ligger klart i indeksen
-        return hentBrukereForEnhet(mockString, filtervalg);
+        return hentBrukereForEnhet(mockString, sortOrder, filtervalg);
     }
 
-    public List<Bruker> hentBrukereForEnhet(String enhetId, Filtervalg filtervalg) {
+    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, Filtervalg filtervalg) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = server.query(SolrUtils.buildSolrQuery(enhetId, filtervalg));
@@ -106,13 +106,18 @@ public class SolrService {
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-        return brukere;
+
+        if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+            return SolrUtils.sortBrukere(brukere, sortOrder);
+        }
+        else {
+            return brukere;
+        }
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
 
-        // Må endres fra "hovedmaalkode" til "veileder_id" når denne blir tilgjengelig
-        String facetFieldString = "hovedmaalkode";
+        String facetFieldString = "veileder_id";
 
         SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
 
