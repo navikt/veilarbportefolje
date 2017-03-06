@@ -121,8 +121,7 @@ public class SolrService {
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
 
-        // Må endres fra "hovedmaalkode" til "veileder_id" når denne blir tilgjengelig
-        String facetFieldString = "hovedmaalkode";
+        String facetFieldString = "veileder_id";
 
         SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
 
