@@ -57,7 +57,6 @@
         <mockito.version>1.9.5</mockito.version>
         <solr.version>4.10.4</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
-        <jwt-security.version>1.0.8</jwt-security.version>
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
@@ -76,7 +75,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!--Jwt-security-->
             <dependency>
                 <groupId>com.javaslang</groupId>
                 <artifactId>javaslang</artifactId>
@@ -94,23 +92,6 @@
                 <version>${loginmodule.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-common</artifactId>
-                <version>${jwt-security.version}</version>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-common</artifactId>
-                <version>${jwt-security.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-loginmodule</artifactId>
-                <version>${jwt-security.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.javaslang</groupId>
                 <artifactId>javaslang</artifactId>
                 <version>${javaslang.version}</version>
@@ -120,11 +101,6 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-filter</artifactId>
-                <version>${jwt-security.version}</version>
             </dependency>
 
             <!--Dialogarena-->
