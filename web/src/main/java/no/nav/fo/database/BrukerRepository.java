@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -30,7 +31,7 @@ public class BrukerRepository {
         db.query(retrieveBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere;
+        return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
     }
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
@@ -39,7 +40,7 @@ public class BrukerRepository {
         db.query(retrieveOppdaterteBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere;
+        return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
     }
     public List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personId) {
         return db.queryForList(retrieveBrukerSomHarVeilederSQL(),personId);
@@ -202,5 +203,16 @@ public class BrukerRepository {
 
     String retrieveBrukerSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
+    }
+
+    private boolean erOppfolgingsBruker(SolrInputDocument bruker) {
+        String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
+
+        boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
+                (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
+                || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
+                || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
+
+        return aktivStatus || bruker.get("veileder_id").getValue() != null;
     }
 }

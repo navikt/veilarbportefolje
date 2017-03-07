@@ -3,6 +3,7 @@ package no.nav.fo.database;
 import com.google.common.base.Joiner;
 import no.nav.fo.config.ApplicationConfigTest;
 import org.apache.commons.io.IOUtils;
+import org.apache.solr.common.SolrInputDocument;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -156,6 +157,15 @@ public class BrukerRepositoryTest {
         assertThat(veilederident).isEqualTo("X484848");
 
 
+    }
+
+    @Test
+    public void skalFiltrereBrukere() {
+        List<SolrInputDocument> aktiveBrukere = brukerRepository.retrieveAlleBrukere();
+        assertThat(aktiveBrukere.size()).isEqualTo(50);
+
+        List<SolrInputDocument> oppdaterteAktiveBrukere = brukerRepository.retrieveOppdaterteBrukere();
+        assertThat(oppdaterteAktiveBrukere.size()).isEqualTo(2);
     }
 
 }
