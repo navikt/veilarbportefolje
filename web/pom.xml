@@ -38,17 +38,6 @@
             <artifactId>javaslang</artifactId>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.javaslang</groupId>
-            <artifactId>javaslang</artifactId>
-        </dependency>
-
-
         <!--Dialogarena tjenestespesifikasjon-->
 
         <!--Dialogarena-->
