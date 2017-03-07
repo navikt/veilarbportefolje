@@ -39,9 +39,9 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String enhetId, Filtervalg filtervalg) {
+    public static SolrQuery buildSolrQuery(String queryString, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
-        solrQuery.addFilterQuery("enhet_id:" + enhetId);
+        solrQuery.addFilterQuery(queryString);
         leggTilFiltervalg(solrQuery, filtervalg);
         return solrQuery;
     }
