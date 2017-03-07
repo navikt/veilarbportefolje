@@ -38,12 +38,11 @@ public class OppdaterBrukerdataFletter {
 
     private String hentPersonIdFromDBorAktoer(String aktoerId) {
         LOG.debug(String.format("Henter personId for aktoerId%s fra database", aktoerId));
-        String personId = null;
         List<Map<String,Object>> aktoerIdToPersonId = brukerRepository.retrievePersonid(aktoerId);
-        if(aktoerIdToPersonId.size() > 0) {
-            return (String) aktoerIdToPersonId.get(0).get("PERSONID");
+        if(aktoerIdToPersonId.isEmpty()) {
+            return hentPersonIdOgOppdaterDB(aktoerId);
         }
-        return hentPersonIdOgOppdaterDB(aktoerId);
+        return (String) aktoerIdToPersonId.get(0).get("PERSONID");
     }
 
     private String hentPersonIdOgOppdaterDB(String aktoerId) {
@@ -58,7 +57,7 @@ public class OppdaterBrukerdataFletter {
 
             List<Map<String,Object>> fnrToPersonid = brukerRepository.retrievePersonidFromFnr(fnr);
 
-            if(fnrToPersonid.size() == 0) {
+            if(fnrToPersonid.isEmpty()) {
                 LOG.error(String.format("Kunne ikke finne fnr i databasen"));
                 return null;
             }

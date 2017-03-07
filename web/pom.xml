@@ -18,22 +18,15 @@
     </properties>
 
     <dependencies>
+        <!--oidc-security-->
         <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>jwt-security-loginmodule</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>jwt-security-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>jwt-security-common</artifactId>
+            <groupId>no.nav.dialogarena</groupId>
+            <artifactId>oidc-security</artifactId>
             <type>test-jar</type>
         </dependency>
         <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>jwt-security-filter</artifactId>
+            <groupId>no.nav.dialogarena</groupId>
+            <artifactId>oidc-security</artifactId>
         </dependency>
 
         <dependency>
@@ -44,17 +37,6 @@
             <groupId>com.javaslang</groupId>
             <artifactId>javaslang</artifactId>
         </dependency>
-
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.javaslang</groupId>
-            <artifactId>javaslang</artifactId>
-        </dependency>
-
 
         <!--Dialogarena tjenestespesifikasjon-->
 
@@ -285,6 +267,10 @@
         <dependency>
             <groupId>com.ibm.mq</groupId>
             <artifactId>mq-jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.components</groupId>
+            <artifactId>geronimo-jaspi</artifactId>
         </dependency>
     </dependencies>
 

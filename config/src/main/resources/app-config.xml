@@ -27,7 +27,10 @@
             <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
         </queueManager>
 
-        <baseUrl alias="openAMHost" mapToProperty="issoHost" />
+        <baseUrl alias="isso-host"/>
+        <baseUrl alias="isso-jwks"/>
+        <baseUrl alias="isso-issuer"/>
+        <credential alias="isso-rp-user"/>
     </resources>
 
     <exposed-services>

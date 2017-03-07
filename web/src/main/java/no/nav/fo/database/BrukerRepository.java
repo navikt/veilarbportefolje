@@ -59,7 +59,7 @@ public class BrukerRepository {
     public java.util.List<Map<String,Object>> retrievePersonidFromFnr(String fnr) {
         return db.queryForList(getPersonIdFromFnrSQL(),fnr);
     }
-    public void insertBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) throws DuplicateKeyException {
+    public void insertBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
         db.update(insertBrukerdataSQL(), aktoerId, veilederident, tilordnetTidsstempel, personId);
     }
     public void updateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
