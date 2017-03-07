@@ -1,11 +1,9 @@
 package no.nav.fo.provider.rest;
 
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Portefolje;
-import no.nav.fo.security.jwt.context.SubjectHandler;
-import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
-import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
@@ -21,8 +19,6 @@ import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@JWTInAuthorizationHeaderJAAS
-@SessionTerminator
 @Path("/veileder")
 @Produces(APPLICATION_JSON)
 public class VeilederController {

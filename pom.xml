@@ -27,7 +27,7 @@
 
         <!-- Egenlagde -->
         <modig.security.version>1.0.30</modig.security.version>
-        <common-jetty.version>2.0.11</common-jetty.version>
+        <common-jetty.version>2.0.12</common-jetty.version>
         <common-types.version>1.2</common-types.version>
         <common-web.version>2.0.4</common-web.version>
         <common-test.version>1.2</common-test.version>
@@ -37,10 +37,11 @@
         <modig-core.version>1.0.1</modig-core.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
         <modig-core-test.version>1.0.0</modig-core-test.version>
-        <common-cxf.version>3.1.32</common-cxf.version>
+        <common-cxf.version>3.1.34</common-cxf.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <javax.jms.version>1.1</javax.jms.version>
+        <oidc-security.version>2.0.14</oidc-security.version>
 
 
         <!-- Tredjeparts -->
@@ -58,7 +59,6 @@
         <mockito.version>1.9.5</mockito.version>
         <solr.version>4.10.4</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
-        <jwt-security.version>1.0.8</jwt-security.version>
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
@@ -73,11 +73,29 @@
         <junit.version>4.11</junit.version>
         <mockito.version>1.10.19</mockito.version>
         <mq-jms.version>6.0</mq-jms.version>
+
+        <sonar.exclusions>
+            **/Swagger*,
+            **/mock/*,
+            **/config/**,
+            **/selftest**
+        </sonar.exclusions>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!--Jwt-security-->
+            <!--oidc-security-->
+            <dependency>
+                <groupId>no.nav.dialogarena</groupId>
+                <artifactId>oidc-security</artifactId>
+                <version>${oidc-security.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.dialogarena</groupId>
+                <artifactId>oidc-security</artifactId>
+                <version>${oidc-security.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.javaslang</groupId>
                 <artifactId>javaslang</artifactId>
@@ -93,39 +111,6 @@
                 <groupId>no.nav.modig</groupId>
                 <artifactId>modig-security-loginmodule</artifactId>
                 <version>${loginmodule.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-common</artifactId>
-                <version>${jwt-security.version}</version>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-common</artifactId>
-                <version>${jwt-security.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-loginmodule</artifactId>
-                <version>${jwt-security.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.javaslang</groupId>
-                <artifactId>javaslang</artifactId>
-                <version>${javaslang.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-filter</artifactId>
-                <version>${jwt-security.version}</version>
             </dependency>
 
             <!--Dialogarena-->
@@ -502,6 +487,12 @@
                 <groupId>com.ibm.mq</groupId>
                 <artifactId>mq-jms</artifactId>
                 <version>${mq-jms.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.geronimo.components</groupId>
+                <artifactId>geronimo-jaspi</artifactId>
+                <version>2.0.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
