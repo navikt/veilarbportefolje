@@ -1,8 +1,8 @@
 package no.nav.fo.provider.rest;
 
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
-import no.nav.fo.security.jwt.context.SubjectHandler;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;

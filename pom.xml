@@ -27,7 +27,7 @@
 
         <!-- Egenlagde -->
         <modig.security.version>1.0.30</modig.security.version>
-        <common-jetty.version>2.0.11</common-jetty.version>
+        <common-jetty.version>2.0.12</common-jetty.version>
         <common-types.version>1.2</common-types.version>
         <common-web.version>2.0.4</common-web.version>
         <common-test.version>1.2</common-test.version>
@@ -41,6 +41,7 @@
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <javax.jms.version>1.1</javax.jms.version>
+        <oidc-security.version>2.0.14</oidc-security.version>
 
 
         <!-- Tredjeparts -->
@@ -75,6 +76,18 @@
 
     <dependencyManagement>
         <dependencies>
+            <!--oidc-security-->
+            <dependency>
+                <groupId>no.nav.dialogarena</groupId>
+                <artifactId>oidc-security</artifactId>
+                <version>${oidc-security.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.dialogarena</groupId>
+                <artifactId>oidc-security</artifactId>
+                <version>${oidc-security.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.javaslang</groupId>
                 <artifactId>javaslang</artifactId>
@@ -472,6 +485,12 @@
                 <groupId>com.ibm.mq</groupId>
                 <artifactId>mq-jms</artifactId>
                 <version>${mq-jms.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.geronimo.components</groupId>
+                <artifactId>geronimo-jaspi</artifactId>
+                <version>2.0.0</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

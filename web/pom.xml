@@ -18,6 +18,16 @@
     </properties>
 
     <dependencies>
+        <!--oidc-security-->
+        <dependency>
+            <groupId>no.nav.dialogarena</groupId>
+            <artifactId>oidc-security</artifactId>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.dialogarena</groupId>
+            <artifactId>oidc-security</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -268,6 +278,10 @@
         <dependency>
             <groupId>com.ibm.mq</groupId>
             <artifactId>mq-jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.components</groupId>
+            <artifactId>geronimo-jaspi</artifactId>
         </dependency>
     </dependencies>
 
