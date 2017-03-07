@@ -24,11 +24,11 @@ public class StartJettyVeilArbPortefolje {
         JAASLoginService jaasLoginService = new JAASLoginService("JWT Realm");
         jaasLoginService.setLoginModuleName("jwtLogin");
 
-        final BrokerService broker = new BrokerService();
-        broker.getSystemUsage().getTempUsage().setLimit(100 * 1024 * 1024 * 100);
-        broker.getSystemUsage().getStoreUsage().setLimit(100 * 1024 * 1024 * 100);
-        broker.addConnector("tcp://localhost:61616");
-        broker.start();
+//        final BrokerService broker = new BrokerService();
+//        broker.getSystemUsage().getTempUsage().setLimit(100 * 1024 * 1024 * 100);
+//        broker.getSystemUsage().getStoreUsage().setLimit(100 * 1024 * 1024 * 100);
+//        broker.addConnector("tcp://localhost:61616");
+//        broker.start();
 
 
         //Må ha https for csrf-token
