@@ -105,8 +105,9 @@ public class SolrUtilsTest {
         filtervalg.inaktiveBrukere = true;
         String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
         String enhetId = "0713";
+        String queryString = "enhet_id:"+enhetId;
 
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
     }
