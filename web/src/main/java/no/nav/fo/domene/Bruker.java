@@ -4,7 +4,6 @@ package no.nav.fo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
-import org.joda.time.LocalDate;
 
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class Bruker {
     String diskresjonskode;
     Boolean egenAnsatt;
     Boolean erDoed;
-    int fodselsdag_i_mnd;
+    int fodselsdagIMnd;
     String fodselsdato;
     String kjonn;
     boolean erInaktiv;
@@ -37,7 +36,7 @@ public class Bruker {
                 .setEgenAnsatt( (Boolean) document.get("egen_ansatt"))
                 .setErDoed( (Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
-                .setFodselsdag_i_mnd((int) document.get("fodselsdag_i_mnd"))
+                .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
                 .setFodselsdato(document.get("fodselsdato").toString())
                 .setKjonn((String) document.get("kjonn"))
                 .setErInaktiv(erInaktivEllerDoed(document));
