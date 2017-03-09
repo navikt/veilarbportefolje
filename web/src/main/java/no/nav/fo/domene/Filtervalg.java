@@ -9,7 +9,16 @@ public class Filtervalg {
     @QueryParam("inaktiveBrukere")
     public boolean inaktiveBrukere;
 
+    @QueryParam("alder")
+    public int alder;
+
+    @QueryParam("kjonn")
+    public String kjonn;
+
+    @QueryParam("fodselsdagIMnd[]")
+    public int fodselsdagIMnd[];
+
     public boolean harAktiveFilter() {
-        return nyeBrukere || inaktiveBrukere;
+        return nyeBrukere || inaktiveBrukere || (alder > 0 && alder <= 8)|| kjonn != null || fodselsdagIMnd != null;
     }
 }

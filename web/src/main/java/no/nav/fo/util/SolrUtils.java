@@ -111,18 +111,62 @@ public class SolrUtils {
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
-        List<String> statements = new ArrayList<>();
+        if(!filtervalg.harAktiveFilter()) {
+            return;
+        }
+
+        List<String> oversiktStatements = new ArrayList<>();
+        List<String> filtrerBrukereStatements = new ArrayList<>();
 
         if(filtervalg.nyeBrukere) {
-            statements.add("-veileder_id:*");
+            oversiktStatements.add("-veileder_id:*");
         }
 
         if(filtervalg.inaktiveBrukere) {
-            statements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
+            oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
-        if(!statements.isEmpty()) {
-            query.addFilterQuery(StringUtils.join(statements, " OR "));
+        if(filtervalg.alder > 0  && filtervalg.alder <= 8) {
+            filtrerBrukereStatements.add(leggTilAlderFilter(filtervalg));
+        }
+
+        if(filtervalg.kjonn != null) {
+            filtrerBrukereStatements.add("kjonn:" + filtervalg.kjonn);
+        }
+
+        if(filtervalg.fodselsdagIMnd != null && filtervalg.fodselsdagIMnd[0] < filtervalg.fodselsdagIMnd[1]) {
+            filtrerBrukereStatements.add("fodselsdag_i_mnd:[" + filtervalg.fodselsdagIMnd[0] + " TO " + filtervalg.fodselsdagIMnd[1] + "]");
+        }
+
+        if(!oversiktStatements.isEmpty()) {
+            query.addFilterQuery(StringUtils.join(oversiktStatements, " OR "));
+        }
+
+        if(!filtrerBrukereStatements.isEmpty()) {
+            query.addFilterQuery(StringUtils.join(filtrerBrukereStatements, " AND "));
+        }
+    }
+
+    static String leggTilAlderFilter(Filtervalg filtervalg) {
+        String filter = "fodselsdato:";
+
+        switch(filtervalg.alder) {
+            case 1:
+                return filter += "[NOW-19YEARS TO NOW]";
+            case 2:
+                return filter += "[NOW-24YEARS TO NOW-20YEARS]";
+            case 3:
+                return filter += "[NOW-29YEARS TO NOW-25YEARS]";
+            case 4:
+                return filter += "[NOW-39YEARS TO NOW-30YEARS]";
+            case 5:
+                return filter += "[NOW-49YEARS TO NOW-40YEARS]";
+            case 6:
+                return filter += "[NOW-59YEARS TO NOW-50YEARS]";
+            case 7:
+                return filter += "[NOW-66YEARS TO NOW-60YEARS]";
+            default:
+                return filter += "[NOW-70YEARS TO NOW-67YEARS]";
         }
     }
 }

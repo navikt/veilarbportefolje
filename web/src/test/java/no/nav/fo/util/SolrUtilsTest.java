@@ -1,6 +1,5 @@
 package no.nav.fo.util;
 
-import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.SolrUpdateResponseCodeException;
@@ -11,15 +10,16 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.sql.Date;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolrUtilsTest {
 
@@ -100,7 +100,7 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalByggSolrQueryMedAlleFelterUtfylt() throws Exception {
+    public void skalByggSolrQueryMedInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.inaktiveBrukere = true;
         String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
@@ -110,5 +110,56 @@ public class SolrUtilsTest {
         SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
+    }
+
+    @Test
+    public void skalLeggeTilAlderFilterISolrQuery() {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.alder = 1;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-19YEARS TO NOW]");
+
+        filtervalg.alder = 2;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-24YEARS TO NOW-20YEARS]");
+
+        filtervalg.alder = 3;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-29YEARS TO NOW-25YEARS]");
+
+        filtervalg.alder = 4;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-39YEARS TO NOW-30YEARS]");
+
+        filtervalg.alder = 5;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-49YEARS TO NOW-40YEARS]");
+
+        filtervalg.alder = 6;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-59YEARS TO NOW-50YEARS]");
+
+        filtervalg.alder = 7;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-66YEARS TO NOW-60YEARS]");
+
+        filtervalg.alder = 8;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-70YEARS TO NOW-67YEARS]");
+
+    }
+
+    @Test
+    public void skalLeggeTilKjonnFilter() {
+        Filtervalg filtervalg = new Filtervalg();
+        SolrQuery solrQuery;
+        filtervalg.kjonn = "M";
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+
+        assertThat(solrQuery.getFilterQueries()).contains("kjonn:M");
+
+        filtervalg.kjonn = "K";
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).contains("kjonn:K");
+    }
+
+    @Test
+    public void skalIkkeLeggePaaFilterQueryHvisIngenFiltervalgErSatt() {
+        Filtervalg filtervalg = new Filtervalg();
+        SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104", filtervalg);
+        filtervalg.harAktiveFilter();
+        assertThat(query.getFilterQueries()).containsOnly("enhet_id:0104");
     }
 }
