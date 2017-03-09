@@ -55,12 +55,12 @@ public class SolrUtils {
             comparator = erNyComparator;
 
             if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
-                comparator = comparator.thenComparing(setComparatorSortOrder(brukerEtternavnComparator(), sortOrder));
+                comparator = comparator.thenComparing(setComparatorSortOrder(brukerNavnComparator(), sortOrder));
             }
         }
         else {
             if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
-                comparator = setComparatorSortOrder(brukerEtternavnComparator(), sortOrder);
+                comparator = setComparatorSortOrder(brukerNavnComparator(), sortOrder);
             }
         }
 
@@ -93,7 +93,7 @@ public class SolrUtils {
         };
     }
 
-    static Comparator<Bruker> brukerEtternavnComparator() {
+    static Comparator<Bruker> brukerNavnComparator() {
         return (brukerA, brukerB) -> {
 
             Locale locale = new Locale("no", "NO");

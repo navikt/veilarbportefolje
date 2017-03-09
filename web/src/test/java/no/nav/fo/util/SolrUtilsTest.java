@@ -95,7 +95,7 @@ public class SolrUtilsTest {
         Bruker bruker2 = new Bruker().setEtternavn("Anderson");
         Bruker bruker3 = new Bruker().setEtternavn("Davidsen");
 
-        Comparator<Bruker> comparator = brukerEtternavnComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker1);
         int compared3 = comparator.compare(bruker1, bruker3);
@@ -114,7 +114,7 @@ public class SolrUtilsTest {
         Bruker bruker3 = new Bruker().setEtternavn("Andersen").setFornavn("Petter");
         Bruker bruker4 = new Bruker().setEtternavn("Andersen").setFornavn("Jakob");
 
-        Comparator<Bruker> comparator = brukerEtternavnComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker3);
         int compared2 = comparator.compare(bruker3, bruker4);
         int compared3 = comparator.compare(bruker1, bruker2);
@@ -134,7 +134,7 @@ public class SolrUtilsTest {
         Bruker bruker6 = new Bruker().setEtternavn("Øvrebø").setFornavn("Åge");
 
 
-        Comparator<Bruker> comparator = brukerEtternavnComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker3);
         int compared3 = comparator.compare(bruker3, bruker1);
@@ -158,7 +158,7 @@ public class SolrUtilsTest {
         Bruker bruker2 = new Bruker().setEtternavn("Aresen");
         Bruker bruker3 = new Bruker().setEtternavn("Ågesen");
 
-        Comparator<Bruker> comparator = brukerEtternavnComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker1, bruker3);
 
@@ -175,7 +175,7 @@ public class SolrUtilsTest {
         Bruker bruker5 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
         Bruker bruker6 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
 
-        Comparator<Bruker> comparator = setComparatorSortOrder(brukerEtternavnComparator(), "ascending");
+        Comparator<Bruker> comparator = setComparatorSortOrder(brukerNavnComparator(), "ascending");
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker3);
         int compared3 = comparator.compare(bruker1, bruker4);
@@ -198,7 +198,7 @@ public class SolrUtilsTest {
         Bruker bruker5 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
         Bruker bruker6 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
 
-        Comparator<Bruker> comparator = setComparatorSortOrder(brukerEtternavnComparator(), "descending");
+        Comparator<Bruker> comparator = setComparatorSortOrder(brukerNavnComparator(), "descending");
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker3);
         int compared3 = comparator.compare(bruker1, bruker4);
