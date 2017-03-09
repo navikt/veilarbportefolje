@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -91,15 +92,15 @@ public class SolrService {
 
     public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder) {
         String queryString = "enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder);
+        return hentBrukere(queryString, sortOrder, SolrUtils.brukerErNyComparator());
     }
 
     public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder) {
         String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder);
+        return hentBrukere(queryString, sortOrder, null);
     }
 
-    private List<Bruker> hentBrukere(String queryString, String sortOrder) {
+    private List<Bruker> hentBrukere(String queryString, String sortOrder, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString));
@@ -109,12 +110,7 @@ public class SolrService {
         } catch (SolrServerException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-
-        if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
-            return SolrUtils.sortBrukere(brukere, sortOrder);
-        } else {
-            return brukere;
-        }
+        return SolrUtils.sortBrukere(brukere, sortOrder, erNyComparator);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
