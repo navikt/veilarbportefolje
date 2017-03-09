@@ -213,7 +213,7 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalSortereNyBrukereOverst() {
+    public void skalSammenligneNyeOgGamleBrukereRiktig() {
         // Definisjonen av nye brukere: veilederId == null
 
         Bruker bruker1 = new Bruker().setVeilederId("x");
