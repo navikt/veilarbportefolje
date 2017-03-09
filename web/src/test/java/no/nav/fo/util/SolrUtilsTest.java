@@ -9,13 +9,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.sql.Date;
 import java.util.*;
 
-import static no.nav.fo.util.SolrUtils.brukerComparator;
-import static no.nav.fo.util.SolrUtils.setComparatorSortOrder;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.asc;
-import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
+import static no.nav.fo.util.SolrUtils.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -97,7 +93,7 @@ public class SolrUtilsTest {
         Bruker bruker2 = new Bruker().setEtternavn("Anderson");
         Bruker bruker3 = new Bruker().setEtternavn("Davidsen");
 
-        Comparator<Bruker> comparator = brukerComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker1);
         int compared3 = comparator.compare(bruker1, bruker3);
@@ -116,7 +112,7 @@ public class SolrUtilsTest {
         Bruker bruker3 = new Bruker().setEtternavn("Andersen").setFornavn("Petter");
         Bruker bruker4 = new Bruker().setEtternavn("Andersen").setFornavn("Jakob");
 
-        Comparator<Bruker> comparator = brukerComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker3);
         int compared2 = comparator.compare(bruker3, bruker4);
         int compared3 = comparator.compare(bruker1, bruker2);
@@ -136,7 +132,7 @@ public class SolrUtilsTest {
         Bruker bruker6 = new Bruker().setEtternavn("Øvrebø").setFornavn("Åge");
 
 
-        Comparator<Bruker> comparator = brukerComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker3);
         int compared3 = comparator.compare(bruker3, bruker1);
@@ -160,7 +156,7 @@ public class SolrUtilsTest {
         Bruker bruker2 = new Bruker().setEtternavn("Aresen");
         Bruker bruker3 = new Bruker().setEtternavn("Ågesen");
 
-        Comparator<Bruker> comparator = brukerComparator();
+        Comparator<Bruker> comparator = brukerNavnComparator();
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker1, bruker3);
 
@@ -177,7 +173,7 @@ public class SolrUtilsTest {
         Bruker bruker5 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
         Bruker bruker6 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
 
-        Comparator<Bruker> comparator = setComparatorSortOrder(brukerComparator(), "ascending");
+        Comparator<Bruker> comparator = setComparatorSortOrder(brukerNavnComparator(), "ascending");
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker3);
         int compared3 = comparator.compare(bruker1, bruker4);
@@ -200,7 +196,7 @@ public class SolrUtilsTest {
         Bruker bruker5 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
         Bruker bruker6 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
 
-        Comparator<Bruker> comparator = setComparatorSortOrder(brukerComparator(), "descending");
+        Comparator<Bruker> comparator = setComparatorSortOrder(brukerNavnComparator(), "descending");
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker2, bruker3);
         int compared3 = comparator.compare(bruker1, bruker4);
@@ -212,5 +208,127 @@ public class SolrUtilsTest {
         assertThat(compared3).isEqualTo(1);
         assertThat(compared4).isEqualTo(-1);
         assertThat(compared5).isEqualTo(0);
+    }
+
+    @Test
+    public void skalSammenligneNyeOgGamleBrukereRiktig() {
+        // Definisjonen av nye brukere: veilederId == null
+
+        Bruker bruker1 = new Bruker().setVeilederId("x");
+        Bruker bruker2 = new Bruker().setVeilederId("y");
+        Bruker bruker3 = new Bruker().setVeilederId(null);
+        Bruker bruker4 = new Bruker().setVeilederId(null);
+
+        Comparator<Bruker> comparator = brukerErNyComparator();
+
+        int compared1 = comparator.compare(bruker1, bruker3);
+        int compared2 = comparator.compare(bruker4, bruker2);
+        int compared3 = comparator.compare(bruker1, bruker2);
+        int compared4 = comparator.compare(bruker3, bruker4);
+
+        assertThat(compared1).isEqualTo(1);
+        assertThat(compared2).isEqualTo(-1);
+        assertThat(compared3).isEqualTo(0);
+        assertThat(compared4).isEqualTo(0);
+    }
+
+    @Test
+    public void skalIkkeSortere() {
+        Bruker bruker1 = new Bruker().setVeilederId("x");
+        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
+        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
+        Bruker bruker4 = new Bruker().setVeilederId("y");
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", null);
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker4);
+    }
+
+    @Test
+    public void skalKunSortereNyeBrukereOverst() {
+        Bruker bruker1 = new Bruker().setVeilederId("x");
+        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
+        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
+        Bruker bruker4 = new Bruker().setVeilederId("y");
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", brukerErNyComparator());
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker1);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker4);
+    }
+
+    @Test
+    public void skalKunSorterePaaNavn() {
+        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abel");
+        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
+        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
+        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Bro");
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", null);
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker2);
+    }
+
+    @Test
+    public void skalSorterePaaNyeBrukereOgNavnAscending() {
+        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abel");
+        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
+        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
+        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Bro");
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", brukerErNyComparator());
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker1);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker4);
+    }
+
+    @Test
+    public void skalSorterePaaNyeBrukereOgNavnDescending() {
+        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abel");
+        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
+        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
+        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Bro");
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", brukerErNyComparator());
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker4);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
     }
 }
