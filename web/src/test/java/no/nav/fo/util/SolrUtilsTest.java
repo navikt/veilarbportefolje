@@ -11,6 +11,7 @@ import org.junit.rules.ExpectedException;
 
 import java.util.*;
 
+import static no.nav.fo.util.SolrUtils.brukerErNyComparator;
 import static no.nav.fo.util.SolrUtils.brukerEtternavnComparator;
 import static no.nav.fo.util.SolrUtils.setComparatorSortOrder;
 import static org.junit.Assert.assertFalse;
@@ -210,4 +211,29 @@ public class SolrUtilsTest {
         assertThat(compared4).isEqualTo(-1);
         assertThat(compared5).isEqualTo(0);
     }
+
+    @Test
+    public void skalSortereNyBrukereOverst() {
+        // Definisjonen av nye brukere: veilederId == null
+
+        Bruker bruker1 = new Bruker().setVeilederId("x");
+        Bruker bruker2 = new Bruker().setVeilederId("y");
+        Bruker bruker3 = new Bruker().setVeilederId(null);
+        Bruker bruker4 = new Bruker().setVeilederId(null);
+
+        Comparator<Bruker> comparator = brukerErNyComparator();
+
+        int compared1 = comparator.compare(bruker1, bruker3);
+        int compared2 = comparator.compare(bruker4, bruker2);
+        int compared3 = comparator.compare(bruker1, bruker2);
+        int compared4 = comparator.compare(bruker3, bruker4);
+
+        assertThat(compared1).isEqualTo(1);
+        assertThat(compared2).isEqualTo(-1);
+        assertThat(compared3).isEqualTo(0);
+        assertThat(compared4).isEqualTo(0);
+    }
+
+    @Test
+    
 }
