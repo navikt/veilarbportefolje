@@ -61,13 +61,26 @@ public class SolrUtils {
         }
     }
 
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder) {
+    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, Comparator erNyComparator) {
 
-        Comparator<Bruker> brukerComparator = brukerComparator();
+        Comparator<Bruker> comparator = null;
 
-        brukerComparator = setComparatorSortOrder(brukerComparator, sortOrder);
+        if(erNyComparator != null) {
+            comparator = erNyComparator;
 
-        brukere.sort(brukerComparator);
+            if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+                comparator = comparator.thenComparing(setComparatorSortOrder(brukerNavnComparator(), sortOrder));
+            }
+        }
+        else {
+            if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+                comparator = setComparatorSortOrder(brukerNavnComparator(), sortOrder);
+            }
+        }
+
+        if(comparator != null) {
+            brukere.sort(comparator);
+        }
 
         return brukere;
     }
@@ -76,7 +89,25 @@ public class SolrUtils {
         return sortOrder.equals("descending") ? comparator.reversed() : comparator;
     }
 
-    static Comparator<Bruker> brukerComparator() {
+    public static Comparator<Bruker> brukerErNyComparator() {
+        return (brukerA, brukerB) -> {
+
+            boolean brukerAErNy = brukerA.getVeilederId() == null;
+            boolean brukerBErNy = brukerB.getVeilederId() == null;
+
+            if(brukerAErNy && !brukerBErNy) {
+                return -1;
+            }
+            else if(!brukerAErNy && brukerBErNy) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        };
+    }
+
+    static Comparator<Bruker> brukerNavnComparator() {
         return (brukerA, brukerB) -> {
 
             Locale locale = new Locale("no", "NO");
