@@ -29,14 +29,6 @@ public class FodselsnummerUtilsTest {
     }
 
     @Test
-    public void skalReturnereTrueHvisVeilederidErNull() {
-        String veilederid = "***REMOVED***";
-
-        assertThat(FodselsnummerUtils.erNyBruker(veilederid)).isFalse();
-        assertThat(FodselsnummerUtils.erNyBruker(null)).isTrue();
-    }
-
-    @Test
     public void skalLageFodselsdagIMndFraForsteNummerIFodselsnummerOgHandtereDNummer() {
         String fodselsnummer2 = "***REMOVED***";
         String fodselsnummer3 = "***REMOVED***";

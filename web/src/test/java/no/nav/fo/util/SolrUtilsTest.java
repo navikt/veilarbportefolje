@@ -10,7 +10,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.sql.Date;
 import java.util.*;
 
 import static no.nav.fo.util.SolrUtils.*;

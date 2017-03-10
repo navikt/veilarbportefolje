@@ -24,7 +24,6 @@ public class Bruker {
     int fodselsdagIMnd;
     String fodselsdato;
     String kjonn;
-    boolean erInaktiv;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -38,8 +37,7 @@ public class Bruker {
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
                 .setFodselsdato(document.get("fodselsdato").toString())
-                .setKjonn((String) document.get("kjonn"))
-                .setErInaktiv(erInaktivEllerDoed(document));
+                .setKjonn((String) document.get("kjonn"));
     }
 
     private static String getDiskresjonskode(SolrDocument document) {
