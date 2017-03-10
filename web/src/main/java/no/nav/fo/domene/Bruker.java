@@ -59,8 +59,4 @@ public class Bruker {
             return singletonList(kode);
         }
     }
-
-    private static boolean erNyBruker(SolrDocument document) {
-        return document.get("veileder_id") == null;
-    }
 }
