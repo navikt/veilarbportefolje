@@ -8,12 +8,10 @@ import no.nav.fo.service.SolrUpdateResponseCodeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.text.Collator;
 import java.util.*;
 
