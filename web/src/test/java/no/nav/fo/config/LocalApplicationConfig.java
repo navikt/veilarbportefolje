@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Import({
         OppdaterBrukerdataListener.class,
         DatabaseConfig.class,
-        VirksomhetEnhetEndpointConfig.class,
+        VirksomhetEnhetEndpointConfigMock.class,
         ServiceConfig.class,
         SolrConfig.class,
         MQMockConfig.class,
