@@ -41,7 +41,7 @@
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <javax.jms.version>1.1</javax.jms.version>
-        <oidc-security.version>2.0.14</oidc-security.version>
+        <oidc-security.version>2.0.15</oidc-security.version>
 
 
         <!-- Tredjeparts -->
