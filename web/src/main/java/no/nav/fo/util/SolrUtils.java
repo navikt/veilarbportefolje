@@ -8,12 +8,10 @@ import no.nav.fo.service.SolrUpdateResponseCodeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.text.Collator;
 import java.util.*;
 
@@ -44,10 +42,6 @@ public class SolrUtils {
         solrQuery.addFilterQuery(queryString);
         leggTilFiltervalg(solrQuery, filtervalg);
         return solrQuery;
-    }
-
-    public static Map<String, Object> nyesteBruker(List<Map<String, Object>> brukere) {
-        return brukere.stream().max(Comparator.comparing(r -> new DateTime(r.get("tidsstempel")).getMillis())).get();
     }
 
     public static boolean isSlaveNode() {

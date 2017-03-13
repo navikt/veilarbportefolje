@@ -10,7 +10,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.sql.Date;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,24 +63,6 @@ public class SolrUtilsTest {
         assertThat(solrQuery.getQuery()).isEqualTo(query);
         assertThat(solrQuery.getFacetFields()[0]).isEqualTo("value");
         assertThat(Boolean.parseBoolean(solrQuery.get("facet"))).isEqualTo(true);
-    }
-
-    @Test
-    public void skalFinneNyesteBruker() {
-        List<Map<String, Object>> brukere = new ArrayList<>();
-        Map<String, Object> bruker1 = new HashMap<>();
-        Map<String, Object> bruker2 = new HashMap<>();
-        Map<String, Object> bruker3 = new HashMap<>();
-        bruker1.put("tidsstempel", new Date(System.currentTimeMillis()));
-        bruker2.put("tidsstempel", new Date(System.currentTimeMillis() + 100000));
-        bruker3.put("tidsstempel", new Date(System.currentTimeMillis() + 10000000));
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-
-        Map<String, Object> nyesteBruker = SolrUtils.nyesteBruker(brukere);
-
-        assertThat(nyesteBruker).isEqualTo(bruker3);
     }
 
     @Test

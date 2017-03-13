@@ -25,10 +25,6 @@ class FodselsnummerUtils {
         return kjonnsNr % 2 == 0 ? "K" : "M";
     }
 
-    static boolean erNyBruker(String veilederid) {
-        return veilederid == null;
-    }
-
     static boolean erDNummer(String fnr) {
          return Integer.parseInt(fnr.substring(0,1)) > 3;
     }
