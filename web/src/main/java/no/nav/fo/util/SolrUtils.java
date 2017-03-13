@@ -174,24 +174,27 @@ public class SolrUtils {
 
     static String leggTilAlderFilter(Filtervalg filtervalg) {
         String filter = "fodselsdato:";
+        String NOW_PREFIX = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
+        String POSTFIX = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
 
+        // Pga at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut.
         switch(filtervalg.alder) {
             case 1:
-                return filter += "[NOW-19YEARS TO NOW]";
+                return filter += NOW_PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX; // 19 og under
             case 2:
-                return filter += "[NOW-24YEARS TO NOW-20YEARS]";
+                return filter += NOW_PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX; // 20-24
             case 3:
-                return filter += "[NOW-29YEARS TO NOW-25YEARS]";
+                return filter += NOW_PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX; // 25-29
             case 4:
-                return filter += "[NOW-39YEARS TO NOW-30YEARS]";
+                return filter += NOW_PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX; // 30-39
             case 5:
-                return filter += "[NOW-49YEARS TO NOW-40YEARS]";
+                return filter += NOW_PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX; // 40-49
             case 6:
-                return filter += "[NOW-59YEARS TO NOW-50YEARS]";
+                return filter += NOW_PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX; // 50-59
             case 7:
-                return filter += "[NOW-66YEARS TO NOW-60YEARS]";
+                return filter += NOW_PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX; // 60-66
             default:
-                return filter += "[NOW-70YEARS TO NOW-67YEARS]";
+                return filter += NOW_PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX; // 67-70
         }
     }
 }
