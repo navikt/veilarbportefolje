@@ -21,6 +21,9 @@ public class Bruker {
     String diskresjonskode;
     Boolean egenAnsatt;
     Boolean erDoed;
+    int fodselsdagIMnd;
+    String fodselsdato;
+    String kjonn;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -31,7 +34,10 @@ public class Bruker {
                 .setDiskresjonskode(getDiskresjonskode(document))
                 .setEgenAnsatt( (Boolean) document.get("egen_ansatt"))
                 .setErDoed( (Boolean) document.get("er_doed"))
-                .setSikkerhetstiltak(getSikkerhetstiltak(document));
+                .setSikkerhetstiltak(getSikkerhetstiltak(document))
+                .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
+                .setFodselsdato(document.get("fodselsdato").toString())
+                .setKjonn((String) document.get("kjonn"));
     }
 
     private static String getDiskresjonskode(SolrDocument document) {

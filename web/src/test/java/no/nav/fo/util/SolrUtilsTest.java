@@ -2,6 +2,7 @@ package no.nav.fo.util;
 
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.FacetResults;
+import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -79,12 +80,17 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalByggSolrQueryMedRiktigQueryString() throws Exception {
-        String queryString = "enhetId: 0713";
+    public void skalByggSolrQueryMedAlleFelterUtfylt() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.inaktiveBrukere = true;
+        String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
+        String enhetId = "0713";
+        String queryString = "enhet_id:"+enhetId;
 
-        SolrQuery query = SolrUtils.buildSolrQuery(queryString);
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
 
-        assertThat(query.getQuery()).isEqualTo(queryString);
     }
 
     @Test
