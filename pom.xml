@@ -54,13 +54,13 @@
         <jackson.version>2.7.4</jackson.version>
         <logback.version>1.1.7</logback.version>
         <commons-lang3.version>3.1</commons-lang3.version>
-        <jsoup.version>1.7.2</jsoup.version>
         <mockito.version>1.9.5</mockito.version>
         <solr.version>4.10.4</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
+        <camel.version>2.18.2</camel.version>
 
         <!-- Java -->
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -83,6 +83,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Virksomhetstjenester -->
+            <dependency>
+                <groupId>no.nav.meldinger.virksomhet</groupId>
+                <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
+                <classifier>jaxb</classifier>
+            </dependency>
+
             <!--oidc-security-->
             <dependency>
                 <groupId>no.nav.dialogarena</groupId>
@@ -476,6 +484,26 @@
                         <artifactId>geronimo-jms_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-core</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-spring</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-ftp</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-jaxb</artifactId>
+                <version>${camel.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.mq</groupId>

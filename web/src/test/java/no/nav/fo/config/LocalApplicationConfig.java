@@ -16,7 +16,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         ServiceConfig.class,
         SolrConfig.class,
         MQMockConfig.class,
-        AktoerEndpointConfig.class
+        AktoerEndpointConfig.class,
+        CamelConfig.class
 })
 public class LocalApplicationConfig {
     @Bean

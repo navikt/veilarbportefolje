@@ -18,6 +18,13 @@
     </properties>
 
     <dependencies>
+        <!-- Virksomhetstjenester -->
+        <dependency>
+            <groupId>no.nav.meldinger.virksomhet</groupId>
+            <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
+            <classifier>jaxb</classifier>
+        </dependency>
+
         <!--oidc-security-->
         <dependency>
             <groupId>no.nav.dialogarena</groupId>
@@ -271,6 +278,22 @@
         <dependency>
             <groupId>org.apache.geronimo.components</groupId>
             <artifactId>geronimo-jaspi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-ftp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jaxb</artifactId>
         </dependency>
     </dependencies>
 

@@ -3,6 +3,7 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
+import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.util.SolrUtils;
@@ -24,10 +25,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -100,10 +98,31 @@ public class SolrService {
         return hentBrukere(queryString, sortOrder, null);
     }
 
+    public Optional<Bruker> hentBruker(String fnr) {
+        try {
+            QueryResponse response = server.query(SolrUtils.buildSolrQuery("fnr:" + fnr));
+            SolrUtils.checkSolrResponseCode(response.getStatus());
+
+            SolrDocumentList results = response.getResults();
+
+            if (results.size() != 1) {
+                logger.debug("Feil ved uthenting av %s. Fant %d solr-dokumenter.", fnr, results.size());
+                return Optional.empty();
+            }
+            return results.stream().map(Bruker::of).findFirst();
+
+        } catch (SolrServerException e) {
+            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
     private List<Bruker> hentBrukere(String queryString, String sortOrder, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString));
+            SolrUtils.checkSolrResponseCode(response.getStatus());
+
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());

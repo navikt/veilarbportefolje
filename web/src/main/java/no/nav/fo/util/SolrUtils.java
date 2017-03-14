@@ -3,7 +3,7 @@ package no.nav.fo.util;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Facet;
 import no.nav.fo.domene.FacetResults;
-import no.nav.fo.service.SolrUpdateResponseCodeException;
+import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
