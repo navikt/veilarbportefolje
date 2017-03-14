@@ -143,11 +143,11 @@ public class SolrUtils {
         List<String> oversiktStatements = new ArrayList<>();
         List<String> filtrerBrukereStatements = new ArrayList<>();
 
-        if(filtervalg.nyeBrukere) {
+        if(filtervalg.nyeBrukere && filtervalg.inaktiveBrukere) {
+            oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)");
+        } else if(filtervalg.nyeBrukere) {
             oversiktStatements.add("-veileder_id:*");
-        }
-
-        if(filtervalg.inaktiveBrukere) {
+        } else if(filtervalg.inaktiveBrukere) {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
@@ -159,8 +159,8 @@ public class SolrUtils {
             filtrerBrukereStatements.add("kjonn:" + filtervalg.kjonn);
         }
 
-        if(filtervalg.fodselsdagIMnd != null && filtervalg.fodselsdagIMnd[0] < filtervalg.fodselsdagIMnd[1]) {
-            filtrerBrukereStatements.add("fodselsdag_i_mnd:[" + filtervalg.fodselsdagIMnd[0] + " TO " + filtervalg.fodselsdagIMnd[1] + "]");
+        if(filtervalg.fodselsdagIMnd > 0 && filtervalg.fodselsdagIMnd <= 31) {
+            filtrerBrukereStatements.add("fodselsdag_i_mnd:" + filtervalg.fodselsdagIMnd);
         }
 
         if(!oversiktStatements.isEmpty()) {
@@ -177,7 +177,7 @@ public class SolrUtils {
         String NOW_PREFIX = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
         String POSTFIX = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
 
-        // Pga at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut.
+        // Pga. at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut i forhold til ønsket filter
         switch(filtervalg.alder) {
             case 1:
                 return filter += NOW_PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX; // 19 og under

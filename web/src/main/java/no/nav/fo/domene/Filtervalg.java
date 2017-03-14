@@ -15,10 +15,10 @@ public class Filtervalg {
     @QueryParam("kjonn")
     public String kjonn;
 
-    @QueryParam("fodselsdagIMnd[]")
-    public int fodselsdagIMnd[];
+    @QueryParam("fodselsdagIMnd")
+    public int fodselsdagIMnd;
 
     public boolean harAktiveFilter() {
-        return nyeBrukere || inaktiveBrukere || (alder > 0 && alder <= 8)|| kjonn != null || fodselsdagIMnd != null;
+        return nyeBrukere || inaktiveBrukere || (alder > 0 && alder <= 8)|| kjonn != null || (fodselsdagIMnd > 0 && fodselsdagIMnd <= 31);
     }
 }
