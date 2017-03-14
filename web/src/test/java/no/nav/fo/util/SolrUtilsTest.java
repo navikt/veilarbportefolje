@@ -341,29 +341,33 @@ public class SolrUtilsTest {
     @Test
     public void skalLeggeTilAlderFilterISolrQuery() {
         Filtervalg filtervalg = new Filtervalg();
+
+        String PREFIX = "fodselsdato:[NOW/DAY-";
+        String POSTFIX = "+1DAY/DAY]";
+
         filtervalg.alder = 1;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-19YEARS TO NOW]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
 
         filtervalg.alder = 2;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-24YEARS TO NOW-20YEARS]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
 
         filtervalg.alder = 3;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-29YEARS TO NOW-25YEARS]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
 
         filtervalg.alder = 4;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-39YEARS TO NOW-30YEARS]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
 
         filtervalg.alder = 5;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-49YEARS TO NOW-40YEARS]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
 
         filtervalg.alder = 6;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-59YEARS TO NOW-50YEARS]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
 
         filtervalg.alder = 7;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-66YEARS TO NOW-60YEARS]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
 
         filtervalg.alder = 8;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo("fodselsdato:[NOW-70YEARS TO NOW-67YEARS]");
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
 
     }
 
