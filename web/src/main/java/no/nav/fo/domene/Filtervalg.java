@@ -19,6 +19,10 @@ public class Filtervalg {
     public int fodselsdagIMnd;
 
     public boolean harAktiveFilter() {
-        return nyeBrukere || inaktiveBrukere || (alder > 0 && alder <= 8)|| ("M".equals(kjonn) || "K".equals(kjonn)) || (fodselsdagIMnd > 0 && fodselsdagIMnd <= 31);
+        return nyeBrukere || inaktiveBrukere || erMellom(alder, 0, 8) || ("M".equals(kjonn) || "K".equals(kjonn)) || erMellom(fodselsdagIMnd, 1, 31);
+    }
+
+    private boolean erMellom(int variabel, int fra, int til) {
+        return variabel > fra && variabel <= til;
     }
 }

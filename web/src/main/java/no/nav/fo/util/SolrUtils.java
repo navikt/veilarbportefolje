@@ -174,27 +174,27 @@ public class SolrUtils {
 
     static String leggTilAlderFilter(Filtervalg filtervalg) {
         String filter = "fodselsdato:";
-        String NOW_PREFIX = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
-        String POSTFIX = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
+        String prefix = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
+        String postfix = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
 
         // Pga. at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut i forhold til ønsket filter
         switch(filtervalg.alder) {
             case 1:
-                return filter += NOW_PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX; // 19 og under
+                return filter + (prefix + "20YEARS+1DAY TO NOW" + postfix); // 19 og under
             case 2:
-                return filter += NOW_PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX; // 20-24
+                return filter + (prefix + "25YEARS+1DAY TO NOW-20YEARS" + postfix); // 20-24
             case 3:
-                return filter += NOW_PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX; // 25-29
+                return filter + (prefix + "30YEARS+1DAY TO NOW-25YEARS" + postfix); // 25-29
             case 4:
-                return filter += NOW_PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX; // 30-39
+                return filter + (prefix + "40YEARS+1DAY TO NOW-30YEARS" + postfix); // 30-39
             case 5:
-                return filter += NOW_PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX; // 40-49
+                return filter + (prefix + "50YEARS+1DAY TO NOW-40YEARS" + postfix); // 40-49
             case 6:
-                return filter += NOW_PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX; // 50-59
+                return filter + (prefix + "60YEARS+1DAY TO NOW-50YEARS" + postfix); // 50-59
             case 7:
-                return filter += NOW_PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX; // 60-66
+                return filter + (prefix + "67YEARS+1DAY TO NOW-60YEARS" + postfix); // 60-66
             default:
-                return filter += NOW_PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX; // 67-70
+                return filter + (prefix + "71YEARS+1DAY TO NOW-67YEARS" + postfix); // 67-70
         }
     }
 }
