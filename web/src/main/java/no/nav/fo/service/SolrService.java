@@ -6,6 +6,7 @@ import no.nav.fo.domene.Bruker;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.domene.FacetResults;
+import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -88,14 +89,14 @@ public class SolrService {
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
 
-    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder) {
+    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, Filtervalg filtervalg) {
         String queryString = "enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, SolrUtils.brukerErNyComparator());
+        return hentBrukere(queryString, sortOrder, filtervalg, SolrUtils.brukerErNyComparator());
     }
 
-    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder) {
+    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder, Filtervalg filtervalg) {
         String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, null);
+        return hentBrukere(queryString, sortOrder, filtervalg, null);
     }
 
     public Optional<Bruker> hentBruker(String fnr) {
@@ -117,12 +118,11 @@ public class SolrService {
         }
     }
 
-    private List<Bruker> hentBrukere(String queryString, String sortOrder, Comparator<Bruker> erNyComparator) {
+    public List<Bruker> hentBrukere(String queryString, String sortOrder, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString));
+            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
             SolrUtils.checkSolrResponseCode(response.getStatus());
-
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());

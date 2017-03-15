@@ -31,12 +31,14 @@ public class DbUtils {
             document.addField("er_doed", parseJaNei(rs.getString("er_doed"), "er_doed"));
             document.addField("doed_fra_dato", parseDato(rs.getString("doed_fra_dato")));
             document.addField("veileder_id", rs.getString("veilederident"));
+            document.addField("fodselsdag_i_mnd", FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")));
+            document.addField("fodselsdato", FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")));
+            document.addField("kjonn", FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")));
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return document;
     }
-
 
     public static SolrInputDocument mapRadTilDokument(Map<String, Object> rad) {
         SolrInputDocument document = new SolrInputDocument();

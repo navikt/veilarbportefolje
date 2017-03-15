@@ -2,6 +2,7 @@ package no.nav.fo.provider.rest;
 
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Bruker;
+import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
@@ -37,7 +38,8 @@ public class VeilederController {
             @QueryParam("enhet") String enhet,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
-            @QueryParam("sortByLastName") String sortDirection) {
+            @QueryParam("sortByLastName") String sortDirection,
+            @BeanParam Filtervalg filtervalg) {
 
         try {
             String ident = SubjectHandler.getSubjectHandler().getUid();
@@ -45,7 +47,7 @@ public class VeilederController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection);
+                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, brukereSublist, enhet, fra);

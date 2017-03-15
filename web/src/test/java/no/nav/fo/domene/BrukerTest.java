@@ -44,6 +44,10 @@ public class BrukerTest {
         document.addField("sikkerhetstiltak", "foo");
         document.addField("er_doed", false);
         document.addField("diskresjonskode", kode);
+        document.addField("fodselsdag_i_mnd", 99);
+        document.addField("fodselsdato", "999999");
+        document.addField("kjonn", "K");
+        document.addField("erInaktiv", false);
 
         return document;
     }

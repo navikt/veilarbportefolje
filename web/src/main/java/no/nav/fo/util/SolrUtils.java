@@ -4,9 +4,14 @@ import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Facet;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.domene.Filtervalg;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.text.Collator;
 import java.util.*;
 
@@ -33,7 +38,17 @@ public class SolrUtils {
     }
 
     public static SolrQuery buildSolrQuery(String queryString) {
-        return new SolrQuery(queryString);
+        SolrQuery solrQuery = new SolrQuery("*:*");
+        solrQuery.addFilterQuery(queryString);
+        return solrQuery;
+    }
+
+
+    public static SolrQuery buildSolrQuery(String queryString, Filtervalg filtervalg) {
+        SolrQuery solrQuery = new SolrQuery("*:*");
+        solrQuery.addFilterQuery(queryString);
+        leggTilFiltervalg(solrQuery, filtervalg);
+        return solrQuery;
     }
 
     public static boolean isSlaveNode() {
@@ -127,5 +142,19 @@ public class SolrUtils {
         };
     }
 
+    private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
+        List<String> statements = new ArrayList<>();
 
+        if(filtervalg.nyeBrukere) {
+            statements.add("-veileder_id:*");
+        }
+
+        if(filtervalg.inaktiveBrukere) {
+            statements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
+        }
+
+        if(!statements.isEmpty()) {
+            query.addFilterQuery(StringUtils.join(statements, " OR "));
+        }
+    }
 }
