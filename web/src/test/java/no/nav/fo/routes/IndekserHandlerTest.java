@@ -12,14 +12,16 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static java.lang.String.valueOf;
+import static java.time.LocalDate.of;
 import static java.time.Month.MARCH;
 import static no.nav.fo.routes.IndekserHandler.utlopsdatoUtregning;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 public class IndekserHandlerTest {
-    public static final LocalDate START_DATO = LocalDate.of(2017, MARCH, 7);
+    public static final LocalDate START_DATO = of(2017, MARCH, 7);
 
+    private final LocalDate startDato;
     private final Dagpengetellere testdata;
     private final LocalDate result;
 
@@ -33,17 +35,26 @@ public class IndekserHandlerTest {
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {dt(1, 0), START_DATO},
-                {dt(3, 0), START_DATO.plusDays(2)},
-                {dt(4, 0), START_DATO.plusDays(3)},
-                {dt(0, 1), START_DATO.plusDays(6)},
-                {dt(1, 1), START_DATO.plusDays(7)},
-                {dt(4, 2), START_DATO.plusDays(17)},
-                {dt(0, 3), START_DATO.plusDays(20)}
+                // Data fra excel-arket: http://confluence.adeo.no/pages/viewpage.action?pageId=208240799
+                {START_DATO, dt(1, 0), START_DATO},
+                {START_DATO, dt(3, 0), START_DATO.plusDays(2)},
+                {START_DATO, dt(4, 0), START_DATO.plusDays(3)},
+                {START_DATO, dt(0, 1), START_DATO.plusDays(6)},
+                {START_DATO, dt(1, 1), START_DATO.plusDays(7)},
+                {START_DATO, dt(4, 2), START_DATO.plusDays(17)},
+                {START_DATO, dt(0, 3), START_DATO.plusDays(20)},
+
+                // Andre test-caser som sjekker at man ikke havner i helgen
+                {of(2017, MARCH, 17), dt(1, 0), of(2017, MARCH, 17)},
+                {of(2017, MARCH, 17), dt(2, 0), of(2017, MARCH, 20)},
+                {of(2017, MARCH, 18), dt(1, 0), of(2017, MARCH, 20)},
+                {of(2017, MARCH, 18), dt(0, 1), of(2017, MARCH, 24)}, // Skal ha 5 virkedager igjen
+                {of(2017, MARCH, 18), dt(1, 1), of(2017, MARCH, 27)}
         });
     }
 
-    public IndekserHandlerTest(Dagpengetellere testdata, LocalDate result) {
+    public IndekserHandlerTest(LocalDate startDato, Dagpengetellere testdata, LocalDate result) {
+        this.startDato = startDato;
         this.testdata = testdata;
         this.result = result;
     }
@@ -51,7 +62,6 @@ public class IndekserHandlerTest {
 
     @Test
     public void skalGiRiktigVerdi() {
-        assertThat(utlopsdatoUtregning(START_DATO, this.testdata)).isEqualTo(this.result);
+        assertThat(utlopsdatoUtregning(this.startDato, this.testdata)).isEqualTo(this.result);
     }
-
 }

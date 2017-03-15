@@ -11,6 +11,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
 import javax.inject.Inject;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 
@@ -60,10 +61,16 @@ public class IndekserHandler {
     }
 
     static LocalDate utlopsdatoUtregning(LocalDate now, Dagpengetellere dagpengetellere) {
-        return now
+        LocalDate utlopsdato = now
                 .minusDays(1)
                 .plusWeeks(dagpengetellere.getAntallUkerIgjen().intValue())
                 .plusDays(dagpengetellere.getAntallDagerIgjen().intValue());
+
+        while (utlopsdato.getDayOfWeek() == DayOfWeek.SATURDAY || utlopsdato.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            utlopsdato = utlopsdato.plusDays(1);
+        }
+
+        return utlopsdato;
     }
 
     private void lagreSolrDokument(SolrInputDocument dokument) {
