@@ -155,7 +155,7 @@ public class SolrUtils {
             filtrerBrukereStatements.add(leggTilAlderFilter(filtervalg));
         }
 
-        if(filtervalg.kjonn != null) {
+        if(filtervalg.kjonn != null && ("K".equals(filtervalg.kjonn) || "M".equals(filtervalg.kjonn))) {
             filtrerBrukereStatements.add("kjonn:" + filtervalg.kjonn);
         }
 

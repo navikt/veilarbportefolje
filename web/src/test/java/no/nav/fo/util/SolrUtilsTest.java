@@ -94,6 +94,33 @@ public class SolrUtilsTest {
     }
 
     @Test
+    public void skalByggSolrQueryMedNyeBrukere() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.nyeBrukere = true;
+        String nyeBrukereFilter = "-veileder_id:*";
+        String enhetId = "0713";
+        String queryString = "enhet_id:"+enhetId;
+
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(nyeBrukereFilter);
+    }
+
+    @Test
+    public void skalByggSolrQueryMedInaktiveOgNyeBrukere() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.inaktiveBrukere = true;
+        filtervalg.nyeBrukere = true;
+        String expectedFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)";
+        String enhetId = "0713";
+        String queryString = "enhet_id:"+enhetId;
+
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(expectedFilter);
+    }
+
+    @Test
     public void skalSammenligneEtternavnRiktig() {
         Bruker bruker1 = new Bruker().setEtternavn("Andersen");
         Bruker bruker2 = new Bruker().setEtternavn("Anderson");
@@ -368,7 +395,6 @@ public class SolrUtilsTest {
 
         filtervalg.alder = 8;
         assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
-
     }
 
     @Test
@@ -383,6 +409,15 @@ public class SolrUtilsTest {
         filtervalg.kjonn = "K";
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
         assertThat(solrQuery.getFilterQueries()).contains("kjonn:K");
+
+        filtervalg.kjonn = "J";
+
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).containsOnly("");
+
+        filtervalg.kjonn = "";
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).containsOnly("");
     }
 
     @Test

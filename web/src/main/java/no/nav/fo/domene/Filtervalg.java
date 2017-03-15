@@ -19,6 +19,6 @@ public class Filtervalg {
     public int fodselsdagIMnd;
 
     public boolean harAktiveFilter() {
-        return nyeBrukere || inaktiveBrukere || (alder > 0 && alder <= 8)|| kjonn != null || (fodselsdagIMnd > 0 && fodselsdagIMnd <= 31);
+        return nyeBrukere || inaktiveBrukere || (alder > 0 && alder <= 8)|| ("M".equals(kjonn) || "K".equals(kjonn)) || (fodselsdagIMnd > 0 && fodselsdagIMnd <= 31);
     }
 }
