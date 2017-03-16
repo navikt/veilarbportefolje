@@ -58,6 +58,9 @@ public class DbUtils {
         document.addField("er_doed", parseJaNei(rad.get("er_doed"), "er_doed"));
         document.addField("doed_fra_dato", parseDato(rad.get("doed_fra_dato")));
         document.addField("veileder_id", rad.get("veilederident").toString());
+        document.addField("fodselsdag_i_mnd", FodselsnummerUtils.lagFodselsdagIMnd(rad.get("fodselsnr").toString()));
+        document.addField("fodselsdato", FodselsnummerUtils.lagFodselsdato(rad.get("fodselsnr").toString()));
+        document.addField("kjonn", FodselsnummerUtils.lagKjonn(rad.get("fodselsnr").toString()));
         return document;
     }
 
