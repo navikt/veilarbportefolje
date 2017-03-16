@@ -24,7 +24,6 @@ public class OppdaterBrukerdataListener {
     @Inject
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
 
-    @Transactional
     @JmsListener(id = "endringAvVeileder_inbound", containerFactory = "jmsListenerContainerFactory", destination = "java:jboss/jms/endreVeilederKo")
     public void listenForEndringAvVeileder(Object message) {
         TextMessage textMessage = (TextMessage) message;
