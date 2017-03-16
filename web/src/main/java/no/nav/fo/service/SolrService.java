@@ -139,7 +139,7 @@ public class SolrService {
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
         addDocuments(dokumenter);
         commit();
-        logger.info("Bruker med personId %s lagt til i indeksen", personId);
+        logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }
 
     private Try<UpdateResponse> commit() {
