@@ -18,6 +18,7 @@ import java.time.LocalDate;
 public class IndekserHandler {
 
     public static final String DAGPENGER = "DAGP";
+
     @Inject
     SolrService solr;
 

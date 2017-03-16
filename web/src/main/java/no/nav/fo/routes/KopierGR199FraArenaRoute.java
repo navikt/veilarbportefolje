@@ -8,14 +8,20 @@ import static java.lang.String.format;
 
 public class KopierGR199FraArenaRoute extends SpringRouteBuilder {
 
-    @Value("${no.nav.modig.security.systemuser.username}")
+    @Value("${filmottak.loependeYtelser.sftp.username}")
     String username;
 
-    @Value("${no.nav.modig.security.systemuser.password}")
+    @Value("${filmottak.loependeYtelser.sftp.password}")
     String password;
 
-    @Value("${filmottak.sftp}")
+    @Value("${filmottak.loependeYtelser.sftp}")
     String server;
+
+    private IndekserHandler indekserHandler;
+
+    public KopierGR199FraArenaRoute(IndekserHandler indekserHandler) {
+        this.indekserHandler = indekserHandler;
+    }
 
     @Override
     public void configure() throws Exception {
@@ -23,7 +29,7 @@ public class KopierGR199FraArenaRoute extends SpringRouteBuilder {
                 .autoStartup(true)
                 .convertBodyTo(String.class)
                 .unmarshal(new JaxbDataFormat("no.nav.melding.virksomhet.loependeytelser.v1"))
-                .bean(IndekserHandler.class, "indekser")
+                .bean(indekserHandler, "indekser")
                 .routeId(getClass().getName());
     }
 }
