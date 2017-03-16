@@ -12,12 +12,12 @@ import org.junit.rules.ExpectedException;
 
 import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static no.nav.fo.util.SolrUtils.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolrUtilsTest {
 
@@ -80,7 +80,7 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalByggSolrQueryMedAlleFelterUtfylt() throws Exception {
+    public void skalByggSolrQueryMedInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.inaktiveBrukere = true;
         String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
@@ -91,6 +91,33 @@ public class SolrUtilsTest {
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
 
+    }
+
+    @Test
+    public void skalByggSolrQueryMedNyeBrukere() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.nyeBrukere = true;
+        String nyeBrukereFilter = "-veileder_id:*";
+        String enhetId = "0713";
+        String queryString = "enhet_id:"+enhetId;
+
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(nyeBrukereFilter);
+    }
+
+    @Test
+    public void skalByggSolrQueryMedInaktiveOgNyeBrukere() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.inaktiveBrukere = true;
+        filtervalg.nyeBrukere = true;
+        String expectedFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)";
+        String enhetId = "0713";
+        String queryString = "enhet_id:"+enhetId;
+
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(expectedFilter);
     }
 
     @Test
@@ -336,5 +363,68 @@ public class SolrUtilsTest {
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(2)).isEqualTo(bruker4);
         assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
+    }
+
+    @Test
+    public void skalLeggeTilAlderFilterISolrQuery() {
+        Filtervalg filtervalg = new Filtervalg();
+
+        String PREFIX = "fodselsdato:[NOW/DAY-";
+        String POSTFIX = "+1DAY/DAY]";
+
+        filtervalg.alder = 1;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
+
+        filtervalg.alder = 2;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
+
+        filtervalg.alder = 3;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
+
+        filtervalg.alder = 4;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
+
+        filtervalg.alder = 5;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
+
+        filtervalg.alder = 6;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
+
+        filtervalg.alder = 7;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
+
+        filtervalg.alder = 8;
+        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
+    }
+
+    @Test
+    public void skalLeggeTilKjonnFilter() {
+        Filtervalg filtervalg = new Filtervalg();
+        SolrQuery solrQuery;
+        filtervalg.kjonn = "M";
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+
+        assertThat(solrQuery.getFilterQueries()).contains("kjonn:M");
+
+        filtervalg.kjonn = "K";
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).contains("kjonn:K");
+
+        filtervalg.kjonn = "J";
+
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).containsOnly("");
+
+        filtervalg.kjonn = "";
+        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).containsOnly("");
+    }
+
+    @Test
+    public void skalIkkeLeggePaaFilterQueryHvisIngenFiltervalgErSatt() {
+        Filtervalg filtervalg = new Filtervalg();
+        SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104", filtervalg);
+        filtervalg.harAktiveFilter();
+        assertThat(query.getFilterQueries()).containsOnly("enhet_id:0104");
     }
 }
