@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.text.Collator;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -151,8 +152,8 @@ public class SolrUtils {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
-        if(filtervalg.alder > 0  && filtervalg.alder <= 8) {
-            filtrerBrukereStatements.add(leggTilAlderFilter(filtervalg));
+        if(filtervalg.alder.size() > 0) {
+            filtrerBrukereStatements.add(leggTilAlderFilter(filtervalg.alder));
         }
 
         if(filtervalg.kjonn != null && ("K".equals(filtervalg.kjonn) || "M".equals(filtervalg.kjonn))) {
@@ -172,29 +173,31 @@ public class SolrUtils {
         }
     }
 
-    static String leggTilAlderFilter(Filtervalg filtervalg) {
+    static String leggTilAlderFilter(List<Integer> alder) {
         String filter = "fodselsdato:";
         String prefix = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
         String postfix = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
-
-        // Pga. at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut i forhold til ønsket filter
-        switch(filtervalg.alder) {
-            case 1:
-                return filter + (prefix + "20YEARS+1DAY TO NOW" + postfix); // 19 og under
-            case 2:
-                return filter + (prefix + "25YEARS+1DAY TO NOW-20YEARS" + postfix); // 20-24
-            case 3:
-                return filter + (prefix + "30YEARS+1DAY TO NOW-25YEARS" + postfix); // 25-29
-            case 4:
-                return filter + (prefix + "40YEARS+1DAY TO NOW-30YEARS" + postfix); // 30-39
-            case 5:
-                return filter + (prefix + "50YEARS+1DAY TO NOW-40YEARS" + postfix); // 40-49
-            case 6:
-                return filter + (prefix + "60YEARS+1DAY TO NOW-50YEARS" + postfix); // 50-59
-            case 7:
-                return filter + (prefix + "67YEARS+1DAY TO NOW-60YEARS" + postfix); // 60-66
-            default:
-                return filter + (prefix + "71YEARS+1DAY TO NOW-67YEARS" + postfix); // 67-70
-        }
+        List<String> params = alder.stream().map((aldersRangeIndex) -> {
+            // Pga. at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut i forhold til ønsket filter
+            switch(aldersRangeIndex) {
+                case 1:
+                    return prefix + "20YEARS+1DAY TO NOW" + postfix; // 19 og under
+                case 2:
+                    return prefix + "25YEARS+1DAY TO NOW-20YEARS" + postfix; // 20-24
+                case 3:
+                    return prefix + "30YEARS+1DAY TO NOW-25YEARS" + postfix; // 25-29
+                case 4:
+                    return prefix + "40YEARS+1DAY TO NOW-30YEARS" + postfix; // 30-39
+                case 5:
+                    return prefix + "50YEARS+1DAY TO NOW-40YEARS" + postfix; // 40-49
+                case 6:
+                    return prefix + "60YEARS+1DAY TO NOW-50YEARS" + postfix; // 50-59
+                case 7:
+                    return prefix + "67YEARS+1DAY TO NOW-60YEARS" + postfix; // 60-66
+                default:
+                    return prefix + "71YEARS+1DAY TO NOW-67YEARS" + postfix; // 67-70
+            }
+        }).collect(Collectors.toList());
+        return filter + StringUtils.join(params, " OR " + filter);
     }
 }

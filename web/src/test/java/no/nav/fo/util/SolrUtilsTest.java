@@ -367,34 +367,71 @@ public class SolrUtilsTest {
 
     @Test
     public void skalLeggeTilAlderFilterISolrQuery() {
-        Filtervalg filtervalg = new Filtervalg();
-
         String PREFIX = "fodselsdato:[NOW/DAY-";
         String POSTFIX = "+1DAY/DAY]";
 
-        filtervalg.alder = 1;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
+        List<Integer> liste = new ArrayList<>();
+        liste.add(1);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
 
-        filtervalg.alder = 2;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
+        liste = new ArrayList<>();
+        liste.add(2);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
 
-        filtervalg.alder = 3;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
+        liste = new ArrayList<>();
+        liste.add(3);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
 
-        filtervalg.alder = 4;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
+        liste = new ArrayList<>();
+        liste.add(4);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
 
-        filtervalg.alder = 5;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
+        liste = new ArrayList<>();
+        liste.add(5);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
 
-        filtervalg.alder = 6;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
+        liste = new ArrayList<>();
+        liste.add(6);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
 
-        filtervalg.alder = 7;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
+        liste = new ArrayList<>();
+        liste.add(7);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
 
-        filtervalg.alder = 8;
-        assertThat(SolrUtils.leggTilAlderFilter(filtervalg)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
+        liste = new ArrayList<>();
+        liste.add(8);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
+    }
+
+    @Test
+    public void skalLeggeTilFlereAldersIntervallerISolrQuery() {
+        String filterParameter = "fodselsdato:";
+        String separator = " OR " + filterParameter;
+        String PREFIX = "[NOW/DAY-";
+        String POSTFIX = "+1DAY/DAY]";
+
+        List<Integer> liste = new ArrayList<>();
+        liste.add(1);
+        liste.add(2);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(
+            filterParameter +
+            PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX +
+            separator +
+            PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX
+        );
+
+        liste = new ArrayList<>();
+        liste.add(7);
+        liste.add(4);
+        liste.add(5);
+        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(
+            filterParameter +
+                PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX +
+                separator +
+                PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX +
+                separator +
+                PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX
+        );
     }
 
     @Test
