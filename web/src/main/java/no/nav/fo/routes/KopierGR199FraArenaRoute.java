@@ -17,9 +17,9 @@ public class KopierGR199FraArenaRoute extends SpringRouteBuilder {
     @Value("${filmottak.loependeYtelser.sftp}")
     String server;
 
-    private IndekserHandler indekserHandler;
+    private IndekserYtelserHandler indekserHandler;
 
-    public KopierGR199FraArenaRoute(IndekserHandler indekserHandler) {
+    public KopierGR199FraArenaRoute(IndekserYtelserHandler indekserHandler) {
         this.indekserHandler = indekserHandler;
     }
 

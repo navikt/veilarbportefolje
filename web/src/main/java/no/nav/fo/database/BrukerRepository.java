@@ -1,16 +1,20 @@
 package no.nav.fo.database;
 
+import no.nav.fo.exception.UnexpectedRowCountException;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 
@@ -49,6 +53,7 @@ public class BrukerRepository {
     public int updateTidsstempel(Timestamp tidsstempel) {
         return db.update(updateTidsstempelSQL(), tidsstempel);
     }
+
     public java.util.List<Map<String,Object>> retrieveBruker(String aktoerId) {
         return db.queryForList(retrieveBrukerSQL(),aktoerId);
     }
@@ -56,12 +61,20 @@ public class BrukerRepository {
     public java.util.List<Map<String,Object>> retrievePersonid(String aktoerId) {
         return db.queryForList(getPersonidFromAktoeridSQL(),aktoerId);
     }
-    public java.util.List<Map<String,Object>> retrievePersonidFromFnr(String fnr) {
-        return db.queryForList(getPersonIdFromFnrSQL(),fnr);
+
+    public Optional<BigDecimal> retrievePersonidFromFnr(String fnr) {
+        List<Map<String, Object>> list = db.queryForList(getPersonIdFromFnrSQL(), fnr);
+        if (list.size() != 1) {
+            throw new UnexpectedRowCountException(format("Fikk %d antall rader for bruker med fnr %s", list.size(), fnr));
+        }
+        BigDecimal personId = (BigDecimal)list.get(0).get("PERSON_ID");
+        return Optional.ofNullable(personId);
     }
+
     public void insertBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
         db.update(insertBrukerdataSQL(), aktoerId, veilederident, tilordnetTidsstempel, personId);
     }
+
     public void updateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
         db.update(updateBrukerdataSQL(),veilederident,tilordnetTidsstempel,personId,aktoerId);
     }
@@ -190,7 +203,7 @@ public class BrukerRepository {
     }
 
     String insertBrukerdataSQL() {
-        return "INSERT INTO BRUKER_DATA VALUES(?,?,TO_TIMESTAMP(?,"+dateFormat+"),?)";
+        return "INSERT INTO BRUKER_DATA VALUES(?,?,TO_TIMESTAMP(?," + dateFormat + "),?)";
     }
 
     String updateBrukerdataSQL() {

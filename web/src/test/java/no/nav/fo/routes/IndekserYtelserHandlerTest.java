@@ -7,23 +7,23 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.math.BigInteger;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 
 import static java.lang.String.valueOf;
 import static java.time.LocalDate.of;
 import static java.time.Month.MARCH;
-import static no.nav.fo.routes.IndekserHandler.utlopsdatoUtregning;
+import static no.nav.fo.routes.IndekserYtelserHandler.utlopsdatoUtregning;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
-public class IndekserHandlerTest {
-    public static final LocalDate START_DATO = of(2017, MARCH, 7);
+public class IndekserYtelserHandlerTest {
+    private static final LocalDateTime START_DATO = LocalDateTime.of(2017, MARCH, 7, 0, 0);
 
-    private final LocalDate startDato;
+    private final LocalDateTime startDato;
     private final Dagpengetellere testdata;
-    private final LocalDate result;
+    private final LocalDateTime result;
 
     public static Dagpengetellere dt(int dager, int uker) {
         return new Dagpengetellere() {{
@@ -53,7 +53,7 @@ public class IndekserHandlerTest {
         });
     }
 
-    public IndekserHandlerTest(LocalDate startDato, Dagpengetellere testdata, LocalDate result) {
+    public IndekserYtelserHandlerTest(LocalDateTime startDato, Dagpengetellere testdata, LocalDateTime result) {
         this.startDato = startDato;
         this.testdata = testdata;
         this.result = result;

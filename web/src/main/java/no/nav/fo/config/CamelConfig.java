@@ -1,7 +1,7 @@
 package no.nav.fo.config;
 
 
-import no.nav.fo.routes.IndekserHandler;
+import no.nav.fo.routes.IndekserYtelserHandler;
 import no.nav.fo.routes.KopierGR199FraArenaRoute;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
@@ -12,12 +12,12 @@ import org.springframework.context.annotation.Configuration;
 public class CamelConfig {
 
     @Bean
-    public IndekserHandler indekserHandler() {
-        return new IndekserHandler();
+    public IndekserYtelserHandler indekserHandler() {
+        return new IndekserYtelserHandler();
     }
 
     @Bean
-    public KopierGR199FraArenaRoute kopierGR199FraArenaRoute(IndekserHandler indekserHandler) {
+    public KopierGR199FraArenaRoute kopierGR199FraArenaRoute(IndekserYtelserHandler indekserHandler) {
         return new KopierGR199FraArenaRoute(indekserHandler);
     }
 

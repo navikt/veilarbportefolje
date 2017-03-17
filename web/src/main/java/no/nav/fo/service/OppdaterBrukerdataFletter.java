@@ -3,6 +3,7 @@ package no.nav.fo.service;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.aktoer.v2.HentIdentForAktoerIdPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdRequest;
@@ -55,16 +56,13 @@ public class OppdaterBrukerdataFletter {
                             .withAktoerId(aktoerId)
             ).getIdent();
 
-            List<Map<String,Object>> fnrToPersonid = brukerRepository.retrievePersonidFromFnr(fnr);
-
-            if(fnrToPersonid.isEmpty()) {
-                LOG.error(String.format("Kunne ikke finne fnr i databasen"));
-                return null;
-            }
-
-            personId = getPersonidFromBigDecimal((BigDecimal) fnrToPersonid.get(0).get("PERSON_ID"));
+            personId = brukerRepository.retrievePersonidFromFnr(fnr)
+                    .map(BigDecimal::intValue)
+                    .map(x -> Integer.toString(x))
+                    .orElseThrow(() -> new FantIkkePersonIdException(fnr));
 
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
+
             LOG.debug(String.format("Personid %s og aktoerId %s lagret til database", personId, aktoerId));
         } catch (HentIdentForAktoerIdPersonIkkeFunnet e) {
             LOG.error(String.format("Kunne ikke finne ident for aktoerId %s", aktoerId));
@@ -74,9 +72,5 @@ public class OppdaterBrukerdataFletter {
             return null;
         }
         return personId;
-    }
-
-    String getPersonidFromBigDecimal(BigDecimal personId) {
-        return Integer.toString(personId.intValue());
     }
 }
