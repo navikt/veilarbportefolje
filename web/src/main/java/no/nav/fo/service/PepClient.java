@@ -4,6 +4,7 @@ import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import org.springframework.cache.annotation.Cacheable;
 
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
@@ -14,6 +15,7 @@ public class PepClient {
     @Inject
     private Pep pep;
 
+    @Cacheable("brukertilgangCache")
     public boolean isServiceCallAllowed(String fnr, String ident) {
         BiasedDecisionResponse callAllowed;
         try {

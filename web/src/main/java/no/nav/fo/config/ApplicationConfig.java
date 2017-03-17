@@ -20,7 +20,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         ServiceConfig.class,
         SolrConfig.class,
         MessageQueueConfig.class,
-        AktoerEndpointConfig.class
+        AktoerEndpointConfig.class,
+        CacheConfig.class
 })
 public class ApplicationConfig {
 

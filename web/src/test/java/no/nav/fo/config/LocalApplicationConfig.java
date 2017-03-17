@@ -19,6 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         MQMockConfig.class,
         AktoerEndpointConfig.class,
         AbacContext.class,
+        CacheConfig.class
 })
 public class LocalApplicationConfig {
     @Bean
