@@ -13,7 +13,12 @@
         <ear groupId="no.nav.fo" artifactId="veilarbportefolje-jee"/>
     </artifacts>
 
+    <abacSecurity serviceUserResourceAlias="srvveilarbsituasjon"/>
+
     <resources>
+        <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
+        <ldap alias="ldap" mapToProperty="ldap"/>
+
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
 

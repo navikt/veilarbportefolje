@@ -2,6 +2,7 @@ package no.nav.fo.util;
 
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
+import no.nav.fo.service.PepClient;
 
 import java.util.List;
 
@@ -23,4 +24,17 @@ public class PortefoljeUtils {
         return brukere.stream().skip(fra).limit(antall).collect(toList());
     }
 
+    public static List<Bruker> filtrerBrukere(List<Bruker> brukere, String veilederIdent, PepClient pepClient) {
+        return brukere.stream()
+                .map( bruker -> fjernNavnOgFnrDersomIkkeTilgang(bruker, pepClient.isServiceCallAllowed(bruker.getFnr(),veilederIdent)))
+                .collect(toList());
+    }
+
+    private static Bruker fjernNavnOgFnrDersomIkkeTilgang(Bruker bruker, Boolean skalNavnOgFnrVises) {
+        return skalNavnOgFnrVises ? bruker : fjernNavnOgFnr(bruker);
+    }
+
+    private static Bruker fjernNavnOgFnr(Bruker bruker) {
+        return bruker.setFnr("").setEtternavn("").setFornavn("").setKjonn("").setFodselsdato("");
+    }
 }
