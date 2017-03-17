@@ -16,8 +16,7 @@ import static org.mockito.Mockito.mock;
 @Configuration
 @Import({
         VirksomhetEnhetConfigTest.class,
-        DatabaseConfigTest.class,
-        CamelConfig.class
+        DatabaseConfigTest.class
 })
 public class ApplicationConfigTest {
 
