@@ -12,11 +12,12 @@ public enum ManedMapping {
     MND9, MND10, MND11, MND12;
 
     public static Optional<ManedMapping> finnManed(LocalDateTime startDato, LocalDateTime dato) {
-        if (dato.isBefore(startDato) || dato.isAfter(startDato.plusYears(1))) {
+        int mndDiff = absoluttManedNummer(dato) - absoluttManedNummer(startDato);
+        if (mndDiff < 0 || mndDiff > 11) {
             return empty();
         }
 
-        return of(values()[absoluttManedNummer(dato) - absoluttManedNummer(startDato)]);
+        return of(values()[mndDiff]);
     }
 
     static int absoluttManedNummer(LocalDateTime dato) {

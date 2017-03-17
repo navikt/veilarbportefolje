@@ -7,11 +7,11 @@ import org.junit.runners.Parameterized;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.Collection;
 
 import static java.lang.String.valueOf;
-import static java.time.LocalDate.of;
 import static java.time.Month.MARCH;
 import static no.nav.fo.domene.Utlopsdato.utlopsdatoUtregning;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -31,6 +31,10 @@ public class UtlopsdatoTest {
         }};
     }
 
+    public static LocalDateTime dato(int ar, Month maned, int dag) {
+        return LocalDateTime.of(ar, maned, dag, 12, 00);
+    }
+
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
@@ -44,11 +48,11 @@ public class UtlopsdatoTest {
                 {START_DATO, dt(0, 3), START_DATO.plusDays(20)},
 
                 // Andre test-caser som sjekker at man ikke havner i helgen
-                {of(2017, MARCH, 17), dt(1, 0), of(2017, MARCH, 17)},
-                {of(2017, MARCH, 17), dt(2, 0), of(2017, MARCH, 20)},
-                {of(2017, MARCH, 18), dt(1, 0), of(2017, MARCH, 20)},
-                {of(2017, MARCH, 18), dt(0, 1), of(2017, MARCH, 24)}, // Skal ha 5 virkedager igjen
-                {of(2017, MARCH, 18), dt(1, 1), of(2017, MARCH, 27)}
+                {dato(2017, MARCH, 17), dt(1, 0), dato(2017, MARCH, 17)},
+                {dato(2017, MARCH, 17), dt(2, 0), dato(2017, MARCH, 20)},
+                {dato(2017, MARCH, 18), dt(1, 0), dato(2017, MARCH, 20)},
+                {dato(2017, MARCH, 18), dt(0, 1), dato(2017, MARCH, 24)}, // Skal ha 5 virkedager igjen
+                {dato(2017, MARCH, 18), dt(1, 1), dato(2017, MARCH, 27)}
         });
     }
 

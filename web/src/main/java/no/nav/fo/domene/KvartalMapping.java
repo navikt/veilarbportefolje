@@ -13,11 +13,12 @@ public enum KvartalMapping {
     KV13, KV14, KV15, KV16;
 
     public static Optional<KvartalMapping> finnKvartal(LocalDateTime startDato, LocalDateTime dato) {
-        if (dato.isBefore(startDato) || dato.isAfter(startDato.minusDays(1).plusYears(4))) {
+        int kvartalDiff = absoluttKvartal(dato) - absoluttKvartal(startDato);
+        if (kvartalDiff < 0 || kvartalDiff > 15) {
             return empty();
         }
 
-        return of(values()[absoluttKvartal(dato) - absoluttKvartal(startDato)]);
+        return of(values()[kvartalDiff]);
     }
 
     static int absoluttKvartal(LocalDateTime dato) {

@@ -2,9 +2,7 @@ package no.nav.fo.routes;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.service.SolrService;
-import no.nav.melding.virksomhet.loependeytelser.v1.Dagpengetellere;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
+import no.nav.melding.virksomhet.loependeytelser.v1.*;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,12 +13,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
@@ -58,38 +62,126 @@ public class IndekserYtelserHandlerTest {
     }
 
     @Test
-    public void name() throws Exception {
-        LoependeYtelser ytelser = lagLoependeYtelser();
+    public void filtrerBortBrukereSomIkkeErIDatabasen() throws Exception {
+        LoependeYtelser ytelser = lagLoependeYtelser(asList(
+                lagVedtak("10108000398"), // Skal bli filtrert bort
+                lagVedtak("10108000399")
+        ));
+
+        handler.indekser(ytelser);
+
+        verify(solr, times(1)).addDocuments(anyList());
+        verify(solr).addDocuments(captor.capture());
+        assertThat(captor.getValue()).hasSize(1);
+    }
+
+    @Test
+    public void leggerTilManedFasetteringOmUtlopsdatoErInnenforSammeKalenderar() throws Exception {
+        LoependeYtelser ytelser = lagLoependeYtelser(asList(
+                lagVedtak("10108000397", new BigInteger("52"), BigInteger.TEN), // Utenfor kalenderåret
+                lagVedtak("10108000399")
+        ));
+
         handler.indekser(ytelser);
 
         verify(solr, times(1)).addDocuments(anyList());
         verify(solr).addDocuments(captor.capture());
 
-        assertThat(captor.getValue()).hasSize(1);
+        List<SolrInputDocument> solrDokumenter = captor.getValue();
+        assertThat(solrDokumenter).hasSize(2);
+
+        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato");
+        assertThat(solrDokumenter.get(1).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
     }
 
-    private LoependeYtelser lagLoependeYtelser() {
+    @Test
+    public void leggerTilAAPMAXTid() {
+        LoependeYtelser ytelser = lagLoependeYtelser(asList(
+                lagVedtak("10108000397", "AA", "AAP"),
+                lagVedtak("10108000399", "AA", "AAP", new BigInteger("205"), BigInteger.TEN)
+        ));
+
+        handler.indekser(ytelser);
+
+        verify(solr, times(1)).addDocuments(anyList());
+        verify(solr).addDocuments(captor.capture());
+
+        List<SolrInputDocument> solrDokumenter = captor.getValue();
+        assertThat(solrDokumenter).hasSize(2);
+
+        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasettert");
+        assertThat(solrDokumenter.get(1).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid");
+    }
+
+    @Test
+    public void leggerIkkeTilAAPMaxTilVedAAPUnntak() {
+        LoependeVedtak vedtak = lagVedtak("10108000397", "AA", "AAP");
+        vedtak.getAaptellere().setAntallDagerUnntak(BigInteger.ONE);
+        LoependeYtelser ytelser = lagLoependeYtelser(asList(vedtak));
+
+        handler.indekser(ytelser);
+
+        verify(solr, times(1)).addDocuments(anyList());
+        verify(solr).addDocuments(captor.capture());
+
+        List<SolrInputDocument> solrDokumenter = captor.getValue();
+        assertThat(solrDokumenter).hasSize(1);
+
+        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
+    }
+
+    private LoependeYtelser lagLoependeYtelser(List<LoependeVedtak> vedtak) {
         LoependeYtelser ytelser = new LoependeYtelser();
 
-        ytelser.getLoependeVedtakListe()
-                .addAll(Arrays.asList(
-                        lagVedtak("10108000398"),
-                        lagVedtak("10108000399")
-                ));
+        ytelser.getLoependeVedtakListe().addAll(vedtak);
 
         return ytelser;
     }
 
     private LoependeVedtak lagVedtak(String fnr) {
+        return lagVedtak(fnr, "DAGP", "DAGO", BigInteger.ONE, BigInteger.ONE);
+    }
+
+    private LoependeVedtak lagVedtak(String fnr, BigInteger uker, BigInteger dager) {
+        return lagVedtak(fnr, "DAGP", "DAGO", uker, dager);
+    }
+
+    private LoependeVedtak lagVedtak(String fnr, String sakstype, String rettighetstype) {
+        return lagVedtak(fnr, sakstype, rettighetstype, BigInteger.ONE, BigInteger.ONE);
+    }
+
+    private LoependeVedtak lagVedtak(String fnr, String sakstype, String rettighetstype, BigInteger uker, BigInteger dager) {
         LoependeVedtak vedtak = new LoependeVedtak();
+
         Dagpengetellere dagpengetellere = new Dagpengetellere();
-        dagpengetellere.setAntallUkerIgjen(BigInteger.ONE);
-        dagpengetellere.setAntallDagerIgjen(BigInteger.ONE);
+        dagpengetellere.setAntallUkerIgjen(uker);
+        dagpengetellere.setAntallDagerIgjen(dager);
+
 
         vedtak.setPersonident(fnr);
-        vedtak.setSakstypeKode("DAGP");
-        vedtak.setRettighetstypeKode("DAGO");
+        vedtak.setSakstypeKode(sakstype);
+        vedtak.setRettighetstypeKode(rettighetstype);
         vedtak.setDagpengetellere(dagpengetellere);
+
+        if (!"DAGP".equals(sakstype)) {
+            AAPtellere aaptellere = new AAPtellere();
+            aaptellere.setAntallUkerIgjen(uker);
+            aaptellere.setAntallDagerIgjen(dager);
+            vedtak.setAaptellere(aaptellere);
+
+            try {
+                Periode periode = new Periode();
+                LocalDate now = LocalDate.now().plusDays(10);
+                GregorianCalendar gcal = GregorianCalendar.from(now.atStartOfDay(ZoneId.systemDefault()));
+                XMLGregorianCalendar xcal = null;
+                xcal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
+
+                periode.setTom(xcal);
+                vedtak.setVedtaksperiode(periode);
+            } catch (DatatypeConfigurationException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         return vedtak;
     }

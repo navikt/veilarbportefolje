@@ -31,7 +31,7 @@ public class Utlopsdato {
         return utlopsdatoUtregning(now, aaptellere.getAntallUkerIgjen().intValue(), aaptellere.getAntallDagerIgjen().intValue());
     }
 
-    public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, int antallDagerIgjen, int antallUkerIgjen) {
+    public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, int antallUkerIgjen, int antallDagerIgjen) {
         LocalDateTime utlopsdato = now
                 .minusDays(1)
                 .plusWeeks(antallUkerIgjen)
