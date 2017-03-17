@@ -132,10 +132,10 @@ public class SolrUtilsTest {
         int compared3 = comparator.compare(bruker1, bruker3);
         int compared4 = comparator.compare(bruker3, bruker2);
 
-        assertThat(compared1).isEqualTo(-1);
-        assertThat(compared2).isEqualTo(1);
-        assertThat(compared3).isEqualTo(-1);
-        assertThat(compared4).isEqualTo(1);
+        assertThat(compared1).isLessThan(0);
+        assertThat(compared2).isGreaterThan(0);
+        assertThat(compared3).isLessThan(0);
+        assertThat(compared4).isGreaterThan(0);
     }
 
     @Test
@@ -150,8 +150,8 @@ public class SolrUtilsTest {
         int compared2 = comparator.compare(bruker3, bruker4);
         int compared3 = comparator.compare(bruker1, bruker2);
 
-        assertThat(compared1).isEqualTo(-1);
-        assertThat(compared2).isEqualTo(1);
+        assertThat(compared1).isLessThan(0);
+        assertThat(compared2).isGreaterThan(0);
         assertThat(compared3).isEqualTo(0);
     }
 
@@ -174,13 +174,13 @@ public class SolrUtilsTest {
         int compared6 = comparator.compare(bruker2, bruker6);
         int compared7 = comparator.compare(bruker6, bruker2);
 
-        assertThat(compared1).isEqualTo(-1);
-        assertThat(compared2).isEqualTo(-1);
-        assertThat(compared3).isEqualTo(1);
+        assertThat(compared1).isLessThan(0);
+        assertThat(compared2).isLessThan(0);
+        assertThat(compared3).isGreaterThan(0);
         assertThat(compared4).isEqualTo(0);
-        assertThat(compared5).isEqualTo(-1);
-        assertThat(compared6).isEqualTo(-1);
-        assertThat(compared7).isEqualTo(1);
+        assertThat(compared5).isLessThan(0);
+        assertThat(compared6).isLessThan(0);
+        assertThat(compared7).isGreaterThan(0);
     }
 
     @Test
@@ -193,8 +193,8 @@ public class SolrUtilsTest {
         int compared1 = comparator.compare(bruker1, bruker2);
         int compared2 = comparator.compare(bruker1, bruker3);
 
-        assertThat(compared1).isEqualTo(1);
-        assertThat(compared2).isEqualTo(1);
+        assertThat(compared1).isGreaterThan(0);
+        assertThat(compared2).isGreaterThan(0);
     }
 
     @Test
@@ -213,10 +213,10 @@ public class SolrUtilsTest {
         int compared4 = comparator.compare(bruker1, bruker5);
         int compared5 = comparator.compare(bruker6, bruker5);
 
-        assertThat(compared1).isEqualTo(-1);
-        assertThat(compared2).isEqualTo(1);
-        assertThat(compared3).isEqualTo(-1);
-        assertThat(compared4).isEqualTo(1);
+        assertThat(compared1).isLessThan(0);
+        assertThat(compared2).isGreaterThan(0);
+        assertThat(compared3).isLessThan(0);
+        assertThat(compared4).isGreaterThan(0);
         assertThat(compared5).isEqualTo(0);
     }
 
@@ -236,10 +236,10 @@ public class SolrUtilsTest {
         int compared4 = comparator.compare(bruker1, bruker5);
         int compared5 = comparator.compare(bruker6, bruker5);
 
-        assertThat(compared1).isEqualTo(1);
-        assertThat(compared2).isEqualTo(-1);
-        assertThat(compared3).isEqualTo(1);
-        assertThat(compared4).isEqualTo(-1);
+        assertThat(compared1).isGreaterThan(0);
+        assertThat(compared2).isLessThan(0);
+        assertThat(compared3).isGreaterThan(0);
+        assertThat(compared4).isLessThan(0);
         assertThat(compared5).isEqualTo(0);
     }
 
@@ -259,8 +259,8 @@ public class SolrUtilsTest {
         int compared3 = comparator.compare(bruker1, bruker2);
         int compared4 = comparator.compare(bruker3, bruker4);
 
-        assertThat(compared1).isEqualTo(1);
-        assertThat(compared2).isEqualTo(-1);
+        assertThat(compared1).isGreaterThan(0);
+        assertThat(compared2).isLessThan(0);
         assertThat(compared3).isEqualTo(0);
         assertThat(compared4).isEqualTo(0);
     }
