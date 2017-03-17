@@ -5,13 +5,16 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.time.LocalDate.of;
 import static java.time.Month.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.domene.KvartalMapping.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,14 +22,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(Parameterized.class)
 public class KvartalMappingTest {
 
-    private final LocalDate startDato;
-    private final LocalDate dato;
-    private final KvartalMapping resultat;
+    private final LocalDateTime startDato;
+    private final LocalDateTime dato;
+    private final Optional<KvartalMapping> resultat;
 
-    public KvartalMappingTest(LocalDate startDato, LocalDate dato, KvartalMapping resultat) {
+    public KvartalMappingTest(LocalDateTime startDato, LocalDateTime dato, Optional<KvartalMapping> resultat) {
         this.startDato = startDato;
         this.dato = dato;
         this.resultat = resultat;
+    }
+
+    public static LocalDateTime dato(int ar, Month maned, int dag) {
+        return LocalDateTime.of(ar, maned, dag, 12, 00);
     }
 
     @Parameters
@@ -34,33 +41,38 @@ public class KvartalMappingTest {
         return IntStream.range(1970, 2050)
                 .mapToObj((ar) -> new Object[][]{
                         // Alltid KV1 om det er i samme kvartal
-                        {of(ar, JANUARY, 15), of(ar, MARCH, 15), KV1},
-                        {of(ar, APRIL, 15), of(ar, MAY, 15), KV1},
-                        {of(ar, AUGUST, 15), of(ar, SEPTEMBER, 15), KV1},
-                        {of(ar, NOVEMBER, 15), of(ar, NOVEMBER, 16), KV1},
-                        {of(ar, NOVEMBER, 15), of(ar, DECEMBER, 16), KV1},
+                        {dato(ar, JANUARY, 15), dato(ar, MARCH, 15), of(KV1)},
+                        {dato(ar, APRIL, 15), dato(ar, MAY, 15), of(KV1)},
+                        {dato(ar, AUGUST, 15), dato(ar, SEPTEMBER, 15), of(KV1)},
+                        {dato(ar, NOVEMBER, 15), dato(ar, NOVEMBER, 16), of(KV1)},
+                        {dato(ar, NOVEMBER, 15), dato(ar, DECEMBER, 16), of(KV1)},
 
                         // Gir KV1-KV4 for kvartal innenfor samme år
-                        {of(ar, JANUARY, 15), of(ar, MAY, 15), KV2},
-                        {of(ar, JANUARY, 15), of(ar, AUGUST, 15), KV3},
-                        {of(ar, JANUARY, 15), of(ar, NOVEMBER, 15), KV4},
-                        {of(ar, APRIL, 15), of(ar, AUGUST, 15), KV2},
-                        {of(ar, APRIL, 15), of(ar, NOVEMBER, 15), KV3},
-                        {of(ar, AUGUST, 15), of(ar, NOVEMBER, 15), KV2},
+                        {dato(ar, JANUARY, 15), dato(ar, MAY, 15), of(KV2)},
+                        {dato(ar, JANUARY, 15), dato(ar, AUGUST, 15), of(KV3)},
+                        {dato(ar, JANUARY, 15), dato(ar, NOVEMBER, 15), of(KV4)},
+                        {dato(ar, APRIL, 15), dato(ar, AUGUST, 15), of(KV2)},
+                        {dato(ar, APRIL, 15), dato(ar, NOVEMBER, 15), of(KV3)},
+                        {dato(ar, AUGUST, 15), dato(ar, NOVEMBER, 15), of(KV2)},
 
                         // Gir KV5-KV16 for kvartal i fremtidige år
-                        {of(ar, JANUARY, 15), of(ar + 1, MARCH, 15), KV5},
-                        {of(ar, JANUARY, 15), of(ar + 1, MAY, 15), KV6},
-                        {of(ar, JANUARY, 15), of(ar + 1, AUGUST, 15), KV7},
-                        {of(ar, JANUARY, 15), of(ar + 1, NOVEMBER, 15), KV8},
-                        {of(ar, JANUARY, 15), of(ar + 2, MARCH, 15), KV9},
-                        {of(ar, JANUARY, 15), of(ar + 2, MAY, 15), KV10},
-                        {of(ar, JANUARY, 15), of(ar + 2, AUGUST, 15), KV11},
-                        {of(ar, JANUARY, 15), of(ar + 2, NOVEMBER, 15), KV12},
-                        {of(ar, JANUARY, 15), of(ar + 3, MARCH, 15), KV13},
-                        {of(ar, JANUARY, 15), of(ar + 3, MAY, 15), KV14},
-                        {of(ar, JANUARY, 15), of(ar + 3, AUGUST, 15), KV15},
-                        {of(ar, JANUARY, 15), of(ar + 3, NOVEMBER, 15), KV16}
+                        {dato(ar, JANUARY, 15), dato(ar + 1, MARCH, 15), of(KV5)},
+                        {dato(ar, JANUARY, 15), dato(ar + 1, MAY, 15), of(KV6)},
+                        {dato(ar, JANUARY, 15), dato(ar + 1, AUGUST, 15), of(KV7)},
+                        {dato(ar, JANUARY, 15), dato(ar + 1, NOVEMBER, 15), of(KV8)},
+                        {dato(ar, JANUARY, 15), dato(ar + 2, MARCH, 15), of(KV9)},
+                        {dato(ar, JANUARY, 15), dato(ar + 2, MAY, 15), of(KV10)},
+                        {dato(ar, JANUARY, 15), dato(ar + 2, AUGUST, 15), of(KV11)},
+                        {dato(ar, JANUARY, 15), dato(ar + 2, NOVEMBER, 15), of(KV12)},
+                        {dato(ar, JANUARY, 15), dato(ar + 3, MARCH, 15), of(KV13)},
+                        {dato(ar, JANUARY, 15), dato(ar + 3, MAY, 15), of(KV14)},
+                        {dato(ar, JANUARY, 15), dato(ar + 3, AUGUST, 15), of(KV15)},
+                        {dato(ar, JANUARY, 15), dato(ar + 3, NOVEMBER, 15), of(KV16)},
+
+                        // Utenfor fire-års rammen
+                        {dato(ar, JANUARY, 15), dato(ar - 1, DECEMBER, 15), empty()},
+                        {dato(ar, JANUARY, 15), dato(ar + 4, JANUARY, 15), empty()},
+                        {dato(ar, JANUARY, 15), dato(ar + 4, NOVEMBER, 15), empty()}
                 })
                 .flatMap(Stream::of)
                 .collect(toList());
@@ -68,6 +80,9 @@ public class KvartalMappingTest {
 
     @Test
     public void skalGiRiktigVerdi() {
-        assertThat(finnKvartal(this.startDato, this.dato)).isEqualTo(this.resultat);
+        Optional<KvartalMapping> actual = finnKvartal(this.startDato, this.dato);
+
+        assertThat(actual.isPresent()).isEqualTo(this.resultat.isPresent());
+        this.resultat.ifPresent((res) -> assertThat(actual.get()).isEqualTo(res));
     }
 }

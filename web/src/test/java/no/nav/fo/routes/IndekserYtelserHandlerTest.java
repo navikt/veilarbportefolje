@@ -1,67 +1,96 @@
 package no.nav.fo.routes;
 
+import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.service.SolrService;
 import no.nav.melding.virksomhet.loependeytelser.v1.Dagpengetellere;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
+import org.apache.solr.common.SolrInputDocument;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
-import static java.lang.String.valueOf;
-import static java.time.LocalDate.of;
-import static java.time.Month.MARCH;
-import static no.nav.fo.routes.IndekserYtelserHandler.utlopsdatoUtregning;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-@RunWith(Parameterized.class)
+@RunWith(MockitoJUnitRunner.class)
 public class IndekserYtelserHandlerTest {
-    private static final LocalDateTime START_DATO = LocalDateTime.of(2017, MARCH, 7, 0, 0);
 
-    private final LocalDateTime startDato;
-    private final Dagpengetellere testdata;
-    private final LocalDateTime result;
+    @Mock
+    SolrService solr;
 
-    public static Dagpengetellere dt(int dager, int uker) {
-        return new Dagpengetellere() {{
-            setAntallDagerIgjen(new BigInteger(valueOf(dager)));
-            setAntallUkerIgjen(new BigInteger(valueOf(uker)));
-        }};
+    @Mock
+    BrukerRepository brukerRepository;
+
+    @InjectMocks
+    IndekserYtelserHandler handler;
+
+    @Captor
+    ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+
+    @Before
+    public void setup() {
+        when(brukerRepository.retrievePersonidFromFnr(anyString()))
+                .then(invocationOnMock -> {
+                    String fnr = (String) invocationOnMock.getArguments()[0];
+
+                    if ("10108000398".equals(fnr)) {
+                        return Optional.empty();
+                    }
+
+                    return Optional.of(fnr).map(BigDecimal::new);
+                });
     }
-
-    @Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                // Data fra excel-arket: http://confluence.adeo.no/pages/viewpage.action?pageId=208240799
-                {START_DATO, dt(1, 0), START_DATO},
-                {START_DATO, dt(3, 0), START_DATO.plusDays(2)},
-                {START_DATO, dt(4, 0), START_DATO.plusDays(3)},
-                {START_DATO, dt(0, 1), START_DATO.plusDays(6)},
-                {START_DATO, dt(1, 1), START_DATO.plusDays(7)},
-                {START_DATO, dt(4, 2), START_DATO.plusDays(17)},
-                {START_DATO, dt(0, 3), START_DATO.plusDays(20)},
-
-                // Andre test-caser som sjekker at man ikke havner i helgen
-                {of(2017, MARCH, 17), dt(1, 0), of(2017, MARCH, 17)},
-                {of(2017, MARCH, 17), dt(2, 0), of(2017, MARCH, 20)},
-                {of(2017, MARCH, 18), dt(1, 0), of(2017, MARCH, 20)},
-                {of(2017, MARCH, 18), dt(0, 1), of(2017, MARCH, 24)}, // Skal ha 5 virkedager igjen
-                {of(2017, MARCH, 18), dt(1, 1), of(2017, MARCH, 27)}
-        });
-    }
-
-    public IndekserYtelserHandlerTest(LocalDateTime startDato, Dagpengetellere testdata, LocalDateTime result) {
-        this.startDato = startDato;
-        this.testdata = testdata;
-        this.result = result;
-    }
-
 
     @Test
-    public void skalGiRiktigVerdi() {
-        assertThat(utlopsdatoUtregning(this.startDato, this.testdata)).isEqualTo(this.result);
+    public void name() throws Exception {
+        LoependeYtelser ytelser = lagLoependeYtelser();
+        handler.indekser(ytelser);
+
+        verify(solr, times(1)).addDocuments(anyList());
+        verify(solr).addDocuments(captor.capture());
+
+        assertThat(captor.getValue()).hasSize(1);
+    }
+
+    private LoependeYtelser lagLoependeYtelser() {
+        LoependeYtelser ytelser = new LoependeYtelser();
+
+        ytelser.getLoependeVedtakListe()
+                .addAll(Arrays.asList(
+                        lagVedtak("10108000398"),
+                        lagVedtak("10108000399")
+                ));
+
+        return ytelser;
+    }
+
+    private LoependeVedtak lagVedtak(String fnr) {
+        LoependeVedtak vedtak = new LoependeVedtak();
+        Dagpengetellere dagpengetellere = new Dagpengetellere();
+        dagpengetellere.setAntallUkerIgjen(BigInteger.ONE);
+        dagpengetellere.setAntallDagerIgjen(BigInteger.ONE);
+
+        vedtak.setPersonident(fnr);
+        vedtak.setSakstypeKode("DAGP");
+        vedtak.setRettighetstypeKode("DAGO");
+        vedtak.setDagpengetellere(dagpengetellere);
+
+        return vedtak;
     }
 }

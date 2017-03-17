@@ -1,11 +1,16 @@
 package no.nav.fo.routes;
 
+import javaslang.Tuple;
+import javaslang.Tuple2;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.KvartalMapping;
+import no.nav.fo.domene.ManedMapping;
+import no.nav.fo.domene.Utlopsdato;
 import no.nav.fo.domene.YtelseMapping;
-import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.exception.FantIngenYtelseMappingException;
 import no.nav.fo.exception.YtelseManglerTOMDatoException;
 import no.nav.fo.service.SolrService;
+import no.nav.melding.virksomhet.loependeytelser.v1.AAPtellere;
 import no.nav.melding.virksomhet.loependeytelser.v1.Dagpengetellere;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
@@ -16,77 +21,79 @@ import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.function.Function;
 
+import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
+import static no.nav.fo.domene.Utlopsdato.utlopsdato;
+import static no.nav.fo.domene.Utlopsdato.utlopsdatoUtregning;
 
 
 public class IndekserYtelserHandler {
 
-    public static final String DAGPENGER = "DAGP";
+    @Inject
+    private SolrService solr;
 
     @Inject
-    SolrService solr;
-
-    @Inject
-    BrukerRepository brukerRepository;
+    private BrukerRepository brukerRepository;
 
     public void indekser(LoependeYtelser ytelser) {
-        ytelser
-                .getLoependeVedtakListe()
+        LocalDateTime now = now();
+
+        ytelser.getLoependeVedtakListe()
                 .stream()
-                .filter(this::brukerFinnesISolrIndeks)
-                .map(this::lagSolrDocument)
+                .map(this::brukerFinnesISolrIndeks)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this.lagSolrDocument(now))
                 .map(Collections::singletonList)
                 .forEach(solr::addDocuments);
     }
 
-    private boolean brukerFinnesISolrIndeks(LoependeVedtak loependeVedtak) {
-        return solr.hentBruker(loependeVedtak.getPersonident()).isPresent();
-    }
 
-    private SolrInputDocument lagSolrDocument(LoependeVedtak loependeVedtak) {
-        SolrInputDocument dokument = new SolrInputDocument();
-
-        YtelseMapping ytelseMapping = YtelseMapping.of(loependeVedtak).orElseThrow(() -> new FantIngenYtelseMappingException(loependeVedtak));
-        LocalDateTime utlopsdato = utlopsdato(loependeVedtak);
-
-        String personId = brukerRepository.retrievePersonidFromFnr(loependeVedtak.getPersonident())
+    private Optional<Tuple2<String, LoependeVedtak>> brukerFinnesISolrIndeks(LoependeVedtak loependeVedtak) {
+        return brukerRepository.retrievePersonidFromFnr(loependeVedtak.getPersonident())
                 .map(BigDecimal::intValue)
                 .map(x -> Integer.toString(x))
-                .orElseThrow(() -> new FantIkkePersonIdException(loependeVedtak.getPersonident()));
-
-        dokument.put("person_id", new SolrInputField(personId));
-        dokument.put("fnr", new SolrInputField(loependeVedtak.getPersonident()));
-        dokument.put("ytelse", new SolrInputField(ytelseMapping.toString()));
-        dokument.put("utlopsdato", new SolrInputField(utlopsdato.format(ISO_INSTANT)));
-        dokument.put("utlopsdato_mnd", new SolrInputField(String.valueOf(utlopsdato.getMonthValue())));
-
-        return dokument;
+                .map((id) -> Tuple.of(id, loependeVedtak));
     }
 
-    private LocalDateTime utlopsdato(LoependeVedtak loependeVedtak) {
-        if (loependeVedtak.getVedtaksperiode().getTom() != null) {
-            return loependeVedtak.getVedtaksperiode().getTom().toGregorianCalendar().toZonedDateTime().toLocalDateTime();
-        }
+    private Function<Tuple2<String, LoependeVedtak>, SolrInputDocument> lagSolrDocument(LocalDateTime now) {
+        return (Tuple2<String, LoependeVedtak> loependeVedtak) -> {
+            SolrInputDocument dokument = new SolrInputDocument();
 
-        if (!DAGPENGER.equals(loependeVedtak.getSakstypeKode())) {
-            throw new YtelseManglerTOMDatoException(loependeVedtak);
-        }
+            String personId = loependeVedtak._1;
+            LoependeVedtak vedtak = loependeVedtak._2;
 
-        return utlopsdatoUtregning(LocalDateTime.now(), loependeVedtak.getDagpengetellere());
+            YtelseMapping ytelseMapping = YtelseMapping.of(vedtak).orElseThrow(() -> new FantIngenYtelseMappingException(vedtak));
+
+            LocalDateTime utlopsdato = utlopsdato(now, vedtak).atOffset(ZoneOffset.of(""));
+
+            dokument.put("person_id", new SolrInputField(personId));
+            dokument.put("fnr", new SolrInputField(vedtak.getPersonident()));
+            dokument.put("ytelse", new SolrInputField(ytelseMapping.toString()));
+            dokument.put("utlopsdato", new SolrInputField(utlopsdato.format(ISO_INSTANT)));
+
+            ManedMapping.finnManed(now, utlopsdato).ifPresent((mndMapping) -> {
+                dokument.put("utlopsdato_mnd_fasett", new SolrInputField(mndMapping.toString()));
+            });
+
+            if ("AAP".equals(vedtak.getSakstypeKode())) {
+                LocalDateTime maxtid = utlopsdatoUtregning(now, vedtak.getAaptellere());
+                dokument.put("aap_maxtid", new SolrInputField(maxtid.toString()));
+
+                KvartalMapping.finnKvartal(now, maxtid).ifPresent((kvartalMapping -> {
+                    dokument.put("aap_maxtid_fasettert", new SolrInputField(kvartalMapping.toString()));
+                }));
+            }
+
+            return dokument;
+        };
     }
 
-    static LocalDateTime utlopsdatoUtregning(LocalDateTime now, Dagpengetellere dagpengetellere) {
-        LocalDateTime utlopsdato = now
-                .minusDays(1)
-                .plusWeeks(dagpengetellere.getAntallUkerIgjen().intValue())
-                .plusDays(dagpengetellere.getAntallDagerIgjen().intValue());
 
-        while (utlopsdato.getDayOfWeek() == DayOfWeek.SATURDAY || utlopsdato.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            utlopsdato = utlopsdato.plusDays(1);
-        }
-
-        return utlopsdato;
-    }
 }
