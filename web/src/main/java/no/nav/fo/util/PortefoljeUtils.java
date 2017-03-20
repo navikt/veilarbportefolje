@@ -24,29 +24,29 @@ public class PortefoljeUtils {
         return brukere.stream().skip(fra).limit(antall).collect(toList());
     }
 
-    public static List<Bruker> filtrerBrukere(List<Bruker> brukere, String veilederIdent, PepClient pepClient) {
+    public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String veilederIdent, PepClient pepClient) {
         return brukere.stream()
-                .map( bruker -> bruker.erKonfidensiell() ? fjernNavnOgFnrDersomIkkeTilgang(bruker, veilederIdent, pepClient) : bruker)
+                .map( bruker -> bruker.erKonfidensiell() ? fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent, pepClient) : bruker)
                 .collect(toList());
     }
 
-    private static Bruker fjernNavnOgFnrDersomIkkeTilgang(Bruker bruker, String veilederIdent, PepClient pepClient) {
+    private static Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent, PepClient pepClient) {
         String diskresjonskode = bruker.getDiskresjonskode() == null ? "" : bruker.getDiskresjonskode();
         Boolean egenAnsatt = bruker.getEgenAnsatt() == null ? false : bruker.getEgenAnsatt();
         if(diskresjonskode.equals("6") && !pepClient.isSubjectAuthorizedToSeeKode6(veilederIdent)) {
-            return fjernNavnOgFnr(bruker);
+            return fjernKonfidensiellInfo(bruker);
         }
         if(diskresjonskode.equals("7") && !pepClient.isSubjectAuthorizedToSeeKode7(veilederIdent)) {
-            return fjernNavnOgFnr(bruker);
+            return fjernKonfidensiellInfo(bruker);
         }
         if(egenAnsatt && !pepClient.isSubjectAuthorizedToSeeEgenAnsatt(veilederIdent)) {
-            return fjernNavnOgFnr(bruker);
+            return fjernKonfidensiellInfo(bruker);
         }
         return bruker;
 
     }
 
-    private static Bruker fjernNavnOgFnr(Bruker bruker) {
+    private static Bruker fjernKonfidensiellInfo(Bruker bruker) {
         return bruker.setFnr("").setEtternavn("").setFornavn("").setKjonn("").setFodselsdato("");
     }
 }

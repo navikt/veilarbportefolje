@@ -61,7 +61,7 @@ public class Bruker {
     }
 
     public Boolean erKonfidensiell() {
-        return (this.diskresjonskode != null) || (this.egenAnsatt == null ? false : true);
+        return (this.diskresjonskode != null) || (this.egenAnsatt == null ? false : this.egenAnsatt);
 
     }
 }
