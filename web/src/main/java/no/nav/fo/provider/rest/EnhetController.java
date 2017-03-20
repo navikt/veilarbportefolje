@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -45,7 +47,12 @@ public class EnhetController {
             @QueryParam("sortByLastName") String sortDirection,
             @BeanParam Filtervalg filtervalg) {
 
+        List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
+
         try {
+            if(!enheterIPilot.contains(enhet)) {
+                return Response.ok().entity(new Portefolje().setBrukere(new ArrayList<>())).build();
+            }
             String ident = SubjectHandler.getSubjectHandler().getUid();
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
 
