@@ -16,11 +16,11 @@ public class Filtervalg {
     @QueryParam("kjonn")
     public String kjonn;
 
-    @QueryParam("fodselsdagIMnd")
-    public int fodselsdagIMnd;
+    @QueryParam("fodselsdagIMnd[]")
+    public List<Integer> fodselsdagIMnd;
 
     public boolean harAktiveFilter() {
-        return nyeBrukere || inaktiveBrukere || (alder != null && alder.size() > 0) || ("M".equals(kjonn) || "K".equals(kjonn)) || erMellom(fodselsdagIMnd, 1, 31);
+        return nyeBrukere || inaktiveBrukere || (alder != null && alder.size() > 0) || ("M".equals(kjonn) || "K".equals(kjonn)) || (fodselsdagIMnd != null && fodselsdagIMnd.size() > 0);
     }
 
     private boolean erMellom(int variabel, int fra, int til) {

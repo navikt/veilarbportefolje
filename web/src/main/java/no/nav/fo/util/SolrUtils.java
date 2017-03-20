@@ -160,8 +160,9 @@ public class SolrUtils {
             filtrerBrukereStatements.add("kjonn:" + filtervalg.kjonn);
         }
 
-        if(filtervalg.fodselsdagIMnd > 0 && filtervalg.fodselsdagIMnd <= 31) {
-            filtrerBrukereStatements.add("fodselsdag_i_mnd:" + filtervalg.fodselsdagIMnd);
+        if(filtervalg.fodselsdagIMnd.size() > 0) {
+            List<String> params = filtervalg.fodselsdagIMnd.stream().map(x -> "fodselsdag_i_mnd:" + x).collect(toList());
+            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
         if(!oversiktStatements.isEmpty()) {
