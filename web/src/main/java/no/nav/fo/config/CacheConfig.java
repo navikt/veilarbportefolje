@@ -18,7 +18,10 @@ import org.springframework.context.annotation.Configuration;
 @EnableCaching
 public class CacheConfig implements CachingConfigurer {
 
-    int brukertilgangCacheSeconds = Integer.parseInt(System.getProperty("veilarbportefolje.tilgangtilbrukercache.seconds"));
+    String cacheConfig = System.getProperty("veilarbportefolje.tilgangtilbrukercache.seconds") == null ? "3600" :
+            System.getProperty("veilarbportefolje.tilgangtilbrukercache.seconds");
+
+    int brukertilgangCacheSeconds = Integer.parseInt(cacheConfig);
 
     @Bean
     public net.sf.ehcache.CacheManager ehCacheManager() {

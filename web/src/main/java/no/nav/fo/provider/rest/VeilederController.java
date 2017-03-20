@@ -5,6 +5,7 @@ import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.service.BrukertilgangService;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
 import org.slf4j.Logger;
@@ -31,6 +32,9 @@ public class VeilederController {
     @Inject
     SolrService solrService;
 
+    @Inject
+    PepClient pepClient;
+
     @GET
     @Path("/{veilederident}/portefolje")
     public Response hentPortefoljeForVeileder(
@@ -49,8 +53,9 @@ public class VeilederController {
 
                 List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
+                List<Bruker> filtrertBrukereSublist = PortefoljeUtils.filtrerBrukere(brukereSublist,ident, pepClient);
 
-                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, brukereSublist, enhet, fra);
+                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, filtrertBrukereSublist, enhet, fra);
 
                 return Response.ok().entity(portefolje).build();
             } else {

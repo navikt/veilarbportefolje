@@ -26,12 +26,24 @@ public class PortefoljeUtils {
 
     public static List<Bruker> filtrerBrukere(List<Bruker> brukere, String veilederIdent, PepClient pepClient) {
         return brukere.stream()
-                .map( bruker -> fjernNavnOgFnrDersomIkkeTilgang(bruker, pepClient.isServiceCallAllowed(bruker.getFnr(),veilederIdent)))
+                .map( bruker -> bruker.erKonfidensiell() ? fjernNavnOgFnrDersomIkkeTilgang(bruker, veilederIdent, pepClient) : bruker)
                 .collect(toList());
     }
 
-    private static Bruker fjernNavnOgFnrDersomIkkeTilgang(Bruker bruker, Boolean skalNavnOgFnrVises) {
-        return skalNavnOgFnrVises ? bruker : fjernNavnOgFnr(bruker);
+    private static Bruker fjernNavnOgFnrDersomIkkeTilgang(Bruker bruker, String veilederIdent, PepClient pepClient) {
+        String diskresjonskode = bruker.getDiskresjonskode() == null ? "" : bruker.getDiskresjonskode();
+        Boolean egenAnsatt = bruker.getEgenAnsatt() == null ? false : bruker.getEgenAnsatt();
+        if(diskresjonskode.equals("6") && !pepClient.isSubjectAuthorizedToSeeKode6(veilederIdent)) {
+            return fjernNavnOgFnr(bruker);
+        }
+        if(diskresjonskode.equals("7") && !pepClient.isSubjectAuthorizedToSeeKode7(veilederIdent)) {
+            return fjernNavnOgFnr(bruker);
+        }
+        if(egenAnsatt && !pepClient.isSubjectAuthorizedToSeeEgenAnsatt(veilederIdent)) {
+            return fjernNavnOgFnr(bruker);
+        }
+        return bruker;
+
     }
 
     private static Bruker fjernNavnOgFnr(Bruker bruker) {

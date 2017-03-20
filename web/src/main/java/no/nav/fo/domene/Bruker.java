@@ -59,4 +59,9 @@ public class Bruker {
             return singletonList(kode);
         }
     }
+
+    public Boolean erKonfidensiell() {
+        return (this.diskresjonskode != null) || (this.egenAnsatt == null ? false : true);
+
+    }
 }

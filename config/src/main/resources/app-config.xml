@@ -13,7 +13,7 @@
         <ear groupId="no.nav.fo" artifactId="veilarbportefolje-jee"/>
     </artifacts>
 
-    <abacSecurity serviceUserResourceAlias="srvveilarbsituasjon"/>
+    <abacSecurity serviceUserResourceAlias="***REMOVED***"/>
 
     <resources>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />

@@ -16,10 +16,32 @@ public class PepClient {
     private Pep pep;
 
     @Cacheable("brukertilgangCache")
-    public boolean isServiceCallAllowed(String fnr, String ident) {
+    public boolean isSubjectAuthorizedToSeeKode7(String ident) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.isServiceCallAllowedWithIdent(ident, "veilarb", fnr);
+            callAllowed = pep.isSubjectAuthorizedToSeeKode7(ident, "veilarb");
+        } catch (PepException e) {
+            throw new InternalServerErrorException("something went wrong in PEP", e);
+        }
+        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+    }
+
+    @Cacheable("brukertilgangCache")
+    public boolean isSubjectAuthorizedToSeeKode6(String ident) {
+        BiasedDecisionResponse callAllowed;
+        try {
+            callAllowed = pep.isSubjectAuthorizedToSeeKode6(ident, "veilarb");
+        } catch (PepException e) {
+            throw new InternalServerErrorException("something went wrong in PEP", e);
+        }
+        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+    }
+
+    @Cacheable("brukertilgangCache")
+    public boolean isSubjectAuthorizedToSeeEgenAnsatt(String ident) {
+        BiasedDecisionResponse callAllowed;
+        try {
+            callAllowed = pep.isSubjectAuthorizedToSeeEgenAnsatt(ident, "veilarb");
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
