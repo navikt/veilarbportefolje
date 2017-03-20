@@ -6,7 +6,6 @@ import no.nav.fo.service.OppdaterBrukerdataFletter;
 import org.slf4j.Logger;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.jms.JMSException;
@@ -24,7 +23,6 @@ public class OppdaterBrukerdataListener {
     @Inject
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
 
-    @Transactional
     @JmsListener(id = "endringAvVeileder_inbound", containerFactory = "jmsListenerContainerFactory", destination = "java:jboss/jms/endreVeilederKo")
     public void listenForEndringAvVeileder(Object message) {
         TextMessage textMessage = (TextMessage) message;
