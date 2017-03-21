@@ -152,7 +152,7 @@ public class SolrUtils {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
-        if(filtervalg.alder.size() > 0) {
+        if(filtervalg.alder != null && !filtervalg.alder.isEmpty()) {
             filtrerBrukereStatements.add(alderFilter(filtervalg.alder));
         }
 
@@ -160,7 +160,7 @@ public class SolrUtils {
             filtrerBrukereStatements.add("kjonn:" + filtervalg.kjonn);
         }
 
-        if(filtervalg.fodselsdagIMnd.size() > 0) {
+        if(filtervalg.fodselsdagIMnd != null && !filtervalg.fodselsdagIMnd.isEmpty()) {
             List<String> params = filtervalg.fodselsdagIMnd.stream().map(SolrUtils::fodselsdagIMndFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
@@ -170,15 +170,16 @@ public class SolrUtils {
         }
 
         if(!filtrerBrukereStatements.isEmpty()) {
-            query.addFilterQuery(StringUtils.join(filtrerBrukereStatements, " AND "));
+            query.addFilterQuery(filtrerBrukereStatements
+                    .stream().map(statement -> "("+statement+")").collect(Collectors.joining(" AND ")));
         }
     }
 
-    static String alderFilter(List<Integer> alder) {
+    static String alderFilter(List<Integer> index) {
         String filter = "fodselsdato:";
         String prefix = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
         String postfix = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
-        List<String> params = alder.stream().map((aldersRangeIndex) -> {
+        List<String> params = index.stream().map((aldersRangeIndex) -> {
             // Pga. at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut i forhold til ønsket filter
             switch(aldersRangeIndex) {
                 case 0:
@@ -202,7 +203,7 @@ public class SolrUtils {
         return filter + StringUtils.join(params, " OR " + filter);
     }
 
-    static String fodselsdagIMndFilter(int alder) {
-        return "fodselsdag_i_mnd:" + (alder + 1);
+    static String fodselsdagIMndFilter(int index) {
+        return "fodselsdag_i_mnd:" + (index + 1);
     }
 }
