@@ -1,16 +1,20 @@
 package no.nav.fo.config;
 
+import no.nav.fo.consumer.IndekserYtelserHandler;
+import no.nav.fo.consumer.KopierGR199FraArena;
 import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.internal.IsAliveServlet;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.ServiceConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
+@EnableAspectJAutoProxy
 @Configuration
 @Import({
         OppdaterBrukerdataListener.class,
@@ -20,7 +24,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         SolrConfig.class,
         MessageQueueConfig.class,
         AktoerEndpointConfig.class,
-        CamelConfig.class
+        MetricsConfig.class
 })
 public class ApplicationConfig {
 
@@ -39,4 +43,13 @@ public class ApplicationConfig {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
+    @Bean
+    public IndekserYtelserHandler indekserYtelserHandler() {
+        return new IndekserYtelserHandler();
+    }
+
+    @Bean
+    public KopierGR199FraArena kopierGR199FraArena(IndekserYtelserHandler indekserYtelserHandler) {
+        return new KopierGR199FraArena(indekserYtelserHandler);
+    }
 }

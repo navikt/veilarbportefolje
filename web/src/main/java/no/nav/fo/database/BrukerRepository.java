@@ -1,23 +1,27 @@
 package no.nav.fo.database;
 
-import no.nav.fo.exception.UnexpectedRowCountException;
+import javaslang.Tuple;
+import javaslang.Tuple2;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
-
+import static no.nav.fo.util.MetricsUtils.timed;
+import static no.nav.fo.util.StreamUtils.batchProcess;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
@@ -26,6 +30,9 @@ public class BrukerRepository {
 
     @Inject
     private JdbcTemplate db;
+
+    @Inject
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     static final private String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
 
@@ -46,29 +53,63 @@ public class BrukerRepository {
         });
         return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
     }
-    public List<Map<String,Object>> retrieveBrukerSomHarVeileder(String personId) {
-        return db.queryForList(retrieveBrukerSomHarVeilederSQL(),personId);
+
+    public List<Map<String, Object>> retrieveBrukerSomHarVeileder(String personId) {
+        return db.queryForList(retrieveBrukerSomHarVeilederSQL(), personId);
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
         return db.update(updateTidsstempelSQL(), tidsstempel);
     }
 
-    public java.util.List<Map<String,Object>> retrieveBruker(String aktoerId) {
-        return db.queryForList(retrieveBrukerSQL(),aktoerId);
+    public java.util.List<Map<String, Object>> retrieveBruker(String aktoerId) {
+        return db.queryForList(retrieveBrukerSQL(), aktoerId);
     }
 
-    public java.util.List<Map<String,Object>> retrievePersonid(String aktoerId) {
-        return db.queryForList(getPersonidFromAktoeridSQL(),aktoerId);
+    public java.util.List<Map<String, Object>> retrievePersonid(String aktoerId) {
+        return db.queryForList(getPersonidFromAktoeridSQL(), aktoerId);
     }
 
     public Optional<BigDecimal> retrievePersonidFromFnr(String fnr) {
         List<Map<String, Object>> list = db.queryForList(getPersonIdFromFnrSQL(), fnr);
         if (list.size() != 1) {
-            throw new UnexpectedRowCountException(format("Fikk %d antall rader for bruker med fnr %s", list.size(), fnr));
+            LOG.error(format("Fikk %d antall rader for bruker med fnr %s", list.size(), fnr));
+            return empty();
         }
-        BigDecimal personId = (BigDecimal)list.get(0).get("PERSON_ID");
+        BigDecimal personId = (BigDecimal) list.get(0).get("PERSON_ID");
         return Optional.ofNullable(personId);
+    }
+
+    public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
+        Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
+        RowMapper<Tuple2<String, String>> rowmapper = (rs, i) -> Tuple.of(
+                rs.getString("FODSELSNR"),
+                rs.getString("PERSON_ID"));
+
+        batchProcess(1000, fnrs, timed("GR199.brukersjekk.batch", (fnrBatch) -> {
+            Map<String, Object> params = new HashMap<>();
+            params.put("fnrs", fnrBatch);
+
+            Map<String, Optional<String>> fnrPersonIdMap = namedParameterJdbcTemplate.query(
+                    getPersonIdsFromFnrsSQL(),
+                    params,
+                    rowmapper)
+                    .stream()
+                    .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
+
+            brukere.putAll(fnrPersonIdMap);
+        }));
+
+        fnrs.stream()
+                .filter(not(brukere::containsKey))
+                .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
+
+        return brukere;
+    }
+
+
+    private <T> Predicate<T> not(Predicate<T> predicate) {
+        return (T t) -> !predicate.test(t);
     }
 
     public void insertBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
@@ -76,20 +117,20 @@ public class BrukerRepository {
     }
 
     public void updateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
-        db.update(updateBrukerdataSQL(),veilederident,tilordnetTidsstempel,personId,aktoerId);
+        db.update(updateBrukerdataSQL(), veilederident, tilordnetTidsstempel, personId, aktoerId);
     }
 
     public void insertOrUpdateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
         try {
             insertBrukerdata(aktoerId, personId, veilederident, tilordnetTidsstempel);
-        } catch(DuplicateKeyException e) {
+        } catch (DuplicateKeyException e) {
             updateBrukerdata(aktoerId, personId, veilederident, tilordnetTidsstempel);
         }
     }
 
     public void insertAktoeridToPersonidMapping(String aktoerId, String personId) {
         try {
-            db.update(insertPersonidAktoeridMappingSQL(),aktoerId,personId);
+            db.update(insertPersonidAktoeridMappingSQL(), aktoerId, personId);
         } catch (DuplicateKeyException e) {
             LOG.info("Aktoerid %s personId %s mapping finnes i databasen", aktoerId, personId);
         }
@@ -98,58 +139,58 @@ public class BrukerRepository {
     String retrieveBrukereSQL() {
         return
                 "SELECT " +
-                    "person_id, " +
-                    "fodselsnr, " +
-                    "fornavn, " +
-                    "etternavn, " +
-                    "nav_kontor, " +
-                    "formidlingsgruppekode, " +
-                    "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
-                    "kvalifiseringsgruppekode, " +
-                    "rettighetsgruppekode, " +
-                    "hovedmaalkode, " +
-                    "sikkerhetstiltak_type_kode, " +
-                    "fr_kode, " +
-                    "sperret_ansatt, " +
-                    "er_doed, " +
-                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
-                    "tidsstempel, " +
-                    "veilederident " +
-                "FROM " +
-                    "oppfolgingsbruker " +
-                "LEFT JOIN bruker_data " +
-                "ON " +
-                    "bruker_data.personid = oppfolgingsbruker.person_id";
+                        "person_id, " +
+                        "fodselsnr, " +
+                        "fornavn, " +
+                        "etternavn, " +
+                        "nav_kontor, " +
+                        "formidlingsgruppekode, " +
+                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "kvalifiseringsgruppekode, " +
+                        "rettighetsgruppekode, " +
+                        "hovedmaalkode, " +
+                        "sikkerhetstiltak_type_kode, " +
+                        "fr_kode, " +
+                        "sperret_ansatt, " +
+                        "er_doed, " +
+                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "tidsstempel, " +
+                        "veilederident " +
+                        "FROM " +
+                        "oppfolgingsbruker " +
+                        "LEFT JOIN bruker_data " +
+                        "ON " +
+                        "bruker_data.personid = oppfolgingsbruker.person_id";
 
     }
 
     String retrieveBrukerSomHarVeilederSQL() {
         return
                 "SELECT " +
-                    "person_id, " +
-                    "fodselsnr, " +
-                    "fornavn, " +
-                    "etternavn, " +
-                    "nav_kontor, " +
-                    "formidlingsgruppekode, " +
-                    "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
-                    "kvalifiseringsgruppekode, " +
-                    "rettighetsgruppekode, " +
-                    "hovedmaalkode, " +
-                    "sikkerhetstiltak_type_kode, " +
-                    "fr_kode, " +
-                    "sperret_ansatt, " +
-                    "er_doed, " +
-                    "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
-                    "tidsstempel, " +
-                    "veilederident " +
-                "FROM " +
-                    "oppfolgingsbruker " +
-                "LEFT JOIN bruker_data " +
-                "ON " +
-                    "bruker_data.personid = oppfolgingsbruker.person_id " +
-                "WHERE " +
-                    "person_id = ? ";
+                        "person_id, " +
+                        "fodselsnr, " +
+                        "fornavn, " +
+                        "etternavn, " +
+                        "nav_kontor, " +
+                        "formidlingsgruppekode, " +
+                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "kvalifiseringsgruppekode, " +
+                        "rettighetsgruppekode, " +
+                        "hovedmaalkode, " +
+                        "sikkerhetstiltak_type_kode, " +
+                        "fr_kode, " +
+                        "sperret_ansatt, " +
+                        "er_doed, " +
+                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "tidsstempel, " +
+                        "veilederident " +
+                        "FROM " +
+                        "oppfolgingsbruker " +
+                        "LEFT JOIN bruker_data " +
+                        "ON " +
+                        "bruker_data.personid = oppfolgingsbruker.person_id " +
+                        "WHERE " +
+                        "person_id = ? ";
     }
 
     String retrieveOppdaterteBrukereSQL() {
@@ -198,6 +239,10 @@ public class BrukerRepository {
         return "SELECT PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR= ?";
     }
 
+    String getPersonIdsFromFnrsSQL() {
+        return "SELECT FODSELSNR, PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR in (:fnrs)";
+    }
+
     String insertPersonidAktoeridMappingSQL() {
         return "INSERT INTO AKTOERID_TO_PERSONID VALUES (?,?)";
     }
@@ -209,7 +254,7 @@ public class BrukerRepository {
     String updateBrukerdataSQL() {
         return "UPDATE BRUKER_DATA" +
                 "   SET VEILEDERIDENT=?," +
-                "   TILDELT_TIDSPUNKT=TO_TIMESTAMP(?,"+dateFormat+")," +
+                "   TILDELT_TIDSPUNKT=TO_TIMESTAMP(?," + dateFormat + ")," +
                 "   PERSONID=?" +
                 "   WHERE AKTOERID=?";
     }
@@ -223,8 +268,8 @@ public class BrukerRepository {
 
         boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
                 (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
-                || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
-                || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
+                        || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
+                        || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
 
         return aktivStatus || bruker.get("veileder_id").getValue() != null;
     }

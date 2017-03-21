@@ -1,5 +1,6 @@
 package no.nav.fo.routes;
 
+import no.nav.fo.consumer.IndekserYtelserHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.service.SolrService;
 import no.nav.melding.virksomhet.loependeytelser.v1.*;
