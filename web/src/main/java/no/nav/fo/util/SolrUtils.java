@@ -9,11 +9,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.text.Collator;
-import java.util.*;
+import java.util.Locale;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
@@ -21,13 +22,13 @@ public class SolrUtils {
 
     public static FacetResults mapFacetResults(FacetField facetField) {
         return new FacetResults()
-            .setFacetResults(
-                facetField.getValues().stream().map(
-                    value -> new Facet()
-                        .setValue(value.getName())
-                        .setCount(value.getCount())
-                ).collect(toList())
-            );
+                .setFacetResults(
+                        facetField.getValues().stream().map(
+                                value -> new Facet()
+                                        .setValue(value.getName())
+                                        .setCount(value.getCount())
+                        ).collect(toList())
+                );
     }
 
     public static SolrQuery buildSolrFacetQuery(String query, String facetField) {
@@ -59,20 +60,19 @@ public class SolrUtils {
 
         Comparator<Bruker> comparator = null;
 
-        if(erNyComparator != null) {
+        if (erNyComparator != null) {
             comparator = erNyComparator;
 
-            if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
                 comparator = comparator.thenComparing(setComparatorSortOrder(brukerNavnComparator(), sortOrder));
             }
-        }
-        else {
-            if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+        } else {
+            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
                 comparator = setComparatorSortOrder(brukerNavnComparator(), sortOrder);
             }
         }
 
-        if(comparator != null) {
+        if (comparator != null) {
             brukere.sort(comparator);
         }
 
@@ -89,85 +89,61 @@ public class SolrUtils {
             boolean brukerAErNy = brukerA.getVeilederId() == null;
             boolean brukerBErNy = brukerB.getVeilederId() == null;
 
-            if(brukerAErNy && !brukerBErNy) {
+            if (brukerAErNy && !brukerBErNy) {
                 return -1;
-            }
-            else if(!brukerAErNy && brukerBErNy) {
+            } else if (!brukerAErNy && brukerBErNy) {
                 return 1;
-            }
-            else {
+            } else {
                 return 0;
             }
         };
     }
 
+    private static <S> Comparator<S> norskComparator(final Function<S, String> keyExtractor) {
+        Locale locale = new Locale("no", "NO");
+        Collator collator = Collator.getInstance(locale);
+        collator.setStrength(Collator.PRIMARY);
+
+        return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
+    }
+
     static Comparator<Bruker> brukerNavnComparator() {
-        return (brukerA, brukerB) -> {
-
-            Locale locale = new Locale("no", "NO");
-
-            Collator collator = Collator.getInstance(locale);
-            collator.setStrength(Collator.PRIMARY);
-
-            String etternavnA = brukerA.getEtternavn();
-            String etternavnB = brukerB.getEtternavn();
-
-            String fornavnA = brukerA.getFornavn();
-            String fornavnB = brukerB.getFornavn();
-
-            if(collator.compare(etternavnA, etternavnB) < 0) {
-                return -1;
-            }
-            else if(collator.compare(etternavnA, etternavnB) > 0) {
-                return 1;
-            }
-            else {
-                if(collator.compare(fornavnA, fornavnB) < 0) {
-                    return -1;
-                }
-                else if(collator.compare(fornavnA, fornavnB) > 0) {
-                    return 1;
-                }
-                else {
-                    return 0;
-                }
-            }
-        };
+        return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
-        if(!filtervalg.harAktiveFilter()) {
+        if (!filtervalg.harAktiveFilter()) {
             return;
         }
 
         List<String> oversiktStatements = new ArrayList<>();
         List<String> filtrerBrukereStatements = new ArrayList<>();
 
-        if(filtervalg.nyeBrukere && filtervalg.inaktiveBrukere) {
+        if (filtervalg.nyeBrukere && filtervalg.inaktiveBrukere) {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)");
-        } else if(filtervalg.nyeBrukere) {
+        } else if (filtervalg.nyeBrukere) {
             oversiktStatements.add("-veileder_id:*");
-        } else if(filtervalg.inaktiveBrukere) {
+        } else if (filtervalg.inaktiveBrukere) {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
-        if(filtervalg.alder > 0  && filtervalg.alder <= 8) {
+        if (filtervalg.alder > 0 && filtervalg.alder <= 8) {
             filtrerBrukereStatements.add(leggTilAlderFilter(filtervalg));
         }
 
-        if(filtervalg.kjonn != null && ("K".equals(filtervalg.kjonn) || "M".equals(filtervalg.kjonn))) {
+        if (filtervalg.kjonn != null && ("K".equals(filtervalg.kjonn) || "M".equals(filtervalg.kjonn))) {
             filtrerBrukereStatements.add("kjonn:" + filtervalg.kjonn);
         }
 
-        if(filtervalg.fodselsdagIMnd > 0 && filtervalg.fodselsdagIMnd <= 31) {
+        if (filtervalg.fodselsdagIMnd > 0 && filtervalg.fodselsdagIMnd <= 31) {
             filtrerBrukereStatements.add("fodselsdag_i_mnd:" + filtervalg.fodselsdagIMnd);
         }
 
-        if(!oversiktStatements.isEmpty()) {
+        if (!oversiktStatements.isEmpty()) {
             query.addFilterQuery(StringUtils.join(oversiktStatements, " OR "));
         }
 
-        if(!filtrerBrukereStatements.isEmpty()) {
+        if (!filtrerBrukereStatements.isEmpty()) {
             query.addFilterQuery(StringUtils.join(filtrerBrukereStatements, " AND "));
         }
     }
@@ -178,7 +154,7 @@ public class SolrUtils {
         String postfix = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
 
         // Pga. at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut i forhold til ønsket filter
-        switch(filtervalg.alder) {
+        switch (filtervalg.alder) {
             case 1:
                 return filter + (prefix + "20YEARS+1DAY TO NOW" + postfix); // 19 og under
             case 2:
