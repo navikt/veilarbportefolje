@@ -22,8 +22,4 @@ public class Filtervalg {
     public boolean harAktiveFilter() {
         return nyeBrukere || inaktiveBrukere || (alder != null && alder.size() > 0) || ("M".equals(kjonn) || "K".equals(kjonn)) || (fodselsdagIMnd != null && fodselsdagIMnd.size() > 0);
     }
-
-    private boolean erMellom(int variabel, int fra, int til) {
-        return variabel > fra && variabel <= til;
-    }
 }
