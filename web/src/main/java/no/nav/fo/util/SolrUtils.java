@@ -153,7 +153,7 @@ public class SolrUtils {
         }
 
         if(filtervalg.alder.size() > 0) {
-            filtrerBrukereStatements.add(leggTilAlderFilter(filtervalg.alder));
+            filtrerBrukereStatements.add(alderFilter(filtervalg.alder));
         }
 
         if(filtervalg.kjonn != null && ("K".equals(filtervalg.kjonn) || "M".equals(filtervalg.kjonn))) {
@@ -161,7 +161,7 @@ public class SolrUtils {
         }
 
         if(filtervalg.fodselsdagIMnd.size() > 0) {
-            List<String> params = filtervalg.fodselsdagIMnd.stream().map(SolrUtils::leggTilFodselsdagIMndFilter).collect(toList());
+            List<String> params = filtervalg.fodselsdagIMnd.stream().map(SolrUtils::fodselsdagIMndFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
@@ -174,7 +174,7 @@ public class SolrUtils {
         }
     }
 
-    static String leggTilAlderFilter(List<Integer> alder) {
+    static String alderFilter(List<Integer> alder) {
         String filter = "fodselsdato:";
         String prefix = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
         String postfix = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
@@ -202,7 +202,7 @@ public class SolrUtils {
         return filter + StringUtils.join(params, " OR " + filter);
     }
 
-    static String leggTilFodselsdagIMndFilter(int alder) {
+    static String fodselsdagIMndFilter(int alder) {
         return "fodselsdag_i_mnd:" + (alder + 1);
     }
 }

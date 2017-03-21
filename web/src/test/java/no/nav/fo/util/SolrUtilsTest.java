@@ -372,35 +372,35 @@ public class SolrUtilsTest {
 
         List<Integer> liste = new ArrayList<>();
         liste.add(1);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
 
         liste = new ArrayList<>();
         liste.add(2);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
 
         liste = new ArrayList<>();
         liste.add(3);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
 
         liste = new ArrayList<>();
         liste.add(4);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
 
         liste = new ArrayList<>();
         liste.add(5);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
 
         liste = new ArrayList<>();
         liste.add(6);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
 
         liste = new ArrayList<>();
         liste.add(7);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
 
         liste = new ArrayList<>();
         liste.add(8);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
     }
 
     @Test
@@ -413,7 +413,7 @@ public class SolrUtilsTest {
         List<Integer> liste = new ArrayList<>();
         liste.add(1);
         liste.add(2);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(
             filterParameter +
             PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX +
             separator +
@@ -424,7 +424,7 @@ public class SolrUtilsTest {
         liste.add(7);
         liste.add(4);
         liste.add(5);
-        assertThat(SolrUtils.leggTilAlderFilter(liste)).isEqualTo(
+        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(
             filterParameter +
                 PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX +
                 separator +
