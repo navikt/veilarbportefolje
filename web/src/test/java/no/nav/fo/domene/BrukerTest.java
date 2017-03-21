@@ -3,10 +3,13 @@ package no.nav.fo.domene;
 import org.apache.solr.common.SolrDocument;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class BrukerTest {
     @Test
@@ -32,6 +35,16 @@ public class BrukerTest {
         assertThat(brukerKode5.getDiskresjonskode(), nullValue());
         assertThat(brukerKode6.getDiskresjonskode()).isEqualTo("6");
         assertThat(brukerKode7.getDiskresjonskode()).isEqualTo("7");
+    }
+
+    @Test
+    public void parseDato() throws Exception {
+        String datoformat = "2017-03-30T22:00:00Z";
+        LocalDateTime dato = Bruker.dato(datoformat);
+
+        assertThat(dato.getYear()).isEqualTo(2017);
+        assertThat(dato.getMonth()).isEqualTo(Month.MARCH);
+        assertThat(dato.getDayOfMonth()).isEqualTo(30);
     }
 
     private SolrDocument createSolrDocument(String kode) {

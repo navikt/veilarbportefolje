@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -24,6 +27,12 @@ public class Bruker {
     int fodselsdagIMnd;
     String fodselsdato;
     String kjonn;
+    YtelseMapping ytelse;
+    LocalDateTime utlopsdato;
+    ManedMapping utlopsdatoFasett;
+    LocalDateTime aapMaxtid;
+    KvartalMapping aapMaxtidFasett;
+
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -32,20 +41,28 @@ public class Bruker {
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilederId((String) document.get("veileder_id"))
                 .setDiskresjonskode(getDiskresjonskode(document))
-                .setEgenAnsatt( (Boolean) document.get("egen_ansatt"))
-                .setErDoed( (Boolean) document.get("er_doed"))
+                .setEgenAnsatt((Boolean) document.get("egen_ansatt"))
+                .setErDoed((Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
                 .setFodselsdato(document.get("fodselsdato").toString())
-                .setKjonn((String) document.get("kjonn"));
+                .setKjonn((String) document.get("kjonn"))
+                .setYtelse(YtelseMapping.valueOf(((String) document.get("ytelse"))))
+                .setUtlopsdato(dato(((String) document.get("utlopsdato"))))
+                .setUtlopsdatoFasett(ManedMapping.valueOf(((String) document.get("utlopsdato_mnd_fasett"))))
+                .setAapMaxtid(dato(((String) document.get("aap_maxtid"))))
+                .setAapMaxtidFasett(KvartalMapping.valueOf(((String) document.get("aap_maxtid_fasett"))))
+                ;
+    }
+
+    static LocalDateTime dato(String dato) {
+        return OffsetDateTime.parse(dato, DateTimeFormatter.ISO_ZONED_DATE_TIME).toLocalDateTime();
     }
 
     private static String getDiskresjonskode(SolrDocument document) {
-        String kode6 = "6";
-        String kode7 = "7";
-
         String diskresjonskode = (String) document.get("diskresjonskode");
-        if (kode6.equals(diskresjonskode) || kode7.equals(diskresjonskode)) {
+
+        if ("6".equals(diskresjonskode) || "7".equals(diskresjonskode)) {
             return diskresjonskode;
         }
         return null;
