@@ -19,7 +19,10 @@ public class Filtervalg {
     @QueryParam("fodselsdagIMnd[]")
     public List<Integer> fodselsdagIMnd;
 
+    @QueryParam("innsatsgruppe[]")
+    public List<Integer> innsatsgruppe;
+
     public boolean harAktiveFilter() {
-        return nyeBrukere || inaktiveBrukere || (alder != null && alder.size() > 0) || (kjonn != null && (kjonn == 0  || kjonn == 1)) || (fodselsdagIMnd != null && fodselsdagIMnd.size() > 0);
+        return nyeBrukere || inaktiveBrukere || (alder != null && alder.size() > 0) || (kjonn != null && (kjonn == 0  || kjonn == 1)) || (fodselsdagIMnd != null && fodselsdagIMnd.size() > 0) || ( innsatsgruppe != null && innsatsgruppe.size() > 0);
     }
 }
