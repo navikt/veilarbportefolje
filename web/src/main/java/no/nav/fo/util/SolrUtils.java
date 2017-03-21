@@ -161,7 +161,7 @@ public class SolrUtils {
         }
 
         if(filtervalg.fodselsdagIMnd.size() > 0) {
-            List<String> params = filtervalg.fodselsdagIMnd.stream().map(x -> "fodselsdag_i_mnd:" + x).collect(toList());
+            List<String> params = filtervalg.fodselsdagIMnd.stream().map(SolrUtils::leggTilFodselsdagIMndFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
@@ -181,24 +181,28 @@ public class SolrUtils {
         List<String> params = alder.stream().map((aldersRangeIndex) -> {
             // Pga. at man fortsatt er f.eks 19år når man er 19år og 364 dager så ser spørringene litt rare ut i forhold til ønsket filter
             switch(aldersRangeIndex) {
-                case 1:
+                case 0:
                     return prefix + "20YEARS+1DAY TO NOW" + postfix; // 19 og under
-                case 2:
+                case 1:
                     return prefix + "25YEARS+1DAY TO NOW-20YEARS" + postfix; // 20-24
-                case 3:
+                case 2:
                     return prefix + "30YEARS+1DAY TO NOW-25YEARS" + postfix; // 25-29
-                case 4:
+                case 3:
                     return prefix + "40YEARS+1DAY TO NOW-30YEARS" + postfix; // 30-39
-                case 5:
+                case 4:
                     return prefix + "50YEARS+1DAY TO NOW-40YEARS" + postfix; // 40-49
-                case 6:
+                case 5:
                     return prefix + "60YEARS+1DAY TO NOW-50YEARS" + postfix; // 50-59
-                case 7:
+                case 6:
                     return prefix + "67YEARS+1DAY TO NOW-60YEARS" + postfix; // 60-66
                 default:
                     return prefix + "71YEARS+1DAY TO NOW-67YEARS" + postfix; // 67-70
             }
         }).collect(Collectors.toList());
         return filter + StringUtils.join(params, " OR " + filter);
+    }
+
+    static String leggTilFodselsdagIMndFilter(int alder) {
+        return "fodselsdag_i_mnd:" + (alder + 1);
     }
 }
