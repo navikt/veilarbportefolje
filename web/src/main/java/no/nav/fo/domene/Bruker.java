@@ -47,15 +47,18 @@ public class Bruker {
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
                 .setFodselsdato(document.get("fodselsdato").toString())
                 .setKjonn((String) document.get("kjonn"))
-                .setYtelse(YtelseMapping.valueOf(((String) document.get("ytelse"))))
+                .setYtelse(YtelseMapping.of(((String) document.get("ytelse"))))
                 .setUtlopsdato(dato(((String) document.get("utlopsdato"))))
-                .setUtlopsdatoFasett(ManedMapping.valueOf(((String) document.get("utlopsdato_mnd_fasett"))))
+                .setUtlopsdatoFasett(ManedMapping.of(((String) document.get("utlopsdato_mnd_fasett"))))
                 .setAapMaxtid(dato(((String) document.get("aap_maxtid"))))
-                .setAapMaxtidFasett(KvartalMapping.valueOf(((String) document.get("aap_maxtid_fasett"))))
+                .setAapMaxtidFasett(KvartalMapping.of(((String) document.get("aap_maxtid_fasett"))))
                 ;
     }
 
     static LocalDateTime dato(String dato) {
+        if (dato == null) {
+            return null;
+        }
         return OffsetDateTime.parse(dato, DateTimeFormatter.ISO_ZONED_DATE_TIME).toLocalDateTime();
     }
 

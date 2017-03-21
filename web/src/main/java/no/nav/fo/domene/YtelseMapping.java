@@ -32,6 +32,13 @@ public enum YtelseMapping {
         this.sjekk = sjekk;
     }
 
+    public static YtelseMapping of(String s) {
+        if (s == null) {
+            return null;
+        }
+        return valueOf(s);
+    }
+
     public static Optional<YtelseMapping> of(LoependeVedtak vedtak) {
         return Stream.of(values())
                 .filter((YtelseMapping mapping) -> mapping.sjekk.test(vedtak))

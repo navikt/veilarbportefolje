@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class MetricsUtils {
+
     public static <S, T> Function<S, T> timed(String navn, Function<S, T> function) {
         return (S s) -> {
             Timer timer = MetricsFactory.createTimer(navn);
@@ -17,6 +18,7 @@ public class MetricsUtils {
                 t = function.apply(s);
             } catch (Throwable e) {
                 timer.setFailed();
+                throw e;
             } finally {
                 timer.stop();
                 timer.report();
@@ -33,6 +35,7 @@ public class MetricsUtils {
             s = function.get();
         } catch (Throwable e) {
             timer.setFailed();
+            throw e;
         } finally {
             timer.stop();
             timer.report();
@@ -48,6 +51,7 @@ public class MetricsUtils {
                 function.accept(s);
             } catch (Throwable e) {
                 timer.setFailed();
+                throw e;
             } finally {
                 timer.stop();
                 timer.report();

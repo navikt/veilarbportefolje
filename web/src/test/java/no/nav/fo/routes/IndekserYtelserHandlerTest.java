@@ -6,6 +6,7 @@ import no.nav.fo.service.SolrService;
 import no.nav.melding.virksomhet.loependeytelser.v1.*;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -17,18 +18,17 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static java.util.function.Function.identity;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -48,18 +48,25 @@ public class IndekserYtelserHandlerTest {
     @Captor
     ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
 
+    @BeforeClass
+    public static void before() {
+        System.setProperty("disable.metrics.report", "true");
+    }
+
     @Before
     public void setup() {
-        when(brukerRepository.retrievePersonidFromFnr(anyString()))
-                .then(invocationOnMock -> {
-                    String fnr = (String) invocationOnMock.getArguments()[0];
+        when(brukerRepository.retrievePersonidFromFnrs(anyCollection())).then((invocationOnMock -> {
+            Collection<String> fnrs = (Collection<String>) invocationOnMock.getArguments()[0];
+            Map<String, Optional<String>> res = fnrs.stream()
+                    .collect(Collectors.toMap(identity(), (fnr) -> {
+                        if ("10108000398".equals(fnr)) {
+                            return Optional.empty();
+                        }
+                        return Optional.of(fnr);
+                    }));
+            return res;
+        }));
 
-                    if ("10108000398".equals(fnr)) {
-                        return Optional.empty();
-                    }
-
-                    return Optional.of(fnr).map(BigDecimal::new);
-                });
     }
 
     @Test
@@ -110,7 +117,7 @@ public class IndekserYtelserHandlerTest {
         List<SolrInputDocument> solrDokumenter = captor.getValue();
         assertThat(solrDokumenter).hasSize(2);
 
-        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasettert");
+        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasett");
         assertThat(solrDokumenter.get(1).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid");
     }
 

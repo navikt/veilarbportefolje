@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 public class DatabaseConfigTest {
@@ -15,5 +16,10 @@ public class DatabaseConfigTest {
     @Bean
     public JdbcTemplate jdbcTemplate(javax.sql.DataSource dataSource) {
         return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(javax.sql.DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 }

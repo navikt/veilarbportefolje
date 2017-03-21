@@ -18,7 +18,14 @@ public enum KvartalMapping {
             return empty();
         }
 
-        return of(values()[kvartalDiff]);
+        return Optional.of(values()[kvartalDiff]);
+    }
+
+    public static KvartalMapping of(String s) {
+        if (s == null) {
+            return null;
+        }
+        return valueOf(s);
     }
 
     static int absoluttKvartal(LocalDateTime dato) {

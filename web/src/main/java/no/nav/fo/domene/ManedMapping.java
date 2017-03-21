@@ -17,7 +17,14 @@ public enum ManedMapping {
             return empty();
         }
 
-        return of(values()[mndDiff]);
+        return Optional.of(values()[mndDiff]);
+    }
+
+    public static ManedMapping of(String s) {
+        if (s == null) {
+            return null;
+        }
+        return valueOf(s);
     }
 
     static int absoluttManedNummer(LocalDateTime dato) {
