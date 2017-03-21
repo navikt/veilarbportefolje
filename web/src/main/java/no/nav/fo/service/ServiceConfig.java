@@ -13,4 +13,7 @@ public class ServiceConfig {
 
     @Bean
     public BrukertilgangService sjekkBrukertilgang() { return new BrukertilgangService(); }
+
+    @Bean
+    public PepClient pepClient() { return new PepClient(); }
 }
