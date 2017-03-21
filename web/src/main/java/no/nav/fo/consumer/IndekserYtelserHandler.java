@@ -108,10 +108,10 @@ public class IndekserYtelserHandler {
 
             if (AAP_MAXTID.sjekk.test(vedtak)) {
                 LocalDateTime maxtid = utlopsdatoUtregning(now, vedtak.getAaptellere());
-                dokument.put("aap_maxtid", new SolrInputField(maxtid.toString()));
+                dokument.put("aap_maxtid", new SolrInputField(maxtid.atZone(ZoneId.of("Europe/Oslo")).format(ISO_INSTANT)));
 
                 KvartalMapping.finnKvartal(now, maxtid).ifPresent((kvartalMapping -> {
-                    dokument.put("aap_maxtid_fasettert", new SolrInputField(kvartalMapping.toString()));
+                    dokument.put("aap_maxtid_fasett", new SolrInputField(kvartalMapping.toString()));
                 }));
             }
 
