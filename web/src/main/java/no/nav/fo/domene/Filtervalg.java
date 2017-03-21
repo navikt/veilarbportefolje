@@ -14,12 +14,12 @@ public class Filtervalg {
     public List<Integer> alder;
 
     @QueryParam("kjonn")
-    public String kjonn;
+    public Integer kjonn;
 
     @QueryParam("fodselsdagIMnd[]")
     public List<Integer> fodselsdagIMnd;
 
     public boolean harAktiveFilter() {
-        return nyeBrukere || inaktiveBrukere || (alder != null && alder.size() > 0) || ("M".equals(kjonn) || "K".equals(kjonn)) || (fodselsdagIMnd != null && fodselsdagIMnd.size() > 0);
+        return nyeBrukere || inaktiveBrukere || (alder != null && alder.size() > 0) || (kjonn != null && (kjonn == 0  || kjonn == 1)) || (fodselsdagIMnd != null && fodselsdagIMnd.size() > 0);
     }
 }

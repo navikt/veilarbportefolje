@@ -438,21 +438,20 @@ public class SolrUtilsTest {
     public void skalLeggeTilKjonnFilter() {
         Filtervalg filtervalg = new Filtervalg();
         SolrQuery solrQuery;
-        filtervalg.kjonn = "M";
+        filtervalg.kjonn = 1;
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
 
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:M)");
 
-        filtervalg.kjonn = "K";
+        filtervalg.kjonn = 0;
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:K)");
 
-        filtervalg.kjonn = "J";
-
+        filtervalg.kjonn = -3000;
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
         assertThat(solrQuery.getFilterQueries()).containsOnly("");
 
-        filtervalg.kjonn = "";
+        filtervalg = new Filtervalg();
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
         assertThat(solrQuery.getFilterQueries()).containsOnly("");
     }

@@ -156,8 +156,8 @@ public class SolrUtils {
             filtrerBrukereStatements.add(alderFilter(filtervalg.alder));
         }
 
-        if(filtervalg.kjonn != null && ("K".equals(filtervalg.kjonn) || "M".equals(filtervalg.kjonn))) {
-            filtrerBrukereStatements.add("kjonn:" + filtervalg.kjonn);
+        if(filtervalg.kjonn != null && (filtervalg.kjonn == 0 || filtervalg.kjonn == 1)) {
+            filtrerBrukereStatements.add("kjonn:" + (filtervalg.kjonn == 0 ? "K" : "M"));
         }
 
         if(filtervalg.fodselsdagIMnd != null && !filtervalg.fodselsdagIMnd.isEmpty()) {
