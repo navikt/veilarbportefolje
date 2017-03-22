@@ -64,6 +64,7 @@
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
         <httpclient.version>4.5.2</httpclient.version>
+        <httpcore.version>4.4.4</httpcore.version>
 
         <!-- Java -->
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -407,6 +408,17 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcore.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
