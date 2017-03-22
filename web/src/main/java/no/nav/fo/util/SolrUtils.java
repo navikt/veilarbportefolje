@@ -10,9 +10,9 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -125,25 +125,25 @@ public class SolrUtils {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
-        if(filtervalg.alder != null && !filtervalg.alder.isEmpty()) {
+        if (filtervalg.alder != null && !filtervalg.alder.isEmpty()) {
             filtrerBrukereStatements.add(alderFilter(filtervalg.alder));
         }
 
-        if(filtervalg.kjonn != null && (filtervalg.kjonn == 0 || filtervalg.kjonn == 1)) {
+        if (filtervalg.kjonn != null && (filtervalg.kjonn == 0 || filtervalg.kjonn == 1)) {
             filtrerBrukereStatements.add("kjonn:" + FiltervalgMappers.kjonn[filtervalg.kjonn]);
         }
 
-        if(filtervalg.fodselsdagIMnd != null && !filtervalg.fodselsdagIMnd.isEmpty()) {
+        if (filtervalg.fodselsdagIMnd != null && !filtervalg.fodselsdagIMnd.isEmpty()) {
             List<String> params = filtervalg.fodselsdagIMnd.stream().map(SolrUtils::fodselsdagIMndFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
-        if(filtervalg.innsatsgruppe != null && !filtervalg.innsatsgruppe.isEmpty()) {
+        if (filtervalg.innsatsgruppe != null && !filtervalg.innsatsgruppe.isEmpty()) {
             List<String> params = filtervalg.innsatsgruppe.stream().map(SolrUtils::innsatsgruppeFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
-        if(filtervalg.formidlingsgruppe != null && !filtervalg.formidlingsgruppe.isEmpty()) {
+        if (filtervalg.formidlingsgruppe != null && !filtervalg.formidlingsgruppe.isEmpty()) {
             List<String> params = filtervalg.formidlingsgruppe.stream().map(SolrUtils::formidlingsgruppeFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
@@ -152,7 +152,7 @@ public class SolrUtils {
             query.addFilterQuery(StringUtils.join(oversiktStatements, " OR "));
         }
 
-        if(!filtrerBrukereStatements.isEmpty()) {
+        if (!filtrerBrukereStatements.isEmpty()) {
             query.addFilterQuery(filtrerBrukereStatements
                 .stream().map(statement -> "(" + statement + ")").collect(Collectors.joining(" AND ")));
         }
