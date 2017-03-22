@@ -9,7 +9,7 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Data
 @Accessors(chain = true)
