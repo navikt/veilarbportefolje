@@ -43,7 +43,9 @@ public class BatchCollector<T> implements Collector<T, List<T>, List<T>> {
     @Override
     public Function<List<T>, List<T>> finisher() {
         return (ts) -> {
-            batchProcessor.accept(ts);
+            if (!ts.isEmpty()) {
+                batchProcessor.accept(ts);
+            }
             return Collections.emptyList();
         };
     }
