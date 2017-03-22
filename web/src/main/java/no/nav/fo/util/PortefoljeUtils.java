@@ -2,6 +2,7 @@ package no.nav.fo.util;
 
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
+import no.nav.fo.service.PepClient;
 
 import java.util.List;
 
@@ -23,4 +24,33 @@ public class PortefoljeUtils {
         return brukere.stream().skip(fra).limit(antall).collect(toList());
     }
 
+    public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String veilederIdent, PepClient pepClient) {
+        return brukere.stream()
+                .map( bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent, pepClient))
+                .collect(toList());
+    }
+
+    private static Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent, PepClient pepClient) {
+        if(!bruker.erKonfidensiell()) {
+            return bruker;
+        }
+
+        String diskresjonskode = bruker.getDiskresjonskode();
+
+        if("6".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode6(veilederIdent)) {
+            return fjernKonfidensiellInfo(bruker);
+        }
+        if("7".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode7(veilederIdent)) {
+            return fjernKonfidensiellInfo(bruker);
+        }
+        if(bruker.isEgenAnsatt() && !pepClient.isSubjectAuthorizedToSeeEgenAnsatt(veilederIdent)) {
+            return fjernKonfidensiellInfo(bruker);
+        }
+        return bruker;
+
+    }
+
+    private static Bruker fjernKonfidensiellInfo(Bruker bruker) {
+        return bruker.setFnr("").setEtternavn("").setFornavn("").setKjonn("").setFodselsdato("");
+    }
 }

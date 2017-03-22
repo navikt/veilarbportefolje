@@ -6,12 +6,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.text.Collator;
-import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Locale;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
@@ -57,20 +58,19 @@ public class SolrUtils {
 
         Comparator<Bruker> comparator = null;
 
-        if(erNyComparator != null) {
+        if (erNyComparator != null) {
             comparator = erNyComparator;
 
-            if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
                 comparator = comparator.thenComparing(setComparatorSortOrder(brukerNavnComparator(), sortOrder));
             }
-        }
-        else {
-            if(sortOrder.equals("ascending") || sortOrder.equals("descending")) {
+        } else {
+            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
                 comparator = setComparatorSortOrder(brukerNavnComparator(), sortOrder);
             }
         }
 
-        if(comparator != null) {
+        if (comparator != null) {
             brukere.sort(comparator);
         }
 
@@ -87,65 +87,41 @@ public class SolrUtils {
             boolean brukerAErNy = brukerA.getVeilederId() == null;
             boolean brukerBErNy = brukerB.getVeilederId() == null;
 
-            if(brukerAErNy && !brukerBErNy) {
+            if (brukerAErNy && !brukerBErNy) {
                 return -1;
-            }
-            else if(!brukerAErNy && brukerBErNy) {
+            } else if (!brukerAErNy && brukerBErNy) {
                 return 1;
-            }
-            else {
+            } else {
                 return 0;
             }
         };
     }
 
+    private static <S> Comparator<S> norskComparator(final Function<S, String> keyExtractor) {
+        Locale locale = new Locale("no", "NO");
+        Collator collator = Collator.getInstance(locale);
+        collator.setStrength(Collator.PRIMARY);
+
+        return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
+    }
+
     static Comparator<Bruker> brukerNavnComparator() {
-        return (brukerA, brukerB) -> {
-
-            Locale locale = new Locale("no", "NO");
-
-            Collator collator = Collator.getInstance(locale);
-            collator.setStrength(Collator.PRIMARY);
-
-            String etternavnA = brukerA.getEtternavn();
-            String etternavnB = brukerB.getEtternavn();
-
-            String fornavnA = brukerA.getFornavn();
-            String fornavnB = brukerB.getFornavn();
-
-            if(collator.compare(etternavnA, etternavnB) < 0) {
-                return -1;
-            }
-            else if(collator.compare(etternavnA, etternavnB) > 0) {
-                return 1;
-            }
-            else {
-                if(collator.compare(fornavnA, fornavnB) < 0) {
-                    return -1;
-                }
-                else if(collator.compare(fornavnA, fornavnB) > 0) {
-                    return 1;
-                }
-                else {
-                    return 0;
-                }
-            }
-        };
+        return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
-        if(!filtervalg.harAktiveFilter()) {
+        if (!filtervalg.harAktiveFilter()) {
             return;
         }
 
         List<String> oversiktStatements = new ArrayList<>();
         List<String> filtrerBrukereStatements = new ArrayList<>();
 
-        if(filtervalg.nyeBrukere && filtervalg.inaktiveBrukere) {
+        if (filtervalg.nyeBrukere && filtervalg.inaktiveBrukere) {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)");
-        } else if(filtervalg.nyeBrukere) {
+        } else if (filtervalg.nyeBrukere) {
             oversiktStatements.add("-veileder_id:*");
-        } else if(filtervalg.inaktiveBrukere) {
+        } else if (filtervalg.inaktiveBrukere) {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
@@ -172,13 +148,13 @@ public class SolrUtils {
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
-        if(!oversiktStatements.isEmpty()) {
+        if (!oversiktStatements.isEmpty()) {
             query.addFilterQuery(StringUtils.join(oversiktStatements, " OR "));
         }
 
         if(!filtrerBrukereStatements.isEmpty()) {
             query.addFilterQuery(filtrerBrukereStatements
-                    .stream().map(statement -> "(" + statement + ")").collect(Collectors.joining(" AND ")));
+                .stream().map(statement -> "(" + statement + ")").collect(Collectors.joining(" AND ")));
         }
     }
 
