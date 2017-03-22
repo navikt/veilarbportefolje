@@ -60,9 +60,9 @@ public class EnhetController {
 
                 List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> filtrertBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,ident, pepClient);
+                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,ident, pepClient);
 
-                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, filtrertBrukereSublist, enhet, fra);
+                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 
                 return Response.ok().entity(portefolje).build();
             } else {
