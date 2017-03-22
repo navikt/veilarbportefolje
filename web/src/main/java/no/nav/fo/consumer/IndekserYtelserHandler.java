@@ -97,21 +97,21 @@ public class IndekserYtelserHandler {
 
             LocalDateTime utlopsdato = utlopsdato(now, vedtak);
 
-            dokument.put("person_id", new SolrInputField(personId));
-            dokument.put("fnr", new SolrInputField(vedtak.getPersonident()));
-            dokument.put("ytelse", new SolrInputField(ytelseMapping.toString()));
-            dokument.put("utlopsdato", new SolrInputField(utlopsdato.atZone(ZoneId.of("Europe/Oslo")).format(ISO_INSTANT)));
+            dokument.addField("person_id", personId);
+            dokument.addField("fnr", vedtak.getPersonident());
+            dokument.addField("ytelse", ytelseMapping.toString());
+            dokument.addField("utlopsdato", utlopsdato.atZone(ZoneId.of("Europe/Oslo")).format(ISO_INSTANT));
 
             ManedMapping.finnManed(now, utlopsdato).ifPresent((mndMapping) -> {
-                dokument.put("utlopsdato_mnd_fasett", new SolrInputField(mndMapping.toString()));
+                dokument.addField("utlopsdato_mnd_fasett", mndMapping.toString());
             });
 
             if (AAP_MAXTID.sjekk.test(vedtak)) {
                 LocalDateTime maxtid = utlopsdatoUtregning(now, vedtak.getAaptellere());
-                dokument.put("aap_maxtid", new SolrInputField(maxtid.atZone(ZoneId.of("Europe/Oslo")).format(ISO_INSTANT)));
+                dokument.addField("aap_maxtid", maxtid.atZone(ZoneId.of("Europe/Oslo")).format(ISO_INSTANT));
 
                 KvartalMapping.finnKvartal(now, maxtid).ifPresent((kvartalMapping -> {
-                    dokument.put("aap_maxtid_fasett", new SolrInputField(kvartalMapping.toString()));
+                    dokument.addField("aap_maxtid_fasett", kvartalMapping.toString());
                 }));
             }
 
