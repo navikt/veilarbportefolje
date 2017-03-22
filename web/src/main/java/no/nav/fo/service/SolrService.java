@@ -17,6 +17,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
 
 public class SolrService {
 
@@ -48,6 +51,7 @@ public class SolrService {
     private BrukerRepository brukerRepository;
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
+    @Transactional
     public void hovedindeksering() {
         if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
@@ -68,6 +72,7 @@ public class SolrService {
 
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
+    @Transactional
     public void deltaindeksering() {
         if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
