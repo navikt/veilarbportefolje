@@ -3,6 +3,7 @@ package no.nav.fo.util;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.FiltervalgMappers;
 import no.nav.fo.service.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -462,5 +463,33 @@ public class SolrUtilsTest {
         SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104", filtervalg);
         filtervalg.harAktiveFilter();
         assertThat(query.getFilterQueries()).containsOnly("enhet_id:0104");
+    }
+
+    @Test
+    public void skalLeggeTilInnsatsgruppeFilter() {
+        String prefix = "kvalifiseringsgruppekode:";
+
+        assertThat(SolrUtils.innsatsgruppeFilter(0)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[0]);
+
+        assertThat(SolrUtils.innsatsgruppeFilter(1)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[1]);
+
+        assertThat(SolrUtils.innsatsgruppeFilter(2)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[2]);
+
+        assertThat(SolrUtils.innsatsgruppeFilter(3)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[3]);
+    }
+
+    @Test
+    public void skalLeggeTilFormidlingsgruppeFilter() {
+        String prefix = "formidlingsgruppekode:";
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(0)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[0]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(1)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[1]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(2)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[2]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(3)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[3]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(4)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[4]);
     }
 }

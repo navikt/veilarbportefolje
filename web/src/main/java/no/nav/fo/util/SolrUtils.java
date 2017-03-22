@@ -162,13 +162,23 @@ public class SolrUtils {
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
+        if(filtervalg.innsatsgruppe != null && !filtervalg.innsatsgruppe.isEmpty()) {
+            List<String> params = filtervalg.innsatsgruppe.stream().map(SolrUtils::innsatsgruppeFilter).collect(toList());
+            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
+        }
+
+        if(filtervalg.formidlingsgruppe != null && !filtervalg.formidlingsgruppe.isEmpty()) {
+            List<String> params = filtervalg.formidlingsgruppe.stream().map(SolrUtils::formidlingsgruppeFilter).collect(toList());
+            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
+        }
+
         if(!oversiktStatements.isEmpty()) {
             query.addFilterQuery(StringUtils.join(oversiktStatements, " OR "));
         }
 
         if(!filtrerBrukereStatements.isEmpty()) {
             query.addFilterQuery(filtrerBrukereStatements
-                    .stream().map(statement -> "("+statement+")").collect(Collectors.joining(" AND ")));
+                    .stream().map(statement -> "(" + statement + ")").collect(Collectors.joining(" AND ")));
         }
     }
 
@@ -182,5 +192,13 @@ public class SolrUtils {
 
     private static String fodselsdagIMndFilter(int index) {
         return "fodselsdag_i_mnd:" + FiltervalgMappers.fodselsdagIMnd[index];
+    }
+
+    static String innsatsgruppeFilter(int index) {
+        return "kvalifiseringsgruppekode:" + FiltervalgMappers.innsatsgruppe[index];
+    }
+
+    static String formidlingsgruppeFilter(int index) {
+        return "formidlingsgruppekode:" + FiltervalgMappers.formidlingsgruppe[index];
     }
 }
