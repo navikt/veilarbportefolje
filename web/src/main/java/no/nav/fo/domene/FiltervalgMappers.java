@@ -29,4 +29,8 @@ public class FiltervalgMappers {
     public static final String[] innsatsgruppe = new String[] {
             "BATT", "BFORM", "IKVAL", "VARIG"
     };
+
+    public static final String[] formidlingsgruppe = new String[] {
+            "ARBS", "IARBS", "ISERV", "PARBS", "RARBS"
+    };
 }

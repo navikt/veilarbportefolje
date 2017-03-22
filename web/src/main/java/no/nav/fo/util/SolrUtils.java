@@ -167,6 +167,11 @@ public class SolrUtils {
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
+        if(filtervalg.formidlingsgruppe != null && !filtervalg.formidlingsgruppe.isEmpty()) {
+            List<String> params = filtervalg.formidlingsgruppe.stream().map(SolrUtils::formidlingsgruppeFilter).collect(toList());
+            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
+        }
+
         if(!oversiktStatements.isEmpty()) {
             query.addFilterQuery(StringUtils.join(oversiktStatements, " OR "));
         }
@@ -191,5 +196,9 @@ public class SolrUtils {
 
     static String innsatsgruppeFilter(int index) {
         return "kvalifiseringsgruppekode:" + FiltervalgMappers.innsatsgruppe[index];
+    }
+
+    static String formidlingsgruppeFilter(int index) {
+        return "formidlingsgruppekode:" + FiltervalgMappers.formidlingsgruppe[index];
     }
 }

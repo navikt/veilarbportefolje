@@ -477,4 +477,19 @@ public class SolrUtilsTest {
 
         assertThat(SolrUtils.innsatsgruppeFilter(3)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[3]);
     }
+
+    @Test
+    public void skalLeggeTilFormidlingsgruppeFilter() {
+        String prefix = "formidlingsgruppekode:";
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(0)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[0]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(1)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[1]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(2)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[2]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(3)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[3]);
+
+        assertThat(SolrUtils.formidlingsgruppeFilter(4)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[4]);
+    }
 }
