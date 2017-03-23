@@ -58,11 +58,13 @@
         <jsoup.version>1.7.2</jsoup.version>
         <joda.version>2.9.6</joda.version>
         <mockito.version>1.9.5</mockito.version>
-        <solr.version>4.10.4</solr.version>
+        <solr.version>6.4.2</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
         <javaslang.version>2.0.0-RC4</javaslang.version>
         <lombok.version>1.12.6</lombok.version>
         <activemq.version>5.7.0</activemq.version>
+        <httpclient.version>4.5.2</httpclient.version>
+        <httpcore.version>4.4.4</httpcore.version>
 
         <!-- Java -->
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -401,6 +403,28 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
                 <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcore.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>

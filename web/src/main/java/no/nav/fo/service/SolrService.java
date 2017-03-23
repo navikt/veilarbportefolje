@@ -7,9 +7,9 @@ import no.nav.fo.util.DbUtils;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.util.SolrUtils;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -45,7 +45,7 @@ public class SolrService {
     private static final String DELTAINDEKSERING = "Deltaindeksering";
 
     @Inject
-    private HttpSolrServer server;
+    private SolrClient solrClient;
 
     @Inject
     private BrukerRepository brukerRepository;
@@ -109,11 +109,11 @@ public class SolrService {
     public List<Bruker> hentBrukere(String queryString, String sortOrder, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
+            QueryResponse response = solrClient.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
-        } catch (SolrServerException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return SolrUtils.sortBrukere(brukere, sortOrder, erNyComparator);
@@ -127,9 +127,9 @@ public class SolrService {
 
         QueryResponse response = new QueryResponse();
         try {
-            response = server.query(solrQuery);
+            response = solrClient.query(solrQuery);
             logger.debug(response.toString());
-        } catch (SolrServerException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet", e.getMessage(), e);
         }
 
@@ -148,7 +148,7 @@ public class SolrService {
     }
 
     private Try<UpdateResponse> commit() {
-        return Try.of(() -> server.commit())
+        return Try.of(() -> solrClient.commit())
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
@@ -158,7 +158,7 @@ public class SolrService {
                 .sliding(10000, 10000)
                 .forEach(docs -> {
                     try {
-                        server.add(docs.toJavaList());
+                        solrClient.add(docs.toJavaList());
                         logger.info(String.format("Legger til %d dokumenter i indeksen", docs.length()));
                     } catch (SolrServerException | IOException e) {
                         logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
@@ -169,7 +169,7 @@ public class SolrService {
 
     private void deleteAllDocuments() {
         try {
-            UpdateResponse response = server.deleteByQuery("*:*");
+            UpdateResponse response = solrClient.deleteByQuery("*:*");
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
