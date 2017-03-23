@@ -4,9 +4,12 @@ import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -51,7 +54,13 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public HttpSolrServer httpSolrServer() {
-        return mock(HttpSolrServer.class);
+    public SolrClient solrClient() {
+        return mock(HttpSolrClient.class); }
+
+    @Bean
+    public Pep pep() { return mock(Pep.class); }
+
+    @Bean
+    public PepClient pepClient() { return mock(PepClient.class);
     }
 }

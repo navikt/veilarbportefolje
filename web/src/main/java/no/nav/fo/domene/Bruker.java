@@ -12,6 +12,7 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Data
 @Accessors(chain = true)
@@ -22,8 +23,8 @@ public class Bruker {
     String veilederId;
     List<String> sikkerhetstiltak;
     String diskresjonskode;
-    Boolean egenAnsatt;
-    Boolean erDoed;
+    boolean egenAnsatt;
+    boolean erDoed;
     int fodselsdagIMnd;
     String fodselsdato;
     String kjonn;
@@ -78,5 +79,10 @@ public class Bruker {
         } else {
             return singletonList(kode);
         }
+    }
+
+    public boolean erKonfidensiell() {
+        return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
+
     }
 }

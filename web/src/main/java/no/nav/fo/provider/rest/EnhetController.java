@@ -6,6 +6,7 @@ import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.service.BrukertilgangService;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
 import org.slf4j.Logger;
@@ -13,6 +14,8 @@ import org.slf4j.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -32,6 +35,9 @@ public class EnhetController {
     @Inject
     SolrService solrService;
 
+    @Inject
+    PepClient pepClient;
+
     @GET
     @Path("/{enhet}/portefolje")
     public Response hentPortefoljeForEnhet(
@@ -41,7 +47,12 @@ public class EnhetController {
             @QueryParam("sortByLastName") String sortDirection,
             @BeanParam Filtervalg filtervalg) {
 
+        List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
+
         try {
+            if(!enheterIPilot.contains(enhet)) {
+                return Response.ok().entity(new Portefolje().setBrukere(new ArrayList<>())).build();
+            }
             String ident = SubjectHandler.getSubjectHandler().getUid();
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
 
@@ -49,8 +60,9 @@ public class EnhetController {
 
                 List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
+                List<Bruker> filtrertBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,ident, pepClient);
 
-                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, brukereSublist, enhet, fra);
+                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, filtrertBrukereSublist, enhet, fra);
 
                 return Response.ok().entity(portefolje).build();
             } else {

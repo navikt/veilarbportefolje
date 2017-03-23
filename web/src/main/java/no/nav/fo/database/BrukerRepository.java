@@ -132,7 +132,7 @@ public class BrukerRepository {
         try {
             db.update(insertPersonidAktoeridMappingSQL(), aktoerId, personId);
         } catch (DuplicateKeyException e) {
-            LOG.info("Aktoerid %s personId %s mapping finnes i databasen", aktoerId, personId);
+            LOG.info("Aktoerid {} personId {} mapping finnes i databasen", aktoerId, personId);
         }
     }
 

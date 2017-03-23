@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
-
 import java.io.IOException;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -41,14 +40,13 @@ public class OppdaterBrukerdataListener {
     public BrukerOppdatertInformasjon konverterJSONTilBruker(String brukerString) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            BrukerOppdatertInformasjon bruker = mapper.readValue(brukerString,BrukerOppdatertInformasjon.class);
+            BrukerOppdatertInformasjon bruker = mapper.readValue(brukerString, BrukerOppdatertInformasjon.class);
             return bruker;
         } catch (IOException e) {
-            LOG.error("Kunne ikke lese brukerinformasjon",e);
+            LOG.error("Kunne ikke lese brukerinformasjon", e);
         }
         return null;
     }
-
 
 
 }

@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
+import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableAspectJAutoProxy
@@ -23,7 +25,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         MQMockConfig.class,
         AktoerEndpointConfig.class,
         LocalArenafilConfig.class,
-        MetricsConfig.class
+        MetricsConfig.class,
+        AktoerEndpointConfig.class,
+        AbacContext.class,
+        CacheConfig.class
 })
 public class LocalApplicationConfig {
     @Bean

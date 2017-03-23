@@ -20,10 +20,10 @@ public class BrukerTest {
         assertThat(bruker.getFornavn(), notNullValue());
         assertThat(bruker.getEtternavn(), notNullValue());
         assertThat(bruker.getVeilederId(), notNullValue());
-        assertThat(bruker.getEgenAnsatt(), notNullValue());
+        assertThat(bruker.isEgenAnsatt(), notNullValue());
         assertThat(bruker.getSikkerhetstiltak(), notNullValue());
         assertThat(bruker.getDiskresjonskode(), notNullValue());
-        assertThat(bruker.getErDoed(), notNullValue());
+        assertThat(bruker.isErDoed(), notNullValue());
     }
 
     @Test

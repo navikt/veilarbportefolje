@@ -8,9 +8,9 @@ import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -18,6 +18,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
 
 public class SolrService {
 
@@ -39,12 +42,13 @@ public class SolrService {
     private static final String DELTAINDEKSERING = "Deltaindeksering";
 
     @Inject
-    private HttpSolrServer server;
+    private SolrClient solrClient;
 
     @Inject
     private BrukerRepository brukerRepository;
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
+    @Transactional
     public void hovedindeksering() {
         if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
@@ -65,6 +69,7 @@ public class SolrService {
 
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
+    @Transactional
     public void deltaindeksering() {
         if (SolrUtils.isSlaveNode()) {
             logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
@@ -121,12 +126,12 @@ public class SolrService {
     public List<Bruker> hentBrukere(String queryString, String sortOrder, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {
-            QueryResponse response = server.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
+            QueryResponse response = solrClient.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
             SolrUtils.checkSolrResponseCode(response.getStatus());
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
-        } catch (SolrServerException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return SolrUtils.sortBrukere(brukere, sortOrder, erNyComparator);
@@ -140,9 +145,9 @@ public class SolrService {
 
         QueryResponse response = new QueryResponse();
         try {
-            response = server.query(solrQuery);
+            response = solrClient.query(solrQuery);
             logger.debug(response.toString());
-        } catch (SolrServerException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet", e.getMessage(), e);
         }
 
@@ -157,11 +162,11 @@ public class SolrService {
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
         addDocuments(dokumenter);
         commit();
-        logger.info("Bruker med personId %s lagt til i indeksen", personId);
+        logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }
 
     public Try<UpdateResponse> commit() {
-        return Try.of(() -> server.commit())
+        return Try.of(() -> solrClient.commit())
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
@@ -171,7 +176,7 @@ public class SolrService {
                 .sliding(10000, 10000)
                 .forEach(docs -> {
                     try {
-                        server.add(docs.toJavaList());
+                        solrClient.add(docs.toJavaList());
                         logger.info(format("Legger til %d dokumenter i indeksen", docs.length()));
                     } catch (SolrServerException | IOException e) {
                         logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
@@ -182,7 +187,7 @@ public class SolrService {
 
     private void deleteAllDocuments() {
         try {
-            UpdateResponse response = server.deleteByQuery("*:*");
+            UpdateResponse response = solrClient.deleteByQuery("*:*");
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);

@@ -45,7 +45,11 @@
             <artifactId>javaslang</artifactId>
         </dependency>
 
-        <!--Dialogarena tjenestespesifikasjon-->
+        <!--ABAC-->
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>common-abac</artifactId>
+        </dependency>
 
         <!--Dialogarena-->
         <dependency>
@@ -207,12 +211,24 @@
             <artifactId>activemq-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
