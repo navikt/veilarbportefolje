@@ -92,7 +92,7 @@ public class BrukerRepository {
                     params)
                     .stream()
                     .map((rs) -> Tuple.of(
-                            ((String) rs.get("FODSELSNR")),
+                            (String) rs.get("FODSELSNR"),
                             DbUtils.mapRadTilDokument(rs))
                     )
                     .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));

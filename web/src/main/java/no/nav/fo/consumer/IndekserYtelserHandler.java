@@ -110,9 +110,9 @@ public class IndekserYtelserHandler {
                 LocalDateTime maxtid = utlopsdatoUtregning(now, vedtak.getAaptellere());
                 dokument.addField("aap_maxtid", maxtid.atZone(ZoneId.of("Europe/Oslo")).format(ISO_INSTANT));
 
-                KvartalMapping.finnKvartal(now, maxtid).ifPresent((kvartalMapping -> {
+                KvartalMapping.finnKvartal(now, maxtid).ifPresent(kvartalMapping -> {
                     dokument.addField("aap_maxtid_fasett", kvartalMapping.toString());
-                }));
+                });
             }
 
             return dokument;

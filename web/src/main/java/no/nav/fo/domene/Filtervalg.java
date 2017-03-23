@@ -33,7 +33,7 @@ public class Filtervalg {
     }
 
     public boolean harYtelsefilter() {
-        return (ytelser != null && !ytelser.isEmpty());
+        return ytelser != null && !ytelser.isEmpty();
     }
 
     private boolean erMellom(int variabel, int fra, int til) {

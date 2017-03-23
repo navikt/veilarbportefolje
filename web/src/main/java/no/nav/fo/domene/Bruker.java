@@ -48,11 +48,11 @@ public class Bruker {
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
                 .setFodselsdato(document.get("fodselsdato").toString())
                 .setKjonn((String) document.get("kjonn"))
-                .setYtelse(YtelseMapping.of(((String) document.get("ytelse"))))
-                .setUtlopsdato(dato(((String) document.get("utlopsdato"))))
-                .setUtlopsdatoFasett(ManedMapping.of(((String) document.get("utlopsdato_mnd_fasett"))))
+                .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
+                .setUtlopsdato(dato((String) document.get("utlopsdato")))
+                .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
                 .setAapMaxtid(dato(((String) document.get("aap_maxtid"))))
-                .setAapMaxtidFasett(KvartalMapping.of(((String) document.get("aap_maxtid_fasett"))))
+                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
                 ;
     }
 

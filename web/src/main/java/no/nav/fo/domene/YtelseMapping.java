@@ -14,13 +14,22 @@ public enum YtelseMapping {
             (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode()) && "PERM".equals(vedtak.getRettighetstypeKode())
     ),
     DAGPENGER_OVRIGE(
-            (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode()) && !"DAGO".equals(vedtak.getRettighetstypeKode()) && !"PERM".equals(vedtak.getRettighetstypeKode())
+            (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode())
+                    && !"DAGO".equals(vedtak.getRettighetstypeKode())
+                    && !"PERM".equals(vedtak.getRettighetstypeKode())
     ),
     AAP_MAXTID(
-            (vedtak) -> "AA".equals(vedtak.getSakstypeKode()) && "AAP".equals(vedtak.getRettighetstypeKode()) && (vedtak.getAaptellere() != null && vedtak.getAaptellere().getAntallDagerUnntak() == null)
+            (vedtak) -> "AA".equals(vedtak.getSakstypeKode())
+                    && "AAP".equals(vedtak.getRettighetstypeKode())
+                    && (vedtak.getAaptellere() != null
+                    && vedtak.getAaptellere().getAntallDagerUnntak() == null)
     ),
     AAP_UNNTAK(
-            (vedtak) -> "AA".equals(vedtak.getSakstypeKode()) && "AAP".equals(vedtak.getRettighetstypeKode()) && vedtak.getAaptellere() != null && vedtak.getAaptellere().getAntallDagerUnntak() != null
+            (vedtak) ->
+                    "AA".equals(vedtak.getSakstypeKode())
+                    && "AAP".equals(vedtak.getRettighetstypeKode())
+                    && vedtak.getAaptellere() != null
+                    && vedtak.getAaptellere().getAntallDagerUnntak() != null
     ),
     TILTAKSPENGER(
             (vedtak) -> "INDIV".equals(vedtak.getSakstypeKode()) && "BASI".equals(vedtak.getRettighetstypeKode())
