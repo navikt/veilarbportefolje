@@ -28,7 +28,9 @@ public class YtelseMappingTest {
 
     @Test
     public void skalKlassifisereAAPMaxTid() throws Exception {
-        assertThat(YtelseMapping.of(lagVedtak("AA", "AAP"))).isEqualTo(Optional.of(AAP_MAXTID));
+        LoependeVedtak vedtak = lagVedtak("AA", "AAP");
+        vedtak.setAaptellere(new AAPtellere());
+        assertThat(YtelseMapping.of(vedtak)).isEqualTo(Optional.of(AAP_MAXTID));
     }
 
     @Test

@@ -57,12 +57,12 @@ public class IndekserYtelserHandlerTest {
     public void setup() {
         when(brukerRepository.retrievePersonidFromFnrs(anyCollection())).then((invocationOnMock -> {
             Collection<String> fnrs = (Collection<String>) invocationOnMock.getArguments()[0];
-            Map<String, Optional<String>> res = fnrs.stream()
+            Map<String, Optional<SolrInputDocument>> res = fnrs.stream()
                     .collect(Collectors.toMap(identity(), (fnr) -> {
                         if ("10108000398".equals(fnr)) {
                             return Optional.empty();
                         }
-                        return Optional.of(fnr);
+                        return Optional.of(new SolrInputDocument());
                     }));
             return res;
         }));
@@ -98,8 +98,8 @@ public class IndekserYtelserHandlerTest {
         List<SolrInputDocument> solrDokumenter = captor.getValue();
         assertThat(solrDokumenter).hasSize(2);
 
-        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato");
-        assertThat(solrDokumenter.get(1).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
+        assertThat(solrDokumenter.get(0).keySet()).containsExactly("ytelse", "utlopsdato");
+        assertThat(solrDokumenter.get(1).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
     }
 
     @Test
@@ -117,8 +117,8 @@ public class IndekserYtelserHandlerTest {
         List<SolrInputDocument> solrDokumenter = captor.getValue();
         assertThat(solrDokumenter).hasSize(2);
 
-        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasett");
-        assertThat(solrDokumenter.get(1).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid");
+        assertThat(solrDokumenter.get(0).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasett");
+        assertThat(solrDokumenter.get(1).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid");
     }
 
     @Test
@@ -135,7 +135,7 @@ public class IndekserYtelserHandlerTest {
         List<SolrInputDocument> solrDokumenter = captor.getValue();
         assertThat(solrDokumenter).hasSize(1);
 
-        assertThat(solrDokumenter.get(0).keySet()).containsExactly("person_id", "fnr", "ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
+        assertThat(solrDokumenter.get(0).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
     }
 
     private LoependeYtelser lagLoependeYtelser(List<LoependeVedtak> vedtak) {
