@@ -56,7 +56,6 @@
         <logback.version>1.1.7</logback.version>
         <commons-lang3.version>3.1</commons-lang3.version>
         <jsoup.version>1.7.2</jsoup.version>
-        <joda.version>2.9.6</joda.version>
         <mockito.version>1.9.5</mockito.version>
         <solr.version>6.4.2</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
@@ -87,6 +86,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Virksomhetstjenester -->
+            <dependency>
+                <groupId>no.nav.meldinger.virksomhet</groupId>
+                <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
+                <classifier>jaxb</classifier>
+            </dependency>
+
             <!--oidc-security-->
             <dependency>
                 <groupId>no.nav.dialogarena</groupId>
@@ -213,6 +220,17 @@
             </dependency>
 
             <!--Spring-->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
@@ -384,6 +402,11 @@
 
             <!--Diverse-->
             <dependency>
+                <groupId>no.nav</groupId>
+                <artifactId>metrics</artifactId>
+                <version>3.1.1</version>
+            </dependency>
+            <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
                 <version>${enhet.tjenestespesifikasjon.versjon}</version>
@@ -513,6 +536,11 @@
                         <artifactId>geronimo-jms_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.hierynomus</groupId>
+                <artifactId>sshj</artifactId>
+                <version>0.19.0</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.mq</groupId>

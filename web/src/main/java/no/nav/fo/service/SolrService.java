@@ -3,9 +3,10 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
-import no.nav.fo.util.DbUtils;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -23,16 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
-
-import java.time.LocalDateTime;
-
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
@@ -110,6 +107,7 @@ public class SolrService {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = solrClient.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
+            SolrUtils.checkSolrResponseCode(response.getStatus());
             SolrDocumentList results = response.getResults();
             logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
@@ -147,19 +145,19 @@ public class SolrService {
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }
 
-    private Try<UpdateResponse> commit() {
+    public Try<UpdateResponse> commit() {
         return Try.of(() -> solrClient.commit())
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
-    private List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
+    public List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
         // javaslang.collection-API brukes her pga sliding-metoden
         javaslang.collection.List.ofAll(dokumenter)
                 .sliding(10000, 10000)
                 .forEach(docs -> {
                     try {
                         solrClient.add(docs.toJavaList());
-                        logger.info(String.format("Legger til %d dokumenter i indeksen", docs.length()));
+                        logger.info(format("Legger til %d dokumenter i indeksen", docs.length()));
                     } catch (SolrServerException | IOException e) {
                         logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
                     }
@@ -183,7 +181,8 @@ public class SolrService {
         long hours = duration.toHours();
         long minutes = duration.toMinutes();
         long seconds = duration.getSeconds();
-        String logString = String.format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
+        String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         logger.info(logString);
     }
+
 }

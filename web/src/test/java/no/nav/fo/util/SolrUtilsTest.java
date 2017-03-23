@@ -3,17 +3,22 @@ package no.nav.fo.util;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.service.SolrUpdateResponseCodeException;
+import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Arrays.asList;
+import static no.nav.fo.domene.YtelseMapping.DAGPENGER_MED_PERMITTERING;
 import static no.nav.fo.util.SolrUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -85,7 +90,7 @@ public class SolrUtilsTest {
         filtervalg.inaktiveBrukere = true;
         String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
         String enhetId = "0713";
-        String queryString = "enhet_id:"+enhetId;
+        String queryString = "enhet_id:" + enhetId;
 
         SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
@@ -426,5 +431,14 @@ public class SolrUtilsTest {
         SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104", filtervalg);
         filtervalg.harAktiveFilter();
         assertThat(query.getFilterQueries()).containsOnly("enhet_id:0104");
+    }
+
+    @Test
+    public void skalLeggeTilYtelseFilter() throws Exception {
+        Filtervalg filter = new Filtervalg();
+        filter.ytelser = asList(DAGPENGER_MED_PERMITTERING);
+
+        assertThat(filter.harAktiveFilter()).isTrue();
+        assertThat(SolrUtils.buildSolrQuery(filter).getFilterQueries()).contains("ytelser:DAGPENGER_MED_PERMITTERING");
     }
 }

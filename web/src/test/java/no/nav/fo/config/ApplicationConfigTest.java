@@ -24,10 +24,14 @@ import static org.mockito.Mockito.mock;
 public class ApplicationConfigTest {
 
     @Bean
-    public AktoerV2 aktoerV2() { return mock(AktoerV2.class); }
+    public AktoerV2 aktoerV2() {
+        return mock(AktoerV2.class);
+    }
 
     @Bean
-    public BrukertilgangService brukertilgangService() { return new BrukertilgangService(); }
+    public BrukertilgangService brukertilgangService() {
+        return new BrukertilgangService();
+    }
 
     @Bean
     public BrukerRepository brukerRepository() {
@@ -35,20 +39,28 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() { return new OppdaterBrukerdataFletter(); }
+    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() {
+        return new OppdaterBrukerdataFletter();
+    }
 
     @Bean
-    public OppdaterBrukerdataListener oppdaterBrukerdataListener() { return new OppdaterBrukerdataListener(); }
+    public OppdaterBrukerdataListener oppdaterBrukerdataListener() {
+        return new OppdaterBrukerdataListener();
+    }
 
     @Bean
-    public SolrService solrService() { return mock(SolrService.class); }
+    public SolrService solrService() {
+        return mock(SolrService.class);
+    }
 
     @Bean
-    public SolrClient solrClient() { return mock(HttpSolrClient.class); }
+    public SolrClient solrClient() {
+        return mock(HttpSolrClient.class); }
 
     @Bean
     public Pep pep() { return mock(Pep.class); }
 
     @Bean
-    public PepClient pepClient() { return mock(PepClient.class); }
+    public PepClient pepClient() { return mock(PepClient.class);
+    }
 }
