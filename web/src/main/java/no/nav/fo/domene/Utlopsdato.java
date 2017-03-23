@@ -5,6 +5,7 @@ import no.nav.melding.virksomhet.loependeytelser.v1.AAPtellere;
 import no.nav.melding.virksomhet.loependeytelser.v1.Dagpengetellere;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 
+import java.math.BigInteger;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
@@ -24,11 +25,11 @@ public class Utlopsdato {
     }
 
     public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, Dagpengetellere dagpengetellere) {
-        return utlopsdatoUtregning(now, dagpengetellere.getAntallUkerIgjen().intValue(), dagpengetellere.getAntallDagerIgjen().intValue());
+        return utlopsdatoUtregning(now, nullcheck(dagpengetellere.getAntallUkerIgjen()).intValue(), nullcheck(dagpengetellere.getAntallDagerIgjen()).intValue());
     }
 
     public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, AAPtellere aaptellere) {
-        return utlopsdatoUtregning(now, aaptellere.getAntallUkerIgjen().intValue(), aaptellere.getAntallDagerIgjen().intValue());
+        return utlopsdatoUtregning(now, nullcheck(aaptellere.getAntallUkerIgjen()).intValue(), nullcheck(aaptellere.getAntallDagerIgjen()).intValue());
     }
 
     public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, int antallUkerIgjen, int antallDagerIgjen) {
@@ -42,5 +43,12 @@ public class Utlopsdato {
         }
 
         return utlopsdato;
+    }
+
+    private static BigInteger nullcheck(BigInteger bi) {
+        if (bi == null) {
+            return BigInteger.ZERO;
+        }
+        return bi;
     }
 }

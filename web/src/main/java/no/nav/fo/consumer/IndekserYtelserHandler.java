@@ -12,7 +12,6 @@ import no.nav.fo.service.SolrService;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +31,8 @@ import static java.util.stream.Collectors.*;
 import static no.nav.fo.domene.Utlopsdato.utlopsdato;
 import static no.nav.fo.domene.Utlopsdato.utlopsdatoUtregning;
 import static no.nav.fo.domene.YtelseMapping.AAP_MAXTID;
-import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.MetricsUtils.timed;
+import static no.nav.fo.util.StreamUtils.batchProcess;
 
 
 public class IndekserYtelserHandler {
@@ -49,15 +48,17 @@ public class IndekserYtelserHandler {
         batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtaks) -> {
             LocalDateTime now = now();
 
-            Map<String, Optional<String>> brukererIDB = brukererIDB(vedtaks);
+            Map<String, Optional<SolrInputDocument>> brukererIDB = brukererIDB(vedtaks);
 
-            Map<Boolean, List<Try<SolrInputDocument>>> alleDokumenter = timed("GR199.lagsolrdocument", () -> vedtaks
-                    .stream()
-                    .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((fnr) -> Tuple.of(fnr, vedtak)))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(this.lagSolrDocument(now))
-                    .collect(partitioningBy(Try::isSuccess))
+            Map<Boolean, List<Try<SolrInputDocument>>> alleDokumenter = timed("GR199.lagsolrdocument", () -> {
+                        return vedtaks
+                                .stream()
+                                .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((fnr) -> Tuple.of(fnr, vedtak)))
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .map(this.lagSolrDocument(now))
+                                .collect(partitioningBy(Try::isSuccess));
+                    }
             );
 
             alleDokumenter
@@ -75,8 +76,8 @@ public class IndekserYtelserHandler {
         });
     }
 
-    private Map<String, Optional<String>> brukererIDB(Collection<LoependeVedtak> vedtaks) {
-        Supplier<Map<String, Optional<String>>> personIdSupplier = () -> brukerRepository
+    private Map<String, Optional<SolrInputDocument>> brukererIDB(Collection<LoependeVedtak> vedtaks) {
+        Supplier<Map<String, Optional<SolrInputDocument>>> personIdSupplier = () -> brukerRepository
                 .retrievePersonidFromFnrs(vedtaks
                         .stream()
                         .map(LoependeVedtak::getPersonident)
@@ -86,19 +87,15 @@ public class IndekserYtelserHandler {
         return timed("GR199.brukersjekk", personIdSupplier);
     }
 
-    private Function<Tuple2<String, LoependeVedtak>, Try<SolrInputDocument>> lagSolrDocument(LocalDateTime now) {
-        return (Tuple2<String, LoependeVedtak> loependeVedtak) -> Try.of(() -> {
-            SolrInputDocument dokument = new SolrInputDocument();
-
-            String personId = loependeVedtak._1;
+    private Function<Tuple2<SolrInputDocument, LoependeVedtak>, Try<SolrInputDocument>> lagSolrDocument(LocalDateTime now) {
+        return (Tuple2<SolrInputDocument, LoependeVedtak> loependeVedtak) -> Try.of(() -> {
+            SolrInputDocument dokument = loependeVedtak._1;
             LoependeVedtak vedtak = loependeVedtak._2;
 
             YtelseMapping ytelseMapping = YtelseMapping.of(vedtak).orElseThrow(() -> new FantIngenYtelseMappingException(vedtak));
 
             LocalDateTime utlopsdato = utlopsdato(now, vedtak);
 
-            dokument.addField("person_id", personId);
-            dokument.addField("fnr", vedtak.getPersonident());
             dokument.addField("ytelse", ytelseMapping.toString());
             dokument.addField("utlopsdato", utlopsdato.atZone(ZoneId.of("Europe/Oslo")).format(ISO_INSTANT));
 

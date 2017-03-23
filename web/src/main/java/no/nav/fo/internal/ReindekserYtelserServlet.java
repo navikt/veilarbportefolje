@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 public class ReindekserYtelserServlet extends HttpServlet {
 
@@ -31,14 +32,18 @@ public class ReindekserYtelserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (this.ismasternode) {
-            kopierGR199FraArena.kopierOgIndekser();
-            resp.getWriter().write("reindeksering startet");
+            if (kopierGR199FraArena.isRunning()) {
+                resp.getWriter().write("reindeksering kjører");
+            } else {
+                runAsync(() -> kopierGR199FraArena.kopierOgIndekser());
+                resp.getWriter().write("reindeksering startet");
+            }
             resp.setStatus(200);
         } else if (this.masternode.isEmpty()) {
             resp.getWriter().write("fant ikke masternoden");
             resp.setStatus(500);
         } else {
-            URL masterUrl = new URL(format("https://%s/internal/reindekserytelser", masternode));
+            URL masterUrl = new URL(format("http://%s/veilarbportefolje/internal/reindekserytelser", masternode));
             InputStreamReader reader = new InputStreamReader(masterUrl.openStream());
             String masterResp = CharStreams.toString(reader);
             resp.getWriter().write("master sa: " + masterResp);

@@ -1,11 +1,7 @@
 package no.nav.fo.consumer;
 
 import javaslang.control.Try;
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.sftp.SFTPClient;
-import net.schmizz.sshj.xfer.InMemoryDestFile;
 import no.nav.fo.service.ArenafilService;
-import no.nav.fo.util.CopyStream;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.metrics.aspects.Timed;
 import org.slf4j.Logger;
@@ -16,9 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.function.Supplier;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -39,6 +33,8 @@ public class KopierGR199FraArena {
     @Value("${cluster.ismasternode}")
     boolean isMaster;
 
+    boolean isRunning = false;
+
     private IndekserYtelserHandler indekserHandler;
     private ArenafilService arenafilService;
 
@@ -50,6 +46,7 @@ public class KopierGR199FraArena {
     @Timed(name = "GR199.kopierOgIndekser")
     @Scheduled(cron = "${filmottak.loependeYtelser.cron}")
     public void kopierOgIndekser() {
+        isRunning = true;
         Supplier<Try<InputStream>> hentfil = () -> arenafilService.hentArenafil(server, username, password);
 
         timed("GR199.hentfil", hentfil)
@@ -57,7 +54,12 @@ public class KopierGR199FraArena {
                 .flatMap(timed("GR199.unmarshall", this::unmarshall))
                 .onFailure(log(logger, "Unmarshalling feilet"))
                 .andThen(timed("GR199.indekser", indekserHandler::indekser))
-                .onFailure(log(logger, "Indeksering feilet"));
+                .onFailure(log(logger, "Indeksering feilet"))
+                .andThen(() -> this.isRunning = false);
+    }
+
+    public boolean isRunning() {
+        return this.isRunning;
     }
 
     private Try<LoependeYtelser> unmarshall(final InputStream stream) {

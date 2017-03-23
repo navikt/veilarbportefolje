@@ -2,11 +2,11 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
+import no.nav.fo.util.DbUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
@@ -80,21 +80,21 @@ public class BrukerRepository {
         return Optional.ofNullable(personId);
     }
 
-    public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
-        Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
-        RowMapper<Tuple2<String, String>> rowmapper = (rs, i) -> Tuple.of(
-                rs.getString("FODSELSNR"),
-                rs.getString("PERSON_ID"));
+    public Map<String, Optional<SolrInputDocument>> retrievePersonidFromFnrs(Collection<String> fnrs) {
+        Map<String, Optional<SolrInputDocument>> brukere = new HashMap<>(fnrs.size());
 
         batchProcess(1000, fnrs, timed("GR199.brukersjekk.batch", (fnrBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("fnrs", fnrBatch);
 
-            Map<String, Optional<String>> fnrPersonIdMap = namedParameterJdbcTemplate.query(
+            Map<String, Optional<SolrInputDocument>> fnrPersonIdMap = namedParameterJdbcTemplate.queryForList(
                     getPersonIdsFromFnrsSQL(),
-                    params,
-                    rowmapper)
+                    params)
                     .stream()
+                    .map((rs) -> Tuple.of(
+                            ((String) rs.get("FODSELSNR")),
+                            DbUtils.mapRadTilDokument(rs))
+                    )
                     .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
 
             brukere.putAll(fnrPersonIdMap);
@@ -240,7 +240,32 @@ public class BrukerRepository {
     }
 
     String getPersonIdsFromFnrsSQL() {
-        return "SELECT FODSELSNR, PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR in (:fnrs)";
+        return
+                "SELECT " +
+                        "person_id, " +
+                        "fodselsnr, " +
+                        "fornavn, " +
+                        "etternavn, " +
+                        "nav_kontor, " +
+                        "formidlingsgruppekode, " +
+                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "kvalifiseringsgruppekode, " +
+                        "rettighetsgruppekode, " +
+                        "hovedmaalkode, " +
+                        "sikkerhetstiltak_type_kode, " +
+                        "fr_kode, " +
+                        "sperret_ansatt, " +
+                        "er_doed, " +
+                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "tidsstempel, " +
+                        "veilederident " +
+                        "FROM " +
+                        "oppfolgingsbruker " +
+                        "LEFT JOIN bruker_data " +
+                        "ON " +
+                        "bruker_data.personid = oppfolgingsbruker.person_id " +
+                        "WHERE " +
+                        "fodselsnr in (:fnrs)";
     }
 
     String insertPersonidAktoeridMappingSQL() {

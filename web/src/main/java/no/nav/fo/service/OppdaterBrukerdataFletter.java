@@ -34,7 +34,6 @@ public class OppdaterBrukerdataFletter {
         String aktoerId = bruker.getAktoerid();
         brukerRepository.insertOrUpdateBrukerdata(aktoerId, personId, bruker.getVeileder(),bruker.getOppdatert());
         solrService.indekserBrukerMedVeileder(personId);
-
     }
 
     private String hentPersonIdFromDBorAktoer(String aktoerId) {
