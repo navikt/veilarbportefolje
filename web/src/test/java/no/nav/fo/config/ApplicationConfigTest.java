@@ -8,7 +8,8 @@ import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -23,10 +24,14 @@ import static org.mockito.Mockito.mock;
 public class ApplicationConfigTest {
 
     @Bean
-    public AktoerV2 aktoerV2() { return mock(AktoerV2.class); }
+    public AktoerV2 aktoerV2() {
+        return mock(AktoerV2.class);
+    }
 
     @Bean
-    public BrukertilgangService brukertilgangService() { return new BrukertilgangService(); }
+    public BrukertilgangService brukertilgangService() {
+        return new BrukertilgangService();
+    }
 
     @Bean
     public BrukerRepository brukerRepository() {
@@ -34,20 +39,28 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() { return new OppdaterBrukerdataFletter(); }
+    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() {
+        return new OppdaterBrukerdataFletter();
+    }
 
     @Bean
-    public OppdaterBrukerdataListener oppdaterBrukerdataListener() { return new OppdaterBrukerdataListener(); }
+    public OppdaterBrukerdataListener oppdaterBrukerdataListener() {
+        return new OppdaterBrukerdataListener();
+    }
 
     @Bean
-    public SolrService solrService() { return mock(SolrService.class); }
+    public SolrService solrService() {
+        return mock(SolrService.class);
+    }
 
     @Bean
-    public HttpSolrServer httpSolrServer() { return mock(HttpSolrServer.class); }
+    public SolrClient solrClient() {
+        return mock(HttpSolrClient.class); }
 
     @Bean
     public Pep pep() { return mock(Pep.class); }
 
     @Bean
-    public PepClient pepClient() { return mock(PepClient.class); }
+    public PepClient pepClient() { return mock(PepClient.class);
+    }
 }

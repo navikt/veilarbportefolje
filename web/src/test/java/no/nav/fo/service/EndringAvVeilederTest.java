@@ -89,15 +89,6 @@ public class EndringAvVeilederTest {
     }
 
     @Test
-    public void skalKonvertereBigDecimalTilString() {
-        BigDecimal bigDecimal = new BigDecimal(123123123.123123123);
-        String string = oppdaterBrukerdataFletter.getPersonidFromBigDecimal(bigDecimal);
-
-        assertThat(string).isEqualTo("123123123");
-
-    }
-
-    @Test
     public void skalHenteFraAktoerLagrePersonidIDBogOppdatererBrukerdata() {
         updateDBWithPersonidbruker("156156","10000000065");
 

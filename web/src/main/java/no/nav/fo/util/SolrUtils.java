@@ -1,7 +1,7 @@
 package no.nav.fo.util;
 
 import no.nav.fo.domene.*;
-import no.nav.fo.service.SolrUpdateResponseCodeException;
+import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 public class SolrUtils {
@@ -36,9 +37,22 @@ public class SolrUtils {
         return solrQuery;
     }
 
+    public static SolrQuery buildSolrQuery(String queryString) {
+        SolrQuery solrQuery = new SolrQuery("*:*");
+        solrQuery.addFilterQuery(queryString);
+        return solrQuery;
+    }
+
+
     public static SolrQuery buildSolrQuery(String queryString, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery(queryString);
+        leggTilFiltervalg(solrQuery, filtervalg);
+        return solrQuery;
+    }
+
+    public static SolrQuery buildSolrQuery(Filtervalg filtervalg) {
+        SolrQuery solrQuery = new SolrQuery("*:*");
         leggTilFiltervalg(solrQuery, filtervalg);
         return solrQuery;
     }
@@ -50,7 +64,7 @@ public class SolrUtils {
 
     public static void checkSolrResponseCode(int statusCode) {
         if (statusCode != 0) {
-            throw new SolrUpdateResponseCodeException(String.format("Solr returnerte med statuskode %s", statusCode));
+            throw new SolrUpdateResponseCodeException(format("Solr returnerte med statuskode %s", statusCode));
         }
     }
 
@@ -102,11 +116,11 @@ public class SolrUtils {
         Collator collator = Collator.getInstance(locale);
         collator.setStrength(Collator.PRIMARY);
 
-        return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
-    }
 
-    static Comparator<Bruker> brukerNavnComparator() {
-        return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
+                return (S s1, S s2) ->collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2) );
+                }
+            static Comparator<Bruker> brukerNavnComparator() {
+                    return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
@@ -127,6 +141,10 @@ public class SolrUtils {
 
         if (filtervalg.alder != null && !filtervalg.alder.isEmpty()) {
             filtrerBrukereStatements.add(alderFilter(filtervalg.alder));
+        }
+
+        if (filtervalg.harYtelsefilter()) {
+            filtervalg.ytelser.forEach((ytelse) -> filtrerBrukereStatements.add(format("ytelser:%s", ytelse.toString())));
         }
 
         if (filtervalg.kjonn != null && (filtervalg.kjonn == 0 || filtervalg.kjonn == 1)) {

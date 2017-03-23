@@ -11,6 +11,9 @@ public class Filtervalg {
     @QueryParam("inaktiveBrukere")
     public boolean inaktiveBrukere;
 
+    @QueryParam("ytelser[]")
+    public List<YtelseMapping> ytelser;
+
     @QueryParam("alder[]")
     public List<Integer> alder = new ArrayList<>();
 
@@ -29,10 +32,19 @@ public class Filtervalg {
     public boolean harAktiveFilter() {
         return nyeBrukere ||
                 inaktiveBrukere ||
+                harYtelsefilter() ||
                 (!alder.isEmpty()) ||
                 (kjonn != null && (kjonn == 0 || kjonn == 1)) ||
                 (!fodselsdagIMnd.isEmpty()) ||
                 (!innsatsgruppe.isEmpty()) ||
                 (!formidlingsgruppe.isEmpty());
+    }
+
+    public boolean harYtelsefilter() {
+        return ytelser != null && !ytelser.isEmpty();
+    }
+
+    private boolean erMellom(int variabel, int fra, int til) {
+        return variabel > fra && variabel <= til;
     }
 }

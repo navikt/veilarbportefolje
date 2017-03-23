@@ -57,6 +57,14 @@
         <servlet-name>isAlive</servlet-name>
         <url-pattern>/internal/isAlive</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>reindekserytelser</servlet-name>
+        <servlet-class>no.nav.fo.internal.ReindekserYtelserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>reindekserytelser</servlet-name>
+        <url-pattern>/internal/reindekserytelser</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>restservlet</servlet-name>
