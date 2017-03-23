@@ -1,6 +1,7 @@
 package no.nav.fo.domene;
 
 import javax.ws.rs.QueryParam;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Filtervalg {
@@ -11,27 +12,27 @@ public class Filtervalg {
     public boolean inaktiveBrukere;
 
     @QueryParam("alder[]")
-    public List<Integer> alder;
+    public List<Integer> alder = new ArrayList<>();
 
     @QueryParam("kjonn")
     public Integer kjonn;
 
     @QueryParam("fodselsdagIMnd[]")
-    public List<Integer> fodselsdagIMnd;
+    public List<Integer> fodselsdagIMnd = new ArrayList<>();
 
     @QueryParam("innsatsgruppe[]")
-    public List<Integer> innsatsgruppe;
+    public List<Integer> innsatsgruppe = new ArrayList<>();
 
     @QueryParam("formidlingsgruppe[]")
-    public List<Integer> formidlingsgruppe;
+    public List<Integer> formidlingsgruppe = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return nyeBrukere ||
                 inaktiveBrukere ||
-                (alder != null && alder.size() > 0) ||
-                (kjonn != null && (kjonn == 0  || kjonn == 1)) ||
-                (fodselsdagIMnd != null && fodselsdagIMnd.size() > 0) ||
-                (innsatsgruppe != null && innsatsgruppe.size() > 0) ||
-                (formidlingsgruppe != null && formidlingsgruppe.size() > 0);
+                (!alder.isEmpty()) ||
+                (kjonn != null && (kjonn == 0 || kjonn == 1)) ||
+                (!fodselsdagIMnd.isEmpty()) ||
+                (!innsatsgruppe.isEmpty()) ||
+                (!formidlingsgruppe.isEmpty());
     }
 }
