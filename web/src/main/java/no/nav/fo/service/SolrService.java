@@ -160,7 +160,7 @@ public class SolrService {
         logger.info("Bruker med personId %s lagt til i indeksen", personId);
     }
 
-    private Try<UpdateResponse> commit() {
+    public Try<UpdateResponse> commit() {
         return Try.of(() -> server.commit())
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
