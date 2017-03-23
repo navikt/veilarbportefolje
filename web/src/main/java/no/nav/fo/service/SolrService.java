@@ -103,26 +103,6 @@ public class SolrService {
         return hentBrukere(queryString, sortOrder, filtervalg, null);
     }
 
-    public Optional<Bruker> hentBruker(String fnr) {
-        try {
-            QueryResponse response = server.query(SolrUtils.buildSolrQuery("fnr:" + fnr));
-            SolrUtils.checkSolrResponseCode(response.getStatus());
-
-            SolrDocumentList results = response.getResults();
-
-            if (results.size() != 1) {
-                logger.debug("Feil ved uthenting av %s. Fant %d solr-dokumenter.", fnr, results.size());
-                return Optional.empty();
-            }
-            return results.stream().map(Bruker::of).findFirst();
-
-        } catch (SolrServerException e) {
-            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
-            return Optional.empty();
-        }
-    }
-
-
     public List<Bruker> hentBrukere(String queryString, String sortOrder, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {

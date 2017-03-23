@@ -25,7 +25,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         MessageQueueConfig.class,
         AktoerEndpointConfig.class,
         ArenafilConfig.class,
-        MetricsConfig.class
+        MetricsConfig.class,
         AktoerEndpointConfig.class,
         CacheConfig.class
 })
