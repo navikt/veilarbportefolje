@@ -476,7 +476,7 @@ public class SolrUtilsTest {
         filter.ytelser = asList(DAGPENGER_MED_PERMITTERING);
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery(filter).getFilterQueries()).contains("ytelser:DAGPENGER_MED_PERMITTERING");
+        assertThat(SolrUtils.buildSolrQuery(filter).getFilterQueries()).contains("(ytelser:DAGPENGER_MED_PERMITTERING)");
     }
 
     @Test
