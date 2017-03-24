@@ -195,7 +195,7 @@ public class SolrService {
         StatusTall statusTall = new StatusTall();
         QueryResponse response;
         try {
-            response = solrClient.query(solrQuery);
+            response = solrClientSlave.query(solrQuery);
             long antallTotalt = response.getResults().getNumFound();
             long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
             long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
