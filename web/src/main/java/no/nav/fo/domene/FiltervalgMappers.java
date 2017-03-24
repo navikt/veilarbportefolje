@@ -33,4 +33,8 @@ public class FiltervalgMappers {
     public static final String[] formidlingsgruppe = new String[] {
             "ARBS", "IARBS", "ISERV", "PARBS", "RARBS"
     };
+
+    public static final String[] servicegruppe = new String[] {
+            "BKART", "IVURD", "OPPFI", "VARIG", "VURDI", "VURDU"
+    };
 }

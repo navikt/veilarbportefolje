@@ -139,7 +139,7 @@ public class SolrUtils {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
-        if (filtervalg.alder != null && !filtervalg.alder.isEmpty()) {
+        if (!filtervalg.alder.isEmpty()) {
             filtrerBrukereStatements.add(alderFilter(filtervalg.alder));
         }
 
@@ -151,18 +151,23 @@ public class SolrUtils {
             filtrerBrukereStatements.add("kjonn:" + FiltervalgMappers.kjonn[filtervalg.kjonn]);
         }
 
-        if (filtervalg.fodselsdagIMnd != null && !filtervalg.fodselsdagIMnd.isEmpty()) {
+        if (!filtervalg.fodselsdagIMnd.isEmpty()) {
             List<String> params = filtervalg.fodselsdagIMnd.stream().map(SolrUtils::fodselsdagIMndFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
-        if (filtervalg.innsatsgruppe != null && !filtervalg.innsatsgruppe.isEmpty()) {
+        if (!filtervalg.innsatsgruppe.isEmpty()) {
             List<String> params = filtervalg.innsatsgruppe.stream().map(SolrUtils::innsatsgruppeFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
-        if (filtervalg.formidlingsgruppe != null && !filtervalg.formidlingsgruppe.isEmpty()) {
+        if (!filtervalg.formidlingsgruppe.isEmpty()) {
             List<String> params = filtervalg.formidlingsgruppe.stream().map(SolrUtils::formidlingsgruppeFilter).collect(toList());
+            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
+        }
+
+        if(!filtervalg.servicegruppe.isEmpty()) {
+            List<String> params = filtervalg.servicegruppe.stream().map(SolrUtils::servicegruppeFilter).collect(toList());
             filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
         }
 
@@ -194,5 +199,9 @@ public class SolrUtils {
 
     static String formidlingsgruppeFilter(int index) {
         return "formidlingsgruppekode:" + FiltervalgMappers.formidlingsgruppe[index];
+    }
+
+    static String servicegruppeFilter(int index) {
+        return "kvalifiseringsgruppekode:" + FiltervalgMappers.servicegruppe[index];
     }
 }

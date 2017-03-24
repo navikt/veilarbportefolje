@@ -29,22 +29,22 @@ public class Filtervalg {
     @QueryParam("formidlingsgruppe[]")
     public List<Integer> formidlingsgruppe = new ArrayList<>();
 
+    @QueryParam("servicegruppe[]")
+    public List<Integer> servicegruppe = new ArrayList<>();
+
     public boolean harAktiveFilter() {
         return nyeBrukere ||
                 inaktiveBrukere ||
                 harYtelsefilter() ||
-                (!alder.isEmpty()) ||
+                !alder.isEmpty() ||
                 (kjonn != null && (kjonn == 0 || kjonn == 1)) ||
-                (!fodselsdagIMnd.isEmpty()) ||
-                (!innsatsgruppe.isEmpty()) ||
-                (!formidlingsgruppe.isEmpty());
+                !fodselsdagIMnd.isEmpty() ||
+                !innsatsgruppe.isEmpty() ||
+                !formidlingsgruppe.isEmpty() ||
+                !servicegruppe.isEmpty();
     }
 
     public boolean harYtelsefilter() {
         return ytelser != null && !ytelser.isEmpty();
-    }
-
-    private boolean erMellom(int variabel, int fra, int til) {
-        return variabel > fra && variabel <= til;
     }
 }

@@ -506,4 +506,22 @@ public class SolrUtilsTest {
 
         assertThat(SolrUtils.formidlingsgruppeFilter(4)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[4]);
     }
+
+    @Test
+    public void skalLeggeTilservicegruppeFilter() {
+        String prefix = "kvalifiseringsgruppekode:";
+
+        assertThat(SolrUtils.servicegruppeFilter(0)).isEqualTo(prefix + FiltervalgMappers.servicegruppe[0]);
+
+        assertThat(SolrUtils.servicegruppeFilter(1)).isEqualTo(prefix + FiltervalgMappers.servicegruppe[1]);
+
+        assertThat(SolrUtils.servicegruppeFilter(2)).isEqualTo(prefix + FiltervalgMappers.servicegruppe[2]);
+
+        assertThat(SolrUtils.servicegruppeFilter(3)).isEqualTo(prefix + FiltervalgMappers.servicegruppe[3]);
+
+        assertThat(SolrUtils.servicegruppeFilter(4)).isEqualTo(prefix + FiltervalgMappers.servicegruppe[4]);
+
+        assertThat(SolrUtils.servicegruppeFilter(5)).isEqualTo(prefix + FiltervalgMappers.servicegruppe[5]);
+    }
+
 }
