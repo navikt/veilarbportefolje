@@ -28,7 +28,7 @@ public class Bruker {
     LocalDate fodselsdato;
     String kjonn;
     YtelseMapping ytelse;
-    LocalDateTime utlopsdato;
+    LocalDate utlopsdato;
     ManedMapping utlopsdatoFasett;
     LocalDateTime aapMaxtid;
     KvartalMapping aapMaxtidFasett;
@@ -48,15 +48,11 @@ public class Bruker {
                 .setFodselsdato(getDate((Date)document.get("fodselsdato")))
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
-                .setUtlopsdato(toLocalDateTime((Date) document.get("utlopsdato")))
+                .setUtlopsdato(getDate((Date) document.get("utlopsdato")))
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
                 .setAapMaxtid(dato((String) document.get("aap_maxtid")))
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
                 ;
-    }
-
-    private static LocalDateTime toLocalDateTime(Date dato) {
-        return dato == null ? null : LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
     }
 
     static LocalDateTime dato(String dato) {

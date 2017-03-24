@@ -5,10 +5,9 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.time.Month;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Date;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -55,6 +54,7 @@ public class BrukerTest {
         document.addField("fornavn", "Rudolf");
         document.addField("etternavn", "Blodstrupmoen");
         document.addField("veileder_id", "XXXXXX");
+        document.addField("utlopsdato", new Date());
         document.addField("egen_ansatt", false);
         document.addField("sikkerhetstiltak", "foo");
         document.addField("er_doed", false);
