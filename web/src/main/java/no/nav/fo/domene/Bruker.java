@@ -3,11 +3,14 @@ package no.nav.fo.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import net.sf.cglib.core.Local;
 import org.apache.solr.common.SolrDocument;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -49,11 +52,15 @@ public class Bruker {
                 .setFodselsdato(document.get("fodselsdato").toString())
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
-                .setUtlopsdato(dato((String) document.get("utlopsdato")))
+                .setUtlopsdato(toLocalDateTime((Date) document.get("utlopsdato")))
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
                 .setAapMaxtid(dato((String) document.get("aap_maxtid")))
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
                 ;
+    }
+
+    private static LocalDateTime toLocalDateTime(Date dato) {
+        return dato == null ? null : LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
     }
 
     static LocalDateTime dato(String dato) {
