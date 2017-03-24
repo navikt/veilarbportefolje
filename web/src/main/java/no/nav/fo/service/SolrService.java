@@ -2,23 +2,18 @@ package no.nav.fo.service;
 
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
-import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.FacetField;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.client.solrj.*;
+import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -32,7 +27,6 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.springframework.transaction.annotation.Isolation.SERIALIZABLE;
 
 public class SolrService {
 
@@ -93,17 +87,17 @@ public class SolrService {
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
 
-    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, Filtervalg filtervalg) {
+    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = "enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, filtervalg, SolrUtils.brukerErNyComparator());
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg, SolrUtils.brukerErNyComparator());
     }
 
-    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder, Filtervalg filtervalg) {
+    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, filtervalg, null);
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg, null);
     }
 
-    public List<Bruker> hentBrukere(String queryString, String sortOrder, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
+    public List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = solrClient.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
@@ -114,7 +108,7 @@ public class SolrService {
         } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-        return SolrUtils.sortBrukere(brukere, sortOrder, erNyComparator);
+        return SolrUtils.sortBrukere(brukere, sortOrder, sortField, erNyComparator);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {

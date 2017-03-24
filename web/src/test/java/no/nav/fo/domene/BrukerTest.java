@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.Month;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Date;
+
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -58,7 +60,7 @@ public class BrukerTest {
         document.addField("er_doed", false);
         document.addField("diskresjonskode", kode);
         document.addField("fodselsdag_i_mnd", 99);
-        document.addField("fodselsdato", "999999");
+        document.addField("fodselsdato", new Date());
         document.addField("kjonn", "K");
         document.addField("erInaktiv", false);
 
