@@ -3,6 +3,7 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
+import no.nav.fo.domene.StatusTall;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
@@ -180,4 +181,29 @@ public class SolrService {
         logger.info(logString);
     }
 
+    public StatusTall hentStatusTallForPortefolje(String enhet) {
+        SolrQuery solrQuery = new SolrQuery("*:*");
+
+        String nyeBrukere = "-veileder_id:*";
+        String inaktiveBrukere = "formidlingsgruppekode:ISERV AND veileder_id:*";
+
+        solrQuery.addFilterQuery("enhet_id:" + enhet);
+        solrQuery.addFacetQuery(nyeBrukere);
+        solrQuery.addFacetQuery(inaktiveBrukere);
+        solrQuery.setRows(0);
+
+        StatusTall statusTall = new StatusTall();
+        QueryResponse response;
+        try {
+            response = solrClient.query(solrQuery);
+            long antallTotalt = response.getResults().getNumFound();
+            long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
+            long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
+            statusTall.setTotalt(antallTotalt).setInaktiveBrukere(antallInaktiveBrukere).setNyeBrukere(antallNyeBrukere);
+        } catch (SolrServerException | IOException e) {
+            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+        }
+
+        return statusTall;
+    }
 }
