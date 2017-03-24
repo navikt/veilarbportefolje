@@ -75,7 +75,7 @@ public class IndekserYtelserHandler {
             logger.info("Solr-dokumenter laget. {} vellykkede, {} feilet", alleDokumenter.get(true).size(), alleDokumenter.get(false).size());
             timed("GR199.addDocuments", () -> solr.addDocuments(dokumenter));
             solr.commit();
-            logger.info("Indeksering ferdig");
+            logger.info("Indeksering av ytelser ferdig!");
         });
     }
 
