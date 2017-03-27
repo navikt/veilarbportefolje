@@ -144,7 +144,7 @@ public class SolrUtils {
         }
 
         if (filtervalg.harYtelsefilter()) {
-            filtervalg.ytelser.forEach((ytelse) -> filtrerBrukereStatements.add(format("ytelser:%s", ytelse.toString())));
+            filtrerBrukereStatements.add(format("ytelse:%s", filtervalg.ytelse));
         }
 
         if (filtervalg.kjonn != null && (filtervalg.kjonn == 0 || filtervalg.kjonn == 1)) {

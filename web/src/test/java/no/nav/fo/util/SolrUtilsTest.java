@@ -473,10 +473,10 @@ public class SolrUtilsTest {
     @Test
     public void skalLeggeTilYtelseFilter() throws Exception {
         Filtervalg filter = new Filtervalg();
-        filter.ytelser = asList(DAGPENGER_MED_PERMITTERING);
+        filter.ytelse = DAGPENGER_MED_PERMITTERING;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery(filter).getFilterQueries()).contains("(ytelser:DAGPENGER_MED_PERMITTERING)");
+        assertThat(SolrUtils.buildSolrQuery(filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
     }
 
     @Test

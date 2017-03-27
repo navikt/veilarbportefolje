@@ -11,8 +11,8 @@ public class Filtervalg {
     @QueryParam("inaktiveBrukere")
     public boolean inaktiveBrukere;
 
-    @QueryParam("ytelser[]")
-    public List<YtelseMapping> ytelser;
+    @QueryParam("ytelse")
+    public YtelseMapping ytelse;
 
     @QueryParam("alder[]")
     public List<Integer> alder = new ArrayList<>();
@@ -41,7 +41,7 @@ public class Filtervalg {
     }
 
     public boolean harYtelsefilter() {
-        return ytelser != null && !ytelser.isEmpty();
+        return ytelse != null;
     }
 
     private boolean erMellom(int variabel, int fra, int til) {
