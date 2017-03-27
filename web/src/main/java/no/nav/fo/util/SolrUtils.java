@@ -122,8 +122,8 @@ public class SolrUtils {
                     return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
-    static Comparator<Bruker> brukerFodelsdatoComparator() {
-        return Comparator.comparing(Bruker::getFodselsdato);
+    private static Comparator<Bruker> brukerFodelsdatoComparator() {
+        return norskComparator(Bruker::getFnr);
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
