@@ -7,10 +7,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -68,19 +65,21 @@ public class SolrUtils {
         }
     }
 
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, Comparator<Bruker> erNyComparator) {
+    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Comparator<Bruker> erNyComparator) {
 
         Comparator<Bruker> comparator = null;
+        Comparator<Bruker> fieldComparator = "etternavn".equals(sortField) ? brukerNavnComparator() : brukerFodelsdatoComparator();
+        boolean hasSortOrder = sortOrder.equals("ascending") || sortOrder.equals("descending");
 
         if (erNyComparator != null) {
             comparator = erNyComparator;
 
-            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
-                comparator = comparator.thenComparing(setComparatorSortOrder(brukerNavnComparator(), sortOrder));
+            if (hasSortOrder) {
+                comparator = comparator.thenComparing(setComparatorSortOrder(fieldComparator, sortOrder));
             }
         } else {
-            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
-                comparator = setComparatorSortOrder(brukerNavnComparator(), sortOrder);
+            if (hasSortOrder) {
+                comparator = setComparatorSortOrder(fieldComparator, sortOrder);
             }
         }
 
@@ -121,6 +120,10 @@ public class SolrUtils {
                 }
             static Comparator<Bruker> brukerNavnComparator() {
                     return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
+    }
+
+    static Comparator<Bruker> brukerFodelsdatoComparator() {
+        return Comparator.comparing(Bruker::getFodselsdato);
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {

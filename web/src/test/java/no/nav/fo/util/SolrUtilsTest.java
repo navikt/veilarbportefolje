@@ -283,7 +283,7 @@ public class SolrUtilsTest {
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", null);
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn", null);
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
@@ -303,7 +303,7 @@ public class SolrUtilsTest {
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", brukerErNyComparator());
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn", brukerErNyComparator());
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
@@ -323,7 +323,7 @@ public class SolrUtilsTest {
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", null);
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "etternavn", null);
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
@@ -343,7 +343,7 @@ public class SolrUtilsTest {
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", brukerErNyComparator());
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending","etternavn", brukerErNyComparator());
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
@@ -363,7 +363,7 @@ public class SolrUtilsTest {
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", brukerErNyComparator());
+        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "etternavn", brukerErNyComparator());
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);

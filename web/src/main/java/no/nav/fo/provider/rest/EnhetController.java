@@ -41,7 +41,8 @@ public class EnhetController {
             @PathParam("enhet") String enhet,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
-            @QueryParam("sortByLastName") String sortDirection,
+            @QueryParam("sortDirection") String sortDirection,
+            @QueryParam("sortField") String sortField,
             @BeanParam Filtervalg filtervalg) {
 
         List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
@@ -54,7 +55,7 @@ public class EnhetController {
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
 
             if (brukerHarTilgangTilEnhet) {
-                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, filtervalg);
+                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
                 List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,ident, pepClient);
 

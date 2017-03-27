@@ -42,7 +42,8 @@ public class VeilederController {
             @QueryParam("enhet") String enhet,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
-            @QueryParam("sortByLastName") String sortDirection,
+            @QueryParam("sortDirection") String sortDirection,
+            @QueryParam("sortField") String sortField,
             @BeanParam Filtervalg filtervalg) {
 
         try {
@@ -51,7 +52,7 @@ public class VeilederController {
 
             if (brukerHarTilgangTilEnhet) {
 
-                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, filtervalg);
+                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
                 List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,ident, pepClient);
 

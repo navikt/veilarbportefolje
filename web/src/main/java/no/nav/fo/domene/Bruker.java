@@ -1,14 +1,10 @@
 package no.nav.fo.domene;
 
-
 import lombok.Data;
 import lombok.experimental.Accessors;
-import net.sf.cglib.core.Local;
 import org.apache.solr.common.SolrDocument;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -29,10 +25,10 @@ public class Bruker {
     boolean egenAnsatt;
     boolean erDoed;
     int fodselsdagIMnd;
-    String fodselsdato;
+    LocalDate fodselsdato;
     String kjonn;
     YtelseMapping ytelse;
-    LocalDateTime utlopsdato;
+    LocalDate utlopsdato;
     ManedMapping utlopsdatoFasett;
     LocalDateTime aapMaxtid;
     KvartalMapping aapMaxtidFasett;
@@ -49,18 +45,14 @@ public class Bruker {
                 .setErDoed((Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
-                .setFodselsdato(document.get("fodselsdato").toString())
+                .setFodselsdato(getDate((Date)document.get("fodselsdato")))
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
-                .setUtlopsdato(toLocalDateTime((Date) document.get("utlopsdato")))
+                .setUtlopsdato(getDate((Date) document.get("utlopsdato")))
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
                 .setAapMaxtid(dato((String) document.get("aap_maxtid")))
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
                 ;
-    }
-
-    private static LocalDateTime toLocalDateTime(Date dato) {
-        return dato == null ? null : LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
     }
 
     static LocalDateTime dato(String dato) {
@@ -68,6 +60,10 @@ public class Bruker {
             return null;
         }
         return OffsetDateTime.parse(dato, DateTimeFormatter.ISO_ZONED_DATE_TIME).toLocalDateTime();
+    }
+
+    private static LocalDate getDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     private static String getDiskresjonskode(SolrDocument document) {

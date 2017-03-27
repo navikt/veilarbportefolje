@@ -2,10 +2,10 @@ package no.nav.fo.service;
 
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.StatusTall;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
-import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
 import org.apache.solr.client.solrj.*;
 import org.apache.solr.client.solrj.response.*;
@@ -89,17 +89,17 @@ public class SolrService {
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
 
-    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, Filtervalg filtervalg) {
+    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = "enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, filtervalg, SolrUtils.brukerErNyComparator());
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg, SolrUtils.brukerErNyComparator());
     }
 
-    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder, Filtervalg filtervalg) {
+    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, filtervalg, null);
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg, null);
     }
 
-    public List<Bruker> hentBrukere(String queryString, String sortOrder, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
+    public List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = solrClientSlave.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
@@ -110,7 +110,7 @@ public class SolrService {
         } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-        return SolrUtils.sortBrukere(brukere, sortOrder, erNyComparator);
+        return SolrUtils.sortBrukere(brukere, sortOrder, sortField, erNyComparator);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
