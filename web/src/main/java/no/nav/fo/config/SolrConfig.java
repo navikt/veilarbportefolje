@@ -2,25 +2,17 @@ package no.nav.fo.config;
 
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.dialogarena.types.Pingable;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.AuthState;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.*;
+import org.apache.http.auth.*;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,21 +35,18 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrClient solrClient() {
-        String username = System.getProperty("no.nav.modig.security.systemuser.username");
-        String password = System.getProperty("no.nav.modig.security.systemuser.password");
-
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
-
-        HttpClient httpClient = HttpClientBuilder.create()
-                .setDefaultCredentialsProvider(credentialsProvider)
-                .addInterceptorFirst(new PreemptiveAuthInterceptor())
+    public SolrClient solrClientSlave() {
+        return new HttpSolrClient.Builder()
+                .withBaseSolrUrl(System.getProperty("veilarbportefolje.solr.brukercore.url"))
+                .withHttpClient(createHttpClientForSolr())
                 .build();
+    }
 
+    @Bean
+    public SolrClient solrClientMaster() {
         return new HttpSolrClient.Builder()
                 .withBaseSolrUrl(System.getProperty("veilarbportefolje.solr.masternode"))
-                .withHttpClient(httpClient)
+                .withHttpClient(createHttpClientForSolr())
                 .build();
     }
 
@@ -80,6 +69,19 @@ public class SolrConfig {
                 return Pingable.Ping.feilet("SolrServer", e);
             }
         };
+    }
+
+    private HttpClient createHttpClientForSolr() {
+        String username = System.getProperty("no.nav.modig.security.systemuser.username");
+        String password = System.getProperty("no.nav.modig.security.systemuser.password");
+
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+
+        return HttpClientBuilder.create()
+                .setDefaultCredentialsProvider(credentialsProvider)
+                .addInterceptorFirst(new PreemptiveAuthInterceptor())
+                .build();
     }
 
     private class PreemptiveAuthInterceptor implements HttpRequestInterceptor {
