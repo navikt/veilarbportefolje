@@ -45,25 +45,28 @@ public class Bruker {
                 .setErDoed((Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
-                .setFodselsdato(getDate((Date)document.get("fodselsdato")))
+                .setFodselsdato(dato((Date)document.get("fodselsdato")))
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
-                .setUtlopsdato(getDate((Date) document.get("utlopsdato")))
+                .setUtlopsdato(dato((Date) document.get("utlopsdato")))
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
-                .setAapMaxtid(dato((String) document.get("aap_maxtid")))
+                .setAapMaxtid(datoMedTid((String) document.get("aap_maxtid")))
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
                 ;
     }
 
-    static LocalDateTime dato(String dato) {
+    static LocalDateTime datoMedTid(String dato) {
         if (dato == null) {
             return null;
         }
         return OffsetDateTime.parse(dato, DateTimeFormatter.ISO_ZONED_DATE_TIME).toLocalDateTime();
     }
 
-    private static LocalDate getDate(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    private static LocalDate dato(Date dato) {
+        if (dato == null) {
+            return null;
+        }
+        return dato.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     private static String getDiskresjonskode(SolrDocument document) {

@@ -41,7 +41,7 @@ public class BrukerTest {
     @Test
     public void parseDato() throws Exception {
         String datoformat = "2017-03-30T22:00:00Z";
-        LocalDateTime dato = Bruker.dato(datoformat);
+        LocalDateTime dato = Bruker.datoMedTid(datoformat);
 
         assertThat(dato.getYear()).isEqualTo(2017);
         assertThat(dato.getMonth()).isEqualTo(Month.MARCH);
