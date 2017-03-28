@@ -5,7 +5,6 @@ import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -25,10 +24,10 @@ public class Bruker {
     boolean egenAnsatt;
     boolean erDoed;
     int fodselsdagIMnd;
-    LocalDate fodselsdato;
+    LocalDateTime fodselsdato;
     String kjonn;
     YtelseMapping ytelse;
-    LocalDate utlopsdato;
+    LocalDateTime utlopsdato;
     ManedMapping utlopsdatoFasett;
     LocalDateTime aapMaxtid;
     KvartalMapping aapMaxtidFasett;
@@ -50,24 +49,17 @@ public class Bruker {
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
                 .setUtlopsdato(dato((Date) document.get("utlopsdato")))
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
-                .setAapMaxtid(datoMedTid((String) document.get("aap_maxtid")))
-                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
-                ;
+                .setAapMaxtid(dato((Date) document.get("aap_maxtid")))
+                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")));
     }
 
-    static LocalDateTime datoMedTid(String dato) {
+    static LocalDateTime dato(Date dato) {
         if (dato == null) {
             return null;
         }
-        return OffsetDateTime.parse(dato, DateTimeFormatter.ISO_ZONED_DATE_TIME).toLocalDateTime();
+        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
     }
 
-    private static LocalDate dato(Date dato) {
-        if (dato == null) {
-            return null;
-        }
-        return dato.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    }
 
     private static String getDiskresjonskode(SolrDocument document) {
         String diskresjonskode = (String) document.get("diskresjonskode");

@@ -6,25 +6,27 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
+import javax.xml.ws.Service;
 import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class SolrUtils {
 
     public static FacetResults mapFacetResults(FacetField facetField) {
         return new FacetResults()
-            .setFacetResults(
-                facetField.getValues().stream().map(
-                    value -> new Facet()
-                        .setValue(value.getName())
-                        .setCount(value.getCount())
-                ).collect(toList())
-            );
+                .setFacetResults(
+                        facetField.getValues().stream().map(
+                                value -> new Facet()
+                                        .setValue(value.getName())
+                                        .setCount(value.getCount())
+                        ).collect(toList())
+                );
     }
 
     public static SolrQuery buildSolrFacetQuery(String query, String facetField) {
@@ -34,22 +36,9 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String queryString) {
-        SolrQuery solrQuery = new SolrQuery("*:*");
-        solrQuery.addFilterQuery(queryString);
-        return solrQuery;
-    }
-
-
     public static SolrQuery buildSolrQuery(String queryString, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery(queryString);
-        leggTilFiltervalg(solrQuery, filtervalg);
-        return solrQuery;
-    }
-
-    public static SolrQuery buildSolrQuery(Filtervalg filtervalg) {
-        SolrQuery solrQuery = new SolrQuery("*:*");
         leggTilFiltervalg(solrQuery, filtervalg);
         return solrQuery;
     }
@@ -66,7 +55,7 @@ public class SolrUtils {
     }
 
     public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Comparator<Bruker> erNyComparator) {
-
+        // TODO Se på om denne kan skrives om litt
         Comparator<Bruker> comparator = null;
         Comparator<Bruker> fieldComparator = "etternavn".equals(sortField) ? brukerNavnComparator() : brukerFodelsdatoComparator();
         boolean hasSortOrder = sortOrder.equals("ascending") || sortOrder.equals("descending");
@@ -115,15 +104,22 @@ public class SolrUtils {
         Collator collator = Collator.getInstance(locale);
         collator.setStrength(Collator.PRIMARY);
 
+        return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
+    }
 
-                return (S s1, S s2) ->collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2) );
-                }
-            static Comparator<Bruker> brukerNavnComparator() {
-                    return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
+    static Comparator<Bruker> brukerNavnComparator() {
+        return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
     private static Comparator<Bruker> brukerFodelsdatoComparator() {
         return norskComparator(Bruker::getFnr);
+    }
+
+    public static <T> String orStatement(List<T> filter, Function<T, String> mapper) {
+        if (filter == null || filter.isEmpty()) {
+            return "";
+        }
+        return filter.stream().map(mapper).collect(joining(" OR "));
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
@@ -142,36 +138,16 @@ public class SolrUtils {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
 
-        if (!filtervalg.alder.isEmpty()) {
-            filtrerBrukereStatements.add(alderFilter(filtervalg.alder));
-        }
+        filtrerBrukereStatements.add(orStatement(filtervalg.alder, SolrUtils::alderFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.fodselsdagIMnd, SolrUtils::fodselsdagIMndFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.innsatsgruppe, SolrUtils::innsatsgruppeFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.formidlingsgruppe, SolrUtils::formidlingsgruppeFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
+
 
         if (filtervalg.harYtelsefilter()) {
-            filtervalg.ytelser.forEach((ytelse) -> filtrerBrukereStatements.add(format("ytelser:%s", ytelse.toString())));
-        }
-
-        if (filtervalg.kjonn != null && (filtervalg.kjonn == 0 || filtervalg.kjonn == 1)) {
-            filtrerBrukereStatements.add("kjonn:" + FiltervalgMappers.kjonn[filtervalg.kjonn]);
-        }
-
-        if (!filtervalg.fodselsdagIMnd.isEmpty()) {
-            List<String> params = filtervalg.fodselsdagIMnd.stream().map(SolrUtils::fodselsdagIMndFilter).collect(toList());
-            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
-        }
-
-        if (!filtervalg.innsatsgruppe.isEmpty()) {
-            List<String> params = filtervalg.innsatsgruppe.stream().map(SolrUtils::innsatsgruppeFilter).collect(toList());
-            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
-        }
-
-        if (!filtervalg.formidlingsgruppe.isEmpty()) {
-            List<String> params = filtervalg.formidlingsgruppe.stream().map(SolrUtils::formidlingsgruppeFilter).collect(toList());
-            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
-        }
-
-        if(!filtervalg.servicegruppe.isEmpty()) {
-            List<String> params = filtervalg.servicegruppe.stream().map(SolrUtils::servicegruppeFilter).collect(toList());
-            filtrerBrukereStatements.add(StringUtils.join(params, " OR "));
+            filtrerBrukereStatements.add(format("ytelse:%s", filtervalg.ytelse));
         }
 
         if (!oversiktStatements.isEmpty()) {
@@ -180,31 +156,34 @@ public class SolrUtils {
 
         if (!filtrerBrukereStatements.isEmpty()) {
             query.addFilterQuery(filtrerBrukereStatements
-                .stream().map(statement -> "(" + statement + ")").collect(Collectors.joining(" AND ")));
+                    .stream()
+                    .filter(StringUtils::isNotBlank)
+                    .map(statement -> "(" + statement + ")")
+                    .collect(Collectors.joining(" AND ")));
         }
     }
 
-    static String alderFilter(List<Integer> index) {
-        String filter = "fodselsdato:";
-
-        List<String> params = index.stream().map((aldersRangeIndex) ->
-            FiltervalgMappers.alder[aldersRangeIndex]).collect(Collectors.toList());
-        return filter + StringUtils.join(params, " OR " + filter);
+    static String kjonnFilter(Kjonn kjonn) {
+        return "kjonn:" + kjonn.toString();
     }
 
-    private static String fodselsdagIMndFilter(int index) {
-        return "fodselsdag_i_mnd:" + FiltervalgMappers.fodselsdagIMnd[index];
+    static String alderFilter(String alder) {
+        return "fodselsdato:" + FiltervalgMappers.alder.get(alder);
     }
 
-    static String innsatsgruppeFilter(int index) {
-        return "kvalifiseringsgruppekode:" + FiltervalgMappers.innsatsgruppe[index];
+    static String fodselsdagIMndFilter(String fodselDato) {
+        return "fodselsdag_i_mnd:" + fodselDato;
     }
 
-    static String formidlingsgruppeFilter(int index) {
-        return "formidlingsgruppekode:" + FiltervalgMappers.formidlingsgruppe[index];
+    static String innsatsgruppeFilter(Innsatsgruppe innsatsgruppe) {
+        return "kvalifiseringsgruppekode:" + innsatsgruppe;
     }
 
-    static String servicegruppeFilter(int index) {
-        return "kvalifiseringsgruppekode:" + FiltervalgMappers.servicegruppe[index];
+    static String formidlingsgruppeFilter(Formidlingsgruppe formidlingsgruppe) {
+        return "formidlingsgruppekode:" + formidlingsgruppe;
+    }
+
+    static String servicegruppeFilter(Servicegruppe servicegruppe) {
+        return "kvalifiseringsgruppekode:" + servicegruppe;
     }
 }

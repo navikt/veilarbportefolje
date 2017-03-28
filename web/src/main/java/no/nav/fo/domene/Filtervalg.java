@@ -1,43 +1,25 @@
 package no.nav.fo.domene;
 
-import javax.ws.rs.QueryParam;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Filtervalg {
-    @QueryParam("nyeBrukere")
     public boolean nyeBrukere;
-
-    @QueryParam("inaktiveBrukere")
     public boolean inaktiveBrukere;
-
-    @QueryParam("ytelser[]")
-    public List<YtelseMapping> ytelser;
-
-    @QueryParam("alder[]")
-    public List<Integer> alder = new ArrayList<>();
-
-    @QueryParam("kjonn")
-    public Integer kjonn;
-
-    @QueryParam("fodselsdagIMnd[]")
-    public List<Integer> fodselsdagIMnd = new ArrayList<>();
-
-    @QueryParam("innsatsgruppe[]")
-    public List<Integer> innsatsgruppe = new ArrayList<>();
-
-    @QueryParam("formidlingsgruppe[]")
-    public List<Integer> formidlingsgruppe = new ArrayList<>();
-
-    @QueryParam("servicegruppe[]")
-    public List<Integer> servicegruppe = new ArrayList<>();
+    public YtelseMapping ytelse;
+    public List<String> alder = new ArrayList<>();
+    public List<Kjonn> kjonn = new ArrayList<>();
+    public List<String> fodselsdagIMnd = new ArrayList<>();
+    public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
+    public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
+    public List<Servicegruppe> servicegruppe = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return nyeBrukere ||
                 inaktiveBrukere ||
                 harYtelsefilter() ||
                 !alder.isEmpty() ||
-                (kjonn != null && (kjonn == 0 || kjonn == 1)) ||
+                !kjonn.isEmpty() ||
                 !fodselsdagIMnd.isEmpty() ||
                 !innsatsgruppe.isEmpty() ||
                 !formidlingsgruppe.isEmpty() ||
@@ -45,6 +27,6 @@ public class Filtervalg {
     }
 
     public boolean harYtelsefilter() {
-        return ytelser != null && !ytelser.isEmpty();
+        return ytelse != null;
     }
 }
