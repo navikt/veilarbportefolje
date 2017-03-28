@@ -60,6 +60,7 @@ public class DbUtilsTest {
         assertThat(DbUtils.kapitaliser("NAVN")).isEqualTo("Navn");
         assertThat(DbUtils.kapitaliser("nAVN")).isEqualTo("Navn");
         assertThat(DbUtils.kapitaliser("navn NAVNESEN")).isEqualTo("Navn Navnesen");
+        assertThat(DbUtils.kapitaliser("æØÅÄÖÈÊËÉÌÎÏÍ")).isEqualTo("Æøåäöèêëéìîïí");
     }
 
     @Test
