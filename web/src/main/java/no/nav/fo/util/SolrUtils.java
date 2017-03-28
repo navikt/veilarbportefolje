@@ -55,7 +55,7 @@ public class SolrUtils {
     }
 
     public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Comparator<Bruker> erNyComparator) {
-
+        // TODO Se på om denne kan skrives om litt
         Comparator<Bruker> comparator = null;
         Comparator<Bruker> fieldComparator = "etternavn".equals(sortField) ? brukerNavnComparator() : brukerFodelsdatoComparator();
         boolean hasSortOrder = sortOrder.equals("ascending") || sortOrder.equals("descending");
@@ -103,7 +103,6 @@ public class SolrUtils {
         Locale locale = new Locale("no", "NO");
         Collator collator = Collator.getInstance(locale);
         collator.setStrength(Collator.PRIMARY);
-
 
         return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
     }
