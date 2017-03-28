@@ -76,7 +76,7 @@ public class IndekserYtelserHandler {
             timed("GR199.addDocuments", () -> solr.addDocuments(dokumenter));
             solr.commit();
         });
-        logger.info("Indeksering ferdig");
+        logger.info("Indeksering av ytelser ferdig!");
     }
 
     private Map<String, Optional<SolrInputDocument>> brukererIDB(Collection<LoependeVedtak> vedtaks) {

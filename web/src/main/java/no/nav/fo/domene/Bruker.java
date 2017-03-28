@@ -26,7 +26,7 @@ public class Bruker {
     boolean egenAnsatt;
     boolean erDoed;
     int fodselsdagIMnd;
-    String fodselsdato;
+    LocalDateTime fodselsdato;
     String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
@@ -46,7 +46,7 @@ public class Bruker {
                 .setErDoed((Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
-                .setFodselsdato(document.get("fodselsdato").toString())
+                .setFodselsdato(dato((Date)document.get("fodselsdato")))
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
                 .setUtlopsdato(dato((Date) document.get("utlopsdato")))

@@ -6,11 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
+import javax.xml.ws.Service;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,19 +54,21 @@ public class SolrUtils {
         }
     }
 
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, Comparator<Bruker> erNyComparator) {
+    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Comparator<Bruker> erNyComparator) {
 
         Comparator<Bruker> comparator = null;
+        Comparator<Bruker> fieldComparator = "etternavn".equals(sortField) ? brukerNavnComparator() : brukerFodelsdatoComparator();
+        boolean hasSortOrder = sortOrder.equals("ascending") || sortOrder.equals("descending");
 
         if (erNyComparator != null) {
             comparator = erNyComparator;
 
-            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
-                comparator = comparator.thenComparing(setComparatorSortOrder(brukerNavnComparator(), sortOrder));
+            if (hasSortOrder) {
+                comparator = comparator.thenComparing(setComparatorSortOrder(fieldComparator, sortOrder));
             }
         } else {
-            if (sortOrder.equals("ascending") || sortOrder.equals("descending")) {
-                comparator = setComparatorSortOrder(brukerNavnComparator(), sortOrder);
+            if (hasSortOrder) {
+                comparator = setComparatorSortOrder(fieldComparator, sortOrder);
             }
         }
 
@@ -112,6 +112,10 @@ public class SolrUtils {
         return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
+    private static Comparator<Bruker> brukerFodelsdatoComparator() {
+        return norskComparator(Bruker::getFnr);
+    }
+
     public static <T> String orStatement(List<T> filter, Function<T, String> mapper) {
         if (filter == null || filter.isEmpty()) {
             return "";
@@ -140,6 +144,8 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.fodselsdagIMnd, SolrUtils::fodselsdagIMndFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.innsatsgruppe, SolrUtils::innsatsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.formidlingsgruppe, SolrUtils::formidlingsgruppeFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
+
 
         if (filtervalg.harYtelsefilter()) {
             filtrerBrukereStatements.add(format("ytelse:%s", filtervalg.ytelse));
@@ -176,5 +182,9 @@ public class SolrUtils {
 
     static String formidlingsgruppeFilter(Formidlingsgruppe formidlingsgruppe) {
         return "formidlingsgruppekode:" + formidlingsgruppe;
+    }
+
+    static String servicegruppeFilter(Servicegruppe servicegruppe) {
+        return "kvalifiseringsgruppekode:" + servicegruppe;
     }
 }

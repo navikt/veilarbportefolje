@@ -12,17 +12,18 @@ public class Filtervalg {
     public List<String> fodselsdagIMnd = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
-    public List<String> servicegruppe = new ArrayList<>();
+    public List<Servicegruppe> servicegruppe = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return nyeBrukere ||
                 inaktiveBrukere ||
                 harYtelsefilter() ||
-                (!alder.isEmpty()) ||
-                (!kjonn.isEmpty()) ||
-                (!fodselsdagIMnd.isEmpty()) ||
-                (!innsatsgruppe.isEmpty()) ||
-                (!formidlingsgruppe.isEmpty());
+                !alder.isEmpty() ||
+                !kjonn.isEmpty() ||
+                !fodselsdagIMnd.isEmpty() ||
+                !innsatsgruppe.isEmpty() ||
+                !formidlingsgruppe.isEmpty() ||
+                !servicegruppe.isEmpty();
     }
 
     public boolean harYtelsefilter() {

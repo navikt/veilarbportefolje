@@ -51,6 +51,6 @@ public class PortefoljeUtils {
     }
 
     private static Bruker fjernKonfidensiellInfo(Bruker bruker) {
-        return bruker.setFnr("").setEtternavn("").setFornavn("").setKjonn("").setFodselsdato("");
+        return bruker.setFnr("").setEtternavn("").setFornavn("").setKjonn("").setFodselsdato(null);
     }
 }

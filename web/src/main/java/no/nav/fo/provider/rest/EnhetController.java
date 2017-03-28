@@ -1,10 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.domene.Bruker;
-import no.nav.fo.domene.FacetResults;
-import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.domene.Portefolje;
+import no.nav.fo.domene.*;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -44,7 +41,8 @@ public class EnhetController {
             @PathParam("enhet") String enhet,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
-            @QueryParam("sortByLastName") String sortDirection,
+            @QueryParam("sortDirection") String sortDirection,
+            @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
         List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
@@ -57,8 +55,7 @@ public class EnhetController {
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
 
             if (brukerHarTilgangTilEnhet) {
-
-                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, filtervalg);
+                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
                 List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,ident, pepClient);
 
@@ -79,5 +76,12 @@ public class EnhetController {
     public Response hentPortefoljestorrelser(@PathParam("enhet") String enhet) {
         FacetResults facetResult = solrService.hentPortefoljestorrelser(enhet);
         return Response.ok().entity(facetResult).build();
+    }
+
+    @GET
+    @Path("/{enhet}/statustall")
+    public Response hentStatusTall(@PathParam("enhet") String enhet) {
+        StatusTall statusTall = solrService.hentStatusTallForPortefolje(enhet);
+        return Response.ok().entity(statusTall).build();
     }
 }

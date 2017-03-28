@@ -17,6 +17,7 @@
 
     <resources>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
+        <rest alias="veilarbportefolje.solr.brukercore" mapToProperty="veilarbportefolje.solr.brukercore" />
         <ldap alias="ldap" mapToProperty="ldap"/>
 
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>

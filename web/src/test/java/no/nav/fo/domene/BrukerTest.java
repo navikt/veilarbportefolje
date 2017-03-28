@@ -56,12 +56,13 @@ public class BrukerTest {
         document.addField("fornavn", "Rudolf");
         document.addField("etternavn", "Blodstrupmoen");
         document.addField("veileder_id", "XXXXXX");
+        document.addField("utlopsdato", new Date());
         document.addField("egen_ansatt", false);
         document.addField("sikkerhetstiltak", "foo");
         document.addField("er_doed", false);
         document.addField("diskresjonskode", kode);
         document.addField("fodselsdag_i_mnd", 99);
-        document.addField("fodselsdato", "999999");
+        document.addField("fodselsdato", new Date());
         document.addField("kjonn", "K");
         document.addField("erInaktiv", false);
 
