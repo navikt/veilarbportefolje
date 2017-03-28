@@ -1,12 +1,10 @@
 package no.nav.fo.domene;
 
-
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.Date;
 import java.util.List;
 
@@ -61,6 +59,7 @@ public class Bruker {
         }
         return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
     }
+
 
     private static String getDiskresjonskode(SolrDocument document) {
         String diskresjonskode = (String) document.get("diskresjonskode");
