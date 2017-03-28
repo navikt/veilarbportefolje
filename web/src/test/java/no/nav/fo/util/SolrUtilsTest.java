@@ -1,9 +1,6 @@
 package no.nav.fo.util;
 
-import no.nav.fo.domene.Bruker;
-import no.nav.fo.domene.FacetResults;
-import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.domene.FiltervalgMappers;
+import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -12,11 +9,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static no.nav.fo.domene.YtelseMapping.DAGPENGER_MED_PERMITTERING;
 import static no.nav.fo.util.SolrUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +25,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class SolrUtilsTest {
+
+    static String[] alderList = new String[]{
+            "19-og-under",
+            "20-24",
+            "25-29",
+            "30-39",
+            "40-49",
+            "50-59",
+            "60-66",
+            "67-70"
+    };
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -105,7 +115,7 @@ public class SolrUtilsTest {
         filtervalg.nyeBrukere = true;
         String nyeBrukereFilter = "-veileder_id:*";
         String enhetId = "0713";
-        String queryString = "enhet_id:"+enhetId;
+        String queryString = "enhet_id:" + enhetId;
 
         SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
@@ -119,7 +129,7 @@ public class SolrUtilsTest {
         filtervalg.nyeBrukere = true;
         String expectedFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)";
         String enhetId = "0713";
-        String queryString = "enhet_id:"+enhetId;
+        String queryString = "enhet_id:" + enhetId;
 
         SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
@@ -376,86 +386,38 @@ public class SolrUtilsTest {
         String PREFIX = "fodselsdato:[NOW/DAY-";
         String POSTFIX = "+1DAY/DAY]";
 
-        List<Integer> liste = new ArrayList<>();
-        liste.add(0);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
-
-        liste = new ArrayList<>();
-        liste.add(1);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
-
-        liste = new ArrayList<>();
-        liste.add(2);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
-
-        liste = new ArrayList<>();
-        liste.add(3);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
-
-        liste = new ArrayList<>();
-        liste.add(4);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
-
-        liste = new ArrayList<>();
-        liste.add(5);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
-
-        liste = new ArrayList<>();
-        liste.add(6);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
-
-        liste = new ArrayList<>();
-        liste.add(7);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("19-og-under")).isEqualTo(PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("20-24")).isEqualTo(PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("25-29")).isEqualTo(PREFIX + "30YEARS+1DAY TO NOW-25YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("30-39")).isEqualTo(PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("40-49")).isEqualTo(PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("50-59")).isEqualTo(PREFIX + "60YEARS+1DAY TO NOW-50YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("60-66")).isEqualTo(PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX);
+        assertThat(SolrUtils.alderFilter("67-70")).isEqualTo(PREFIX + "71YEARS+1DAY TO NOW-67YEARS" + POSTFIX);
     }
 
     @Test
-    public void skalLeggeTilFlereAldersIntervallerISolrQuery() {
-        String filterParameter = "fodselsdato:";
-        String separator = " OR " + filterParameter;
-        String PREFIX = "[NOW/DAY-";
-        String POSTFIX = "+1DAY/DAY]";
+    public void orStatementSkalORETingSammen() {
+        List<String> filter = asList("abba", "acdc");
+        Function<String, String> mapper = String::toUpperCase;
 
-        List<Integer> liste = new ArrayList<>();
-        liste.add(0);
-        liste.add(1);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(
-            filterParameter +
-            PREFIX + "20YEARS+1DAY TO NOW" + POSTFIX +
-            separator +
-            PREFIX + "25YEARS+1DAY TO NOW-20YEARS" + POSTFIX
-        );
+        String query = orStatement(filter, mapper);
 
-        liste = new ArrayList<>();
-        liste.add(6);
-        liste.add(3);
-        liste.add(4);
-        assertThat(SolrUtils.alderFilter(liste)).isEqualTo(
-            filterParameter +
-                PREFIX + "67YEARS+1DAY TO NOW-60YEARS" + POSTFIX +
-                separator +
-                PREFIX + "40YEARS+1DAY TO NOW-30YEARS" + POSTFIX +
-                separator +
-                PREFIX + "50YEARS+1DAY TO NOW-40YEARS" + POSTFIX
-        );
+        assertThat(query).isEqualTo("ABBA OR ACDC");
     }
 
     @Test
     public void skalLeggeTilKjonnFilter() {
         Filtervalg filtervalg = new Filtervalg();
         SolrQuery solrQuery;
-        filtervalg.kjonn = 1;
+        filtervalg.kjonn = singletonList(Kjonn.M);
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
 
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:M)");
 
-        filtervalg.kjonn = 0;
+        filtervalg.kjonn = singletonList(Kjonn.K);
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:K)");
-
-        filtervalg.kjonn = -3000;
-        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
-        assertThat(solrQuery.getFilterQueries()).containsOnly("");
 
         filtervalg = new Filtervalg();
         solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
@@ -476,34 +438,20 @@ public class SolrUtilsTest {
         filter.ytelse = DAGPENGER_MED_PERMITTERING;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery(filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
+        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
     }
 
     @Test
     public void skalLeggeTilInnsatsgruppeFilter() {
         String prefix = "kvalifiseringsgruppekode:";
 
-        assertThat(SolrUtils.innsatsgruppeFilter(0)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[0]);
-
-        assertThat(SolrUtils.innsatsgruppeFilter(1)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[1]);
-
-        assertThat(SolrUtils.innsatsgruppeFilter(2)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[2]);
-
-        assertThat(SolrUtils.innsatsgruppeFilter(3)).isEqualTo(prefix + FiltervalgMappers.innsatsgruppe[3]);
+        assertThat(SolrUtils.innsatsgruppeFilter(Innsatsgruppe.BATT)).isEqualTo(prefix + Innsatsgruppe.BATT);
     }
 
     @Test
     public void skalLeggeTilFormidlingsgruppeFilter() {
         String prefix = "formidlingsgruppekode:";
 
-        assertThat(SolrUtils.formidlingsgruppeFilter(0)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[0]);
-
-        assertThat(SolrUtils.formidlingsgruppeFilter(1)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[1]);
-
-        assertThat(SolrUtils.formidlingsgruppeFilter(2)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[2]);
-
-        assertThat(SolrUtils.formidlingsgruppeFilter(3)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[3]);
-
-        assertThat(SolrUtils.formidlingsgruppeFilter(4)).isEqualTo(prefix + FiltervalgMappers.formidlingsgruppe[4]);
+        assertThat(SolrUtils.formidlingsgruppeFilter(Formidlingsgruppe.ARBS)).isEqualTo(prefix + Formidlingsgruppe.ARBS);
     }
 }

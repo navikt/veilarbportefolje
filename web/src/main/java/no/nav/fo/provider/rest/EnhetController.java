@@ -38,14 +38,14 @@ public class EnhetController {
     @Inject
     PepClient pepClient;
 
-    @GET
+    @POST
     @Path("/{enhet}/portefolje")
     public Response hentPortefoljeForEnhet(
             @PathParam("enhet") String enhet,
             @QueryParam("fra") int fra,
             @QueryParam("antall") int antall,
             @QueryParam("sortByLastName") String sortDirection,
-            @BeanParam Filtervalg filtervalg) {
+            Filtervalg filtervalg) {
 
         List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
 
