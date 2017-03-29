@@ -52,4 +52,20 @@ public class DbUtilsTest {
         expectedException.expect(IllegalArgumentException.class);
         DbUtils.parseJaNei("foo", "test");
     }
+
+    @Test
+    public void kapitaliserTaklerUlikeKombinasjoner() {
+        assertThat(DbUtils.kapitaliser("navn")).isEqualTo("Navn");
+        assertThat(DbUtils.kapitaliser("Navn")).isEqualTo("Navn");
+        assertThat(DbUtils.kapitaliser("NAVN")).isEqualTo("Navn");
+        assertThat(DbUtils.kapitaliser("nAVN")).isEqualTo("Navn");
+        assertThat(DbUtils.kapitaliser("navn NAVNESEN")).isEqualTo("Navn Navnesen");
+        assertThat(DbUtils.kapitaliser("æØÅÄÖÈÊËÉÌÎÏÍ")).isEqualTo("Æøåäöèêëéìîïí");
+    }
+
+    @Test
+    public void kapitaliserTaklerNull() {
+        assertThat(DbUtils.kapitaliser(null)).isNull();
+    }
+
 }

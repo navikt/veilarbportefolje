@@ -1,17 +1,15 @@
 package no.nav.fo.util;
 
 import lombok.SneakyThrows;
+
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class DbUtils {
 
@@ -47,8 +45,8 @@ public class DbUtils {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("person_id", fieldGetter.apply(rs, "person_id"));
         document.addField("fnr", fieldGetter.apply(rs, "fodselsnr"));
-        document.addField("fornavn", fieldGetter.apply(rs, "fornavn"));
-        document.addField("etternavn", fieldGetter.apply(rs, "etternavn"));
+        document.addField("fornavn", kapitaliser(fieldGetter.apply(rs, "fornavn")));
+        document.addField("etternavn", kapitaliser(fieldGetter.apply(rs, "etternavn")));
         document.addField("enhet_id", fieldGetter.apply(rs, "nav_kontor"));
         document.addField("formidlingsgruppekode", fieldGetter.apply(rs, "formidlingsgruppekode"));
         document.addField("iserv_fra_dato", parseDato(fieldGetter.apply(rs, "iserv_fra_dato")));
@@ -66,6 +64,10 @@ public class DbUtils {
         document.addField("kjonn", FodselsnummerUtils.lagKjonn(fieldGetter.apply(rs, "fodselsnr")));
 
         return document;
+    }
+
+    static String kapitaliser(String s) {
+        return WordUtils.capitalizeFully(s);
     }
 
     static String parseDato(Object dato) {
