@@ -58,7 +58,7 @@ public class SolrUtils {
         // TODO Se på om denne kan skrives om litt
         Comparator<Bruker> comparator = null;
         Comparator<Bruker> fieldComparator = "etternavn".equals(sortField) ? brukerNavnComparator() : brukerFodelsdatoComparator();
-        boolean hasSortOrder = sortOrder.equals("ascending") || sortOrder.equals("descending");
+        boolean hasSortOrder = "ascending".equals(sortOrder) || "descending".equals(sortOrder);
 
         if (erNyComparator != null) {
             comparator = erNyComparator;
