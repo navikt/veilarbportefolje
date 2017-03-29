@@ -81,6 +81,12 @@ public class EnhetController {
     @GET
     @Path("/{enhet}/statustall")
     public Response hentStatusTall(@PathParam("enhet") String enhet) {
+        List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
+
+        if(!enheterIPilot.contains(enhet)) {
+            return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0).setNyeBrukere(0)).build();
+        }
+
         StatusTall statusTall = solrService.hentStatusTallForPortefolje(enhet);
         return Response.ok().entity(statusTall).build();
     }
