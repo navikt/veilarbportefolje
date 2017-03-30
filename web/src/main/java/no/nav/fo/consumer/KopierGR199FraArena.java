@@ -22,7 +22,7 @@ import static no.nav.fo.util.StreamUtils.log;
 public class KopierGR199FraArena {
     static Logger logger = LoggerFactory.getLogger(KopierGR199FraArena.class);
 
-    @Value("${loependeytelser.url}")
+    @Value("${loependeytelser.path}")
     String filpath;
 
     @Value("${loependeytelser.filnavn}")

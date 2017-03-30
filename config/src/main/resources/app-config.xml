@@ -22,8 +22,8 @@
 
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
-        <directory name="loependeytelser" mapToProperty="filmottak.loependeYtelser.nfs" temporary="false">
-            <mountOnNfs/>
+        <directory name="loependeytelser" mapToProperty="loependeytelser" temporary="false">
+            <mountOnNfs customNFSResourceAlias="filmottak.loependeYtelser.nfs" />
         </directory>
 
         <applicationCertificate alias="***REMOVED***"/>
