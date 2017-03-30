@@ -538,11 +538,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>com.hierynomus</groupId>
-                <artifactId>sshj</artifactId>
-                <version>0.19.0</version>
-            </dependency>
-            <dependency>
                 <groupId>com.ibm.mq</groupId>
                 <artifactId>mq-jms</artifactId>
                 <version>${mq-jms.version}</version>
