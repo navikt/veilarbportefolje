@@ -67,7 +67,7 @@ public class DbUtils {
     }
 
     static String kapitaliser(String s) {
-        return WordUtils.capitalizeFully(s);
+        return WordUtils.capitalizeFully(s, ' ', '\'', '-');
     }
 
     static String parseDato(Object dato) {
