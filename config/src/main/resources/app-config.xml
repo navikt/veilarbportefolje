@@ -22,7 +22,7 @@
 
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
-        <directory name="loependeytelser" mapToProperty="loependeytelser" temporary="false">
+        <directory name="loependeytelser" mapToProperty="loependeytelser.path" temporary="false">
             <mountOnNfs customNFSResourceAlias="filmottak.loependeYtelser.nfs" />
         </directory>
 
