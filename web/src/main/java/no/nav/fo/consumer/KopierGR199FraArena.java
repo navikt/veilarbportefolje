@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import java.io.File;
 import java.io.InputStream;
 import java.util.function.Supplier;
 
@@ -21,14 +22,11 @@ import static no.nav.fo.util.StreamUtils.log;
 public class KopierGR199FraArena {
     static Logger logger = LoggerFactory.getLogger(KopierGR199FraArena.class);
 
-    @Value("${filmottak.loependeYtelser.sftp.username}")
-    String username;
+    @Value("${loependeytelser.url}")
+    String filpath;
 
-    @Value("${filmottak.loependeYtelser.sftp.password}")
-    String password;
-
-    @Value("${filmottak.loependeYtelser.sftp}")
-    String server;
+    @Value("${loependeytelser.filnavn}")
+    String filnavn;
 
     @Value("${cluster.ismasternode}")
     boolean isMaster;
@@ -47,7 +45,7 @@ public class KopierGR199FraArena {
     @Scheduled(cron = "${filmottak.loependeYtelser.cron}")
     public void kopierOgIndekser() {
         isRunning = true;
-        Supplier<Try<InputStream>> hentfil = () -> arenafilService.hentArenafil(server, username, password);
+        Supplier<Try<InputStream>> hentfil = () -> arenafilService.hentArenafil(new File(filpath, filnavn));
 
         timed("GR199.hentfil", hentfil)
                 .onFailure(log(logger, "Kunne ikke hente ut fil fra sftpserver"))

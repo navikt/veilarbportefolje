@@ -22,6 +22,9 @@
 
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
+        <directory name="loependeytelser" mapToProperty="filmottak.loependeYtelser.nfs" temporary="false">
+            <mountOnNfs/>
+        </directory>
 
         <applicationCertificate alias="***REMOVED***"/>
         <datasource alias="veilarbportefoljeDB" jndi="java:/jboss/datasources/veilarbportefoljeDB">
