@@ -22,6 +22,9 @@
 
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
+        <directory name="loependeytelser" mapToProperty="loependeytelser.path" temporary="false">
+            <mountOnNfs customNFSResourceAlias="filmottak.loependeYtelser.nfs" />
+        </directory>
 
         <applicationCertificate alias="***REMOVED***"/>
         <datasource alias="veilarbportefoljeDB" jndi="java:/jboss/datasources/veilarbportefoljeDB">
@@ -38,7 +41,6 @@
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
         <credential alias="isso-rp-user"/>
-        <credential alias="filmottak.loependeYtelser.sftp"/>
     </resources>
 
     <exposed-services>

@@ -59,6 +59,7 @@ public class SolrConfig {
     public Pingable solrServerPing() {
         SolrClient solrClient = new HttpSolrClient.Builder()
                 .withBaseSolrUrl(System.getProperty("veilarbportefolje.solr.masternode"))
+                .withHttpClient(createHttpClientForSolr())
                 .build();
 
         return () -> {
