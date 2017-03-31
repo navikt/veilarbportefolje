@@ -4,6 +4,7 @@ import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Portefolje;
+import no.nav.fo.domene.StatusTall;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -35,7 +37,7 @@ public class VeilederController {
     @Inject
     PepClient pepClient;
 
-    @GET
+    @POST
     @Path("/{veilederident}/portefolje")
     public Response hentPortefoljeForVeileder(
             @PathParam("veilederident") String veilederIdent,
@@ -44,7 +46,7 @@ public class VeilederController {
             @QueryParam("antall") int antall,
             @QueryParam("sortDirection") String sortDirection,
             @QueryParam("sortField") String sortField,
-            @BeanParam Filtervalg filtervalg) {
+            Filtervalg filtervalg) {
 
         try {
             String ident = SubjectHandler.getSubjectHandler().getUid();
@@ -54,7 +56,7 @@ public class VeilederController {
 
                 List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,ident, pepClient);
+                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, ident, pepClient);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 
@@ -66,5 +68,18 @@ public class VeilederController {
             logger.error("Kall mot upstream service feilet", e);
             return Response.status(BAD_GATEWAY).build();
         }
+    }
+
+    @GET
+    @Path("/{veilederident}/statustall")
+    public Response hentStatusTall(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
+        List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
+
+        if (!enheterIPilot.contains(enhet)) {
+            return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0)).build();
+        }
+
+        StatusTall statusTall = solrService.hentStatusTallForVeileder(enhet, veilederIdent);
+        return Response.ok().entity(statusTall).build();
     }
 }

@@ -2,13 +2,19 @@ package no.nav.fo.service;
 
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.util.DbUtils;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.Bruker;
+import no.nav.fo.domene.FacetResults;
+import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.StatusTall;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
-import org.apache.solr.client.solrj.*;
-import org.apache.solr.client.solrj.response.*;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -20,7 +26,10 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -201,7 +210,31 @@ public class SolrService {
             long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
             statusTall.setTotalt(antallTotalt).setInaktiveBrukere(antallInaktiveBrukere).setNyeBrukere(antallNyeBrukere);
         } catch (SolrServerException | IOException e) {
-            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+            logger.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
+        }
+
+        return statusTall;
+    }
+
+    public StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent) {
+        SolrQuery solrQuery = new SolrQuery("*:*");
+
+        String inaktiveBrukere = "formidlingsgruppekode:ISERV";
+
+        solrQuery.addFilterQuery("enhet_id:" + enhet);
+        solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
+        solrQuery.addFacetQuery(inaktiveBrukere);
+        solrQuery.setRows(0);
+
+        StatusTall statusTall = new StatusTall();
+        QueryResponse response;
+        try {
+            response = solrClientSlave.query(solrQuery);
+            long antallTotalt = response.getResults().getNumFound();
+            long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
+            statusTall.setTotalt(antallTotalt).setInaktiveBrukere(antallInaktiveBrukere);
+        } catch (SolrServerException | IOException e) {
+            logger.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
         }
 
         return statusTall;
