@@ -13,6 +13,7 @@ public class Filtervalg {
     public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
+    public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return nyeBrukere ||
@@ -23,7 +24,8 @@ public class Filtervalg {
                 !fodselsdagIMnd.isEmpty() ||
                 !innsatsgruppe.isEmpty() ||
                 !formidlingsgruppe.isEmpty() ||
-                !servicegruppe.isEmpty();
+                !servicegruppe.isEmpty() ||
+                !rettighetsgruppe.isEmpty();
     }
 
     public boolean harYtelsefilter() {

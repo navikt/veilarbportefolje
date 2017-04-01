@@ -144,6 +144,7 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.innsatsgruppe, SolrUtils::innsatsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.formidlingsgruppe, SolrUtils::formidlingsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
 
 
         if (filtervalg.harYtelsefilter()) {
@@ -185,5 +186,9 @@ public class SolrUtils {
 
     static String servicegruppeFilter(Servicegruppe servicegruppe) {
         return "kvalifiseringsgruppekode:" + servicegruppe;
+    }
+
+    static String rettighetsgruppeFilter(Rettighetsgruppe rettighetsgruppe) {
+        return "rettighetsgruppekode:" + rettighetsgruppe;
     }
 }
