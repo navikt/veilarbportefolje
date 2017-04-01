@@ -118,7 +118,7 @@ public class IndekserYtelserHandlerTest {
         assertThat(solrDokumenter).hasSize(2);
 
         assertThat(solrDokumenter.get(0).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasett");
-        assertThat(solrDokumenter.get(1).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid");
+        assertThat(solrDokumenter.get(1).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasett");
     }
 
     @Test
