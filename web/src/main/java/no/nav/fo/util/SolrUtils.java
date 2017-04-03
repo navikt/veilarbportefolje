@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
-import javax.xml.ws.Service;
 import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
@@ -148,7 +147,7 @@ public class SolrUtils {
 
 
         if (filtervalg.harYtelsefilter()) {
-            filtrerBrukereStatements.add(format("ytelse:%s", filtervalg.ytelse));
+            filtrerBrukereStatements.add(orStatement(filtervalg.ytelse.underytelser, SolrUtils::ytelseFilter));
         }
 
         if (!oversiktStatements.isEmpty()) {
@@ -162,6 +161,10 @@ public class SolrUtils {
                     .map(statement -> "(" + statement + ")")
                     .collect(Collectors.joining(" AND ")));
         }
+    }
+
+    private static String ytelseFilter(YtelseMapping ytelse) {
+        return "ytelse:" + ytelse;
     }
 
     static String kjonnFilter(Kjonn kjonn) {

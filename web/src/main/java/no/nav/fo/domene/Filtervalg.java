@@ -6,7 +6,7 @@ import java.util.List;
 public class Filtervalg {
     public boolean nyeBrukere;
     public boolean inaktiveBrukere;
-    public YtelseMapping ytelse;
+    public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
     public List<Kjonn> kjonn = new ArrayList<>();
     public List<String> fodselsdagIMnd = new ArrayList<>();
