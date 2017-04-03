@@ -30,7 +30,7 @@ public class VirksomhetEnhetEndpointConfig {
                 virksomhetEnhet.ping();
                 return Pingable.Ping.lyktes("VirksomhetEnhet");
             } catch (Exception e) {
-                return Pingable.Ping.feilet("Feilet", e);
+                return Pingable.Ping.feilet("VirksomhetEnhet", e);
             }
         };
     }

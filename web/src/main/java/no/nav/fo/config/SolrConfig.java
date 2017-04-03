@@ -57,17 +57,13 @@ public class SolrConfig {
 
     @Bean
     public Pingable solrServerPing() {
-        SolrClient solrClient = new HttpSolrClient.Builder()
-                .withBaseSolrUrl(System.getProperty("veilarbportefolje.solr.masternode"))
-                .withHttpClient(createHttpClientForSolr())
-                .build();
-
+        SolrClient solrClient = solrClientSlave();
         return () -> {
             try {
                 solrClient.ping();
-                return Pingable.Ping.lyktes("SolrServer");
+                return Pingable.Ping.lyktes("VeilArbPortefoljeIndeks");
             } catch (Exception e) {
-                return Pingable.Ping.feilet("SolrServer", e);
+                return Pingable.Ping.feilet("VeilArbPortefoljeIndeks", e);
             }
         };
     }
