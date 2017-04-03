@@ -434,7 +434,7 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalLeggeTilSpesifikYtelseFilter() throws Exception {
+    public void skalLeggeTilSpesifikkYtelseFilter() throws Exception {
         Filtervalg filter = new Filtervalg();
         filter.ytelse = YtelseFilter.DAGPENGER_MED_PERMITTERING;
 
