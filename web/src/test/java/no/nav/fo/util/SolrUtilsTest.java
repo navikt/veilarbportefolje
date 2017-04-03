@@ -434,12 +434,23 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalLeggeTilYtelseFilter() throws Exception {
+    public void skalLeggeTilSpesifikkYtelseFilter() throws Exception {
         Filtervalg filter = new Filtervalg();
-        filter.ytelse = DAGPENGER_MED_PERMITTERING;
+        filter.ytelse = YtelseFilter.DAGPENGER_MED_PERMITTERING;
 
         assertThat(filter.harAktiveFilter()).isTrue();
         assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
+    }
+
+    @Test
+    public void skalLeggeTilGruppeYtelseFilter() throws Exception {
+        Filtervalg filter = new Filtervalg();
+        filter.ytelse = YtelseFilter.DAGPENGER;
+
+        assertThat(filter.harAktiveFilter()).isTrue();
+        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
+                "(ytelse:ORDINARE_DAGPENGER OR ytelse:DAGPENGER_MED_PERMITTERING OR ytelse:DAGPENGER_OVRIGE)"
+        );
     }
 
     @Test
