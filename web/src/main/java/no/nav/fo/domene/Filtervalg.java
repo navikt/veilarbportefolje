@@ -14,6 +14,7 @@ public class Filtervalg {
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
+    public List<String> veiledere = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return nyeBrukere ||
@@ -25,7 +26,8 @@ public class Filtervalg {
                 !innsatsgruppe.isEmpty() ||
                 !formidlingsgruppe.isEmpty() ||
                 !servicegruppe.isEmpty() ||
-                !rettighetsgruppe.isEmpty();
+                !rettighetsgruppe.isEmpty() ||
+                !veiledere.isEmpty();
     }
 
     public boolean harYtelsefilter() {
