@@ -35,6 +35,8 @@
         <mockito.version>1.10.19</mockito.version>
         <commonsio.version>2.5</commonsio.version>
         <oidcsecurity.version>2.0.15</oidcsecurity.version>
+        <jackson.version>2.9.0.pr2</jackson.version>
+        <scala-maven-plugin.version>3.1.5</scala-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -89,11 +91,53 @@
             <artifactId>oidc-security</artifactId>
             <version>${oidcsecurity.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-scala_2.11</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>io.gatling</groupId>
                 <artifactId>gatling-maven-plugin</artifactId>
@@ -105,10 +149,13 @@
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <simulationsFolder>src/test/scala/simulations</simulationsFolder>
+                            <simulationClass>simulations.PortefoljeSimulation</simulationClass>
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <disableCompiler>true</disableCompiler>
+                </configuration>
             </plugin>
         </plugins>
     </build>
