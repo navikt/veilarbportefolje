@@ -144,6 +144,7 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.formidlingsgruppe, SolrUtils::formidlingsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
 
 
         if (filtervalg.harYtelsefilter()) {
@@ -193,5 +194,9 @@ public class SolrUtils {
 
     static String rettighetsgruppeFilter(Rettighetsgruppe rettighetsgruppe) {
         return "rettighetsgruppekode:" + rettighetsgruppe;
+    }
+
+    static String veilederFilter(String veileder) {
+        return "veileder_id:" + veileder;
     }
 }
