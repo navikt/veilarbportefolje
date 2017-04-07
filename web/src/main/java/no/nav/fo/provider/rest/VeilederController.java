@@ -6,7 +6,7 @@ import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.domene.StatusTall;
 import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientInterface;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class VeilederController {
     SolrService solrService;
 
     @Inject
-    PepClient pepClient;
+    PepClientInterface pepClient;
 
     @POST
     @Path("/{veilederident}/portefolje")

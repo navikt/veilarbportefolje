@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
 
 
-public class PepClient {
+public class PepClient implements PepClientInterface {
 
     @Inject
     private Pep pep;

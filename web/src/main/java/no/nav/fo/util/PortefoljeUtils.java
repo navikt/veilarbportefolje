@@ -3,6 +3,7 @@ package no.nav.fo.util;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientInterface;
 
 import java.util.List;
 
@@ -24,13 +25,13 @@ public class PortefoljeUtils {
         return brukere.stream().skip(fra).limit(antall).collect(toList());
     }
 
-    public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String veilederIdent, PepClient pepClient) {
+    public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String veilederIdent, PepClientInterface pepClient) {
         return brukere.stream()
                 .map( bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent, pepClient))
                 .collect(toList());
     }
 
-    private static Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent, PepClient pepClient) {
+    private static Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent, PepClientInterface pepClient) {
         if(!bruker.erKonfidensiell()) {
             return bruker;
         }

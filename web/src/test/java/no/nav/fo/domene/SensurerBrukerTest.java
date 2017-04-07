@@ -2,7 +2,7 @@ package no.nav.fo.domene;
 
 
 import no.nav.fo.config.ApplicationConfigTest;
-import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientInterface;
 import no.nav.fo.util.PortefoljeUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 public class SensurerBrukerTest {
 
     @Inject
-    private PepClient pepClient;
+    private PepClientInterface pepClient;
 
     @Test
     public void skalIkkeSeKode6Bruker() {
