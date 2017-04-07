@@ -2,6 +2,7 @@ package no.nav.fo.consumer;
 
 import javaslang.control.Try;
 import no.nav.fo.service.ArenafilService;
+import no.nav.fo.service.SolrService;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.metrics.aspects.Timed;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -30,6 +32,9 @@ public class KopierGR199FraArena {
 
     @Value("${cluster.ismasternode}")
     boolean isMaster;
+
+    @Inject
+    SolrService solrService;
 
     boolean isRunning = false;
 
@@ -53,6 +58,7 @@ public class KopierGR199FraArena {
                 .onFailure(log(logger, "Unmarshalling feilet"))
                 .andThen(timed("GR199.indekser", indekserHandler::indekser))
                 .onFailure(log(logger, "Indeksering feilet"))
+                .andThen(() -> solrService.hovedindeksering())
                 .andThen(() -> this.isRunning = false);
     }
 

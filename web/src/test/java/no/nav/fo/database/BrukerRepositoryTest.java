@@ -2,6 +2,10 @@ package no.nav.fo.database;
 
 import com.google.common.base.Joiner;
 import no.nav.fo.config.ApplicationConfigTest;
+import no.nav.fo.domene.Brukerdata;
+import no.nav.fo.domene.KvartalMapping;
+import no.nav.fo.domene.ManedMapping;
+import no.nav.fo.domene.YtelseMapping;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.assertj.core.api.Assertions;
@@ -16,10 +20,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -42,7 +48,6 @@ public class BrukerRepositoryTest {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-aktoerid-to-personid-mapping.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-bruker-data-test.sql"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -68,7 +73,8 @@ public class BrukerRepositoryTest {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT"};
+                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
+                "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -85,7 +91,8 @@ public class BrukerRepositoryTest {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT"};
+                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
+                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -117,47 +124,35 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalOppdatereOmBrukerFinnes() {
-        String aktoerId = (String) jdbcTemplate.queryForList("SELECT * FROM BRUKER_DATA").get(0).get("AKTOERID");
-        brukerRepository.insertOrUpdateBrukerdata(aktoerId,"555555","X444444","2017-01-14 09:59:56.000000");
-        String veilederident = (String) jdbcTemplate.queryForList("SELECT VEILEDERIDENT FROM BRUKER_DATA WHERE AKTOERID='111111'").get(0).get("VEILEDERIDENT");
-        Assertions.assertThat(veilederident).isEqualTo("X444444");
+        Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+        Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+
+        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1));
+        Brukerdata brukerdataAfterInsert = brukerRepository.retrieveBrukerdata("personid");
+        assertThatBrukerdataIsEqual(brukerdata1, brukerdataAfterInsert);
+        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata2));
+        Brukerdata brukerdataAfterUpdate = brukerRepository.retrieveBrukerdata("personid");
+        assertThatBrukerdataIsEqual(brukerdata2, brukerdataAfterUpdate);
+
     }
 
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
-        String aktoerId = "999999"; //aktoerId som ikke finnes i databasen.
-        List<Map<String,Object>> brukere = brukerRepository.retrieveBruker(aktoerId);
-        Assertions.assertThat(brukere).isEmpty();
 
-        brukerRepository.insertOrUpdateBrukerdata("999999","555555","X444444","2017-01-14 09:59:56.000000");
-        String veilederident = (String) brukerRepository.retrieveBruker(aktoerId).get(0).get("VEILEDERIDENT");
-        Assertions.assertThat(veilederident).isEqualTo("X444444");
-    }
-    private void updateBrukerData(String aktoerId, String veilederident, String personId) {
-        jdbcTemplate.execute("INSERT INTO BRUKER_DATA VALUES ('"+aktoerId + "', '"+veilederident +
-                "',TO_TIMESTAMP('2017-01-13 14:59:29.000000', 'YYYY-MM-DD HH24:MI:SS.FF'),'"+personId+"')");
-    }
+        Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
 
-    private void updateDBWithPersonidbruker(String personId, String fnr) {
-        jdbcTemplate.execute("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR, ETTERNAVN, FORNAVN, NAV_KONTOR, FORMIDLINGSGRUPPEKODE, " +
-                "ISERV_FRA_DATO, KVALIFISERINGSGRUPPEKODE, RETTIGHETSGRUPPEKODE, HOVEDMAALKODE, SIKKERHETSTILTAK_TYPE_KODE, FR_KODE, " +
-                "SPERRET_ANSATT, ER_DOED, DOED_FRA_DATO, TIDSSTEMPEL) VALUES " +
-                "("+personId+", '"+fnr+"', 'GAASEN', 'GUNNAR', '0713', 'ARBS', null, 'BATT', 'IYT', 'SKAFFEA', 'TOAN', '7', 'J', 'N', null, " +
-                "TO_TIMESTAMP('2017-01-13 14:59:29.000000', 'YYYY-MM-DD HH24:MI:SS.FF'));\n");
-    }
+        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata));
 
-    @Test
-    public void skalOppdatereBrukerMedTilordnetVeileder() {
-        updateDBWithPersonidbruker("154154","11111111111");
-        updateBrukerData("164132165132","X484848","154154");
+        Brukerdata brukerdataFromDb = brukerRepository.retrieveBrukerdata("personid");
 
-        List<Map<String,Object>> bruker = brukerRepository.retrieveBrukerSomHarVeileder("154154");
-        String veilederident = (String) bruker.get(0).get("VEILEDERIDENT");
-
-        assertThat(veilederident).isEqualTo("X484848");
-
+        assertThatBrukerdataIsEqual(brukerdata, brukerdataFromDb);
 
     }
+
+
 
     @Test
     public void skalFiltrereBrukere() {
@@ -166,6 +161,33 @@ public class BrukerRepositoryTest {
 
         List<SolrInputDocument> oppdaterteAktiveBrukere = brukerRepository.retrieveOppdaterteBrukere();
         assertThat(oppdaterteAktiveBrukere.size()).isEqualTo(2);
+    }
+
+    private Brukerdata brukerdata(String aktoerid, String personId, String veileder, LocalDateTime tildeltTidspunkt, YtelseMapping ytelse,
+                                  LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett) {
+        return new Brukerdata()
+                .setAktoerid(aktoerid)
+                .setPersonid(personId)
+                .setVeileder(veileder)
+                .setTildeltTidspunkt(tildeltTidspunkt)
+                .setAapMaxtidFasett(aapMaxtidFasett)
+                .setAapMaxtid(aapMaxtid)
+                .setUtlopsdatoFasett(utlopsdatoFasett)
+                .setUtlopsdato(utlopsdato)
+                .setYtelse(ytelse);
+
+    }
+
+    private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
+        assertThat(b1.getPersonid()).isEqualTo(b2.getPersonid());
+        assertThat(b1.getAapMaxtid()).isEqualTo(b2.getAapMaxtid());
+        assertThat(b1.getAktoerid()).isEqualTo(b2.getAktoerid());
+        assertThat(b1.getAapMaxtidFasett()).isEqualTo(b2.getAapMaxtidFasett());
+        assertThat(b1.getTildeltTidspunkt()).isEqualTo(b2.getTildeltTidspunkt());
+        assertThat(b1.getVeileder()).isEqualTo(b2.getVeileder());
+        assertThat(b1.getUtlopsdato()).isEqualTo(b2.getUtlopsdato());
+        assertThat(b1.getUtlopsdatoFasett()).isEqualTo(b2.getUtlopsdatoFasett());
+        assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
     }
 
 }

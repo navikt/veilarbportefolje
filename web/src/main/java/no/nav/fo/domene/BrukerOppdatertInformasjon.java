@@ -10,4 +10,11 @@ public class BrukerOppdatertInformasjon {
     private String aktoerid;
     private String veileder;
     private String oppdatert;
+
+    public BrukerinformasjonFraKo applyTo(BrukerinformasjonFraKo brukerinformasjonFraKo) {
+        return brukerinformasjonFraKo
+                .setOppdatert(oppdatert)
+                .setVeileder(veileder)
+                .setAktoerid(aktoerid);
+    }
 }

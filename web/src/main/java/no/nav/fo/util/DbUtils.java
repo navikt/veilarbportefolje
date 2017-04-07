@@ -62,6 +62,11 @@ public class DbUtils {
         document.addField("fodselsdag_i_mnd", FodselsnummerUtils.lagFodselsdagIMnd(fieldGetter.apply(rs, "fodselsnr")));
         document.addField("fodselsdato", FodselsnummerUtils.lagFodselsdato(fieldGetter.apply(rs, "fodselsnr")));
         document.addField("kjonn", FodselsnummerUtils.lagKjonn(fieldGetter.apply(rs, "fodselsnr")));
+        document.addField("ytelse", fieldGetter.apply(rs, "ytelse"));
+        document.addField("utlopsdato_mnd_fasett", fieldGetter.apply(rs, "UTLOPSDATOFASETT"));
+        document.addField("aap_maxtid_fasett", fieldGetter.apply(rs, "AAPMAXTIDFASETT"));
+        document.addField("utlopsdato", parseDato(fieldGetter.apply(rs, "UTLOPSDATO")));
+        document.addField("aap_maxtid", parseDato(fieldGetter.apply(rs, "AAPMAXTID")));
 
         return document;
     }

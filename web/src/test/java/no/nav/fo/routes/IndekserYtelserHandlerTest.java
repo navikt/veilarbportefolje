@@ -2,9 +2,10 @@ package no.nav.fo.routes;
 
 import no.nav.fo.consumer.IndekserYtelserHandler;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.service.SolrService;
+import no.nav.fo.database.PersistentOppdatering;
+import no.nav.fo.domene.BrukerinformasjonFraFil;
+import no.nav.fo.domene.YtelseMapping;
 import no.nav.melding.virksomhet.loependeytelser.v1.*;
-import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,7 +38,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 public class IndekserYtelserHandlerTest {
 
     @Mock
-    SolrService solr;
+    PersistentOppdatering persistentOppdatering;
 
     @Mock
     BrukerRepository brukerRepository;
@@ -57,12 +58,12 @@ public class IndekserYtelserHandlerTest {
     public void setup() {
         when(brukerRepository.retrievePersonidFromFnrs(anyCollection())).then((invocationOnMock -> {
             Collection<String> fnrs = (Collection<String>) invocationOnMock.getArguments()[0];
-            Map<String, Optional<SolrInputDocument>> res = fnrs.stream()
+            Map<String, Optional<String>> res = fnrs.stream()
                     .collect(Collectors.toMap(identity(), (fnr) -> {
                         if ("10108000398".equals(fnr)) {
                             return Optional.empty();
                         }
-                        return Optional.of(new SolrInputDocument());
+                        return Optional.of("anotherPersonId");
                     }));
             return res;
         }));
@@ -78,8 +79,8 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(solr, times(1)).addDocuments(anyList());
-        verify(solr).addDocuments(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
+        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
         assertThat(captor.getValue()).hasSize(1);
     }
 
@@ -92,14 +93,15 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(solr, times(1)).addDocuments(anyList());
-        verify(solr).addDocuments(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
+        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
 
-        List<SolrInputDocument> solrDokumenter = captor.getValue();
-        assertThat(solrDokumenter).hasSize(2);
+        List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
+        assertThat(oppdateringer).hasSize(2);
 
-        assertThat(solrDokumenter.get(0).keySet()).containsExactly("ytelse", "utlopsdato");
-        assertThat(solrDokumenter.get(1).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
+
+        assertThat(oppdateringer.get(0).getUtlopsdatoFasett()).isNull();
+        assertThat(oppdateringer.get(1).getUtlopsdatoFasett()).isNotNull();
     }
 
     @Test
@@ -111,14 +113,16 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(solr, times(1)).addDocuments(anyList());
-        verify(solr).addDocuments(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
+        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
 
-        List<SolrInputDocument> solrDokumenter = captor.getValue();
-        assertThat(solrDokumenter).hasSize(2);
+        List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
+        assertThat(oppdateringer).hasSize(2);
 
-        assertThat(solrDokumenter.get(0).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasett");
-        assertThat(solrDokumenter.get(1).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett", "aap_maxtid", "aap_maxtid_fasett");
+        assertThat(oppdateringer.get(0).getPersonid()).isEqualTo("anotherPersonId");
+        assertThat(oppdateringer.get(1).getPersonid()).isEqualTo("anotherPersonId");
+        assertThat(oppdateringer.get(0).getYtelse()).isEqualTo(YtelseMapping.AAP_MAXTID);
+        assertThat(oppdateringer.get(1).getYtelse()).isEqualTo(YtelseMapping.AAP_MAXTID);
     }
 
     @Test
@@ -129,13 +133,15 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(solr, times(1)).addDocuments(anyList());
-        verify(solr).addDocuments(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
+        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
 
-        List<SolrInputDocument> solrDokumenter = captor.getValue();
-        assertThat(solrDokumenter).hasSize(1);
+        List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
+        assertThat(oppdateringer).hasSize(1);
 
-        assertThat(solrDokumenter.get(0).keySet()).containsExactly("ytelse", "utlopsdato", "utlopsdato_mnd_fasett");
+        assertThat(oppdateringer.get(0).getPersonid()).isNotNull();
+        assertThat(oppdateringer.get(0).getAapMaxtid()).isNull();
+        assertThat(oppdateringer.get(0).getAapMaxtidFasett()).isNull();
     }
 
     private LoependeYtelser lagLoependeYtelser(List<LoependeVedtak> vedtak) {

@@ -131,9 +131,9 @@ public class SolrService {
         return SolrUtils.mapFacetResults(facetField);
     }
 
-    public void indekserBrukerMedVeileder(String personId) {
+    public void indekserBrukerdata(String personId) {
         logger.info("Legger bruker med personId % til i indeks ", personId);
-        List<Map<String, Object>> rader = brukerRepository.retrieveBrukerSomHarVeileder(personId);
+        List<Map<String, Object>> rader = brukerRepository.retrieveBrukermedBrukerdata(personId);
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
         addDocuments(dokumenter);
         commit();

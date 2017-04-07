@@ -2,7 +2,9 @@ package no.nav.fo.service;
 
 
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.domene.BrukerinformasjonFraKo;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.aktoer.v2.HentIdentForAktoerIdPersonIkkeFunnet;
@@ -27,13 +29,14 @@ public class OppdaterBrukerdataFletter {
     BrukerRepository brukerRepository;
 
     @Inject
-    SolrService solrService;
+    PersistentOppdatering persistentOppdatering;
+
 
     public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
         String personId = hentPersonIdFromDBorAktoer(bruker.getAktoerid());
-        String aktoerId = bruker.getAktoerid();
-        brukerRepository.insertOrUpdateBrukerdata(aktoerId, personId, bruker.getVeileder(),bruker.getOppdatert());
-        solrService.indekserBrukerMedVeileder(personId);
+        BrukerinformasjonFraKo brukerinformasjonFraKo = new BrukerinformasjonFraKo().setPersonid(personId);
+        persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraKo));
+
     }
 
     private String hentPersonIdFromDBorAktoer(String aktoerId) {

@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import no.nav.fo.database.PersistentOppdatering;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,4 +17,7 @@ public class ServiceConfig {
 
     @Bean
     public PepClient pepClient() { return new PepClient(); }
+
+    @Bean
+    public PersistentOppdatering persistentOppdatering() { return new PersistentOppdatering(); }
 }

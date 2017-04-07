@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
@@ -42,6 +43,9 @@ public class ApplicationConfigTest {
     public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() {
         return new OppdaterBrukerdataFletter();
     }
+
+    @Bean
+    public PersistentOppdatering persistentOppdatering() { return new PersistentOppdatering(); }
 
     @Bean
     public OppdaterBrukerdataListener oppdaterBrukerdataListener() {

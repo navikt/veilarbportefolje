@@ -2,7 +2,10 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
-import no.nav.fo.util.DbUtils;
+import no.nav.fo.domene.Brukerdata;
+import no.nav.fo.domene.KvartalMapping;
+import no.nav.fo.domene.ManedMapping;
+import no.nav.fo.domene.YtelseMapping;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
@@ -12,6 +15,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -54,8 +58,26 @@ public class BrukerRepository {
         return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
     }
 
-    public List<Map<String, Object>> retrieveBrukerSomHarVeileder(String personId) {
-        return db.queryForList(retrieveBrukerSomHarVeilederSQL(), personId);
+    public List<Map<String, Object>> retrieveBrukermedBrukerdata(String personId) {
+        return db.queryForList(retrieveBrukerMedBrukerdataSQL(), personId);
+    }
+
+    public Brukerdata retrieveBrukerdata(String personId) {
+        List<Map<String, Object>> bruker = db.queryForList(retrieveBrukerdataSQL(), personId);
+        if(bruker.isEmpty()) {
+            return new Brukerdata().setPersonid(personId);
+        }
+
+        return new Brukerdata()
+                .setAktoerid((String) bruker.get(0).get("AKTOERID"))
+                .setVeileder((String) bruker.get(0).get("VEILEDERIDENT"))
+                .setPersonid(personId)
+                .setTildeltTidspunkt(toLocalDateTime((Timestamp) bruker.get(0).get("TILDELT_TIDSPUNKT")))
+                .setUtlopsdato(toLocalDateTime((Timestamp) bruker.get(0).get("UTLOPSDATO")))
+                .setYtelse(ytelsemappingOrNull((String) bruker.get(0).get("YTELSE")))
+                .setAapMaxtid(toLocalDateTime((Timestamp) bruker.get(0).get("AAPMAXTID")))
+                .setAapMaxtidFasett(kvartalmappingOrNull((String) bruker.get(0).get("AAPMAXTIDFASETT")))
+                .setUtlopsdatoFasett(manedmappingOrNull((String) bruker.get(0).get("UTLOPSDATOFASETT")));
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
@@ -80,20 +102,20 @@ public class BrukerRepository {
         return Optional.ofNullable(personId);
     }
 
-    public Map<String, Optional<SolrInputDocument>> retrievePersonidFromFnrs(Collection<String> fnrs) {
-        Map<String, Optional<SolrInputDocument>> brukere = new HashMap<>(fnrs.size());
+    public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
+        Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
 
         batchProcess(1000, fnrs, timed("GR199.brukersjekk.batch", (fnrBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("fnrs", fnrBatch);
 
-            Map<String, Optional<SolrInputDocument>> fnrPersonIdMap = namedParameterJdbcTemplate.queryForList(
+            Map<String, Optional<String>> fnrPersonIdMap = namedParameterJdbcTemplate.queryForList(
                     getPersonIdsFromFnrsSQL(),
                     params)
                     .stream()
                     .map((rs) -> Tuple.of(
                             (String) rs.get("FODSELSNR"),
-                            DbUtils.mapRadTilDokument(rs))
+                            rs.get("PERSON_ID").toString())
                     )
                     .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
 
@@ -112,20 +134,14 @@ public class BrukerRepository {
         return (T t) -> !predicate.test(t);
     }
 
-    public void insertBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
-        db.update(insertBrukerdataSQL(), aktoerId, veilederident, tilordnetTidsstempel, personId);
-    }
-
-    public void updateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
-        db.update(updateBrukerdataSQL(), veilederident, tilordnetTidsstempel, personId, aktoerId);
-    }
-
-    public void insertOrUpdateBrukerdata(String aktoerId, String personId, String veilederident, String tilordnetTidsstempel) {
-        try {
-            insertBrukerdata(aktoerId, personId, veilederident, tilordnetTidsstempel);
-        } catch (DuplicateKeyException e) {
-            updateBrukerdata(aktoerId, personId, veilederident, tilordnetTidsstempel);
-        }
+    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata) {
+        brukerdata.forEach((data) -> {
+            try {
+                data.toInsertQuery(db).execute();
+            } catch (DuplicateKeyException e) {
+                data.toUpdateQuery(db).execute();
+            }
+        });
     }
 
     public void insertAktoeridToPersonidMapping(String aktoerId, String personId) {
@@ -155,7 +171,12 @@ public class BrukerRepository {
                         "er_doed, " +
                         "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
                         "tidsstempel, " +
-                        "veilederident " +
+                        "veilederident, " +
+                        "ytelse, " +
+                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdatofasett, " +
+                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
+                        "aapmaxtidfasett " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -164,7 +185,7 @@ public class BrukerRepository {
 
     }
 
-    String retrieveBrukerSomHarVeilederSQL() {
+    String retrieveBrukerMedBrukerdataSQL() {
         return
                 "SELECT " +
                         "person_id, " +
@@ -183,7 +204,12 @@ public class BrukerRepository {
                         "er_doed, " +
                         "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
                         "tidsstempel, " +
-                        "veilederident " +
+                        "veilederident, " +
+                        "ytelse," +
+                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdatofasett, " +
+                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
+                        "aapmaxtidfasett " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -212,7 +238,12 @@ public class BrukerRepository {
                         "er_doed, " +
                         "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
                         "tidsstempel, " +
-                        "veilederident " +
+                        "veilederident," +
+                        "ytelse, " +
+                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdatofasett, " +
+                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
+                        "aapmaxtidfasett  " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -243,27 +274,9 @@ public class BrukerRepository {
         return
                 "SELECT " +
                         "person_id, " +
-                        "fodselsnr, " +
-                        "fornavn, " +
-                        "etternavn, " +
-                        "nav_kontor, " +
-                        "formidlingsgruppekode, " +
-                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
-                        "kvalifiseringsgruppekode, " +
-                        "rettighetsgruppekode, " +
-                        "hovedmaalkode, " +
-                        "sikkerhetstiltak_type_kode, " +
-                        "fr_kode, " +
-                        "sperret_ansatt, " +
-                        "er_doed, " +
-                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
-                        "tidsstempel, " +
-                        "veilederident " +
+                        "fodselsnr " +
                         "FROM " +
                         "oppfolgingsbruker " +
-                        "LEFT JOIN bruker_data " +
-                        "ON " +
-                        "bruker_data.personid = oppfolgingsbruker.person_id " +
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
     }
@@ -272,21 +285,12 @@ public class BrukerRepository {
         return "INSERT INTO AKTOERID_TO_PERSONID VALUES (?,?)";
     }
 
-    String insertBrukerdataSQL() {
-        return "INSERT INTO BRUKER_DATA VALUES(?,?,TO_TIMESTAMP(?," + dateFormat + "),?)";
-    }
-
-    String updateBrukerdataSQL() {
-        return "UPDATE BRUKER_DATA" +
-                "   SET VEILEDERIDENT=?," +
-                "   TILDELT_TIDSPUNKT=TO_TIMESTAMP(?," + dateFormat + ")," +
-                "   PERSONID=?" +
-                "   WHERE AKTOERID=?";
-    }
-
     String retrieveBrukerSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
     }
+
+    String retrieveBrukerdataSQL() {
+        return "SELECT * FROM BRUKER_DATA WHERE PERSONID=?"; }
 
     private boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
@@ -298,4 +302,21 @@ public class BrukerRepository {
 
         return aktivStatus || bruker.get("veileder_id").getValue() != null;
     }
+
+    public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
+        return timestamp != null ? timestamp.toLocalDateTime() : null;
+    }
+
+    private ManedMapping manedmappingOrNull(String string) {
+        return string != null ? ManedMapping.valueOf(string) : null;
+    }
+
+    private YtelseMapping ytelsemappingOrNull(String string) {
+        return string != null ? YtelseMapping.valueOf(string) : null;
+    }
+
+    private KvartalMapping kvartalmappingOrNull(String string) {
+        return string != null ? KvartalMapping.valueOf(string) : null;
+    }
+
 }
