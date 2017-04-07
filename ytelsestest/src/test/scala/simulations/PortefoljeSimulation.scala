@@ -16,7 +16,7 @@ class PortefoljeSimulation extends Simulation {
     private val logger = LoggerFactory.getLogger(PortefoljeSimulation.this.getClass)
     private val brukernavn = csv(System.getProperty("BRUKERE", "brukere_t.csv")).circular
 
-    private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC_ENHET", 1).toInt
+    private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC", 1).toInt
     private val duration = Integer.getInteger("DURATION", 1).toInt
     private val baseUrl = System.getProperty("BASEURL", "https://app-q4.adeo.no")
     private val loginUrl = System.getProperty("LOGINURL", "https://isso-q.adeo.no")
