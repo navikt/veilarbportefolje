@@ -53,28 +53,27 @@ public class SolrUtils {
         }
     }
 
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Comparator<Bruker> erNyComparator) {
-        // TODO Se på om denne kan skrives om litt
-        Comparator<Bruker> comparator = null;
-        Comparator<Bruker> fieldComparator = "etternavn".equals(sortField) ? brukerNavnComparator() : brukerFodelsdatoComparator();
-        boolean hasSortOrder = "ascending".equals(sortOrder) || "descending".equals(sortOrder);
+    private static <S extends Comparable<S>> List<Bruker> sorterBrukerePaaFelt(List<Bruker> brukere, String sortOrder, Function<Bruker, S> sortField) {
+        boolean ascending = "ascending".equals(sortOrder);
 
-        if (erNyComparator != null) {
-            comparator = erNyComparator;
-
-            if (hasSortOrder) {
-                comparator = comparator.thenComparing(setComparatorSortOrder(fieldComparator, sortOrder));
-            }
-        } else {
-            if (hasSortOrder) {
-                comparator = setComparatorSortOrder(fieldComparator, sortOrder);
-            }
+        Comparator<Bruker> fieldComparator = Comparator.comparing(sortField);
+        if (!ascending) {
+            fieldComparator = fieldComparator.reversed();
         }
+        Comparator<Bruker> comparator = brukerErNyComparator().thenComparing(fieldComparator);
 
-        if (comparator != null) {
-            brukere.sort(comparator);
+        brukere.sort(comparator);
+        return brukere;
+    }
+
+    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField) {
+        if ("etternavn".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getEtternavn);
+        } else if ("fodselsnummer".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getFnr);
+        } else if ("utlopsdato".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getUtlopsdato);
         }
-
         return brukere;
     }
 
@@ -98,7 +97,7 @@ public class SolrUtils {
         };
     }
 
-    private static <S> Comparator<S> norskComparator(final Function<S, String> keyExtractor) {
+    private static <S, T> Comparator<S> norskComparator(final Function<S, T> keyExtractor) {
         Locale locale = new Locale("no", "NO");
         Collator collator = Collator.getInstance(locale);
         collator.setStrength(Collator.PRIMARY);
@@ -112,6 +111,10 @@ public class SolrUtils {
 
     private static Comparator<Bruker> brukerFodelsdatoComparator() {
         return norskComparator(Bruker::getFnr);
+    }
+
+    private static Comparator<Bruker> brukerUtlopsdatoComparator() {
+        return norskComparator(Bruker::getUtlopsdato);
     }
 
     public static <T> String orStatement(List<T> filter, Function<T, String> mapper) {

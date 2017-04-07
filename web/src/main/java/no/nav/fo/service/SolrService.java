@@ -90,15 +90,15 @@ public class SolrService {
 
     public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = "enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, sortField, filtervalg, SolrUtils.brukerErNyComparator());
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg);
     }
 
     public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, sortField, filtervalg, null);
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg);
     }
 
-    public List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg, Comparator<Bruker> erNyComparator) {
+    public List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = solrClientSlave.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
@@ -109,7 +109,7 @@ public class SolrService {
         } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
-        return SolrUtils.sortBrukere(brukere, sortOrder, sortField, erNyComparator);
+        return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
