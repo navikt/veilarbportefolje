@@ -56,7 +56,14 @@ public class SolrUtils {
     private static <S extends Comparable<S>> List<Bruker> sorterBrukerePaaFelt(List<Bruker> brukere, String sortOrder, Function<Bruker, S> sortField) {
         boolean ascending = "ascending".equals(sortOrder);
 
-        Comparator<Bruker> fieldComparator = Comparator.comparing(sortField);
+        Comparator<S> allowNullComparator = (o1, o2) -> {
+            if(o1 == null && o2 == null) return 0;
+            if (o1 == null) return -1;
+            if (o2 == null) return 1;
+
+            return o1.compareTo(o2);
+        };
+        Comparator<Bruker> fieldComparator = Comparator.comparing(sortField, allowNullComparator);
         if (!ascending) {
             fieldComparator = fieldComparator.reversed();
         }
@@ -74,6 +81,7 @@ public class SolrUtils {
         } else if ("utlopsdato".equals(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getUtlopsdato);
         }
+        brukere.sort(brukerErNyComparator());
         return brukere;
     }
 
