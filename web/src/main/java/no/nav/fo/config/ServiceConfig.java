@@ -1,6 +1,9 @@
-package no.nav.fo.service;
+package no.nav.fo.config;
 
 import no.nav.fo.database.PersistentOppdatering;
+import no.nav.fo.service.BrukertilgangService;
+import no.nav.fo.service.PepClient;
+import no.nav.fo.service.VirksomhetEnhetService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

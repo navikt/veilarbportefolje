@@ -3,7 +3,7 @@ package no.nav.fo.provider.rest;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientInterface;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class EnhetController {
     SolrService solrService;
 
     @Inject
-    PepClient pepClient;
+    PepClientInterface pepClient;
 
     @POST
     @Path("/{enhet}/portefolje")

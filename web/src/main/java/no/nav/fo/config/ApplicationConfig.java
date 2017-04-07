@@ -3,7 +3,8 @@ package no.nav.fo.config;
 import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.internal.IsAliveServlet;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
-import no.nav.fo.service.ServiceConfig;
+import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientInterface;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,4 +46,7 @@ public class ApplicationConfig {
     public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
     }
+
+    @Bean
+    public PepClientInterface pepClient() { return new PepClient(); }
 }

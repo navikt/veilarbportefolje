@@ -8,16 +8,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import javax.xml.ws.Service;
+import java.time.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.domene.YtelseMapping.DAGPENGER_MED_PERMITTERING;
 import static no.nav.fo.util.SolrUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -283,63 +281,23 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalIkkeSortere() {
-        Bruker bruker1 = new Bruker().setVeilederId("x");
-        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
-        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
-        Bruker bruker4 = new Bruker().setVeilederId("y");
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn", null);
-
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
-        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker4);
-    }
-
-    @Test
     public void skalKunSortereNyeBrukereOverst() {
-        Bruker bruker1 = new Bruker().setVeilederId("x");
+        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abelson");
         Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
         Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
-        Bruker bruker4 = new Bruker().setVeilederId("y");
+        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Abel");
         List<Bruker> brukere = new ArrayList<>();
         brukere.add(bruker1);
         brukere.add(bruker2);
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn", brukerErNyComparator());
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn");
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(2)).isEqualTo(bruker1);
         assertThat(brukereSortert.get(3)).isEqualTo(bruker4);
-    }
-
-    @Test
-    public void skalKunSorterePaaNavn() {
-        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abel");
-        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
-        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
-        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Bro");
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "etternavn", null);
-
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
-        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker2);
     }
 
     @Test
@@ -354,7 +312,7 @@ public class SolrUtilsTest {
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending","etternavn", brukerErNyComparator());
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "etternavn");
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
@@ -374,12 +332,33 @@ public class SolrUtilsTest {
         brukere.add(bruker3);
         brukere.add(bruker4);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "etternavn", brukerErNyComparator());
+        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "etternavn");
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(2)).isEqualTo(bruker4);
         assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
+    }
+
+    @Test
+    public void skalSorterePaaUtlopsdato() {
+        Bruker bruker1 = new Bruker().setUtlopsdato(LocalDateTime.now());
+        Bruker bruker2 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 1, 1, 1, 1));
+        Bruker bruker3 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 2, 1, 1, 1));
+        Bruker bruker4 = new Bruker().setUtlopsdato(LocalDateTime.of(2016, 12, 1, 1, 1));
+
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "utlopsdato");
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker2);
     }
 
     @Test
