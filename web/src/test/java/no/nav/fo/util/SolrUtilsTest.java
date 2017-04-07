@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -337,6 +338,27 @@ public class SolrUtilsTest {
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(2)).isEqualTo(bruker4);
         assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
+    }
+
+    @Test
+    public void skalSorterePaaUtlopsdato() {
+        Bruker bruker1 = new Bruker().setUtlopsdato(LocalDateTime.now());
+        Bruker bruker2 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 1, 1, 1, 1));
+        Bruker bruker3 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 2, 1, 1, 1));
+        Bruker bruker4 = new Bruker().setUtlopsdato(LocalDateTime.of(2016, 12, 1, 1, 1));
+
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "utlopsdato");
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker2);
     }
 
     @Test
