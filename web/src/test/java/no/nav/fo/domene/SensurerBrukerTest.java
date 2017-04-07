@@ -4,11 +4,8 @@ package no.nav.fo.domene;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.util.PortefoljeUtils;
-import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
