@@ -109,14 +109,6 @@ public class SolrUtils {
         return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
-    private static Comparator<Bruker> brukerFodelsdatoComparator() {
-        return norskComparator(Bruker::getFnr);
-    }
-
-    private static Comparator<Bruker> brukerUtlopsdatoComparator() {
-        return norskComparator(Bruker::getUtlopsdato);
-    }
-
     public static <T> String orStatement(List<T> filter, Function<T, String> mapper) {
         if (filter == null || filter.isEmpty()) {
             return "";
