@@ -4,9 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 
-public enum ManedMapping {
+public enum ManedMapping implements Mapping {
     MND1, MND2, MND3, MND4,
     MND5, MND6, MND7, MND8,
     MND9, MND10, MND11, MND12;

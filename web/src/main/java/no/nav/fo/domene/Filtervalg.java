@@ -1,8 +1,13 @@
 package no.nav.fo.domene;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Data()
+@Accessors(chain = true)
 public class Filtervalg {
     public boolean nyeBrukere;
     public boolean inaktiveBrukere;
