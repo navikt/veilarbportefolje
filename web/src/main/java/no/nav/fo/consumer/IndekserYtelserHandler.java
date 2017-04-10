@@ -7,6 +7,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.FantIngenYtelseMappingException;
+import no.nav.fo.util.MetricsUtils;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import org.slf4j.Logger;
@@ -40,6 +41,11 @@ public class IndekserYtelserHandler {
     private BrukerRepository brukerRepository;
 
     public synchronized void indekser(LoependeYtelser ytelser) {
+        MetricsUtils.timed("GR199.slettytelser", () -> {
+            brukerRepository.slettYtelsesdata();
+            return null;
+        });
+
         batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtaks) -> {
             LocalDateTime now = now();
 

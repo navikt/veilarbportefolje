@@ -6,6 +6,7 @@ import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.KvartalMapping;
 import no.nav.fo.domene.ManedMapping;
 import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.util.SqlUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
@@ -150,6 +151,16 @@ public class BrukerRepository {
         } catch (DuplicateKeyException e) {
             LOG.info("Aktoerid {} personId {} mapping finnes i databasen", aktoerId, personId);
         }
+    }
+
+    public void slettYtelsesdata() {
+        SqlUtils.UpdateQuery.update(db, "bruker_data")
+                .set("ytelse", null)
+                .set("utlopsdato", null)
+                .set("utlopsdatoFasett", null)
+                .set("aapMaxtid", null)
+                .set("aapMaxtidFasett", null)
+                .execute();
     }
 
     String retrieveBrukereSQL() {
@@ -318,5 +329,6 @@ public class BrukerRepository {
     private KvartalMapping kvartalmappingOrNull(String string) {
         return string != null ? KvartalMapping.valueOf(string) : null;
     }
+
 
 }

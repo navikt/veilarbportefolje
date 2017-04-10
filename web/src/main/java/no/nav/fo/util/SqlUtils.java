@@ -76,27 +76,33 @@ public class SqlUtils {
 
         public void execute() {
             assert tableName != null;
-            assert whereParam != null;
             assert !setParams.isEmpty();
 
-            String sql = new StringBuilder()
+            StringBuilder sqlBuilder = new StringBuilder()
                     .append("update ").append(tableName)
-                    .append(createSetStatement())
-                    .append(" where ").append(whereParam).append(" = ?")
-                    .toString();
+                    .append(createSetStatement());
+
+            if (this.whereParam != null) {
+                sqlBuilder.append(" where ").append(whereParam).append(" = ?");
+            }
+
+            String sql = sqlBuilder.toString();
 
             db.update(sql, createSqlArgumentArray());
         }
 
         private Object[] createSqlArgumentArray() {
-            Object[] arguments = new Object[setParams.size() + 1];
+            int argumentsSize = whereValue != null ? setParams.size() + 1 : setParams.size();
+            Object[] arguments = new Object[argumentsSize];
 
             int index = 0;
             for (Object value : setParams.values()) {
                 arguments[index] = value;
                 index = index + 1;
             }
-            arguments[index] = whereValue;
+            if (whereValue != null) {
+                arguments[index] = whereValue;
+            }
 
             return arguments;
         }
