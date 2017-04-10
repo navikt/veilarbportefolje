@@ -453,4 +453,28 @@ public class SolrUtilsTest {
         assertThat(SolrUtils.servicegruppeFilter(Servicegruppe.BKART)).isEqualTo(prefix + Servicegruppe.BKART);
     }
 
+    @Test
+    public void skalSortereMedNorskComparator() throws Exception {
+        Bruker bruker1 = new Bruker().setEtternavn("Aabelson");
+        Bruker bruker2 = new Bruker().setEtternavn("Nilsen");
+        Bruker bruker3 = new Bruker().setEtternavn("Johnsen");
+        Bruker bruker4 = new Bruker().setEtternavn("Abel");
+        Bruker bruker5 = new Bruker().setEtternavn("Øran");
+        Bruker bruker6 = new Bruker().setEtternavn("Åran");
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+        brukere.add(bruker5);
+        brukere.add(bruker6);
+
+        List<Bruker> sortert = SolrUtils.sortBrukere(brukere, "ascending", "etternavn");
+
+        assertThat(sortert.get(0).getEtternavn()).isEqualTo("Abel");
+        assertThat(sortert.get(3).getEtternavn()).isEqualTo("Øran");
+        assertThat(sortert.get(4).getEtternavn()).isEqualTo("Aabelson");
+        assertThat(sortert.get(5).getEtternavn()).isEqualTo("Åran");
+
+    }
 }

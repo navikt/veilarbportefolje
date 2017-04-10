@@ -17,6 +17,12 @@ import static java.util.stream.Collectors.toList;
 
 public class SolrUtils {
 
+    private static Locale locale = new Locale("no", "NO");
+    private static Collator collator = Collator.getInstance(locale);
+    static {
+        collator.setStrength(Collator.PRIMARY);
+    }
+
     public static FacetResults mapFacetResults(FacetField facetField) {
         return new FacetResults()
                 .setFacetResults(
@@ -61,12 +67,14 @@ public class SolrUtils {
             if (o1 == null) return -1;
             if (o2 == null) return 1;
 
-            return o1.compareTo(o2);
+            return collator.compare(o1, o2);
         };
+
         Comparator<Bruker> fieldComparator = Comparator.comparing(sortField, allowNullComparator);
         if (!ascending) {
             fieldComparator = fieldComparator.reversed();
         }
+
         Comparator<Bruker> comparator = brukerErNyComparator().thenComparing(fieldComparator);
 
         brukere.sort(comparator);
@@ -106,10 +114,6 @@ public class SolrUtils {
     }
 
     private static <S, T> Comparator<S> norskComparator(final Function<S, T> keyExtractor) {
-        Locale locale = new Locale("no", "NO");
-        Collator collator = Collator.getInstance(locale);
-        collator.setStrength(Collator.PRIMARY);
-
         return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
     }
 
