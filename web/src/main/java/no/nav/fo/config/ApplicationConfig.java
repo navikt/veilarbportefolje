@@ -12,6 +12,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.jta.JtaTransactionManager;
 
 @EnableScheduling
 @EnableAspectJAutoProxy
@@ -31,6 +33,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         CacheConfig.class
 })
 public class ApplicationConfig {
+
+    @Bean(name = "transactionManager")
+    public PlatformTransactionManager transactionManager() {
+        return new JtaTransactionManager();
+    }
 
     @Bean
     public IsAliveServlet isAliveServlet() {
