@@ -19,10 +19,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Import({
         OppdaterBrukerdataListener.class,
         DatabaseConfig.class,
+        MessageQueueConfig.class,
         VirksomhetEnhetEndpointConfigMock.class,
         ServiceConfig.class,
         SolrConfig.class,
-        MQMockConfig.class,
         AktoerEndpointConfig.class,
         ArenafilConfig.class,
         MetricsConfig.class,
@@ -47,5 +47,7 @@ public class LocalApplicationConfig {
     }
 
     @Bean
-    public PepClientInterface pepClient() { return new PepClientMock(); }
+    public PepClientInterface pepClient() {
+        return new PepClientMock();
+    }
 }

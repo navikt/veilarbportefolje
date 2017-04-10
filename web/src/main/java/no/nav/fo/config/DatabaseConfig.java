@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiTemplate;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 
@@ -20,6 +21,11 @@ public class DatabaseConfig {
     @Bean
     public DataSource oracleDataSource() throws ClassNotFoundException, NamingException {
         return new JndiTemplate().lookup("java:/jboss/datasources/veilarbportefoljeDB", DataSource.class);
+    }
+
+    @Bean
+    public DataSourceTransactionManager transactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
     }
 
     @Bean

@@ -1,11 +1,9 @@
 package no.nav.fo;
 
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
-import no.nav.brukerdialog.security.context.JettySubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.apache.geronimo.components.jaspi.AuthConfigFactoryImpl;
-
 
 import javax.security.auth.message.config.AuthConfigFactory;
 import java.security.Security;
@@ -32,7 +30,7 @@ public class StartJettyVeilArbPortefolje {
 
 //        final BrokerService broker = new BrokerService();
 //        broker.getSystemUsage().getTempUsage().setLimit(100 * 1024 * 1024 * 100);
-//        broker.getSystemUsage().getStoreUsage().setLimit(100 * 1024 * 1024 N* 100);
+//        broker.getSystemUsage().getStoreUsage().setLimit(100 * 1024 * 1024 * 100);
 //        broker.addConnector("tcp://localhost:61616");
 //        broker.start();
 

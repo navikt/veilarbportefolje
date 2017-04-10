@@ -40,6 +40,7 @@
         <common-cxf.version>3.1.34</common-cxf.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
+        <javax.transaction.version>1.1</javax.transaction.version>
         <javax.jms.version>1.1</javax.jms.version>
         <oidc-security.version>2.1.20</oidc-security.version>
         <common-abac.version>1.0.32</common-abac.version>
@@ -483,6 +484,18 @@
                 <artifactId>javax.inject</artifactId>
                 <version>1</version>
                 <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.transaction</groupId>
+                <artifactId>jta</artifactId>
+                <version>${javax.transaction.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.transaction</groupId>
+                <artifactId>transaction-api</artifactId>
+                <version>${javax.transaction.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
