@@ -4,9 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 
-public enum KvartalMapping {
+public enum KvartalMapping implements Mapping {
     KV1, KV2, KV3, KV4,
     KV5, KV6, KV7, KV8,
     KV9, KV10, KV11, KV12,

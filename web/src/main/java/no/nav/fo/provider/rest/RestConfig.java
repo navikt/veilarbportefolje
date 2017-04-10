@@ -13,7 +13,8 @@ public class RestConfig extends ResourceConfig {
                 JSLoggerController.class,
                 EnhetController.class,
                 VeilederController.class,
-                SolrController.class
+                SolrController.class,
+                DiagramController.class
         );
     }
 }
