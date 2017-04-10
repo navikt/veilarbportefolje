@@ -67,7 +67,10 @@ public class SolrUtils {
             if (o1 == null) return -1;
             if (o2 == null) return 1;
 
-            return collator.compare(o1, o2);
+            if (o1 instanceof String && o2 instanceof String) {
+                return collator.compare(o1, o2);
+            }
+            return o1.compareTo(o2);
         };
 
         Comparator<Bruker> fieldComparator = Comparator.comparing(sortField, allowNullComparator);
