@@ -9,6 +9,7 @@ import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClientInterface;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
+import no.nav.fo.util.TokenUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -50,13 +51,15 @@ public class VeilederController {
 
         try {
             String ident = SubjectHandler.getSubjectHandler().getUid();
+            String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
+
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
 
             if (brukerHarTilgangTilEnhet) {
 
                 List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, ident, pepClient);
+                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,token, pepClient);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 

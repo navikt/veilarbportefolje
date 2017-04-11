@@ -16,10 +16,10 @@ public class PepClient implements PepClientInterface {
     private Pep pep;
 
     @Cacheable("brukertilgangCache")
-    public boolean isSubjectAuthorizedToSeeKode7(String ident) {
+    public boolean isSubjectAuthorizedToSeeKode7(String token) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.isSubjectAuthorizedToSeeKode7(ident, "veilarb");
+            callAllowed = pep.isSubjectAuthorizedToSeeKode7(token, "veilarb");
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
@@ -27,10 +27,10 @@ public class PepClient implements PepClientInterface {
     }
 
     @Cacheable("brukertilgangCache")
-    public boolean isSubjectAuthorizedToSeeKode6(String ident) {
+    public boolean isSubjectAuthorizedToSeeKode6(String token) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.isSubjectAuthorizedToSeeKode6(ident, "veilarb");
+            callAllowed = pep.isSubjectAuthorizedToSeeKode6(token, "veilarb");
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
@@ -38,10 +38,10 @@ public class PepClient implements PepClientInterface {
     }
 
     @Cacheable("brukertilgangCache")
-    public boolean isSubjectAuthorizedToSeeEgenAnsatt(String ident) {
+    public boolean isSubjectAuthorizedToSeeEgenAnsatt(String token) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.isSubjectAuthorizedToSeeEgenAnsatt(ident, "veilarb");
+            callAllowed = pep.isSubjectAuthorizedToSeeEgenAnsatt(token, "veilarb");
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
