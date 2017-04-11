@@ -25,26 +25,26 @@ public class PortefoljeUtils {
         return brukere.stream().skip(fra).limit(antall).collect(toList());
     }
 
-    public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String veilederIdent, PepClientInterface pepClient) {
+    public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String token, PepClientInterface pepClient) {
         return brukere.stream()
-                .map( bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent, pepClient))
+                .map( bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, token, pepClient))
                 .collect(toList());
     }
 
-    private static Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent, PepClientInterface pepClient) {
+    private static Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String token, PepClientInterface pepClient) {
         if(!bruker.erKonfidensiell()) {
             return bruker;
         }
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-        if("6".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode6(veilederIdent)) {
+        if("6".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode6(token)) {
             return fjernKonfidensiellInfo(bruker);
         }
-        if("7".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode7(veilederIdent)) {
+        if("7".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode7(token)) {
             return fjernKonfidensiellInfo(bruker);
         }
-        if(bruker.isEgenAnsatt() && !pepClient.isSubjectAuthorizedToSeeEgenAnsatt(veilederIdent)) {
+        if(bruker.isEgenAnsatt() && !pepClient.isSubjectAuthorizedToSeeEgenAnsatt(token)) {
             return fjernKonfidensiellInfo(bruker);
         }
         return bruker;
