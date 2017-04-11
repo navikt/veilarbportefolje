@@ -68,10 +68,10 @@ public class PersistentOppdatering {
     }
 
     private Brukerdata hentBruker(String personid) {
-        List<Brukerdata> brukerdatas = brukerRepository.retrieveBrukerdata(asList(personid));
-        if (brukerdatas.isEmpty()) {
+        List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(asList(personid));
+        if (brukerdata.isEmpty()) {
             return new Brukerdata().setPersonid(personid);
         }
-        return brukerdatas.get(0);
+        return brukerdata.get(0);
     }
 }

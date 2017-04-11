@@ -2,7 +2,10 @@ package no.nav.fo.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.fo.util.SqlUtils;
+import no.nav.fo.util.sql.InsertQuery;
+import no.nav.fo.util.sql.SqlUtils;
+import no.nav.fo.util.sql.UpdateBatchQuery;
+import no.nav.fo.util.sql.UpdateQuery;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
@@ -22,8 +25,8 @@ public class Brukerdata {
     private LocalDateTime aapMaxtid;
     private KvartalMapping aapMaxtidFasett;
 
-    public SqlUtils.UpdateQuery toUpdateQuery(JdbcTemplate db) {
-        return SqlUtils.UpdateQuery.update(db, "bruker_data")
+    public UpdateQuery toUpdateQuery(JdbcTemplate db) {
+        return SqlUtils.update(db, "bruker_data")
                 .set("VEILEDERIDENT", veileder)
                 .set("TILDELT_TIDSPUNKT", toTimestamp(tildeltTidspunkt))
                 .set("AKTOERID", aktoerid)
@@ -35,8 +38,8 @@ public class Brukerdata {
                 .whereEquals("PERSONID", personid);
     }
 
-    public SqlUtils.InsertQuery toInsertQuery(JdbcTemplate db) {
-        return SqlUtils.InsertQuery.insert(db, "bruker_data")
+    public InsertQuery toInsertQuery(JdbcTemplate db) {
+        return SqlUtils.insert(db, "bruker_data")
                 .value("VEILEDERIDENT", veileder)
                 .value("TILDELT_TIDSPUNKT", toTimestamp(tildeltTidspunkt))
                 .value("AKTOERID", aktoerid)
@@ -51,7 +54,7 @@ public class Brukerdata {
 
 
     public static int[] batchUpdate(JdbcTemplate db, List<Brukerdata> data) {
-        SqlUtils.UpdateBatchQuery<Brukerdata> updateQuery = new SqlUtils.UpdateBatchQuery<>(db, "bruker_data");
+        UpdateBatchQuery<Brukerdata> updateQuery = new UpdateBatchQuery<>(db, "bruker_data");
 
         return updateQuery
                 .add("VEILEDERIDENT", Brukerdata::getVeileder, String.class)

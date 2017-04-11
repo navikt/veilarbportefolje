@@ -47,13 +47,13 @@ public class IndekserYtelserHandler {
             return null;
         });
 
-        batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtaks) -> {
+        batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtakListe) -> {
             LocalDateTime now = now();
 
-            Map<String, Optional<String>> brukererIDB = brukererIDB(vedtaks);
+            Map<String, Optional<String>> brukererIDB = brukererIDB(vedtakListe);
 
             Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleOppdateringer = timed("GR199.lagoppdatering", () -> {
-                        return vedtaks
+                        return vedtakListe
                                 .stream()
                                 .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((personId) -> Tuple.of(personId, vedtak)))
                                 .filter(Optional::isPresent)
