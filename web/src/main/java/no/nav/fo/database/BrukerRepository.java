@@ -41,8 +41,6 @@ public class BrukerRepository {
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    static final private String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
-
     public List<SolrInputDocument> retrieveAlleBrukere() {
         List<SolrInputDocument> brukere = new ArrayList<>();
         db.setFetchSize(10000);
