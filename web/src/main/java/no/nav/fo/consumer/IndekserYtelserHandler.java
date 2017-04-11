@@ -41,6 +41,7 @@ public class IndekserYtelserHandler {
     private BrukerRepository brukerRepository;
 
     public synchronized void indekser(LoependeYtelser ytelser) {
+        logger.info("Sletter ytelsesdata fra DB");
         MetricsUtils.timed("GR199.slettytelser", () -> {
             brukerRepository.slettYtelsesdata();
             return null;
@@ -51,31 +52,31 @@ public class IndekserYtelserHandler {
 
             Map<String, Optional<String>> brukererIDB = brukererIDB(vedtaks);
 
-            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleDokumenter = timed("GR199.lagsolrdocument", () -> {
+            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleOppdateringer = timed("GR199.lagoppdatering", () -> {
                         return vedtaks
                                 .stream()
                                 .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((personId) -> Tuple.of(personId, vedtak)))
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
-                                .map(this.lagSolrDocument(now))
+                                .map(this.lagBrukeroppdatering(now))
                                 .collect(partitioningBy(Try::isSuccess));
                     }
             );
 
-            alleDokumenter
+            alleOppdateringer
                     .get(false)
-                    .forEach((e) -> logger.error("Feil ved generering av solr-dokument: ", e.getCause()));
+                    .forEach((e) -> logger.error("Feil ved generering av brukeroppdatering: ", e.getCause()));
 
-            List<BrukerOppdatering> dokumenter = alleDokumenter
+            List<BrukerOppdatering> dokumenter = alleOppdateringer
                     .get(true)
                     .stream()
                     .map(Try::get)
                     .collect(toList());
 
-            logger.info("Solr-dokumenter laget. {} vellykkede, {} feilet", alleDokumenter.get(true).size(), alleDokumenter.get(false).size());
-            timed("GR199.addDocuments", () -> { persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter); return null; });
+            logger.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
+            timed("GR199.lagreOppdateringer", () -> { persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter); return null; });
         });
-        logger.info("Indeksering av ytelser ferdig!");
+        logger.info("Lagring av ytelser ferdig!");
     }
 
     private Map<String, Optional<String>> brukererIDB(Collection<LoependeVedtak> vedtaks) {
@@ -89,7 +90,7 @@ public class IndekserYtelserHandler {
         return timed("GR199.brukersjekk", personIdSupplier);
     }
 
-    private Function<Tuple2<String, LoependeVedtak>, Try<BrukerinformasjonFraFil>> lagSolrDocument(LocalDateTime now) {
+    private Function<Tuple2<String, LoependeVedtak>, Try<BrukerinformasjonFraFil>> lagBrukeroppdatering(LocalDateTime now) {
         return (Tuple2<String, LoependeVedtak> loependeVedtak) -> Try.of(() -> {
             String personId = loependeVedtak._1;
             LoependeVedtak vedtak = loependeVedtak._2;

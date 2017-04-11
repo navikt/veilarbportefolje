@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Accessors(chain = true)
@@ -48,8 +49,28 @@ public class Brukerdata {
 
     }
 
-    private Timestamp toTimestamp(LocalDateTime localDateTime) {
-        return localDateTime != null ? Timestamp.valueOf(localDateTime) : null;
+
+    public static int[] batchUpdate(JdbcTemplate db, List<Brukerdata> data) {
+        SqlUtils.UpdateBatchQuery<Brukerdata> updateQuery = new SqlUtils.UpdateBatchQuery<>(db, "bruker_data");
+
+        return updateQuery
+                .add("VEILEDERIDENT", Brukerdata::getVeileder, String.class)
+                .add("TILDELT_TIDSPUNKT", (bruker) -> toTimestamp(bruker.tildeltTidspunkt), Timestamp.class)
+                .add("AKTOERID", Brukerdata::getAktoerid, String.class)
+                .add("YTELSE", (bruker) -> safeToString(bruker.ytelse), String.class)
+                .add("UTLOPSDATO", (bruker) -> toTimestamp(bruker.utlopsdato), Timestamp.class)
+                .add("UTLOPSDATOFASETT", (bruker) -> safeToString(bruker.utlopsdatoFasett), String.class)
+                .add("AAPMAXTID", (bruker) -> toTimestamp(bruker.aapMaxtid), Timestamp.class)
+                .add("AAPMAXTIDFASETT", (bruker) -> safeToString(bruker.aapMaxtidFasett), String.class)
+                .addWhereClause("PERSONID", (bruker) -> bruker.personid)
+                .execute(data);
     }
 
+    private static Object safeToString(Object o) {
+        return o != null ? o.toString() : null;
+    }
+
+    private static Timestamp toTimestamp(LocalDateTime localDateTime) {
+        return localDateTime != null ? Timestamp.valueOf(localDateTime) : null;
+    }
 }
