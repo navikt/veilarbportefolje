@@ -109,9 +109,9 @@ public class SqlUtils {
 
         static void setParam(PreparedStatement ps, int i, Class type, Object value) throws SQLException {
             if (String.class == type) {
-                ps.setString(i, ((String) value));
+                ps.setString(i, (String) value);
             } else if (Timestamp.class == type) {
-                ps.setTimestamp(i, ((Timestamp) value));
+                ps.setTimestamp(i, (Timestamp) value);
             }
         }
 
