@@ -7,6 +7,9 @@ import javax.security.auth.Subject;
 public class TokenUtils {
 
     public static String getTokenBody(Subject subject){
+        if(subject.getPublicCredentials().isEmpty()) {
+            return null;
+        }
         OidcCredential credential = (OidcCredential) subject
             .getPublicCredentials()
             .stream()
