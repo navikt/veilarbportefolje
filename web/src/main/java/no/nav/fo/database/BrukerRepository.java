@@ -6,6 +6,7 @@ import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.KvartalMapping;
 import no.nav.fo.domene.ManedMapping;
 import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.util.sql.SqlUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
@@ -21,7 +22,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -37,8 +40,6 @@ public class BrukerRepository {
 
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    static final private String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
 
     public List<SolrInputDocument> retrieveAlleBrukere() {
         List<SolrInputDocument> brukere = new ArrayList<>();
@@ -62,22 +63,21 @@ public class BrukerRepository {
         return db.queryForList(retrieveBrukerMedBrukerdataSQL(), personId);
     }
 
-    public Brukerdata retrieveBrukerdata(String personId) {
-        List<Map<String, Object>> bruker = db.queryForList(retrieveBrukerdataSQL(), personId);
-        if(bruker.isEmpty()) {
-            return new Brukerdata().setPersonid(personId);
-        }
-
-        return new Brukerdata()
-                .setAktoerid((String) bruker.get(0).get("AKTOERID"))
-                .setVeileder((String) bruker.get(0).get("VEILEDERIDENT"))
-                .setPersonid(personId)
-                .setTildeltTidspunkt(toLocalDateTime((Timestamp) bruker.get(0).get("TILDELT_TIDSPUNKT")))
-                .setUtlopsdato(toLocalDateTime((Timestamp) bruker.get(0).get("UTLOPSDATO")))
-                .setYtelse(ytelsemappingOrNull((String) bruker.get(0).get("YTELSE")))
-                .setAapMaxtid(toLocalDateTime((Timestamp) bruker.get(0).get("AAPMAXTID")))
-                .setAapMaxtidFasett(kvartalmappingOrNull((String) bruker.get(0).get("AAPMAXTIDFASETT")))
-                .setUtlopsdatoFasett(manedmappingOrNull((String) bruker.get(0).get("UTLOPSDATOFASETT")));
+    public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("fnrs", personIds);
+        return namedParameterJdbcTemplate.queryForList(retrieveBrukerdataSQL(), params)
+                .stream()
+                .map(data -> new Brukerdata()
+                        .setAktoerid((String) data.get("AKTOERID"))
+                        .setVeileder((String) data.get("VEILEDERIDENT"))
+                        .setPersonid((String) data.get("PERSONID"))
+                        .setTildeltTidspunkt(toLocalDateTime((Timestamp) data.get("TILDELT_TIDSPUNKT")))
+                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
+                        .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
+                        .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
+                        .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
+                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))).collect(toList());
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
@@ -134,14 +134,25 @@ public class BrukerRepository {
         return (T t) -> !predicate.test(t);
     }
 
-    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata) {
-        brukerdata.forEach((data) -> {
-            try {
-                data.toInsertQuery(db).execute();
-            } catch (DuplicateKeyException e) {
-                data.toUpdateQuery(db).execute();
-            }
-        });
+    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
+        Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
+                .stream()
+                .collect(groupingBy((data) -> finnesIDb.contains(data.getPersonid())));
+
+
+        Brukerdata.batchUpdate(db, eksisterendeBrukere.getOrDefault(true, emptyList()));
+
+        eksisterendeBrukere
+                .getOrDefault(false, emptyList())
+                .forEach(this::upsertBrukerdata);
+    }
+
+    void upsertBrukerdata(Brukerdata brukerdata) {
+        try {
+            brukerdata.toInsertQuery(db).execute();
+        } catch (DuplicateKeyException e) {
+            brukerdata.toUpdateQuery(db).execute();
+        }
     }
 
     public void insertAktoeridToPersonidMapping(String aktoerId, String personId) {
@@ -150,6 +161,16 @@ public class BrukerRepository {
         } catch (DuplicateKeyException e) {
             LOG.info("Aktoerid {} personId {} mapping finnes i databasen", aktoerId, personId);
         }
+    }
+
+    public void slettYtelsesdata() {
+        SqlUtils.update(db, "bruker_data")
+                .set("ytelse", null)
+                .set("utlopsdato", null)
+                .set("utlopsdatoFasett", null)
+                .set("aapMaxtid", null)
+                .set("aapMaxtidFasett", null)
+                .execute();
     }
 
     String retrieveBrukereSQL() {
@@ -290,7 +311,8 @@ public class BrukerRepository {
     }
 
     String retrieveBrukerdataSQL() {
-        return "SELECT * FROM BRUKER_DATA WHERE PERSONID=?"; }
+        return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
+    }
 
     private boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
@@ -318,5 +340,6 @@ public class BrukerRepository {
     private KvartalMapping kvartalmappingOrNull(String string) {
         return string != null ? KvartalMapping.valueOf(string) : null;
     }
+
 
 }

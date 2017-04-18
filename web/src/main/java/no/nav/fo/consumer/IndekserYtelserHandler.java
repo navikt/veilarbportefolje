@@ -7,6 +7,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.FantIngenYtelseMappingException;
+import no.nav.fo.util.MetricsUtils;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import org.slf4j.Logger;
@@ -40,36 +41,42 @@ public class IndekserYtelserHandler {
     private BrukerRepository brukerRepository;
 
     public synchronized void indekser(LoependeYtelser ytelser) {
-        batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtaks) -> {
+        logger.info("Sletter ytelsesdata fra DB");
+        MetricsUtils.timed("GR199.slettytelser", () -> {
+            brukerRepository.slettYtelsesdata();
+            return null;
+        });
+
+        batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtakListe) -> {
             LocalDateTime now = now();
 
-            Map<String, Optional<String>> brukererIDB = brukererIDB(vedtaks);
+            Map<String, Optional<String>> brukererIDB = brukererIDB(vedtakListe);
 
-            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleDokumenter = timed("GR199.lagsolrdocument", () -> {
-                        return vedtaks
+            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleOppdateringer = timed("GR199.lagoppdatering", () -> {
+                        return vedtakListe
                                 .stream()
                                 .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((personId) -> Tuple.of(personId, vedtak)))
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
-                                .map(this.lagSolrDocument(now))
+                                .map(this.lagBrukeroppdatering(now))
                                 .collect(partitioningBy(Try::isSuccess));
                     }
             );
 
-            alleDokumenter
+            alleOppdateringer
                     .get(false)
-                    .forEach((e) -> logger.error("Feil ved generering av solr-dokument: ", e.getCause()));
+                    .forEach((e) -> logger.error("Feil ved generering av brukeroppdatering: ", e.getCause()));
 
-            List<BrukerOppdatering> dokumenter = alleDokumenter
+            List<BrukerOppdatering> dokumenter = alleOppdateringer
                     .get(true)
                     .stream()
                     .map(Try::get)
                     .collect(toList());
 
-            logger.info("Solr-dokumenter laget. {} vellykkede, {} feilet", alleDokumenter.get(true).size(), alleDokumenter.get(false).size());
-            timed("GR199.addDocuments", () -> { persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter); return null; });
+            logger.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
+            timed("GR199.lagreOppdateringer", () -> { persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter); return null; });
         });
-        logger.info("Indeksering av ytelser ferdig!");
+        logger.info("Lagring av ytelser ferdig!");
     }
 
     private Map<String, Optional<String>> brukererIDB(Collection<LoependeVedtak> vedtaks) {
@@ -83,7 +90,7 @@ public class IndekserYtelserHandler {
         return timed("GR199.brukersjekk", personIdSupplier);
     }
 
-    private Function<Tuple2<String, LoependeVedtak>, Try<BrukerinformasjonFraFil>> lagSolrDocument(LocalDateTime now) {
+    private Function<Tuple2<String, LoependeVedtak>, Try<BrukerinformasjonFraFil>> lagBrukeroppdatering(LocalDateTime now) {
         return (Tuple2<String, LoependeVedtak> loependeVedtak) -> Try.of(() -> {
             String personId = loependeVedtak._1;
             LoependeVedtak vedtak = loependeVedtak._2;

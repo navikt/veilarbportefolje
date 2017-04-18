@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -129,14 +131,17 @@ public class BrukerRepositoryTest {
         Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
 
-        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1));
-        Brukerdata brukerdataAfterInsert = brukerRepository.retrieveBrukerdata("personid");
+        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
+        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
+        Brukerdata brukerdataAfterInsert = brukerRepository.retrieveBrukerdata(asList("personid")).get(0);
         assertThatBrukerdataIsEqual(brukerdata1, brukerdataAfterInsert);
-        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata2));
-        Brukerdata brukerdataAfterUpdate = brukerRepository.retrieveBrukerdata("personid");
+        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata2), emptyList());
+        Brukerdata brukerdataAfterUpdate = brukerRepository.retrieveBrukerdata(asList("personid")).get(0);
         assertThatBrukerdataIsEqual(brukerdata2, brukerdataAfterUpdate);
 
     }
+
+
 
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
@@ -144,9 +149,9 @@ public class BrukerRepositoryTest {
         Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
 
-        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata));
+        brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
 
-        Brukerdata brukerdataFromDb = brukerRepository.retrieveBrukerdata("personid");
+        Brukerdata brukerdataFromDb = brukerRepository.retrieveBrukerdata(asList("personid")).get(0);
 
         assertThatBrukerdataIsEqual(brukerdata, brukerdataFromDb);
 

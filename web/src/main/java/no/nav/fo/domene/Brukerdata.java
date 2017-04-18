@@ -2,11 +2,15 @@ package no.nav.fo.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.fo.util.SqlUtils;
+import no.nav.fo.util.sql.InsertQuery;
+import no.nav.fo.util.sql.SqlUtils;
+import no.nav.fo.util.sql.UpdateBatchQuery;
+import no.nav.fo.util.sql.UpdateQuery;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Accessors(chain = true)
@@ -21,8 +25,8 @@ public class Brukerdata {
     private LocalDateTime aapMaxtid;
     private KvartalMapping aapMaxtidFasett;
 
-    public SqlUtils.UpdateQuery toUpdateQuery(JdbcTemplate db) {
-        return SqlUtils.UpdateQuery.update(db, "bruker_data")
+    public UpdateQuery toUpdateQuery(JdbcTemplate db) {
+        return SqlUtils.update(db, "bruker_data")
                 .set("VEILEDERIDENT", veileder)
                 .set("TILDELT_TIDSPUNKT", toTimestamp(tildeltTidspunkt))
                 .set("AKTOERID", aktoerid)
@@ -34,8 +38,8 @@ public class Brukerdata {
                 .whereEquals("PERSONID", personid);
     }
 
-    public SqlUtils.InsertQuery toInsertQuery(JdbcTemplate db) {
-        return SqlUtils.InsertQuery.insert(db, "bruker_data")
+    public InsertQuery toInsertQuery(JdbcTemplate db) {
+        return SqlUtils.insert(db, "bruker_data")
                 .value("VEILEDERIDENT", veileder)
                 .value("TILDELT_TIDSPUNKT", toTimestamp(tildeltTidspunkt))
                 .value("AKTOERID", aktoerid)
@@ -48,8 +52,28 @@ public class Brukerdata {
 
     }
 
-    private Timestamp toTimestamp(LocalDateTime localDateTime) {
-        return localDateTime != null ? Timestamp.valueOf(localDateTime) : null;
+
+    public static int[] batchUpdate(JdbcTemplate db, List<Brukerdata> data) {
+        UpdateBatchQuery<Brukerdata> updateQuery = new UpdateBatchQuery<>(db, "bruker_data");
+
+        return updateQuery
+                .add("VEILEDERIDENT", Brukerdata::getVeileder, String.class)
+                .add("TILDELT_TIDSPUNKT", (bruker) -> toTimestamp(bruker.tildeltTidspunkt), Timestamp.class)
+                .add("AKTOERID", Brukerdata::getAktoerid, String.class)
+                .add("YTELSE", (bruker) -> safeToString(bruker.ytelse), String.class)
+                .add("UTLOPSDATO", (bruker) -> toTimestamp(bruker.utlopsdato), Timestamp.class)
+                .add("UTLOPSDATOFASETT", (bruker) -> safeToString(bruker.utlopsdatoFasett), String.class)
+                .add("AAPMAXTID", (bruker) -> toTimestamp(bruker.aapMaxtid), Timestamp.class)
+                .add("AAPMAXTIDFASETT", (bruker) -> safeToString(bruker.aapMaxtidFasett), String.class)
+                .addWhereClause("PERSONID", (bruker) -> bruker.personid)
+                .execute(data);
     }
 
+    private static Object safeToString(Object o) {
+        return o != null ? o.toString() : null;
+    }
+
+    private static Timestamp toTimestamp(LocalDateTime localDateTime) {
+        return localDateTime != null ? Timestamp.valueOf(localDateTime) : null;
+    }
 }

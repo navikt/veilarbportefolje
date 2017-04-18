@@ -2,15 +2,23 @@ package no.nav.fo.service;
 
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.Bruker;
+import no.nav.fo.domene.FacetResults;
+import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.StatusTall;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
-import org.apache.solr.client.solrj.*;
-import org.apache.solr.client.solrj.response.*;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +27,14 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -32,6 +44,9 @@ public class SolrService {
 
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
+
+    @Inject
+    private JdbcTemplate db;
 
     @Inject
     private SolrClient solrClientSlave;
@@ -75,6 +90,9 @@ public class SolrService {
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);
 
+        logger.info("Syncer materialiserte views");
+        db.execute(lagSyncSql());
+
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
         if (dokumenter.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
@@ -86,6 +104,23 @@ public class SolrService {
         commit();
 
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
+    }
+
+    private String lagSyncSql() {
+        Stream<String> views = Stream.of(
+                "OPPFOLGINGSBRUKER",
+                "SIKKERHETSTILTAK_TYPE",
+                "HOVEDMAAL",
+                "RETTIGHETSGRUPPETYPE",
+                "KVALIFISERINGSGRUPPETYPE",
+                "FORMIDLINGSGRUPPETYPE"
+        );
+
+        String viewsSql = views
+                .map((view) -> String.format("DBMS_MVIEW.REFRESH('%s', 'F');", view))
+                .collect(joining(" "));
+
+        return String.format("BEGIN %s END;", viewsSql);
     }
 
     public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {

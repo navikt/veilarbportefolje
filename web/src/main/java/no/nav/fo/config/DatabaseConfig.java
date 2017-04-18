@@ -1,15 +1,14 @@
 package no.nav.fo.config;
 
 import no.nav.fo.database.BrukerRepository;
+import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiTemplate;
-import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -24,11 +23,6 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public DataSourceTransactionManager transactionManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) throws NamingException, SQLException, IOException {
         return new JdbcTemplate(dataSource);
     }
@@ -39,7 +33,9 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public BrukerRepository brukerRepository() { return new BrukerRepository(); }
+    public BrukerRepository brukerRepository() {
+        return new BrukerRepository();
+    }
 
     @Bean
     public Pingable dbPinger(final DataSource ds) {

@@ -52,6 +52,8 @@ public class KopierGR199FraArena {
         isRunning = true;
         Supplier<Try<InputStream>> hentfil = () -> arenafilService.hentArenafil(new File(filpath, filnavn));
 
+        logger.info("Starter reindeksering...");
+
         timed("GR199.hentfil", hentfil)
                 .onFailure(log(logger, "Kunne ikke hente ut fil fra sftpserver"))
                 .flatMap(timed("GR199.unmarshall", this::unmarshall))
@@ -59,7 +61,10 @@ public class KopierGR199FraArena {
                 .andThen(timed("GR199.indekser", indekserHandler::indekser))
                 .onFailure(log(logger, "Indeksering feilet"))
                 .andThen(() -> solrService.hovedindeksering())
-                .andThen(() -> this.isRunning = false);
+                .andThen(() -> {
+                    this.isRunning = false;
+                    logger.info("Reindeksering ferdig...");
+                });
     }
 
     public boolean isRunning() {
