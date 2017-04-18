@@ -97,7 +97,7 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.inaktiveBrukere = true;
+        filtervalg.brukerstatus = Brukerstatus.INAKTIVE_BRUKERE;
         String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
@@ -111,7 +111,7 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedNyeBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.nyeBrukere = true;
+        filtervalg.brukerstatus = Brukerstatus.NYE_BRUKERE;
         String nyeBrukereFilter = "-veileder_id:*";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
@@ -119,20 +119,6 @@ public class SolrUtilsTest {
         SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(nyeBrukereFilter);
-    }
-
-    @Test
-    public void skalByggSolrQueryMedInaktiveOgNyeBrukere() throws Exception {
-        Filtervalg filtervalg = new Filtervalg();
-        filtervalg.inaktiveBrukere = true;
-        filtervalg.nyeBrukere = true;
-        String expectedFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)";
-        String enhetId = "0713";
-        String queryString = "enhet_id:" + enhetId;
-
-        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
-        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
-        assertThat(query.getFilterQueries()).contains(expectedFilter);
     }
 
     @Test

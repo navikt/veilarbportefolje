@@ -141,13 +141,12 @@ public class SolrUtils {
         List<String> oversiktStatements = new ArrayList<>();
         List<String> filtrerBrukereStatements = new ArrayList<>();
 
-        if (filtervalg.nyeBrukere && filtervalg.inaktiveBrukere) {
-            oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*) OR (*:* AND -veileder_id:*)");
-        } else if (filtervalg.nyeBrukere) {
+        if (filtervalg.brukerstatus == Brukerstatus.NYE_BRUKERE) {
             oversiktStatements.add("-veileder_id:*");
-        } else if (filtervalg.inaktiveBrukere) {
+        } else if (filtervalg.brukerstatus == Brukerstatus.INAKTIVE_BRUKERE) {
             oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
         }
+
 
         filtrerBrukereStatements.add(orStatement(filtervalg.alder, SolrUtils::alderFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));

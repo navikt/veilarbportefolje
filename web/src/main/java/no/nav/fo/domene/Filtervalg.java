@@ -9,8 +9,7 @@ import java.util.List;
 @Data()
 @Accessors(chain = true)
 public class Filtervalg {
-    public boolean nyeBrukere;
-    public boolean inaktiveBrukere;
+    public Brukerstatus brukerstatus;
     public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
     public List<Kjonn> kjonn = new ArrayList<>();
@@ -22,8 +21,7 @@ public class Filtervalg {
     public List<String> veiledere = new ArrayList<>();
 
     public boolean harAktiveFilter() {
-        return nyeBrukere ||
-                inaktiveBrukere ||
+        return harBrukerstatus() ||
                 harYtelsefilter() ||
                 !alder.isEmpty() ||
                 !kjonn.isEmpty() ||
@@ -33,6 +31,10 @@ public class Filtervalg {
                 !servicegruppe.isEmpty() ||
                 !rettighetsgruppe.isEmpty() ||
                 !veiledere.isEmpty();
+    }
+
+    private boolean harBrukerstatus() {
+        return brukerstatus != null;
     }
 
     public boolean harYtelsefilter() {
