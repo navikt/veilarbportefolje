@@ -10,7 +10,6 @@ import no.nav.fo.util.TokenUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
-import javax.security.auth.Subject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Path("/enhet")
@@ -54,11 +53,14 @@ public class EnhetController {
                 return Response.ok().entity(new Portefolje().setBrukere(new ArrayList<>())).build();
             }
 
+
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
+            boolean userIsInModigOppfolging = pepClient.isSubjectMemberOfModiaOppfolging(ident);
 
-            if (brukerHarTilgangTilEnhet) {
+
+            if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
                 List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
                 List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,token, pepClient);
@@ -67,7 +69,7 @@ public class EnhetController {
 
                 return Response.ok().entity(portefolje).build();
             } else {
-                return Response.status(FORBIDDEN).build();
+                return Response.status(UNAUTHORIZED).build();
             }
         } catch (Exception e) {
             logger.error("Kall mot upstream service feilet", e);

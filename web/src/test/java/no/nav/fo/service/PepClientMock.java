@@ -16,4 +16,9 @@ public class PepClientMock implements PepClientInterface {
     public boolean isSubjectAuthorizedToSeeEgenAnsatt(String token) {
         return true;
     }
+
+    @Override
+    public boolean isSubjectMemberOfModiaOppfolging(String ident) {
+        return true;
+    }
 }

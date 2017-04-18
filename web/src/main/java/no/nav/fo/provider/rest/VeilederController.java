@@ -20,7 +20,7 @@ import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Path("/veileder")
@@ -54,8 +54,9 @@ public class VeilederController {
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
 
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
+            boolean userIsInModigOppfolging = pepClient.isSubjectMemberOfModiaOppfolging(ident);
 
-            if (brukerHarTilgangTilEnhet) {
+            if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
 
                 List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
@@ -65,7 +66,7 @@ public class VeilederController {
 
                 return Response.ok().entity(portefolje).build();
             } else {
-                return Response.status(FORBIDDEN).build();
+                return Response.status(UNAUTHORIZED).build();
             }
         } catch (Exception e) {
             logger.error("Kall mot upstream service feilet", e);
