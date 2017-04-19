@@ -10,6 +10,9 @@ import no.nav.fo.service.PepClientInterface;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
 import no.nav.fo.util.TokenUtils;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -51,6 +54,8 @@ public class VeilederController {
 
         try {
             String ident = SubjectHandler.getSubjectHandler().getUid();
+            String identHash = DigestUtils.md5Hex(ident).toUpperCase();
+
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
 
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
@@ -63,6 +68,10 @@ public class VeilederController {
                 List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,token, pepClient);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
+
+                Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
+                event.addFieldToReport("identhash", identHash);
+                event.report();
 
                 return Response.ok().entity(portefolje).build();
             } else {

@@ -7,15 +7,17 @@ import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
+
 @Configuration
 public class VirksomhetEnhetEndpointConfig {
 
     @Bean
     public Enhet virksomhetEnhet() {
-        return new CXFClient<>(Enhet.class)
+        return createTimerProxyForWebService("enhet_v1",new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
                 .configureStsForOnBehalfOfWithJWT()
-                .build();
+                .build(), Enhet.class);
     }
 
     @Bean

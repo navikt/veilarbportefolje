@@ -3,6 +3,8 @@ package no.nav.fo.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import org.slf4j.Logger;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,8 @@ public class OppdaterBrukerdataListener {
             String melding = textMessage.getText();
             LOG.debug(String.format("Melding motatt: %s", melding));
             oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(konverterJSONTilBruker(melding));
+            Event event = MetricsFactory.createEvent("meldinglestfrako");
+            event.report();
         } catch (JMSException e) {
             LOG.error("Kunne ikke lese melding fra kø", e);
         }

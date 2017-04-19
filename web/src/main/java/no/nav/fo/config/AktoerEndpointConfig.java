@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import static java.lang.System.getProperty;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
+import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
 
 @Configuration
 public class AktoerEndpointConfig {
@@ -32,9 +33,9 @@ public class AktoerEndpointConfig {
     }
 
     public AktoerV2 factory() {
-        return new CXFClient<>(AktoerV2.class)
+        return createTimerProxyForWebService("Aktoer_v2", new CXFClient<>(AktoerV2.class)
                 .address(getProperty("aktoer.endpoint.url"))
                 .withOutInterceptor(new SystemSAMLOutInterceptor())
-                .build();
+                .build(), AktoerV2.class);
     }
 }

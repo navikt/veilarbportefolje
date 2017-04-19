@@ -15,6 +15,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -213,6 +215,10 @@ public class SolrService {
         long seconds = duration.getSeconds();
         String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         logger.info(logString);
+
+        Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
+        event.addFieldToReport("antall.oppdateringer", antall );
+        event.report();
     }
 
     public StatusTall hentStatusTallForPortefolje(String enhet) {
