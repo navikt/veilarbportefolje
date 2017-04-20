@@ -34,9 +34,9 @@ public class LocalJndiContextConfig {
 
     private static DataSource createDataSource() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
-        ds.setUrl("jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=d26dbfl007.test.local)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=t4veilarbportefolje)(INSTANCE_NAME=cdbx01t)(UR=A)(SERVER=DEDICATED)))");
-        ds.setUsername("t4_veilarbportefolje");
-        ds.setPassword("XAYV4qdi1REt");
+        ds.setUrl("jdbc:oracle:thin:@d26dbfl020.test.local:1521/VEILARBPORTEFOLJE_T5");
+        ds.setUsername("VEILARBPORTEFOLJE");
+        ds.setPassword("Ham5IcBNBZ1s");
         ds.setSuppressClose(true);
         return ds;
     }
