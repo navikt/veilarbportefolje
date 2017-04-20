@@ -11,7 +11,7 @@ public class BatchConsumer<T> implements Consumer<T> {
 
     public BatchConsumer(int size, Consumer<List<T>> consumer) {
         this.size = size;
-        this.batch = new ArrayList<T>(size);
+        this.batch = new ArrayList<>(size);
         this.consumer = consumer;
     }
 
