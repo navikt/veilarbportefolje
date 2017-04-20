@@ -16,6 +16,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.InputStream;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -54,13 +55,16 @@ public class KopierGR199FraArena {
 
         logger.info("Starter reindeksering...");
 
+        Consumer<Throwable> stopped = (t) -> this.isRunning = false;
+
         timed("GR199.hentfil", hentfil)
-                .onFailure(log(logger, "Kunne ikke hente ut fil fra sftpserver"))
+                .onFailure(log(logger, "Kunne ikke hente ut fil fra sftpserver").andThen(stopped))
                 .flatMap(timed("GR199.unmarshall", this::unmarshall))
-                .onFailure(log(logger, "Unmarshalling feilet"))
+                .onFailure(log(logger, "Unmarshalling feilet").andThen(stopped))
                 .andThen(timed("GR199.indekser", indekserHandler::indekser))
-                .onFailure(log(logger, "Indeksering feilet"))
+                .onFailure(log(logger, "Indeksering feilet").andThen(stopped))
                 .andThen(() -> solrService.hovedindeksering())
+                .onFailure(log(logger, "Feil under hovedindeksering").andThen(stopped))
                 .andThen(() -> {
                     this.isRunning = false;
                     logger.info("Reindeksering ferdig...");
