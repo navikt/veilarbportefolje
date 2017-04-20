@@ -59,7 +59,6 @@ public class SolrService {
     @Inject
     private BrukerRepository brukerRepository;
 
-    @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     @Transactional
     public void hovedindeksering() {
         if (SolrUtils.isSlaveNode()) {
@@ -96,7 +95,7 @@ public class SolrService {
         db.execute(lagSyncSql());
 
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
-        if (dokumenter.isEmpty()) {
+        if (!dokumenter.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
         }
