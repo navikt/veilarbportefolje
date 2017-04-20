@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.internal.IsAliveServlet;
+import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientInterface;
@@ -30,7 +31,8 @@ import org.springframework.transaction.jta.JtaTransactionManager;
         ArenafilConfig.class,
         MetricsConfig.class,
         AktoerEndpointConfig.class,
-        CacheConfig.class
+        CacheConfig.class,
+        PingConfig.class
 })
 public class ApplicationConfig {
 
