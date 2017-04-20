@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,13 +42,18 @@ public class BrukerRepository {
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public List<SolrInputDocument> retrieveAlleBrukere() {
-        List<SolrInputDocument> brukere = new ArrayList<>();
-        db.setFetchSize(10000);
+    public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
+        prosesserBrukere(10000, filter, prosess);
+    }
+
+    public void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
+        db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
-            brukere.add(mapResultSetTilDokument(rs));
+            SolrInputDocument bruker = mapResultSetTilDokument(rs);
+            if (filter.test(bruker)) {
+                prosess.accept(bruker);
+            }
         });
-        return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
     }
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
@@ -56,7 +62,7 @@ public class BrukerRepository {
         db.query(retrieveOppdaterteBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere.stream().filter(this::erOppfolgingsBruker).collect(toList());
+        return brukere.stream().filter(BrukerRepository::erOppfolgingsBruker).collect(toList());
     }
 
     public List<Map<String, Object>> retrieveBrukermedBrukerdata(String personId) {
@@ -314,7 +320,7 @@ public class BrukerRepository {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
 
-    private boolean erOppfolgingsBruker(SolrInputDocument bruker) {
+    public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
 
         boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||

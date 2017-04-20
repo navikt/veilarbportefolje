@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -161,7 +162,8 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalFiltrereBrukere() {
-        List<SolrInputDocument> aktiveBrukere = brukerRepository.retrieveAlleBrukere();
+        List<SolrInputDocument> aktiveBrukere = new ArrayList<>();
+        brukerRepository.prosesserBrukere(3, BrukerRepository::erOppfolgingsBruker, aktiveBrukere::add);
         assertThat(aktiveBrukere.size()).isEqualTo(50);
 
         List<SolrInputDocument> oppdaterteAktiveBrukere = brukerRepository.retrieveOppdaterteBrukere();

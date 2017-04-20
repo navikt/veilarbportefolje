@@ -7,16 +7,17 @@ import no.nav.fo.domene.FacetResults;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.StatusTall;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.util.BatchConsumer;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -69,13 +71,20 @@ public class SolrService {
         logger.info("Starter hovedindeksering");
         LocalDateTime t0 = LocalDateTime.now();
 
-        List<SolrInputDocument> dokumenter = brukerRepository.retrieveAlleBrukere();
+        final int[] antallBrukere = {0};
         deleteAllDocuments();
-        addDocuments(dokumenter);
-        commit();
+
+        BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (brukere) -> {
+            antallBrukere[0] += brukere.size();
+            addDocuments(brukere);
+            commit();
+        });
+        brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
+        consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
+
         brukerRepository.updateTidsstempel(Timestamp.valueOf(t0));
 
-        logFerdig(t0, dokumenter.size(), HOVEDINDEKSERING);
+        logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
     }
 
 
@@ -216,7 +225,7 @@ public class SolrService {
         logger.info(logString);
 
         Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
-        event.addFieldToReport("antall.oppdateringer", antall );
+        event.addFieldToReport("antall.oppdateringer", antall);
         event.report();
     }
 
