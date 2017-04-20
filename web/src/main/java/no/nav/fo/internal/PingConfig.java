@@ -30,7 +30,7 @@ public class PingConfig {
     }
 
     @Bean
-    public Pingable portefoljePing() throws IOException {
+    public Pingable issoPing() throws IOException {
         return () -> {
             try {
                 HttpURLConnection connection = (HttpURLConnection) new URL(System.getProperty("isso.isalive.url")).openConnection();
