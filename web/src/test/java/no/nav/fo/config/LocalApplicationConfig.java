@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.internal.IsAliveServlet;
+import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClientInterface;
 import no.nav.fo.service.PepClientMock;
@@ -32,7 +33,8 @@ import javax.sql.DataSource;
         MetricsConfig.class,
         AktoerEndpointConfig.class,
         AbacContext.class,
-        CacheConfig.class
+        CacheConfig.class,
+        PingConfig.class
 })
 public class LocalApplicationConfig {
 
