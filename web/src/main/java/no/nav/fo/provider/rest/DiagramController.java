@@ -1,5 +1,6 @@
 package no.nav.fo.provider.rest;
 
+import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.BrukertilgangService;
@@ -27,6 +28,7 @@ import static javax.ws.rs.core.Response.Status.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Api(value="Diagram")
 @Path("/diagram")
 @Produces(APPLICATION_JSON)
 public class DiagramController {

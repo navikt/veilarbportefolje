@@ -11,6 +11,7 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
+import io.swagger.annotations.Api;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -24,6 +25,7 @@ import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Api(value="Enhet")
 @Path("/enhet")
 @Produces(APPLICATION_JSON)
 public class EnhetController {

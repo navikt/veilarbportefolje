@@ -1,5 +1,6 @@
 package no.nav.fo.provider.rest;
 
+import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Filtervalg;
@@ -26,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Api(value="Veileder")
 @Path("/veileder")
 @Produces(APPLICATION_JSON)
 public class VeilederController {
