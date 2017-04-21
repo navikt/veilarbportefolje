@@ -24,7 +24,7 @@ public class VirksomhetEnhetEndpointConfig {
     public Pingable virksomhetEnhetPing() {
         Enhet virksomhetEnhet = new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build();
 
         return () -> {
