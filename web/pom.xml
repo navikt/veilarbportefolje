@@ -78,10 +78,6 @@
         </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-ws</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
             <artifactId>modig-lang</artifactId>
         </dependency>
         <dependency>
@@ -94,7 +90,6 @@
             <artifactId>modig-core-test</artifactId>
         </dependency>
 
-        <!--Spring-->
         <!--Spring-->
         <dependency>
             <groupId>org.springframework</groupId>
