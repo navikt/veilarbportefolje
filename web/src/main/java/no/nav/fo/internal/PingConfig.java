@@ -3,10 +3,13 @@ package no.nav.fo.internal;
 
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.types.Pingable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -16,6 +19,12 @@ public class PingConfig {
 
     @Inject
     private Pep pep;
+
+    @Value("${loependeytelser.path}")
+    String filpath;
+
+    @Value("${loependeytelser.filnavn}")
+    String filnavn;
 
     @Bean
     public Pingable pepPing() {
@@ -45,4 +54,15 @@ public class PingConfig {
         };
     }
 
+    @Bean
+    public Pingable nfsPing() {
+        return () -> {
+            File file = new File(filpath, filnavn);
+            if(file.exists()) {
+                return Pingable.Ping.lyktes("NFS");
+            }else{
+                return Pingable.Ping.feilet("NFS", new FileNotFoundException("File not found at " + filpath+filnavn));
+            }
+        };
+    }
 }
