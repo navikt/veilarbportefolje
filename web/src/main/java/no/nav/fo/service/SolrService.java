@@ -104,7 +104,7 @@ public class SolrService {
         db.execute(lagSyncSql());
 
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
-        if (!dokumenter.isEmpty()) {
+        if (dokumenter.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
         }

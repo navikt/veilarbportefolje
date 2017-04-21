@@ -158,7 +158,15 @@ public class BrukerRepositoryTest {
 
     }
 
+    @Test
+    public void skalVareOppfolgningsbruker() throws Exception {
+        SolrInputDocument document = new SolrInputDocument();
+        document.addField("kvalifiseringsgruppekode", "BATT");
+        document.addField("formidlingsgruppekode", "IARBS");
+        document.addField("veileder_id", "V123456");
 
+        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
+    }
 
     @Test
     public void skalFiltrereBrukere() {
