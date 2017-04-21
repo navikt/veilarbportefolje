@@ -35,7 +35,7 @@ public class AktoerEndpointConfig {
     public AktoerV2 factory() {
         return createTimerProxyForWebService("Aktoer_v2", new CXFClient<>(AktoerV2.class)
                 .address(getProperty("aktoer.endpoint.url"))
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build(), AktoerV2.class);
     }
 }
