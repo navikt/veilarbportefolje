@@ -65,7 +65,7 @@ public class IndekserYtelserHandler {
 
             alleOppdateringer
                     .get(false)
-                    .forEach((e) -> logger.error("Feil ved generering av brukeroppdatering: ", e.getCause()));
+                    .forEach((e) -> logger.warn("Feil ved generering av brukeroppdatering: ", e.getCause()));
 
             List<BrukerOppdatering> dokumenter = alleOppdateringer
                     .get(true)

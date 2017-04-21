@@ -88,7 +88,7 @@ public class DiagramController {
                 return Response.status(FORBIDDEN).build();
             }
         } catch (Exception e) {
-            logger.error("Kall mot upstream service feilet", e);
+            logger.warn("Kall mot upstream service feilet", e);
             return Response.status(BAD_GATEWAY).build();
         }
     }

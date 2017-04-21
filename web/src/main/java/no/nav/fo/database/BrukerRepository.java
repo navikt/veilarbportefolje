@@ -101,7 +101,7 @@ public class BrukerRepository {
     public Optional<BigDecimal> retrievePersonidFromFnr(String fnr) {
         List<Map<String, Object>> list = db.queryForList(getPersonIdFromFnrSQL(), fnr);
         if (list.size() != 1) {
-            LOG.error(format("Fikk %d antall rader for bruker med fnr %s", list.size(), fnr));
+            LOG.warn(format("Fikk %d antall rader for bruker med fnr %s", list.size(), fnr));
             return empty();
         }
         BigDecimal personId = (BigDecimal) list.get(0).get("PERSON_ID");

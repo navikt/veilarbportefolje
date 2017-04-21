@@ -21,6 +21,6 @@ public class VirksomhetEnhetService {
         WSHentEnhetListeRequest request = new WSHentEnhetListeRequest();
         request.setRessursId(ident);
         return Try.of(() -> virksomhetEnhet.hentEnhetListe(request))
-                .onFailure(e -> logger.error(String.format("Kunne ikke hente ansattopplysninger for %s", ident), e));
+                .onFailure(e -> logger.warn(String.format("Kunne ikke hente ansattopplysninger for %s", ident), e));
     }
 }
