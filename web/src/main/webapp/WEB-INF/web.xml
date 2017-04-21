@@ -70,12 +70,11 @@
         <servlet-name>restservlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>no.nav.fo.provider.rest.RestConfig</param-value>
-        </init-param>
-        <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>no.nav.fo.security.jwt.filter</param-value>
+            <param-value>
+                no.nav.fo.security.jwt.filter,
+                no.nav.fo.provider.rest
+            </param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
@@ -83,6 +82,46 @@
     <servlet-mapping>
         <servlet-name>restservlet</servlet-name>
         <url-pattern>/tjenester/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>swagger</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>
+                io.swagger.jaxrs.listing,
+                no.nav.fo.provider.rest
+            </param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>swagger</servlet-name>
+        <url-pattern>internal/api/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Jersey2Config</servlet-name>
+        <servlet-class>io.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
+        <init-param>
+            <param-name>api.version</param-name>
+            <param-value>1.0.0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>swagger.api.basepath</param-name>
+            <param-value>/veilarbportefolje/api</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>SwaggerUI</servlet-name>
+        <servlet-class>no.nav.fo.config.SwaggerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SwaggerUI</servlet-name>
+        <url-pattern>/internal/swagger/*</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
