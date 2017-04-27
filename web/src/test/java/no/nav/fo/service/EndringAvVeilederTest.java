@@ -122,8 +122,8 @@ public class EndringAvVeilederTest {
 
     @Test
     public void meldingFraKoSkalOppretteBruker() {
-        updateDBWithPersonidbruker("147147", "***REMOVED***");
-        WSHentIdentForAktoerIdResponse response = new WSHentIdentForAktoerIdResponse().withIdent("***REMOVED***");
+        updateDBWithPersonidbruker("147147","10108000399"); //TESTFAMILIE
+        WSHentIdentForAktoerIdResponse response = new WSHentIdentForAktoerIdResponse().withIdent("10108000399"); //TESTFAMILIE
 
         try {
             when(aktoerV2.hentIdentForAktoerId(any(WSHentIdentForAktoerIdRequest.class))).thenReturn(response);
