@@ -102,12 +102,12 @@ class PortefoljeSimulation extends Simulation {
         .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
         .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
         .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
-        .exec(Helpers.httpGetSuccess("person", "/veilarbperson/tjenester/person/***REMOVED***"))
+        .exec(Helpers.httpGetSuccess("person", "/veilarbperson/tjenester/person/!!CHANGE ME!!"))
         .pause("1", "6", TimeUnit.SECONDS)
-        .exec(Helpers.httpGetSuccess("oppfoelginsstatus", "/veilarbsituasjon/api/person/***REMOVED***/oppfoelgingsstatus"))
+        .exec(Helpers.httpGetSuccess("oppfoelginsstatus", "/veilarbsituasjon/api/person/!!CHANGE ME!!/oppfoelgingsstatus"))
         .pause("50", "300", TimeUnit.MILLISECONDS)
-        .exec(Helpers.httpGetSuccess("ytelser", "/veilarbsituasjon/api/person/***REMOVED***/ytelser"))
-        .exec(Helpers.httpGetSuccess("veilederinfo", "/veilarbsituasjon/api/person/***REMOVED***/veileder"))
+        .exec(Helpers.httpGetSuccess("ytelser", "/veilarbsituasjon/api/person/!!CHANGE ME!!/ytelser"))
+        .exec(Helpers.httpGetSuccess("veilederinfo", "/veilarbsituasjon/api/person/!!CHANGE ME!!/veileder"))
 
     setUp(
         portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
