@@ -21,8 +21,8 @@ public class StartJettyVeilArbPortefolje {
         setupJndiLocalContext();
         System.setProperty("develop-local", "true");
 
-        InternbrukerSubjectHandler.setVeilederIdent("***REMOVED***");
-        InternbrukerSubjectHandler.setServicebruker("srvveilarbveileder");
+        InternbrukerSubjectHandler.setVeilederIdent("!!CHANGE ME!!");
+        InternbrukerSubjectHandler.setServicebruker("!!CHANGE ME!!");
         setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
 
         System.setProperty("org.apache.geronimo.jaspic.configurationFile", "src/test/resources/jaspiconf.xml");
