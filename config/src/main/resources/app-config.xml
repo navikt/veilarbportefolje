@@ -13,7 +13,7 @@
         <ear groupId="no.nav.fo" artifactId="veilarbportefolje-jee"/>
     </artifacts>
 
-    <abacSecurity serviceUserResourceAlias="***REMOVED***"/>
+    <abacSecurity serviceUserResourceAlias="srvveilarbportefolje"/>
 
     <resources>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
@@ -26,7 +26,7 @@
             <mountOnNfs customNFSResourceAlias="filmottak.loependeYtelser.nfs" />
         </directory>
 
-        <applicationCertificate alias="***REMOVED***"/>
+        <applicationCertificate alias="srvveilarbportefolje"/>
         <datasource alias="veilarbportefoljeDB" jndi="java:/jboss/datasources/veilarbportefoljeDB">
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
@@ -50,7 +50,7 @@
     </exposed-services>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
-    <security serviceUserResourceAlias="***REMOVED***">
+    <security serviceUserResourceAlias="srvveilarbportefolje">
         <logins>
             <openIdConnect moduleClass="no.nav.fo.security.jwt.loginmodule.JwtLoginModule"/>
         </logins>

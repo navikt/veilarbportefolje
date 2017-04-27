@@ -60,7 +60,7 @@ public class IndekserYtelserHandlerTest {
             Collection<String> fnrs = (Collection<String>) invocationOnMock.getArguments()[0];
             Map<String, Optional<String>> res = fnrs.stream()
                     .collect(Collectors.toMap(identity(), (fnr) -> {
-                        if ("10108000398".equals(fnr)) {
+                        if ("10108000398".equals(fnr)) { //TESTFAMILIE
                             return Optional.empty();
                         }
                         return Optional.of("anotherPersonId");
@@ -73,8 +73,8 @@ public class IndekserYtelserHandlerTest {
     @Test
     public void filtrerBortBrukereSomIkkeErIDatabasen() throws Exception {
         LoependeYtelser ytelser = lagLoependeYtelser(asList(
-                lagVedtak("10108000398"), // Skal bli filtrert bort
-                lagVedtak("10108000399")
+                lagVedtak("10108000398"), //TESTFAMILIE // Skal bli filtrert bort
+                lagVedtak("10108000399") //TESTFAMILIE
         ));
 
         handler.indekser(ytelser);
@@ -87,8 +87,8 @@ public class IndekserYtelserHandlerTest {
     @Test
     public void leggerTilManedFasetteringOmUtlopsdatoErInnenforSammeKalenderar() throws Exception {
         LoependeYtelser ytelser = lagLoependeYtelser(asList(
-                lagVedtak("10108000397", new BigInteger("52"), BigInteger.TEN), // Utenfor kalenderåret
-                lagVedtak("10108000399")
+                lagVedtak("10108000397", new BigInteger("52"), BigInteger.TEN), //TESTFAMILIE // Utenfor kalenderåret
+                lagVedtak("10108000399") //TESTFAMILIE
         ));
 
         handler.indekser(ytelser);
@@ -107,8 +107,8 @@ public class IndekserYtelserHandlerTest {
     @Test
     public void leggerTilAAPMAXTid() {
         LoependeYtelser ytelser = lagLoependeYtelser(asList(
-                lagVedtak("10108000397", "AA", "AAP"),
-                lagVedtak("10108000399", "AA", "AAP", new BigInteger("205"), BigInteger.TEN)
+                lagVedtak("10108000397", "AA", "AAP"), //TESTFAMILIE
+                lagVedtak("10108000399", "AA", "AAP", new BigInteger("205"), BigInteger.TEN) //TESTFAMILIE
         ));
 
         handler.indekser(ytelser);
@@ -127,7 +127,7 @@ public class IndekserYtelserHandlerTest {
 
     @Test
     public void leggerIkkeTilAAPMaxTilVedAAPUnntak() {
-        LoependeVedtak vedtak = lagVedtak("10108000397", "AA", "AAP");
+        LoependeVedtak vedtak = lagVedtak("10108000397", "AA", "AAP"); //TESTFAMILIE
         vedtak.getAaptellere().setAntallDagerUnntak(BigInteger.ONE);
         LoependeYtelser ytelser = lagLoependeYtelser(asList(vedtak));
 
