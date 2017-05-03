@@ -27,7 +27,7 @@ import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Api(value="Veileder")
+@Api(value = "Veileder")
 @Path("/veileder")
 @Produces(APPLICATION_JSON)
 public class VeilederController {
@@ -54,6 +54,11 @@ public class VeilederController {
             @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent);
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkSortering(sortDirection, sortField);
+        ValideringsRegler.sjekkFiltervalg(filtervalg);
+
         try {
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
@@ -67,7 +72,7 @@ public class VeilederController {
 
                 List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,token, pepClient);
+                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 

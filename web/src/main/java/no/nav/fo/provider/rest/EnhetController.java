@@ -1,5 +1,6 @@
 package no.nav.fo.provider.rest;
 
+import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.BrukertilgangService;
@@ -11,7 +12,6 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
-import io.swagger.annotations.Api;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -25,7 +25,7 @@ import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Api(value="Enhet")
+@Api(value = "Enhet")
 @Path("/enhet")
 @Produces(APPLICATION_JSON)
 public class EnhetController {
@@ -51,10 +51,14 @@ public class EnhetController {
             @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkSortering(sortDirection, sortField);
+        ValideringsRegler.sjekkFiltervalg(filtervalg);
+
         List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
 
         try {
-            if(!enheterIPilot.contains(enhet)) {
+            if (!enheterIPilot.contains(enhet)) {
                 return Response.ok().entity(new Portefolje().setBrukere(new ArrayList<>())).build();
             }
 
@@ -70,7 +74,7 @@ public class EnhetController {
             if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
                 List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,token, pepClient);
+                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
 
                 Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 
@@ -91,6 +95,8 @@ public class EnhetController {
     @GET
     @Path("/{enhet}/portefoljestorrelser")
     public Response hentPortefoljestorrelser(@PathParam("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+
         FacetResults facetResult = solrService.hentPortefoljestorrelser(enhet);
         return Response.ok().entity(facetResult).build();
     }
@@ -98,9 +104,11 @@ public class EnhetController {
     @GET
     @Path("/{enhet}/statustall")
     public Response hentStatusTall(@PathParam("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+
         List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
 
-        if(!enheterIPilot.contains(enhet)) {
+        if (!enheterIPilot.contains(enhet)) {
             return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0).setNyeBrukere(0)).build();
         }
 
