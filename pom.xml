@@ -37,7 +37,7 @@
         <modig-core.version>1.0.1</modig-core.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
         <modig-core-test.version>1.0.0</modig-core-test.version>
-        <common-cxf.version>3.1.34</common-cxf.version>
+        <common-cxf.version>3.1.39</common-cxf.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <javax.transaction.version>1.1</javax.transaction.version>
@@ -48,7 +48,7 @@
 
         <!-- Tredjeparts -->
         <ehcache.version>2.10.3</ehcache.version>
-        <cxf.version>3.1.6</cxf.version>
+        <cxf.version>3.1.11</cxf.version>
         <hamcrest.version>1.3</hamcrest.version>
         <slf4j.version>1.7.21</slf4j.version>
         <spring.version>4.2.6.RELEASE</spring.version>
