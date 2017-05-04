@@ -1,6 +1,6 @@
 package no.nav.fo.service;
 
-public class PepClientMock implements PepClientInterface {
+public class PepClientMock implements PepClient {
 
     @Override
     public boolean isSubjectAuthorizedToSeeKode7(String token) {

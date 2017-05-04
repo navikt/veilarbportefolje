@@ -4,7 +4,7 @@ import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.PepClientInterface;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
 import no.nav.fo.util.TokenUtils;
@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
@@ -32,14 +33,17 @@ public class EnhetController {
 
     private static final Logger logger = getLogger(EnhetController.class);
 
-    @Inject
-    BrukertilgangService brukertilgangService;
+    private BrukertilgangService brukertilgangService;
+    private SolrService solrService;
+    private PepClient pepClient;
 
     @Inject
-    SolrService solrService;
+    public EnhetController(BrukertilgangService brukertilgangService, SolrService solrService, PepClient pepClient) {
+        this.brukertilgangService = brukertilgangService;
+        this.solrService = solrService;
+        this.pepClient = pepClient;
+    }
 
-    @Inject
-    PepClientInterface pepClient;
 
     @POST
     @Path("/{enhet}/portefolje")
@@ -72,7 +76,7 @@ public class EnhetController {
 
 
             if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
-                List<Bruker> brukere = solrService.hentBrukereForEnhet(enhet, sortDirection, sortField, filtervalg);
+                List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg);
                 List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
                 List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
 

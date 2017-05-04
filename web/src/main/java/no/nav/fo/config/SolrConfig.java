@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.apache.http.*;
@@ -17,6 +18,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -51,8 +53,8 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService() {
-        return new SolrService();
+    public SolrService solrService(JdbcTemplate db, SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository) {
+        return new SolrService(db, solrClientMaster, solrClientSlave, brukerRepository);
     }
 
     @Bean

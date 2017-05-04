@@ -1,38 +1,38 @@
 package no.nav.fo.provider.rest;
 
 import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.exception.RestValideringsfeilException;
+import no.nav.fo.exception.RestValideringException;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
-@Provider
-public class ValideringsRegler implements ExceptionMapper<RestValideringsfeilException> {
+class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
     private static List<String> sortFields = asList("ikke_satt", "etternavn", "fodselsnummer", "utlopsdato", "aapMaxtid");
 
-    public static void sjekkEnhet(String enhet) {
+    static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
     }
 
 
-    public static void sjekkVeilederIdent(String veilederIdent) {
-        test("veilederident", veilederIdent, veilederIdent.matches("[A-Z]\\d{6}"));
+    static void sjekkVeilederIdent(String veilederIdent, boolean optional) {
+        test("veilederident", veilederIdent, optional || veilederIdent.matches("[A-Z]\\d{6}"));
     }
 
-    public static void sjekkFiltervalg(Filtervalg filtervalg) {
+    static void sjekkFiltervalg(Filtervalg filtervalg) {
         test("filtervalg", filtervalg, filtervalg::valider);
     }
 
-    public static void sjekkSortering(String sortDirection, String sortField) {
+    static void sjekkSortering(String sortDirection, String sortField) {
         test("sortDirection", sortDirection, sortDirs.contains(sortDirection));
         test("sortField", sortField, sortFields.contains(sortField));
+    }
+
+    static void harYtelsesFilter(Filtervalg filtervalg) {
+        test("ytelsesfilter", filtervalg.ytelse, filtervalg.ytelse != null);
     }
 
     private static void test(String navn, Object data, Supplier<Boolean> matches) {
@@ -41,12 +41,7 @@ public class ValideringsRegler implements ExceptionMapper<RestValideringsfeilExc
 
     private static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new RestValideringsfeilException(format("sjekk av %s feilet, %s", navn, data));
+            throw new RestValideringException(format("sjekk av %s feilet, %s", navn, data));
         }
-    }
-
-    @Override
-    public Response toResponse(RestValideringsfeilException e) {
-        return Response.status(Response.Status.NOT_ACCEPTABLE).entity(e.getMessage()).build();
     }
 }

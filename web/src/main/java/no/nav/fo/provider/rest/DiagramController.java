@@ -1,11 +1,9 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
-import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.POST;
@@ -13,31 +11,30 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.*;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.slf4j.LoggerFactory.getLogger;
+import static no.nav.fo.provider.rest.RestUtils.createResponse;
 
 @Api(value = "Diagram")
 @Path("/diagram")
 @Produces(APPLICATION_JSON)
 public class DiagramController {
 
-    private static final Logger logger = getLogger(DiagramController.class);
+    private BrukertilgangService brukertilgangService;
+    private SolrService solrService;
 
     @Inject
-    BrukertilgangService brukertilgangService;
-
-    @Inject
-    SolrService solrService;
+    public DiagramController(BrukertilgangService brukertilgangService, SolrService solrService) {
+        this.brukertilgangService = brukertilgangService;
+        this.solrService = solrService;
+    }
 
     @POST
     public Response hentDiagramData(
@@ -45,52 +42,34 @@ public class DiagramController {
             @QueryParam("enhet") String enhet,
             Filtervalg filtervalg) {
 
-        ValideringsRegler.sjekkVeilederIdent(veilederIdent);
-        ValideringsRegler.sjekkEnhet(enhet);
-        ValideringsRegler.sjekkFiltervalg(filtervalg);
+        return createResponse(() -> {
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, true);
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkFiltervalg(filtervalg);
+            ValideringsRegler.harYtelsesFilter(filtervalg);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
-        try {
-            String ident = SubjectHandler.getSubjectHandler().getUid();
-            boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
+            Function<Bruker, Mapping> mapper = brukerMapping(filtervalg.ytelse);
+            List<Mapping> alleFacetter = fasetter(filtervalg.ytelse);
 
-            if (brukerHarTilgangTilEnhet) {
+            List<Bruker> brukere = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
 
-                if (filtervalg.ytelse == null) {
-                    return Response.status(BAD_REQUEST).build();
-                }
+            Map<Mapping, Long> facetterteBrukere = brukere
+                    .stream()
+                    .filter((bruker) -> mapper.apply(bruker) != null)
+                    .collect(groupingBy(mapper, counting()));
 
-                Function<Bruker, Mapping> mapping = Bruker::getUtlopsdatoFasett;
-                List<Mapping> mappings = asList(ManedMapping.values());
-                if (filtervalg.ytelse == YtelseFilter.AAP_MAXTID) {
-                    mapping = Bruker::getAapMaxtidFasett;
-                    mappings = asList(KvartalMapping.values());
-                }
+            alleFacetter.forEach((key) -> facetterteBrukere.putIfAbsent(key, 0L));
 
-                List<Bruker> brukere;
-                if (isBlank(veilederIdent)) {
-                    brukere = solrService.hentBrukereForEnhet(enhet, null, null, filtervalg);
-                } else {
-                    brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, null, null, filtervalg);
-                }
+            return facetterteBrukere;
+        });
+    }
 
-                Map<Mapping, Long> gruppering = new LinkedHashMap<>();
-                mappings.forEach((m) -> gruppering.put(m, 0L));
+    private static Function<Bruker, Mapping> brukerMapping(YtelseFilter ytelse) {
+        return ytelse == YtelseFilter.AAP_MAXTID ? Bruker::getAapMaxtidFasett : Bruker::getUtlopsdatoFasett;
+    }
 
-                Function<Bruker, Mapping> finalMapping = mapping;
-                Map<Mapping, Long> brukergruppering = brukere
-                        .stream()
-                        .filter((bruker) -> finalMapping.apply(bruker) != null)
-                        .collect(groupingBy(mapping, counting()));
-
-                gruppering.putAll(brukergruppering);
-
-                return Response.ok().entity(gruppering).build();
-            } else {
-                return Response.status(FORBIDDEN).build();
-            }
-        } catch (Exception e) {
-            logger.warn("Kall mot upstream service feilet", e);
-            return Response.status(BAD_GATEWAY).build();
-        }
+    private static List<Mapping> fasetter(YtelseFilter ytelse) {
+        return (ytelse == YtelseFilter.AAP_MAXTID) ? asList(KvartalMapping.values()) : asList(ManedMapping.values());
     }
 }
