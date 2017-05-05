@@ -4,7 +4,7 @@ package no.nav.fo.provider.rest;
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.PepClientInterface;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
+
+import java.util.Optional;
 
 import static java.lang.System.setProperty;
 import static org.mockito.Matchers.any;
@@ -29,7 +31,7 @@ public class EnhetControllerTest {
     private SolrService solrService;
 
     @Mock
-    private PepClientInterface pepClient;
+    private PepClient pepClient;
 
     @InjectMocks
     private EnhetController enhetController;
@@ -44,41 +46,41 @@ public class EnhetControllerTest {
     public void skalReturnereTomResponsNaarEnhetIkkeErIPilot() throws Exception {
         System.setProperty("portefolje.pilot.enhetliste", "0000,0001");
 
-        Response response = enhetController.hentPortefoljeForEnhet("0002",0,0,"dontcare","dontcare", new Filtervalg());
-        verify(solrService, never()).hentBrukereForEnhet(any(),any(),any(),any());
+        Response response = enhetController.hentPortefoljeForEnhet("0002", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
+        verify(solrService, never()).hentBrukere(any(), any(), any(), any(), any());
     }
 
     @Test
     public void skalHentPortefoljeFraIndeksDersomEnhetErIPilot() throws Exception {
         System.setProperty("portefolje.pilot.enhetliste", "0000,0001");
-        when(brukertilgangService.harBrukerTilgang(any(),any())).thenReturn(true);
+        when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
         when(pepClient.isSubjectMemberOfModiaOppfolging(any())).thenReturn(true);
 
-        Response response = enhetController.hentPortefoljeForEnhet("0001",0,0,"dontcare","dontcare", new Filtervalg());
+        Response response = enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
-        verify(solrService, times(1)).hentBrukereForEnhet(any(),any(),any(),any());
+        verify(solrService, times(1)).hentBrukere(any(), any(), any(), any(), any());
     }
 
     @Test
     public void skalHentPortefoljeFraIndeksDersomIngenEnheterIPilotliste() throws Exception {
-        when(brukertilgangService.harBrukerTilgang(any(),any())).thenReturn(true);
+        when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
         when(pepClient.isSubjectMemberOfModiaOppfolging(any())).thenReturn(true);
 
-        Response response = enhetController.hentPortefoljeForEnhet("0000",0,0,"dontcare","dontcare", new Filtervalg());
+        Response response = enhetController.hentPortefoljeForEnhet("0000", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
-        verify(solrService, times(1)).hentBrukereForEnhet(any(),any(),any(),any());
+        verify(solrService, times(1)).hentBrukere(any(), any(), any(), any(), any());
     }
 
     @Test
     public void skalhentePortefoljeDersomListeIkkeInneholderGyldigEnhet() throws Exception {
         System.setProperty("portefolje.pilot.enhetliste", "[]");
 
-        when(brukertilgangService.harBrukerTilgang(any(),any())).thenReturn(true);
+        when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
         when(pepClient.isSubjectMemberOfModiaOppfolging(any())).thenReturn(true);
 
-        Response response = enhetController.hentPortefoljeForEnhet("0000",0,0,"dontcare","dontcare", new Filtervalg());
+        Response response = enhetController.hentPortefoljeForEnhet("0000", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
-        verify(solrService, times(1)).hentBrukereForEnhet(any(),any(),any(),any());
+        verify(solrService, times(1)).hentBrukere(any(), any(), any(), any(), any());
 
     }
 

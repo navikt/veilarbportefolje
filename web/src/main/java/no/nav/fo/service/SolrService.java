@@ -26,6 +26,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -33,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +42,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
@@ -49,17 +52,23 @@ public class SolrService {
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
 
-    @Inject
     private JdbcTemplate db;
-
-    @Inject
     private SolrClient solrClientSlave;
-
-    @Inject
     private SolrClient solrClientMaster;
+    private BrukerRepository brukerRepository;
 
     @Inject
-    private BrukerRepository brukerRepository;
+    public SolrService(
+            JdbcTemplate db,
+            @Named("solrClientMaster") SolrClient solrClientMaster,
+            @Named("solrClientSlave")SolrClient solrClientSlave,
+            BrukerRepository brukerRepository
+    ) {
+        this.db = db;
+        this.solrClientMaster = solrClientMaster;
+        this.solrClientSlave = solrClientSlave;
+        this.brukerRepository = brukerRepository;
+    }
 
     @Transactional
     public void hovedindeksering() {
@@ -133,17 +142,19 @@ public class SolrService {
         return String.format("BEGIN %s END;", viewsSql);
     }
 
-    public List<Bruker> hentBrukereForEnhet(String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
-        String queryString = "enhet_id: " + enhetId;
+    public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
+        String queryString = byggQueryString(enhetId, veilederIdent);
         return hentBrukere(queryString, sortOrder, sortField, filtervalg);
     }
 
-    public List<Bruker> hentBrukereForVeileder(String veilederIdent, String enhetId, String sortOrder, String sortField, Filtervalg filtervalg) {
-        String queryString = "veileder_id: " + veilederIdent + " AND enhet_id: " + enhetId;
-        return hentBrukere(queryString, sortOrder, sortField, filtervalg);
+    String byggQueryString(String enhetId, Optional<String> veilederIdent) {
+        return veilederIdent
+                .map((ident) -> isBlank(ident) ? null : ident)
+                .map((ident) -> "veileder_id: " + ident + " AND enhet_id: " + enhetId)
+                .orElse("enhet_id: " + enhetId);
     }
 
-    public List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
+    private List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
         List<Bruker> brukere = new ArrayList<>();
         try {
             QueryResponse response = solrClientSlave.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
@@ -155,6 +166,9 @@ public class SolrService {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
+    }
+
+    public void test() {
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
@@ -185,12 +199,12 @@ public class SolrService {
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }
 
-    public Try<UpdateResponse> commit() {
+    private Try<UpdateResponse> commit() {
         return Try.of(() -> solrClientMaster.commit())
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
-    public List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
+    private List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
         // javaslang.collection-API brukes her pga sliding-metoden
         javaslang.collection.List.ofAll(dokumenter)
                 .sliding(10000, 10000)

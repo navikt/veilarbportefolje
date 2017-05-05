@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BinaryOperator;
 
 @Data()
 @Accessors(chain = true)
@@ -39,5 +40,32 @@ public class Filtervalg {
 
     public boolean harYtelsefilter() {
         return ytelse != null;
+    }
+
+
+    public boolean valider() {
+        if (!harAktiveFilter()) {
+            return true;
+        }
+
+        Boolean alderOk = alder
+                .stream()
+                .map(FiltervalgMappers.alder::containsKey)
+                .reduce(true, and());
+
+        Boolean fodselsdatoOk = fodselsdagIMnd
+                .stream()
+                .map((dato) -> dato.matches("\\d+"))
+                .reduce(true, and());
+        Boolean veiledereOk = veiledere
+                .stream()
+                .map((veileder) -> veileder.matches("[A-Z]\\d{6}"))
+                .reduce(true, and());
+
+        return alderOk && fodselsdatoOk && veiledereOk;
+    }
+
+    private BinaryOperator<Boolean> and() {
+        return (aBoolean, aBoolean2) -> aBoolean && aBoolean2;
     }
 }
