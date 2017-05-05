@@ -17,8 +17,6 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,11 +58,8 @@ public class EnhetController {
         ValideringsRegler.sjekkSortering(sortDirection, sortField);
         ValideringsRegler.sjekkFiltervalg(filtervalg);
 
-        String pilotenheter = System.getProperty("portefolje.pilot.enhetliste","");
-        List<String> enheterIPilot = !pilotenheter.matches("\\d{4}") ? Collections.emptyList() : Arrays.asList(pilotenheter.split(","));
-
         try {
-            if(!enheterIPilot.contains(enhet) && !enheterIPilot.isEmpty()) {
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
                 return Response.ok().entity(new Portefolje().setBrukere(new ArrayList<>())).build();
             }
 
@@ -111,9 +106,7 @@ public class EnhetController {
     public Response hentStatusTall(@PathParam("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
 
-        List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
-
-        if (!enheterIPilot.contains(enhet)) {
+        if (!TilgangsRegler.enhetErIPilot(enhet)) {
             return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0).setNyeBrukere(0)).build();
         }
 
