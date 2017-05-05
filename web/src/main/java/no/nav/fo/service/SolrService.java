@@ -21,7 +21,6 @@ import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,10 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -52,19 +49,16 @@ public class SolrService {
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
 
-    private JdbcTemplate db;
     private SolrClient solrClientSlave;
     private SolrClient solrClientMaster;
     private BrukerRepository brukerRepository;
 
     @Inject
     public SolrService(
-            JdbcTemplate db,
             @Named("solrClientMaster") SolrClient solrClientMaster,
-            @Named("solrClientSlave")SolrClient solrClientSlave,
+            @Named("solrClientSlave") SolrClient solrClientSlave,
             BrukerRepository brukerRepository
     ) {
-        this.db = db;
         this.solrClientMaster = solrClientMaster;
         this.solrClientSlave = solrClientSlave;
         this.brukerRepository = brukerRepository;
@@ -109,9 +103,6 @@ public class SolrService {
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);
 
-        logger.info("Syncer materialiserte views");
-        db.execute(lagSyncSql());
-
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
         if (dokumenter.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
@@ -123,23 +114,6 @@ public class SolrService {
         commit();
 
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
-    }
-
-    private String lagSyncSql() {
-        Stream<String> views = Stream.of(
-                "OPPFOLGINGSBRUKER",
-                "SIKKERHETSTILTAK_TYPE",
-                "HOVEDMAAL",
-                "RETTIGHETSGRUPPETYPE",
-                "KVALIFISERINGSGRUPPETYPE",
-                "FORMIDLINGSGRUPPETYPE"
-        );
-
-        String viewsSql = views
-                .map((view) -> String.format("DBMS_MVIEW.REFRESH('%s', 'F');", view))
-                .collect(joining(" "));
-
-        return String.format("BEGIN %s END;", viewsSql);
     }
 
     public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {

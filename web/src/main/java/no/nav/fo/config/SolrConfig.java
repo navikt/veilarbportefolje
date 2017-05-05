@@ -3,8 +3,14 @@ package no.nav.fo.config;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.dialogarena.types.Pingable;
-import org.apache.http.*;
-import org.apache.http.auth.*;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -18,7 +24,6 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -53,8 +58,8 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(JdbcTemplate db, SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository) {
-        return new SolrService(db, solrClientMaster, solrClientSlave, brukerRepository);
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository) {
+        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository);
     }
 
     @Bean

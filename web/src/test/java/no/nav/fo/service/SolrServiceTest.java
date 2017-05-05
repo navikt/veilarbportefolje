@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -31,8 +30,6 @@ import static org.mockito.Mockito.*;
 public class SolrServiceTest {
 
     @Mock
-    private JdbcTemplate db;
-    @Mock
     private BrukerRepository brukerRepository;
     @Mock
     private SolrClient solrClientSlave;
@@ -43,7 +40,7 @@ public class SolrServiceTest {
 
     @Before
     public void setup() {
-        service = new SolrService(db, solrClientMaster, solrClientSlave, brukerRepository);
+        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository);
     }
 
     @Test
