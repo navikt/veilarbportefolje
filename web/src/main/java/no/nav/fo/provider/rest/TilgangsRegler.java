@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 class TilgangsRegler {
 
@@ -18,7 +19,14 @@ class TilgangsRegler {
     }
 
     public static boolean enhetErIPilot(String enhet) {
-        List<String> pilotenheter = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste", "").split(","));
+        String enhetsliste = System.getProperty("portefolje.pilot.enhetliste", "");
+        enhetsliste = enhetsliste.matches("\\d{4}") ? enhetsliste : "";
+
+        if (isBlank(enhetsliste)) {
+            return true;
+        }
+
+        List<String> pilotenheter = Arrays.asList(enhetsliste.split(","));
 
         return pilotenheter.isEmpty() || pilotenheter.contains(enhet);
     }
