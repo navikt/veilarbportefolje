@@ -3,11 +3,14 @@ package no.nav.fo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
+import org.joda.time.DateTime;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -24,12 +27,12 @@ public class Bruker {
     boolean egenAnsatt;
     boolean erDoed;
     int fodselsdagIMnd;
-    LocalDateTime fodselsdato;
+    String fodselsdato;
     String kjonn;
     YtelseMapping ytelse;
-    LocalDateTime utlopsdato;
+    String utlopsdato;
     ManedMapping utlopsdatoFasett;
-    LocalDateTime aapMaxtid;
+    String aapMaxtid;
     KvartalMapping aapMaxtidFasett;
 
 
@@ -53,11 +56,11 @@ public class Bruker {
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")));
     }
 
-    static LocalDateTime dato(Date dato) {
+    static String dato(Date dato) {
         if (dato == null) {
             return null;
         }
-        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
+        return ISO_DATE_TIME.format(LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault()));
     }
 
 

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class SolrUtilsTest {
 
@@ -328,10 +329,10 @@ public class SolrUtilsTest {
 
     @Test
     public void skalSorterePaaUtlopsdato() {
-        Bruker bruker1 = new Bruker().setUtlopsdato(LocalDateTime.now());
-        Bruker bruker2 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 1, 1, 1, 1));
-        Bruker bruker3 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 2, 1, 1, 1));
-        Bruker bruker4 = new Bruker().setUtlopsdato(LocalDateTime.of(2016, 12, 1, 1, 1));
+        Bruker bruker1 = new Bruker().setUtlopsdato(ISO_DATE_TIME.format(LocalDateTime.now()));
+        Bruker bruker2 = new Bruker().setUtlopsdato(ISO_DATE_TIME.format(LocalDateTime.of(2015, 1, 1, 1, 1)));
+        Bruker bruker3 = new Bruker().setUtlopsdato(ISO_DATE_TIME.format(LocalDateTime.of(2015, 2, 1, 1, 1)));
+        Bruker bruker4 = new Bruker().setUtlopsdato(ISO_DATE_TIME.format(LocalDateTime.of(2016, 12, 1, 1, 1)));
 
         List<Bruker> brukere = new ArrayList<>();
         brukere.add(bruker1);

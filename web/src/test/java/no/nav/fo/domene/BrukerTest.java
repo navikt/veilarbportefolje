@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +44,8 @@ public class BrukerTest {
     @Test
     public void parseDato() throws Exception {
         Date date = Date.from(LocalDate.of(2017, Month.MARCH, 30).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        LocalDateTime dato = Bruker.dato(date);
+        DateTimeFormatter format = DateTimeFormatter.ISO_DATE_TIME;
+        LocalDateTime dato = LocalDateTime.parse(Bruker.dato(date), format);
 
         assertThat(dato.getYear()).isEqualTo(2017);
         assertThat(dato.getMonth()).isEqualTo(Month.MARCH);
