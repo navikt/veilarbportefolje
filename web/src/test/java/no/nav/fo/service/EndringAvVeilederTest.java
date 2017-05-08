@@ -1,9 +1,7 @@
 package no.nav.fo.service;
 
 import com.google.common.base.Joiner;
-import com.ibm.mq.jms.TextMessageImpl;
 import no.nav.fo.config.ApplicationConfigTest;
-import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.BrukerRepositoryTest;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
@@ -21,8 +19,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
 import java.io.IOException;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -44,9 +40,6 @@ public class EndringAvVeilederTest {
 
     @Inject
     OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
-
-    @Inject
-    OppdaterBrukerdataListener oppdaterBrukerdataListener;
 
     @Before
     public void setUp() {
@@ -118,40 +111,6 @@ public class EndringAvVeilederTest {
 
         assertThat(personid).isEqualTo("156156");
         assertThat(veileder).isEqualTo("X111111");
-    }
-
-    @Test
-    public void meldingFraKoSkalOppretteBruker() {
-        updateDBWithPersonidbruker("147147","10108000399"); //TESTFAMILIE
-        WSHentIdentForAktoerIdResponse response = new WSHentIdentForAktoerIdResponse().withIdent("10108000399"); //TESTFAMILIE
-
-        try {
-            when(aktoerV2.hentIdentForAktoerId(any(WSHentIdentForAktoerIdRequest.class))).thenReturn(response);
-        } catch (HentIdentForAktoerIdPersonIkkeFunnet hentIdentForAktoerIdPersonIkkeFunnet) {
-            hentIdentForAktoerIdPersonIkkeFunnet.printStackTrace();
-        }
-
-        TextMessage textMessage = new TextMessageImpl();
-        String melding = "{\"aktoerid\":\"22222222\",\"veileder\":\"X123123\",\"oppdatert\":\"2017-01-14 13:33:16.000000\"}";
-        try {
-            textMessage.setText(melding);
-        } catch (JMSException e) {
-            e.printStackTrace();
-        }
-        oppdaterBrukerdataListener.listenForEndringAvVeileder(textMessage);
-
-        String personid = (String) brukerRepository.retrieveBruker("22222222").get(0).get("PERSONID");
-        assertThat(personid).isEqualTo("147147");
-    }
-
-    @Test
-    public void skalMappeMeldingTilBrukerobjekt() {
-
-        String melding = "{\"aktoerid\":\"22222222\",\"veileder\":\"X123123\",\"oppdatert\":\"2017-01-14 13:33:16.000000\"}";
-        BrukerOppdatertInformasjon bruker = oppdaterBrukerdataListener.konverterJSONTilBruker(melding);
-        assertThat(bruker.getAktoerid()).isEqualTo("22222222");
-        assertThat(bruker.getOppdatert()).isEqualTo("2017-01-14 13:33:16.000000");
-        assertThat(bruker.getVeileder()).isEqualTo("X123123");
     }
 
     private void updateDBWithPersonidbruker(String personid, String fnr) {

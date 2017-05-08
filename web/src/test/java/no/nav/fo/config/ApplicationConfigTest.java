@@ -1,6 +1,5 @@
 package no.nav.fo.config;
 
-import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.BrukertilgangService;
@@ -46,11 +45,6 @@ public class ApplicationConfigTest {
 
     @Bean
     public PersistentOppdatering persistentOppdatering() { return new PersistentOppdatering(); }
-
-    @Bean
-    public OppdaterBrukerdataListener oppdaterBrukerdataListener() {
-        return new OppdaterBrukerdataListener();
-    }
 
     @Bean
     public SolrService solrService() {

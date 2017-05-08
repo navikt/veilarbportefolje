@@ -28,13 +28,6 @@ public class StartJettyVeilArbPortefolje {
         System.setProperty("org.apache.geronimo.jaspic.configurationFile", "src/test/resources/jaspiconf.xml");
         Security.setProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY, AuthConfigFactoryImpl.class.getCanonicalName());
 
-//        final BrokerService broker = new BrokerService();
-//        broker.getSystemUsage().getTempUsage().setLimit(100 * 1024 * 1024 * 100);
-//        broker.getSystemUsage().getStoreUsage().setLimit(100 * 1024 * 1024 * 100);
-//        broker.addConnector("tcp://localhost:61616");
-//        broker.start();
-
-
         //Må ha https for csrf-token
         final Jetty jetty = Jetty.usingWar()
                 .at("veilarbportefolje")

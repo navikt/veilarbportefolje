@@ -1,6 +1,5 @@
 package no.nav.fo.config;
 
-import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.internal.IsAliveServlet;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
@@ -22,9 +21,7 @@ import javax.sql.DataSource;
 @EnableScheduling
 @Configuration
 @Import({
-        OppdaterBrukerdataListener.class,
         DatabaseConfig.class,
-        MessageQueueConfig.class,
         VirksomhetEnhetEndpointConfigMock.class,
         ServiceConfig.class,
         SolrConfig.class,
