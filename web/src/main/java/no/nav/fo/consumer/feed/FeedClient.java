@@ -29,6 +29,11 @@ public class FeedClient {
     @Value("${feed.consumer.url.callback}")
     private String feedConsumerUrlCallback;
 
+    public void callback() {
+        LOG.info("Webhook was activated!");
+        this.pollFeed();
+    }
+
     @Timed(name = "feed.registerWebhook")
     @Scheduled(cron = "${feed.consumer.pollingrate.cron}")
     public void registerWebhook() {
