@@ -12,8 +12,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class FeedClient {
 
     private static final Logger LOG = getLogger(FeedClient.class);
-    private final static MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private final static MediaType TEXT = MediaType.parse("application/text; charset=utf-8");
     private final static String HTTPS = "https";
+    private static final String HTTP = "http";
+    private final int port = 8486;
 
     @Value("${feed.producer.host}")
     private String feedProducerHost;
@@ -30,27 +32,27 @@ public class FeedClient {
     @Timed(name = "feed.registerWebhook")
     @Scheduled(cron = "${feed.consumer.pollingrate.cron}")
     public void registerWebhook() {
-        String json = String.format("\"callbackUrl\": \"%s\"", feedConsumerUrlCallback);
 
         OkHttpClient client = new OkHttpClient();
 
         HttpUrl webhookUrl = new HttpUrl.Builder()
-                .scheme(HTTPS)
+                .scheme(HTTP)
                 .host(feedProducerHost)
-                .port(8485)
+                .port(port)
                 .addPathSegments(feedProducerPathWebhook)
                 .build();
 
-        RequestBody body = RequestBody.create(JSON, json);
-        Request request = new Request.Builder().url(webhookUrl).post(body).build();
+        RequestBody body = RequestBody.create(TEXT, feedConsumerUrlCallback);
+        Request request = new Request.Builder().url(webhookUrl).put(body).build();
 
         Try.of(() -> {
             Response response = client.newCall(request).execute();
             if (response.code() == 201) {
                 LOG.info("Webhook opprettet hos produsent!");
             } else if (isNotSuccessful(response)) {
-                LOG.warn("Produsent returnerte feilkode ", response.code());
+                LOG.warn("Endepunkt for opprettelse av webhook returnerte feilkode {}: {}", response.code(), response.message());
             }
+            LOG.debug("Pollet webhook: {}", response.code());
             return response;
         }).onFailure(e -> LOG.warn("Kunne ikke opprette webhook: {}.", e.getMessage()));
     }
@@ -62,9 +64,9 @@ public class FeedClient {
         OkHttpClient client = new OkHttpClient();
 
         HttpUrl feedUrl = new HttpUrl.Builder()
-                .scheme(HTTPS)
+                .scheme(HTTP)
                 .host(feedProducerHost)
-                .port(8485)
+                .port(port)
                 .addPathSegments(feedProducerPath)
                 .addQueryParameter("since_id", "2017-01-01T00:00:00Z")
                 .build();
@@ -74,8 +76,10 @@ public class FeedClient {
         Try.of(() -> {
             Response response = client.newCall(request).execute();
             if (isNotSuccessful(response)) {
-                LOG.warn("Produsent returnerte feilkode ", response.code());
+                LOG.warn("Endepunkt for polling av feed returnerte feilkode {}: {}", response.code(), response.message());
             }
+            LOG.info("Pollet feed. Produsent svarte med {}", response.code());
+            LOG.info("{}", response.body().string());
             return response;
         }).onFailure(e -> LOG.warn("Det skjedde en feil ved polling av feed: {}", e.getMessage()));
 
