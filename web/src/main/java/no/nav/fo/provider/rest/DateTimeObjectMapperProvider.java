@@ -3,7 +3,8 @@ package no.nav.fo.provider.rest;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class DateTimeObjectMapperProvider implements ContextResolver<ObjectMappe
         logger.debug("Logger ObjectCoder pga prosjektet ikke kompilerer når jackson-core har scope runtime, og dependency-checker'n klager når den har scope compile",
                 ObjectCodec.class);
         final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JodaModule());
+        mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper;
     }
