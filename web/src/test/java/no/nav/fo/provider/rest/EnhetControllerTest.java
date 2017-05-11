@@ -47,7 +47,7 @@ public class EnhetControllerTest {
         System.setProperty("portefolje.pilot.enhetliste", "0000,0001");
 
         Response response = enhetController.hentPortefoljeForEnhet("0002", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
-        verify(solrService, never()).hentBrukere(any(), any(), any(), any(), any());
+        verify(brukertilgangService, never()).harBrukerTilgang(any(),any());
     }
 
     @Test

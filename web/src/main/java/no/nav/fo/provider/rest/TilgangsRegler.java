@@ -7,6 +7,7 @@ import no.nav.fo.service.BrukertilgangService;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -19,8 +20,10 @@ class TilgangsRegler {
     }
 
     public static boolean enhetErIPilot(String enhet) {
+        Pattern pattern = Pattern.compile("\\d{4}");
+
         String enhetsliste = System.getProperty("portefolje.pilot.enhetliste", "");
-        enhetsliste = enhetsliste.matches("\\d{4}") ? enhetsliste : "";
+        enhetsliste = pattern.matcher(enhetsliste).find() ? enhetsliste : "";
 
         if (isBlank(enhetsliste)) {
             return true;
