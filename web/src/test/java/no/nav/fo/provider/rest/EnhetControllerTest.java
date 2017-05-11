@@ -40,6 +40,8 @@ public class EnhetControllerTest {
     public void setup() {
         setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
         InternbrukerSubjectHandler.setVeilederIdent("testident");
+        System.clearProperty("portefolje.pilot.enhetliste");
+
     }
 
     @Test

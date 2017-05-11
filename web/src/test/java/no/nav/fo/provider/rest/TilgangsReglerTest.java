@@ -1,11 +1,17 @@
 package no.nav.fo.provider.rest;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 public class TilgangsReglerTest {
+
+    @Before
+    public void setup() {
+        System.clearProperty("portefolje.pilot.enhetliste");
+    }
 
 
     @Test
