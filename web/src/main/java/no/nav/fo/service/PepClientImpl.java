@@ -59,12 +59,12 @@ public class PepClientImpl implements PepClient {
     }
 
     @Cacheable("brukertilgangCache")
-    public boolean isSubjectMemberOfModiaOppfolging(String ident) {
+    public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
         BiasedDecisionResponse callAllowed;
         try {
             Timer timer = MetricsFactory.createTimer("isSubjectMemberOfModiaOppfolging");
             timer.start();
-            callAllowed  = pep.isSubjectMemberOfModiaOppfolging(ident);
+            callAllowed  = pep.isSubjectMemberOfModiaOppfolging(token, "veilarb");
             timer.stop();
             timer.report();
         } catch (PepException e) {

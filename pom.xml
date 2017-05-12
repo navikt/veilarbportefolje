@@ -42,7 +42,7 @@
         <javax.transaction.version>1.1</javax.transaction.version>
         <javax.jms.version>1.1</javax.jms.version>
         <oidc-security.version>2.0.23</oidc-security.version>
-        <common-abac.version>1.0.58</common-abac.version>
+        <common-abac.version>1.1.60</common-abac.version>
 
 
         <!-- Tredjeparts -->

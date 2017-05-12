@@ -56,7 +56,7 @@ public class EnhetControllerTest {
     public void skalHentPortefoljeFraIndeksDersomEnhetErIPilot() throws Exception {
         System.setProperty("portefolje.pilot.enhetliste", "0000,0001");
         when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
-        when(pepClient.isSubjectMemberOfModiaOppfolging(any())).thenReturn(true);
+        when(pepClient.isSubjectMemberOfModiaOppfolging(any(), any())).thenReturn(true);
 
         Response response = enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
@@ -66,7 +66,7 @@ public class EnhetControllerTest {
     @Test
     public void skalHentPortefoljeFraIndeksDersomIngenEnheterIPilotliste() throws Exception {
         when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
-        when(pepClient.isSubjectMemberOfModiaOppfolging(any())).thenReturn(true);
+        when(pepClient.isSubjectMemberOfModiaOppfolging(any(), any())).thenReturn(true);
 
         Response response = enhetController.hentPortefoljeForEnhet("0000", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
@@ -78,7 +78,7 @@ public class EnhetControllerTest {
         System.setProperty("portefolje.pilot.enhetliste", "[]");
 
         when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
-        when(pepClient.isSubjectMemberOfModiaOppfolging(any())).thenReturn(true);
+        when(pepClient.isSubjectMemberOfModiaOppfolging(any(), any())).thenReturn(true);
 
         Response response = enhetController.hentPortefoljeForEnhet("0000", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 

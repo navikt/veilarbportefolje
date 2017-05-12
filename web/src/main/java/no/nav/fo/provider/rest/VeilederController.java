@@ -73,7 +73,7 @@ public class VeilederController {
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
 
             boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
-            boolean userIsInModigOppfolging = pepClient.isSubjectMemberOfModiaOppfolging(ident);
+            boolean userIsInModigOppfolging = pepClient.isSubjectMemberOfModiaOppfolging(ident, token);
 
             if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
                 List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg);

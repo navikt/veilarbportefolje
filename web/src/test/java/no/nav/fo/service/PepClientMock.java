@@ -18,7 +18,7 @@ public class PepClientMock implements PepClient {
     }
 
     @Override
-    public boolean isSubjectMemberOfModiaOppfolging(String ident) {
+    public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
         return true;
     }
 }
