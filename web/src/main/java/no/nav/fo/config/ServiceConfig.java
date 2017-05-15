@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.fo.consumer.TilordningFeedClient;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
@@ -23,4 +24,9 @@ public class ServiceConfig {
 
     @Bean
     public PersistentOppdatering persistentOppdatering() { return new PersistentOppdatering(); }
+
+    @Bean
+    public TilordningFeedClient tilordningFeedClient() {
+        return new TilordningFeedClient();
+    }
 }

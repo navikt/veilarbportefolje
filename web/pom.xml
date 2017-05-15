@@ -18,6 +18,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>api-app-feed</artifactId>
+        </dependency>
+
         <!-- Virksomhetstjenester -->
         <dependency>
             <groupId>no.nav.meldinger.virksomhet</groupId>
