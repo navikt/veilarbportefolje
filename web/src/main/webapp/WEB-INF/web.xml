@@ -67,7 +67,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>feedcallback</servlet-name>
-        <servlet-class>no.nav.fo.consumer.feed.FeedClientServlet</servlet-class>
+        <servlet-class>no.nav.fo.internal.FeedCallbackServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>feedcallback</servlet-name>
