@@ -1,6 +1,11 @@
 package no.nav.fo.consumer;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.metrics.Event;
@@ -19,6 +24,25 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 public class OppdaterBrukerdataListener {
+    static ObjectMapper mapper = new ObjectMapper();
+
+    static {
+        SimpleModule module = new SimpleModule();
+
+        module.addDeserializer(String.class, new JsonDeserializer<String>() {
+            @Override
+            public String deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+                String result = StringDeserializer.instance.deserialize(jsonParser, deserializationContext);
+
+                if ("null".equals(result)) {
+                    return null;
+                }
+                return result;
+            }
+        });
+
+        mapper.registerModule(module);
+    }
 
     private static final Logger LOG = getLogger(OppdaterBrukerdataListener.class);
 
@@ -42,7 +66,6 @@ public class OppdaterBrukerdataListener {
     }
 
     public BrukerOppdatertInformasjon konverterJSONTilBruker(String brukerString) {
-        ObjectMapper mapper = new ObjectMapper();
         try {
             BrukerOppdatertInformasjon bruker = mapper.readValue(brukerString, BrukerOppdatertInformasjon.class);
             return bruker;
@@ -51,6 +74,4 @@ public class OppdaterBrukerdataListener {
         }
         return null;
     }
-
-
 }
