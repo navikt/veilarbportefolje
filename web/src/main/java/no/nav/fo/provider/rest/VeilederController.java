@@ -99,9 +99,10 @@ public class VeilederController {
     @GET
     @Path("/{veilederident}/statustall")
     public Response hentStatusTall(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
-        List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
-        if (!enheterIPilot.contains(enhet)) {
+        if (!TilgangsRegler.enhetErIPilot(enhet)) {
             return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0)).build();
         }
 
