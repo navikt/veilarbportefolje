@@ -65,14 +65,6 @@
         <servlet-name>reindekserytelser</servlet-name>
         <url-pattern>/internal/reindekserytelser</url-pattern>
     </servlet-mapping>
-    <servlet>
-        <servlet-name>feedcallback</servlet-name>
-        <servlet-class>no.nav.fo.internal.FeedCallbackServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>feedcallback</servlet-name>
-        <url-pattern>/internal/feed/callback</url-pattern>
-    </servlet-mapping>
 
     <servlet>
         <servlet-name>restservlet</servlet-name>
