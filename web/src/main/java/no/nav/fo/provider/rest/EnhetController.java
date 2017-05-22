@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Api(value = "Enhet")
@@ -54,11 +54,11 @@ public class EnhetController {
             @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
-        ValideringsRegler.sjekkEnhet(enhet);
-        ValideringsRegler.sjekkSortering(sortDirection, sortField);
-        ValideringsRegler.sjekkFiltervalg(filtervalg);
+        return createResponse(() -> {
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkSortering(sortDirection, sortField);
+            ValideringsRegler.sjekkFiltervalg(filtervalg);
 
-        try {
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
                 return Response.ok().entity(new Portefolje().setBrukere(new ArrayList<>())).build();
             }
@@ -86,31 +86,32 @@ public class EnhetController {
             } else {
                 return Response.status(UNAUTHORIZED).build();
             }
-        } catch (Exception e) {
-            logger.warn("Kall mot upstream service feilet", e);
-            return Response.status(BAD_GATEWAY).build();
-        }
+        });
     }
 
     @GET
     @Path("/{enhet}/portefoljestorrelser")
     public Response hentPortefoljestorrelser(@PathParam("enhet") String enhet) {
-        ValideringsRegler.sjekkEnhet(enhet);
+        return createResponse(() -> {
+            ValideringsRegler.sjekkEnhet(enhet);
 
-        FacetResults facetResult = solrService.hentPortefoljestorrelser(enhet);
-        return Response.ok().entity(facetResult).build();
+            FacetResults facetResult = solrService.hentPortefoljestorrelser(enhet);
+            return Response.ok().entity(facetResult).build();
+        });
     }
 
     @GET
     @Path("/{enhet}/statustall")
     public Response hentStatusTall(@PathParam("enhet") String enhet) {
-        ValideringsRegler.sjekkEnhet(enhet);
+        return createResponse(() -> {
+            ValideringsRegler.sjekkEnhet(enhet);
 
-        if (!TilgangsRegler.enhetErIPilot(enhet)) {
-            return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0).setNyeBrukere(0)).build();
-        }
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
+                return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0).setNyeBrukere(0)).build();
+            }
 
-        StatusTall statusTall = solrService.hentStatusTallForPortefolje(enhet);
-        return Response.ok().entity(statusTall).build();
+            StatusTall statusTall = solrService.hentStatusTallForPortefolje(enhet);
+            return Response.ok().entity(statusTall).build();
+        });
     }
 }

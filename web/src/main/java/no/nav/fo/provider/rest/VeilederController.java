@@ -19,13 +19,12 @@ import org.slf4j.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Api(value = "Veileder")
@@ -61,12 +60,12 @@ public class VeilederController {
             @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
-        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-        ValideringsRegler.sjekkEnhet(enhet);
-        ValideringsRegler.sjekkSortering(sortDirection, sortField);
-        ValideringsRegler.sjekkFiltervalg(filtervalg);
+        return createResponse(() -> {
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkSortering(sortDirection, sortField);
+            ValideringsRegler.sjekkFiltervalg(filtervalg);
 
-        try {
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
@@ -90,23 +89,22 @@ public class VeilederController {
             } else {
                 return Response.status(UNAUTHORIZED).build();
             }
-        } catch (Exception e) {
-            logger.warn("Kall mot upstream service feilet", e);
-            return Response.status(BAD_GATEWAY).build();
-        }
+        });
     }
 
     @GET
     @Path("/{veilederident}/statustall")
     public Response hentStatusTall(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
-        ValideringsRegler.sjekkEnhet(enhet);
-        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+        return createResponse(() -> {
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
-        if (!TilgangsRegler.enhetErIPilot(enhet)) {
-            return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0)).build();
-        }
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
+                return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0)).build();
+            }
 
-        StatusTall statusTall = solrService.hentStatusTallForVeileder(enhet, veilederIdent);
-        return Response.ok().entity(statusTall).build();
+            StatusTall statusTall = solrService.hentStatusTallForVeileder(enhet, veilederIdent);
+            return Response.ok().entity(statusTall).build();
+        });
     }
 }
