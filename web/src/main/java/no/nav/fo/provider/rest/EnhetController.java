@@ -58,34 +58,28 @@ public class EnhetController {
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkSortering(sortDirection, sortField);
             ValideringsRegler.sjekkFiltervalg(filtervalg);
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return Response.ok().entity(new Portefolje().setBrukere(new ArrayList<>())).build();
+                return new Portefolje().setBrukere(new ArrayList<>());
             }
 
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
-            boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
-            boolean userIsInModigOppfolging = pepClient.isSubjectMemberOfModiaOppfolging(ident, token);
+            List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg);
+            List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
 
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 
-            if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
-                List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg);
-                List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
+            Event event = MetricsFactory.createEvent("enhetsportefolje.lastet");
+            event.addFieldToReport("identhash", identHash);
+            event.report();
 
-                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
-
-                Event event = MetricsFactory.createEvent("enhetsportefolje.lastet");
-                event.addFieldToReport("identhash", identHash);
-                event.report();
-
-                return Response.ok().entity(portefolje).build();
-            } else {
-                return Response.status(UNAUTHORIZED).build();
-            }
+            return portefolje;
         });
     }
 
@@ -95,8 +89,7 @@ public class EnhetController {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
 
-            FacetResults facetResult = solrService.hentPortefoljestorrelser(enhet);
-            return Response.ok().entity(facetResult).build();
+            return solrService.hentPortefoljestorrelser(enhet);
         });
     }
 
@@ -110,8 +103,7 @@ public class EnhetController {
                 return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0).setNyeBrukere(0)).build();
             }
 
-            StatusTall statusTall = solrService.hentStatusTallForPortefolje(enhet);
-            return Response.ok().entity(statusTall).build();
+            return solrService.hentStatusTallForPortefolje(enhet);
         });
     }
 }

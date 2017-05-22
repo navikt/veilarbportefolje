@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,30 +66,29 @@ public class VeilederController {
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkSortering(sortDirection, sortField);
             ValideringsRegler.sjekkFiltervalg(filtervalg);
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
+                return new Portefolje().setBrukere(new ArrayList<>());
+            }
 
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
 
-            boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
-            boolean userIsInModigOppfolging = pepClient.isSubjectMemberOfModiaOppfolging(ident, token);
+            List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg);
+            List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
 
-            if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
-                List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg);
-                List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 
-                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
+            Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
+            event.addFieldToReport("identhash", identHash);
+            event.report();
 
-                Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
-                event.addFieldToReport("identhash", identHash);
-                event.report();
-
-                return Response.ok().entity(portefolje).build();
-            } else {
-                return Response.status(UNAUTHORIZED).build();
-            }
+            return portefolje;
         });
     }
 
@@ -100,11 +100,10 @@ public class VeilederController {
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0)).build();
+                return new StatusTall().setTotalt(0).setInaktiveBrukere(0);
             }
 
-            StatusTall statusTall = solrService.hentStatusTallForVeileder(enhet, veilederIdent);
-            return Response.ok().entity(statusTall).build();
+            return solrService.hentStatusTallForVeileder(enhet, veilederIdent);
         });
     }
 }
