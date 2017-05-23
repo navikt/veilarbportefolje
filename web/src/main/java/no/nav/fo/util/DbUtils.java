@@ -1,7 +1,6 @@
 package no.nav.fo.util;
 
 import lombok.SneakyThrows;
-
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -67,6 +66,7 @@ public class DbUtils {
         document.addField("aap_maxtid_fasett", fieldGetter.apply(rs, "AAPMAXTIDFASETT"));
         document.addField("utlopsdato", parseDato(fieldGetter.apply(rs, "UTLOPSDATO")));
         document.addField("aap_maxtid", parseDato(fieldGetter.apply(rs, "AAPMAXTID")));
+        document.addField("oppfolging", fieldGetter.apply(rs, "OPPFOLGING"));
 
         return document;
     }

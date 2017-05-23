@@ -78,12 +78,13 @@ public class BrukerRepository {
                         .setAktoerid((String) data.get("AKTOERID"))
                         .setVeileder((String) data.get("VEILEDERIDENT"))
                         .setPersonid((String) data.get("PERSONID"))
-                        .setTildeltTidspunkt(toLocalDateTime((Timestamp) data.get("TILDELT_TIDSPUNKT")))
+                        .setTildeltTidspunkt((Timestamp) data.get("TILDELT_TIDSPUNKT"))
                         .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
                         .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
                         .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
-                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))).collect(toList());
+                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
+                        .setOppfolging((Boolean) data.get("OPPFOLGING"))).collect(toList());
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {

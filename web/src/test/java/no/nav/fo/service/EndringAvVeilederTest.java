@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.sql.Timestamp;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -68,7 +69,7 @@ public class EndringAvVeilederTest {
         BrukerOppdatertInformasjon bruker = new BrukerOppdatertInformasjon()
                 .setAktoerid("11111111")
                 .setVeileder("X111111")
-                .setOppdatert("2017-01-14 13:33:16.000000");
+                .setEndretTimestamp(Timestamp.valueOf("2017-01-14 13:33:16.000000"));
 
         oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker);
         try {
@@ -96,7 +97,7 @@ public class EndringAvVeilederTest {
         BrukerOppdatertInformasjon bruker = new BrukerOppdatertInformasjon()
                 .setAktoerid("22222222")
                 .setVeileder("X111111")
-                .setOppdatert("2017-01-14 13:33:16.000000");
+                .setEndretTimestamp(Timestamp.valueOf("2017-01-14 13:33:16.000000"));
 
         oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker);
 

@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,9 +128,9 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalOppdatereOmBrukerFinnes() {
-        Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+        Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
-        Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+        Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
@@ -147,7 +148,7 @@ public class BrukerRepositoryTest {
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
 
-        Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+        Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
@@ -178,7 +179,7 @@ public class BrukerRepositoryTest {
         assertThat(oppdaterteAktiveBrukere.size()).isEqualTo(2);
     }
 
-    private Brukerdata brukerdata(String aktoerid, String personId, String veileder, LocalDateTime tildeltTidspunkt, YtelseMapping ytelse,
+    private Brukerdata brukerdata(String aktoerid, String personId, String veileder, Timestamp tildeltTidspunkt, YtelseMapping ytelse,
                                   LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett) {
         return new Brukerdata()
                 .setAktoerid(aktoerid)

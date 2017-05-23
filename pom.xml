@@ -27,7 +27,7 @@
 
         <!-- Egenlagde -->
         <modig.security.version>1.0.30</modig.security.version>
-        <common-jetty.version>2.0.12</common-jetty.version>
+        <common-jetty.version>2.0.16</common-jetty.version>
         <common-types.version>1.2</common-types.version>
         <common-web.version>2.0.4</common-web.version>
         <common-test.version>1.2</common-test.version>
@@ -86,6 +86,14 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>api-app-bom</artifactId>
+                <version>LATEST</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
@@ -549,6 +557,12 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbportefolje-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
