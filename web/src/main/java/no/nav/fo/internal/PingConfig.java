@@ -65,4 +65,20 @@ public class PingConfig {
             }
         };
     }
+
+    @Bean
+    public Pingable aktivitetPing() throws IOException {
+        return () -> {
+            try {
+                HttpURLConnection connection = (HttpURLConnection) new URL(System.getProperty("veilarbaktivitet.isalive.url")).openConnection();
+                connection.connect();
+                if (connection.getResponseCode() == 200) {
+                    return Pingable.Ping.lyktes("VeilArbAktivitet");
+                }
+                return Pingable.Ping.feilet("VeilArbAktivitet", new Exception("Statuskode: " + connection.getResponseCode()));
+            } catch (Exception e) {
+                return Pingable.Ping.feilet("VeilArbAktivitet", e);
+            }
+        };
+    }
 }
