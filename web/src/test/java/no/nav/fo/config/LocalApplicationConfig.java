@@ -33,6 +33,7 @@ import javax.sql.DataSource;
         CacheConfig.class,
         PingConfig.class,
         FeedConfig.class,
+        AktivitetFeedConfig.class,
         LocalAktoerEndpointConfig.class
 })
 public class LocalApplicationConfig {
