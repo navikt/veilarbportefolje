@@ -37,6 +37,7 @@
             <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
         </queueManager>
 
+        <baseUrl alias="veilarbaktivitetPingURL" mapToProperty="veilarbaktivitet.isalive" />
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
