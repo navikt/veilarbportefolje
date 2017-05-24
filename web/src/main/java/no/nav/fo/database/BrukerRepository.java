@@ -339,8 +339,7 @@ public class BrukerRepository {
     }
 
     static boolean oppfolgingsFlaggSatt(SolrInputDocument bruker) {
-        Boolean oppfolging = (Boolean) bruker.get("oppfolging").getValue();
-        return oppfolging;
+        return (Boolean) bruker.get("oppfolging").getValue();
     }
 
     public static LocalDateTime toLocalDateTime(Timestamp timestamp) {

@@ -165,9 +165,33 @@ public class BrukerRepositoryTest {
         document.addField("kvalifiseringsgruppekode", "BATT");
         document.addField("formidlingsgruppekode", "IARBS");
         document.addField("veileder_id", "V123456");
+        document.addField("oppfolging", true);
 
         assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
     }
+
+    @Test
+    public void skalIkkeVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
+        SolrInputDocument document = new SolrInputDocument();
+        document.addField("kvalifiseringsgruppekode", "XXX");
+        document.addField("formidlingsgruppekode", "ISERV");
+        document.addField("veileder_id", null);
+        document.addField("oppfolging", false);
+
+        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isFalse();
+    }
+
+    @Test
+    public void skalVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
+        SolrInputDocument document = new SolrInputDocument();
+        document.addField("kvalifiseringsgruppekode", "XXX");
+        document.addField("formidlingsgruppekode", "ISERV");
+        document.addField("veileder_id", null);
+        document.addField("oppfolging", true);
+
+        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
+    }
+
 
     @Test
     public void skalFiltrereBrukere() {
