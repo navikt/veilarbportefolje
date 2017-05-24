@@ -1,6 +1,5 @@
 package no.nav.fo.config;
 
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
@@ -24,7 +23,7 @@ public class VirksomhetEnhetEndpointConfig {
     public Pingable virksomhetEnhetPing() {
         Enhet virksomhetEnhet = new CXFClient<>(Enhet.class)
                 .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build();
 
         return () -> {

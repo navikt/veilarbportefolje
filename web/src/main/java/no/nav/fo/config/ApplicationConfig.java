@@ -4,8 +4,9 @@ import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.internal.IsAliveServlet;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+import no.nav.fo.service.PepClientImpl;
 import no.nav.fo.service.PepClient;
-import no.nav.fo.service.PepClientInterface;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,5 +58,5 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public PepClientInterface pepClient() { return new PepClient(); }
+    public PepClient pepClient(Pep pep) { return new PepClientImpl(pep); }
 }

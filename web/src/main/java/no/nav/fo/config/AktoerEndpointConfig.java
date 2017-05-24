@@ -1,6 +1,5 @@
 package no.nav.fo.config;
 
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
@@ -35,7 +34,7 @@ public class AktoerEndpointConfig {
     public AktoerV2 factory() {
         return createTimerProxyForWebService("Aktoer_v2", new CXFClient<>(AktoerV2.class)
                 .address(getProperty("aktoer.endpoint.url"))
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build(), AktoerV2.class);
     }
 }
