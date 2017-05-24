@@ -52,6 +52,7 @@ public class BrukerRepositoryTest {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-aktoerid-to-personid-mapping.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-bruker-data-test.sql"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,7 +79,7 @@ public class BrukerRepositoryTest {
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
-                "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
+                "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -96,7 +97,7 @@ public class BrukerRepositoryTest {
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
+                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -129,9 +130,9 @@ public class BrukerRepositoryTest {
     @Test
     public void skalOppdatereOmBrukerFinnes() {
         Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
         Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
@@ -149,7 +150,7 @@ public class BrukerRepositoryTest {
     public void skalInserteOmBrukerIkkeFinnes() {
 
         Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
 
@@ -180,7 +181,7 @@ public class BrukerRepositoryTest {
     }
 
     private Brukerdata brukerdata(String aktoerid, String personId, String veileder, Timestamp tildeltTidspunkt, YtelseMapping ytelse,
-                                  LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett) {
+                                  LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett, boolean oppfolging) {
         return new Brukerdata()
                 .setAktoerid(aktoerid)
                 .setPersonid(personId)
@@ -190,8 +191,8 @@ public class BrukerRepositoryTest {
                 .setAapMaxtid(aapMaxtid)
                 .setUtlopsdatoFasett(utlopsdatoFasett)
                 .setUtlopsdato(utlopsdato)
-                .setYtelse(ytelse);
-
+                .setYtelse(ytelse)
+                .setOppfolging(oppfolging);
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
@@ -206,4 +207,17 @@ public class BrukerRepositoryTest {
         assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
     }
 
+    @Test
+    public void skalKonvertereDokumentFeltTilBoolean() throws Exception {
+        SolrInputDocument inputDocumentTrue = new SolrInputDocument();
+        inputDocumentTrue.addField("oppfolging", true);
+
+        SolrInputDocument inputDocumentFalse = new SolrInputDocument();
+        inputDocumentFalse.addField("oppfolging", false);
+
+        boolean shouldBeTrue = BrukerRepository.oppfolgingsFlaggSatt(inputDocumentTrue);
+        boolean shouldBeFalse = BrukerRepository.oppfolgingsFlaggSatt(inputDocumentFalse);
+        assertThat(shouldBeTrue).isTrue();
+        assertThat(shouldBeFalse).isFalse();
+    }
 }

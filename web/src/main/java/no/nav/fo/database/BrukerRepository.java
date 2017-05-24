@@ -28,6 +28,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
+import static no.nav.fo.util.DbUtils.parseJaNei;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -35,6 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class BrukerRepository {
 
     static final private Logger LOG = getLogger(BrukerRepository.class);
+    private static final String IARBS = "IARBS";
 
     @Inject
     private JdbcTemplate db;
@@ -84,7 +86,8 @@ public class BrukerRepository {
                         .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
                         .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
                         .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
-                        .setOppfolging((Boolean) data.get("OPPFOLGING"))).collect(toList());
+                        .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING")))
+                .collect(toList());
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
@@ -204,7 +207,8 @@ public class BrukerRepository {
                         "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett " +
+                        "aapmaxtidfasett, " +
+                        "oppfolging " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -237,7 +241,8 @@ public class BrukerRepository {
                         "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett " +
+                        "aapmaxtidfasett, " +
+                        "oppfolging" +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -271,7 +276,8 @@ public class BrukerRepository {
                         "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett  " +
+                        "aapmaxtidfasett, " +
+                        "oppfolging  " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -329,7 +335,12 @@ public class BrukerRepository {
                         || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
                         || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
 
-        return aktivStatus || bruker.get("veileder_id").getValue() != null;
+        return aktivStatus || bruker.get("veileder_id").getValue() != null || oppfolgingsFlaggSatt(bruker);
+    }
+
+    static boolean oppfolgingsFlaggSatt(SolrInputDocument bruker) {
+        Boolean oppfolging = (Boolean) bruker.get("oppfolging").getValue();
+        return oppfolging;
     }
 
     public static LocalDateTime toLocalDateTime(Timestamp timestamp) {

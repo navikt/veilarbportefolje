@@ -36,7 +36,7 @@ public class Brukerdata {
                 .set("UTLOPSDATOFASETT", utlopsdatoFasett != null ? utlopsdatoFasett.toString() : null)
                 .set("AAPMAXTID", toTimestamp(aapMaxtid))
                 .set("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
-                .set("OPPFOLGING", toNumber(oppfolging))
+                .set("OPPFOLGING", toJaNei(oppfolging))
                 .whereEquals("PERSONID", personid);
     }
 
@@ -51,7 +51,7 @@ public class Brukerdata {
                 .value("AAPMAXTID", toTimestamp(aapMaxtid))
                 .value("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
                 .value("PERSONID", personid)
-                .value("OPPFOLGING", toNumber(oppfolging));
+                .value("OPPFOLGING", toJaNei(oppfolging));
 
     }
 
@@ -68,9 +68,14 @@ public class Brukerdata {
                 .add("UTLOPSDATOFASETT", (bruker) -> safeToString(bruker.utlopsdatoFasett), String.class)
                 .add("AAPMAXTID", (bruker) -> toTimestamp(bruker.aapMaxtid), Timestamp.class)
                 .add("AAPMAXTIDFASETT", (bruker) -> safeToString(bruker.aapMaxtidFasett), String.class)
-                .add("OPPFOLGING", (bruker) -> toNumber(bruker.oppfolging), Integer.class)
+                .add("OPPFOLGING", (bruker) -> toJaNei(bruker.oppfolging), String.class)
                 .addWhereClause("PERSONID", (bruker) -> bruker.personid)
                 .execute(data);
+    }
+
+    private static String toJaNei(boolean oppfolging) {
+        String s = oppfolging ? "J" : "N";
+        return s;
     }
 
     private static Object safeToString(Object o) {
@@ -79,9 +84,5 @@ public class Brukerdata {
 
     private static Timestamp toTimestamp(LocalDateTime localDateTime) {
         return localDateTime != null ? Timestamp.valueOf(localDateTime) : null;
-    }
-
-    private static int toNumber(Boolean oppfolging) {
-        return oppfolging ? 1 : 0;
     }
 }
