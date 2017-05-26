@@ -88,7 +88,7 @@
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>api-app-bom</artifactId>
-                <version>LATEST</version>
+                <version>RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -96,7 +96,7 @@
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>feed</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.0.2</version>
             </dependency>
 
             <!-- Virksomhetstjenester -->
@@ -148,6 +148,12 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-test</artifactId>
                 <version>${common-test.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-plus</artifactId>
+                <version>9.3.0.M2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
