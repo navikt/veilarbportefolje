@@ -67,6 +67,8 @@ public class DbUtils {
         document.addField("utlopsdato", parseDato(fieldGetter.apply(rs, "UTLOPSDATO")));
         document.addField("aap_maxtid", parseDato(fieldGetter.apply(rs, "AAPMAXTID")));
         document.addField("oppfolging", parseJaNei(fieldGetter.apply(rs, "OPPFOLGING"), "OPPFOLGING"));
+        document.addField("venterpasvarfrabruker", parseDato(fieldGetter.apply(rs, "venterpasvarfrabruker")));
+        document.addField("venterpasvarfranav", parseDato(fieldGetter.apply(rs, "venterpasvarfranav")));
 
         return document;
     }

@@ -217,7 +217,9 @@ public class BrukerRepository {
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
-                        "oppfolging " +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -251,7 +253,9 @@ public class BrukerRepository {
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
-                        "oppfolging" +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -286,7 +290,9 @@ public class BrukerRepository {
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
-                        "oppfolging  " +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
