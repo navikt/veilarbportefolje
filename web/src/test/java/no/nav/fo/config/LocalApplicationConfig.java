@@ -34,6 +34,7 @@ import javax.sql.DataSource;
         AktoerEndpointConfig.class,
         AbacContext.class,
         CacheConfig.class,
+        FeedConfig.class,
         PingConfig.class
 })
 public class LocalApplicationConfig {

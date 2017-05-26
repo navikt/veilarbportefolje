@@ -27,7 +27,7 @@
 
         <!-- Egenlagde -->
         <modig.security.version>1.0.30</modig.security.version>
-        <common-jetty.version>2.0.12</common-jetty.version>
+        <common-jetty.version>2.0.16</common-jetty.version>
         <common-types.version>1.2</common-types.version>
         <common-web.version>2.0.4</common-web.version>
         <common-test.version>1.2</common-test.version>
@@ -59,7 +59,7 @@
         <solr.version>6.4.2</solr.version>
         <jetty.version>9.3.0.M2</jetty.version>
         <javaslang.version>2.0.0-RC4</javaslang.version>
-        <lombok.version>1.12.6</lombok.version>
+        <lombok.version>1.16.16</lombok.version>
         <activemq.version>5.7.0</activemq.version>
         <httpclient.version>4.5.2</httpclient.version>
         <httpcore.version>4.4.4</httpcore.version>
@@ -94,6 +94,12 @@
                 <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
                 <version>1.0.1-SNAPSHOT</version>
                 <classifier>jaxb</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>feed</artifactId>
+                <version>1.0.2</version>
             </dependency>
 
             <!--oidc-security-->

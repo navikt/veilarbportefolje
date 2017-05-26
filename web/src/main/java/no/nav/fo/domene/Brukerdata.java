@@ -24,6 +24,8 @@ public class Brukerdata {
     private ManedMapping utlopsdatoFasett;
     private LocalDateTime aapMaxtid;
     private KvartalMapping aapMaxtidFasett;
+    private LocalDateTime venterPaSvarFraBruker;
+    private LocalDateTime venterPaSvarFraNav;
 
     public UpdateQuery toUpdateQuery(JdbcTemplate db) {
         return SqlUtils.update(db, "bruker_data")
@@ -35,6 +37,8 @@ public class Brukerdata {
                 .set("UTLOPSDATOFASETT", utlopsdatoFasett != null ? utlopsdatoFasett.toString() : null)
                 .set("AAPMAXTID", toTimestamp(aapMaxtid))
                 .set("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
+                .set("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
+                .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .whereEquals("PERSONID", personid);
     }
 
@@ -48,6 +52,8 @@ public class Brukerdata {
                 .value("UTLOPSDATOFASETT", utlopsdatoFasett != null ? utlopsdatoFasett.toString() : null)
                 .value("AAPMAXTID", toTimestamp(aapMaxtid))
                 .value("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
+                .value("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
+                .value("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .value("PERSONID", personid);
 
     }
@@ -65,6 +71,8 @@ public class Brukerdata {
                 .add("UTLOPSDATOFASETT", (bruker) -> safeToString(bruker.utlopsdatoFasett), String.class)
                 .add("AAPMAXTID", (bruker) -> toTimestamp(bruker.aapMaxtid), Timestamp.class)
                 .add("AAPMAXTIDFASETT", (bruker) -> safeToString(bruker.aapMaxtidFasett), String.class)
+                .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
+                .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .addWhereClause("PERSONID", (bruker) -> bruker.personid)
                 .execute(data);
     }

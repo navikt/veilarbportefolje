@@ -18,6 +18,12 @@
     </properties>
 
     <dependencies>
+        <!--FELLESBIBLIOTEKER-->
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>feed</artifactId>
+        </dependency>
+
         <!-- Virksomhetstjenester -->
         <dependency>
             <groupId>no.nav.meldinger.virksomhet</groupId>
