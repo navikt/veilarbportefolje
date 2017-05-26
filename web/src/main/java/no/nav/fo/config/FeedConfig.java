@@ -73,9 +73,7 @@ public class FeedConfig {
     }
 
     private FeedConsumer<DialogDataFraFeed> dialogDataFraFeedFeedConsumer(JdbcTemplate db, DialogDataFeedHandler callback) {
-        Timestamp sisteEndring = db.query("SELECT dialogaktor from METADATA", resultSet -> {
-            return resultSet.getTimestamp("dialogaktor");
-        });
+        Object sisteEndring = db.queryForList("SELECT dialogaktor_sist_oppdatert from METADATA").get(0).get("dialogaktor_sist_oppdatert");
 
         FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(
                 DialogDataFraFeed.class,
