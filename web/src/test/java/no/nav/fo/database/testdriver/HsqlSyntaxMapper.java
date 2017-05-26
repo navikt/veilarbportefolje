@@ -13,7 +13,11 @@ class HsqlSyntaxMapper {
     static {
         map(
                 "INSERT INTO METADATA (SIST_INDEKSERT)\nVALUES (TO_TIMESTAMP('1970-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.FF6'))",
-                "SELECT 1 FROM DUAL"
+                "INSERT INTO METADATA (SIST_INDEKSERT)\nVALUES (TIMESTAMP '1970-01-01 00:00:00')"
+        );
+        map(
+                "INSERT INTO METADATA (dialogaktor_sist_oppdatert) VALUES (TO_TIMESTAMP('1970-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.FF6'))",
+                "INSERT INTO METADATA (dialogaktor_sist_oppdatert) VALUES (TIMESTAMP '1970-01-01 00:00:00')"
         );
     }
 
