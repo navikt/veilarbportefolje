@@ -6,13 +6,11 @@ import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Mapping;
 import no.nav.fo.domene.YtelseFilter;
 import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -21,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -38,7 +35,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 @RunWith(MockitoJUnitRunner.class)
 public class DiagramControllerTest {
 
-    public static final List<Bruker> BRUKERE = asList(
+    private static final List<Bruker> BRUKERE = asList(
             new Bruker().setFnr("1").setUtlopsdatoFasett(MND1).setAapMaxtidFasett(KV1),
             new Bruker().setFnr("2").setUtlopsdatoFasett(MND2).setAapMaxtidFasett(KV2),
             new Bruker().setFnr("3").setUtlopsdatoFasett(MND3).setAapMaxtidFasett(KV3),
@@ -57,16 +54,12 @@ public class DiagramControllerTest {
             new Bruker().setFnr("16").setUtlopsdatoFasett(MND12).setAapMaxtidFasett(KV16)
     );
     @Mock
-    SolrService solr;
+    private SolrService solr;
 
     @Mock
-    BrukertilgangService brukertilgangService;
+    private BrukertilgangService brukertilgangService;
 
-    @Mock
-    PepClient pepClient;
-
-    @InjectMocks
-    DiagramController controller;
+    private DiagramController controller;
 
     @BeforeClass
     public static void before() {
@@ -76,14 +69,15 @@ public class DiagramControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        when(solr.hentBrukereForVeileder(anyString(), anyString(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(BRUKERE);
+        controller = new DiagramController(brukertilgangService, solr);
+        when(solr.hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(BRUKERE);
     }
 
     @Test
     public void skalSjekkeTilgang() throws Exception {
         when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(false);
 
-        Response response = controller.hentDiagramData("ident", "enhet", new Filtervalg());
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
         assertThat(response.getStatus()).isEqualTo(FORBIDDEN.getStatusCode());
     }
@@ -92,7 +86,7 @@ public class DiagramControllerTest {
     public void skalGiFeilOmYtelseIkkeErValgt() throws Exception {
         when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
 
-        Response response = controller.hentDiagramData("ident", "enhet", new Filtervalg());
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg());
 
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     }
@@ -101,32 +95,32 @@ public class DiagramControllerTest {
     public void skalHenteUtBrukereForEnhet() throws Exception {
         when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
 
-        Response response = controller.hentDiagramData(null, "enhet", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
+        controller.hentDiagramData(null, "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
-        verify(solr, times(1)).hentBrukereForEnhet(anyString(), anyString(), anyString(), any(Filtervalg.class));
+        verify(solr, times(1)).hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class));
     }
 
     @Test
     public void skalHenteUtBrukereForVeileder() throws Exception {
         when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
 
-        Response response = controller.hentDiagramData("ident", "enhet", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
+        controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
-        verify(solr, times(1)).hentBrukereForVeileder(anyString(), anyString(), anyString(), anyString(), any(Filtervalg.class));
+        verify(solr, times(1)).hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class));
     }
 
     @Test
     public void skalGrupperePaUtlopsdato() throws Exception {
-        List<Bruker> brukere = new ArrayList(BRUKERE);
+        List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
         when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
-        when(solr.hentBrukereForVeileder(anyString(), anyString(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(brukere);
+        when(solr.hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(brukere);
 
-        Response response = controller.hentDiagramData("ident", "enhet", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
         Map<Mapping, Long> gruppering = (Map<Mapping, Long>) response.getEntity();
-        Optional<Long> storsteGruppe = gruppering.values().stream().collect(Collectors.maxBy(Long::compare));
+        Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
 
         assertThat(gruppering).hasSize(12);
         assertThat(storsteGruppe).contains(5L);
@@ -136,16 +130,16 @@ public class DiagramControllerTest {
 
     @Test
     public void skalGrupperePaAApUtlopsdato() throws Exception {
-        List<Bruker> brukere = new ArrayList(BRUKERE);
+        List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
         when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
-        when(solr.hentBrukereForVeileder(anyString(), anyString(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(brukere);
+        when(solr.hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(brukere);
 
-        Response response = controller.hentDiagramData("ident", "enhet", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
 
         Map<Mapping, Long> gruppering = (Map<Mapping, Long>) response.getEntity();
-        Optional<Long> storsteGruppe = gruppering.values().stream().collect(Collectors.maxBy(Long::compare));
+        Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
 
         assertThat(gruppering).hasSize(16);
         assertThat(storsteGruppe).contains(2L);

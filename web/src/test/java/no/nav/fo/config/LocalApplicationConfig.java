@@ -3,7 +3,7 @@ package no.nav.fo.config;
 import no.nav.fo.internal.IsAliveServlet;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
-import no.nav.fo.service.PepClientInterface;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientMock;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
@@ -58,7 +58,7 @@ public class LocalApplicationConfig {
     }
 
     @Bean
-    public PepClientInterface pepClient() {
+    public PepClient pepClient() {
         return new PepClientMock();
     }
 }

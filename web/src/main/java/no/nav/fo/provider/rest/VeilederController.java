@@ -7,7 +7,7 @@ import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Portefolje;
 import no.nav.fo.domene.StatusTall;
 import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.PepClientInterface;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
 import no.nav.fo.util.TokenUtils;
@@ -19,29 +19,36 @@ import org.slf4j.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.BAD_GATEWAY;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Api(value="Veileder")
+@Api(value = "Veileder")
 @Path("/veileder")
 @Produces(APPLICATION_JSON)
 public class VeilederController {
 
     private static final Logger logger = getLogger(VeilederController.class);
 
-    @Inject
-    BrukertilgangService brukertilgangService;
+    private BrukertilgangService brukertilgangService;
+    private SolrService solrService;
+    private PepClient pepClient;
 
     @Inject
-    SolrService solrService;
-
-    @Inject
-    PepClientInterface pepClient;
+    public VeilederController(
+            BrukertilgangService brukertilgangService,
+            SolrService solrService,
+            PepClient pepClient
+    ) {
+        this.brukertilgangService = brukertilgangService;
+        this.solrService = solrService;
+        this.pepClient = pepClient;
+    }
 
     @POST
     @Path("/{veilederident}/portefolje")
@@ -54,47 +61,49 @@ public class VeilederController {
             @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
-        try {
+        return createResponse(() -> {
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkSortering(sortDirection, sortField);
+            ValideringsRegler.sjekkFiltervalg(filtervalg);
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
+                return new Portefolje().setBrukere(new ArrayList<>());
+            }
+
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
 
-            boolean brukerHarTilgangTilEnhet = brukertilgangService.harBrukerTilgang(ident, enhet);
-            boolean userIsInModigOppfolging = pepClient.isSubjectMemberOfModiaOppfolging(ident);
+            List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg);
+            List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
 
-            if (brukerHarTilgangTilEnhet && userIsInModigOppfolging) {
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
 
-                List<Bruker> brukere = solrService.hentBrukereForVeileder(veilederIdent, enhet, sortDirection, sortField, filtervalg);
-                List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-                List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist,token, pepClient);
+            Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
+            event.addFieldToReport("identhash", identHash);
+            event.report();
 
-                Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
-
-                Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
-                event.addFieldToReport("identhash", identHash);
-                event.report();
-
-                return Response.ok().entity(portefolje).build();
-            } else {
-                return Response.status(UNAUTHORIZED).build();
-            }
-        } catch (Exception e) {
-            logger.warn("Kall mot upstream service feilet", e);
-            return Response.status(BAD_GATEWAY).build();
-        }
+            return portefolje;
+        });
     }
 
     @GET
     @Path("/{veilederident}/statustall")
     public Response hentStatusTall(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
-        List<String> enheterIPilot = Arrays.asList(System.getProperty("portefolje.pilot.enhetliste").split(","));
+        return createResponse(() -> {
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
-        if (!enheterIPilot.contains(enhet)) {
-            return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0)).build();
-        }
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
+                return new StatusTall().setTotalt(0).setInaktiveBrukere(0);
+            }
 
-        StatusTall statusTall = solrService.hentStatusTallForVeileder(enhet, veilederIdent);
-        return Response.ok().entity(statusTall).build();
+            return solrService.hentStatusTallForVeileder(enhet, veilederIdent);
+        });
     }
 }

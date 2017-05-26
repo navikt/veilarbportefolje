@@ -1,6 +1,6 @@
 package no.nav.fo.service;
 
-public class PepClientMock implements PepClientInterface {
+public class PepClientMock implements PepClient {
 
     @Override
     public boolean isSubjectAuthorizedToSeeKode7(String token) {
@@ -18,7 +18,7 @@ public class PepClientMock implements PepClientInterface {
     }
 
     @Override
-    public boolean isSubjectMemberOfModiaOppfolging(String ident) {
+    public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
         return true;
     }
 }
