@@ -21,7 +21,6 @@ public class StartJettyVeilArbPortefolje {
     public static void main(String[] args) throws Exception {
         SystemProperties.setFrom("veilarbportefolje.properties");
         System.setProperty("develop-local", "true");
-        System.setProperty("environment.class", "lokalt");
 
         SingleConnectionDataSource dataSource;
         if (Boolean.parseBoolean(getProperty("lokal.database"))) {
@@ -52,6 +51,8 @@ public class StartJettyVeilArbPortefolje {
                 .addDatasource(dataSource, DatabaseConfig.JNDI_NAME)
                 .overrideWebXml(), new ISSOSecurityConfig("veilarbportefolje", "t5"))
                 .buildJetty();
+
+        System.setProperty("environment.class", "lokalt");
 
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }

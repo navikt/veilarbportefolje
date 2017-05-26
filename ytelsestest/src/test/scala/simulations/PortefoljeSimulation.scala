@@ -4,7 +4,7 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import no.nav.sbl.gatling.login.OpenIdConnectLogin
 import org.slf4j.LoggerFactory
-import utils.{Helpers, RequestFilter}
+import utils.{Helpers, RequestFilter, RequestTildelingVeileder}
 import java.util.concurrent.TimeUnit
 
 import io.gatling.core.feeder.RecordSeqFeederBuilder
@@ -22,12 +22,16 @@ class PortefoljeSimulation extends Simulation {
     private val loginUrl = System.getProperty("LOGINURL", "https://isso-q.adeo.no")
     private val password = System.getProperty("USER_PASSWORD", "changeme")
     private val oidcPassword = System.getProperty("OIDC_PASSWORD", "changeme")
-    private val enheter = System.getProperty("ENHETER", "0709,0805,0415").split(",")
+    private val enheter = System.getProperty("ENHETER", "0104,0105,0315,0415,0702,0709,0713,0714,0722,0805,1002,1604,1804").split(",")
 
     private val appnavn = "veilarbpersonflatefs"
     private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
     private val random = new Random()
     private val enhetsFeeder = RecordSeqFeederBuilder(enheter.map(enhet => Map("enhet" -> enhet.trim))).circular
+
+    private val veilederForTildeling1 = System.getProperty("VEIL_1", "changeme")
+    private val veilederForTildeling2 = System.getProperty("VEIL_2", "changeme")
+    private val brukerForTildeling = System.getProperty("BRUKER_TIL_VEILEDER", "changeme")
 
     private val httpProtocol = http
         .baseURL(baseUrl)
@@ -52,7 +56,7 @@ class PortefoljeSimulation extends Simulation {
         .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
         .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/statustall"))
         .exec(
-            Helpers.httpPostPaginering("portefoljefilter", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter default", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter()))
                 .check(status.is(200))
         )
@@ -61,22 +65,19 @@ class PortefoljeSimulation extends Simulation {
         .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
         .pause("3", "15", TimeUnit.SECONDS)
         .exec(
-            http("portefoljefilter")
-                .post("/veilarbportefolje/tjenester/enhet/0713/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter alder", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
                 .check(status.is(200))
         )
         .pause("1", "10", TimeUnit.SECONDS)
         .exec(
-            http("portefoljefilter")
-                .post(session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter alder og kjoenn", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(alder = List("25-29", "30-39"), kjonn = List("M"))))
                 .check(status.is(200))
         )
         .pause("1", "10", TimeUnit.SECONDS)
         .exec(
-            http("portefoljefilter")
-                .post(session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(
                     kjonn = List("M"),
                     fodselsdagIMnd = List("1", "2")
@@ -85,8 +86,7 @@ class PortefoljeSimulation extends Simulation {
         )
         .pause("1", "10", TimeUnit.SECONDS)
         .exec(
-            http("portefoljefilter")
-                .post(session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter alder, kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(
                     alder = List("20-24", "30-39"),
                     kjonn = List("M"),
@@ -94,6 +94,37 @@ class PortefoljeSimulation extends Simulation {
                 )))
                 .check(status.is(200))
         )
+
+        .exec(
+          Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
+            .body(Helpers.toBody(List(RequestTildelingVeileder(
+              brukerFnr = brukerForTildeling,
+              fraVeilederId = null,
+              tilVeilederId = veilederForTildeling1
+            ))))
+            .check(status.is(200))
+        )
+        .pause("1", "6", TimeUnit.SECONDS)
+        .exec(
+            Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
+              .body(Helpers.toBody(List(RequestTildelingVeileder(
+                  brukerFnr = brukerForTildeling,
+                  fraVeilederId = veilederForTildeling1,
+                  tilVeilederId = veilederForTildeling2
+              ))))
+              .check(status.is(200))
+        )
+        .pause("1", "6", TimeUnit.SECONDS)
+        .exec(
+          Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
+            .body(Helpers.toBody(List(RequestTildelingVeileder(
+              brukerFnr = brukerForTildeling,
+              fraVeilederId = veilederForTildeling1,
+              tilVeilederId = veilederForTildeling1
+            ))))
+            .check(status.is(200))
+        )
+
         .pause("1", "6", TimeUnit.SECONDS)
         .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
         .pause("1", "6", TimeUnit.SECONDS)
@@ -102,12 +133,12 @@ class PortefoljeSimulation extends Simulation {
         .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
         .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
         .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
-        .exec(Helpers.httpGetSuccess("person", "/veilarbperson/tjenester/person/!!CHANGE ME!!"))
+        .exec(Helpers.httpGetSuccess("person", "/veilarbperson/tjenester/person/" + brukerForTildeling))
         .pause("1", "6", TimeUnit.SECONDS)
-        .exec(Helpers.httpGetSuccess("oppfoelginsstatus", "/veilarbsituasjon/api/person/!!CHANGE ME!!/oppfoelgingsstatus"))
+        .exec(Helpers.httpGetSuccess("oppfoelginsstatus", "/veilarbsituasjon/api/person/" + brukerForTildeling + "/oppfoelgingsstatus"))
         .pause("50", "300", TimeUnit.MILLISECONDS)
-        .exec(Helpers.httpGetSuccess("ytelser", "/veilarbsituasjon/api/person/!!CHANGE ME!!/ytelser"))
-        .exec(Helpers.httpGetSuccess("veilederinfo", "/veilarbsituasjon/api/person/!!CHANGE ME!!/veileder"))
+        .exec(Helpers.httpGetSuccess("ytelser", "/veilarbsituasjon/api/person/" + brukerForTildeling + "/ytelser"))
+        .exec(Helpers.httpGetSuccess("veilederinfo", "/veilarbsituasjon/api/person/" + brukerForTildeling + "/veileder"))
 
     setUp(
         portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)

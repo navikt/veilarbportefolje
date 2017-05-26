@@ -102,6 +102,15 @@ public class BrukerRepository {
         return db.queryForList(getPersonidFromAktoeridSQL(), aktoerId);
     }
 
+    public Optional<String> retrievePersonIdFromAktoerId(String aktoerId) {
+        List<Map<String, Object>> list = retrieveBruker(aktoerId);
+        if (list.size() != 1) {
+            LOG.warn(format("Fikk %d antall rader for bruker med aktoerId %s", list.size(), aktoerId));
+            return empty();
+        }
+        return Optional.of((String)list.get(0).get("PERSON_ID"));
+    }
+
     public Optional<BigDecimal> retrievePersonidFromFnr(String fnr) {
         List<Map<String, Object>> list = db.queryForList(getPersonIdFromFnrSQL(), fnr);
         if (list.size() != 1) {
@@ -208,7 +217,9 @@ public class BrukerRepository {
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
-                        "oppfolging " +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -242,7 +253,9 @@ public class BrukerRepository {
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
-                        "oppfolging" +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -277,7 +290,9 @@ public class BrukerRepository {
                         "utlopsdatofasett, " +
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
-                        "oppfolging  " +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +

@@ -24,6 +24,8 @@ public class Brukerdata {
     private ManedMapping utlopsdatoFasett;
     private LocalDateTime aapMaxtid;
     private KvartalMapping aapMaxtidFasett;
+    private LocalDateTime venterPaSvarFraBruker;
+    private LocalDateTime venterPaSvarFraNav;
     private Boolean oppfolging;
 
     public UpdateQuery toUpdateQuery(JdbcTemplate db) {
@@ -37,6 +39,8 @@ public class Brukerdata {
                 .set("AAPMAXTID", toTimestamp(aapMaxtid))
                 .set("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
                 .set("OPPFOLGING", safeToJaNei(oppfolging))
+                .set("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
+                .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .whereEquals("PERSONID", personid);
     }
 
@@ -50,6 +54,8 @@ public class Brukerdata {
                 .value("UTLOPSDATOFASETT", utlopsdatoFasett != null ? utlopsdatoFasett.toString() : null)
                 .value("AAPMAXTID", toTimestamp(aapMaxtid))
                 .value("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
+                .value("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
+                .value("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .value("PERSONID", personid)
                 .value("OPPFOLGING", safeToJaNei(oppfolging));
 
@@ -69,6 +75,8 @@ public class Brukerdata {
                 .add("AAPMAXTID", (bruker) -> toTimestamp(bruker.aapMaxtid), Timestamp.class)
                 .add("AAPMAXTIDFASETT", (bruker) -> safeToString(bruker.aapMaxtidFasett), String.class)
                 .add("OPPFOLGING", (bruker) -> safeToJaNei(bruker.oppfolging), String.class)
+                .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
+                .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .addWhereClause("PERSONID", (bruker) -> bruker.personid)
                 .execute(data);
     }
