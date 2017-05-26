@@ -3,7 +3,7 @@ package no.nav.fo.exception;
 import static java.lang.String.format;
 
 public class FantIkkePersonIdException extends RuntimeException {
-    public FantIkkePersonIdException(String fnr) {
-        super(format("Fant ikke person_id for fnr: %S", fnr));
+    public FantIkkePersonIdException(String aktoerId) {
+        super(format("Fant ikke personid for aktoerId: %S", aktoerId));
     }
 }

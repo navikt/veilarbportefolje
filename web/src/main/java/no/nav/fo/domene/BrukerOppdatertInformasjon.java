@@ -3,18 +3,28 @@ package no.nav.fo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.sql.Timestamp;
+
 @Data
 @Accessors(chain = true)
-public class BrukerOppdatertInformasjon {
+public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInformasjon> {
 
     private String aktoerid;
     private String veileder;
-    private String oppdatert;
+    private Boolean oppfolging;
+    private Timestamp endretTimestamp;
 
-    public BrukerinformasjonFraKo applyTo(BrukerinformasjonFraKo brukerinformasjonFraKo) {
-        return brukerinformasjonFraKo
-                .setOppdatert(oppdatert)
+
+    public BrukerinformasjonFraFeed applyTo(BrukerinformasjonFraFeed brukerinformasjonFraFeed) {
+        return brukerinformasjonFraFeed
+                .setAktoerid(aktoerid)
                 .setVeileder(veileder)
-                .setAktoerid(aktoerid);
+                .setOppfolging(oppfolging)
+                .setOppdatert(endretTimestamp);
+    }
+
+    @Override
+    public int compareTo(BrukerOppdatertInformasjon o) {
+        return endretTimestamp.compareTo(o.getEndretTimestamp());
     }
 }

@@ -1,7 +1,6 @@
 package no.nav.fo.util;
 
 import lombok.SneakyThrows;
-
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -67,6 +66,7 @@ public class DbUtils {
         document.addField("aap_maxtid_fasett", fieldGetter.apply(rs, "AAPMAXTIDFASETT"));
         document.addField("utlopsdato", parseDato(fieldGetter.apply(rs, "UTLOPSDATO")));
         document.addField("aap_maxtid", parseDato(fieldGetter.apply(rs, "AAPMAXTID")));
+        document.addField("oppfolging", parseJaNei(fieldGetter.apply(rs, "OPPFOLGING"), "OPPFOLGING"));
 
         return document;
     }
@@ -85,7 +85,7 @@ public class DbUtils {
         }
     }
 
-    static boolean parseJaNei(Object janei, String name) {
+    public static boolean parseJaNei(Object janei, String name) {
         boolean defaultValue  = false;
         if (janei == null) {
             logger.warn(String.format("%s er ikke satt i databasen, defaulter til %b", name, defaultValue));
