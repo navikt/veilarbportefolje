@@ -100,7 +100,7 @@ public class VeilederController {
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return new StatusTall().setTotalt(0).setInaktiveBrukere(0);
+                return new StatusTall();
             }
 
             return solrService.hentStatusTallForVeileder(enhet, veilederIdent);

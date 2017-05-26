@@ -100,7 +100,7 @@ public class EnhetController {
             ValideringsRegler.sjekkEnhet(enhet);
 
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return Response.ok().entity(new StatusTall().setTotalt(0).setInaktiveBrukere(0).setNyeBrukere(0)).build();
+                return Response.ok().entity(new StatusTall()).build();
             }
 
             return solrService.hentStatusTallForPortefolje(enhet);

@@ -222,10 +222,14 @@ public class SolrService {
 
         String nyeBrukere = "-veileder_id:*";
         String inaktiveBrukere = "formidlingsgruppekode:ISERV AND veileder_id:*";
+        String venterPaSvarFraNAV = "venterpasvarfranav:*";
+        String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFacetQuery(nyeBrukere);
         solrQuery.addFacetQuery(inaktiveBrukere);
+        solrQuery.addFacetQuery(venterPaSvarFraNAV);
+        solrQuery.addFacetQuery(venterPaSvarFraBruker);
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -235,7 +239,14 @@ public class SolrService {
             long antallTotalt = response.getResults().getNumFound();
             long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
             long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
-            statusTall.setTotalt(antallTotalt).setInaktiveBrukere(antallInaktiveBrukere).setNyeBrukere(antallNyeBrukere);
+            long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
+            long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
+            statusTall
+                    .setTotalt(antallTotalt)
+                    .setInaktiveBrukere(antallInaktiveBrukere)
+                    .setNyeBrukere(antallNyeBrukere)
+                    .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
+                    .setInaktiveBrukere(antallVenterPaSvarFraBruker);
         } catch (SolrServerException | IOException e) {
             logger.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
         }
@@ -247,10 +258,14 @@ public class SolrService {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
+        String venterPaSvarFraNAV = "venterpasvarfranav:*";
+        String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
         solrQuery.addFacetQuery(inaktiveBrukere);
+        solrQuery.addFacetQuery(venterPaSvarFraNAV);
+        solrQuery.addFacetQuery(venterPaSvarFraBruker);
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -259,7 +274,13 @@ public class SolrService {
             response = solrClientSlave.query(solrQuery);
             long antallTotalt = response.getResults().getNumFound();
             long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
-            statusTall.setTotalt(antallTotalt).setInaktiveBrukere(antallInaktiveBrukere);
+            long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
+            long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
+            statusTall
+                    .setTotalt(antallTotalt)
+                    .setInaktiveBrukere(antallInaktiveBrukere)
+                    .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
+                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker);
         } catch (SolrServerException | IOException e) {
             logger.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
         }
