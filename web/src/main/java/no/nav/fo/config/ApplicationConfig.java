@@ -31,8 +31,7 @@ import org.springframework.transaction.jta.JtaTransactionManager;
         AktoerEndpointConfig.class,
         CacheConfig.class,
         PingConfig.class,
-        FeedConfig.class,
-        AktivitetFeedConfig.class
+        FeedConfig.class
 
 })
 public class ApplicationConfig {

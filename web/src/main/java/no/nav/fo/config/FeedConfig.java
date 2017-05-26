@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.DialogDataFeedHandler;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
@@ -14,6 +15,8 @@ import java.sql.Timestamp;
 import no.nav.fo.consumer.TilordningFeedHandler;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+
+import static java.util.Arrays.asList;
 
 @Configuration
 public class FeedConfig {
@@ -41,7 +44,7 @@ public class FeedConfig {
     public FeedController feedController(JdbcTemplate db, DialogDataFeedHandler callback) {
         FeedController feedController = new FeedController();
 
-        feedController.addFeed("tilordninger", oppfolgingBrukerFeed());
+//        feedController.addFeed("tilordninger", oppfolgingBrukerFeed());
         feedController.addFeed("dialogaktor", dialogDataFraFeedFeedConsumer(db, callback));
 
         return feedController;
@@ -58,6 +61,7 @@ public class FeedConfig {
         config.pollingInterval(pollingRate);
         config.webhookPollingInterval(pollingRateWebhook);
         config.callback(page -> tilordningFeedHandler().handleFeedPage((page)));
+        config.interceptors(asList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);
     }
@@ -82,7 +86,8 @@ public class FeedConfig {
                 "dialogaktor"
         )
                 .pollingInterval(dialogaktorPolling)
-                .callback(callback);
+                .callback(callback)
+                .interceptors(asList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);
     }
