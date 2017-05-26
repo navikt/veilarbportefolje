@@ -2,7 +2,10 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.Bruker;
+import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.Portefolje;
+import no.nav.fo.domene.StatusTall;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -21,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -100,7 +102,7 @@ public class EnhetController {
             ValideringsRegler.sjekkEnhet(enhet);
 
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return Response.ok().entity(new StatusTall()).build();
+                return new StatusTall();
             }
 
             return solrService.hentStatusTallForPortefolje(enhet);
