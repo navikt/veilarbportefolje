@@ -38,7 +38,7 @@ public class FeedConfig {
     private String pollingRateWebhook;
 
     @Bean
-    public FeedController feedController() {
+    public FeedController feedController(JdbcTemplate db, DialogDataFeedHandler callback) {
         FeedController feedController = new FeedController();
 
         feedController.addFeed("tilordninger", oppfolgingBrukerFeed());
