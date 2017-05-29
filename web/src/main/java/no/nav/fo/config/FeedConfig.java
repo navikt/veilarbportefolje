@@ -9,11 +9,15 @@ import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -26,6 +30,9 @@ public class FeedConfig {
     static {
         FeedConsumer.applicationApiroot = "veilarbportefolje/tjenester";
     }
+
+    @Value("${dialogaktor.feed.isalive.url}")
+    private String dialogIsalive;
 
     @Value("${dialogaktor.feed.producer.url}")
     private String dialogaktorHost;
@@ -101,5 +108,25 @@ public class FeedConfig {
     @Bean
     public DialogDataFeedHandler dialogDataFeedHandler() {
         return new DialogDataFeedHandler();
+    }
+
+    @Bean
+    public Pingable veilarbDialogPing() {
+        final String name = "dialogaktorfeed";
+        return new Pingable() {
+            @Override
+            public Ping ping() {
+                try {
+                    HttpURLConnection connection = (HttpURLConnection) new URL(dialogIsalive).openConnection();
+                    connection.connect();
+                    if (connection.getResponseCode() == 200) {
+                        return Ping.lyktes(name);
+                    }
+                } catch (IOException e) {
+                    return Ping.feilet(name, e);
+                }
+                return Ping.feilet(name, new RuntimeException("Noe gikk feil."));
+            }
+        };
     }
 }
