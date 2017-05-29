@@ -2,11 +2,9 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.KvartalMapping;
-import no.nav.fo.domene.ManedMapping;
-import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.domene.*;
 import no.nav.fo.util.sql.SqlUtils;
+import no.nav.fo.util.sql.UpsertQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
@@ -15,7 +13,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -27,6 +25,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 import static no.nav.fo.util.DbUtils.parseJaNei;
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -148,6 +147,18 @@ public class BrukerRepository {
         return brukere;
     }
 
+    public Timestamp getAktiviteterSistOppdatert() {
+        return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
+    }
+
+    public void setAktiviteterSistOppdatert(String sistOppdatert) {
+        db.update("UPDATE METADATA SET aktiviteter_sist_oppdatert = ?", timestampFromISO8601(sistOppdatert));
+    }
+
+   public void upsertAktivitet(AktivitetDataFraFeed aktivitet) {
+     getAktivitetUpsertQuery(this.db,aktivitet).execute();
+   }
+
 
     private <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);
@@ -190,6 +201,19 @@ public class BrukerRepository {
                 .set("aapMaxtid", null)
                 .set("aapMaxtidFasett", null)
                 .execute();
+    }
+
+    static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, AktivitetDataFraFeed aktivitet) {
+        return SqlUtils.upsert(db, "AKTIVITETER")
+                .whereEquals("AKTIVITETID", aktivitet.getAktivitetId())
+                .set("AKTIVITETID", aktivitet.getAktivitetId())
+                .set("AKTOERID", aktivitet.getAktorId())
+                .set("AKTIVITETTYPE", aktivitet.getAktivitetType())
+                .set("AVTALT", aktivitet.isAvtalt())
+                .set("FRADATO", aktivitet.getFraDato())
+                .set("TILDATO", aktivitet.getTilDato())
+                .set("OPPDATERTDATO", aktivitet.getOpprettetDato())
+                .set("STATUS", aktivitet.getStatus());
     }
 
     String retrieveBrukereSQL() {
@@ -333,6 +357,7 @@ public class BrukerRepository {
     String insertPersonidAktoeridMappingSQL() {
         return "INSERT INTO AKTOERID_TO_PERSONID VALUES (?,?)";
     }
+
 
     String retrieveBrukerSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
