@@ -2,19 +2,22 @@ package no.nav.fo.config;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.DialogDataFeedHandler;
+import no.nav.fo.consumer.TilordningFeedHandler;
+import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.controller.FeedController;
+import no.nav.fo.service.OppdaterBrukerdataFletter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
-import no.nav.fo.consumer.TilordningFeedHandler;
-import no.nav.fo.domene.BrukerOppdatertInformasjon;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
 
@@ -53,14 +56,14 @@ public class FeedConfig {
     private FeedConsumer<BrukerOppdatertInformasjon> oppfolgingBrukerFeed() {
         FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(
                 BrukerOppdatertInformasjon.class,
-                "1970-01-01T00:00:00.000+02:00",
+                () -> "1970-01-01T00:00:00.000+02:00",
                 tilordningerHost,
                 "tilordninger"
         );
 
         config.pollingInterval(pollingRate);
         config.webhookPollingInterval(pollingRateWebhook);
-        config.callback(page -> tilordningFeedHandler().handleFeedPage((page)));
+        config.callback((last, page) -> tilordningFeedHandler().handleFeedPage((page)));
         config.interceptors(asList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);
@@ -77,11 +80,14 @@ public class FeedConfig {
     }
 
     private FeedConsumer<DialogDataFraFeed> dialogDataFraFeedFeedConsumer(JdbcTemplate db, DialogDataFeedHandler callback) {
-        Object sisteEndring = db.queryForList("SELECT dialogaktor_sist_oppdatert from METADATA").get(0).get("dialogaktor_sist_oppdatert");
+        Supplier<String> lastEntrySupplier = () -> {
+            Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT dialogaktor_sist_oppdatert from METADATA").get(0).get("dialogaktor_sist_oppdatert");
+            return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
+        };
 
         FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(
                 DialogDataFraFeed.class,
-                sisteEndring.toString(),
+                lastEntrySupplier,
                 dialogaktorHost,
                 "dialogaktor"
         )

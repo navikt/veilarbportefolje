@@ -10,6 +10,6 @@ public class DialogDataFraFeed implements Comparable<DialogDataFraFeed> {
 
     @Override
     public int compareTo(DialogDataFraFeed o) {
-        return this.sisteEndring.compareTo(o.sisteEndring);
+        return o.sisteEndring.compareTo(this.sisteEndring);
     }
 }
