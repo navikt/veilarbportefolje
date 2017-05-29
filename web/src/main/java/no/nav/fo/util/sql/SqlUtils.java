@@ -20,4 +20,8 @@ public class SqlUtils {
     public static InsertQuery insert(JdbcTemplate db, String tableName) {
         return new InsertQuery(db, tableName);
     }
+
+    public static UpsertQuery upsert(JdbcTemplate db, String tableName) {
+        return new UpsertQuery(db, tableName);
+    }
 }
