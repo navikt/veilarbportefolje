@@ -17,9 +17,12 @@ import java.sql.SQLException;
 
 @Configuration
 public class DatabaseConfig {
+
+    public static final String JNDI_NAME = "java:/jboss/datasources/veilarbportefoljeDB";
+
     @Bean
-    public DataSource oracleDataSource() throws ClassNotFoundException, NamingException {
-        return new JndiTemplate().lookup("java:/jboss/datasources/veilarbportefoljeDB", DataSource.class);
+    public DataSource dataSource() throws ClassNotFoundException, NamingException {
+        return new JndiTemplate().lookup(JNDI_NAME, DataSource.class);
     }
 
     @Bean

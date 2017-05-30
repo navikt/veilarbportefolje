@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,7 @@ public class BrukerRepositoryTest {
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
-                "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
+                "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -95,7 +96,7 @@ public class BrukerRepositoryTest {
         String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
+                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -127,10 +128,10 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalOppdatereOmBrukerFinnes() {
-        Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
-        Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+        Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
+        Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
@@ -147,8 +148,8 @@ public class BrukerRepositoryTest {
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
 
-        Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+        Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
 
@@ -164,9 +165,33 @@ public class BrukerRepositoryTest {
         document.addField("kvalifiseringsgruppekode", "BATT");
         document.addField("formidlingsgruppekode", "IARBS");
         document.addField("veileder_id", "V123456");
+        document.addField("oppfolging", true);
 
         assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
     }
+
+    @Test
+    public void skalIkkeVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
+        SolrInputDocument document = new SolrInputDocument();
+        document.addField("kvalifiseringsgruppekode", "XXX");
+        document.addField("formidlingsgruppekode", "ISERV");
+        document.addField("veileder_id", null);
+        document.addField("oppfolging", false);
+
+        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isFalse();
+    }
+
+    @Test
+    public void skalVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
+        SolrInputDocument document = new SolrInputDocument();
+        document.addField("kvalifiseringsgruppekode", "XXX");
+        document.addField("formidlingsgruppekode", "ISERV");
+        document.addField("veileder_id", null);
+        document.addField("oppfolging", true);
+
+        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
+    }
+
 
     @Test
     public void skalFiltrereBrukere() {
@@ -178,8 +203,8 @@ public class BrukerRepositoryTest {
         assertThat(oppdaterteAktiveBrukere.size()).isEqualTo(2);
     }
 
-    private Brukerdata brukerdata(String aktoerid, String personId, String veileder, LocalDateTime tildeltTidspunkt, YtelseMapping ytelse,
-                                  LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett) {
+    private Brukerdata brukerdata(String aktoerid, String personId, String veileder, Timestamp tildeltTidspunkt, YtelseMapping ytelse,
+                                  LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett, boolean oppfolging) {
         return new Brukerdata()
                 .setAktoerid(aktoerid)
                 .setPersonid(personId)
@@ -189,8 +214,8 @@ public class BrukerRepositoryTest {
                 .setAapMaxtid(aapMaxtid)
                 .setUtlopsdatoFasett(utlopsdatoFasett)
                 .setUtlopsdato(utlopsdato)
-                .setYtelse(ytelse);
-
+                .setYtelse(ytelse)
+                .setOppfolging(oppfolging);
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
@@ -205,4 +230,17 @@ public class BrukerRepositoryTest {
         assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
     }
 
+    @Test
+    public void skalKonvertereDokumentFeltTilBoolean() throws Exception {
+        SolrInputDocument inputDocumentTrue = new SolrInputDocument();
+        inputDocumentTrue.addField("oppfolging", true);
+
+        SolrInputDocument inputDocumentFalse = new SolrInputDocument();
+        inputDocumentFalse.addField("oppfolging", false);
+
+        boolean shouldBeTrue = BrukerRepository.oppfolgingsFlaggSatt(inputDocumentTrue);
+        boolean shouldBeFalse = BrukerRepository.oppfolgingsFlaggSatt(inputDocumentFalse);
+        assertThat(shouldBeTrue).isTrue();
+        assertThat(shouldBeFalse).isFalse();
+    }
 }

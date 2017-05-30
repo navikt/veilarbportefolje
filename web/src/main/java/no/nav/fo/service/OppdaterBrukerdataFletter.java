@@ -4,7 +4,8 @@ package no.nav.fo.service;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
-import no.nav.fo.domene.BrukerinformasjonFraKo;
+import no.nav.fo.domene.BrukerinformasjonFraFeed;
+import no.nav.fo.exception.FantIkkeFnrException;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.aktoer.v2.HentIdentForAktoerIdPersonIkkeFunnet;
@@ -34,8 +35,11 @@ public class OppdaterBrukerdataFletter {
 
     public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
         String personId = hentPersonIdFromDBorAktoer(bruker.getAktoerid());
-        BrukerinformasjonFraKo brukerinformasjonFraKo = new BrukerinformasjonFraKo().setPersonid(personId);
-        persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraKo));
+        if (personId == null) {
+            throw new FantIkkePersonIdException(bruker.getAktoerid());
+        }
+        BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
+        persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
 
     }
 
@@ -61,7 +65,7 @@ public class OppdaterBrukerdataFletter {
             personId = brukerRepository.retrievePersonidFromFnr(fnr)
                     .map(BigDecimal::intValue)
                     .map(x -> Integer.toString(x))
-                    .orElseThrow(() -> new FantIkkePersonIdException(fnr));
+                    .orElseThrow(() -> new FantIkkeFnrException(fnr));
 
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
 

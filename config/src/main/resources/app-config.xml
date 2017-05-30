@@ -32,10 +32,9 @@
         </datasource>
         <applicationProperties alias="veilarbportefolje.properties"/>
         <applicationProperties alias="portefolje.pilot.properties"/>
-
-        <queueManager xaEnabled="true" alias="mqGateway02" jndi="java:/jboss/mqConnectionFactory">
-            <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
-        </queueManager>
+        <applicationProperties alias="dialogaktorfeed.properties"/>
+        <applicationProperties alias="aktiviteterfeed.properties"/>
+        <applicationProperties alias="brukertilordningerfeed.properties"/>
 
         <baseUrl alias="veilarbaktivitetPingURL" mapToProperty="veilarbaktivitet.isalive" />
         <baseUrl alias="isso-host"/>
@@ -52,8 +51,6 @@
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
     <security serviceUserResourceAlias="srvveilarbportefolje">
-        <logins>
-            <openIdConnect moduleClass="no.nav.fo.security.jwt.loginmodule.JwtLoginModule"/>
-        </logins>
+        <logins/>
     </security>
 </application>

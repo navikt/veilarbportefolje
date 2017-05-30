@@ -1,10 +1,9 @@
 package no.nav.fo.config;
 
-import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.internal.IsAliveServlet;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
-import no.nav.fo.service.PepClientInterface;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientMock;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
@@ -22,9 +21,7 @@ import javax.sql.DataSource;
 @EnableScheduling
 @Configuration
 @Import({
-        OppdaterBrukerdataListener.class,
         DatabaseConfig.class,
-        MessageQueueConfig.class,
         VirksomhetEnhetEndpointConfigMock.class,
         ServiceConfig.class,
         SolrConfig.class,
@@ -34,7 +31,9 @@ import javax.sql.DataSource;
         AktoerEndpointConfig.class,
         AbacContext.class,
         CacheConfig.class,
-        PingConfig.class
+        PingConfig.class,
+        FeedConfig.class,
+        LocalAktoerEndpointConfig.class
 })
 public class LocalApplicationConfig {
 
@@ -59,7 +58,7 @@ public class LocalApplicationConfig {
     }
 
     @Bean
-    public PepClientInterface pepClient() {
+    public PepClient pepClient() {
         return new PepClientMock();
     }
 }

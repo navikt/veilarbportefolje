@@ -1,11 +1,10 @@
 package no.nav.fo.config;
 
-import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
-import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientImpl;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
@@ -48,11 +47,6 @@ public class ApplicationConfigTest {
     public PersistentOppdatering persistentOppdatering() { return new PersistentOppdatering(); }
 
     @Bean
-    public OppdaterBrukerdataListener oppdaterBrukerdataListener() {
-        return new OppdaterBrukerdataListener();
-    }
-
-    @Bean
     public SolrService solrService() {
         return mock(SolrService.class);
     }
@@ -65,6 +59,6 @@ public class ApplicationConfigTest {
     public Pep pep() { return mock(Pep.class); }
 
     @Bean
-    public PepClient pepClient() { return mock(PepClient.class);
+    public PepClientImpl pepClient() { return mock(PepClientImpl.class);
     }
 }
