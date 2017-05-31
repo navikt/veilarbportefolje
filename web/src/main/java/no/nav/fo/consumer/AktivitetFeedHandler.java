@@ -3,9 +3,13 @@ package no.nav.fo.consumer;
 
 import javaslang.Tuple2;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktivitetData;
+import no.nav.fo.domene.BrukerOppdatering;
+import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.fo.service.AktoerService;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -22,6 +26,12 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     @Inject
     private BrukerRepository brukerRepository;
+
+    @Inject
+    private PersistentOppdatering persistentOppdatering;
+
+    @Inject
+    private AktoerService aktoerService;
 
     @Override
     public void call(String lastEntry, List<AktivitetDataFraFeed> data) {
@@ -48,6 +58,27 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             aktivitetTypeTilStatus.put(aktivitetsype, erBrukersAktivitetAktiv(statuser, AktivitetData.fullførteStatuser));
         });
 
-        aktivitetTypeTilStatus.forEach((type, status) -> brukerRepository.upsertAktivitetStatuserForBruker(type, status, aktoerid));
+        String personid = aktoerService.hentPersonidFraAktoerid(aktoerid);
+        persistentOppdatering.lagre(new AktivitetsDataEndring(personid, aktivitetTypeTilStatus));
+    }
+
+    class AktivitetsDataEndring implements BrukerOppdatering {
+        private final String personid;
+        private Map<String, Boolean> aktivitetStatus;
+
+        public AktivitetsDataEndring(String personid, Map<String, Boolean> aktivitetStatus) {
+            this.personid = personid;
+            this.aktivitetStatus = aktivitetStatus;
+        }
+
+        @Override
+        public String getPersonid() {
+            return personid;
+        }
+
+        @Override
+        public Brukerdata applyTo(Brukerdata bruker) {
+            return bruker.setAktivitetStatus(aktivitetStatus);
+        }
     }
 }

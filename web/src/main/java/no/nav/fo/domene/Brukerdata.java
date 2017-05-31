@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Accessors(chain = true)
@@ -27,6 +28,7 @@ public class Brukerdata {
     private LocalDateTime venterPaSvarFraBruker;
     private LocalDateTime venterPaSvarFraNav;
     private Boolean oppfolging;
+    private Map<String, Boolean> aktivitetStatus;
 
     public UpdateQuery toUpdateQuery(JdbcTemplate db) {
         return SqlUtils.update(db, "bruker_data")
@@ -58,9 +60,7 @@ public class Brukerdata {
                 .value("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .value("PERSONID", personid)
                 .value("OPPFOLGING", safeToJaNei(oppfolging));
-
     }
-
 
     public static int[] batchUpdate(JdbcTemplate db, List<Brukerdata> data) {
         UpdateBatchQuery<Brukerdata> updateQuery = new UpdateBatchQuery<>(db, "bruker_data");

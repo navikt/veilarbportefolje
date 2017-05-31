@@ -27,6 +27,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 import static no.nav.fo.util.DbUtils.parseJaNei;
@@ -53,6 +54,7 @@ public class BrukerRepository {
         db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument bruker = mapResultSetTilDokument(rs);
+            applyAktivitetStatuser(bruker, this, AktivitetData.aktivitettyperSet);
             if (filter.test(bruker)) {
                 prosess.accept(bruker);
             }
@@ -172,19 +174,32 @@ public class BrukerRepository {
      getAktivitetUpsertQuery(this.db,aktivitet).execute();
    }
 
+   public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
+        aktivitetstatus.forEach( (aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid) );
+   }
+
    // TODO skrive om UpsertQuery til å ta inn en list med where params
-   public void upsertAktivitetStatuserForBruker(String type, boolean status, String aktoerid) {
+   public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
        db.execute(getUpsertAktivitetStatuserForBrukerSql(), (PreparedStatementCallback<Boolean>) ps -> {
-           ps.setString(1, aktoerid);
-           ps.setString(2, type);
+           ps.setString(1, personid);
+           ps.setString(2, aktivitettype);
            ps.setBoolean(3, status);
-           ps.setString(4, aktoerid);
-           ps.setString(5, type);
-           ps.setBoolean(6, status);
+           ps.setString(4, personid);
+           ps.setString(5, aktivitettype);
+           ps.setString(6, aktoerid);
+           ps.setBoolean(7, status);
            return ps.execute();
        });
    }
 
+    public Map<String,Boolean> getAktivitetStatusMap(String personid, Set<String> typerAvInteresse) {
+        Map<String, Boolean> statusMap = new HashMap<>();
+
+        List<Map<String, Object>> statuserFraDb = db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER where PERSONID=?",personid);
+
+        typerAvInteresse.forEach( (type) ->  statusMap.put(type, kanskjeVerdi(statuserFraDb, type)));
+        return statusMap;
+    }
 
     private <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);
@@ -381,7 +396,7 @@ public class BrukerRepository {
     }
 
     String getUpsertAktivitetStatuserForBrukerSql() {
-        return "MERGE INTO BRUKERSTATUS_AKTIVITETER USING dual ON (AKTOERID = ? AND AKTIVITETTYPE = ?) WHEN MATCHED THEN UPDATE SET STATUS = ? WHEN NOT MATCHED THEN INSERT (AKTOERID, AKTIVITETTYPE, STATUS) VALUES (?, ?, ?)";
+        return "MERGE INTO BRUKERSTATUS_AKTIVITETER USING dual ON (PERSONID = ? AND AKTIVITETTYPE = ?) WHEN MATCHED THEN UPDATE SET STATUS = ? WHEN NOT MATCHED THEN INSERT (PERSONID, AKTIVITETTYPE, AKTOERID, STATUS) VALUES (?, ?, ?, ?)";
     }
 
     String insertPersonidAktoeridMappingSQL() {
@@ -430,4 +445,13 @@ public class BrukerRepository {
         return string != null ? KvartalMapping.valueOf(string) : null;
     }
 
+    private Boolean kanskjeVerdi(List<Map<String, Object>> statuserFraDb, String type) {
+        for(Map<String, Object> rad : statuserFraDb) {
+            String aktivitetType = (String) rad.get("AKTIVITETTYPE");
+            if(type.equals(aktivitetType)) {
+                return  Boolean.valueOf((String) rad.get("STATUS"));
+            }
+        }
+        return false;
+    }
 }

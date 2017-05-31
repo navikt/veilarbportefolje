@@ -60,6 +60,7 @@ public class PersistentOppdatering {
 
     public void lagreIDB(List<Brukerdata> brukerdata) {
         brukerRepository.insertOrUpdateBrukerdata(brukerdata, emptyList());
+        brukerdata.forEach( data -> brukerRepository.upsertAktivitetStatuserForBruker(data.getAktivitetStatus(), data.getAktoerid(), data.getPersonid()));
     }
 
 

@@ -1,6 +1,8 @@
 package no.nav.fo.config;
 
 import no.nav.fo.database.PersistentOppdatering;
+import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.AktoerServiceImpl;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.VirksomhetEnhetService;
 import org.springframework.context.annotation.Bean;
@@ -23,4 +25,7 @@ public class ServiceConfig {
     public PersistentOppdatering persistentOppdatering() {
         return new PersistentOppdatering();
     }
+
+    @Bean
+    public AktoerService aktoerService() { return new AktoerServiceImpl(); }
 }
