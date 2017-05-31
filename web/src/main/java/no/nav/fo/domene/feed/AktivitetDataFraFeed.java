@@ -1,4 +1,4 @@
-package no.nav.fo.domene;
+package no.nav.fo.domene.feed;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

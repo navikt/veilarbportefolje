@@ -3,12 +3,14 @@ package no.nav.fo.database;
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import no.nav.fo.domene.*;
+import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
@@ -151,12 +153,36 @@ public class BrukerRepository {
         return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
     }
 
+    public List<Tuple2<String,String>> getAktiviteterForAktoerid(String aktoerid) {
+        return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
+                .stream()
+                .map(BrukerRepository::mapToTuple)
+                .collect(toList());
+    }
+
+    private static Tuple2<String, String> mapToTuple(Map<String, Object> map) {
+        return Tuple.of(((String) map.get("AKTIVITETTYPE")), ((String) map.get("STATUS")));
+    }
+
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
         db.update("UPDATE METADATA SET aktiviteter_sist_oppdatert = ?", timestampFromISO8601(sistOppdatert));
     }
 
    public void upsertAktivitet(AktivitetDataFraFeed aktivitet) {
      getAktivitetUpsertQuery(this.db,aktivitet).execute();
+   }
+
+   // TODO skrive om UpsertQuery til å ta inn en list med where params
+   public void upsertAktivitetStatuserForBruker(String type, boolean status, String aktoerid) {
+       db.execute(getUpsertAktivitetStatuserForBrukerSql(), (PreparedStatementCallback<Boolean>) ps -> {
+           ps.setString(1, aktoerid);
+           ps.setString(2, type);
+           ps.setBoolean(3, status);
+           ps.setString(4, aktoerid);
+           ps.setString(5, type);
+           ps.setBoolean(6, status);
+           return ps.execute();
+       });
    }
 
 
@@ -354,6 +380,10 @@ public class BrukerRepository {
                         "fodselsnr in (:fnrs)";
     }
 
+    String getUpsertAktivitetStatuserForBrukerSql() {
+        return "MERGE INTO BRUKERSTATUS_AKTIVITETER USING dual ON (AKTOERID = ? AND AKTIVITETTYPE = ?) WHEN MATCHED THEN UPDATE SET STATUS = ? WHEN NOT MATCHED THEN INSERT (AKTOERID, AKTIVITETTYPE, STATUS) VALUES (?, ?, ?)";
+    }
+
     String insertPersonidAktoeridMappingSQL() {
         return "INSERT INTO AKTOERID_TO_PERSONID VALUES (?,?)";
     }
@@ -366,6 +396,8 @@ public class BrukerRepository {
     String retrieveBrukerdataSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
+
+    String getAktiviteterForAktoeridSql() { return "SELECT AKTIVITETTYPE, STATUS FROM AKTIVITETER where aktoerid=?"; }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
@@ -397,6 +429,5 @@ public class BrukerRepository {
     private KvartalMapping kvartalmappingOrNull(String string) {
         return string != null ? KvartalMapping.valueOf(string) : null;
     }
-
 
 }

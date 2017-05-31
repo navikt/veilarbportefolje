@@ -1,7 +1,7 @@
 package no.nav.fo.database;
 
 import no.nav.fo.config.DatabaseFlywayConfigTest;
-import no.nav.fo.domene.AktivitetDataFraFeed;
+import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +17,8 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { DatabaseFlywayConfigTest.class})
 public class BrukerRepositoryFlywayTest {
+
+    // TODO skrive om BrukerRepositoryTest slik at den også bruker flyway
 
     @Inject
     private JdbcTemplate jdbcTemplate;

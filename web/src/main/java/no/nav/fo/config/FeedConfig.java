@@ -1,8 +1,10 @@
 package no.nav.fo.config;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
+import no.nav.fo.consumer.AktivitetFeedHandler;
 import no.nav.fo.consumer.DialogDataFeedHandler;
-import no.nav.fo.consumer.TilordningFeedHandler;
+import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
@@ -10,6 +12,7 @@ import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.fo.util.DateUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +27,9 @@ import java.time.ZonedDateTime;
 import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
+import java.util.Collections;
+
+import no.nav.fo.consumer.TilordningFeedHandler;
 
 @Configuration
 public class FeedConfig {
@@ -50,11 +56,20 @@ public class FeedConfig {
     @Value("${tilordninger.feed.consumer.pollingratewebhook.cron}")
     private String pollingRateWebhook;
 
+    @Value("${aktiviteter.feed.producer.url}")
+    private String aktiviteterHost;
+
+    @Value("${aktiviteter.feed.consumer.pollingrate.cron}")
+    private String aktiviteterPolling;
+
+
+
     @Bean
-    public FeedController feedController(JdbcTemplate db, DialogDataFeedHandler callback) {
+    public FeedController feedController(JdbcTemplate db, BrukerRepository brukerRepository, DialogDataFeedHandler callback,  AktivitetFeedHandler aktiviteterCallback) {
         FeedController feedController = new FeedController();
 
 //        feedController.addFeed("tilordninger", oppfolgingBrukerFeed());
+        feedController.addFeed("aktiviteter", aktiviteterFraFeedConsumer(brukerRepository,aktiviteterCallback));
         feedController.addFeed("dialogaktor", dialogDataFraFeedFeedConsumer(db, callback));
 
         return feedController;
@@ -128,5 +143,30 @@ public class FeedConfig {
                 return Ping.feilet(name, new RuntimeException("Noe gikk feil."));
             }
         };
+    }
+
+    private FeedConsumer<AktivitetDataFraFeed> aktiviteterFraFeedConsumer(BrukerRepository brukerRepository, AktivitetFeedHandler aktiviteterCallback) {
+        Supplier<String> lastEntrySupplier = () -> {
+            Timestamp sisteEndring = (Timestamp) brukerRepository.getAktiviteterSistOppdatert();
+            return DateUtils.ISO8601FromTimestamp(sisteEndring, ZoneId.systemDefault());
+        };;
+
+        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(
+                AktivitetDataFraFeed.class,
+                lastEntrySupplier,
+                aktiviteterHost,
+                "aktiviteter"
+        );
+
+        config.interceptors(Collections.singletonList(new OidcFeedOutInterceptor()));
+        config.pollingInterval(aktiviteterPolling);
+        config.callback(aktiviteterCallback);
+
+        return new FeedConsumer<>(config);
+    }
+
+    @Bean
+    public AktivitetFeedHandler aktiviteterFeedHandler() {
+        return new AktivitetFeedHandler();
     }
 }

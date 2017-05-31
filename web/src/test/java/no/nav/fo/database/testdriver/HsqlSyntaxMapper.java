@@ -19,6 +19,10 @@ class HsqlSyntaxMapper {
                 "INSERT INTO METADATA (dialogaktor_sist_oppdatert) VALUES (TO_TIMESTAMP('1970-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.FF6'))",
                 "INSERT INTO METADATA (dialogaktor_sist_oppdatert) VALUES (TIMESTAMP '1970-01-01 00:00:00')"
         );
+        map(
+                "ALTER TABLE METADATA ADD aktiviteter_sist_oppdatert TIMESTAMP DEFAULT TO_TIMESTAMP('1970-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS') NOT NULL;",
+                "INSERT INTO METADATA (aktiviteter_sist_oppdatert) VALUES (TIMESTAMP '1970-01-01 00:00:00')"
+        );
     }
 
     private static void map(String oracleSyntax, String hsqlSyntax) {
