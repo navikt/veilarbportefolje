@@ -244,7 +244,7 @@ public class SolrService {
                     .setInaktiveBrukere(antallInaktiveBrukere)
                     .setNyeBrukere(antallNyeBrukere)
                     .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
-                    .setInaktiveBrukere(antallVenterPaSvarFraBruker);
+                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker);
         } catch (SolrServerException | IOException e) {
             logger.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
         }

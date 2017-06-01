@@ -7,9 +7,6 @@ import no.nav.virksomhet.tjenester.enhet.v1.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ***REMOVED*** on 11.03.2017.
- */
 public class EnhetMock implements Enhet {
     @Override
     public WSFinnEnhetListeResponse finnEnhetListe(WSFinnEnhetListeRequest request) {
@@ -38,6 +35,8 @@ public class EnhetMock implements Enhet {
         List<no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet> enhetliste = new ArrayList<>();
         enhetliste.add(createEnhet("0713","NAV SANDE"));
         enhetliste.add(createEnhet("0104","NAV MOSS"));
+        enhetliste.add(createEnhet("0100","NAV ØSTFOLD"));
+        enhetliste.add(createEnhet("0709","NAV LARVIK"));
 
         return new WSHentEnhetListeResponse().withEnhetListe(enhetliste).withRessurs(ressurs);
     }

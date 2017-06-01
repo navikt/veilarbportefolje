@@ -283,8 +283,8 @@ public class BrukerRepository {
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
                         "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav " +
+                        "TO_CHAR(venterpasvarfrabruker, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfrabruker, 'HH24:MI:SS') || 'Z' AS venterpasvarfrabruker, " +
+                        "TO_CHAR(venterpasvarfranav, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfranav, 'HH24:MI:SS') || 'Z' AS venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -319,8 +319,8 @@ public class BrukerRepository {
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
                         "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav " +
+                        "TO_CHAR(venterpasvarfrabruker, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfrabruker, 'HH24:MI:SS') || 'Z' AS venterpasvarfrabruker, " +
+                        "TO_CHAR(venterpasvarfranav, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfranav, 'HH24:MI:SS') || 'Z' AS venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -356,8 +356,8 @@ public class BrukerRepository {
                         "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
                         "aapmaxtidfasett, " +
                         "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav " +
+                        "TO_CHAR(venterpasvarfrabruker, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfrabruker, 'HH24:MI:SS') || 'Z' AS venterpasvarfrabruker, " +
+                        "TO_CHAR(venterpasvarfranav, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfranav, 'HH24:MI:SS') || 'Z' AS venterpasvarfranav " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +

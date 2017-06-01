@@ -9,6 +9,7 @@ import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Date;
@@ -20,16 +21,19 @@ import java.util.Optional;
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
-    @Inject
-    BrukerRepository brukerRepository;
+    private final BrukerRepository brukerRepository;
+    private final PersistentOppdatering persistentOppdatering;
+    private final JdbcTemplate db;
 
     @Inject
-    PersistentOppdatering persistentOppdatering;
-
-    @Inject
-    JdbcTemplate db;
+    public DialogDataFeedHandler(BrukerRepository brukerRepository, PersistentOppdatering persistentOppdatering, JdbcTemplate db) {
+        this.brukerRepository = brukerRepository;
+        this.persistentOppdatering = persistentOppdatering;
+        this.db = db;
+    }
 
     @Override
+    @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
         data.stream()
                 .map((dialog) -> new DialogBrukerOppdatering(dialog, brukerRepository.retrievePersonIdFromAktoerId(dialog.aktorId)))

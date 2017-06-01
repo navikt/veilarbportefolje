@@ -52,6 +52,7 @@ public class BrukerRepositoryTest {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-aktoerid-to-personid-mapping.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-brukerstatus_aktiviteter.sql"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,6 +64,7 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("drop table metadata");
         jdbcTemplate.execute("drop table aktoerid_to_personid");
         jdbcTemplate.execute("drop table bruker_data");
+        jdbcTemplate.execute("drop table brukerstatus_aktiviteter");
     }
 
     @Test

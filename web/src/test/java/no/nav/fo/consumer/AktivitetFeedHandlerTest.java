@@ -1,7 +1,9 @@
 package no.nav.fo.consumer;
 
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.service.AktoerService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +26,10 @@ public class AktivitetFeedHandlerTest {
 
     @Mock
     private BrukerRepository brukerRepository;
+    @Mock
+    private AktoerService aktoerService;
+    @Mock
+    private PersistentOppdatering persistentOppdatering;
 
     @InjectMocks
     private AktivitetFeedHandler aktivitetFeedHandler;

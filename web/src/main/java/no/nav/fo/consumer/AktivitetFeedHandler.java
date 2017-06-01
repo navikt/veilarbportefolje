@@ -24,14 +24,16 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     private static final Logger LOG = getLogger(AktivitetFeedHandler.class);
 
-    @Inject
     private BrukerRepository brukerRepository;
-
-    @Inject
     private PersistentOppdatering persistentOppdatering;
+    private AktoerService aktoerService;
 
     @Inject
-    private AktoerService aktoerService;
+    public AktivitetFeedHandler(BrukerRepository brukerRepository, PersistentOppdatering persistentOppdatering, AktoerService aktoerService) {
+        this.brukerRepository = brukerRepository;
+        this.persistentOppdatering = persistentOppdatering;
+        this.aktoerService = aktoerService;
+    }
 
     @Override
     public void call(String lastEntry, List<AktivitetDataFraFeed> data) {

@@ -75,4 +75,11 @@ public class PepClientImpl implements PepClient {
         }
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
+
+    @Override
+    public void ping() throws PepException {
+        pep.ping();
+    }
+
+
 }

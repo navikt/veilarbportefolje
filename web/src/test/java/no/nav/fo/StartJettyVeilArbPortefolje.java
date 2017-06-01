@@ -4,6 +4,7 @@ import no.nav.brukerdialog.security.Constants;
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
+import no.nav.dialogarena.config.util.Util;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
@@ -60,6 +61,8 @@ public class StartJettyVeilArbPortefolje {
                 .configureForJaspic()
                 .buildJetty();
 
+
+        Util.setProperty("oidc-redirect.url", "https://app-t6.adeo.no/veilarbportefoljeflatefs/tjenester/login");
         System.setProperty("environment.class", "lokalt");
 
         //Fra versjon 3.0.0 av oidc-security bruker vi nå fullstendig url. Setter denne slik for nå, at den overskriver ressurs fra fasit.

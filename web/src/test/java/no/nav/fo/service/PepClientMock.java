@@ -1,5 +1,7 @@
 package no.nav.fo.service;
 
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+
 public class PepClientMock implements PepClient {
 
     @Override
@@ -20,5 +22,10 @@ public class PepClientMock implements PepClient {
     @Override
     public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
         return true;
+    }
+
+    @Override
+    public void ping() throws PepException {
+
     }
 }
