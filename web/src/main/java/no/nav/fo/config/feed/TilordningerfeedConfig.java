@@ -59,7 +59,7 @@ public class TilordningerfeedConfig {
     }
 
     private static String sisteEndring(JdbcTemplate db) {
-        Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT dialogaktor_sist_oppdatert from METADATA").get(0).get("dialogaktor_sist_oppdatert");
+        Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT tilordning_sist_oppdatert from METADATA").get(0).get("tilordning_sist_oppdatert");
         return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
     }
 }
