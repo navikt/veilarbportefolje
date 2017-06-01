@@ -4,7 +4,9 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BinaryOperator;
 
 @Data()
@@ -20,6 +22,7 @@ public class Filtervalg {
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
     public List<String> veiledere = new ArrayList<>();
+    public Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
 
     public boolean harAktiveFilter() {
         return harBrukerstatus() ||

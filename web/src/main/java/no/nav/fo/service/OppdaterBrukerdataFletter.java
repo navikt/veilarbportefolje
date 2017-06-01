@@ -36,11 +36,11 @@ public class OppdaterBrukerdataFletter {
     public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
         String personId = hentPersonIdFromDBorAktoer(bruker.getAktoerid());
         if (personId == null) {
-            throw new FantIkkePersonIdException(bruker.getAktoerid());
+            getLogger(OppdaterBrukerdataFletter.class).warn("Fnat ikke personid", new FantIkkePersonIdException(bruker.getAktoerid()));
+        } else {
+            BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
+            persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
         }
-        BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
-        persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
-
     }
 
     private String hentPersonIdFromDBorAktoer(String aktoerId) {

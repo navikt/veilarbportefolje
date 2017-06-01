@@ -36,7 +36,6 @@
         <applicationProperties alias="aktiviteterfeed.properties"/>
         <applicationProperties alias="brukertilordningerfeed.properties"/>
 
-        <baseUrl alias="veilarbaktivitetPingURL" mapToProperty="veilarbaktivitet.isalive" />
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>

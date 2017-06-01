@@ -2,6 +2,7 @@ package no.nav.fo;
 
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
+import no.nav.dialogarena.config.util.Util;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
@@ -52,6 +53,8 @@ public class StartJettyVeilArbPortefolje {
                 .overrideWebXml(), new ISSOSecurityConfig("veilarbportefolje", "t5"))
                 .buildJetty();
 
+
+        Util.setProperty("oidc-redirect.url", "https://app-t6.adeo.no/veilarbportefoljeflatefs/tjenester/login");
         System.setProperty("environment.class", "lokalt");
 
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));

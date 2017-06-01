@@ -1,7 +1,7 @@
 package no.nav.fo.internal;
 
 
-import no.nav.sbl.dialogarena.common.abac.pep.Pep;
+import no.nav.fo.service.PepClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ import java.net.URL;
 public class PingConfig {
 
     @Inject
-    private Pep pep;
+    private PepClient pep;
 
     @Value("${loependeytelser.path}")
     String filpath;
@@ -32,8 +32,8 @@ public class PingConfig {
             try {
                 pep.ping();
                 return Pingable.Ping.lyktes("ABAC");
-            } catch( Exception e) {
-                return Pingable.Ping.feilet("ABAC",e);
+            } catch (Exception e) {
+                return Pingable.Ping.feilet("ABAC", e);
             }
         };
     }
@@ -58,10 +58,10 @@ public class PingConfig {
     public Pingable nfsPing() {
         return () -> {
             File file = new File(filpath, filnavn);
-            if(file.exists()) {
+            if (file.exists()) {
                 return Pingable.Ping.lyktes("NFS");
-            }else{
-                return Pingable.Ping.feilet("NFS", new FileNotFoundException("File not found at " + filpath+filnavn));
+            } else {
+                return Pingable.Ping.feilet("NFS", new FileNotFoundException("File not found at " + filpath + filnavn));
             }
         };
     }
@@ -70,7 +70,7 @@ public class PingConfig {
     public Pingable aktivitetPing() throws IOException {
         return () -> {
             try {
-                HttpURLConnection connection = (HttpURLConnection) new URL(System.getProperty("veilarbaktivitet.isalive.url")).openConnection();
+                HttpURLConnection connection = (HttpURLConnection) new URL(System.getProperty("aktiviteter.feed.isalive.url")).openConnection();
                 connection.connect();
                 if (connection.getResponseCode() == 200) {
                     return Pingable.Ping.lyktes("VeilArbAktivitet");
