@@ -74,7 +74,7 @@
             <param-value>
                 no.nav.fo.security.jwt.filter,
                 no.nav.fo.provider.rest,
-                no.nav.sbl.dialogarena.feed.controller
+                no.nav.fo.feed.controller
             </param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>

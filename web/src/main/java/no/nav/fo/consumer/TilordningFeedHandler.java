@@ -6,9 +6,12 @@ import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.slf4j.Logger;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import java.sql.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -24,6 +27,9 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.oppdaterBrukerdataFletter = oppdaterBrukerdataFletter;
     }
 
+    @Inject
+    private JdbcTemplate db;
+
     @Override
     @Transactional
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
@@ -31,5 +37,7 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
         data.forEach(b -> oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(b));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
         event.report();
+        db.update("UPDATE METADATA SET tilordning_sist_oppdatert = ?", Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
+
     }
 }
