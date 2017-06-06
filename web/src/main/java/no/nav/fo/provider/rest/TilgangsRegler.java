@@ -51,6 +51,13 @@ class TilgangsRegler {
         test("tilgang til enhet", Tuple.of(enhet, ident), brukertilgangService.harBrukerTilgang(ident, enhet));
     }
 
+    public static void tilgangTilBruker(PepClient pep, String fnr) {
+        SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
+        String token = TokenUtils.getTokenBody(subjectHandler.getSubject());
+
+        pep.tilgangTilBruker(token, fnr);
+    }
+
     private static void test(String navn, Object data, boolean matches) {
         if (!matches) {
             throw new RestTilgangException(format("sjekk av %s feilet, %s", navn, data));
