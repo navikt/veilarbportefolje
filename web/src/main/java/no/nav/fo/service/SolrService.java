@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import javaslang.control.Either;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Bruker;
@@ -119,6 +120,17 @@ public class SolrService {
     public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = byggQueryString(enhetId, veilederIdent);
         return hentBrukere(queryString, sortOrder, sortField, filtervalg);
+    }
+
+    public Either<Throwable, List<Bruker>> query(String query) {
+        return Try.of(() -> {
+            SolrQuery solrQuery = new SolrQuery("*:*");
+            solrQuery.addFilterQuery(query);
+            QueryResponse response = solrClientSlave.query(solrQuery);
+            SolrUtils.checkSolrResponseCode(response.getStatus());
+            SolrDocumentList results = response.getResults();
+            return results.stream().map(Bruker::of).collect(toList());
+        }).toEither();
     }
 
     String byggQueryString(String enhetId, Optional<String> veilederIdent) {

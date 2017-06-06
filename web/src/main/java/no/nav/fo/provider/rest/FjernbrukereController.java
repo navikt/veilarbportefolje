@@ -1,6 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 
@@ -12,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Api(value = "Fjern brukere")
@@ -27,15 +29,15 @@ public class FjernbrukereController {
     private SolrService solrService;
 
     @POST
-    @Path("/fjernbrukere")
+    @Path("/fjern")
     public Response fjernBrukere(List<String> fnrs) {
         return RestUtils.createResponse(() -> {
+            String veilederIdent = SubjectHandler.getSubjectHandler().getUid();
             TilgangsRegler.tilgangTilOppfolging(pepClient);
 
-            fnrs.forEach((fnr) -> {
-                TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-                solrService.slettBruker(fnr);
-            });
+            solrService.query("veileder_id:" + veilederIdent)
+                    .map((brukere) -> brukere.stream().filter((bruker) -> fnrs.contains(bruker.getFnr())).collect(toList()))
+                    .forEach((brukere) -> brukere.forEach((bruker) -> solrService.slettBruker(bruker.getFnr())));
 
             solrService.commit();
 
