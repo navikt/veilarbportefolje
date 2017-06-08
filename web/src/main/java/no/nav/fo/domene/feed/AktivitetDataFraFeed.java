@@ -3,7 +3,7 @@ package no.nav.fo.domene.feed;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Data
 @Accessors(chain = true)
@@ -12,9 +12,9 @@ public class AktivitetDataFraFeed implements Comparable<AktivitetDataFraFeed> {
     String aktivitetId;
     String aktorId;
 
-    Date fraDato;
-    Date tilDato;
-    Date opprettetDato;
+    Timestamp fraDato;
+    Timestamp tilDato;
+    Timestamp opprettetDato;
 
     String aktivitetType;
     String status;
