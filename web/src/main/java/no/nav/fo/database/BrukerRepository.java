@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -192,13 +193,18 @@ public class BrukerRepository {
        });
    }
 
-    public Map<String,Boolean> getAktivitetStatusMap(String personid, Set<String> typerAvInteresse) {
+    public Map<String,Timestamp> getAktivitetStatusMap(String personid, Set<String> typerAvInteresse) {
         Map<String, Boolean> statusMap = new HashMap<>();
+        Map<String, Timestamp> statusMapTimestamp = new HashMap<>();
 
         List<Map<String, Object>> statuserFraDb = db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER where PERSONID=?",personid);
 
         typerAvInteresse.forEach( (type) ->  statusMap.put(type, kanskjeVerdi(statuserFraDb, type)));
-        return statusMap;
+
+        //Lagrer mapping til Date for å håndtere dato på aktiviteter i fremtiden.
+        statusMap.forEach( (key, value) -> statusMapTimestamp.put(key, value ? new Timestamp(Instant.now().toEpochMilli()) : null));
+
+        return statusMapTimestamp;
     }
 
     private <T> Predicate<T> not(Predicate<T> predicate) {
@@ -249,12 +255,12 @@ public class BrukerRepository {
                 .whereEquals("AKTIVITETID", aktivitet.getAktivitetId())
                 .set("AKTIVITETID", aktivitet.getAktivitetId())
                 .set("AKTOERID", aktivitet.getAktorId())
-                .set("AKTIVITETTYPE", aktivitet.getAktivitetType())
+                .set("AKTIVITETTYPE", aktivitet.getAktivitetType().toLowerCase())
                 .set("AVTALT", aktivitet.isAvtalt())
                 .set("FRADATO", aktivitet.getFraDato())
                 .set("TILDATO", aktivitet.getTilDato())
                 .set("OPPDATERTDATO", aktivitet.getOpprettetDato())
-                .set("STATUS", aktivitet.getStatus());
+                .set("STATUS", aktivitet.getStatus().toLowerCase());
     }
 
     String retrieveBrukereSQL() {

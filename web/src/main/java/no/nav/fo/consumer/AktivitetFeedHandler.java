@@ -61,15 +61,17 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         });
 
         String personid = aktoerService.hentPersonidFraAktoerid(aktoerid);
-        persistentOppdatering.lagre(new AktivitetsDataEndring(personid, aktivitetTypeTilStatus));
+        persistentOppdatering.lagre(new AktivitetsDataEndring(personid, aktoerid, aktivitetTypeTilStatus));
     }
 
     class AktivitetsDataEndring implements BrukerOppdatering {
         private final String personid;
+        private final String aktoerid;
         private Map<String, Boolean> aktivitetStatus;
 
-        public AktivitetsDataEndring(String personid, Map<String, Boolean> aktivitetStatus) {
+        public AktivitetsDataEndring(String personid, String aktoerid, Map<String, Boolean> aktivitetStatus) {
             this.personid = personid;
+            this.aktoerid = aktoerid;
             this.aktivitetStatus = aktivitetStatus;
         }
 
@@ -80,7 +82,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
         @Override
         public Brukerdata applyTo(Brukerdata bruker) {
-            return bruker.setAktivitetStatus(aktivitetStatus);
+            return bruker
+                    .setAktivitetStatus(aktivitetStatus)
+                    .setAktoerid(aktoerid);
         }
     }
 }

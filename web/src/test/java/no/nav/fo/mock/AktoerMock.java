@@ -28,7 +28,7 @@ public class AktoerMock implements AktoerV2 {
 
     @Override
     public WSHentIdentForAktoerIdResponse hentIdentForAktoerId(WSHentIdentForAktoerIdRequest wsHentIdentForAktoerIdRequest) throws HentIdentForAktoerIdPersonIkkeFunnet {
-        String tulleId = wsHentIdentForAktoerIdRequest.getAktoerId() + "-IDENT";
+        String tulleId = "01010101010";
         WSHentIdentForAktoerIdResponse response = new WSHentIdentForAktoerIdResponse();
         response.setIdent(tulleId);
         return response;

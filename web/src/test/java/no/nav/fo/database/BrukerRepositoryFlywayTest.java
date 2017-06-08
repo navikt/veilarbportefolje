@@ -1,6 +1,7 @@
 package no.nav.fo.database;
 
 import no.nav.fo.config.DatabaseFlywayConfigTest;
+import no.nav.fo.domene.AktivitetData;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.DateUtils;
 import org.junit.Test;
@@ -10,6 +11,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
+
+import java.sql.Timestamp;
+import java.util.Map;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -75,6 +79,16 @@ public class BrukerRepositoryFlywayTest {
 
         assertThat(status).isEqualToIgnoringCase("FERDIG");
 
+    }
+
+    @Test
+    public void skalReturnereNullPaaAlleStatuserDersomBrukerIkkeFinnes() {
+        Map<String, Timestamp> statuser = brukerRepository.getAktivitetStatusMap("jegfinnesikke", AktivitetData.aktivitettyperSet);
+
+        statuser.forEach( (key, value) -> {
+            assertThat(value).isNull();
+            assertThat(statuser).containsKey(key);
+        });
     }
 
 }

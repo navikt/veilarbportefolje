@@ -37,7 +37,7 @@ public class LocalJndiContextConfig {
         }
 
         Flyway flyway = new Flyway();
-        flyway.setLocations("db/migration/veilarbportefoljeDB");
+        flyway.setLocations("testmigration");
         flyway.setDataSource(ds);
         int migrate = flyway.migrate();
         assertThat(migrate, greaterThan(0));

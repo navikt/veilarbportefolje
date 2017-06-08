@@ -60,6 +60,8 @@ public class PersistentOppdatering {
 
     public void lagreIDB(List<Brukerdata> brukerdata) {
         brukerRepository.insertOrUpdateBrukerdata(brukerdata, emptyList());
+
+        //Lagre aktivitetstatuser
         brukerdata
                 .stream()
                 .filter((data) -> data.getAktivitetStatus() != null)

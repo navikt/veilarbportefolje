@@ -160,7 +160,7 @@ public class SolrService {
     }
 
     public void indekserBrukerdata(String personId) {
-        logger.info("Legger bruker med personId % til i indeks ", personId);
+        logger.info("Legger bruker med personId {} til i indeksen ", personId);
         List<Map<String, Object>> rader = brukerRepository.retrieveBrukermedBrukerdata(personId);
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
 

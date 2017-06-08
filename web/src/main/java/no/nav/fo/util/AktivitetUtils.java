@@ -4,6 +4,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktivitetData;
 import org.apache.solr.common.SolrInputDocument;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +24,7 @@ public class AktivitetUtils {
     public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository, Set<String> aktivitettyperSet) {
         for(SolrInputDocument document : dokumenter) {
             String personid = (String) document.get("person_id").getValue();
-            Map<String, Boolean> statusMap = brukerRepository.getAktivitetStatusMap(personid, AktivitetData.aktivitettyperSet);
+            Map<String, Timestamp> statusMap = brukerRepository.getAktivitetStatusMap(personid, AktivitetData.aktivitettyperSet);
             AktivitetData.aktivitettyperSet.forEach( (type) -> document.addField(type, statusMap.get(type)));
         }
     }

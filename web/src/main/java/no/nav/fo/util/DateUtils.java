@@ -13,6 +13,9 @@ public class DateUtils {
     }
 
     public static String ISO8601FromTimestamp(Timestamp timestamp, ZoneId zoneId) {
+        if(timestamp == null) {
+            return null;
+        }
         return ZonedDateTime.ofInstant(timestamp.toInstant(), zoneId).toString();
     }
 
