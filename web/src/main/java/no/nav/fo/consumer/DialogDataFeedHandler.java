@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -64,8 +65,8 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         @Override
         public Brukerdata applyTo(Brukerdata bruker) {
             return bruker
-                    .setVenterPaSvarFraBruker(dialog.venterPaSvar ? LocalDateTime.now() : null)
-                    .setVenterPaSvarFraNav(dialog.harUbehandlet ? LocalDateTime.now() : null);
+                    .setVenterPaSvarFraBruker(LocalDateTime.ofInstant(dialog.venterPaSvar.toInstant(), ZoneId.systemDefault()))
+                    .setVenterPaSvarFraNav(LocalDateTime.ofInstant(dialog.harUbehandlet.toInstant(), ZoneId.systemDefault()));
         }
 
         public boolean harPersonid() {

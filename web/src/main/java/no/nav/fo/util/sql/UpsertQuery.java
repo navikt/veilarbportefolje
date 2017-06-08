@@ -1,5 +1,6 @@
 package no.nav.fo.util.sql;
 
+import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 
@@ -14,8 +15,7 @@ public class UpsertQuery {
     private final JdbcTemplate db;
     private final String tableName;
     private final Map<String, Object> setParams;
-    private String whereParam;
-    private Object whereValue;
+    private WhereClause where;
 
     public UpsertQuery(JdbcTemplate db, String tableName) {
         this.db = db;
@@ -31,20 +31,20 @@ public class UpsertQuery {
         return this;
     }
 
-    public UpsertQuery whereEquals(String whereParam, Object whereValue) {
-        this.whereParam = whereParam;
-        this.whereValue = whereValue;
+    public UpsertQuery where(WhereClause where) {
+        this.where = where;
         return this;
     }
 
     public void execute() {
-        if (this.whereParam == null || this.whereValue == null || this.setParams.isEmpty()) {
+        if (this.where == null || this.setParams.isEmpty()) {
             throw new IllegalStateException("Invalid data");
         }
 
         db.execute(createUpsertStatement(), (PreparedStatementCallback<Boolean>) ps -> {
             int index = 1;
-            ps.setObject(index++, this.whereValue);
+
+            index = this.where.applyTo(ps, index);
 
             // For updatequery
             for (Map.Entry<String, Object> entry : this.setParams.entrySet()) {
@@ -64,14 +64,10 @@ public class UpsertQuery {
         return format(
                 upsertTemplate,
                 this.tableName,
-                this.createWhereStatement(),
+                this.where.toSql(),
                 this.createUpdateStatement(),
                 this.createInsertStatement()
         );
-    }
-
-    private String createWhereStatement() {
-        return format("%s = ?", this.whereParam);
     }
 
     private String createUpdateStatement() {

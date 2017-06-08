@@ -72,7 +72,6 @@
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
             <param-value>
-                no.nav.fo.security.jwt.filter,
                 no.nav.fo.provider.rest,
                 no.nav.fo.feed.controller
             </param-value>

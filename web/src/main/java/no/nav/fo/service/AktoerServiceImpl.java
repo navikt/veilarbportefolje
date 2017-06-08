@@ -4,7 +4,10 @@ import javaslang.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.exception.FantIkkeFnrException;
+import no.nav.fo.util.sql.where.WhereClause;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
+import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentRequest;
+import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentResponse;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdRequest;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+
+import static no.nav.fo.util.sql.SqlUtils.upsert;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -56,5 +61,51 @@ public class AktoerServiceImpl implements AktoerService {
             return Optional.empty();
         }
         return Optional.of(mapper.apply(data.get(0)));
+    }
+
+    @Override
+    public Optional<String> hentAktoeridFraPersonid(String personid) {
+        return hentSingleFraDb(
+                db,
+                "SELECT aktoerid FROM PERSON_MAPPING WHERE personid = ?",
+                (data) -> ((String) data.get("aktoerid")),
+                personid
+        );
+    }
+
+    @Override
+    public Optional<String> hentAktoeridFraFnr(String fnr) {
+        return Try.of(() -> endpoint.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr)))
+                .map(WSHentAktoerIdForIdentResponse::getAktoerId)
+                .toJavaOptional();
+    }
+
+    @Override
+    public Optional<String> hentFnrFraAktoerid(String aktoerid) {
+        Optional<String> fnr = hentSingleFraDb(
+                db,
+                "SELECT fnr FROM PERSON_MAPPING WHERE aktoerid = ?",
+                (data) -> ((String) data.get("fnr")),
+                aktoerid
+        );
+
+        if (fnr.isPresent()) { return fnr; }
+
+        return hentFnrFraAktoerV1(aktoerid);
+    }
+
+    private Optional<String> hentFnrFraAktoerV1(String aktoerid) {
+        Optional<String> maybyFnr = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid)))
+                .map(WSHentIdentForAktoerIdResponse::getIdent)
+                .toJavaOptional();
+
+        maybyFnr.ifPresent((fnr) -> {
+            upsert(db, "PERSON_MAPPING")
+                    .set("fnr", fnr)
+                    .where(WhereClause.equals("aktoerid", aktoerid))
+                    .execute();
+        });
+
+        return maybyFnr;
     }
 }
