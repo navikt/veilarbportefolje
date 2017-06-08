@@ -8,8 +8,10 @@ import no.nav.fo.domene.AktivitetData;
 import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.OppdaterBrukerdataFletter;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -60,7 +62,10 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             aktivitetTypeTilStatus.put(aktivitetsype, erBrukersAktivitetAktiv(statuser, AktivitetData.fullførteStatuser));
         });
 
-        String personid = aktoerService.hentPersonidFraAktoerid(aktoerid);
+        String personid = aktoerService.hentPersonidFraAktoerid(aktoerid).orElseThrow( () -> {
+            getLogger(OppdaterBrukerdataFletter.class).warn("Fant ikke personid for aktoerid {} ", aktoerid);
+            return new FantIkkePersonIdException(aktoerid);
+        });
         persistentOppdatering.lagre(new AktivitetsDataEndring(personid, aktoerid, aktivitetTypeTilStatus));
     }
 

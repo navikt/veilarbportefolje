@@ -23,12 +23,11 @@ public class OppdaterBrukerdataFletter {
 
 
     public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
-        String personId = aktoerService.hentPersonidFraAktoerid(bruker.getAktoerid());
-        if (personId == null) {
-            getLogger(OppdaterBrukerdataFletter.class).warn("Fnat ikke personid", new FantIkkePersonIdException(bruker.getAktoerid()));
-        } else {
-            BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
-            persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
-        }
+        String personId = aktoerService.hentPersonidFraAktoerid(bruker.getAktoerid()).orElseThrow( () -> {
+            getLogger(OppdaterBrukerdataFletter.class).warn("Fant ikke personid for aktoerid {} ", bruker.getAktoerid());
+            return new FantIkkePersonIdException(bruker.getAktoerid());
+        });
+        BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
+        persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
     }
 }

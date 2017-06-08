@@ -14,11 +14,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.fo.util.AktivitetUtils.erBrukersAktivitetAktiv;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -26,6 +29,7 @@ public class AktivitetFeedHandlerTest {
 
     @Mock
     private BrukerRepository brukerRepository;
+
     @Mock
     private AktoerService aktoerService;
     @Mock
@@ -52,6 +56,8 @@ public class AktivitetFeedHandlerTest {
 
     @Test
     public void getAktiviteterForAktoeridShouldBeCalledOnceForEachDistinctAktoerid() {
+
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Optional.of("jegfantpersonid"));
 
         List<AktivitetDataFraFeed> data = new ArrayList<>();
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1"));

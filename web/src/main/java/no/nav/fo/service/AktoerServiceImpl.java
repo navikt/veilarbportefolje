@@ -33,7 +33,7 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private BrukerRepository brukerRepository;
 
-    public String hentPersonidFraAktoerid(String aktoerid) {
+    public Optional<String> hentPersonidFraAktoerid(String aktoerid) {
         Optional<String> personid = hentSingleFraDb(
                 db,
                 "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?",
@@ -41,7 +41,7 @@ public class AktoerServiceImpl implements AktoerService {
                 aktoerid
         );
 
-        return personid
+        return Optional.ofNullable(personid
                 .orElseGet(() -> {
                     Try<WSHentIdentForAktoerIdResponse> response = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid)));
 
@@ -52,7 +52,7 @@ public class AktoerServiceImpl implements AktoerService {
                             .orElseThrow(() -> new FantIkkeFnrException(response.get().getIdent())));
                     brukerRepository.insertAktoeridToPersonidMapping(aktoerid, personId.get());
                     return personId.get();
-                });
+                }));
     }
 
     private static <T> Optional<T> hentSingleFraDb(JdbcTemplate db, String sql, Function<Map<String, Object>, T> mapper, Object... args) {

@@ -6,6 +6,7 @@ import no.nav.fo.domene.*;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
+import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
@@ -252,7 +253,7 @@ public class BrukerRepository {
 
     static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, AktivitetDataFraFeed aktivitet) {
         return SqlUtils.upsert(db, "AKTIVITETER")
-                .whereEquals("AKTIVITETID", aktivitet.getAktivitetId())
+                .where( WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
                 .set("AKTIVITETID", aktivitet.getAktivitetId())
                 .set("AKTOERID", aktivitet.getAktorId())
                 .set("AKTIVITETTYPE", aktivitet.getAktivitetType().toLowerCase())
