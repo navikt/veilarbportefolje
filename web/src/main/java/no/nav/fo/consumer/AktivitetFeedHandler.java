@@ -45,7 +45,15 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         data.stream().map(AktivitetDataFraFeed::getAktorId)
                 .distinct()
                 .collect(toList())
-                    .forEach(aktoerid -> oppdaterAktivitetstatusForBruker(brukerRepository.getAktiviteterForAktoerid(aktoerid), aktoerid));
+                .forEach(aktoerid -> {
+                   try {
+                       oppdaterAktivitetstatusForBruker(brukerRepository.getAktiviteterForAktoerid(aktoerid), aktoerid);
+                   }catch(Exception e) {
+                       LOG.error("Feil ved behandling av aktivitetdata for aktoerid: {}  {}", aktoerid, e.getMessage());
+                   }
+                });
+
+
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
     }
 

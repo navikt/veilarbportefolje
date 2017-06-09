@@ -1,5 +1,6 @@
 package no.nav.fo.database;
 
+import com.google.common.collect.ImmutableSet;
 import no.nav.fo.config.DatabaseFlywayConfigTest;
 import no.nav.fo.domene.AktivitetData;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
@@ -13,6 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -91,4 +93,16 @@ public class BrukerRepositoryFlywayTest {
         });
     }
 
+    @Test
+    public void skalReturnereKorrektStatusPaaAktivitet() {
+        Map<String, Boolean> aktivitetTypeTilStatus = new HashMap<>();
+        aktivitetTypeTilStatus.put("type1", false);
+        aktivitetTypeTilStatus.put("type2", true);
+
+        brukerRepository.upsertAktivitetStatuserForBruker(aktivitetTypeTilStatus, "aktoerid", "personid");
+        Map<String, Timestamp> typeTilTimestamp = brukerRepository.getAktivitetStatusMap("personid", ImmutableSet.of("type1", "type2"));
+
+        assertThat(typeTilTimestamp.get("type1")).isNull();
+        assertThat(typeTilTimestamp.get("type2")).isNotNull();
+    }
 }

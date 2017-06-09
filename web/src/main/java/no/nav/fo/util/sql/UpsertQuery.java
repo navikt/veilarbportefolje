@@ -15,12 +15,14 @@ public class UpsertQuery {
     private final JdbcTemplate db;
     private final String tableName;
     private final Map<String, Object> setParams;
+    private final Map<String, Object> insertParams;
     private WhereClause where;
 
     public UpsertQuery(JdbcTemplate db, String tableName) {
         this.db = db;
         this.tableName = tableName;
         this.setParams = new LinkedHashMap<>();
+        this.insertParams = new LinkedHashMap<>();
     }
 
     public UpsertQuery set(String param, Object value) {
@@ -30,6 +32,16 @@ public class UpsertQuery {
         this.setParams.put(param, value);
         return this;
     }
+
+    public UpsertQuery insert(String param, Object value) {
+        if (this.insertParams.containsKey(param)) {
+            throw new IllegalArgumentException(format("Param[%s] was already set.", param));
+        }
+        this.insertParams.put(param, value);
+        return this;
+    }
+
+
 
     public UpsertQuery where(WhereClause where) {
         this.where = where;
@@ -52,7 +64,7 @@ public class UpsertQuery {
             }
 
             // For insertquery
-            for (Map.Entry<String, Object> entry : this.setParams.entrySet()) {
+            for (Map.Entry<String, Object> entry : this.insertParams.entrySet()) {
                 ps.setObject(index++, entry.getValue());
             }
 
@@ -87,14 +99,14 @@ public class UpsertQuery {
     }
 
     private String createInsertFields() {
-        return setParams
+        return insertParams
                 .entrySet().stream()
                 .map(Map.Entry::getKey)
                 .collect(joining(", "));
     }
 
     private String createInsertValues() {
-        return setParams
+        return insertParams
                 .entrySet().stream()
                 .map((entry) -> "?")
                 .collect(joining(", "));

@@ -24,7 +24,7 @@ public class AktivitetUtils {
     public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository, Set<String> aktivitettyperSet) {
         for(SolrInputDocument document : dokumenter) {
             String personid = (String) document.get("person_id").getValue();
-            Map<String, Timestamp> statusMap = brukerRepository.getAktivitetStatusMap(personid, AktivitetData.aktivitettyperSet);
+            Map<String, Timestamp> statusMap = brukerRepository.getAktivitetStatusMap(personid, aktivitettyperSet);
             AktivitetData.aktivitettyperSet.forEach( (type) -> document.addField(type, statusMap.get(type)));
         }
     }

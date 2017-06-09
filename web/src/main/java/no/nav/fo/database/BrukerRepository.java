@@ -11,7 +11,6 @@ import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
@@ -180,18 +179,8 @@ public class BrukerRepository {
         aktivitetstatus.forEach( (aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid) );
    }
 
-   // TODO skrive om UpsertQuery til å ta inn en list med where params
    public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
-       db.execute(getUpsertAktivitetStatuserForBrukerSql(), (PreparedStatementCallback<Boolean>) ps -> {
-           ps.setString(1, personid);
-           ps.setString(2, aktivitettype);
-           ps.setBoolean(3, status);
-           ps.setString(4, personid);
-           ps.setString(5, aktivitettype);
-           ps.setString(6, aktoerid);
-           ps.setBoolean(7, status);
-           return ps.execute();
-       });
+        getUpsertAktivitetStatuserForBrukerQuery(aktivitettype, this.db, status, aktoerid, personid).execute();
    }
 
     public Map<String,Timestamp> getAktivitetStatusMap(String personid, Set<String> typerAvInteresse) {
@@ -254,14 +243,31 @@ public class BrukerRepository {
     static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, AktivitetDataFraFeed aktivitet) {
         return SqlUtils.upsert(db, "AKTIVITETER")
                 .where( WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
-                .set("AKTIVITETID", aktivitet.getAktivitetId())
                 .set("AKTOERID", aktivitet.getAktorId())
                 .set("AKTIVITETTYPE", aktivitet.getAktivitetType().toLowerCase())
                 .set("AVTALT", aktivitet.isAvtalt())
                 .set("FRADATO", aktivitet.getFraDato())
                 .set("TILDATO", aktivitet.getTilDato())
                 .set("OPPDATERTDATO", aktivitet.getOpprettetDato())
-                .set("STATUS", aktivitet.getStatus().toLowerCase());
+                .set("STATUS", aktivitet.getStatus().toLowerCase())
+                .insert("AKTIVITETID", aktivitet.getAktivitetId())
+                .insert("AKTOERID", aktivitet.getAktorId())
+                .insert("AKTIVITETTYPE", aktivitet.getAktivitetType().toLowerCase())
+                .insert("AVTALT", aktivitet.isAvtalt())
+                .insert("FRADATO", aktivitet.getFraDato())
+                .insert("TILDATO", aktivitet.getTilDato())
+                .insert("OPPDATERTDATO", aktivitet.getOpprettetDato())
+                .insert("STATUS", aktivitet.getStatus().toLowerCase());
+    }
+
+    static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid) {
+        return SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER" )
+                .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
+                .set("STATUS", status)
+                .insert("PERSONID", personid)
+                .insert("AKTIVITETTYPE", aktivitetstype)
+                .insert("AKTOERID", aktoerid)
+                .insert("STATUS", status);
     }
 
     String retrieveBrukereSQL() {
@@ -402,10 +408,6 @@ public class BrukerRepository {
                         "fodselsnr in (:fnrs)";
     }
 
-    String getUpsertAktivitetStatuserForBrukerSql() {
-        return "MERGE INTO BRUKERSTATUS_AKTIVITETER USING dual ON (PERSONID = ? AND AKTIVITETTYPE = ?) WHEN MATCHED THEN UPDATE SET STATUS = ? WHEN NOT MATCHED THEN INSERT (PERSONID, AKTIVITETTYPE, AKTOERID, STATUS) VALUES (?, ?, ?, ?)";
-    }
-
     String insertPersonidAktoeridMappingSQL() {
         return "INSERT INTO AKTOERID_TO_PERSONID VALUES (?,?)";
     }
@@ -456,7 +458,8 @@ public class BrukerRepository {
         for(Map<String, Object> rad : statuserFraDb) {
             String aktivitetType = (String) rad.get("AKTIVITETTYPE");
             if(type.equals(aktivitetType)) {
-                return  Boolean.valueOf((String) rad.get("STATUS"));
+                //med hsql driveren settes det inn false/true og med oracle settes det inn 0/1.
+                return  Boolean.valueOf( (String) rad.get("STATUS")) || "1".equals(rad.get("STATUS"));
             }
         }
         return false;
