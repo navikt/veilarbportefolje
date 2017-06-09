@@ -2,6 +2,8 @@ package no.nav.fo.consumer;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
+import no.nav.fo.domene.Aktivitet.AktivitetData;
+import no.nav.fo.domene.Aktivitet.AktivitetFullfortStatuser;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.service.AktoerService;
 import org.junit.Test;
@@ -40,18 +42,25 @@ public class AktivitetFeedHandlerTest {
 
     @Test
     public void AktivitetSkalHaStatusTrue() {
-        List<String> fullførteStatuser = Arrays.asList( new String[]{"FULLFORT1", "FULLFORT2"});
-        List<String> statusliste = Arrays.asList( new String[]{"FULLFORT1", "IKKEFULLFORT1"});
+        List<AktivitetFullfortStatuser> fullfortStatuser = AktivitetData.fullførteStatuser;
+        String ikkeFullfortStatus = "DenneErIkkeFullfort";
 
-        assertThat(erBrukersAktivitetAktiv(statusliste, fullførteStatuser)).isEqualTo(true);
+
+        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus)).isFalse();
+        List<String> statusliste = Arrays.asList(fullfortStatuser.get(0).toString(), ikkeFullfortStatus);
+
+        assertThat(erBrukersAktivitetAktiv(statusliste)).isEqualTo(true);
     }
 
     @Test
     public void AktivitetSkalHaStatusFalse() {
-        List<String> fullførteStatuser = Arrays.asList( new String[]{"FULLFORT1", "FULLFORT2"});
-        List<String> statusliste = Arrays.asList( new String[]{"FULLFORT1", "FULLFORT2"});
+        String ikkeFullfortStatus = "DenneErIkkeFullfort";
 
-        assertThat(erBrukersAktivitetAktiv(statusliste, fullførteStatuser)).isEqualTo(false);
+        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus)).isFalse();
+
+        List<String> statusliste = Arrays.asList(ikkeFullfortStatus);
+
+        assertThat(erBrukersAktivitetAktiv(statusliste)).isEqualTo(false);
     }
 
     @Test
@@ -74,8 +83,5 @@ public class AktivitetFeedHandlerTest {
 
         assertThat(capturedAktoerids).contains("AktoerID1");
         assertThat(capturedAktoerids).contains("AktoerID2");
-
     }
-
-
 }

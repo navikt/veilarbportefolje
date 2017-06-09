@@ -3,6 +3,7 @@ package no.nav.fo.database;
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import no.nav.fo.domene.*;
+import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
@@ -55,7 +56,7 @@ public class BrukerRepository {
         db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument bruker = mapResultSetTilDokument(rs);
-            applyAktivitetStatuser(bruker, this, AktivitetData.aktivitettyperSet);
+            applyAktivitetStatuser(bruker, this);
             if (filter.test(bruker)) {
                 prosess.accept(bruker);
             }
@@ -183,13 +184,13 @@ public class BrukerRepository {
         getUpsertAktivitetStatuserForBrukerQuery(aktivitettype, this.db, status, aktoerid, personid).execute();
    }
 
-    public Map<String,Timestamp> getAktivitetStatusMap(String personid, Set<String> typerAvInteresse) {
+    public Map<String,Timestamp> getAktivitetStatusMap(String personid) {
         Map<String, Boolean> statusMap = new HashMap<>();
         Map<String, Timestamp> statusMapTimestamp = new HashMap<>();
 
         List<Map<String, Object>> statuserFraDb = db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER where PERSONID=?",personid);
 
-        typerAvInteresse.forEach( (type) ->  statusMap.put(type, kanskjeVerdi(statuserFraDb, type)));
+        AktivitetData.aktivitetTyperList.forEach( (type) ->  statusMap.put(type.toString(), kanskjeVerdi(statuserFraDb, type.toString())));
 
         //Lagrer mapping til Date for å håndtere dato på aktiviteter i fremtiden.
         statusMap.forEach( (key, value) -> statusMapTimestamp.put(key, value ? new Timestamp(Instant.now().toEpochMilli()) : null));

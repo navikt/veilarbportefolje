@@ -4,7 +4,6 @@ package no.nav.fo.consumer;
 import javaslang.Tuple2;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.domene.AktivitetData;
 import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
@@ -18,7 +17,7 @@ import javax.inject.Inject;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.domene.AktivitetData.aktivitettyperSet;
+import static no.nav.fo.domene.Aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.AktivitetUtils.erBrukersAktivitetAktiv;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -60,14 +59,14 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
     void oppdaterAktivitetstatusForBruker(List<Tuple2<String, String>> aktivitetStatus, String aktoerid) {
         Map<String, Boolean> aktivitetTypeTilStatus = new HashMap<>();
 
-        aktivitettyperSet.forEach(aktivitetsype -> {
+        aktivitetTyperList.forEach(aktivitetsype -> {
             List<String> statuser = aktivitetStatus
                     .stream()
-                    .filter(tuple -> aktivitetsype.equals(tuple._1))
+                    .filter(tuple -> aktivitetsype.toString().equals(tuple._1))
                     .map(tuple -> tuple._2)
                     .collect(toList());
 
-            aktivitetTypeTilStatus.put(aktivitetsype, erBrukersAktivitetAktiv(statuser, AktivitetData.fullførteStatuser));
+            aktivitetTypeTilStatus.put(aktivitetsype.toString(), erBrukersAktivitetAktiv(statuser));
         });
 
         String personid = aktoerService.hentPersonidFraAktoerid(aktoerid).orElseThrow( () -> {

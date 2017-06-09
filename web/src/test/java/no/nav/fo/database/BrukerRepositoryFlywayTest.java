@@ -1,8 +1,8 @@
 package no.nav.fo.database;
 
-import com.google.common.collect.ImmutableSet;
 import no.nav.fo.config.DatabaseFlywayConfigTest;
-import no.nav.fo.domene.AktivitetData;
+import no.nav.fo.domene.Aktivitet.AktivitetData;
+import no.nav.fo.domene.Aktivitet.AktivitetTyper;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.DateUtils;
 import org.junit.Test;
@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -85,7 +86,7 @@ public class BrukerRepositoryFlywayTest {
 
     @Test
     public void skalReturnereNullPaaAlleStatuserDersomBrukerIkkeFinnes() {
-        Map<String, Timestamp> statuser = brukerRepository.getAktivitetStatusMap("jegfinnesikke", AktivitetData.aktivitettyperSet);
+        Map<String, Timestamp> statuser = brukerRepository.getAktivitetStatusMap("jegfinnesikke");
 
         statuser.forEach( (key, value) -> {
             assertThat(value).isNull();
@@ -95,14 +96,15 @@ public class BrukerRepositoryFlywayTest {
 
     @Test
     public void skalReturnereKorrektStatusPaaAktivitet() {
+        List<AktivitetTyper> aktivitetTyper = AktivitetData.aktivitetTyperList;
         Map<String, Boolean> aktivitetTypeTilStatus = new HashMap<>();
-        aktivitetTypeTilStatus.put("type1", false);
-        aktivitetTypeTilStatus.put("type2", true);
+        aktivitetTypeTilStatus.put(aktivitetTyper.get(0).toString(), false);
+        aktivitetTypeTilStatus.put(aktivitetTyper.get(1).toString(), true);
 
         brukerRepository.upsertAktivitetStatuserForBruker(aktivitetTypeTilStatus, "aktoerid", "personid");
-        Map<String, Timestamp> typeTilTimestamp = brukerRepository.getAktivitetStatusMap("personid", ImmutableSet.of("type1", "type2"));
+        Map<String, Timestamp> typeTilTimestamp = brukerRepository.getAktivitetStatusMap("personid");
 
-        assertThat(typeTilTimestamp.get("type1")).isNull();
-        assertThat(typeTilTimestamp.get("type2")).isNotNull();
+        assertThat(typeTilTimestamp.get(aktivitetTyper.get(0).toString())).isNull();
+        assertThat(typeTilTimestamp.get(aktivitetTyper.get(1).toString())).isNotNull();
     }
 }

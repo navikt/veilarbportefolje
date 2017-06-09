@@ -164,7 +164,7 @@ public class SolrService {
         List<Map<String, Object>> rader = brukerRepository.retrieveBrukermedBrukerdata(personId);
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
 
-        applyAktivitetStatuser(dokumenter, brukerRepository, AktivitetData.aktivitettyperSet);
+        applyAktivitetStatuser(dokumenter, brukerRepository);
 
         addDocuments(dokumenter);
         commit();
