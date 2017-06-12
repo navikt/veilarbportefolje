@@ -37,7 +37,7 @@ public class AktoerServiceImpl implements AktoerService {
         Optional<String> personid = hentSingleFraDb(
                 db,
                 "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?",
-                (data) -> ((String) data.get("personid")),
+                (data) -> (String) data.get("personid"),
                 aktoerid
         );
 
@@ -68,7 +68,7 @@ public class AktoerServiceImpl implements AktoerService {
         return hentSingleFraDb(
                 db,
                 "SELECT aktoerid FROM PERSON_MAPPING WHERE personid = ?",
-                (data) -> ((String) data.get("aktoerid")),
+                (data) -> (String) data.get("aktoerid"),
                 personid
         );
     }
@@ -85,7 +85,7 @@ public class AktoerServiceImpl implements AktoerService {
         Optional<String> fnr = hentSingleFraDb(
                 db,
                 "SELECT fnr FROM PERSON_MAPPING WHERE aktoerid = ?",
-                (data) -> ((String) data.get("fnr")),
+                (data) -> (String) data.get("fnr"),
                 aktoerid
         );
 

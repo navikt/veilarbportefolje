@@ -165,7 +165,7 @@ public class BrukerRepository {
     }
 
     private static Tuple2<String, String> mapToTuple(Map<String, Object> map) {
-        return Tuple.of(((String) map.get("AKTIVITETTYPE")), ((String) map.get("STATUS")));
+        return Tuple.of((String) map.get("AKTIVITETTYPE"), (String) map.get("STATUS"));
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
