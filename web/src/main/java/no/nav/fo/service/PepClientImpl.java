@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import javaslang.control.Try;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -12,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
+import java.util.function.Supplier;
 
 
 public class PepClientImpl implements PepClient {
@@ -76,10 +78,19 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
+    @Cacheable("brukertilgangCache")
+    public boolean tilgangTilBruker(String token, String fnr) {
+        BiasedDecisionResponse callAllowed;
+        try {
+            callAllowed = pep.isServiceCallAllowedWithOidcToken(token, "veilarb", fnr);
+        } catch (PepException e) {
+            throw new InternalServerErrorException("something went wrong in PEP", e);
+        }
+        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+    }
+
     @Override
     public void ping() throws PepException {
         pep.ping();
     }
-
-
 }

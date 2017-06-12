@@ -25,6 +25,11 @@ public class PepClientMock implements PepClient {
     }
 
     @Override
+    public boolean tilgangTilBruker(String token, String fnr) {
+        return true;
+    }
+
+    @Override
     public void ping() throws PepException {
 
     }

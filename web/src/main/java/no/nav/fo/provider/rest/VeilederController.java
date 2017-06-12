@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static org.slf4j.LoggerFactory.getLogger;
 

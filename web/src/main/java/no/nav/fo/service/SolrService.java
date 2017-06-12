@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import javaslang.control.Either;
 import javaslang.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
@@ -116,6 +117,17 @@ public class SolrService {
         return hentBrukere(queryString, sortOrder, sortField, filtervalg);
     }
 
+    public Either<Throwable, List<Bruker>> query(String query) {
+        return Try.of(() -> {
+            SolrQuery solrQuery = new SolrQuery("*:*");
+            solrQuery.addFilterQuery(query);
+            QueryResponse response = solrClientSlave.query(solrQuery);
+            SolrUtils.checkSolrResponseCode(response.getStatus());
+            SolrDocumentList results = response.getResults();
+            return results.stream().map(Bruker::of).collect(toList());
+        }).toEither();
+    }
+
     String byggQueryString(String enhetId, Optional<String> veilederIdent) {
         return veilederIdent
                 .map((ident) -> isBlank(ident) ? null : ident)
@@ -137,7 +149,8 @@ public class SolrService {
         return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
     }
 
-    public void test() {
+    public void slettBruker(String fnr) {
+        deleteDocuments("fnr:" + fnr);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
@@ -171,7 +184,7 @@ public class SolrService {
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }
 
-    private Try<UpdateResponse> commit() {
+    public Try<UpdateResponse> commit() {
         return Try.of(() -> solrClientMaster.commit())
                 .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
@@ -192,8 +205,12 @@ public class SolrService {
     }
 
     private void deleteAllDocuments() {
+        deleteDocuments("*:*");
+    }
+
+    private void deleteDocuments(String query) {
         try {
-            UpdateResponse response = solrClientMaster.deleteByQuery("*:*");
+            UpdateResponse response = solrClientMaster.deleteByQuery(query);
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
             logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
