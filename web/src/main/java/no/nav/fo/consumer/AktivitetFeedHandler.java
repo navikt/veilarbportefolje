@@ -38,10 +38,14 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     @Override
     public void call(String lastEntry, List<AktivitetDataFraFeed> data) {
+        List<AktivitetDataFraFeed> avtalteAktiviteter = data
+                .stream()
+                .filter(AktivitetDataFraFeed::isAvtalt)
+                .collect(toList());
 
-        data.forEach((aktivitet) -> brukerRepository.upsertAktivitet(aktivitet));
+        avtalteAktiviteter.forEach((aktivitet) -> brukerRepository.upsertAktivitet(aktivitet));
 
-        data.stream().map(AktivitetDataFraFeed::getAktorId)
+        avtalteAktiviteter.stream().map(AktivitetDataFraFeed::getAktorId)
                 .distinct()
                 .collect(toList())
                 .forEach(aktoerid -> {
