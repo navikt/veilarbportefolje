@@ -45,17 +45,11 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
         avtalteAktiviteter.forEach((aktivitet) -> brukerRepository.upsertAktivitet(aktivitet));
 
-        avtalteAktiviteter.stream().map(AktivitetDataFraFeed::getAktorId)
+        avtalteAktiviteter
+                .stream().map(AktivitetDataFraFeed::getAktorId)
                 .distinct()
                 .collect(toList())
-                .forEach(aktoerid -> {
-                   try {
-                       oppdaterAktivitetstatusForBruker(brukerRepository.getAktiviteterForAktoerid(aktoerid), aktoerid);
-                   }catch(Exception e) {
-                       LOG.error("Feil ved behandling av aktivitetdata for aktoerid: {}  {}", aktoerid, e.getMessage());
-                   }
-                });
-
+                .forEach(this::tryOppdater);
 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
     }
@@ -78,6 +72,14 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             return new FantIkkePersonIdException(aktoerid);
         });
         persistentOppdatering.lagre(new AktivitetsDataEndring(personid, aktoerid, aktivitetTypeTilStatus));
+    }
+
+    void tryOppdater( String aktoerid) {
+        try {
+            oppdaterAktivitetstatusForBruker(brukerRepository.getAktiviteterForAktoerid(aktoerid), aktoerid);
+        }catch(Exception e) {
+            LOG.error("Feil ved behandling av aktivitetdata for aktoerid: {}  {}", aktoerid, e.getMessage());
+        }
     }
 
     class AktivitetsDataEndring implements BrukerOppdatering {
