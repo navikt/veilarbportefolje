@@ -25,4 +25,9 @@ public class LogicalWhereClause extends WhereClause {
     public String toSql() {
         return String.format("%s %s %s", this.wc1.toSql(), this.operation.sql, this.wc2.toSql());
     }
+
+    @Override
+    public boolean appliesTo(String key) {
+        return wc1.appliesTo(key) || wc2.appliesTo(key);
+    }
 }

@@ -251,24 +251,16 @@ public class BrukerRepository {
                 .set("TILDATO", aktivitet.getTilDato())
                 .set("OPPDATERTDATO", aktivitet.getOpprettetDato())
                 .set("STATUS", aktivitet.getStatus().toLowerCase())
-                .insert("AKTIVITETID", aktivitet.getAktivitetId())
-                .insert("AKTOERID", aktivitet.getAktorId())
-                .insert("AKTIVITETTYPE", aktivitet.getAktivitetType().toLowerCase())
-                .insert("AVTALT", aktivitet.isAvtalt())
-                .insert("FRADATO", aktivitet.getFraDato())
-                .insert("TILDATO", aktivitet.getTilDato())
-                .insert("OPPDATERTDATO", aktivitet.getOpprettetDato())
-                .insert("STATUS", aktivitet.getStatus().toLowerCase());
+                .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
 
     static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid) {
         return SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER" )
                 .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
                 .set("STATUS", status)
-                .insert("PERSONID", personid)
-                .insert("AKTIVITETTYPE", aktivitetstype)
-                .insert("AKTOERID", aktoerid)
-                .insert("STATUS", status);
+                .set("PERSONID", personid)
+                .set("AKTIVITETTYPE", aktivitetstype)
+                .set("AKTOERID", aktoerid);
     }
 
     String retrieveBrukereSQL() {

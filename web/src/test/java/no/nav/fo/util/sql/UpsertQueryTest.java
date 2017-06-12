@@ -24,8 +24,6 @@ public class UpsertQueryTest {
         UpsertQuery updateQuery = SqlUtils.upsert(db, "tabellnavn")
                 .set("kolonneEn", new Date(0))
                 .set("kolonneTo", "Min String")
-                .insert("kolonneEn", new Date(0))
-                .insert("kolonneTo", "Min String")
                 .where(WhereClause.equals("kolonnetre", 2131));
 
         updateQuery.execute();
@@ -42,14 +40,12 @@ public class UpsertQueryTest {
         UpsertQuery updateQuery = SqlUtils.upsert(db, "tabellnavn")
                 .set("kolonneEn", new Date(0))
                 .set("kolonneTo", "Min String")
-                .insert("kolonneEn", new Date(0))
-                .insert("kolonneTo", "Min String")
                 .where(WhereClause.equals("kolonnetre", 2131).and(WhereClause.equals("kolonneTo", 1234)));
 
         updateQuery.execute();
 
         assertThat(captor.getValue()).isEqualTo("MERGE INTO tabellnavn USING dual ON (kolonnetre = ? AND kolonneTo = ?)" +
-                " WHEN MATCHED THEN UPDATE SET kolonneEn = ?, kolonneTo = ? WHEN NOT MATCHED THEN INSERT (kolonneEn, kolonneTo) VALUES (?, ?)");
+                " WHEN MATCHED THEN UPDATE SET kolonneEn = ? WHEN NOT MATCHED THEN INSERT (kolonneEn, kolonneTo) VALUES (?, ?)");
     }
 
     @Test
@@ -59,11 +55,9 @@ public class UpsertQueryTest {
         when(db.execute(captor.capture(), any(PreparedStatementCallback.class))).thenReturn(true);
 
         UpsertQuery updateQuery = SqlUtils.upsert(db, "tabellnavn")
+                .set("kolonneEn", "Min String")
                 .set("kolonneTo", new Date(0))
                 .set("kolonneTre", "Min String")
-                .insert("kolonneEn", new Date(0))
-                .insert("kolonneTo", "Min String")
-                .insert("kolonneTre", "Min String")
                 .where(WhereClause.equals("kolonneEn", 2131));
 
         updateQuery.execute();

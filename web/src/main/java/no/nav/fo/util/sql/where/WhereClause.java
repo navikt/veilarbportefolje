@@ -19,4 +19,6 @@ public abstract class WhereClause {
     public abstract int applyTo(PreparedStatement ps, int index) throws SQLException;
 
     public abstract String toSql();
+
+    public abstract boolean appliesTo(String key);
 }

@@ -24,4 +24,9 @@ public class ComparativeWhereClause extends WhereClause {
     public String toSql() {
         return String.format("%s %s ?", this.field, this.operation.sql);
     }
+
+    @Override
+    public boolean appliesTo(String key) {
+        return key.equals(field);
+    }
 }
