@@ -48,7 +48,9 @@ public class UpsertQuery {
 
             // For updatequery
             for (Map.Entry<String, Object> entry : this.setParams.entrySet()) {
-                ps.setObject(index++, entry.getValue());
+                if(!this.where.appliesTo(entry.getKey())) {
+                    ps.setObject(index++, entry.getValue());
+                }
             }
 
             // For insertquery
