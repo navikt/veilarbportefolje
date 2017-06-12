@@ -69,9 +69,9 @@ public class AktivitetFeedHandlerTest {
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Optional.of("jegfantpersonid"));
 
         List<AktivitetDataFraFeed> data = new ArrayList<>();
-        data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1"));
-        data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1"));
-        data.add(new AktivitetDataFraFeed().setAktorId("AktoerID2"));
+        data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
+        data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
+        data.add(new AktivitetDataFraFeed().setAktorId("AktoerID2").setAvtalt(true));
 
         aktivitetFeedHandler.call("dontcare", data);
 
