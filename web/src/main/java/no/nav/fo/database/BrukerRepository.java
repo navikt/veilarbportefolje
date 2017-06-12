@@ -2,6 +2,7 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
+import javaslang.Tuple4;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
@@ -157,15 +158,19 @@ public class BrukerRepository {
         return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
     }
 
-    public List<Tuple2<String,String>> getAktiviteterForAktoerid(String aktoerid) {
+    public List<Tuple4<String,String, Timestamp, Timestamp>> getAktiviteterForAktoerid(String aktoerid) {
         return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
                 .stream()
                 .map(BrukerRepository::mapToTuple)
                 .collect(toList());
     }
 
-    private static Tuple2<String, String> mapToTuple(Map<String, Object> map) {
-        return Tuple.of((String) map.get("AKTIVITETTYPE"), (String) map.get("STATUS"));
+    private static Tuple4<String, String, Timestamp, Timestamp> mapToTuple(Map<String, Object> map) {
+        return Tuple.of(
+                (String) map.get("AKTIVITETTYPE"),
+                (String) map.get("STATUS"),
+                (Timestamp) map.get("FRADATO"),
+                (Timestamp) map.get("TILDATO"));
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
@@ -414,7 +419,7 @@ public class BrukerRepository {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
 
-    String getAktiviteterForAktoeridSql() { return "SELECT AKTIVITETTYPE, STATUS FROM AKTIVITETER where aktoerid=?"; }
+    String getAktiviteterForAktoeridSql() { return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?"; }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();

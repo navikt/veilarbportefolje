@@ -1,5 +1,7 @@
 package no.nav.fo.database;
 
+import javaslang.Tuple;
+import javaslang.Tuple4;
 import no.nav.fo.config.DatabaseFlywayConfigTest;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.Aktivitet.AktivitetTyper;
@@ -18,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
@@ -41,9 +44,9 @@ public class BrukerRepositoryFlywayTest {
                 .setAktivitetType("aktivitettype")
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(DateUtils.timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(DateUtils.timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setOpprettetDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setOpprettetDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("STATUS");
 
         brukerRepository.upsertAktivitet(aktivitet);
@@ -60,9 +63,9 @@ public class BrukerRepositoryFlywayTest {
                 .setAktivitetType("aktivitettype")
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(DateUtils.timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(DateUtils.timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setOpprettetDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setOpprettetDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("IKKE STARTET");
 
         AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
@@ -70,9 +73,9 @@ public class BrukerRepositoryFlywayTest {
                 .setAktivitetType("aktivitettype")
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(DateUtils.timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(DateUtils.timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setOpprettetDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setOpprettetDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("FERDIG");
 
         brukerRepository.upsertAktivitet(aktivitet1);
@@ -106,5 +109,37 @@ public class BrukerRepositoryFlywayTest {
 
         assertThat(typeTilTimestamp.get(aktivitetTyper.get(0).toString())).isNull();
         assertThat(typeTilTimestamp.get(aktivitetTyper.get(1).toString())).isNotNull();
+    }
+
+    @Test
+    public void skalHenteAlleAktiviteterForBruker() {
+        AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
+                .setAktivitetId("aktivitetid1")
+                .setAktivitetType("aktivitettype1")
+                .setAktorId("aktoerid")
+                .setAvtalt(true)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setOpprettetDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikke startet");
+
+        AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
+                .setAktivitetId("aktivitetid2")
+                .setAktivitetType("aktivitettype2")
+                .setAktorId("aktoerid")
+                .setAvtalt(true)
+                .setOpprettetDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ferdig");
+
+        brukerRepository.upsertAktivitet(aktivitet1);
+        brukerRepository.upsertAktivitet(aktivitet2);
+
+        List<Tuple4<String, String, Timestamp, Timestamp>> aktiviteter = brukerRepository.getAktiviteterForAktoerid("aktoerid");
+
+        assertThat(aktiviteter).contains(Tuple.of("aktivitettype1", "ikke startet", timestampFromISO8601("2017-03-03T10:10:10+02:00"), timestampFromISO8601("2017-12-03T10:10:10+02:00")));
+        assertThat(aktiviteter).contains(Tuple.of("aktivitettype2", "ferdig", null, null));
+
+
+
     }
 }

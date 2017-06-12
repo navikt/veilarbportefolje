@@ -1,7 +1,7 @@
 package no.nav.fo.consumer;
 
 
-import javaslang.Tuple2;
+import javaslang.Tuple4;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerOppdatering;
@@ -14,6 +14,7 @@ import no.nav.fo.service.OppdaterBrukerdataFletter;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -50,7 +51,8 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                 .collect(toList())
                 .forEach(aktoerid -> {
                    try {
-                       oppdaterAktivitetstatusForBruker(brukerRepository.getAktiviteterForAktoerid(aktoerid), aktoerid);
+                       List<Tuple4<String, String, Timestamp, Timestamp>> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
+                       oppdaterAktivitetstatusForBruker(aktiviteter, aktoerid);
                    }catch(Exception e) {
                        LOG.error("Feil ved behandling av aktivitetdata for aktoerid: {}  {}", aktoerid, e.getMessage());
                    }
@@ -60,7 +62,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
     }
 
-    void oppdaterAktivitetstatusForBruker(List<Tuple2<String, String>> aktivitetStatus, String aktoerid) {
+    void oppdaterAktivitetstatusForBruker(List<Tuple4<String, String, Timestamp, Timestamp>> aktivitetStatus, String aktoerid) {
         Map<String, Boolean> aktivitetTypeTilStatus = new HashMap<>();
 
         aktivitetTyperList.forEach(aktivitetsype -> {
