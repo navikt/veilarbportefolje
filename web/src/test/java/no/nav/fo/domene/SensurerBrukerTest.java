@@ -1,15 +1,13 @@
 package no.nav.fo.domene;
 
 
-import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.util.PortefoljeUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +15,10 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ApplicationConfigTest.class})
+@RunWith(MockitoJUnitRunner.class)
 public class SensurerBrukerTest {
 
-    @Inject
+    @Mock
     private PepClient pepClient;
 
     @Test

@@ -1,14 +1,8 @@
 package no.nav.fo.util;
 
-import com.google.common.base.Joiner;
-import no.nav.fo.config.ApplicationConfig;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.BrukerRepositoryTest;
 import no.nav.fo.domene.Brukerdata;
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,7 +10,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,20 +28,6 @@ public class UpdateBatchQueryTest {
 
     @Inject
     private BrukerRepository brukerRepository;
-
-    @Before
-    public void setUp() {
-        try {
-            db.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @After
-    public void tearDown() {
-        db.execute("drop table bruker_data");
-    }
 
     @Test
     public void skalLageBatchUpdateQuery() throws Exception {

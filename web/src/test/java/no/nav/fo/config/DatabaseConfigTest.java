@@ -1,16 +1,15 @@
 package no.nav.fo.config;
 
+import no.nav.fo.database.BrukerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 public class DatabaseConfigTest {
 
     @Bean
     public javax.sql.DataSource hsqldbDataSource() {
-        SingleConnectionDataSource dataSource = new SingleConnectionDataSource("jdbc:hsqldb:mem:veilarbporteofolje;sql.syntax_ora=true", "sa", "", true);
-        return dataSource;
+      return LocalJndiContextConfig.setupInMemoryDatabase();
     }
 
     @Bean
@@ -22,4 +21,7 @@ public class DatabaseConfigTest {
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(javax.sql.DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
+
+    @Bean
+    public BrukerRepository brukerRepository() { return new BrukerRepository(); }
 }

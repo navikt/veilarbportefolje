@@ -221,11 +221,7 @@ public class BrukerRepository {
     }
 
     void upsertBrukerdata(Brukerdata brukerdata) {
-        try {
-            brukerdata.toInsertQuery(db).execute();
-        } catch (DuplicateKeyException e) {
-            brukerdata.toUpdateQuery(db).execute();
-        }
+        brukerdata.toUpsertQuery(db).execute();
     }
 
     public void insertAktoeridToPersonidMapping(String aktoerId, String personId) {
@@ -254,7 +250,7 @@ public class BrukerRepository {
                 .set("AVTALT", aktivitet.isAvtalt())
                 .set("FRADATO", aktivitet.getFraDato())
                 .set("TILDATO", aktivitet.getTilDato())
-                .set("OPPDATERTDATO", aktivitet.getOpprettetDato())
+                .set("OPPDATERTDATO", aktivitet.getEndretDato())
                 .set("STATUS", aktivitet.getStatus().toLowerCase())
                 .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
@@ -277,7 +273,7 @@ public class BrukerRepository {
                         "etternavn, " +
                         "nav_kontor, " +
                         "formidlingsgruppekode, " +
-                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "iserv_fra_dato, " +
                         "kvalifiseringsgruppekode, " +
                         "rettighetsgruppekode, " +
                         "hovedmaalkode, " +
@@ -285,17 +281,19 @@ public class BrukerRepository {
                         "fr_kode, " +
                         "sperret_ansatt, " +
                         "er_doed, " +
-                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "doed_fra_dato, " +
                         "tidsstempel, " +
                         "veilederident, " +
                         "ytelse, " +
-                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
+                        "aapmaxtid, " +
                         "aapmaxtidfasett, " +
                         "oppfolging, " +
-                        "TO_CHAR(venterpasvarfrabruker, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfrabruker, 'HH24:MI:SS') || 'Z' AS venterpasvarfrabruker, " +
-                        "TO_CHAR(venterpasvarfranav, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfranav, 'HH24:MI:SS') || 'Z' AS venterpasvarfranav " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav, " +
+                        "nyesteutlopteaktivitet, " +
+                        "iavtaltaktivitet "+
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -313,7 +311,7 @@ public class BrukerRepository {
                         "etternavn, " +
                         "nav_kontor, " +
                         "formidlingsgruppekode, " +
-                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "iserv_fra_dato, " +
                         "kvalifiseringsgruppekode, " +
                         "rettighetsgruppekode, " +
                         "hovedmaalkode, " +
@@ -321,17 +319,19 @@ public class BrukerRepository {
                         "fr_kode, " +
                         "sperret_ansatt, " +
                         "er_doed, " +
-                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "doed_fra_dato, " +
                         "tidsstempel, " +
                         "veilederident, " +
                         "ytelse," +
-                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
+                        "aapmaxtid, " +
                         "aapmaxtidfasett, " +
                         "oppfolging, " +
-                        "TO_CHAR(venterpasvarfrabruker, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfrabruker, 'HH24:MI:SS') || 'Z' AS venterpasvarfrabruker, " +
-                        "TO_CHAR(venterpasvarfranav, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfranav, 'HH24:MI:SS') || 'Z' AS venterpasvarfranav " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav, " +
+                        "nyesteutlopteaktivitet, " +
+                        "iavtaltaktivitet "+
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -350,7 +350,7 @@ public class BrukerRepository {
                         "etternavn, " +
                         "nav_kontor, " +
                         "formidlingsgruppekode, " +
-                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "iserv_fra_dato, " +
                         "kvalifiseringsgruppekode, " +
                         "rettighetsgruppekode, " +
                         "hovedmaalkode, " +
@@ -358,17 +358,19 @@ public class BrukerRepository {
                         "fr_kode, " +
                         "sperret_ansatt, " +
                         "er_doed, " +
-                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "doed_fra_dato, " +
                         "tidsstempel, " +
                         "veilederident," +
                         "ytelse, " +
-                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
+                        "aapmaxtid, " +
                         "aapmaxtidfasett, " +
                         "oppfolging, " +
-                        "TO_CHAR(venterpasvarfrabruker, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfrabruker, 'HH24:MI:SS') || 'Z' AS venterpasvarfrabruker, " +
-                        "TO_CHAR(venterpasvarfranav, 'YYYY-MM-DD') || 'T' || TO_CHAR(venterpasvarfranav, 'HH24:MI:SS') || 'Z' AS venterpasvarfranav " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav, " +
+                        "nyesteutlopteaktivitet, " +
+                        "iavtaltaktivitet "+
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +

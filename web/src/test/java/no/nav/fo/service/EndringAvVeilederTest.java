@@ -1,16 +1,12 @@
 package no.nav.fo.service;
 
-import com.google.common.base.Joiner;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.BrukerRepositoryTest;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.aktoer.v2.HentIdentForAktoerIdPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdRequest;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdResponse;
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.sql.Timestamp;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -42,30 +37,19 @@ public class EndringAvVeilederTest {
     @Inject
     OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
 
+
     @Before
-    public void setUp() {
-        try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-aktoerid-to-personid-mapping.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-bruker-data.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/create-table-oppfolgingsbruker.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public void beforeTests() {
         reset(aktoerV2);
-    }
-
-    @After
-    public void tearDown() {
-        jdbcTemplate.execute("drop table oppfolgingsbruker");
-        jdbcTemplate.execute("drop table bruker_data");
-        jdbcTemplate.execute("drop table AKTOERID_TO_PERSONID");
+        jdbcTemplate.execute("truncate table oppfolgingsbruker");
+        jdbcTemplate.execute("truncate table bruker_data");
+        jdbcTemplate.execute("truncate table AKTOERID_TO_PERSONID");
     }
 
 
     @Test
     public void skalHentePersonidFraDBogIkkeHenteFraAktoerV2() {
+        jdbcTemplate.execute("INSERT INTO AKTOERID_TO_PERSONID VALUES ('11111111', '222222')");
         BrukerOppdatertInformasjon bruker = new BrukerOppdatertInformasjon()
                 .setAktoerid("11111111")
                 .setVeileder("X111111")

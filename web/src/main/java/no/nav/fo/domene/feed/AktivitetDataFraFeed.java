@@ -14,7 +14,7 @@ public class AktivitetDataFraFeed implements Comparable<AktivitetDataFraFeed> {
 
     Timestamp fraDato;
     Timestamp tilDato;
-    Timestamp opprettetDato;
+    Timestamp endretDato;
 
     String aktivitetType;
     String status;
@@ -22,6 +22,6 @@ public class AktivitetDataFraFeed implements Comparable<AktivitetDataFraFeed> {
 
     @Override
     public int compareTo(AktivitetDataFraFeed o) {
-        return opprettetDato.compareTo(o.opprettetDato);
+        return endretDato.compareTo(o.endretDato);
     }
 }

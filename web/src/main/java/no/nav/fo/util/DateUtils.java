@@ -12,7 +12,7 @@ public class DateUtils {
         return Timestamp.from(instant);
     }
 
-    public static String ISO8601FromTimestamp(Timestamp timestamp, ZoneId zoneId) {
+    public static String iso8601Fromtimestamp(Timestamp timestamp, ZoneId zoneId) {
         if(timestamp == null) {
             return null;
         }
