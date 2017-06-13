@@ -29,6 +29,7 @@ public class StartJettyVeilArbPortefolje {
     public static void main(String[] args) throws Exception {
         SystemProperties.setFrom("veilarbportefolje.properties");
         System.setProperty("develop-local", "true");
+        System.setProperty("lokal.database", "true");
 
         SingleConnectionDataSource dataSource;
         if (Boolean.parseBoolean(getProperty("lokal.database"))) {

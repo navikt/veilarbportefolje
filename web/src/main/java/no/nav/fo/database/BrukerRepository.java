@@ -6,6 +6,7 @@ import no.nav.fo.domene.*;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.util.sql.Query;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -17,11 +18,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -48,6 +52,32 @@ public class BrukerRepository {
 
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public Optional<String> retrieveAktoerId(String fnr) {
+        return
+                retrievePersonidFromFnr(fnr)
+                        .map(BigDecimal::toString)
+                        .flatMap(this::aktoerIdQuery);
+    }
+
+    private Optional<String> aktoerIdQuery(String personId) {
+        return Query.of(db.getDataSource())
+                .select("AKTOERID")
+                .from("AKTOERID_TO_PERSONID")
+                .where(String.format("PERSONID = %s", personId))
+                .fetch(toPersonId())
+                .findFirst();
+    }
+
+    private Function<ResultSet, String> toPersonId() {
+        return rs -> {
+            try {
+                return rs.getString("PERSON_ID");
+            } catch (SQLException e) {
+                throw new RuntimeException();
+            }
+        };
+    }
 
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
