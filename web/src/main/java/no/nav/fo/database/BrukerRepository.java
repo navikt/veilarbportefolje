@@ -57,8 +57,8 @@ public class BrukerRepository {
         db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument bruker = mapResultSetTilDokument(rs);
-            applyAktivitetStatuser(bruker, this);
             if (filter.test(bruker)) {
+                applyAktivitetStatuser(bruker, this);
                 prosess.accept(bruker);
             }
         });
