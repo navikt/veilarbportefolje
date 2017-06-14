@@ -105,6 +105,8 @@ public class SolrService {
             return;
         }
 
+        applyAktivitetStatuser(dokumenter, brukerRepository);
+
         addDocuments(dokumenter);
         brukerRepository.updateTidsstempel(timestamp);
         commit();
