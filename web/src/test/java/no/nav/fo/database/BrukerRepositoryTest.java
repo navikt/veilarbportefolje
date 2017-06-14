@@ -1,9 +1,8 @@
 package no.nav.fo.database;
 
 import com.google.common.base.Joiner;
-import javaslang.Tuple;
-import javaslang.Tuple4;
 import no.nav.fo.config.ApplicationConfigTest;
+import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.Aktivitet.AktivitetTyper;
 import no.nav.fo.domene.Brukerdata;
@@ -345,13 +344,25 @@ public class BrukerRepositoryTest{
                 .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("ferdig");
 
+        AktivitetDTO aktivitetDTO1 = new AktivitetDTO()
+                .setAktivitetType("aktivitettype1")
+                .setStatus("ikke startet")
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"));
+
+        AktivitetDTO aktivitetDTO2 = new AktivitetDTO()
+                .setAktivitetType("aktivitettype2")
+                .setStatus("ferdig");
+
+
+
         brukerRepository.upsertAktivitet(aktivitet1);
         brukerRepository.upsertAktivitet(aktivitet2);
 
-        List<Tuple4<String, String, Timestamp, Timestamp>> aktiviteter = brukerRepository.getAktiviteterForAktoerid("aktoerid");
+        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid("aktoerid");
 
-        assertThat(aktiviteter).contains(Tuple.of("aktivitettype1", "ikke startet", timestampFromISO8601("2017-03-03T10:10:10+02:00"), timestampFromISO8601("2017-12-03T10:10:10+02:00")));
-        assertThat(aktiviteter).contains(Tuple.of("aktivitettype2", "ferdig", null, null));
+        assertThat(aktiviteter).contains(aktivitetDTO1);
+        assertThat(aktiviteter).contains(aktivitetDTO2);
     }
 
     @Test

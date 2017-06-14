@@ -2,8 +2,8 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
-import javaslang.Tuple4;
 import no.nav.fo.domene.*;
+import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.sql.SqlUtils;
@@ -158,19 +158,19 @@ public class BrukerRepository {
         return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
     }
 
-    public List<Tuple4<String,String, Timestamp, Timestamp>> getAktiviteterForAktoerid(String aktoerid) {
+    public List<AktivitetDTO> getAktiviteterForAktoerid(String aktoerid) {
         return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
                 .stream()
-                .map(BrukerRepository::mapToTuple)
+                .map(BrukerRepository::mapToAktivitetDTO)
                 .collect(toList());
     }
 
-    private static Tuple4<String, String, Timestamp, Timestamp> mapToTuple(Map<String, Object> map) {
-        return Tuple.of(
-                (String) map.get("AKTIVITETTYPE"),
-                (String) map.get("STATUS"),
-                (Timestamp) map.get("FRADATO"),
-                (Timestamp) map.get("TILDATO"));
+    private static AktivitetDTO mapToAktivitetDTO(Map<String, Object> map) {
+        return new AktivitetDTO()
+                .setAktivitetType((String) map.get("AKTIVITETTYPE"))
+                .setStatus((String) map.get("STATUS"))
+                .setFraDato((Timestamp) map.get("FRADATO"))
+                .setTilDato((Timestamp) map.get("TILDATO"));
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
@@ -424,14 +424,15 @@ public class BrukerRepository {
     String getAktiviteterForAktoeridSql() { return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?"; }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
+        if(oppfolgingsFlaggSatt(bruker)) {
+            return true;
+        }
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
 
-        boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
+        return !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
                 (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
                         || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
                         || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
-
-        return aktivStatus || bruker.get("veileder_id").getValue() != null || oppfolgingsFlaggSatt(bruker);
     }
 
     static boolean oppfolgingsFlaggSatt(SolrInputDocument bruker) {

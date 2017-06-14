@@ -2,11 +2,11 @@ package no.nav.fo.config.feed;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.DialogDataFeedHandler;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
+import no.nav.fo.service.AktoerService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -51,8 +51,8 @@ public class DialogaktorfeedConfig {
     }
 
     @Bean
-    public DialogDataFeedHandler dialogDataFeedHandler(BrukerRepository brukerRepository, PersistentOppdatering persistentOppdatering, JdbcTemplate db) {
-        return new DialogDataFeedHandler(brukerRepository, persistentOppdatering, db);
+    public DialogDataFeedHandler dialogDataFeedHandler(PersistentOppdatering persistentOppdatering, JdbcTemplate db, AktoerService aktoerService) {
+        return new DialogDataFeedHandler(persistentOppdatering, db, aktoerService);
     }
 
     @Bean
