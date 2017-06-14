@@ -3,7 +3,7 @@ package no.nav.fo.domene.Aktivitet;
 public enum AktivitetFullfortStatuser {
     fullfort,
     avbrutt,
-    gjennomført;
+    gjennomfort;
 
     public static boolean contains(String value) {
         try {
