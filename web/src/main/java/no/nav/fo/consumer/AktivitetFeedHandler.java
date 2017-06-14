@@ -4,6 +4,7 @@ package no.nav.fo.consumer;
 import javaslang.Tuple4;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
+import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
@@ -55,14 +56,14 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
     }
 
-    void oppdaterAktivitetstatusForBruker(List<Tuple4<String, String, Timestamp, Timestamp>> aktivitetStatus, String aktoerid) {
+    void oppdaterAktivitetstatusForBruker(List<AktivitetDTO> aktivitetStatus, String aktoerid) {
         Map<String, Boolean> aktivitetTypeTilStatus = new HashMap<>();
 
         aktivitetTyperList.forEach(aktivitetsype -> {
             List<String> statuser = aktivitetStatus
                     .stream()
-                    .filter(tuple -> aktivitetsype.toString().equals(tuple._1))
-                    .map(tuple -> tuple._2)
+                    .filter(aktivitet -> aktivitetsype.toString().equals(aktivitet.getAktivitetType()))
+                    .map(AktivitetDTO::getStatus)
                     .collect(toList());
 
             aktivitetTypeTilStatus.put(aktivitetsype.toString(), erBrukersAktivitetAktiv(statuser));

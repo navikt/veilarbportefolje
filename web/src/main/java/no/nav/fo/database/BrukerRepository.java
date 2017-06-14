@@ -2,8 +2,8 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
-import javaslang.Tuple4;
 import no.nav.fo.domene.*;
+import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.sql.SqlUtils;
@@ -158,19 +158,19 @@ public class BrukerRepository {
         return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
     }
 
-    public List<Tuple4<String,String, Timestamp, Timestamp>> getAktiviteterForAktoerid(String aktoerid) {
+    public List<AktivitetDTO> getAktiviteterForAktoerid(String aktoerid) {
         return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
                 .stream()
-                .map(BrukerRepository::mapToTuple)
+                .map(BrukerRepository::mapToAktivitetDTO)
                 .collect(toList());
     }
 
-    private static Tuple4<String, String, Timestamp, Timestamp> mapToTuple(Map<String, Object> map) {
-        return Tuple.of(
-                (String) map.get("AKTIVITETTYPE"),
-                (String) map.get("STATUS"),
-                (Timestamp) map.get("FRADATO"),
-                (Timestamp) map.get("TILDATO"));
+    private static AktivitetDTO mapToAktivitetDTO(Map<String, Object> map) {
+        return new AktivitetDTO()
+                .setAktivitetType((String) map.get("AKTIVITETTYPE"))
+                .setStatus((String) map.get("STATUS"))
+                .setFraDato((Timestamp) map.get("FRADATO"))
+                .setTilDato((Timestamp) map.get("TILDATO"));
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
