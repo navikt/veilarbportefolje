@@ -2,12 +2,16 @@ package no.nav.fo.consumer;
 
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.fo.service.AktoerService;
+import no.nav.fo.util.MetricsUtils;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,30 +26,43 @@ import java.util.Optional;
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
-    private final BrukerRepository brukerRepository;
     private final PersistentOppdatering persistentOppdatering;
     private final JdbcTemplate db;
+    private final AktoerService aktoerService;
 
     @Inject
-    public DialogDataFeedHandler(BrukerRepository brukerRepository, PersistentOppdatering persistentOppdatering, JdbcTemplate db) {
-        this.brukerRepository = brukerRepository;
+    public DialogDataFeedHandler(PersistentOppdatering persistentOppdatering, JdbcTemplate db, AktoerService aktoerService) {
         this.persistentOppdatering = persistentOppdatering;
         this.db = db;
+        this.aktoerService = aktoerService;
     }
 
     @Override
     @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
-        data.stream()
-                .map((dialog) -> new DialogBrukerOppdatering(dialog, brukerRepository.retrievePersonIdFromAktoerId(dialog.aktorId)))
-                .forEach((oppdatering) -> {
-                    if (oppdatering.harPersonid()) {
-                        persistentOppdatering.lagre(oppdatering);
-                    } else {
-                        log.warn("Fant ikke bruker med aktorID", oppdatering.dialog.aktorId);
-                    }
-                });
+        data.forEach(this::behandleDialogData);
         db.update("UPDATE METADATA SET dialogaktor_sist_oppdatert = ?", Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+        Event event = MetricsFactory.createEvent("datamotattfrafeed");
+        event.report();
+    }
+
+    private void behandleDialogData(DialogDataFraFeed dialog) {
+        try {
+            MetricsUtils.timed("feed.dialog.objekt",
+                    () -> {
+                        DialogBrukerOppdatering oppdatering = new DialogBrukerOppdatering(dialog, aktoerService.hentPersonidFraAktoerid(dialog.aktorId));
+                        persistentOppdatering.lagre(oppdatering);
+                        return null;
+                    },
+                    (timer, hasFailed) -> {
+                        if (hasFailed) {
+                            timer.addTagToReport("aktorhash", DigestUtils.md5Hex(dialog.aktorId).toUpperCase());
+                        }
+                    }
+            );
+        } catch (Exception e) {
+            log.error("Feil ved behandlig av aktivitetdata fra feed med aktorid {}, {}", dialog.aktorId, e.getMessage());
+        }
     }
 
     static class DialogBrukerOppdatering implements BrukerOppdatering {
@@ -67,10 +84,6 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
             return bruker
                     .setVenterPaSvarFraBruker(LocalDateTime.ofInstant(dialog.venterPaSvar.toInstant(), ZoneId.systemDefault()))
                     .setVenterPaSvarFraNav(LocalDateTime.ofInstant(dialog.harUbehandlet.toInstant(), ZoneId.systemDefault()));
-        }
-
-        public boolean harPersonid() {
-            return this.personId.isPresent();
         }
     }
 }

@@ -43,7 +43,7 @@ public class BrukerRepositoryFlywayTest {
                 .setAvtalt(false)
                 .setFraDato(DateUtils.timestampFromISO8601("2017-03-03T10:10:10+02:00"))
                 .setTilDato(DateUtils.timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setOpprettetDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setEndretDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("STATUS");
 
         brukerRepository.upsertAktivitet(aktivitet);
@@ -62,7 +62,7 @@ public class BrukerRepositoryFlywayTest {
                 .setAvtalt(false)
                 .setFraDato(DateUtils.timestampFromISO8601("2017-03-03T10:10:10+02:00"))
                 .setTilDato(DateUtils.timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setOpprettetDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setEndretDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("IKKE STARTET");
 
         AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
@@ -72,7 +72,7 @@ public class BrukerRepositoryFlywayTest {
                 .setAvtalt(false)
                 .setFraDato(DateUtils.timestampFromISO8601("2017-03-03T10:10:10+02:00"))
                 .setTilDato(DateUtils.timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setOpprettetDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setEndretDato(DateUtils.timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("FERDIG");
 
         brukerRepository.upsertAktivitet(aktivitet1);

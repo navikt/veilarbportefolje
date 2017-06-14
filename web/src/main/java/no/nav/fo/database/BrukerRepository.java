@@ -249,7 +249,7 @@ public class BrukerRepository {
                 .set("AVTALT", aktivitet.isAvtalt())
                 .set("FRADATO", aktivitet.getFraDato())
                 .set("TILDATO", aktivitet.getTilDato())
-                .set("OPPDATERTDATO", aktivitet.getOpprettetDato())
+                .set("OPPDATERTDATO", aktivitet.getEndretDato())
                 .set("STATUS", aktivitet.getStatus().toLowerCase())
                 .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
