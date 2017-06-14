@@ -417,14 +417,15 @@ public class BrukerRepository {
     String getAktiviteterForAktoeridSql() { return "SELECT AKTIVITETTYPE, STATUS FROM AKTIVITETER where aktoerid=?"; }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
+        if(oppfolgingsFlaggSatt(bruker)) {
+            return true;
+        }
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
 
-        boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
+        return !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
                 (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
                         || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
                         || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
-
-        return aktivStatus || bruker.get("veileder_id").getValue() != null || oppfolgingsFlaggSatt(bruker);
     }
 
     static boolean oppfolgingsFlaggSatt(SolrInputDocument bruker) {
