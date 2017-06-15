@@ -5,23 +5,15 @@ import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteUpdate;
 import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.SqlUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 
 public class ArbeidslisteRepository {
-
-    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteRepository.class);
-
-    @Inject
-    private DataSource ds;
 
     @Inject
     private JdbcTemplate jdbcTemplate;
@@ -53,7 +45,7 @@ public class ArbeidslisteRepository {
         return updated > 0 ? Optional.of(data) : Optional.empty();
     }
 
-    Optional<ArbeidslisteUpdate> updateArbeidsliste(ArbeidslisteUpdate data) {
+    public Optional<ArbeidslisteUpdate> updateArbeidsliste(ArbeidslisteUpdate data) {
 
         int updated = SqlUtils.update(jdbcTemplate, TABLE_NAME)
                 .set("VEILEDERIDENT", data.getVeilederId())
@@ -66,7 +58,7 @@ public class ArbeidslisteRepository {
         return updated > 0 ? Optional.of(data) : Optional.empty();
     }
 
-    Optional<String> deleteArbeidsliste(String aktoerID) {
+    public Optional<String> deleteArbeidsliste(String aktoerID) {
         int updated = jdbcTemplate.update("DELETE FROM ARBEIDSLISTE WHERE AKTOERID = ?", aktoerID);
         return updated > 0 ? Optional.of(aktoerID) : Optional.empty();
     }

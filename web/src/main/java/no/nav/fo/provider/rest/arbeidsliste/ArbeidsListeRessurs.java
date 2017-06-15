@@ -4,7 +4,9 @@ import io.swagger.annotations.Api;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeFunnetException;
+import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeOppdatertException;
 import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeOpprettetException;
+import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeSlettetException;
 import no.nav.fo.service.ArbeidslisteService;
 
 import javax.inject.Inject;
@@ -26,7 +28,7 @@ public class ArbeidsListeRessurs {
     @GET
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         Arbeidsliste arbeidsliste = arbeidslisteService
-                .getArbeidsliste(fnr)
+                .getArbeidsliste(new Fnr(fnr))
                 .orElseThrow(ArbeidslisteIkkeFunnetException::new);
 
         return Response.ok().entity(arbeidsliste).build();
@@ -34,13 +36,7 @@ public class ArbeidsListeRessurs {
 
     @PUT
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
-
-        ArbeidslisteUpdate updateData =
-                new ArbeidslisteUpdate(new Fnr(fnr))
-                        .setVeilederId(body.veilederId)
-                        .setKommentar(body.kommentar)
-                        .setFrist(body.frist);
-
+        ArbeidslisteUpdate updateData = createUpdateData(body, fnr);
         arbeidslisteService
                 .createArbeidsliste(updateData)
                 .orElseThrow(ArbeidslisteIkkeOpprettetException::new);
@@ -50,12 +46,28 @@ public class ArbeidsListeRessurs {
 
     @POST
     public Response postArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
+        ArbeidslisteUpdate updateData = createUpdateData(body, fnr);
+        arbeidslisteService
+                .updateArbeidsliste(updateData)
+                .orElseThrow(ArbeidslisteIkkeOppdatertException::new);
+
         return Response.ok().build();
     }
 
     @DELETE
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
+        arbeidslisteService
+                .deleteArbeidsliste(new Fnr(fnr))
+                .orElseThrow(ArbeidslisteIkkeSlettetException::new);
         return Response.ok().build();
     }
+
+    private ArbeidslisteUpdate createUpdateData(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
+        return new ArbeidslisteUpdate(new Fnr(fnr))
+                .setVeilederId(body.veilederId)
+                .setKommentar(body.kommentar)
+                .setFrist(body.frist);
+    }
+
 
 }
