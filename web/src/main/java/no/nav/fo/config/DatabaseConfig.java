@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
@@ -38,6 +39,11 @@ public class DatabaseConfig {
     @Bean
     public BrukerRepository brukerRepository() {
         return new BrukerRepository();
+    }
+
+    @Bean
+    public ArbeidslisteRepository arbeidslisteRepository() {
+        return new ArbeidslisteRepository();
     }
 
     @Bean

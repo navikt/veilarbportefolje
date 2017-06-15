@@ -24,4 +24,8 @@ public class SqlUtils {
     public static UpsertQuery upsert(JdbcTemplate db, String tableName) {
         return new UpsertQuery(db, tableName);
     }
+
+    public static SelectQuery select(JdbcTemplate db, String tableName) {
+        return new SelectQuery(db, tableName);
+    }
 }

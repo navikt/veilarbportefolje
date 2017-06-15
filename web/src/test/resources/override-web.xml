@@ -18,7 +18,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Ubeskyttet</web-resource-name>
-            <url-pattern>/internal/*</url-pattern>
+            <url-pattern>/*</url-pattern>
         </web-resource-collection>
     </security-constraint>
 </web-app>

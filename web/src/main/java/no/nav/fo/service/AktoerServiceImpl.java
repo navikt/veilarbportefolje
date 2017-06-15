@@ -13,7 +13,6 @@ import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdResp
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,8 +46,6 @@ public class AktoerServiceImpl implements AktoerService {
 
                     Try<String> personId = Try.of(() -> brukerRepository
                             .retrievePersonidFromFnr(response.get().getIdent())
-                            .map(BigDecimal::intValue)
-                            .map(x -> Integer.toString(x))
                             .orElseThrow(() -> new FantIkkeFnrException(response.get().getIdent())));
                     brukerRepository.insertAktoeridToPersonidMapping(aktoerid, personId.get());
                     return personId.get();

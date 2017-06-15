@@ -17,7 +17,7 @@ public class LocalJndiContextConfig {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
         ds.setUrl("jdbc:oracle:thin:@d26dbfl020.test.local:1521/VEILARBPORTEFOLJE_T6");
         ds.setUsername("VEILARBPORTEFOLJE_T6");
-        ds.setPassword("qLjKfe1LUmyV");
+        ds.setPassword("!!CHANGE ME!!");
         ds.setSuppressClose(true);
         return ds;
     }

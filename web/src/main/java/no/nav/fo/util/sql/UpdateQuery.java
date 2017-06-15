@@ -34,7 +34,7 @@ public class UpdateQuery {
         return this;
     }
 
-    public void execute() {
+    public int execute() {
         assert tableName != null;
         assert !setParams.isEmpty();
 
@@ -48,7 +48,7 @@ public class UpdateQuery {
 
         String sql = sqlBuilder.toString();
 
-        db.update(sql, createSqlArgumentArray());
+        return db.update(sql, createSqlArgumentArray());
     }
 
     private Object[] createSqlArgumentArray() {
@@ -69,7 +69,7 @@ public class UpdateQuery {
 
     private String createSetStatement() {
         return " set " + setParams.entrySet().stream()
-                .map(entry -> entry.getKey())
+                .map(Map.Entry::getKey)
                 .map(SqlUtils.append(" = ?"))
                 .collect(joining(", "));
     }

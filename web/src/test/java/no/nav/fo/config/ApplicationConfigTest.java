@@ -60,10 +60,4 @@ public class ApplicationConfigTest {
     @Bean
     public PepClientImpl pepClient() { return mock(PepClientImpl.class);
     }
-
-    @Bean
-    public ArbeidslisteService arbeidslisteService() {
-        return new ArbeidslisteServiceMock();
-    }
-
 }
