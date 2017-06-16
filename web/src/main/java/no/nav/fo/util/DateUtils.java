@@ -18,5 +18,4 @@ public class DateUtils {
         }
         return ZonedDateTime.ofInstant(timestamp.toInstant(), zoneId).toString();
     }
-
 }

@@ -58,7 +58,7 @@ public class DbUtils {
         document.addField("venterpasvarfranav", fieldGetter.apply(rs, "venterpasvarfranav"));
         document.addField("venterpasvarfranav", fieldGetter.apply(rs, "venterpasvarfranav"));
         document.addField("nyesteutlopteaktivitet", fieldGetter.apply(rs, "nyesteutlopteaktivitet"));
-        document.addField("nyesteutlopteaktivitet", parse0OR1( (String) fieldGetter.apply(rs, "iavtaltaktivitet")));
+        document.addField("iavtaltaktivitet", parse0OR1( (String) fieldGetter.apply(rs, "iavtaltaktivitet")));
 
         return document;
     }

@@ -5,6 +5,7 @@ import javaslang.Tuple2;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
+import no.nav.fo.domene.Aktivitet.AktivitetTyper;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
@@ -162,6 +163,7 @@ public class BrukerRepository {
         return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
                 .stream()
                 .map(BrukerRepository::mapToAktivitetDTO)
+                .filter(aktivitet -> AktivitetTyper.contains(aktivitet.getAktivitetType()))
                 .collect(toList());
     }
 

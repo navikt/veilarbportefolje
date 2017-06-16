@@ -326,9 +326,11 @@ public class BrukerRepositoryTest{
 
     @Test
     public void skalHenteAlleAktiviteterForBruker() {
+        String aktivitettpe = AktivitetData.aktivitetTyperList.get(0).toString();
+
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
                 .setAktivitetId("aktivitetid1")
-                .setAktivitetType("aktivitettype1")
+                .setAktivitetType(aktivitettpe)
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
                 .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
@@ -338,20 +340,20 @@ public class BrukerRepositoryTest{
 
         AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
                 .setAktivitetId("aktivitetid2")
-                .setAktivitetType("aktivitettype2")
+                .setAktivitetType(aktivitettpe)
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
                 .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setStatus("ferdig");
 
         AktivitetDTO aktivitetDTO1 = new AktivitetDTO()
-                .setAktivitetType("aktivitettype1")
+                .setAktivitetType(aktivitettpe)
                 .setStatus("ikke startet")
                 .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
                 .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"));
 
         AktivitetDTO aktivitetDTO2 = new AktivitetDTO()
-                .setAktivitetType("aktivitettype2")
+                .setAktivitetType(aktivitettpe)
                 .setStatus("ferdig");
 
 
