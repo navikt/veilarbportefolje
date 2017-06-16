@@ -6,9 +6,6 @@ import no.nav.fo.domene.Fnr;
 
 import java.sql.Timestamp;
 
-/**
- * TODO: Kan vi lage en immutable value type som returnere en kopi ved setX()?
- */
 @Data
 @Accessors(chain = true)
 public class ArbeidslisteUpdate {

@@ -55,6 +55,7 @@
             **/config/**,
             **/selftest**
         </sonar.exclusions>
+        <okhttp.version>2.7.5</okhttp.version>
     </properties>
 
     <dependencyManagement>
@@ -265,6 +266,12 @@
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbportefolje-config</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

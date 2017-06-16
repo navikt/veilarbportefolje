@@ -22,15 +22,14 @@ import javax.sql.DataSource;
 @Import({
         DatabaseConfig.class,
         VirksomhetEnhetEndpointConfigMock.class,
-        ServiceConfig.class,
+        LocalServiceConfig.class,
         SolrConfig.class,
         AktoerEndpointConfig.class,
         ArenafilConfig.class,
         MetricsConfig.class,
         AktoerEndpointConfig.class,
         AbacContext.class,
-        CacheConfig.class,
-        LocalAktoerEndpointConfig.class
+        CacheConfig.class
 })
 public class LocalApplicationConfig {
 

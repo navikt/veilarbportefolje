@@ -5,6 +5,8 @@ import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteUpdate;
 import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.SqlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -15,24 +17,22 @@ import java.util.Optional;
 
 public class ArbeidslisteRepository {
 
+    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteRepository.class);
+
     @Inject
     private JdbcTemplate jdbcTemplate;
 
     private static final String TABLE_NAME = "ARBEIDSLISTE";
 
     public Optional<Arbeidsliste> retrieveArbeidsliste(String aktoerId) {
-
-        Arbeidsliste arbeidsliste = new SelectQuery<Arbeidsliste>(jdbcTemplate, TABLE_NAME)
+        return new SelectQuery<Arbeidsliste>(jdbcTemplate, TABLE_NAME)
                 .column("*")
                 .whereEquals("AKTOERID", aktoerId)
                 .usingMapper(this::arbeidslisteMapper)
                 .execute();
-
-        return Optional.of(arbeidsliste);
     }
 
     public Optional<ArbeidslisteUpdate> insertArbeidsliste(ArbeidslisteUpdate data) {
-
 
         int updated = SqlUtils.insert(jdbcTemplate, TABLE_NAME)
                 .value("AKTOERID", data.getAktoerID())

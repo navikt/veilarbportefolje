@@ -1,4 +1,4 @@
-package no.nav.fo.jetty;
+package no.nav.fo.testutil;
 
 import lombok.SneakyThrows;
 import no.nav.dialogarena.config.DevelopmentSecurity;

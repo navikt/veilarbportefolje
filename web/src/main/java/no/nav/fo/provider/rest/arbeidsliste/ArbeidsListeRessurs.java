@@ -6,12 +6,13 @@ import no.nav.fo.domene.Fnr;
 import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeFunnetException;
 import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeOppdatertException;
 import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeOpprettetException;
-import no.nav.fo.provider.rest.arbeidsliste.exception.ArbeidslisteIkkeSlettetException;
 import no.nav.fo.service.ArbeidslisteService;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -58,16 +59,15 @@ public class ArbeidsListeRessurs {
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
         arbeidslisteService
                 .deleteArbeidsliste(new Fnr(fnr))
-                .orElseThrow(ArbeidslisteIkkeSlettetException::new);
+                .orElseThrow(ArbeidslisteIkkeFunnetException::new);
+
         return Response.ok().build();
     }
 
     private ArbeidslisteUpdate createUpdateData(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return new ArbeidslisteUpdate(new Fnr(fnr))
-                .setVeilederId(body.veilederId)
-                .setKommentar(body.kommentar)
-                .setFrist(body.frist);
+                .setVeilederId(body.getVeilederId())
+                .setKommentar(body.getKommentar())
+                .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
     }
-
-
 }

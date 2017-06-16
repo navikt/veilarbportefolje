@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -33,11 +34,11 @@ public class SelectQuery<T> {
         return this;
     }
 
-    public T execute() {
+    public Optional<T> execute() {
         assert tableName != null;
 
         String sql = createSqlString();
-        return db.queryForObject(sql, createSqlArgumentArray(), (rs, rowNum) -> mapper.apply(rs));
+        return db.query(sql, createSqlArgumentArray(), rs -> rs.next() ? Optional.of(mapper.apply(rs)) : Optional.empty());
     }
 
     private String createSqlString() {
