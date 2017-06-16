@@ -58,7 +58,7 @@ public class KopierGR199FraArena {
         Consumer<Throwable> stopped = (t) -> this.isRunning = false;
 
         timed("GR199.hentfil", hentfil)
-                .onFailure(log(logger, "Kunne ikke hente ut fil fra sftpserver").andThen(stopped))
+                .onFailure(log(logger, "Kunne ikke hente ut fil via nfs").andThen(stopped))
                 .flatMap(timed("GR199.unmarshall", this::unmarshall))
                 .onFailure(log(logger, "Unmarshalling feilet").andThen(stopped))
                 .andThen(timed("GR199.indekser", indekserHandler::indekser))
