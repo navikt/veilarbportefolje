@@ -66,6 +66,7 @@ public class ArbeidsListeRessurs {
             ValideringsRegler.sjekkFnr(fnr);
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
+                    .map(x -> "Arbeidsliste slettet")
                     .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
         });
     }
