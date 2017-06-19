@@ -1,68 +1,38 @@
 package no.nav.fo.provider.rest.localintegration;
 
-import com.squareup.okhttp.Response;
 import no.nav.fo.testutil.LocalIntegrationTest;
 import org.json.JSONObject;
-import org.junit.Before;
 import org.junit.Test;
 
+import static no.nav.fo.mock.AktoerServiceMock.getFailingFnr;
 import static org.junit.Assert.assertEquals;
 
 public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
-    //language=JSON
-    private static final String JSON = "{\n" +
-            "  \"veilederId\" : \"X11111\",\n" +
-            "  \"kommentar\": \"Dette er en kommentar\",\n" +
-            "  \"frist\" : \"2017-10-10T00:00:00Z\"\n" +
-            "}";
-    private final String PATH = "/tjenester/arbeidsliste/01010101010";
-
-    @Before
-    public void setUp() throws Exception {
-        delete(PATH);
-    }
-
     @Test
-    public void skalHenteUtArbeidsliste() throws Exception {
-        putArbeidsliste(PATH);
+    public void skalOppretteOppdatereHenteOgSlette() throws Exception {
+        String path = "/tjenester/arbeidsliste/01010101010";
 
-        int expectedStatus = 200;
-        Response response = get(PATH);
+        JSONObject json = new JSONObject()
+                .put("veilederId", "X11111")
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "2017-10-10T00:00:00Z");
 
-        int actualStatus = response.code();
-        assertEquals(expectedStatus, actualStatus);
-    }
-
-    @Test
-    public void skalSletteArbeidsliste() throws Exception {
-        putArbeidsliste(PATH);
-
-        int expectedStatus = 200;
-        int actualStatus = delete(PATH).code();
-        assertEquals(expectedStatus, actualStatus);
-    }
-
-    @Test
-    public void skalOppdatereArbeidsliste() throws Exception {
-        putArbeidsliste(PATH);
-
-        //language=JSON
-        String json = "{\n" +
-                "  \"veilederId\": \"X22222\",\n" +
-                "  \"kommentar\": \"Dette er en NY kommentar\",\n" +
-                "  \"frist\": \"2017-10-10T00:00:00Z\"\n" +
-                "}";
-
-        int expectedStatus = 200;
-        int actualStatus = post(PATH, json).code();
-        assertEquals(expectedStatus, actualStatus);
-
-        String jsonAfterUpdate = get(PATH).body().string();
+        int putStatus = put(path, json.toString()).code();
+        assertEquals(201, putStatus);
 
         String expectedVeilederId = "X22222";
+        json.put("veilederId", expectedVeilederId);
+        int postStatus = post(path, json.toString()).code();
+        assertEquals(200, postStatus);
+
+        String jsonAfterUpdate = get(path).body().string();
+
         Object actualVeilederId = new JSONObject(jsonAfterUpdate).get("veilederId");
         assertEquals(expectedVeilederId, actualVeilederId);
+
+        int deleteStatus = delete(path).code();
+        assertEquals(200, deleteStatus);
     }
 
     @Test
@@ -79,10 +49,17 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         assertEquals(expected, actual);
     }
 
-    private void putArbeidsliste(String PATH) {
-        int expectedPutStatus = 201;
-        int actualPutStatus = put(PATH, JSON).code();
-        assertEquals(expectedPutStatus, actualPutStatus);
+    @Test
+    public void skalReturnereBadGateway() throws Exception {
+        int expected = 502;
+        int actual = get("/tjenester/arbeidsliste/" + getFailingFnr()).code();
+        assertEquals(expected, actual);
     }
 
+    @Test
+    public void skalIkkeGodtaUgyldigFnr() throws Exception {
+        int expected = 400;
+        int actual = get("/tjenester/arbeidsliste/123").code();
+        assertEquals(expected, actual);
+    }
 }

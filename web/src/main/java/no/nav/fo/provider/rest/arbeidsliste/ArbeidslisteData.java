@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 
 @Data
 @Accessors(chain = true)
-public class ArbeidslisteUpdate {
+public class ArbeidslisteData {
     final Fnr fnr;
     String aktoerID;
     String veilederId;

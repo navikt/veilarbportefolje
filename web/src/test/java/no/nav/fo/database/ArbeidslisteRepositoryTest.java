@@ -3,7 +3,7 @@ package no.nav.fo.database;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
-import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteUpdate;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,18 +28,20 @@ public class ArbeidslisteRepositoryTest {
     @Inject
     private JdbcTemplate jdbcTemplate;
 
-    private ArbeidslisteUpdate data;
+    private ArbeidslisteData data;
 
     @Before
     public void setUp() throws Exception {
-        data = new ArbeidslisteUpdate(new Fnr("01010101010"))
+        data = new ArbeidslisteData(new Fnr("01010101010"))
                 .setAktoerID("22222222")
                 .setVeilederId("X11111")
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar");
 
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
-        insertData();
+
+        Optional<ArbeidslisteData> result = repo.insertArbeidsliste(data);
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -67,14 +69,7 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalReturnereIngentingVedFeil() throws Exception {
-        Optional<ArbeidslisteUpdate> result = repo.insertArbeidsliste(data.setAktoerID("WRONG_AKTOER_ID"));
+        Optional<ArbeidslisteData> result = repo.insertArbeidsliste(data);
         assertFalse(result.isPresent());
     }
-
-
-    private void insertData() {
-        Optional<ArbeidslisteUpdate> resultAfterInsert = repo.insertArbeidsliste(data);
-        assertTrue(resultAfterInsert.isPresent());
-    }
-
 }

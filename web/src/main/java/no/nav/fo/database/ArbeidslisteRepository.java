@@ -2,7 +2,7 @@ package no.nav.fo.database;
 
 import lombok.SneakyThrows;
 import no.nav.fo.domene.Arbeidsliste;
-import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteUpdate;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.SqlUtils;
 import org.slf4j.Logger;
@@ -32,9 +32,9 @@ public class ArbeidslisteRepository {
                 .execute();
     }
 
-    public Optional<ArbeidslisteUpdate> insertArbeidsliste(ArbeidslisteUpdate data) {
+    public Optional<ArbeidslisteData> insertArbeidsliste(ArbeidslisteData data) {
 
-        int updated = SqlUtils.insert(jdbcTemplate, TABLE_NAME)
+        int inserted = SqlUtils.insert(jdbcTemplate, TABLE_NAME)
                 .value("AKTOERID", data.getAktoerID())
                 .value("VEILEDERIDENT", data.getVeilederId())
                 .value("BESKRIVELSE", data.getKommentar())
@@ -42,10 +42,10 @@ public class ArbeidslisteRepository {
                 .value("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
                 .execute();
 
-        return updated > 0 ? Optional.of(data) : Optional.empty();
+        return inserted > 0 ? Optional.of(data) : Optional.empty();
     }
 
-    public Optional<ArbeidslisteUpdate> updateArbeidsliste(ArbeidslisteUpdate data) {
+    public Optional<ArbeidslisteData> updateArbeidsliste(ArbeidslisteData data) {
 
         int updated = SqlUtils.update(jdbcTemplate, TABLE_NAME)
                 .set("VEILEDERIDENT", data.getVeilederId())

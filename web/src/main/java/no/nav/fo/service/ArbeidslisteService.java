@@ -3,7 +3,8 @@ package no.nav.fo.service;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
-import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteUpdate;
+import no.nav.fo.exception.RestBadGateWayException;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -16,28 +17,28 @@ public class ArbeidslisteService {
     private ArbeidslisteRepository arbeidslisteRepository;
 
     public Optional<Arbeidsliste> getArbeidsliste(Fnr fnr) {
-        return aktoerService
-                .hentAktoeridFraFnr(fnr.toString())
-                .flatMap(aktoerId -> arbeidslisteRepository.retrieveArbeidsliste(aktoerId));
+        return arbeidslisteRepository.retrieveArbeidsliste(hentAktoerId(fnr));
     }
 
-    public Optional<ArbeidslisteUpdate> createArbeidsliste(ArbeidslisteUpdate data) {
-        return aktoerService
-                .hentAktoeridFraFnr(data.getFnr().toString())
-                .map(data::setAktoerID)
-                .flatMap(aktoerId -> arbeidslisteRepository.insertArbeidsliste(data));
+    public Optional<ArbeidslisteData> createArbeidsliste(ArbeidslisteData data) {
+        String aktoerId = hentAktoerId(data.getFnr());
+        return arbeidslisteRepository
+                .insertArbeidsliste(data.setAktoerID(aktoerId));
     }
 
-    public Optional<ArbeidslisteUpdate> updateArbeidsliste(ArbeidslisteUpdate data) {
-        return aktoerService
-                .hentAktoeridFraFnr(data.getFnr().toString())
-                .map(data::setAktoerID)
-                .flatMap(aktoerId -> arbeidslisteRepository.updateArbeidsliste(data));
+    public Optional<ArbeidslisteData> updateArbeidsliste(ArbeidslisteData data) {
+        String aktoerId = hentAktoerId(data.getFnr());
+        return arbeidslisteRepository
+                .updateArbeidsliste(data.setAktoerID(aktoerId));
     }
 
     public Optional<String> deleteArbeidsliste(Fnr fnr) {
+        return arbeidslisteRepository.deleteArbeidsliste(hentAktoerId(fnr));
+    }
+
+    private String hentAktoerId(Fnr fnr) {
         return aktoerService
                 .hentAktoeridFraFnr(fnr.toString())
-                .flatMap(aktoerId -> arbeidslisteRepository.deleteArbeidsliste(aktoerId));
+                .orElseThrow(() -> new RestBadGateWayException("Fant ikke aktoerId ved kall mot aktoerservice"));
     }
 }

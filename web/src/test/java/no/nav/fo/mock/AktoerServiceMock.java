@@ -6,11 +6,10 @@ import java.util.Optional;
 
 public class AktoerServiceMock implements AktoerService {
 
-    private static final String FAILING_ID = "FAILING_ID";
-    private static final String TEST_ID = "TEST_ID";
+    private static final String FAILING_FNR = "00000000000";
 
-    public static String getFailingId() {
-        return FAILING_ID;
+    public static String getFailingFnr() {
+        return FAILING_FNR;
     }
 
     @Override
@@ -34,9 +33,9 @@ public class AktoerServiceMock implements AktoerService {
         return returnTestData(aktoerid);
     }
 
-    private Optional<String> returnTestData(String aktoerid) {
-        Optional<String> result = Optional.of(TEST_ID);
-        if (FAILING_ID.equals(aktoerid)) {
+    private Optional<String> returnTestData(String string) {
+        Optional<String> result = Optional.of("_" + string);
+        if (FAILING_FNR.equals(string)) {
             result = Optional.empty();
         }
         return result;

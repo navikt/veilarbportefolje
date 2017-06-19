@@ -35,6 +35,10 @@ class ValideringsRegler {
         test("ytelsesfilter", filtervalg.ytelse, filtervalg.ytelse != null);
     }
 
+    static void sjekkFnr(String fnr) {
+        test("fnr", fnr, fnr.length() == 11);
+    }
+
     private static void test(String navn, Object data, Supplier<Boolean> matches) {
         test(navn, data, matches.get());
     }
@@ -44,4 +48,5 @@ class ValideringsRegler {
             throw new RestValideringException(format("sjekk av %s feilet, %s", navn, data));
         }
     }
+
 }
