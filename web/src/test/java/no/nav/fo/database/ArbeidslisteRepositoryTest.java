@@ -2,6 +2,7 @@ package no.nav.fo.database;
 
 import javaslang.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
@@ -34,7 +35,7 @@ public class ArbeidslisteRepositoryTest {
     @Before
     public void setUp() throws Exception {
         data = new ArbeidslisteData(new Fnr("01010101010"))
-                .setAktoerID("22222222")
+                .setAktoerId(new AktoerId("22222222"))
                 .setVeilederId("X11111")
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar");
@@ -47,7 +48,7 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalKunneHenteArbeidsliste() throws Exception {
-        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerID());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
         assertTrue(result.isSuccess());
         assertEquals(data.getVeilederId(), result.get().getVeilederId());
     }
@@ -57,26 +58,26 @@ public class ArbeidslisteRepositoryTest {
         String expected = "TEST_ID";
         repo.updateArbeidsliste(data.setVeilederId(expected));
 
-        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerID());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
         assertTrue(result.isSuccess());
         assertEquals(expected, result.get().getVeilederId());
     }
 
     @Test
     public void skalSletteEksisterendeArbeidsliste() throws Exception {
-        Try<Integer> result = repo.deleteArbeidsliste(data.getAktoerID());
+        Try<Integer> result = repo.deleteArbeidsliste(data.getAktoerId());
         assertTrue(result.isSuccess());
     }
 
     @Test
     public void skalReturnereFailureVedSletting() throws Exception {
-        Try<Integer> result = repo.deleteArbeidsliste("asdajsdklajsdkl");
+        Try<Integer> result = repo.deleteArbeidsliste(new AktoerId("asdajsdklajsdkl"));
         assertTrue(result.isFailure());
     }
 
     @Test
     public void skalReturnereFailureVedFeil() throws Exception {
-        Try<Boolean> result = repo.insertArbeidsliste(data.setAktoerID(null));
+        Try<Boolean> result = repo.insertArbeidsliste(data.setAktoerId(null));
         assertTrue(result.isFailure());
     }
 }

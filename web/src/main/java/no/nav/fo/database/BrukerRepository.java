@@ -2,13 +2,13 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
+import javaslang.control.Try;
+import lombok.SneakyThrows;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.KvartalMapping;
-import no.nav.fo.domene.ManedMapping;
-import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.domene.*;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -470,5 +471,20 @@ public class BrukerRepository {
             }
         }
         return false;
+    }
+
+    public Try<String> retrieveVeileder(AktoerId aktoerId) {
+        return Try.of(
+                () -> new SelectQuery<String>(db, "BRUKER_DATA")
+                        .column("VEILEDERIDENT")
+                        .whereEquals("AKTOERID", aktoerId)
+                        .usingMapper(this::getVeilederident)
+                        .execute()
+        );
+    }
+
+    @SneakyThrows
+    private String getVeilederident(ResultSet rs) {
+        return rs.getString("VEILEDERIDENT");
     }
 }

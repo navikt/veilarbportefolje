@@ -2,6 +2,7 @@ package no.nav.fo.provider.rest.arbeidsliste;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 
 import java.sql.Timestamp;
@@ -10,7 +11,7 @@ import java.sql.Timestamp;
 @Accessors(chain = true)
 public class ArbeidslisteData {
     final Fnr fnr;
-    String aktoerID;
+    AktoerId aktoerId;
     String veilederId;
     String kommentar;
     Timestamp frist;
