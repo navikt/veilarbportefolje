@@ -6,7 +6,6 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.BatchConsumer;
-import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -29,9 +28,9 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
@@ -174,12 +173,11 @@ public class SolrService {
 
     public void indekserBrukerdata(String personId) {
         logger.info("Legger bruker med personId {} til i indeksen ", personId);
-        List<Map<String, Object>> rader = brukerRepository.retrieveBrukermedBrukerdata(personId);
-        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+        SolrInputDocument dokumenter = brukerRepository.retrieveBrukermedBrukerdata(personId);
 
         applyAktivitetStatuser(dokumenter, brukerRepository);
 
-        addDocuments(dokumenter);
+        addDocuments(singletonList(dokumenter));
         commit();
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }

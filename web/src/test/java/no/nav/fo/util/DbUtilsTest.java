@@ -12,22 +12,6 @@ public class DbUtilsTest {
     public ExpectedException expectedException =ExpectedException.none();
 
     @Test
-    public void skalReturnereNullHvisDatoenErNull() {
-        assertThat(DbUtils.parseDato(null)).isEqualTo(null);
-    }
-
-    @Test
-    public void skalReturnereNullHvisDatoenErUfullstendig() {
-        assertThat(DbUtils.parseDato("TZ")).isEqualTo(null);
-    }
-
-    @Test
-    public void skalReturnereDatostrengenHvisDatoenErOk() {
-        Object dato = "2017-01-01'T'23:23:23.23'Z'";
-        assertThat(DbUtils.parseDato(dato)).isEqualTo(dato);
-    }
-
-    @Test
     public void skalParseJaNei() throws Exception {
         boolean shouldBeTrue = DbUtils.parseJaNei("J", "test");
         boolean shouldBeFalse = DbUtils.parseJaNei("N", "test");
