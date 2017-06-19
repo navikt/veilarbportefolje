@@ -1,5 +1,6 @@
 package no.nav.fo.database;
 
+import javaslang.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
@@ -14,9 +15,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { ApplicationConfigTest.class})
@@ -40,15 +41,15 @@ public class ArbeidslisteRepositoryTest {
 
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
 
-        Optional<ArbeidslisteData> result = repo.insertArbeidsliste(data);
-        assertTrue(result.isPresent());
+        Try<Boolean> result = repo.insertArbeidsliste(data);
+        assertTrue(result.isSuccess());
     }
 
     @Test
     public void skalKunneHenteArbeidsliste() throws Exception {
-        Optional<Arbeidsliste> resultAfterRetrieval = repo.retrieveArbeidsliste(data.getAktoerID());
-        assertTrue(resultAfterRetrieval.isPresent());
-        assertEquals(data.getVeilederId(), resultAfterRetrieval.get().getVeilederId());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerID());
+        assertTrue(result.isSuccess());
+        assertEquals(data.getVeilederId(), result.get().getVeilederId());
     }
 
     @Test
@@ -56,20 +57,26 @@ public class ArbeidslisteRepositoryTest {
         String expected = "TEST_ID";
         repo.updateArbeidsliste(data.setVeilederId(expected));
 
-        Optional<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerID());
-        assertTrue(result.isPresent());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerID());
+        assertTrue(result.isSuccess());
         assertEquals(expected, result.get().getVeilederId());
     }
 
     @Test
     public void skalSletteEksisterendeArbeidsliste() throws Exception {
-        Optional<String> result = repo.deleteArbeidsliste(data.getAktoerID());
-        assertTrue(result.isPresent());
+        Try<Integer> result = repo.deleteArbeidsliste(data.getAktoerID());
+        assertTrue(result.isSuccess());
     }
 
     @Test
-    public void skalReturnereIngentingVedFeil() throws Exception {
-        Optional<ArbeidslisteData> result = repo.insertArbeidsliste(data);
-        assertFalse(result.isPresent());
+    public void skalReturnereFailureVedSletting() throws Exception {
+        Try<Integer> result = repo.deleteArbeidsliste("asdajsdklajsdkl");
+        assertTrue(result.isFailure());
+    }
+
+    @Test
+    public void skalReturnereFailureVedFeil() throws Exception {
+        Try<Boolean> result = repo.insertArbeidsliste(data.setAktoerID(null));
+        assertTrue(result.isFailure());
     }
 }

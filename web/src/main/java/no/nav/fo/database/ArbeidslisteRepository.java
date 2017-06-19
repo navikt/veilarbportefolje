@@ -1,66 +1,71 @@
 package no.nav.fo.database;
 
+import javaslang.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.util.sql.SelectQuery;
-import no.nav.fo.util.sql.SqlUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Optional;
+
+import static no.nav.fo.util.sql.SqlUtils.update;
+import static no.nav.fo.util.sql.SqlUtils.upsert;
 
 public class ArbeidslisteRepository {
-
-    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteRepository.class);
 
     @Inject
     private JdbcTemplate jdbcTemplate;
 
     private static final String TABLE_NAME = "ARBEIDSLISTE";
 
-    public Optional<Arbeidsliste> retrieveArbeidsliste(String aktoerId) {
-        return new SelectQuery<Arbeidsliste>(jdbcTemplate, TABLE_NAME)
-                .column("*")
-                .whereEquals("AKTOERID", aktoerId)
-                .usingMapper(this::arbeidslisteMapper)
-                .execute();
+    public Try<Arbeidsliste> retrieveArbeidsliste(String aktoerId) {
+        return Try.of(
+                () -> new SelectQuery<Arbeidsliste>(jdbcTemplate, TABLE_NAME)
+                        .column("*")
+                        .whereEquals("AKTOERID", aktoerId)
+                        .usingMapper(this::arbeidslisteMapper)
+                        .execute()
+        );
     }
 
-    public Optional<ArbeidslisteData> insertArbeidsliste(ArbeidslisteData data) {
-
-        int inserted = SqlUtils.insert(jdbcTemplate, TABLE_NAME)
-                .value("AKTOERID", data.getAktoerID())
-                .value("VEILEDERIDENT", data.getVeilederId())
-                .value("BESKRIVELSE", data.getKommentar())
-                .value("FRIST", data.getFrist())
-                .value("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
-                .execute();
-
-        return inserted > 0 ? Optional.of(data) : Optional.empty();
+    public Try<Boolean> insertArbeidsliste(ArbeidslisteData data) {
+        return Try.of(
+                () -> upsert(jdbcTemplate, TABLE_NAME)
+                        .set("AKTOERID", data.getAktoerID())
+                        .set("VEILEDERIDENT", data.getVeilederId())
+                        .set("BESKRIVELSE", data.getKommentar())
+                        .set("FRIST", data.getFrist())
+                        .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
+                        .where(WhereClause.equals("AKTOERID", data.getAktoerID()))
+                        .execute()
+        );
     }
 
-    public Optional<ArbeidslisteData> updateArbeidsliste(ArbeidslisteData data) {
-
-        int updated = SqlUtils.update(jdbcTemplate, TABLE_NAME)
-                .set("VEILEDERIDENT", data.getVeilederId())
-                .set("BESKRIVELSE", data.getKommentar())
-                .set("FRIST", data.getFrist())
-                .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
-                .whereEquals("AKTOERID", data.getAktoerID())
-                .execute();
-
-        return updated > 0 ? Optional.of(data) : Optional.empty();
+    public Try<Integer> updateArbeidsliste(ArbeidslisteData data) {
+        return Try.of(
+                () -> update(jdbcTemplate, TABLE_NAME)
+                        .set("VEILEDERIDENT", data.getVeilederId())
+                        .set("BESKRIVELSE", data.getKommentar())
+                        .set("FRIST", data.getFrist())
+                        .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
+                        .whereEquals("AKTOERID", data.getAktoerID())
+                        .execute()
+        );
     }
 
-    public Optional<String> deleteArbeidsliste(String aktoerID) {
-        int updated = jdbcTemplate.update("DELETE FROM ARBEIDSLISTE WHERE AKTOERID = ?", aktoerID);
-        return updated > 0 ? Optional.of(aktoerID) : Optional.empty();
+    public Try<Integer> deleteArbeidsliste(String aktoerID) {
+        int update = jdbcTemplate.update("DELETE FROM ARBEIDSLISTE WHERE AKTOERID = ?", aktoerID);
+
+        if (update == 0) {
+            return Try.failure(new RuntimeException("Kunne ikke slette rad fra database"));
+        } else {
+            return Try.success(1);
+        }
     }
 
     @SneakyThrows

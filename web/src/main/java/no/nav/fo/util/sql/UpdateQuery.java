@@ -34,7 +34,7 @@ public class UpdateQuery {
         return this;
     }
 
-    public int execute() {
+    public Integer execute() {
         assert tableName != null;
         assert !setParams.isEmpty();
 

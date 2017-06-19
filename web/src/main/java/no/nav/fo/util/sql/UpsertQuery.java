@@ -36,30 +36,31 @@ public class UpsertQuery {
         return this;
     }
 
-    public void execute() {
+    public Boolean execute() {
         if (this.where == null || this.setParams.isEmpty()) {
             throw new IllegalStateException("Invalid data");
         }
 
-        db.execute(createUpsertStatement(), (PreparedStatementCallback<Boolean>) ps -> {
-            int index = 1;
+        return
+                db.execute(createUpsertStatement(), (PreparedStatementCallback<Boolean>) ps -> {
+                    int index = 1;
 
-            index = this.where.applyTo(ps, index);
+                    index = this.where.applyTo(ps, index);
 
-            // For updatequery
-            for (Map.Entry<String, Object> entry : this.setParams.entrySet()) {
-                if(!this.where.appliesTo(entry.getKey())) {
-                    ps.setObject(index++, entry.getValue());
-                }
-            }
+                    // For updatequery
+                    for (Map.Entry<String, Object> entry : this.setParams.entrySet()) {
+                        if (!this.where.appliesTo(entry.getKey())) {
+                            ps.setObject(index++, entry.getValue());
+                        }
+                    }
 
-            // For insertquery
-            for (Map.Entry<String, Object> entry : this.setParams.entrySet()) {
-                ps.setObject(index++, entry.getValue());
-            }
+                    // For insertquery
+                    for (Map.Entry<String, Object> entry : this.setParams.entrySet()) {
+                        ps.setObject(index++, entry.getValue());
+                    }
 
-            return ps.execute();
-        });
+                    return ps.execute();
+                });
     }
 
     private String createUpsertStatement() {
@@ -101,5 +102,10 @@ public class UpsertQuery {
                 .entrySet().stream()
                 .map((entry) -> "?")
                 .collect(joining(", "));
+    }
+
+    @Override
+    public String toString() {
+        return createUpsertStatement();
     }
 }

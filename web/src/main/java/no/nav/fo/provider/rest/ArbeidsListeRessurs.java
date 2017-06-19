@@ -32,7 +32,7 @@ public class ArbeidsListeRessurs {
             ValideringsRegler.sjekkFnr(fnr);
             return arbeidslisteService
                     .getArbeidsliste(new Fnr(fnr))
-                    .orElseThrow(() -> new RestNotFoundException("Kunne ikke opprette. Fant ikke arbeidsliste for bruker"));
+                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke opprette. Fant ikke arbeidsliste for bruker"));
         });
     }
 
@@ -44,7 +44,7 @@ public class ArbeidsListeRessurs {
             return arbeidslisteService
                     .createArbeidsliste(data(body, fnr))
                     .map(x -> "Arbeidsliste opprettet.")
-                    .orElseThrow(RuntimeException::new);
+                    .getOrElseThrow(() -> new RuntimeException("Kunne ikke opprette arbeidsliste"));
         }, CREATED);
     }
 
@@ -56,7 +56,7 @@ public class ArbeidsListeRessurs {
             return arbeidslisteService
                     .updateArbeidsliste(data(body, fnr))
                     .map(x -> "Arbeidsliste oppdatert.")
-                    .orElseThrow(RuntimeException::new);
+                    .getOrElseThrow(() -> new RuntimeException("Kunne ikke oppdatere ny arbeidsliste"));
         });
     }
 
@@ -66,7 +66,7 @@ public class ArbeidsListeRessurs {
             ValideringsRegler.sjekkFnr(fnr);
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
-                    .orElseThrow(() -> new RestNotFoundException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
+                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
         });
     }
 

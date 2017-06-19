@@ -62,4 +62,19 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         int actual = get("/tjenester/arbeidsliste/123").code();
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void skalKunneOppretteSammeArbeidslisteToGanger() throws Exception {
+        String path = "/tjenester/arbeidsliste/01010101010";
+        JSONObject json = new JSONObject()
+                .put("veilederId", "X11111")
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "2017-10-10T00:00:00Z");
+
+        int putStatus1 = put(path, json.toString()).code();
+        assertEquals(201, putStatus1);
+        int putStatus2 = put(path, json.toString()).code();
+        assertEquals(201, putStatus2);
+    }
+
 }
