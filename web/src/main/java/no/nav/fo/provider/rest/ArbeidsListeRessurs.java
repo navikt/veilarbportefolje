@@ -43,7 +43,8 @@ public class ArbeidsListeRessurs {
 
             return arbeidslisteService
                     .createArbeidsliste(data(body, fnr))
-                    .map(x -> "Arbeidsliste opprettet.");
+                    .map(x -> "Arbeidsliste opprettet.")
+                    .orElseThrow(RuntimeException::new);
         }, CREATED);
     }
 
