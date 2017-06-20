@@ -82,8 +82,8 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         @Override
         public Brukerdata applyTo(Brukerdata bruker) {
             return bruker
-                    .setVenterPaSvarFraBruker(LocalDateTime.ofInstant(dialog.venterPaSvar.toInstant(), ZoneId.systemDefault()))
-                    .setVenterPaSvarFraNav(LocalDateTime.ofInstant(dialog.harUbehandlet.toInstant(), ZoneId.systemDefault()));
+                    .setVenterPaSvarFraBruker(LocalDateTime.ofInstant(dialog.tidspunktEldsteVentende.toInstant(), ZoneId.systemDefault()))
+                    .setVenterPaSvarFraNav(LocalDateTime.ofInstant(dialog.tidspunktEldsteUbehandlede.toInstant(), ZoneId.systemDefault()));
         }
     }
 }
