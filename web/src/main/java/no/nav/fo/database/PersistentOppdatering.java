@@ -24,11 +24,15 @@ public class PersistentOppdatering {
     @Inject
     BrukerRepository brukerRepository;
 
-    public void lagre(BrukerOppdatering brukerOppdatering) {
+    public Brukerdata hentDataOgLagre(BrukerOppdatering brukerOppdatering) {
         Brukerdata brukerdata = hentBruker(brukerOppdatering.getPersonid());
         brukerOppdatering.applyTo(brukerdata);
         lagreIDB(singletonList(brukerdata));
-        lagreISolr(brukerdata);
+        return brukerdata;
+    }
+
+    public void lagre(BrukerOppdatering brukerOppdatering) {
+        lagreISolr(hentDataOgLagre(brukerOppdatering));
     }
 
     public void lagreBrukeroppdateringerIDB(List<BrukerOppdatering> brukerOppdatering) {

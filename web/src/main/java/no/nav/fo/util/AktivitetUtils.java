@@ -1,10 +1,7 @@
 package no.nav.fo.util;
 
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.Aktivitet.AktivitetBrukerOppdatering;
-import no.nav.fo.domene.Aktivitet.AktivitetDTO;
-import no.nav.fo.domene.Aktivitet.AktivitetData;
-import no.nav.fo.domene.Aktivitet.AktivitetFullfortStatuser;
+import no.nav.fo.domene.Aktivitet.*;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
@@ -19,10 +16,18 @@ import static no.nav.fo.domene.Aktivitet.AktivitetData.aktivitetTyperList;
 
 public class AktivitetUtils {
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(String aktoerid, AktoerService aktoerService, BrukerRepository brukerRepository) {
-        String personid = aktoerService.hentPersonidFraAktoerid(aktoerid).orElseThrow(() -> new FantIkkePersonIdException("Fant ikke personid for aktor id: " + aktoerid));
+    public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter, AktoerService aktoerService) {
+        return aktoerAktiviteter
+                .stream()
+                .map( aktoerAktivitet -> {
+                    String personid = getPersonId(aktoerAktivitet.getAktoerid(), aktoerService);
+                    return konverterTilBrukerOppdatering(aktoerAktivitet.getAktiviteter(), aktoerAktivitet.getAktoerid(), personid);
+                })
+                .collect(toList());
+    }
 
-        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
+
+    public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter, String aktoerid, String personid) {
 
         Map<String, Boolean> aktivitetTypeTilStatus = lagAktivitetTypeTilStatusMap(aktiviteter);
         Boolean erIAvtaltIAvtaltAktivitet = erBrukerIAktivAktivitet(aktiviteter, LocalDate.now());
@@ -32,6 +37,15 @@ public class AktivitetUtils {
                 .setAktivitetStatus(aktivitetTypeTilStatus)
                 .setIAvtaltAktivitet(erIAvtaltIAvtaltAktivitet)
                 .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet.map(AktivitetDTO::getTilDato).orElse(null));
+    }
+
+
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(String aktoerid, AktoerService aktoerService, BrukerRepository brukerRepository) {
+        String personid = getPersonId(aktoerid, aktoerService);
+
+        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
+
+        return konverterTilBrukerOppdatering(aktiviteter, aktoerid, personid);
     }
 
     public static Boolean erBrukersAktivitetAktiv(List<String> aktivitetStatusListe) {
@@ -93,5 +107,10 @@ public class AktivitetUtils {
 
     public static void applyAktivitetStatuser(SolrInputDocument dokument, BrukerRepository brukerRepository) {
         applyAktivitetStatuser(singletonList(dokument), brukerRepository);
+    }
+
+    static String getPersonId(String aktoerid, AktoerService aktoerService) {
+        return aktoerService.hentPersonidFraAktoerid(aktoerid).orElseThrow(() -> new FantIkkePersonIdException("Fant ikke personid for aktor id: " + aktoerid));
+
     }
 }

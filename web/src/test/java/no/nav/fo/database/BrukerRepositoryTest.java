@@ -5,6 +5,7 @@ import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.Aktivitet.AktivitetTyper;
+import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.KvartalMapping;
 import no.nav.fo.domene.ManedMapping;
@@ -396,5 +397,58 @@ public class BrukerRepositoryTest{
 
         assertThat( bruker.get(0).get("IAVTALTAKTIVITET")).isEqualTo("1");
         assertThat( bruker.get(0).get("NYESTEUTLOPTEAKTIVITET")).isEqualTo(nyesteUtlopte);
+    }
+
+    @Test
+    public void skalHenteDistinkteAktorider() {
+
+        AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
+                .setAktivitetId("id1")
+                .setAktivitetType("dontcare")
+                .setAktorId("aktoerid")
+                .setAvtalt(true)
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikke startet");
+
+        AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
+                .setAktivitetId("id2")
+                .setAktivitetType("dontcare")
+                .setAktorId("aktoerid")
+                .setAvtalt(true)
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikke startet");
+
+        brukerRepository.upsertAktivitet(aktivitet1);
+        brukerRepository.upsertAktivitet(aktivitet2);
+
+        assertThat(brukerRepository.getDistinctAktoerIdsFromAktivitet()).containsExactly("aktoerid");
+    }
+
+    @Test
+    public void skalHenteListeMedAktiviteterForAktorids() {
+        String aktivitettype = AktivitetData.aktivitetTyperList.get(0).toString();
+
+        AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed().setAktivitetId("id1").setAktivitetType(aktivitettype)
+                .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus1");
+
+        AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed().setAktivitetId("id2").setAktivitetType(aktivitettype)
+                .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus1");
+
+        AktivitetDataFraFeed aktivitet3 = new AktivitetDataFraFeed().setAktivitetId("id3").setAktivitetType(aktivitettype)
+                .setAktorId("aktoerid2").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus2");
+
+        AktivitetDataFraFeed aktivitet4 = new AktivitetDataFraFeed().setAktivitetId("id4").setAktivitetType(aktivitettype)
+                .setAktorId("aktoerid2").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus2");
+
+        brukerRepository.upsertAktivitet(asList(aktivitet1,aktivitet2, aktivitet3, aktivitet4));
+
+        List<AktoerAktiviteter> aktoerAktiviteter = brukerRepository.getAktiviteterForListOfAktoerid(asList("aktoerid1", "aktoerid2"));
+
+        assertThat(aktoerAktiviteter.size()).isEqualTo(2);
+        aktoerAktiviteter.forEach( aktoerAktivitet -> assertThat(asList("aktoerid1", "aktoerid2").contains(aktoerAktivitet.getAktoerid())));
     }
 }
