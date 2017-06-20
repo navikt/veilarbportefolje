@@ -149,6 +149,12 @@ public class SolrUtils {
             oversiktStatements.add("(venterpasvarfranav:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER) {
             oversiktStatements.add("(venterpasvarfrabruker:*)");
+        } else if (filtervalg.brukerstatus == Brukerstatus.I_AVTALT_AKTIVITET ) {
+            oversiktStatements.add("(iavtaltaktivitet:true)");
+        } else if(filtervalg.brukerstatus == Brukerstatus.IKKE_I_AVTALT_AKTIVITET) {
+            oversiktStatements.add("(-iavtaltaktivitet:true)");
+        } else if(filtervalg.brukerstatus == Brukerstatus.UTLOPTE_AKTIVITETER) {
+            oversiktStatements.add("(nyesteutlopteaktivitet:*)");
         }
 
 
