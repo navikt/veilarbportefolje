@@ -3,7 +3,6 @@ package no.nav.fo.database;
 import javaslang.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -24,9 +23,9 @@ public class ArbeidslisteRepository {
 
     private static final String TABLE_NAME = "ARBEIDSLISTE";
 
-    public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
+    public Try<ArbeidslisteData> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
-                () -> new SelectQuery<Arbeidsliste>(jdbcTemplate, TABLE_NAME)
+                () -> new SelectQuery<ArbeidslisteData>(jdbcTemplate, TABLE_NAME)
                         .column("*")
                         .whereEquals("AKTOERID", aktoerId.toString())
                         .usingMapper(this::arbeidslisteMapper)
@@ -73,12 +72,12 @@ public class ArbeidslisteRepository {
     }
 
     @SneakyThrows
-    private Arbeidsliste arbeidslisteMapper(ResultSet rs) {
-        Arbeidsliste arbeidsliste = new Arbeidsliste();
-        arbeidsliste.setVeilederId(rs.getString("VEILEDERIDENT"));
-        arbeidsliste.setKommentar(rs.getString("BESKRIVELSE"));
-        arbeidsliste.setFrist(rs.getTimestamp("FRIST"));
-        arbeidsliste.setEndringstidspunkt(rs.getTimestamp("ENDRINGSTIDSPUNKT"));
-        return arbeidsliste;
+    private ArbeidslisteData arbeidslisteMapper(ResultSet rs) {
+        ArbeidslisteData data = new ArbeidslisteData();
+        data.setVeilederId(rs.getString("VEILEDERIDENT"));
+        data.setKommentar(rs.getString("BESKRIVELSE"));
+        data.setFrist(rs.getTimestamp("FRIST"));
+        data.setEndringstidspunkt(rs.getTimestamp("ENDRINGSTIDSPUNKT"));
+        return data;
     }
 }

@@ -31,7 +31,7 @@ public class ArbeidsListeRessurs {
         return createResponse(() -> {
             ValideringsRegler.sjekkFnr(fnr);
             return arbeidslisteService
-                    .getArbeidsliste(new Fnr(fnr))
+                    .getArbeidsliste(new ArbeidslisteData().setFnr(new Fnr(fnr)))
                     .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke opprette. Fant ikke arbeidsliste for bruker"));
         });
     }
@@ -72,7 +72,8 @@ public class ArbeidsListeRessurs {
     }
 
     private ArbeidslisteData data(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
-        return new ArbeidslisteData(new Fnr(fnr))
+        return new ArbeidslisteData()
+                .setFnr(new Fnr(fnr))
                 .setVeilederId(body.getVeilederId())
                 .setKommentar(body.getKommentar())
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));

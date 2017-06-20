@@ -1,5 +1,6 @@
 package no.nav.fo.provider.rest.localintegration;
 
+import com.squareup.okhttp.Response;
 import no.nav.fo.testutil.LocalIntegrationTest;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -26,8 +27,10 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         int postStatus = post(path, json.toString()).code();
         assertEquals(200, postStatus);
 
-        String jsonAfterUpdate = get(path).body().string();
+        Response getResponse = get(path);
+        assertEquals(200, getResponse.code());
 
+        String jsonAfterUpdate = getResponse.body().string();
         Object actualVeilederId = new JSONObject(jsonAfterUpdate).get("veilederId");
         assertEquals(expectedVeilederId, actualVeilederId);
 

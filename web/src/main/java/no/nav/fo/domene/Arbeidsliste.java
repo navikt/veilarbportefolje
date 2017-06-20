@@ -1,17 +1,25 @@
 package no.nav.fo.domene;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Value;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import java.sql.Timestamp;
 
-@Data
-@Accessors(chain = true)
+@Value
 public class Arbeidsliste {
-    boolean isArbeidsliste;
     String veilederId;
     Timestamp endringstidspunkt;
     String kommentar;
     Timestamp frist;
-    boolean isVeilederOppfolgendeVeileder;
+    boolean isOppfolgendeVeileder;
+
+    public static Arbeidsliste of(ArbeidslisteData data) {
+        return new Arbeidsliste(
+                data.getVeilederId(),
+                data.getEndringstidspunkt(),
+                data.getKommentar(),
+                data.getFrist(),
+                data.getIsOppfolgendeVeileder()
+        );
+    }
 }

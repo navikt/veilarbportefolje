@@ -7,6 +7,7 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.exception.RestBadGateWayException;
+import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
@@ -21,32 +22,20 @@ public class ArbeidslisteService {
     @Inject
     private BrukerRepository brukerRepository;
 
-    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
-
-        String currentVeileder = brukerRepository
-                .retrieveVeileder(hentAktoerId(fnr))
-                .getOrElse("");
-
+    public Try<Arbeidsliste> getArbeidsliste(ArbeidslisteData data) {
         return arbeidslisteRepository
-                        .retrieveArbeidsliste(hentAktoerId(fnr))
-                        .map(arbeidsliste -> setIsOppfolgendeVeileder(currentVeileder, arbeidsliste));
-    }
-
-    private Arbeidsliste setIsOppfolgendeVeileder(String currentVeileder, Arbeidsliste arbeidsliste) {
-        return arbeidsliste.setVeilederOppfolgendeVeileder(
-                arbeidsliste.getVeilederId().equals(currentVeileder)
-        );
+                .retrieveArbeidsliste(hentAktoerId(data.getFnr()))
+                .map(this::setOppfolgendeVeileder)
+                .map(Arbeidsliste::of);
     }
 
     public Try<Boolean> createArbeidsliste(ArbeidslisteData data) {
-        AktoerId aktoerId = hentAktoerId(data.getFnr());
-        return arbeidslisteRepository.insertArbeidsliste(data.setAktoerId(aktoerId));
+        data.setAktoerId(hentAktoerId(data.getFnr()));
+        return arbeidslisteRepository.insertArbeidsliste(data);
     }
 
     public Try<Integer> updateArbeidsliste(ArbeidslisteData data) {
-        AktoerId aktoerId = hentAktoerId(data.getFnr());
-        return arbeidslisteRepository
-                .updateArbeidsliste(data.setAktoerId(aktoerId));
+        return arbeidslisteRepository.updateArbeidsliste(data.setAktoerId(hentAktoerId(data.getFnr())));
     }
 
     public Try<Integer> deleteArbeidsliste(Fnr fnr) {
@@ -57,6 +46,14 @@ public class ArbeidslisteService {
         return aktoerService
                 .hentAktoeridFraFnr(fnr.toString())
                 .map(AktoerId::new)
-                .orElseThrow(() -> new RestBadGateWayException("Fant ikke aktoerId ved kall mot aktoerservice"));
+                .orElseThrow(() -> new RestBadGateWayException("Fant ikke aktoerId for gitt fnr"));
+    }
+
+    private ArbeidslisteData setOppfolgendeVeileder(ArbeidslisteData data) {
+        return brukerRepository
+                .retrieveVeileder(data.getAktoerId())
+                .map(x -> x.equals(data.getVeilederId()))
+                .map(data::setIsOppfolgendeVeileder)
+                .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
     }
 }
