@@ -37,8 +37,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ApplicationConfigTest.class})
-public class BrukerRepositoryTest{
+@ContextConfiguration(classes = {ApplicationConfigTest.class})
+public class BrukerRepositoryTest {
 
     @Inject
     private JdbcTemplate jdbcTemplate;
@@ -75,7 +75,7 @@ public class BrukerRepositoryTest{
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
         insertoppfolgingsbrukerTestData();
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
-        String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
+        String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
                 "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
@@ -97,7 +97,7 @@ public class BrukerRepositoryTest{
     public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
         insertoppfolgingsbrukerTestData();
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
-        String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
+        String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
                 "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
@@ -126,7 +126,7 @@ public class BrukerRepositoryTest{
     @Test
     public void skalReturnerePersonidFraDB() {
         insertoppfolgingsbrukerTestData();
-        List<Map<String,Object>> mapping = brukerRepository.retrievePersonid("11111111");
+        List<Map<String, Object>> mapping = brukerRepository.retrievePersonid("11111111");
         String personid = (String) mapping.get(0).get("PERSONID");
         Assertions.assertThat(personid).isEqualTo("222222");
     }
@@ -147,7 +147,6 @@ public class BrukerRepositoryTest{
         assertThatBrukerdataIsEqual(brukerdata2, brukerdataAfterUpdate);
 
     }
-
 
 
     @Test
@@ -307,7 +306,7 @@ public class BrukerRepositoryTest{
     public void skalReturnereNullPaaAlleStatuserDersomBrukerIkkeFinnes() {
         Map<String, Timestamp> statuser = brukerRepository.getAktivitetStatusMap("jegfinnesikke");
 
-        statuser.forEach( (key, value) -> {
+        statuser.forEach((key, value) -> {
             assertThat(value).isNull();
             assertThat(statuser).containsKey(key);
         });
@@ -358,7 +357,6 @@ public class BrukerRepositoryTest{
                 .setStatus("ferdig");
 
 
-
         brukerRepository.upsertAktivitet(aktivitet1);
         brukerRepository.upsertAktivitet(aktivitet2);
 
@@ -395,8 +393,8 @@ public class BrukerRepositoryTest{
 
         List<Map<String, Object>> bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
-        assertThat( bruker.get(0).get("IAVTALTAKTIVITET")).isEqualTo("1");
-        assertThat( bruker.get(0).get("NYESTEUTLOPTEAKTIVITET")).isEqualTo(nyesteUtlopte);
+        assertThat(bruker.get(0).get("IAVTALTAKTIVITET")).isEqualTo("1");
+        assertThat(bruker.get(0).get("NYESTEUTLOPTEAKTIVITET")).isEqualTo(nyesteUtlopte);
     }
 
     @Test

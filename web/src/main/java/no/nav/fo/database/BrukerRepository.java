@@ -216,28 +216,28 @@ public class BrukerRepository {
         db.update("UPDATE METADATA SET aktiviteter_sist_oppdatert = ?", timestampFromISO8601(sistOppdatert));
     }
 
-   public void upsertAktivitet(AktivitetDataFraFeed aktivitet) {
-     getAktivitetUpsertQuery(this.db,aktivitet).execute();
-   }
+    public void upsertAktivitet(AktivitetDataFraFeed aktivitet) {
+        getAktivitetUpsertQuery(this.db, aktivitet).execute();
+    }
 
-   public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
-        aktivitetstatus.forEach( (aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid) );
-   }
+    public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
+        aktivitetstatus.forEach((aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid));
+    }
 
-   public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
+    public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
         getUpsertAktivitetStatuserForBrukerQuery(aktivitettype, this.db, status, aktoerid, personid).execute();
-   }
+    }
 
-    public Map<String,Timestamp> getAktivitetStatusMap(String personid) {
+    public Map<String, Timestamp> getAktivitetStatusMap(String personid) {
         Map<String, Boolean> statusMap = new HashMap<>();
         Map<String, Timestamp> statusMapTimestamp = new HashMap<>();
 
-        List<Map<String, Object>> statuserFraDb = db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER where PERSONID=?",personid);
+        List<Map<String, Object>> statuserFraDb = db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER where PERSONID=?", personid);
 
-        AktivitetData.aktivitetTyperList.forEach( (type) ->  statusMap.put(type.toString(), kanskjeVerdi(statuserFraDb, type.toString())));
+        AktivitetData.aktivitetTyperList.forEach((type) -> statusMap.put(type.toString(), kanskjeVerdi(statuserFraDb, type.toString())));
 
         //Lagrer mapping til Date for å håndtere dato på aktiviteter i fremtiden.
-        statusMap.forEach( (key, value) -> statusMapTimestamp.put(key, value ? new Timestamp(Instant.now().toEpochMilli()) : null));
+        statusMap.forEach((key, value) -> statusMapTimestamp.put(key, value ? new Timestamp(Instant.now().toEpochMilli()) : null));
 
         return statusMapTimestamp;
     }
@@ -283,7 +283,7 @@ public class BrukerRepository {
 
     static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, AktivitetDataFraFeed aktivitet) {
         return SqlUtils.upsert(db, "AKTIVITETER")
-                .where( WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
+                .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
                 .set("AKTOERID", aktivitet.getAktorId())
                 .set("AKTIVITETTYPE", aktivitet.getAktivitetType().toLowerCase())
                 .set("AVTALT", aktivitet.isAvtalt())
@@ -295,7 +295,7 @@ public class BrukerRepository {
     }
 
     static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid) {
-        return SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER" )
+        return SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER")
                 .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
                 .set("STATUS", status)
                 .set("PERSONID", personid)
@@ -332,7 +332,7 @@ public class BrukerRepository {
                         "venterpasvarfrabruker, " +
                         "venterpasvarfranav, " +
                         "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet "+
+                        "iavtaltaktivitet " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -370,7 +370,7 @@ public class BrukerRepository {
                         "venterpasvarfrabruker, " +
                         "venterpasvarfranav, " +
                         "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet "+
+                        "iavtaltaktivitet " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -409,7 +409,7 @@ public class BrukerRepository {
                         "venterpasvarfrabruker, " +
                         "venterpasvarfranav, " +
                         "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet "+
+                        "iavtaltaktivitet " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -460,10 +460,12 @@ public class BrukerRepository {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
 
-    String getAktiviteterForAktoeridSql() { return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?"; }
+    String getAktiviteterForAktoeridSql() {
+        return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?";
+    }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
-        if(oppfolgingsFlaggSatt(bruker)) {
+        if (oppfolgingsFlaggSatt(bruker)) {
             return true;
         }
         String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
@@ -495,11 +497,11 @@ public class BrukerRepository {
     }
 
     private Boolean kanskjeVerdi(List<Map<String, Object>> statuserFraDb, String type) {
-        for(Map<String, Object> rad : statuserFraDb) {
+        for (Map<String, Object> rad : statuserFraDb) {
             String aktivitetType = (String) rad.get("AKTIVITETTYPE");
-            if(type.equals(aktivitetType)) {
+            if (type.equals(aktivitetType)) {
                 //med hsql driveren settes det inn false/true og med oracle settes det inn 0/1.
-                return  Boolean.valueOf( (String) rad.get("STATUS")) || "1".equals(rad.get("STATUS"));
+                return Boolean.valueOf((String) rad.get("STATUS")) || "1".equals(rad.get("STATUS"));
             }
         }
         return false;
