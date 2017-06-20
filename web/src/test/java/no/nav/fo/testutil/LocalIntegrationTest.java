@@ -5,16 +5,20 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import lombok.SneakyThrows;
+import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.eclipse.jetty.server.ServerConnector;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.*;
 
 import static com.squareup.okhttp.MediaType.parse;
+import static java.lang.System.setProperty;
 
 
 /**
@@ -44,6 +48,7 @@ public abstract class LocalIntegrationTest {
     private static final String CONTEXT_NAME = LocalIntegrationTest.class.getSimpleName();
     private static final Jetty JETTY = StartJetty.nyJetty(CONTEXT_NAME, tilfeldigPort());
     private static final OkHttpClient OKHTTPCLIENT = new OkHttpClient();
+    protected static final SingleConnectionDataSource ds = StartJetty.ds;
 
     @BeforeClass
     public static void startJetty() {
@@ -53,6 +58,12 @@ public abstract class LocalIntegrationTest {
     @AfterClass
     public static void stopJetty() {
         JETTY.stop.run();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
+        InternbrukerSubjectHandler.setVeilederIdent("testident");
     }
 
     @SneakyThrows

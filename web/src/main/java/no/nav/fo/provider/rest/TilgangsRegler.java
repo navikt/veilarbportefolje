@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-class TilgangsRegler {
+public class TilgangsRegler {
     final static Pattern pattern = Pattern.compile("\\d{4}");
 
     static void tilgangTilOppfolging(PepClient pep) {
@@ -60,7 +60,7 @@ class TilgangsRegler {
         pep.tilgangTilBruker(token, fnr);
     }
 
-    private static void test(String navn, Object data, boolean matches) {
+    static void test(String navn, Object data, boolean matches) {
         if (!matches) {
             throw new RestTilgangException(format("sjekk av %s feilet, %s", navn, data));
         }

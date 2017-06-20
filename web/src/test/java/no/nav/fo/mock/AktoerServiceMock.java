@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public class AktoerServiceMock implements AktoerService {
 
-    private static final String FAILING_FNR = "00000000000";
+    private static final String FAILING_FNR = "75843973123";
 
     public static String getFailingFnr() {
         return FAILING_FNR;
@@ -34,10 +34,14 @@ public class AktoerServiceMock implements AktoerService {
     }
 
     private Optional<String> returnTestData(String string) {
-        Optional<String> result = Optional.of("_" + string);
+        Optional<String> result = Optional.of(createTestId(string));
         if (FAILING_FNR.equals(string)) {
             result = Optional.empty();
         }
         return result;
+    }
+
+    public static String createTestId(String string) {
+        return "_" + string;
     }
 }

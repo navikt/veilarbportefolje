@@ -46,8 +46,8 @@ public class BrukerRepository {
 
     static final private Logger LOG = getLogger(BrukerRepository.class);
     private static final String IARBS = "IARBS";
-    static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
-    static final String BRUKERDATA = "BRUKER_DATA";
+    public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
+    public static final String BRUKERDATA = "BRUKER_DATA";
 
     @Inject
     private JdbcTemplate db;

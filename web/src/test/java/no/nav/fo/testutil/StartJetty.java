@@ -19,6 +19,8 @@ import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
 public class StartJetty {
 
+    static SingleConnectionDataSource ds;
+
     public static void main(String[] args) {
         Jetty jetty = nyJetty(null, 8765);
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
@@ -39,9 +41,8 @@ public class StartJetty {
 
     @SneakyThrows
     private static void setupDataSource() {
-        SingleConnectionDataSource dataSource;
-        dataSource = setupInMemoryDatabase();
-        new Resource(DatabaseConfig.JNDI_NAME, dataSource);
+        ds = setupInMemoryDatabase();
+        new Resource(DatabaseConfig.JNDI_NAME, ds);
     }
 
     private static void setupProperties() {

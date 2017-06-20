@@ -9,10 +9,14 @@ import no.nav.fo.domene.Fnr;
 import no.nav.fo.exception.RestBadGateWayException;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
 public class ArbeidslisteService {
+    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteService.class);
+
     @Inject
     private AktoerService aktoerService;
 
@@ -60,6 +64,7 @@ public class ArbeidslisteService {
                 .retrieveVeileder(data.getAktoerId())
                 .map(x -> x.equals(data.getVeilederId()))
                 .map(data::setIsOppfolgendeVeileder)
+                .onFailure(e -> LOG.warn("FAIL! {}", e.getMessage()))
                 .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
     }
 

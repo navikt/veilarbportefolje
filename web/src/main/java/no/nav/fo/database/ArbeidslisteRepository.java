@@ -19,25 +19,25 @@ import static no.nav.fo.util.sql.SqlUtils.upsert;
 public class ArbeidslisteRepository {
 
     @Inject
-    private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate db;
 
-    private static final String TABLE_NAME = "ARBEIDSLISTE";
+    private static final String ARBEIDSLISTE = "ARBEIDSLISTE";
 
     public Try<ArbeidslisteData> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
-                () -> new SelectQuery<ArbeidslisteData>(jdbcTemplate, TABLE_NAME)
+                () -> new SelectQuery<ArbeidslisteData>(db, ARBEIDSLISTE)
                         .column("*")
                         .whereEquals("AKTOERID", aktoerId.toString())
                         .usingMapper(this::arbeidslisteMapper)
                         .execute()
-        );
+        ).map(x -> x.setAktoerId(aktoerId));
     }
 
     public Try<Boolean> insertArbeidsliste(ArbeidslisteData data) {
         return Try.of(
                 () -> {
                     String aktoerId = data.getAktoerId().toString();
-                    return upsert(jdbcTemplate, TABLE_NAME)
+                    return upsert(db, ARBEIDSLISTE)
                             .set("AKTOERID", aktoerId)
                             .set("VEILEDERIDENT", data.getVeilederId())
                             .set("BESKRIVELSE", data.getKommentar())
@@ -51,7 +51,7 @@ public class ArbeidslisteRepository {
 
     public Try<Integer> updateArbeidsliste(ArbeidslisteData data) {
         return Try.of(
-                () -> update(jdbcTemplate, TABLE_NAME)
+                () -> update(db, ARBEIDSLISTE)
                         .set("VEILEDERIDENT", data.getVeilederId())
                         .set("BESKRIVELSE", data.getKommentar())
                         .set("FRIST", data.getFrist())
@@ -62,7 +62,7 @@ public class ArbeidslisteRepository {
     }
 
     public Try<Integer> deleteArbeidsliste(AktoerId aktoerID) {
-        int update = jdbcTemplate.update("DELETE FROM ARBEIDSLISTE WHERE AKTOERID = ?", aktoerID.toString());
+        int update = db.update("DELETE FROM ARBEIDSLISTE WHERE AKTOERID = ?", aktoerID.toString());
 
         if (update == 0) {
             return Try.failure(new RuntimeException("Kunne ikke slette rad fra database"));

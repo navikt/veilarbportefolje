@@ -33,8 +33,8 @@ public class ArbeidsListeRessurs {
     @GET
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            sjekkTilgangTilEnhet(fnr);
             ValideringsRegler.sjekkFnr(fnr);
+            sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
                     .getArbeidsliste(new ArbeidslisteData().setFnr(new Fnr(fnr)))
@@ -46,11 +46,11 @@ public class ArbeidsListeRessurs {
     @PUT
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
             ValideringsRegler.sjekkFnr(fnr);
+            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
 
             return arbeidslisteService
-                    .createArbeidsliste(data(body, fnr))
+                    .createArbeidsliste(data(body, new Fnr(fnr)))
                     .map(x -> "Arbeidsliste opprettet.")
                     .getOrElseThrow(() -> new RuntimeException("Kunne ikke opprette arbeidsliste"));
         }, CREATED);
@@ -59,11 +59,11 @@ public class ArbeidsListeRessurs {
     @POST
     public Response postArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            sjekkTilgangTilEnhet(fnr);
             ValideringsRegler.sjekkFnr(fnr);
+            sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
-                    .updateArbeidsliste(data(body, fnr))
+                    .updateArbeidsliste(data(body, new Fnr(fnr)))
                     .map(x -> "Arbeidsliste oppdatert.")
                     .getOrElseThrow(() -> new RuntimeException("Kunne ikke oppdatere ny arbeidsliste"));
         });
@@ -72,8 +72,8 @@ public class ArbeidsListeRessurs {
     @DELETE
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
             ValideringsRegler.sjekkFnr(fnr);
+            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
 
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
@@ -82,14 +82,14 @@ public class ArbeidsListeRessurs {
         });
     }
 
-    private void sjekkTilgangTilEnhet(@PathParam("fnr") String fnr) {
-        String enhet = arbeidslisteService.hentEnhet(new Fnr(fnr));
+    private void sjekkTilgangTilEnhet(Fnr fnr) {
+        String enhet = arbeidslisteService.hentEnhet(fnr);
         TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
     }
 
-    private ArbeidslisteData data(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
+    private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {
         return new ArbeidslisteData()
-                .setFnr(new Fnr(fnr))
+                .setFnr(fnr)
                 .setVeilederId(body.getVeilederId())
                 .setKommentar(body.getKommentar())
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
