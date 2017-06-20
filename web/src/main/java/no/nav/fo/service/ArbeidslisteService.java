@@ -42,6 +42,12 @@ public class ArbeidslisteService {
         return arbeidslisteRepository.deleteArbeidsliste(hentAktoerId(fnr));
     }
 
+    public String hentEnhet(Fnr fnr) {
+        return brukerRepository
+                .retrieveEnhet(fnr)
+                .getOrElseThrow(x -> new RestBadGateWayException("Kunne ikke hente enhet for denne brukeren"));
+    }
+
     private AktoerId hentAktoerId(Fnr fnr) {
         return aktoerService
                 .hentAktoeridFraFnr(fnr.toString())
@@ -54,6 +60,14 @@ public class ArbeidslisteService {
                 .retrieveVeileder(data.getAktoerId())
                 .map(x -> x.equals(data.getVeilederId()))
                 .map(data::setIsOppfolgendeVeileder)
+                .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
+    }
+
+    public Boolean erVeilederForBruker(Fnr fnr, String veilederId) {
+        AktoerId aktoerId = hentAktoerId(fnr);
+        return brukerRepository
+                .retrieveVeileder(aktoerId)
+                .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
     }
 }

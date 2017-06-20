@@ -6,6 +6,7 @@ import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.ArbeidslisteService;
+import no.nav.fo.service.BrukertilgangService;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -26,19 +27,26 @@ public class ArbeidsListeRessurs {
     @Inject
     private ArbeidslisteService arbeidslisteService;
 
+    @Inject
+    private BrukertilgangService brukertilgangService;
+
     @GET
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
+            sjekkTilgangTilEnhet(fnr);
             ValideringsRegler.sjekkFnr(fnr);
+
             return arbeidslisteService
                     .getArbeidsliste(new ArbeidslisteData().setFnr(new Fnr(fnr)))
                     .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke opprette. Fant ikke arbeidsliste for bruker"));
         });
     }
 
+
     @PUT
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
+            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
             ValideringsRegler.sjekkFnr(fnr);
 
             return arbeidslisteService
@@ -51,6 +59,7 @@ public class ArbeidsListeRessurs {
     @POST
     public Response postArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
+            sjekkTilgangTilEnhet(fnr);
             ValideringsRegler.sjekkFnr(fnr);
 
             return arbeidslisteService
@@ -63,12 +72,19 @@ public class ArbeidsListeRessurs {
     @DELETE
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
+            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
             ValideringsRegler.sjekkFnr(fnr);
+
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
                     .map(x -> "Arbeidsliste slettet")
                     .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
         });
+    }
+
+    private void sjekkTilgangTilEnhet(@PathParam("fnr") String fnr) {
+        String enhet = arbeidslisteService.hentEnhet(new Fnr(fnr));
+        TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
     }
 
     private ArbeidslisteData data(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {

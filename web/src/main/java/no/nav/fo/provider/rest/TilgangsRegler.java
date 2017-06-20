@@ -2,7 +2,9 @@ package no.nav.fo.provider.rest;
 
 import javaslang.Tuple;
 import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.fo.domene.Fnr;
 import no.nav.fo.exception.RestTilgangException;
+import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.util.TokenUtils;
@@ -19,18 +21,18 @@ class TilgangsRegler {
 
     static void tilgangTilOppfolging(PepClient pep) {
         SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
-        String ident = subjectHandler.getUid();
+        String veilederId = subjectHandler.getUid();
         String token = TokenUtils.getTokenBody(subjectHandler.getSubject());
 
-        test("oppfølgingsbruker", ident, pep.isSubjectMemberOfModiaOppfolging(ident, token));
+        test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, token));
     }
 
     static void tilgangTilEnhet(BrukertilgangService brukertilgangService, String enhet) {
-        String ident = SubjectHandler.getSubjectHandler().getUid();
-        tilgangTilEnhet(brukertilgangService, enhet, ident);
+        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        tilgangTilEnhet(brukertilgangService, enhet, veilederId);
     }
 
-    public static boolean enhetErIPilot(String enhet) {
+    static boolean enhetErIPilot(String enhet) {
         String enhetsliste = System.getProperty("portefolje.pilot.enhetliste", "");
         enhetsliste = pattern.matcher(enhetsliste).find() ? enhetsliste : "";
 
@@ -62,5 +64,11 @@ class TilgangsRegler {
         if (!matches) {
             throw new RestTilgangException(format("sjekk av %s feilet, %s", navn, data));
         }
+    }
+
+    static void erVeilederForBruker(ArbeidslisteService arbeidslisteService, Fnr fnr) {
+        SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
+        String veilederId = subjectHandler.getUid();
+        test("er veileder for bruker", fnr, arbeidslisteService.erVeilederForBruker(fnr, veilederId));
     }
 }

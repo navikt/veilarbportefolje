@@ -1,14 +1,12 @@
 package no.nav.fo.database;
 
 import com.google.common.base.Joiner;
+import javaslang.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.Aktivitet.AktivitetTyper;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.KvartalMapping;
-import no.nav.fo.domene.ManedMapping;
-import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.domene.*;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -30,8 +28,13 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
+import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
+import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { ApplicationConfigTest.class})
@@ -394,5 +397,39 @@ public class BrukerRepositoryTest{
 
         assertThat( bruker.get(0).get("IAVTALTAKTIVITET")).isEqualTo("1");
         assertThat( bruker.get(0).get("NYESTEUTLOPTEAKTIVITET")).isEqualTo(nyesteUtlopte);
+    }
+
+    @Test
+    public void skalHenteVeilederForBruker() throws Exception {
+        AktoerId aktoerId = new AktoerId("101010");
+        String expectedVeilederId = "X11111";
+
+        insert(jdbcTemplate, BRUKERDATA)
+                .value("PERSONID", "123456")
+                .value("AKTOERID", aktoerId.toString())
+                .value("VEILEDERIDENT", expectedVeilederId)
+                .execute();
+
+        Try<String> result = brukerRepository.retrieveVeileder(aktoerId);
+        assertTrue(result.isSuccess());
+        assertEquals(expectedVeilederId, result.get());
+
+        deleteData();
+    }
+
+    @Test
+    public void skalHenteEnhetForBruker() throws Exception {
+        Fnr fnr = new Fnr("12345678900");
+        String expectedEnhet = "123";
+
+        insert(jdbcTemplate, OPPFOLGINGSBRUKER)
+                .value("PERSON_ID", "123456")
+                .value("FODSELSNR", fnr.toString())
+                .value("NAV_KONTOR", expectedEnhet)
+                .execute();
+
+        Try<String> result = brukerRepository.retrieveEnhet(fnr);
+        assertTrue(result.isSuccess());
+        assertEquals(expectedEnhet, result.get());
     }
 }

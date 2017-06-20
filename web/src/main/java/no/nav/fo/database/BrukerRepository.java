@@ -46,12 +46,44 @@ public class BrukerRepository {
 
     static final private Logger LOG = getLogger(BrukerRepository.class);
     private static final String IARBS = "IARBS";
+    static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
+    static final String BRUKERDATA = "BRUKER_DATA";
 
     @Inject
     private JdbcTemplate db;
 
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public Try<String> retrieveVeileder(AktoerId aktoerId) {
+        return Try.of(
+                () -> new SelectQuery<String>(db, BRUKERDATA)
+                        .column("VEILEDERIDENT")
+                        .whereEquals("AKTOERID", aktoerId.toString())
+                        .usingMapper(this::getVeilederident)
+                        .execute()
+        );
+    }
+
+    public Try<String> retrieveEnhet(Fnr fnr) {
+        return Try.of(
+                () -> new SelectQuery<String>(db, OPPFOLGINGSBRUKER)
+                        .column("NAV_KONTOR")
+                        .whereEquals("FODSELSNR", fnr.toString())
+                        .usingMapper(this::mapToEnhet)
+                        .execute()
+        );
+    }
+
+    @SneakyThrows
+    private String mapToEnhet(ResultSet rs) {
+        return rs.getString("NAV_KONTOR");
+    }
+
+    @SneakyThrows
+    private String getVeilederident(ResultSet rs) {
+        return rs.getString("VEILEDERIDENT");
+    }
 
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
@@ -471,20 +503,5 @@ public class BrukerRepository {
             }
         }
         return false;
-    }
-
-    public Try<String> retrieveVeileder(AktoerId aktoerId) {
-        return Try.of(
-                () -> new SelectQuery<String>(db, "BRUKER_DATA")
-                        .column("VEILEDERIDENT")
-                        .whereEquals("AKTOERID", aktoerId)
-                        .usingMapper(this::getVeilederident)
-                        .execute()
-        );
-    }
-
-    @SneakyThrows
-    private String getVeilederident(ResultSet rs) {
-        return rs.getString("VEILEDERIDENT");
     }
 }
