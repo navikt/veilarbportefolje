@@ -59,6 +59,7 @@ public class BrukerRepositoryTest{
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
         jdbcTemplate.execute("truncate table brukerstatus_aktiviteter");
+        jdbcTemplate.execute("truncate table aktiviteter");
     }
 
     @Test

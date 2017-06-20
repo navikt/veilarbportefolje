@@ -4,6 +4,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.AktoerService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,19 +31,14 @@ public class AktivitetFeedHandlerTest {
     private BrukerRepository brukerRepository;
 
     @Mock
-    private AktoerService aktoerService;
-
-    @Mock
-    private PersistentOppdatering persistentOppdatering;
+    private AktivitetService aktivitetService;
 
     @InjectMocks
     private AktivitetFeedHandler aktivitetFeedHandler;
 
 
     @Test
-    public void getAktiviteterForAktoeridShouldBeCalledOnceForEachDistinctAktoerid() {
-
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Optional.of("jegfantpersonid"));
+    public void utledOgIndekserAktivitetstatuserForAktoeridShouldBeCalledOnceForEachDistinctAktoerid() {
 
         List<AktivitetDataFraFeed> data = new ArrayList<>();
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
@@ -53,7 +49,7 @@ public class AktivitetFeedHandlerTest {
 
         ArgumentCaptor<String> aktoeridCaptor = ArgumentCaptor.forClass(String.class);
 
-        verify(brukerRepository, times(2)).getAktiviteterForAktoerid(aktoeridCaptor.capture());
+        verify(aktivitetService, times(2)).utledOgIndekserAktivitetstatuserForAktoerid(aktoeridCaptor.capture());
         List<String> capturedAktoerids = aktoeridCaptor.getAllValues();
 
 
@@ -62,10 +58,7 @@ public class AktivitetFeedHandlerTest {
     }
 
     @Test
-    public void lagreShouldBeCalledOnceForEachDistinctAktoerid() {
-
-
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Optional.of("jegfantpersonid"));
+    public void upsertShouldBeCalledOnceForEachAktoerid() {
 
         List<AktivitetDataFraFeed> data = new ArrayList<>();
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
@@ -74,8 +67,7 @@ public class AktivitetFeedHandlerTest {
 
         aktivitetFeedHandler.call("dontcare", data);
 
-
-        verify(persistentOppdatering, times(2)).lagre(any(BrukerOppdatering.class));
+        verify(brukerRepository, times(3)).upsertAktivitet(any(AktivitetDataFraFeed.class));
 
     }
 }
