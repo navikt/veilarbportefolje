@@ -75,8 +75,14 @@ public class BrukerRepository {
         return brukere.stream().filter(BrukerRepository::erOppfolgingsBruker).collect(toList());
     }
 
-    public List<Map<String, Object>> retrieveBrukermedBrukerdata(String personId) {
-        return db.queryForList(retrieveBrukerMedBrukerdataSQL(), personId);
+    public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
+        String[] args = new String[]{personId};
+        return db.query(retrieveBrukerMedBrukerdataSQL(), args, (rs) -> {
+            if(rs.isBeforeFirst()) {
+                rs.next();
+            }
+            return mapResultSetTilDokument(rs);
+        });
     }
 
     public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {

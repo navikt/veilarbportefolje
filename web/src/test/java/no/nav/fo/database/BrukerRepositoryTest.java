@@ -375,15 +375,15 @@ public class BrukerRepositoryTest{
         jdbcTemplate.update("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) VALUES (123456, '1234567890')");
 
 
-        List<Map<String, Object>> bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
+        SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
-        assertThat((Timestamp) bruker.get(0).get("NYESTUTLOPTEAKTIVITET")).isNull();
-        assertThat((String) bruker.get(0).get("IAVTALTAKTIVITET")).isNull();
+        assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isNull();
+        assertThat(bruker.get("iavtaltaktivitet").getValue()).isNull();
     }
 
     @Test
     public void skalHenteUtAktivitetInfo() {
-        Timestamp nyesteUtlopte = timestampFromISO8601("2017-01-01T00:00:00+02:00");
+        Timestamp nyesteUtlopte = timestampFromISO8601("2017-01-01T13:00:00+01:00");
 
         Brukerdata brukerdata = new Brukerdata()
                 .setPersonid("123456")
@@ -393,10 +393,10 @@ public class BrukerRepositoryTest{
         brukerRepository.upsertBrukerdata(brukerdata);
         jdbcTemplate.update("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) VALUES (123456, '1234567890')");
 
-        List<Map<String, Object>> bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
+        SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
-        assertThat( bruker.get(0).get("IAVTALTAKTIVITET")).isEqualTo("1");
-        assertThat( bruker.get(0).get("NYESTEUTLOPTEAKTIVITET")).isEqualTo(nyesteUtlopte);
+        assertThat( bruker.get("iavtaltaktivitet").getValue()).isEqualTo(true);
+        assertThat( bruker.get("nyesteutlopteaktivitet").getValue()).isEqualTo("2017-01-01T12:00:00Z");
     }
 
     @Test
