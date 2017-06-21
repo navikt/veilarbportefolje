@@ -1,10 +1,7 @@
 package no.nav.fo.config;
 
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.service.AktoerService;
-import no.nav.fo.service.AktoerServiceImpl;
-import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.VirksomhetEnhetService;
+import no.nav.fo.service.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,4 +25,7 @@ public class ServiceConfig {
 
     @Bean
     public AktoerService aktoerService() { return new AktoerServiceImpl(); }
+
+    @Bean
+    public AktivitetService aktivitetService() { return new AktivitetService(); }
 }
