@@ -18,23 +18,29 @@ import static org.junit.Assert.assertEquals;
 
 public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
+    private static final JdbcTemplate DB = new JdbcTemplate(ds);
+
     private static final String TEST_VEILEDERID = "testident";
     private static final String TEST_FNR = "01010101010";
     private static final String TEST_PERSONID = "00000";
-    private static final JdbcTemplate db = new JdbcTemplate(ds);
+
     private static final String NOT_FOUND_FNR = "00000000000";
     private static final String NOT_FOUND_PERSONID = "11111";
+
+    private static final String UNAUTHORIZED_FNR = "11111111111";
+    private static final String UNAUTHORIZED_PERSONID = "1111";
 
     @BeforeClass
     public static void setUpDb() throws Exception {
         insertSuccessfulBruker();
         insertNotFoundBruker();
+        insertUnauthorizedBruker();
     }
 
     @AfterClass
     public static void tearDownDb() throws Exception {
-        db.execute("truncate table " + BRUKERDATA);
-        db.execute("truncate table " + OPPFOLGINGSBRUKER);
+        DB.execute("truncate table " + BRUKERDATA);
+        DB.execute("truncate table " + OPPFOLGINGSBRUKER);
     }
 
     @Test
@@ -107,14 +113,37 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         assertEquals(201, putStatus2);
     }
 
+    @Test
+    public void skalHaTilgangsKontroll() throws Exception {
+        String path = "/tjenester/arbeidsliste/" + UNAUTHORIZED_FNR;
+        JSONObject json = new JSONObject()
+                .put("veilederId", TEST_VEILEDERID)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "2017-10-10T00:00:00Z");
+
+        int expected = 403;
+
+        int actualPut = put(path, json.toString()).code();
+        assertEquals(expected, actualPut);
+
+        int actualDelete = delete(path).code();
+        assertEquals(expected, actualDelete);
+
+        int actualGet = get(path).code();
+        assertEquals(expected, actualGet);
+
+        int actualPost = post(path, json.toString()).code();
+        assertEquals(expected, actualPost);
+    }
+
     private static void insertSuccessfulBruker() {
-        insert(db, BRUKERDATA)
+        insert(DB, BRUKERDATA)
                 .value("PERSONID", TEST_PERSONID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", createTestId(TEST_FNR))
                 .execute();
 
-        insert(db, OPPFOLGINGSBRUKER)
+        insert(DB, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", TEST_PERSONID)
                 .value("FODSELSNR", TEST_FNR)
                 .value("NAV_KONTOR", getTestEnhetId())
@@ -122,16 +151,31 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     }
 
     private static void insertNotFoundBruker() {
-        insert(db, OPPFOLGINGSBRUKER)
+        insert(DB, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", NOT_FOUND_PERSONID)
                 .value("FODSELSNR", NOT_FOUND_FNR)
                 .value("NAV_KONTOR", getTestEnhetId())
                 .execute();
 
-        insert(db, BRUKERDATA)
+        insert(DB, BRUKERDATA)
                 .value("PERSONID", NOT_FOUND_PERSONID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", createTestId(NOT_FOUND_FNR))
                 .execute();
     }
+
+    private static void insertUnauthorizedBruker() {
+        insert(DB, OPPFOLGINGSBRUKER)
+                .value("PERSON_ID", UNAUTHORIZED_PERSONID)
+                .value("FODSELSNR", UNAUTHORIZED_FNR)
+                .value("NAV_KONTOR", "XOXOXO")
+                .execute();
+
+        insert(DB, BRUKERDATA)
+                .value("PERSONID", UNAUTHORIZED_PERSONID)
+                .value("VEILEDERIDENT", "X22222")
+                .value("AKTOERID", createTestId(UNAUTHORIZED_FNR))
+                .execute();
+    }
+
 }
