@@ -3,8 +3,9 @@ package no.nav.fo.util;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.Aktivitet.AktivitetFullfortStatuser;
-import org.joda.time.LocalDate;
 import org.junit.Test;
+
+import java.time.LocalDate;
 
 import static java.util.Arrays.asList;
 import static no.nav.fo.util.AktivitetUtils.*;

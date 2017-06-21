@@ -5,9 +5,8 @@ import no.nav.fo.domene.Aktivitet.*;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
-import org.joda.time.LocalDate;
-
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
 
 import static java.util.Collections.*;
@@ -65,8 +64,8 @@ public class AktivitetUtils {
     }
 
     public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
-        LocalDate fraDato = LocalDate.fromDateFields(aktivitet.getFraDato());
-        LocalDate tilDato = LocalDate.fromDateFields(aktivitet.getTilDato());
+        LocalDate fraDato = aktivitet.getFraDato().toLocalDateTime().toLocalDate();
+        LocalDate tilDato = aktivitet.getTilDato().toLocalDateTime().toLocalDate();
 
         return fraDato.isBefore(today.plusDays(1)) && tilDato.plusDays(1).isAfter(today);
     }
@@ -75,7 +74,7 @@ public class AktivitetUtils {
         return aktiviteter
                 .stream()
                 .filter(aktivitet -> !AktivitetFullfortStatuser.contains(aktivitet.getStatus()))
-                .filter(aktivitet -> LocalDate.fromDateFields(aktivitet.getTilDato()).isBefore(today))
+                .filter(aktivitet -> aktivitet.getTilDato().toLocalDateTime().toLocalDate().isBefore(today))
                 .sorted(Comparator.comparing(AktivitetDTO::getTilDato))
                 .findFirst()
                 .orElse(null);
