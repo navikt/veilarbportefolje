@@ -26,24 +26,33 @@ public class ArbeidslisteService {
     @Inject
     private BrukerRepository brukerRepository;
 
+    @Inject
+    private SolrService solrService;
+
     public Try<Arbeidsliste> getArbeidsliste(ArbeidslisteData data) {
+        AktoerId aktoerId = hentAktoerId(data.getFnr());
         return arbeidslisteRepository
-                .retrieveArbeidsliste(hentAktoerId(data.getFnr()))
-                .map(this::setOppfolgendeVeileder)
-                .map(Arbeidsliste::of);
+                .retrieveArbeidsliste(aktoerId)
+                .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId));
     }
 
     public Try<Boolean> createArbeidsliste(ArbeidslisteData data) {
         data.setAktoerId(hentAktoerId(data.getFnr()));
-        return arbeidslisteRepository.insertArbeidsliste(data);
+        return arbeidslisteRepository
+                .insertArbeidsliste(data)
+                .andThen(() -> solrService.deltaindeksering());
     }
 
     public Try<Integer> updateArbeidsliste(ArbeidslisteData data) {
-        return arbeidslisteRepository.updateArbeidsliste(data.setAktoerId(hentAktoerId(data.getFnr())));
+        return arbeidslisteRepository
+                .updateArbeidsliste(data.setAktoerId(hentAktoerId(data.getFnr())))
+                .andThen(() -> solrService.deltaindeksering());
     }
 
     public Try<Integer> deleteArbeidsliste(Fnr fnr) {
-        return arbeidslisteRepository.deleteArbeidsliste(hentAktoerId(fnr));
+        return arbeidslisteRepository
+                .deleteArbeidsliste(hentAktoerId(fnr))
+                .andThen(() -> solrService.deltaindeksering());
     }
 
     public String hentEnhet(Fnr fnr) {
@@ -59,12 +68,11 @@ public class ArbeidslisteService {
                 .orElseThrow(() -> new RestBadGateWayException("Fant ikke aktoerId for gitt fnr"));
     }
 
-    private ArbeidslisteData setOppfolgendeVeileder(ArbeidslisteData data) {
+    private Arbeidsliste setOppfolgendeVeileder(Arbeidsliste arbeidsliste, AktoerId aktoerId) {
         return brukerRepository
-                .retrieveVeileder(data.getAktoerId())
-                .map(x -> x.equals(data.getVeilederId()))
-                .map(data::setIsOppfolgendeVeileder)
-                .onFailure(e -> LOG.warn("FAIL! {}", e.getMessage()))
+                .retrieveVeileder(aktoerId)
+                .map(x -> x.equals(arbeidsliste.getVeilederId()))
+                .map(arbeidsliste::setOppfolgendeVeileder)
                 .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
     }
 

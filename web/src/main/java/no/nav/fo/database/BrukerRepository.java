@@ -62,7 +62,7 @@ public class BrukerRepository {
                         .whereEquals("AKTOERID", aktoerId.toString())
                         .usingMapper(this::getVeilederident)
                         .execute()
-        );
+        ).onFailure(e -> LOG.warn("Fant ikke nåværende veielder for bruker med aktoerId {}", aktoerId));
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
@@ -72,7 +72,7 @@ public class BrukerRepository {
                         .whereEquals("FODSELSNR", fnr.toString())
                         .usingMapper(this::mapToEnhet)
                         .execute()
-        );
+        ).onFailure(e -> LOG.warn("Fant ikke oppfølgingsenhet for bruker med fnr {}", fnr));
     }
 
     @SneakyThrows
@@ -92,13 +92,14 @@ public class BrukerRepository {
     public void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
-            SolrInputDocument bruker = mapResultSetTilDokument(rs);
-            applyAktivitetStatuser(bruker, this);
-            if (filter.test(bruker)) {
-                prosess.accept(bruker);
+            SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
+            applyAktivitetStatuser(brukerDokument, this);
+            if (filter.test(brukerDokument)) {
+                prosess.accept(brukerDokument);
             }
         });
     }
+
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
         List<SolrInputDocument> brukere = new ArrayList<>();

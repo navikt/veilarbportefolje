@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @Data
 @Accessors(chain = true)
 public class ArbeidslisteData {
-    Fnr fnr;
+    final Fnr fnr;
     AktoerId aktoerId;
     String veilederId;
     String kommentar;

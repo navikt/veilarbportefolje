@@ -3,9 +3,12 @@ package no.nav.fo.database;
 import javaslang.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.where.WhereClause;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -17,20 +20,21 @@ import static no.nav.fo.util.sql.SqlUtils.update;
 import static no.nav.fo.util.sql.SqlUtils.upsert;
 
 public class ArbeidslisteRepository {
+    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteRepository.class);
 
     @Inject
     private JdbcTemplate db;
 
     private static final String ARBEIDSLISTE = "ARBEIDSLISTE";
 
-    public Try<ArbeidslisteData> retrieveArbeidsliste(AktoerId aktoerId) {
+    public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
-                () -> new SelectQuery<ArbeidslisteData>(db, ARBEIDSLISTE)
+                () -> new SelectQuery<Arbeidsliste>(db, ARBEIDSLISTE)
                         .column("*")
                         .whereEquals("AKTOERID", aktoerId.toString())
                         .usingMapper(this::arbeidslisteMapper)
                         .execute()
-        ).map(x -> x.setAktoerId(aktoerId));
+        ).onFailure(e -> LOG.warn("Kunne ikke hente ut arbeidsliste fra db: {}", e.getMessage()));
     }
 
     public Try<Boolean> insertArbeidsliste(ArbeidslisteData data) {
@@ -46,7 +50,7 @@ public class ArbeidslisteRepository {
                             .where(WhereClause.equals("AKTOERID", aktoerId))
                             .execute();
                 }
-        );
+        ).onFailure(e -> LOG.warn("Kunne ikke inserte arbeidsliste til db: {}", e.getMessage()));
     }
 
     public Try<Integer> updateArbeidsliste(ArbeidslisteData data) {
@@ -58,7 +62,7 @@ public class ArbeidslisteRepository {
                         .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
                         .whereEquals("AKTOERID", data.getAktoerId().toString())
                         .execute()
-        );
+        ).onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste i db: {}", e.getMessage()));
     }
 
     public Try<Integer> deleteArbeidsliste(AktoerId aktoerID) {
@@ -72,12 +76,12 @@ public class ArbeidslisteRepository {
     }
 
     @SneakyThrows
-    private ArbeidslisteData arbeidslisteMapper(ResultSet rs) {
-        ArbeidslisteData data = new ArbeidslisteData();
-        data.setVeilederId(rs.getString("VEILEDERIDENT"));
-        data.setKommentar(rs.getString("BESKRIVELSE"));
-        data.setFrist(rs.getTimestamp("FRIST"));
-        data.setEndringstidspunkt(rs.getTimestamp("ENDRINGSTIDSPUNKT"));
-        return data;
+    private Arbeidsliste arbeidslisteMapper(ResultSet rs) {
+        return new Arbeidsliste(
+                rs.getString("VEILEDERIDENT"),
+                rs.getTimestamp("ENDRINGSTIDSPUNKT"),
+                rs.getString("BESKRIVELSE"),
+                rs.getTimestamp("FRIST")
+        );
     }
 }

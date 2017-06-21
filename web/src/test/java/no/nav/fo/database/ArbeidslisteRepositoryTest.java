@@ -3,6 +3,7 @@ package no.nav.fo.database;
 import javaslang.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import org.junit.Before;
@@ -33,8 +34,7 @@ public class ArbeidslisteRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
-        data = new ArbeidslisteData()
-                .setFnr(new Fnr("01010101010"))
+        data = new ArbeidslisteData(new Fnr("01010101010"))
                 .setAktoerId(new AktoerId("22222222"))
                 .setVeilederId("X11111")
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
@@ -48,7 +48,7 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalKunneHenteArbeidsliste() throws Exception {
-        Try<ArbeidslisteData> result = repo.retrieveArbeidsliste(data.getAktoerId());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
         assertTrue(result.isSuccess());
         assertEquals(data.getVeilederId(), result.get().getVeilederId());
     }
@@ -58,7 +58,7 @@ public class ArbeidslisteRepositoryTest {
         String expected = "TEST_ID";
         repo.updateArbeidsliste(data.setVeilederId(expected));
 
-        Try<ArbeidslisteData> result = repo.retrieveArbeidsliste(data.getAktoerId());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
         assertTrue(result.isSuccess());
         assertEquals(expected, result.get().getVeilederId());
     }
