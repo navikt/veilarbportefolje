@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Filtervalg;
 import org.apache.solr.client.solrj.SolrClient;
@@ -35,12 +36,16 @@ public class SolrServiceTest {
     private SolrClient solrClientSlave;
     @Mock
     private SolrClient solrClientMaster;
+    @Mock
+    private ArbeidslisteRepository arbeidslisteRepository;
+    @Mock
+    private AktoerService aktoerService;
 
     private SolrService service;
 
     @Before
     public void setup() {
-        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository);
+        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 
     @Test

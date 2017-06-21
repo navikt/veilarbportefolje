@@ -68,7 +68,6 @@ public class PersistentOppdatering {
                 .forEach( data -> brukerRepository.upsertAktivitetStatuserForBruker(data.getAktivitetStatus(), data.getAktoerid(), data.getPersonid()));
     }
 
-
     public void lagreISolr(Brukerdata brukerdata) {
         solrService.indekserBrukerdata(brukerdata.getPersonid());
     }

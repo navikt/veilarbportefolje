@@ -8,14 +8,12 @@ import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.exception.RestBadGateWayException;
 import no.nav.fo.exception.RestNotFoundException;
+import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
 public class ArbeidslisteService {
-    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteService.class);
 
     @Inject
     private AktoerService aktoerService;
@@ -36,20 +34,21 @@ public class ArbeidslisteService {
                 .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId));
     }
 
-    public Try<Boolean> createArbeidsliste(ArbeidslisteData data) {
-        data.setAktoerId(hentAktoerId(data.getFnr()));
+    public Try<AktoerId> createArbeidsliste(ArbeidslisteData data) {
+        AktoerId aktoerId = hentAktoerId(data.getFnr());
+        data.setAktoerId(aktoerId);
         return arbeidslisteRepository
                 .insertArbeidsliste(data)
-                .andThen(() -> solrService.deltaindeksering());
+                .andThen(solrService::indekserBrukerdata);
     }
 
-    public Try<Integer> updateArbeidsliste(ArbeidslisteData data) {
+    public Try<AktoerId> updateArbeidsliste(ArbeidslisteData data) {
         return arbeidslisteRepository
                 .updateArbeidsliste(data.setAktoerId(hentAktoerId(data.getFnr())))
-                .andThen(() -> solrService.deltaindeksering());
+                .andThen(solrService::indekserBrukerdata);
     }
 
-    public Try<Integer> deleteArbeidsliste(Fnr fnr) {
+    public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
         return arbeidslisteRepository
                 .deleteArbeidsliste(hentAktoerId(fnr))
                 .andThen(() -> solrService.deltaindeksering());
@@ -81,6 +80,6 @@ public class ArbeidslisteService {
         return brukerRepository
                 .retrieveVeileder(aktoerId)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
-                .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
+                .getOrElseThrow(() -> new RestTilgangException("Fant ikke nåværende veileder for bruker"));
     }
 }

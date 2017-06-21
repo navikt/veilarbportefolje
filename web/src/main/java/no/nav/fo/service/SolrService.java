@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 import javaslang.control.Either;
 import javaslang.control.Try;
+import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
@@ -28,7 +29,10 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -48,16 +52,23 @@ public class SolrService {
     private SolrClient solrClientSlave;
     private SolrClient solrClientMaster;
     private BrukerRepository brukerRepository;
+    private ArbeidslisteRepository arbeidslisteRepository;
+    private AktoerService aktoerService;
 
     @Inject
     public SolrService(
             @Named("solrClientMaster") SolrClient solrClientMaster,
             @Named("solrClientSlave") SolrClient solrClientSlave,
-            BrukerRepository brukerRepository
+            BrukerRepository brukerRepository,
+            ArbeidslisteRepository arbeidslisteRepository,
+            AktoerService aktoerService
     ) {
+
         this.solrClientMaster = solrClientMaster;
         this.solrClientSlave = solrClientSlave;
         this.brukerRepository = brukerRepository;
+        this.arbeidslisteRepository = arbeidslisteRepository;
+        this.aktoerService = aktoerService;
     }
 
     @Transactional
@@ -73,9 +84,11 @@ public class SolrService {
         final int[] antallBrukere = {0};
         deleteAllDocuments();
 
-        BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (brukere) -> {
-            antallBrukere[0] += brukere.size();
-            addDocuments(brukere);
+        BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
+            antallBrukere[0] += dokumenter.size();
+            applyAktivitetStatuser(dokumenter, brukerRepository);
+            applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
+            addDocuments(dokumenter);
             commit();
         });
         brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
@@ -85,7 +98,6 @@ public class SolrService {
 
         logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
     }
-
 
     @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
     @Transactional
@@ -135,6 +147,25 @@ public class SolrService {
                 .orElse("enhet_id: " + enhetId);
     }
 
+    private static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
+        brukere.forEach(dokument -> {
+            String personId = (String) dokument.get("person_id").getValue();
+
+            aktoerService.hentAktoeridFraPersonid(personId)
+                    .map(AktoerId::new)
+                    .map(arbeidslisteRepository::retrieveArbeidsliste)
+                    .map(result -> result.onSuccess(
+                            arbeidsliste -> {
+                                dokument.setField("arbeidsliste_aktiv", true);
+                                dokument.setField("arbeidsliste_veilederid", arbeidsliste.getVeilederId());
+                                dokument.setField("arbeidsliste_endringstidspunkt", arbeidsliste.getEndringstidspunkt());
+                                dokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
+                                dokument.setField("arbeidsliste_frist", arbeidsliste.getFrist());
+                            }
+                    ));
+        });
+    }
+
     private List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
         List<Bruker> brukere = new ArrayList<>();
         try {
@@ -178,10 +209,17 @@ public class SolrService {
         List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
 
         applyAktivitetStatuser(dokumenter, brukerRepository);
+        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
 
         addDocuments(dokumenter);
         commit();
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
+    }
+
+    void indekserBrukerdata(AktoerId aktoerId) {
+        aktoerService
+                .hentPersonidFraAktoerid(aktoerId.toString())
+                .ifPresent(this::indekserBrukerdata);
     }
 
     public Try<UpdateResponse> commit() {

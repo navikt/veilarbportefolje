@@ -34,7 +34,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
 import static no.nav.fo.util.DbUtils.parseJaNei;
@@ -93,7 +92,6 @@ public class BrukerRepository {
         db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
-            applyAktivitetStatuser(brukerDokument, this);
             if (filter.test(brukerDokument)) {
                 prosess.accept(brukerDokument);
             }

@@ -42,7 +42,7 @@ public class ArbeidslisteRepositoryTest {
 
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
 
-        Try<Boolean> result = repo.insertArbeidsliste(data);
+        Try<AktoerId> result = repo.insertArbeidsliste(data);
         assertTrue(result.isSuccess());
     }
 
@@ -65,19 +65,19 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalSletteEksisterendeArbeidsliste() throws Exception {
-        Try<Integer> result = repo.deleteArbeidsliste(data.getAktoerId());
+        Try<AktoerId> result = repo.deleteArbeidsliste(data.getAktoerId());
         assertTrue(result.isSuccess());
     }
 
     @Test
     public void skalReturnereFailureVedSletting() throws Exception {
-        Try<Integer> result = repo.deleteArbeidsliste(new AktoerId("asdajsdklajsdkl"));
+        Try<AktoerId> result = repo.deleteArbeidsliste(new AktoerId("asdajsdklajsdkl"));
         assertTrue(result.isFailure());
     }
 
     @Test
     public void skalReturnereFailureVedFeil() throws Exception {
-        Try<Boolean> result = repo.insertArbeidsliste(data.setAktoerId(null));
+        Try<AktoerId> result = repo.insertArbeidsliste(data.setAktoerId(null));
         assertTrue(result.isFailure());
     }
 }
