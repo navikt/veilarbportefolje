@@ -26,6 +26,9 @@ import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
 
 public class StartJettyVeilArbPortefolje {
 
+    public static final String TEST_ENV = "t5";
+    public static final String APPLICATION_NAME = "veilarbportefolje";
+
     public static void main(String[] args) throws Exception {
         SystemProperties.setFrom("veilarbportefolje.properties");
         System.setProperty("develop-local", "true");
@@ -58,7 +61,7 @@ public class StartJettyVeilArbPortefolje {
                 .sslPort(9594)
                 .port(9595)
                 .addDatasource(dataSource, DatabaseConfig.JNDI_NAME)
-                .overrideWebXml(), new ISSOSecurityConfig("veilarbportefolje", "t5"))
+                .overrideWebXml(), new ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV))
                 .configureForJaspic()
                 .buildJetty();
 

@@ -1,6 +1,7 @@
 package no.nav.fo.testutil;
 
 import lombok.SneakyThrows;
+import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.modig.core.context.StaticSubjectHandler;
 import no.nav.modig.core.context.SubjectHandler;
@@ -13,6 +14,8 @@ import java.io.File;
 
 import static java.lang.System.setProperty;
 import static no.nav.apiapp.rest.ExceptionMapper.MILJO_PROPERTY_NAME;
+import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
+import static no.nav.fo.StartJettyVeilArbPortefolje.TEST_ENV;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
@@ -26,16 +29,24 @@ public class StartJetty {
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
 
-    public static Jetty nyJetty(String contextPath, int jettyPort) {
+    static Jetty nyJetty(String contextPath, int jettyPort) {
         setupProperties();
         setupDataSource();
         setProperty(SubjectHandler.SUBJECTHANDLER_KEY, StaticSubjectHandler.class.getName());
         setProperty(MILJO_PROPERTY_NAME, "t");
-        return Jetty.usingWar()
+
+        Jetty.JettyBuilder builder = Jetty.usingWar()
                 .at(contextPath)
                 .port(jettyPort)
                 .overrideWebXml()
-                .disableAnnotationScanning()
+                .disableAnnotationScanning();
+
+        DevelopmentSecurity.ISSOSecurityConfig issoSecurityConfig =
+                new DevelopmentSecurity.ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV);
+
+        return DevelopmentSecurity
+                .setupISSO(builder, issoSecurityConfig)
+                .configureForJaspic()
                 .buildJetty();
     }
 
@@ -47,7 +58,7 @@ public class StartJetty {
 
     private static void setupProperties() {
         System.setProperty("APP_LOG_HOME", new File("target").getAbsolutePath());
-        System.setProperty("application.name", "veilarbportefolje");
+        System.setProperty("application.name", APPLICATION_NAME);
         SystemProperties.setFrom("veilarbportefolje.properties");
     }
 
