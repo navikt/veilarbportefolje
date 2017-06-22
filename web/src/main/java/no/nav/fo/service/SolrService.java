@@ -112,6 +112,7 @@ public class SolrService {
         Timestamp timestamp = Timestamp.valueOf(t0);
 
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
+        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         if (dokumenter.isEmpty()) {
             logger.info("Ingen nye dokumenter i databasen");
             return;
