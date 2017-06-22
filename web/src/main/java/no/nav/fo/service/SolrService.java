@@ -346,7 +346,7 @@ public class SolrService {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery("veileder_id:" + veilederId.toString());
         solrQuery.addFilterQuery("enhet_id:" + enhet);
-        solrQuery.addFilterQuery("arbeidsliste:true");
+        solrQuery.addFilterQuery("arbeidsliste_aktiv:true");
 
         return Try.of(() -> solrClientSlave.query(solrQuery))
                 .map(res -> res.getResults().stream().map(Bruker::of).collect(Collectors.toList()))
