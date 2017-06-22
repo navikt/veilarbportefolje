@@ -452,4 +452,32 @@ public class BrukerRepositoryTest{
         assertThat(aktoerAktiviteter.size()).isEqualTo(2);
         aktoerAktiviteter.forEach( aktoerAktivitet -> assertThat(asList("aktoerid1", "aktoerid2").contains(aktoerAktivitet.getAktoerid())));
     }
+
+    @Test
+    public void retrieveBrukerdataSkalInneholdeAlleFelter() {
+
+        Brukerdata brukerdata = new Brukerdata()
+                .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
+                .setIAvtaltAktivitet(true)
+                .setPersonid("personid")
+                .setAapMaxtid(LocalDateTime.now())
+                .setAapMaxtidFasett(KvartalMapping.KV1)
+                .setAktoerid("aktoerid")
+                .setOppfolging(true)
+                .setTildeltTidspunkt(Timestamp.from(Instant.now()))
+                .setUtlopsdato(LocalDateTime.now())
+                .setUtlopsdatoFasett(ManedMapping.MND1)
+                .setVeileder("Veileder")
+                .setVenterPaSvarFraBruker(LocalDateTime.now())
+                .setVenterPaSvarFraNav(LocalDateTime.now())
+                .setYtelse(YtelseMapping.AAP_MAXTID);
+
+        brukerRepository.upsertBrukerdata(brukerdata);
+
+        Brukerdata brukerdataFromDB = brukerRepository.retrieveBrukerdata(singletonList("personid")).get(0);
+
+        assertThat(brukerdata).isEqualTo(brukerdataFromDB);
+
+
+    }
 }

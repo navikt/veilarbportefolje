@@ -32,7 +32,7 @@ public class DbUtils {
         document.addField("etternavn", kapitaliser(rs.getString("etternavn")));
         document.addField("enhet_id", rs.getString("nav_kontor"));
         document.addField("formidlingsgruppekode", rs.getString("formidlingsgruppekode"));
-        document.addField("iserv_fra_dato", rs.getString("iserv_fra_dato"));
+        document.addField("iserv_fra_dato", toIsoUTC(rs.getTimestamp("iserv_fra_dato")));
         document.addField("kvalifiseringsgruppekode", rs.getString("kvalifiseringsgruppekode"));
         document.addField("rettighetsgruppekode", rs.getString("rettighetsgruppekode"));
         document.addField("hovedmaalkode", rs.getString("hovedmaalkode"));
@@ -40,7 +40,7 @@ public class DbUtils {
         document.addField("diskresjonskode", rs.getString("fr_kode"));
         document.addField("egen_ansatt", parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"));
         document.addField("er_doed", parseJaNei(rs.getString("er_doed"), "er_doed"));
-        document.addField("doed_fra_dato", rs.getTimestamp("doed_fra_dato"));
+        document.addField("doed_fra_dato", toIsoUTC(rs.getTimestamp("doed_fra_dato")));
         document.addField("veileder_id", rs.getString("veilederident"));
         document.addField("fodselsdag_i_mnd", FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")));
         document.addField("fodselsdato", FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")));
@@ -51,7 +51,7 @@ public class DbUtils {
         document.addField("utlopsdato", toIsoUTC(rs.getTimestamp("UTLOPSDATO")));
         document.addField("aap_maxtid", toIsoUTC(rs.getTimestamp("AAPMAXTID")));
         document.addField("oppfolging", parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
-        document.addField("venterpasvarfrabruker", rs.getString("venterpasvarfrabruker"));
+        document.addField("venterpasvarfrabruker", toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")));
         document.addField("venterpasvarfranav", toIsoUTC(rs.getTimestamp("venterpasvarfranav")));
         document.addField("nyesteutlopteaktivitet", toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")));
         document.addField("iavtaltaktivitet", parse0OR1(rs.getString("iavtaltaktivitet")));
