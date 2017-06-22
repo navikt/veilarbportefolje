@@ -340,4 +340,15 @@ public class SolrService {
 
         return statusTall;
     }
+
+    public Try<List<Bruker>> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
+        SolrQuery solrQuery = new SolrQuery("*:*");
+        solrQuery.addFilterQuery("veileder_id:" + veilederId.toString());
+        solrQuery.addFilterQuery("enhet_id:" + enhet);
+        solrQuery.addFilterQuery("arbeidsliste:true");
+
+        return Try.of(() -> solrClientSlave.query(solrQuery))
+                .map(res -> res.getResults().stream().map(Bruker::of).collect(Collectors.toList()))
+                .onFailure(e -> logger.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
+    }
 }

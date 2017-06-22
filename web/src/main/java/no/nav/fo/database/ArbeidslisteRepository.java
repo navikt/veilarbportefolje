@@ -4,6 +4,7 @@ import javaslang.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
+import no.nav.fo.exception.FantIkkeAktoerIdException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -15,6 +16,7 @@ import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 
 import static no.nav.fo.util.sql.SqlUtils.update;
 import static no.nav.fo.util.sql.SqlUtils.upsert;
@@ -40,14 +42,18 @@ public class ArbeidslisteRepository {
     public Try<AktoerId> insertArbeidsliste(ArbeidslisteData data) {
         return Try.of(
                 () -> {
-                    String aktoerId = data.getAktoerId().toString();
+
+                    AktoerId aktoerId = Optional
+                            .ofNullable(data.getAktoerId())
+                            .orElseThrow(() -> new FantIkkeAktoerIdException(data.getFnr()));
+
                     upsert(db, ARBEIDSLISTE)
-                            .set("AKTOERID", aktoerId)
+                            .set("AKTOERID", aktoerId.toString())
                             .set("VEILEDERIDENT", data.getVeilederId())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
                             .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
-                            .where(WhereClause.equals("AKTOERID", aktoerId))
+                            .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                             .execute();
                     return data.getAktoerId();
                 }
@@ -91,6 +97,10 @@ public class ArbeidslisteRepository {
     }
 
     private static String getCauseString(Throwable e) {
-        return e.getCause().getCause().toString();
+        if (e.getCause() == null) {
+            return e.getMessage();
+
+        }
+        return e.getCause().toString();
     }
 }

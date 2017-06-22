@@ -82,4 +82,5 @@ public class ArbeidslisteService {
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .getOrElseThrow(() -> new RestTilgangException("Fant ikke nåværende veileder for bruker"));
     }
+
 }
