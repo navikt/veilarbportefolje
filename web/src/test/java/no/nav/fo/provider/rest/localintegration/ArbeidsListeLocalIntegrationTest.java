@@ -10,8 +10,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
-import static no.nav.fo.mock.AktoerServiceMock.createTestId;
-import static no.nav.fo.mock.AktoerServiceMock.getFailingFnr;
+import static no.nav.fo.mock.AktoerServiceMock.getFailingAktoerid;
+import static no.nav.fo.mock.AktoerServiceMock.getTestFnr;
 import static no.nav.fo.mock.EnhetMock.getTestEnhetId;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
@@ -88,7 +88,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     @Test
     public void skalReturnereBadGateway() throws Exception {
         int expected = 502;
-        int actual = get("/tjenester/arbeidsliste/" + getFailingFnr()).code();
+        int actual = get("/tjenester/arbeidsliste/" + getFailingAktoerid()).code();
         assertEquals(expected, actual);
     }
 
@@ -140,7 +140,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         insert(DB, BRUKERDATA)
                 .value("PERSONID", TEST_PERSONID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
-                .value("AKTOERID", createTestId(TEST_FNR))
+                .value("AKTOERID", getTestFnr(TEST_FNR))
                 .execute();
 
         insert(DB, OPPFOLGINGSBRUKER)
@@ -160,7 +160,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         insert(DB, BRUKERDATA)
                 .value("PERSONID", NOT_FOUND_PERSONID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
-                .value("AKTOERID", createTestId(NOT_FOUND_FNR))
+                .value("AKTOERID", getTestFnr(NOT_FOUND_FNR))
                 .execute();
     }
 
@@ -174,7 +174,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         insert(DB, BRUKERDATA)
                 .value("PERSONID", UNAUTHORIZED_PERSONID)
                 .value("VEILEDERIDENT", "X22222")
-                .value("AKTOERID", createTestId(UNAUTHORIZED_FNR))
+                .value("AKTOERID", getTestFnr(UNAUTHORIZED_FNR))
                 .execute();
     }
 

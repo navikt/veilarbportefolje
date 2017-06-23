@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -205,13 +204,16 @@ public class SolrService {
     }
 
     public void indekserBrukerdata(String personId) {
-        logger.info("Legger bruker med personId {} til i indeksen ", personId);
         List<Map<String, Object>> rader = brukerRepository.retrieveBrukermedBrukerdata(personId);
-        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(Collectors.toList());
+        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(toList());
+        if (dokumenter.isEmpty()) {
+            logger.info("Fant ingen brukere i databasen med personId {}. Hopper over indeksering.", personId);
+            return;
+        }
 
+        logger.info("Legger bruker med personId {} til i indeksen ", personId);
         applyAktivitetStatuser(dokumenter, brukerRepository);
         applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-
         addDocuments(dokumenter);
         commit();
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
@@ -349,7 +351,7 @@ public class SolrService {
         solrQuery.addFilterQuery("arbeidsliste_aktiv:true");
 
         return Try.of(() -> solrClientSlave.query(solrQuery))
-                .map(res -> res.getResults().stream().map(Bruker::of).collect(Collectors.toList()))
+                .map(res -> res.getResults().stream().map(Bruker::of).collect(toList()))
                 .onFailure(e -> logger.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
     }
 }

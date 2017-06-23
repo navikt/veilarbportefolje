@@ -7,12 +7,15 @@ import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.function.Function;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -23,6 +26,8 @@ import static no.nav.fo.provider.rest.RestUtils.createResponse;
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeRessurs {
+
+    private static Logger LOG = LoggerFactory.getLogger(ArbeidsListeRessurs.class);
 
     @Inject
     private ArbeidslisteService arbeidslisteService;
@@ -38,6 +43,7 @@ public class ArbeidsListeRessurs {
 
             return arbeidslisteService
                     .getArbeidsliste(new ArbeidslisteData(new Fnr(fnr)))
+                    .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke opprette. Fant ikke arbeidsliste for bruker"));
         });
     }
@@ -46,13 +52,14 @@ public class ArbeidsListeRessurs {
     @PUT
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
-            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
+//            ValideringsRegler.sjekkFnr(fnr);
+//            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
 
             return arbeidslisteService
                     .createArbeidsliste(data(body, new Fnr(fnr)))
                     .map(x -> "Arbeidsliste opprettet.")
-                    .getOrElseThrow(() -> new RuntimeException("Kunne ikke opprette arbeidsliste"));
+                    .onFailure(e -> LOG.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
+                    .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
         }, CREATED);
     }
 
@@ -65,7 +72,8 @@ public class ArbeidsListeRessurs {
             return arbeidslisteService
                     .updateArbeidsliste(data(body, new Fnr(fnr)))
                     .map(x -> "Arbeidsliste oppdatert.")
-                    .getOrElseThrow(() -> new RuntimeException("Kunne ikke oppdatere ny arbeidsliste"));
+                    .onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
+                    .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
         });
     }
 

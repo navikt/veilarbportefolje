@@ -58,7 +58,7 @@ public class Bruker {
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
                 .setAapMaxtid(dato((Date) document.get("aap_maxtid")))
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
-                .setErIArbeidsliste((Boolean) document.get("arbeidsliste"))
+                .setErIArbeidsliste((Boolean) document.get("arbeidsliste_aktiv"))
                 .setArbeidslisteEndringstidspunkt(dato((Date) document.get("arbeidsliste_endringstidspunkt")))
                 .setArbeidslisteKommentar((String) document.get("arbeidsliste_kommentar"))
                 .setArbeidslisteFrist(dato((Date) document.get("arbeidsliste_frist")));

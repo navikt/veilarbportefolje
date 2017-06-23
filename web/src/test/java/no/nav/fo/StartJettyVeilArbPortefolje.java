@@ -26,7 +26,7 @@ import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
 
 public class StartJettyVeilArbPortefolje {
 
-    public static final String TEST_ENV = "t5";
+    public static final String TEST_ENV = "t6";
     public static final String APPLICATION_NAME = "veilarbportefolje";
 
     public static void main(String[] args) throws Exception {
@@ -64,6 +64,7 @@ public class StartJettyVeilArbPortefolje {
                 .overrideWebXml(), new ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV))
                 .configureForJaspic()
                 .buildJetty();
+
 
 
         Util.setProperty("oidc-redirect.url", "https://app-t6.adeo.no/veilarbportefoljeflatefs/tjenester/login");

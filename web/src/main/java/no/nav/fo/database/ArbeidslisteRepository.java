@@ -34,7 +34,7 @@ public class ArbeidslisteRepository {
                 () -> new SelectQuery<Arbeidsliste>(db, ARBEIDSLISTE)
                         .column("*")
                         .whereEquals("AKTOERID", aktoerId.toString())
-                        .usingMapper(this::arbeidslisteMapper)
+                        .usingMapper(ArbeidslisteRepository::arbeidslisteMapper)
                         .execute()
         ).onFailure(e -> LOG.warn("Kunne ikke hente ut arbeidsliste fra db: {}", getCauseString(e)));
     }
@@ -87,7 +87,7 @@ public class ArbeidslisteRepository {
     }
 
     @SneakyThrows
-    private Arbeidsliste arbeidslisteMapper(ResultSet rs) {
+    public static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
         return new Arbeidsliste(
                 rs.getString("VEILEDERIDENT"),
                 rs.getTimestamp("ENDRINGSTIDSPUNKT"),
