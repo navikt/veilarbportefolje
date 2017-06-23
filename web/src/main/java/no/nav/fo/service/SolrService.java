@@ -148,19 +148,18 @@ public class SolrService {
     }
 
     private static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
-        brukere.forEach(dokument -> {
-            String personId = (String) dokument.get("person_id").getValue();
+        brukere.forEach(solrDokument -> {
+            String personId = (String) solrDokument.get("person_id").getValue();
 
             aktoerService.hentAktoeridFraPersonid(personId)
                     .map(AktoerId::new)
                     .map(arbeidslisteRepository::retrieveArbeidsliste)
                     .map(result -> result.onSuccess(
                             arbeidsliste -> {
-                                dokument.setField("arbeidsliste_aktiv", true);
-                                dokument.setField("arbeidsliste_veilederid", arbeidsliste.getVeilederId());
-                                dokument.setField("arbeidsliste_endringstidspunkt", arbeidsliste.getEndringstidspunkt());
-                                dokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
-                                dokument.setField("arbeidsliste_frist", arbeidsliste.getFrist());
+                                solrDokument.setField("arbeidsliste_aktiv", true);
+                                solrDokument.setField("arbeidsliste_endringstidspunkt", arbeidsliste.getEndringstidspunkt());
+                                solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
+                                solrDokument.setField("arbeidsliste_frist", arbeidsliste.getFrist());
                             }
                     ));
         });
