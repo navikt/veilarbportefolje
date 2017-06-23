@@ -111,7 +111,7 @@ public class VeilederController {
     public Response hentArbeidsliste(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
-//            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
                 throw new RestTilgangException("Enhet er ikke med i pilot");
