@@ -5,11 +5,12 @@ import no.nav.fo.domene.Aktivitet.*;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
+
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 
-import static java.util.Collections.*;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.domene.Aktivitet.AktivitetData.aktivitetTyperList;
 

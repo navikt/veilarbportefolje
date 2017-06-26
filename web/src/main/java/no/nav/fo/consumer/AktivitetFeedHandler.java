@@ -9,7 +9,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.MetricsUtils.timed;

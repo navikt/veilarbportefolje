@@ -1,11 +1,8 @@
 package no.nav.fo.consumer;
 
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.service.AktivitetService;
-import no.nav.fo.service.AktoerService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -15,13 +12,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)

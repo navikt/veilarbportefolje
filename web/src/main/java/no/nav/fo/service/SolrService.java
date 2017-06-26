@@ -30,9 +30,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.*;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -207,12 +205,12 @@ public class SolrService {
 
     public void indekserBrukerdata(String personId) {
         logger.info("Legger bruker med personId {} til i indeksen ", personId);
-        SolrInputDocument dokumenter = brukerRepository.retrieveBrukermedBrukerdata(personId);
+        SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId);
 
         logger.info("Legger bruker med personId {} til i indeksen ", personId);
-        applyAktivitetStatuser(dokumenter, brukerRepository);
-        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-        addDocuments(singletonList(dokumenter));
+        applyAktivitetStatuser(brukerDokument, brukerRepository);
+        applyArbeidslisteData(singletonList(brukerDokument), arbeidslisteRepository, aktoerService);
+        addDocuments(singletonList(brukerDokument));
         commit();
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }

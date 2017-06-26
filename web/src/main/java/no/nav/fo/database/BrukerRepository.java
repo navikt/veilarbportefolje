@@ -36,10 +36,9 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
-import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
-import static no.nav.fo.util.DbUtils.parse0OR1;
-import static no.nav.fo.util.DbUtils.parseJaNei;
+import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -96,7 +95,7 @@ public class BrukerRepository {
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
-                applyAktivitetStatuser(bruker, this);
+                applyAktivitetStatuser(brukerDokument, this);
                 prosess.accept(brukerDokument);
             }
         });

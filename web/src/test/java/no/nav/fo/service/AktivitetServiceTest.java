@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -25,9 +24,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AktivitetServiceTest {
