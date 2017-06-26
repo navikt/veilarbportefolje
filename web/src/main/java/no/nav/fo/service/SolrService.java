@@ -7,7 +7,6 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.BatchConsumer;
-import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -33,8 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.*;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
@@ -116,6 +117,8 @@ public class SolrService {
             logger.info("Ingen nye dokumenter i databasen");
             return;
         }
+
+        applyAktivitetStatuser(dokumenter, brukerRepository);
 
         addDocuments(dokumenter);
         brukerRepository.updateTidsstempel(timestamp);
@@ -203,17 +206,13 @@ public class SolrService {
     }
 
     public void indekserBrukerdata(String personId) {
-        List<Map<String, Object>> rader = brukerRepository.retrieveBrukermedBrukerdata(personId);
-        List<SolrInputDocument> dokumenter = rader.stream().map(DbUtils::mapRadTilDokument).collect(toList());
-        if (dokumenter.isEmpty()) {
-            logger.info("Fant ingen brukere i databasen med personId {}. Hopper over indeksering.", personId);
-            return;
-        }
+        logger.info("Legger bruker med personId {} til i indeksen ", personId);
+        SolrInputDocument dokumenter = brukerRepository.retrieveBrukermedBrukerdata(personId);
 
         logger.info("Legger bruker med personId {} til i indeksen ", personId);
         applyAktivitetStatuser(dokumenter, brukerRepository);
         applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-        addDocuments(dokumenter);
+        addDocuments(singletonList(dokumenter));
         commit();
         logger.info("Bruker med personId {} lagt til i indeksen", personId);
     }
@@ -279,12 +278,18 @@ public class SolrService {
         String inaktiveBrukere = "formidlingsgruppekode:ISERV AND veileder_id:*";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
+        String iavtaltAktivitet = "iavtaltaktivitet:true";
+        String ikkeIAvtaltAktivitet = "-iavtaltaktivitet:true";
+        String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFacetQuery(nyeBrukere);
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
+        solrQuery.addFacetQuery(iavtaltAktivitet);
+        solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
+        solrQuery.addFacetQuery(utlopteAktiviteter);
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -296,12 +301,18 @@ public class SolrService {
             long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
             long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
             long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
+            long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
+            long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
+            long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
             statusTall
                     .setTotalt(antallTotalt)
                     .setInaktiveBrukere(antallInaktiveBrukere)
                     .setNyeBrukere(antallNyeBrukere)
                     .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
-                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker);
+                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
+                    .setIavtaltAktivitet(antalliavtaltAktivitet)
+                    .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
+                    .setUtlopteAktiviteter(antallUtlopteAktiviteter);
         } catch (SolrServerException | IOException e) {
             logger.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
         }
@@ -315,12 +326,19 @@ public class SolrService {
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
+        String iavtaltAktivitet = "iavtaltaktivitet:true";
+        String ikkeIAvtaltAktivitet = "-iavtaltaktivitet:true";
+        String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
+        solrQuery.addFacetQuery(iavtaltAktivitet);
+        solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
+        solrQuery.addFacetQuery(utlopteAktiviteter);
+
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -331,11 +349,17 @@ public class SolrService {
             long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
             long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
             long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
+            long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
+            long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
+            long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
             statusTall
                     .setTotalt(antallTotalt)
                     .setInaktiveBrukere(antallInaktiveBrukere)
                     .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
-                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker);
+                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
+                    .setIavtaltAktivitet(antalliavtaltAktivitet)
+                    .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
+                    .setUtlopteAktiviteter(antallUtlopteAktiviteter);
         } catch (SolrServerException | IOException e) {
             logger.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
         }

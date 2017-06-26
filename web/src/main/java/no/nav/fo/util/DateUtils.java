@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class DateUtils {
 
@@ -19,4 +20,12 @@ public class DateUtils {
         return ZonedDateTime.ofInstant(timestamp.toInstant(), zoneId).toString();
     }
 
+    static String toIsoUTC(Timestamp timestamp) {
+        if(timestamp == null) {
+            return null;
+        }
+        DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC"));
+        return zonedDateTime.format(formatter);
+    }
 }

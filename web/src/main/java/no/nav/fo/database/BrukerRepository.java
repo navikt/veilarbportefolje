@@ -6,6 +6,8 @@ import javaslang.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
+import no.nav.fo.domene.Aktivitet.AktivitetTyper;
+import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.sql.SelectQuery;
@@ -36,6 +38,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
+import static no.nav.fo.util.DbUtils.parse0OR1;
 import static no.nav.fo.util.DbUtils.parseJaNei;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
@@ -93,6 +96,7 @@ public class BrukerRepository {
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
+                applyAktivitetStatuser(bruker, this);
                 prosess.accept(brukerDokument);
             }
         });
@@ -108,8 +112,14 @@ public class BrukerRepository {
         return brukere.stream().filter(BrukerRepository::erOppfolgingsBruker).collect(toList());
     }
 
-    public List<Map<String, Object>> retrieveBrukermedBrukerdata(String personId) {
-        return db.queryForList(retrieveBrukerMedBrukerdataSQL(), personId);
+    public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
+        String[] args = new String[]{personId};
+        return db.query(retrieveBrukerMedBrukerdataSQL(), args, (rs) -> {
+            if(rs.isBeforeFirst()) {
+                rs.next();
+            }
+            return mapResultSetTilDokument(rs);
+        });
     }
 
     public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
@@ -127,7 +137,11 @@ public class BrukerRepository {
                         .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
                         .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
                         .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
-                        .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING")))
+                        .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
+                        .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
+                        .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
+                        .setIAvtaltAktivitet(parse0OR1((String) data.get("IAVTALTAKTIVITET")))
+                        .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET")))
                 .collect(toList());
     }
 
@@ -200,7 +214,33 @@ public class BrukerRepository {
         return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
                 .stream()
                 .map(BrukerRepository::mapToAktivitetDTO)
+                .filter(aktivitet -> AktivitetTyper.contains(aktivitet.getAktivitetType()))
                 .collect(toList());
+    }
+
+    public List<AktoerAktiviteter> getAktiviteterForListOfAktoerid(Collection<String> aktoerids) {
+        Map<String, Object> params = new HashMap<>();
+        Map<String, List<AktivitetDTO>> aktoerTilAktiviteterMap = new HashMap<>(aktoerids.size());
+        List<AktoerAktiviteter> aktoerAktiviteter = new ArrayList<>(aktoerids.size());
+
+        params.put("aktoerids", aktoerids);
+
+        List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(getAktiviteterForAktoeridsSql(), params);
+
+        queryResult.forEach( aktivitet -> {
+            String aktoerid = (String) aktivitet.get("AKTOERID");
+            if(aktoerTilAktiviteterMap.containsKey(aktoerid)) {
+                aktoerTilAktiviteterMap.get(aktoerid).add(mapToAktivitetDTO(aktivitet));
+            }else {
+                List<AktivitetDTO> liste = new ArrayList<>();
+                liste.add(mapToAktivitetDTO(aktivitet));
+                aktoerTilAktiviteterMap.put(aktoerid, liste);
+            }
+        });
+
+        aktoerTilAktiviteterMap.forEach( (key, value) -> aktoerAktiviteter.add(new AktoerAktiviteter(key).setAktiviteter(value)));
+
+        return aktoerAktiviteter;
     }
 
     private static AktivitetDTO mapToAktivitetDTO(Map<String, Object> map) {
@@ -219,9 +259,9 @@ public class BrukerRepository {
         getAktivitetUpsertQuery(this.db, aktivitet).execute();
     }
 
-    public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
-        aktivitetstatus.forEach((aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid));
-    }
+   public void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {aktiviteter.forEach(this::upsertAktivitet);}public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
+        aktivitetstatus.forEach( (aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid) );
+   }
 
     public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
         getUpsertAktivitetStatuserForBrukerQuery(aktivitettype, this.db, status, aktoerid, personid).execute();
@@ -239,6 +279,14 @@ public class BrukerRepository {
         statusMap.forEach((key, value) -> statusMapTimestamp.put(key, value ? new Timestamp(Instant.now().toEpochMilli()) : null));
 
         return statusMapTimestamp;
+    }
+
+    public List<String> getDistinctAktoerIdsFromAktivitet() {
+        return db.queryForList("SELECT DISTINCT AKTOERID FROM AKTIVITETER")
+                .stream()
+                .map(map -> (String) map.get("AKTOERID"))
+                .collect(toList());
+
     }
 
     private <T> Predicate<T> not(Predicate<T> predicate) {
@@ -461,6 +509,20 @@ public class BrukerRepository {
 
     String getAktiviteterForAktoeridSql() {
         return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?";
+    }
+
+    String getAktiviteterForAktoeridsSql() {
+        return
+                "SELECT " +
+                        "AKTOERID, " +
+                        "AKTIVITETTYPE, " +
+                        "STATUS, " +
+                        "FRADATO, " +
+                        "TILDATO " +
+                        "FROM " +
+                        "AKTIVITETER " +
+                        "WHERE " +
+                        "AKTOERID in (:aktoerids)";
     }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {

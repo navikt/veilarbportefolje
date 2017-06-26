@@ -17,6 +17,7 @@ public class BrukerinformasjonFraFeed implements BrukerOppdatering {
 
     public Brukerdata applyTo(Brukerdata brukerdata) {
         return brukerdata
+                .setOppfolging(oppfolging)
                 .setAktoerid(aktoerid)
                 .setPersonid(personid)
                 .setVeileder(veileder)

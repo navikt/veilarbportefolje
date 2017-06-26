@@ -3,11 +3,10 @@ package no.nav.fo.config.feed;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.AktivitetFeedHandler;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
-import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.AktivitetService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -47,8 +46,8 @@ public class AktiviteterfeedConfig {
     }
 
     @Bean
-    public AktivitetFeedHandler aktivitetFeedHandler(BrukerRepository brukerRepository, PersistentOppdatering persistentOppdatering, AktoerService aktoerService) {
-        return new AktivitetFeedHandler(brukerRepository, persistentOppdatering, aktoerService);
+    public AktivitetFeedHandler aktivitetFeedHandler(BrukerRepository brukerRepository, AktivitetService aktivitetService) {
+        return new AktivitetFeedHandler(brukerRepository, aktivitetService);
     }
 
     @Bean

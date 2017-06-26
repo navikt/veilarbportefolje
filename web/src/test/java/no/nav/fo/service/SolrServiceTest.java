@@ -50,9 +50,9 @@ public class SolrServiceTest {
 
     @Test
     public void deltaindekseringSkalOppdatereTidsstempel() throws Exception {
-        when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(
-                new SolrInputDocument()
-        ));
+        SolrInputDocument dummyDocument = new SolrInputDocument();
+        dummyDocument.addField("person_id", "dummy");
+        when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
         System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();
