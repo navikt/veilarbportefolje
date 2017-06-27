@@ -114,7 +114,7 @@ public class BrukerRepository {
     public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
         String[] args = new String[]{personId};
         return db.query(retrieveBrukerMedBrukerdataSQL(), args, (rs) -> {
-            if(rs.isBeforeFirst()) {
+            if (rs.isBeforeFirst()) {
                 rs.next();
             }
             return mapResultSetTilDokument(rs);
@@ -226,18 +226,18 @@ public class BrukerRepository {
 
         List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(getAktiviteterForAktoeridsSql(), params);
 
-        queryResult.forEach( aktivitet -> {
+        queryResult.forEach(aktivitet -> {
             String aktoerid = (String) aktivitet.get("AKTOERID");
-            if(aktoerTilAktiviteterMap.containsKey(aktoerid)) {
+            if (aktoerTilAktiviteterMap.containsKey(aktoerid)) {
                 aktoerTilAktiviteterMap.get(aktoerid).add(mapToAktivitetDTO(aktivitet));
-            }else {
+            } else {
                 List<AktivitetDTO> liste = new ArrayList<>();
                 liste.add(mapToAktivitetDTO(aktivitet));
                 aktoerTilAktiviteterMap.put(aktoerid, liste);
             }
         });
 
-        aktoerTilAktiviteterMap.forEach( (key, value) -> aktoerAktiviteter.add(new AktoerAktiviteter(key).setAktiviteter(value)));
+        aktoerTilAktiviteterMap.forEach((key, value) -> aktoerAktiviteter.add(new AktoerAktiviteter(key).setAktiviteter(value)));
 
         return aktoerAktiviteter;
     }
@@ -258,11 +258,13 @@ public class BrukerRepository {
         getAktivitetUpsertQuery(this.db, aktivitet).execute();
     }
 
-   public void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {aktiviteter.forEach(this::upsertAktivitet);}
+    public void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {
+        aktiviteter.forEach(this::upsertAktivitet);
+    }
 
-   public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
-        aktivitetstatus.forEach( (aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid) );
-   }
+    public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
+        aktivitetstatus.forEach((aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid));
+    }
 
     public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
         getUpsertAktivitetStatuserForBrukerQuery(aktivitettype, this.db, status, aktoerid, personid).execute();
