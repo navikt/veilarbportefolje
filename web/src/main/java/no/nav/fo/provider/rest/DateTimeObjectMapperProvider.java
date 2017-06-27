@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 
-import static no.nav.apiapp.rest.DateConfiguration.dateModule;
+import static no.nav.fo.provider.rest.DateConfiguration.dateModule;
 
 @Provider
 public class DateTimeObjectMapperProvider implements ContextResolver<ObjectMapper> {
