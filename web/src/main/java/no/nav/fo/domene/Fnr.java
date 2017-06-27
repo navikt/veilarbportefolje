@@ -12,10 +12,11 @@ public class Fnr {
     String fnr;
 
     public Fnr(String fnr) {
-        if (fnr.length() != 11) {
+        if (fnr.matches("\\d{11}")) {
+            this.fnr = fnr;
+        } else {
             throw new UgyldigFnrException(fnr);
         }
-        this.fnr = fnr;
     }
 
     @Override

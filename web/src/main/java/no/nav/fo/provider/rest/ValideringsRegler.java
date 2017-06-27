@@ -36,7 +36,7 @@ class ValideringsRegler {
     }
 
     static void sjekkFnr(String fnr) {
-        test("fnr", fnr, fnr.length() == 11);
+        test("fnr", fnr, fnr.matches("\\d{11}"));
     }
 
     private static void test(String navn, Object data, Supplier<Boolean> matches) {

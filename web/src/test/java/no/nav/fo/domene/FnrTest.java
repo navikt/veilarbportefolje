@@ -35,4 +35,11 @@ public class FnrTest {
         String fnr = "123";
         new Fnr(fnr);
     }
+
+    @Test
+    public void skalBareGodtaNumeriskeStrenger() throws Exception {
+        thrown.expect(UgyldigFnrException.class);
+        String fnr = "aaaaaaaaaaa";
+        new Fnr(fnr);
+    }
 }
