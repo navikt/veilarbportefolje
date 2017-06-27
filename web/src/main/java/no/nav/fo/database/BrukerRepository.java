@@ -258,7 +258,9 @@ public class BrukerRepository {
         getAktivitetUpsertQuery(this.db, aktivitet).execute();
     }
 
-   public void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {aktiviteter.forEach(this::upsertAktivitet);}public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
+   public void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {aktiviteter.forEach(this::upsertAktivitet);}
+
+   public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
         aktivitetstatus.forEach( (aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid) );
    }
 
