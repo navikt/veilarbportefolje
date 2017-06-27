@@ -3,15 +3,13 @@ package no.nav.fo.provider.rest.localintegration;
 import com.squareup.okhttp.Response;
 import no.nav.fo.testutil.LocalIntegrationTest;
 import org.json.JSONObject;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
-import static no.nav.fo.mock.AktoerServiceMock.getFailingAktoerid;
-import static no.nav.fo.mock.AktoerServiceMock.getTestFnr;
+import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.mock.EnhetMock.getTestEnhetId;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
@@ -22,29 +20,23 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
     private static final String TEST_VEILEDERID = "testident";
     private static final String TEST_FNR = "01010101010";
-    private static final String TEST_PERSONID = "00000";
 
-    private static final String NOT_FOUND_FNR = "00000000000";
     private static final String NOT_FOUND_PERSONID = "11111";
 
     private static final String UNAUTHORIZED_FNR = "11111111111";
     private static final String UNAUTHORIZED_PERSONID = "1111";
 
-    @BeforeClass
-    public static void setUpDb() throws Exception {
-        insertSuccessfulBruker();
-        insertNotFoundBruker();
-        insertUnauthorizedBruker();
-    }
-
-    @AfterClass
-    public static void tearDownDb() throws Exception {
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         DB.execute("truncate table " + BRUKERDATA);
         DB.execute("truncate table " + OPPFOLGINGSBRUKER);
     }
 
     @Test
     public void skalOppretteOppdatereHenteOgSlette() throws Exception {
+        insertSuccessfulBruker();
         String path = "/tjenester/arbeidsliste/" + TEST_FNR;
 
         JSONObject json = new JSONObject()
@@ -73,22 +65,25 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
     @Test
     public void skalReturnereNotFoundVedUthenting() throws Exception {
-        int actual = get("/tjenester/arbeidsliste/" + NOT_FOUND_FNR).code();
+        insertNotFoundBruker();
+        int actual = get("/tjenester/arbeidsliste/" + getFailingFnr()).code();
         int expected = 404;
         assertEquals(expected, actual);
     }
 
     @Test
     public void skalReturnereNotFoundVedSletting() throws Exception {
-        int actual = delete("/tjenester/arbeidsliste/" + NOT_FOUND_FNR).code();
+        insertNotFoundBruker();
+        int actual = delete("/tjenester/arbeidsliste/" +  "12345678901").code();
         int expected = 404;
         assertEquals(expected, actual);
     }
 
     @Test
     public void skalReturnereBadGateway() throws Exception {
+        insertUnauthorizedBruker();
         int expected = 502;
-        int actual = get("/tjenester/arbeidsliste/" + getFailingAktoerid()).code();
+        int actual = get("/tjenester/arbeidsliste/" + getFailingFnr()).code();
         assertEquals(expected, actual);
     }
 
@@ -101,6 +96,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
     @Test
     public void skalKunneOppretteSammeArbeidslisteToGanger() throws Exception {
+        insertSuccessfulBruker();
         String path = "/tjenester/arbeidsliste/" + TEST_FNR;
         JSONObject json = new JSONObject()
                 .put("veilederId", TEST_VEILEDERID)
@@ -115,6 +111,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
     @Test
     public void skalHaTilgangsKontroll() throws Exception {
+        insertUnauthorizedBruker();
         String path = "/tjenester/arbeidsliste/" + UNAUTHORIZED_FNR;
         JSONObject json = new JSONObject()
                 .put("veilederId", TEST_VEILEDERID)
@@ -138,29 +135,38 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
     private static void insertSuccessfulBruker() {
         insert(DB, BRUKERDATA)
-                .value("PERSONID", TEST_PERSONID)
+                .value("PERSONID", PERSON_ID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
-                .value("AKTOERID", getTestFnr(TEST_FNR))
+                .value("AKTOERID", AKTOER_ID)
                 .execute();
 
         insert(DB, OPPFOLGINGSBRUKER)
-                .value("PERSON_ID", TEST_PERSONID)
+                .value("PERSON_ID", PERSON_ID)
                 .value("FODSELSNR", TEST_FNR)
                 .value("NAV_KONTOR", getTestEnhetId())
+                .value("FORNAVN", "TEST")
+                .value("ETTERNAVN", "ETTERNAVN")
+                .value("RETTIGHETSGRUPPEKODE", "AAP")
+                .value("FORMIDLINGSGRUPPEKODE", "ARBS")
+                .value("KVALIFISERINGSGRUPPEKODE", "VARIG")
+                .value("RETTIGHETSGRUPPEKODE", "IYT")
+                .value("SPERRET_ANSATT", "N")
+                .value("ER_DOED", "N")
                 .execute();
+
     }
 
     private static void insertNotFoundBruker() {
         insert(DB, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", NOT_FOUND_PERSONID)
-                .value("FODSELSNR", NOT_FOUND_FNR)
+                .value("FODSELSNR", getFailingFnr())
                 .value("NAV_KONTOR", getTestEnhetId())
                 .execute();
 
         insert(DB, BRUKERDATA)
                 .value("PERSONID", NOT_FOUND_PERSONID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
-                .value("AKTOERID", getTestFnr(NOT_FOUND_FNR))
+                .value("AKTOERID", AKTOER_ID)
                 .execute();
     }
 
@@ -174,7 +180,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         insert(DB, BRUKERDATA)
                 .value("PERSONID", UNAUTHORIZED_PERSONID)
                 .value("VEILEDERIDENT", "X22222")
-                .value("AKTOERID", getTestFnr(UNAUTHORIZED_FNR))
+                .value("AKTOERID", UNAUTHORIZED_FNR)
                 .execute();
     }
 

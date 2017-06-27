@@ -6,7 +6,13 @@ import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
+import no.nav.dialogarena.config.DevelopmentSecurity;
+import no.nav.fo.config.DatabaseConfig;
+import no.nav.modig.core.context.StaticSubjectHandler;
+import no.nav.modig.core.context.SubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
+import no.nav.sbl.dialogarena.test.SystemProperties;
+import org.eclipse.jetty.plus.jndi.Resource;
 import org.eclipse.jetty.server.ServerConnector;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,11 +20,16 @@ import org.junit.BeforeClass;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import javax.ws.rs.core.UriBuilder;
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 
 import static com.squareup.okhttp.MediaType.parse;
 import static java.lang.System.setProperty;
+import static no.nav.apiapp.rest.ExceptionMapper.MILJO_PROPERTY_NAME;
+import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
+import static no.nav.fo.StartJettyVeilArbPortefolje.TEST_ENV;
+import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
 
 /**
@@ -46,9 +57,9 @@ import static java.lang.System.setProperty;
 public abstract class LocalIntegrationTest {
 
     private static final String CONTEXT_NAME = LocalIntegrationTest.class.getSimpleName();
-    private static final Jetty JETTY = StartJetty.nyJetty(CONTEXT_NAME, tilfeldigPort());
+    private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());
     private static final OkHttpClient OKHTTPCLIENT = new OkHttpClient();
-    protected static final SingleConnectionDataSource ds = StartJetty.ds;
+    protected static SingleConnectionDataSource ds;
 
     @BeforeClass
     public static void startJetty() {
@@ -134,4 +145,38 @@ public abstract class LocalIntegrationTest {
             throw new RuntimeException(e);
         }
     }
+
+    private static Jetty nyJetty(String contextPath, int jettyPort) {
+        setupProperties();
+        setupDataSource();
+        setProperty(SubjectHandler.SUBJECTHANDLER_KEY, StaticSubjectHandler.class.getName());
+        setProperty(MILJO_PROPERTY_NAME, "t");
+
+        Jetty.JettyBuilder builder = Jetty.usingWar()
+                .at(contextPath)
+                .port(jettyPort)
+                .overrideWebXml()
+                .disableAnnotationScanning();
+
+        DevelopmentSecurity.ISSOSecurityConfig issoSecurityConfig =
+                new DevelopmentSecurity.ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV);
+
+        return DevelopmentSecurity
+                .setupISSO(builder, issoSecurityConfig)
+                .configureForJaspic()
+                .buildJetty();
+    }
+
+    @SneakyThrows
+    private static void setupDataSource() {
+        ds = setupInMemoryDatabase();
+        new Resource(DatabaseConfig.JNDI_NAME, ds);
+    }
+
+    private static void setupProperties() {
+        System.setProperty("APP_LOG_HOME", new File("target").getAbsolutePath());
+        System.setProperty("application.name", APPLICATION_NAME);
+        SystemProperties.setFrom("veilarbportefolje.properties");
+    }
+
 }

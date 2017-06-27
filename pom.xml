@@ -56,10 +56,18 @@
             **/selftest**
         </sonar.exclusions>
         <okhttp.version>2.7.5</okhttp.version>
+        <json.version>20151123</json.version>
+        <modig-security-core.version>3.0.4</modig-security-core.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
+            </dependency>
 
             <!-- Legger disse her frem til versjonen er oppdatert i api-app-bom !-->
             <dependency>
@@ -273,6 +281,20 @@
                 <version>${okhttp.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-core</artifactId>
+                <version>${modig-security-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-core</artifactId>
+                <version>${modig-security-core.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

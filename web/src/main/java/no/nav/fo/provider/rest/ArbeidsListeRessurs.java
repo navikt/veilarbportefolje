@@ -44,7 +44,7 @@ public class ArbeidsListeRessurs {
             return arbeidslisteService
                     .getArbeidsliste(new ArbeidslisteData(new Fnr(fnr)))
                     .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
-                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke opprette. Fant ikke arbeidsliste for bruker"));
+                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke finne arbeidsliste for bruker"));
         });
     }
 
@@ -52,8 +52,8 @@ public class ArbeidsListeRessurs {
     @PUT
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-//            ValideringsRegler.sjekkFnr(fnr);
-//            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
+            ValideringsRegler.sjekkFnr(fnr);
+            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
 
             return arbeidslisteService
                     .createArbeidsliste(data(body, new Fnr(fnr)))

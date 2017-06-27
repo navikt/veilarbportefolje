@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.mock.AktoerServiceMock.AKTOER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -53,6 +54,7 @@ public class SolrServiceTest {
         SolrInputDocument dummyDocument = new SolrInputDocument();
         dummyDocument.addField("person_id", "dummy");
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
+        when(aktoerService.hentAktoeridFraPersonid(anyString())).thenReturn(Optional.of(AKTOER_ID));
         System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();

@@ -65,6 +65,10 @@ public class BrukerTest {
         document.addField("fodselsdato", new Date());
         document.addField("kjonn", "K");
         document.addField("erInaktiv", false);
+        document.addField("arbeidsliste_aktiv", true);
+        document.addField("arbeidsliste_endringstidspunkt", new Date());
+        document.addField("arbeidsliste_kommentar", "Dette er en kommentar");
+        document.addField("arbeidsliste_frist", new Date());
 
         return document;
     }

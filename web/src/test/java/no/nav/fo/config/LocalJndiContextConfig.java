@@ -8,9 +8,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-
 public class LocalJndiContextConfig {
 
     public static SingleConnectionDataSource setupOracleDataSource() {
@@ -39,8 +36,7 @@ public class LocalJndiContextConfig {
         Flyway flyway = new Flyway();
         flyway.setLocations("testmigration");
         flyway.setDataSource(ds);
-        int migrate = flyway.migrate();
-        assertThat(migrate, greaterThan(0));
+        flyway.migrate();
 
         return ds;
     }
