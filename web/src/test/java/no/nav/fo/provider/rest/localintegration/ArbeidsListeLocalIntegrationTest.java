@@ -13,6 +13,7 @@ import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
@@ -82,6 +83,27 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         assertEquals(expectedUtcString, actual);
 
     }
+
+    @Test
+    public void skalReturnereOppfolgendeVeilederFlagg() throws Exception {
+        insertSuccessfulBruker();
+        String path = "/tjenester/arbeidsliste/" + FNR;
+
+        String expectedUtcString = "2017-10-10T00:00:00Z";
+        JSONObject json = new JSONObject()
+                .put("veilederId", TEST_VEILEDERID)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", expectedUtcString);
+
+        int putStatus = put(path, json.toString()).code();
+        assertEquals(201, putStatus);
+
+        Response response = get(path);
+        JSONObject body = new JSONObject(response.body().string());
+        boolean isOppfolgendeVeileder = body.getBoolean("isOppfolgendeVeileder");
+        assertTrue(isOppfolgendeVeileder);
+    }
+
 
     @Test
     public void skalReturnereNotFoundVedUthenting() throws Exception {
