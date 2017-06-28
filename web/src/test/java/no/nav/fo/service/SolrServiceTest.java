@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Filtervalg;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -54,7 +55,7 @@ public class SolrServiceTest {
         SolrInputDocument dummyDocument = new SolrInputDocument();
         dummyDocument.addField("person_id", "dummy");
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
-        when(aktoerService.hentAktoeridFraPersonid(anyString())).thenReturn(Optional.of(AKTOER_ID));
+        when(aktoerService.hentAktoeridFraPersonid(anyString())).thenReturn(Optional.of(AKTOER_ID).map(AktoerId::new));
         System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();

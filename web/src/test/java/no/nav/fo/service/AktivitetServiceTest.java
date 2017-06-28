@@ -6,6 +6,7 @@ import no.nav.fo.domene.Aktivitet.AktivitetBrukerOppdatering;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
+import no.nav.fo.domene.AktoerId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -73,7 +74,7 @@ public class AktivitetServiceTest {
                     .collect(Collectors.toList());
         });
 
-        when(aktoerService.hentPersonidFraAktoerid(any(String.class))).thenAnswer(invocationOnMock -> Optional.of(invocationOnMock.getArguments()[0]));
+        when(aktoerService.hentPersonidFraAktoerid(any(AktoerId.class))).thenAnswer(invocationOnMock -> Optional.of((invocationOnMock.getArguments()[0]).toString()));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 
