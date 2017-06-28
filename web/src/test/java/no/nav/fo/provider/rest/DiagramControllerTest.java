@@ -64,7 +64,7 @@ public class DiagramControllerTest {
     @BeforeClass
     public static void before() {
         System.setProperty("disable.metrics.report", "true");
-        System.setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", ThreadLocalSubjectHandler.class.getName());
+        System.setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", ThreadLocalSubjectHandler.class.getName());
     }
 
     @Before

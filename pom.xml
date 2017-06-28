@@ -33,7 +33,6 @@
 
         <!-- Tredjeparts -->
         <ehcache.version>2.10.3</ehcache.version>
-        <spring.version>4.2.6.RELEASE</spring.version>
         <jersey.version>2.22.2</jersey.version>
         <jackson.version>2.7.4</jackson.version>
         <mockito.version>1.9.5</mockito.version>
@@ -43,7 +42,7 @@
 
 
         <!-- Test -->
-        <junit.version>4.11</junit.version>
+        <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
 
         <swagger.version>1.5.13</swagger.version>
@@ -62,6 +61,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>api-app-bom</artifactId>
+                <version>3.83.75</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <dependency>
                 <groupId>org.json</groupId>
@@ -69,38 +75,11 @@
                 <version>${json.version}</version>
             </dependency>
 
-            <!-- Legger disse her frem til versjonen er oppdatert i api-app-bom !-->
-            <dependency>
-                <groupId>no.nav.dialogarena</groupId>
-                <artifactId>oidc-security</artifactId>
-                <type>test-jar</type>
-                <version>3.0.29</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.dialogarena</groupId>
-                <artifactId>oidc-security</artifactId>
-                <version>3.0.29</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>common-abac</artifactId>
-                <version>1.1.65</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>api-app-bom</artifactId>
-                <version>2.40.11</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <!-- Virksomhetstjenester -->
             <dependency>
                 <groupId>no.nav.meldinger.virksomhet</groupId>
                 <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
-                <version>1.0.1-SNAPSHOT</version>
+                <version>1.0.0</version>
                 <classifier>jaxb</classifier>
             </dependency>
 
@@ -153,11 +132,6 @@
 
 
             <!--Jackson-->
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-joda</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
                 <artifactId>jackson-jaxrs-base</artifactId>
@@ -233,13 +207,6 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- TEST -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-test</artifactId>
-                <version>${spring.version}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
