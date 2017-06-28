@@ -10,10 +10,6 @@ import static lombok.AccessLevel.PRIVATE;
 public class AktoerId {
     String aktoerId;
 
-    public AktoerId(String aktoerId) {
-        this.aktoerId = aktoerId;
-    }
-
     @Override
     public String toString() {
         return aktoerId;

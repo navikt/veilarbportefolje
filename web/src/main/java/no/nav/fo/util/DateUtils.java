@@ -2,9 +2,11 @@ package no.nav.fo.util;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class DateUtils {
 
@@ -13,7 +15,7 @@ public class DateUtils {
         return Timestamp.from(instant);
     }
 
-    public static String iso8601FromTimestamp(Timestamp timestamp, ZoneId zoneId) {
+    static String iso8601FromTimestamp(Timestamp timestamp, ZoneId zoneId) {
         if(timestamp == null) {
             return null;
         }
@@ -27,5 +29,21 @@ public class DateUtils {
         DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC"));
         return zonedDateTime.format(formatter);
+    }
+
+    public static String toIsoUTC(LocalDateTime dateTime) {
+        if(dateTime == null) {
+            return null;
+        }
+        DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.of("UTC"));
+        return zonedDateTime.format(formatter);
+    }
+
+    public static LocalDateTime toLocalDateTime(Date dato) {
+        if (dato == null) {
+            return null;
+        }
+        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
     }
 }

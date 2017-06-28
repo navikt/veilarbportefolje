@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.mock.AktoerServiceMock.*;
-import static no.nav.fo.mock.EnhetMock.getTestEnhetId;
+import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 
@@ -19,7 +19,6 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     private static final JdbcTemplate DB = new JdbcTemplate(ds);
 
     private static final String TEST_VEILEDERID = "testident";
-    private static final String TEST_FNR = "01010101010";
 
     private static final String NOT_FOUND_PERSONID = "11111";
 
@@ -37,7 +36,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     @Test
     public void skalOppretteOppdatereHenteOgSlette() throws Exception {
         insertSuccessfulBruker();
-        String path = "/tjenester/arbeidsliste/" + TEST_FNR;
+        String path = "/tjenester/arbeidsliste/" + FNR;
 
         JSONObject json = new JSONObject()
                 .put("veilederId", TEST_VEILEDERID)
@@ -56,7 +55,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         assertEquals(200, getResponse.code());
 
         String jsonAfterUpdate = getResponse.body().string();
-        Object actualKommentar = new JSONObject(jsonAfterUpdate).get("kommentar");
+        String actualKommentar = (String) new JSONObject(jsonAfterUpdate).get("kommentar");
         assertEquals(expectedKommentar, actualKommentar);
 
         int deleteStatus = delete(path).code();
@@ -66,7 +65,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     @Test
     public void skalReturnereNotFoundVedUthenting() throws Exception {
         insertNotFoundBruker();
-        int actual = get("/tjenester/arbeidsliste/" + getFailingFnr()).code();
+        int actual = get("/tjenester/arbeidsliste/" + FNR_FAIL).code();
         int expected = 404;
         assertEquals(expected, actual);
     }
@@ -74,7 +73,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     @Test
     public void skalReturnereNotFoundVedSletting() throws Exception {
         insertNotFoundBruker();
-        int actual = delete("/tjenester/arbeidsliste/" +  "12345678901").code();
+        int actual = delete("/tjenester/arbeidsliste/" + "12345678901").code();
         int expected = 404;
         assertEquals(expected, actual);
     }
@@ -83,7 +82,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     public void skalReturnereBadGateway() throws Exception {
         insertUnauthorizedBruker();
         int expected = 502;
-        int actual = get("/tjenester/arbeidsliste/" + getFailingFnr()).code();
+        int actual = get("/tjenester/arbeidsliste/" + FNR_FAIL).code();
         assertEquals(expected, actual);
     }
 
@@ -97,7 +96,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     @Test
     public void skalKunneOppretteSammeArbeidslisteToGanger() throws Exception {
         insertSuccessfulBruker();
-        String path = "/tjenester/arbeidsliste/" + TEST_FNR;
+        String path = "/tjenester/arbeidsliste/" + FNR;
         JSONObject json = new JSONObject()
                 .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
@@ -142,8 +141,8 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
         insert(DB, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", PERSON_ID)
-                .value("FODSELSNR", TEST_FNR)
-                .value("NAV_KONTOR", getTestEnhetId())
+                .value("FODSELSNR", FNR)
+                .value("NAV_KONTOR", NAV_SANDE_ID)
                 .value("FORNAVN", "TEST")
                 .value("ETTERNAVN", "ETTERNAVN")
                 .value("RETTIGHETSGRUPPEKODE", "AAP")
@@ -159,8 +158,8 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     private static void insertNotFoundBruker() {
         insert(DB, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", NOT_FOUND_PERSONID)
-                .value("FODSELSNR", getFailingFnr())
-                .value("NAV_KONTOR", getTestEnhetId())
+                .value("FODSELSNR", FNR_FAIL)
+                .value("NAV_KONTOR", NAV_SANDE_ID)
                 .execute();
 
         insert(DB, BRUKERDATA)

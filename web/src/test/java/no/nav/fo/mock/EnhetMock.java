@@ -9,7 +9,7 @@ import java.util.List;
 
 public class EnhetMock implements Enhet {
 
-    private static final String NAV_SANDE_ID = "0713";
+    public static final String NAV_SANDE_ID = "0713";
 
     @Override
     public WSFinnEnhetListeResponse finnEnhetListe(WSFinnEnhetListeRequest request) {
@@ -54,9 +54,5 @@ public class EnhetMock implements Enhet {
 
     private no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet createEnhet(String enhetId, String enhetNavn) {
         return new no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet().withNavn(enhetNavn).withEnhetId(enhetId);
-    }
-
-    public static String getTestEnhetId() {
-        return NAV_SANDE_ID;
     }
 }

@@ -6,6 +6,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestBadGateWayException;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.exception.RestTilgangException;
@@ -70,12 +71,12 @@ public class ArbeidslisteService {
     private Arbeidsliste setOppfolgendeVeileder(Arbeidsliste arbeidsliste, AktoerId aktoerId) {
         return brukerRepository
                 .retrieveVeileder(aktoerId)
-                .map(x -> x.equals(arbeidsliste.getVeilederId()))
-                .map(arbeidsliste::setOppfolgendeVeileder)
+                .map(veilederId -> veilederId.equals(arbeidsliste.getSistEndretAv()))
+                .map(arbeidsliste::setIsOppfolgendeVeileder)
                 .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
     }
 
-    public Boolean erVeilederForBruker(Fnr fnr, String veilederId) {
+    public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
         AktoerId aktoerId = hentAktoerId(fnr);
         return brukerRepository
                 .retrieveVeileder(aktoerId)

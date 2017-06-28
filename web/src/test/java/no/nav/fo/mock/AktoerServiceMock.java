@@ -6,17 +6,13 @@ import java.util.Optional;
 
 public class AktoerServiceMock implements AktoerService {
 
-    public static final String FAILING_FNR = "90909090909";
+    public static final String FNR = "99999999991";
+    public static final String FNR_FAIL = "99999999992";
 
-    public static final String FNR = "99999999999";
-    public static final String PERSON_ID = "9999";
-    public static final String AKTOER_ID = "9999999999999";
+    public static final String PERSON_ID = "9991";
 
-    public static final String UNAUTHORIZED_FNR = "11111111111";
-
-    public static String getFailingFnr() {
-        return FAILING_FNR;
-    }
+    public static final String AKTOER_ID = "9999999999991";
+    public static final String AKTOER_ID_FAIL = "9999999999992";
 
     @Override
     public Optional<String> hentPersonidFraAktoerid(String aktoerid) {
@@ -31,8 +27,8 @@ public class AktoerServiceMock implements AktoerService {
     @Override
 
     public Optional<String> hentAktoeridFraFnr(String fnr) {
-        if (UNAUTHORIZED_FNR.equals(fnr)) {
-            return Optional.of(FAILING_FNR);
+        if (FNR_FAIL.equals(fnr)) {
+            return Optional.of(AKTOER_ID_FAIL);
         }
         return Optional.of(AKTOER_ID);
     }
@@ -42,9 +38,9 @@ public class AktoerServiceMock implements AktoerService {
         return getTestFnr(aktoerid);
     }
 
-    public static Optional<String> getTestFnr(String aktoerId) {
+    private static Optional<String> getTestFnr(String aktoerId) {
         Optional<String> result = Optional.of(FNR);
-        if (FAILING_FNR.equals(aktoerId)) {
+        if (AKTOER_ID_FAIL.equals(aktoerId)) {
             result = Optional.empty();
         }
         return result;

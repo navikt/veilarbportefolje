@@ -9,6 +9,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.util.Date;
 
+import static no.nav.fo.util.DateUtils.toLocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -43,7 +44,7 @@ public class BrukerTest {
     @Test
     public void parseDato() throws Exception {
         Date date = Date.from(LocalDate.of(2017, Month.MARCH, 30).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        LocalDateTime dato = Bruker.dato(date);
+        LocalDateTime dato = toLocalDateTime(date);
 
         assertThat(dato.getYear()).isEqualTo(2017);
         assertThat(dato.getMonth()).isEqualTo(Month.MARCH);

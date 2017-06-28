@@ -484,15 +484,15 @@ public class BrukerRepositoryTest {
     @Test
     public void skalHenteVeilederForBruker() throws Exception {
         AktoerId aktoerId = new AktoerId("101010");
-        String expectedVeilederId = "X11111";
+        VeilederId expectedVeilederId = new VeilederId("X11111");
 
         insert(jdbcTemplate, BRUKERDATA)
                 .value("PERSONID", "123456")
                 .value("AKTOERID", aktoerId.toString())
-                .value("VEILEDERIDENT", expectedVeilederId)
+                .value("VEILEDERIDENT", expectedVeilederId.toString())
                 .execute();
 
-        Try<String> result = brukerRepository.retrieveVeileder(aktoerId);
+        Try<VeilederId> result = brukerRepository.retrieveVeileder(aktoerId);
         assertTrue(result.isSuccess());
         assertEquals(expectedVeilederId, result.get());
 

@@ -56,14 +56,14 @@ public class BrukerRepository {
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public Try<String> retrieveVeileder(AktoerId aktoerId) {
+    public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
-                () -> new SelectQuery<String>(db, BRUKERDATA)
+                () -> new SelectQuery<VeilederId>(db, BRUKERDATA)
                         .column("VEILEDERIDENT")
                         .whereEquals("AKTOERID", aktoerId.toString())
                         .usingMapper(this::getVeilederident)
                         .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke nåværende veielder for bruker med aktoerId {}", aktoerId));
+        ).onFailure(e -> LOG.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
@@ -82,8 +82,8 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private String getVeilederident(ResultSet rs) {
-        return rs.getString("VEILEDERIDENT");
+    private VeilederId getVeilederident(ResultSet rs) {
+        return new VeilederId(rs.getString("VEILEDERIDENT"));
     }
 
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {

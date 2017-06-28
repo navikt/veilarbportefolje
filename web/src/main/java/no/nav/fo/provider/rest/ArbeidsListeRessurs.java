@@ -2,6 +2,7 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
@@ -38,6 +39,7 @@ public class ArbeidsListeRessurs {
     @GET
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
+
             ValideringsRegler.sjekkFnr(fnr);
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
@@ -97,7 +99,7 @@ public class ArbeidsListeRessurs {
 
     private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {
         return new ArbeidslisteData(fnr)
-                .setVeilederId(body.getVeilederId())
+                .setVeilederId(new VeilederId(body.getVeilederId()))
                 .setKommentar(body.getKommentar())
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
     }

@@ -5,12 +5,12 @@ import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.util.DateUtils.toLocalDateTime;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Data
@@ -32,13 +32,7 @@ public class Bruker {
     ManedMapping utlopsdatoFasett;
     LocalDateTime aapMaxtid;
     KvartalMapping aapMaxtidFasett;
-    LocalDateTime arbeidslisteEndringstidspunkt;
-    boolean erIArbeidsliste;
-    String arbeidslisteKommentar;
-    LocalDateTime arbeidslisteFrist;
-    boolean isOppfolgendeVeileder;
-
-
+    Arbeidsliste arbeidsliste;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -51,26 +45,15 @@ public class Bruker {
                 .setErDoed((Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
-                .setFodselsdato(dato((Date) document.get("fodselsdato")))
+                .setFodselsdato(toLocalDateTime((Date) document.get("fodselsdato")))
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
-                .setUtlopsdato(dato((Date) document.get("utlopsdato")))
+                .setUtlopsdato(toLocalDateTime((Date) document.get("utlopsdato")))
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
-                .setAapMaxtid(dato((Date) document.get("aap_maxtid")))
+                .setAapMaxtid(toLocalDateTime((Date) document.get("aap_maxtid")))
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
-                .setErIArbeidsliste((Boolean) document.get("arbeidsliste_aktiv"))
-                .setArbeidslisteEndringstidspunkt(dato((Date) document.get("arbeidsliste_endringstidspunkt")))
-                .setArbeidslisteKommentar((String) document.get("arbeidsliste_kommentar"))
-                .setArbeidslisteFrist(dato((Date) document.get("arbeidsliste_frist")));
+                .setArbeidsliste(Arbeidsliste.of(document));
     }
-
-    static LocalDateTime dato(Date dato) {
-        if (dato == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
-    }
-
 
     private static String getDiskresjonskode(SolrDocument document) {
         String diskresjonskode = (String) document.get("diskresjonskode");

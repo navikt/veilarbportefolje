@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.VeilederId;
 
 import java.sql.Timestamp;
 
@@ -12,7 +13,7 @@ import java.sql.Timestamp;
 public class ArbeidslisteData {
     final Fnr fnr;
     AktoerId aktoerId;
-    String veilederId;
+    VeilederId veilederId;
     String kommentar;
     Timestamp frist;
     Timestamp endringstidspunkt;

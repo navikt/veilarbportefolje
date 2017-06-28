@@ -4,6 +4,7 @@ import javaslang.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.FantIkkeAktoerIdException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.util.sql.SelectQuery;
@@ -18,6 +19,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 
+import static no.nav.fo.util.DateUtils.toLocalDateTime;
 import static no.nav.fo.util.sql.SqlUtils.update;
 import static no.nav.fo.util.sql.SqlUtils.upsert;
 
@@ -49,10 +51,10 @@ public class ArbeidslisteRepository {
 
                     upsert(db, ARBEIDSLISTE)
                             .set("AKTOERID", aktoerId.toString())
-                            .set("VEILEDERIDENT", data.getVeilederId())
+                            .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
+                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
-                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                             .execute();
                     return data.getAktoerId();
@@ -65,10 +67,10 @@ public class ArbeidslisteRepository {
         return Try.of(
                 () -> {
                     update(db, ARBEIDSLISTE)
-                            .set("VEILEDERIDENT", data.getVeilederId())
+                            .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
+                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
-                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
                             .whereEquals("AKTOERID", data.getAktoerId().toString())
                             .execute();
                     return data.getAktoerId();
@@ -87,13 +89,12 @@ public class ArbeidslisteRepository {
     }
 
     @SneakyThrows
-    public static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
+    private static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
         return new Arbeidsliste(
-                rs.getString("VEILEDERIDENT"),
-                rs.getTimestamp("ENDRINGSTIDSPUNKT"),
+                new VeilederId(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
+                toLocalDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
                 rs.getString("KOMMENTAR"),
-                rs.getTimestamp("FRIST")
-        );
+                toLocalDateTime(rs.getTimestamp("FRIST")));
     }
 
     private static String getCauseString(Throwable e) {

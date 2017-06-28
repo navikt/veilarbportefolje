@@ -3,6 +3,7 @@ package no.nav.fo.provider.rest;
 import javaslang.Tuple;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
@@ -68,7 +69,7 @@ public class TilgangsRegler {
 
     static void erVeilederForBruker(ArbeidslisteService arbeidslisteService, Fnr fnr) {
         SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
-        String veilederId = subjectHandler.getUid();
+        VeilederId veilederId = new VeilederId(subjectHandler.getUid());
         test("er veileder for bruker", fnr, arbeidslisteService.erVeilederForBruker(fnr, veilederId));
     }
 }

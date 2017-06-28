@@ -37,6 +37,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
+import static no.nav.fo.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -158,9 +159,11 @@ public class SolrService {
                     .map(result -> result.onSuccess(
                             arbeidsliste -> {
                                 solrDokument.setField("arbeidsliste_aktiv", true);
-                                solrDokument.setField("arbeidsliste_endringstidspunkt", arbeidsliste.getEndringstidspunkt());
+                                solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
+                                solrDokument.setField("arbeidsliste_endringstidspunkt", toIsoUTC(arbeidsliste.getEndringstidspunkt()));
                                 solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
-                                solrDokument.setField("arbeidsliste_frist", arbeidsliste.getFrist());
+                                solrDokument.setField("arbeidsliste_frist", toIsoUTC(arbeidsliste.getFrist()));
+                                solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
                             }
                     ));
         });
