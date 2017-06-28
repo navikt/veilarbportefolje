@@ -8,8 +8,6 @@ import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.fo.config.DatabaseConfig;
-import no.nav.modig.core.context.StaticSubjectHandler;
-import no.nav.modig.core.context.SubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.eclipse.jetty.plus.jndi.Resource;
@@ -26,7 +24,6 @@ import java.net.*;
 
 import static com.squareup.okhttp.MediaType.parse;
 import static java.lang.System.setProperty;
-import static no.nav.apiapp.rest.ExceptionMapper.MILJO_PROPERTY_NAME;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 import static no.nav.fo.StartJettyVeilArbPortefolje.TEST_ENV;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
@@ -73,8 +70,9 @@ public abstract class LocalIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
+        setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
         InternbrukerSubjectHandler.setVeilederIdent("testident");
+        System.clearProperty("portefolje.pilot.enhetliste");
     }
 
     @SneakyThrows
@@ -149,8 +147,6 @@ public abstract class LocalIntegrationTest {
     private static Jetty nyJetty(String contextPath, int jettyPort) {
         setupProperties();
         setupDataSource();
-        setProperty(SubjectHandler.SUBJECTHANDLER_KEY, StaticSubjectHandler.class.getName());
-        setProperty(MILJO_PROPERTY_NAME, "t");
 
         Jetty.JettyBuilder builder = Jetty.usingWar()
                 .at(contextPath)

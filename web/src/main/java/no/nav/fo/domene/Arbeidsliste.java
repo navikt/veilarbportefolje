@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
-import static no.nav.fo.util.DateUtils.toLocalDateTime;
+import static no.nav.fo.util.DateUtils.toZonedDateTime;
 
 
 @Data
@@ -16,17 +16,17 @@ import static no.nav.fo.util.DateUtils.toLocalDateTime;
 @Getter
 public class Arbeidsliste {
     final VeilederId sistEndretAv;
-    final LocalDateTime endringstidspunkt;
+    final ZonedDateTime endringstidspunkt;
     final String kommentar;
-    final LocalDateTime frist;
+    final ZonedDateTime frist;
     Boolean isOppfolgendeVeileder;
 
     public static Arbeidsliste of(SolrDocument brukerDokument) {
 
         VeilederId sistEndretAv = new VeilederId((String) brukerDokument.get("arbeidsliste_sistendretavveileder"));
-        LocalDateTime endringstidspunkt = toLocalDateTime((Date) brukerDokument.get("arbeidsliste_endringstidspunkt"));
+        ZonedDateTime endringstidspunkt = toZonedDateTime((Date) brukerDokument.get("arbeidsliste_endringstidspunkt"));
         String kommentar = (String) brukerDokument.get("arbeidsliste_kommentar");
-        LocalDateTime frist = toLocalDateTime((Date) brukerDokument.get("arbeidsliste_frist"));
+        ZonedDateTime frist = toZonedDateTime((Date) brukerDokument.get("arbeidsliste_frist"));
         Boolean isOppfolgendeVeileder = (Boolean) brukerDokument.get("arbeidsliste_er_oppfolgende_veileder");
 
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, kommentar, frist)

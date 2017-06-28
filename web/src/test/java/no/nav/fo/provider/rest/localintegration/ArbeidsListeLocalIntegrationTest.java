@@ -63,6 +63,27 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
     }
 
     @Test
+    public void skalReturnereUtcStreng() throws Exception {
+        insertSuccessfulBruker();
+        String path = "/tjenester/arbeidsliste/" + FNR;
+
+        String expectedUtcString = "2017-10-10T00:00:00Z";
+        JSONObject json = new JSONObject()
+                .put("veilederId", TEST_VEILEDERID)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", expectedUtcString);
+
+        int putStatus = put(path, json.toString()).code();
+        assertEquals(201, putStatus);
+
+        Response response = get(path);
+        JSONObject body = new JSONObject(response.body().string());
+        String actual = body.getString("frist");
+        assertEquals(expectedUtcString, actual);
+
+    }
+
+    @Test
     public void skalReturnereNotFoundVedUthenting() throws Exception {
         insertNotFoundBruker();
         int actual = get("/tjenester/arbeidsliste/" + FNR_FAIL).code();

@@ -31,6 +31,18 @@ public class DateUtils {
         return zonedDateTime.format(formatter);
     }
 
+    public static ZonedDateTime toZonedDateTime(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+    }
+
+    public static String toUtcString(ZonedDateTime zonedDateTime) {
+        DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
+        return zonedDateTime.format(formatter);
+    }
+
     public static String toIsoUTC(LocalDateTime dateTime) {
         if(dateTime == null) {
             return null;

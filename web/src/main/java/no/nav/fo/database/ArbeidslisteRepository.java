@@ -19,7 +19,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 
-import static no.nav.fo.util.DateUtils.toLocalDateTime;
+import static no.nav.fo.util.DateUtils.toZonedDateTime;
 import static no.nav.fo.util.sql.SqlUtils.update;
 import static no.nav.fo.util.sql.SqlUtils.upsert;
 
@@ -92,9 +92,9 @@ public class ArbeidslisteRepository {
     private static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
         return new Arbeidsliste(
                 new VeilederId(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
-                toLocalDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
+                toZonedDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
                 rs.getString("KOMMENTAR"),
-                toLocalDateTime(rs.getTimestamp("FRIST")));
+                toZonedDateTime(rs.getTimestamp("FRIST")));
     }
 
     private static String getCauseString(Throwable e) {
