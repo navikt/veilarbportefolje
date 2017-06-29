@@ -2,6 +2,7 @@ package no.nav.fo.util.sql;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
 import java.util.function.Function;
 
 public class SqlUtils {
@@ -27,5 +28,9 @@ public class SqlUtils {
 
     public static SelectQuery select(JdbcTemplate db, String tableName) {
         return new SelectQuery(db, tableName);
+    }
+
+    public static DeleteQuery delete(DataSource ds, String tableName) {
+        return new DeleteQuery(ds, tableName);
     }
 }
