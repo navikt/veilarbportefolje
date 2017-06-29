@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
-public class SqlUtilsTest {
+public class DeleteQueryTest {
 
     @Inject
     private DataSource ds;

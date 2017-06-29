@@ -7,7 +7,6 @@ import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.FantIkkeAktoerIdException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
-import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +35,9 @@ public class ArbeidslisteRepository {
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
-                () -> new SelectQuery<Arbeidsliste>(db, ARBEIDSLISTE)
+                () -> select(ds, ARBEIDSLISTE, ArbeidslisteRepository::arbeidslisteMapper)
                         .column("*")
-                        .whereEquals("AKTOERID", aktoerId.toString())
-                        .usingMapper(ArbeidslisteRepository::arbeidslisteMapper)
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
         ).onFailure(e -> LOG.warn("Kunne ikke hente ut arbeidsliste fra db: {}", getCauseString(e)));
     }

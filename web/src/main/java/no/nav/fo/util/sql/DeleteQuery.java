@@ -24,7 +24,10 @@ public class DeleteQuery {
 
     public int execute() {
         if (tableName == null || this.where == null) {
-            throw new IllegalStateException("Invalid data");
+            throw new SqlUtilsException(
+                    "I need more data to create a sql-statement. " +
+                            "Did you remember to specify table and a where clause?"
+            );
         }
 
         int result;
@@ -35,11 +38,11 @@ public class DeleteQuery {
 
             result = ps.executeUpdate();
             if (result == 0) {
-                throw new RuntimeException("Could not delete row");
+                throw new SqlUtilsException("Could not delete row");
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SqlUtilsException(e);
         }
         return result;
     }
