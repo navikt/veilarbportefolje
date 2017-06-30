@@ -35,7 +35,7 @@ public class AktoerServiceImpl implements AktoerService {
     public Optional<String> hentPersonidFraAktoerid(String aktoerid) {
         Optional<String> personid = hentSingleFraDb(
                 db,
-                "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?",
+                "SELECT PERSONID FROM BRUKER_DATA WHERE AKTOERID = ?",
                 (data) -> (String) data.get("personid"),
                 aktoerid
         );
@@ -64,7 +64,7 @@ public class AktoerServiceImpl implements AktoerService {
     public Optional<String> hentAktoeridFraPersonid(String personid) {
         return hentSingleFraDb(
                 db,
-                "SELECT aktoerid FROM PERSON_MAPPING WHERE personid = ?",
+                "SELECT AKTOERID FROM BRUKER_DATA WHERE PERSONID = ?",
                 (data) -> (String) data.get("aktoerid"),
                 personid
         );
@@ -81,8 +81,8 @@ public class AktoerServiceImpl implements AktoerService {
     public Optional<String> hentFnrFraAktoerid(String aktoerid) {
         Optional<String> fnr = hentSingleFraDb(
                 db,
-                "SELECT fnr FROM PERSON_MAPPING WHERE aktoerid = ?",
-                (data) -> (String) data.get("fnr"),
+                "SELECT FNR FROM BRUKER_DATA WHERE AKTOERID = ?",
+                (data) -> (String) data.get("FNR"),
                 aktoerid
         );
 
@@ -97,9 +97,9 @@ public class AktoerServiceImpl implements AktoerService {
                 .toJavaOptional();
 
         maybyFnr.ifPresent((fnr) -> {
-            upsert(db, "PERSON_MAPPING")
-                    .set("fnr", fnr)
-                    .where(WhereClause.equals("aktoerid", aktoerid))
+            upsert(db, "BRUKER_DATA")
+                    .set("FNR", fnr)
+                    .where(WhereClause.equals("AKTOERID", aktoerid))
                     .execute();
         });
 
