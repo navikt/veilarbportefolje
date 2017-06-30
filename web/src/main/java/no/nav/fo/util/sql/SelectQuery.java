@@ -1,25 +1,29 @@
 package no.nav.fo.util.sql;
 
-import org.springframework.jdbc.core.JdbcTemplate;
+import no.nav.fo.util.sql.where.WhereClause;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class SelectQuery<T> {
-    private JdbcTemplate db;
+    private DataSource ds;
     private String tableName;
-    private String whereParam;
-    private Object whereValue;
     private List<String> columnNames;
     private Function<ResultSet, T> mapper;
+    private WhereClause where;
 
-    public SelectQuery(JdbcTemplate db, String tableName) {
-        this.db = db;
+    SelectQuery(DataSource ds, String tableName, Function<ResultSet, T> mapper) {
+        this.ds = ds;
         this.tableName = tableName;
         this.columnNames = new ArrayList<>();
+        this.mapper = mapper;
     }
 
     public SelectQuery<T> column(String columnName) {
@@ -27,24 +31,43 @@ public class SelectQuery<T> {
         return this;
     }
 
-    public SelectQuery<T> whereEquals(String whereParam, Object whereValue) {
-        this.whereParam = whereParam;
-        this.whereValue = whereValue;
+    public SelectQuery<T> where(WhereClause where) {
+        this.where = where;
         return this;
     }
 
     public T execute() {
-        assert tableName != null;
-        String sql = createSqlString();
-        return db.query(sql, createSqlArgumentArray(), rs -> {
-            rs.next();
-            return mapper.apply(rs);
-        });
+        validate();
+
+        try {
+            Connection conn = ds.getConnection();
+            PreparedStatement ps = conn.prepareStatement(createSelectStatement());
+            where.applyTo(ps, 1);
+            ResultSet resultSet = ps.executeQuery();
+            resultSet.next();
+            return mapper.apply(resultSet);
+
+        } catch (SQLException e) {
+            throw new SqlUtilsException(e);
+        }
     }
 
-    private String createSqlString() {
+    private void validate() {
+        if (tableName == null || columnNames == null || this.where == null) {
+            throw new SqlUtilsException(
+                    "I need more data to create a sql-statement. " +
+                    "Did you remember to specify table, columns or a where clause?"
+            );
+        }
+
+        if (mapper == null) {
+            throw new SqlUtilsException("I need a mapper function in order to return the right data type.");
+        }
+    }
+
+    private String createSelectStatement() {
         StringBuilder sqlBuilder = new StringBuilder()
-                .append("select ");
+                .append("SELECT ");
 
         columnNames.stream()
                 .flatMap(x -> Stream.of(", ", x))
@@ -53,34 +76,19 @@ public class SelectQuery<T> {
 
         sqlBuilder
                 .append(" ")
-                .append("from ")
-                .append(tableName);
+                .append("FROM ")
+                .append(tableName)
+                .append(" WHERE ");
 
-        if (this.whereParam != null) {
-            sqlBuilder.append(" where ").append(whereParam).append(" = ?");
-        }
+        sqlBuilder
+                .append(this.where.toSql());
 
         return sqlBuilder.toString();
     }
 
-    public SelectQuery<T> usingMapper(Function<ResultSet, T> mapper) {
-        this.mapper = mapper;
-        return this;
-    }
-
-    private Object[] createSqlArgumentArray() {
-        if (whereValue == null) {
-            return new Object[]{};
-        }
-        Object[] arguments = new Object[1];
-        int index = 0;
-        arguments[index] = whereValue;
-        return arguments;
-    }
-
     @Override
     public String toString() {
-        return createSqlString();
+        return createSelectStatement();
     }
 
 }

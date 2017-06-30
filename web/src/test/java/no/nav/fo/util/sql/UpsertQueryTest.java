@@ -66,7 +66,7 @@ public class UpsertQueryTest {
                 " WHEN MATCHED THEN UPDATE SET kolonneTo = ?, kolonneTre = ? WHEN NOT MATCHED THEN INSERT (kolonneEn, kolonneTo, kolonneTre) VALUES (?, ?, ?)");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = SqlUtilsException.class)
     public void kasterExceptionManIkkeHarParametere() throws Exception {
         UpsertQuery updateQuery = SqlUtils.upsert(db, "tabellnavn")
                 .where(WhereClause.equals("kolonnetre", 2131));
@@ -74,7 +74,7 @@ public class UpsertQueryTest {
         updateQuery.execute();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = SqlUtilsException.class)
     public void kasterExceptionManIkkeHarWhereClause() throws Exception {
         UpsertQuery updateQuery = SqlUtils.upsert(db, "tabellnavn")
                 .set("kolonneEn", new Date(0))

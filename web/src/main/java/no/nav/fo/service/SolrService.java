@@ -154,7 +154,6 @@ public class SolrService {
             String personId = (String) solrDokument.get("person_id").getValue();
 
             aktoerService.hentAktoeridFraPersonid(personId)
-                    .map(AktoerId::new)
                     .map(arbeidslisteRepository::retrieveArbeidsliste)
                     .map(result -> result.onSuccess(
                             arbeidsliste -> {
@@ -220,7 +219,7 @@ public class SolrService {
 
     void indekserBrukerdata(AktoerId aktoerId) {
         aktoerService
-                .hentPersonidFraAktoerid(aktoerId.toString())
+                .hentPersonidFraAktoerid(aktoerId)
                 .ifPresent(this::indekserBrukerdata);
     }
 

@@ -1,5 +1,7 @@
 package no.nav.fo.mock;
 
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Fnr;
 import no.nav.fo.service.AktoerService;
 
 import java.util.Optional;
@@ -15,34 +17,34 @@ public class AktoerServiceMock implements AktoerService {
     public static final String AKTOER_ID_FAIL = "9999999999992";
 
     @Override
-    public Optional<String> hentPersonidFraAktoerid(String aktoerid) {
+    public Optional<String> hentPersonidFraAktoerid(AktoerId aktoerid) {
         return Optional.of(PERSON_ID);
     }
 
 
     @Override
-    public Optional<String> hentAktoeridFraPersonid(String personid) {
-        return Optional.of(AKTOER_ID);
+    public Optional<AktoerId> hentAktoeridFraPersonid(String personid) {
+        return Optional.of(AKTOER_ID).map(AktoerId::new);
     }
-    @Override
 
-    public Optional<String> hentAktoeridFraFnr(String fnr) {
-        if (FNR_FAIL.equals(fnr)) {
-            return Optional.of(AKTOER_ID_FAIL);
+    @Override
+    public Optional<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
+        if (new Fnr(FNR_FAIL).equals(fnr)) {
+            return Optional.of(AKTOER_ID_FAIL).map(AktoerId::new);
         }
-        return Optional.of(AKTOER_ID);
+        return Optional.of(AKTOER_ID).map(AktoerId::new);
     }
 
     @Override
-    public Optional<String> hentFnrFraAktoerid(String aktoerid) {
+    public Optional<Fnr> hentFnrFraAktoerid(AktoerId aktoerid) {
         return getTestFnr(aktoerid);
     }
 
-    private static Optional<String> getTestFnr(String aktoerId) {
+    private static Optional<Fnr> getTestFnr(AktoerId aktoerId) {
         Optional<String> result = Optional.of(FNR);
-        if (AKTOER_ID_FAIL.equals(aktoerId)) {
+        if (new AktoerId(AKTOER_ID_FAIL).equals(aktoerId)) {
             result = Optional.empty();
         }
-        return result;
+        return result.map(Fnr::new);
     }
 }

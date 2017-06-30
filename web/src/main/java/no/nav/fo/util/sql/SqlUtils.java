@@ -2,6 +2,8 @@ package no.nav.fo.util.sql;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
+import java.sql.ResultSet;
 import java.util.function.Function;
 
 public class SqlUtils {
@@ -25,7 +27,11 @@ public class SqlUtils {
         return new UpsertQuery(db, tableName);
     }
 
-    public static SelectQuery select(JdbcTemplate db, String tableName) {
-        return new SelectQuery(db, tableName);
+    public static <T> SelectQuery<T> select(DataSource ds, String tableName, Function<ResultSet, T> mapper) {
+        return new SelectQuery<>(ds, tableName, mapper);
+    }
+
+    public static DeleteQuery delete(DataSource ds, String tableName) {
+        return new DeleteQuery(ds, tableName);
     }
 }

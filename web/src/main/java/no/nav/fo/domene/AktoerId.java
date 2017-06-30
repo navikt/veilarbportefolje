@@ -8,7 +8,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Value
 @Getter(value = PRIVATE)
 public class AktoerId {
-    String aktoerId;
+    public final String aktoerId;
 
     @Override
     public String toString() {

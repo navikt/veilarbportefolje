@@ -2,6 +2,7 @@ package no.nav.fo.util;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Aktivitet.*;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
@@ -10,6 +11,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.domene.Aktivitet.AktivitetData.aktivitetTyperList;
@@ -20,7 +22,7 @@ public class AktivitetUtils {
         return aktoerAktiviteter
                 .stream()
                 .map( aktoerAktivitet -> {
-                    String personid = getPersonId(aktoerAktivitet.getAktoerid(), aktoerService);
+                    String personid = getPersonId(new AktoerId(aktoerAktivitet.getAktoerid()), aktoerService);
                     return konverterTilBrukerOppdatering(aktoerAktivitet.getAktiviteter(), aktoerAktivitet.getAktoerid(), personid);
                 })
                 .collect(toList());
@@ -41,7 +43,7 @@ public class AktivitetUtils {
 
 
     public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(String aktoerid, AktoerService aktoerService, BrukerRepository brukerRepository) {
-        String personid = getPersonId(aktoerid, aktoerService);
+        String personid = getPersonId(new AktoerId(aktoerid), aktoerService);
 
         List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
 
@@ -109,8 +111,8 @@ public class AktivitetUtils {
         applyAktivitetStatuser(singletonList(dokument), brukerRepository);
     }
 
-    static String getPersonId(String aktoerid, AktoerService aktoerService) {
-        return aktoerService.hentPersonidFraAktoerid(aktoerid).orElseThrow(() -> new FantIkkePersonIdException("Fant ikke personid for aktor id: " + aktoerid));
+    static String getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
+        return aktoerService.hentPersonidFraAktoerid(aktoerid).orElseThrow(() -> new FantIkkePersonIdException(format("Fant ikke personid for aktor id: %s", aktoerid)));
 
     }
 }

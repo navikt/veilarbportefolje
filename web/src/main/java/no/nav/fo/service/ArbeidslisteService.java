@@ -63,8 +63,7 @@ public class ArbeidslisteService {
 
     private AktoerId hentAktoerId(Fnr fnr) {
         return aktoerService
-                .hentAktoeridFraFnr(fnr.toString())
-                .map(AktoerId::new)
+                .hentAktoeridFraFnr(fnr)
                 .orElseThrow(() -> new RestBadGateWayException("Fant ikke aktoerId for gitt fnr"));
     }
 

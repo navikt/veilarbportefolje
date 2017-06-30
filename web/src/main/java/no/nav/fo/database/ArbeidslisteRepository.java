@@ -7,21 +7,20 @@ import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.FantIkkeAktoerIdException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
-import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
-import static no.nav.fo.util.sql.SqlUtils.update;
-import static no.nav.fo.util.sql.SqlUtils.upsert;
+import static no.nav.fo.util.sql.SqlUtils.*;
 
 public class ArbeidslisteRepository {
     private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteRepository.class);
@@ -29,14 +28,16 @@ public class ArbeidslisteRepository {
     @Inject
     private JdbcTemplate db;
 
+    @Inject
+    private DataSource ds;
+
     private static final String ARBEIDSLISTE = "ARBEIDSLISTE";
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
-                () -> new SelectQuery<Arbeidsliste>(db, ARBEIDSLISTE)
+                () -> select(ds, ARBEIDSLISTE, ArbeidslisteRepository::arbeidslisteMapper)
                         .column("*")
-                        .whereEquals("AKTOERID", aktoerId.toString())
-                        .usingMapper(ArbeidslisteRepository::arbeidslisteMapper)
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
         ).onFailure(e -> LOG.warn("Kunne ikke hente ut arbeidsliste fra db: {}", getCauseString(e)));
     }
@@ -79,13 +80,14 @@ public class ArbeidslisteRepository {
     }
 
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
-        int update = db.update("DELETE FROM ARBEIDSLISTE WHERE AKTOERID = ?", aktoerID.toString());
-
-        if (update == 0) {
-            return Try.failure(new RuntimeException("Kunne ikke slette rad fra database"));
-        } else {
-            return Try.success(aktoerID);
-        }
+        return Try.of(
+                () -> {
+                    delete(ds, ARBEIDSLISTE)
+                            .where(WhereClause.equals("AKTOERID", aktoerID.toString()))
+                            .execute();
+                    return aktoerID;
+                }
+        ).onFailure(e -> LOG.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
     }
 
     @SneakyThrows

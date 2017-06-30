@@ -3,6 +3,8 @@ package no.nav.fo.service;
 import javaslang.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Fnr;
 import no.nav.fo.exception.FantIkkeFnrException;
 import no.nav.fo.util.sql.where.WhereClause;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
@@ -32,22 +34,22 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private BrukerRepository brukerRepository;
 
-    public Optional<String> hentPersonidFraAktoerid(String aktoerid) {
+    public Optional<String> hentPersonidFraAktoerid(AktoerId aktoerid) {
         Optional<String> personid = hentSingleFraDb(
                 db,
                 "SELECT PERSONID FROM BRUKER_DATA WHERE AKTOERID = ?",
                 (data) -> (String) data.get("PERSONID"),
-                aktoerid
+                aktoerid.toString()
         );
 
         return Optional.ofNullable(personid
                 .orElseGet(() -> {
-                    Try<WSHentIdentForAktoerIdResponse> response = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid)));
+                    Try<WSHentIdentForAktoerIdResponse> response = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid.toString())));
 
                     Try<String> personId = Try.of(() -> brukerRepository
                             .retrievePersonidFromFnr(response.get().getIdent())
                             .orElseThrow(() -> new FantIkkeFnrException(response.get().getIdent())));
-                    brukerRepository.insertAktoeridToPersonidMapping(aktoerid, personId.get());
+                    brukerRepository.insertAktoeridToPersonidMapping(aktoerid.toString(), personId.get());
                     return personId.get();
                 }));
     }
@@ -61,24 +63,25 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     @Override
-    public Optional<String> hentAktoeridFraPersonid(String personid) {
+    public Optional<AktoerId> hentAktoeridFraPersonid(String personid) {
         return hentSingleFraDb(
                 db,
                 "SELECT AKTOERID FROM BRUKER_DATA WHERE PERSONID = ?",
                 (data) -> (String) data.get("aktoerid"),
                 personid
-        );
+        ).map(AktoerId::new);
     }
 
     @Override
-    public Optional<String> hentAktoeridFraFnr(String fnr) {
-        return Try.of(() -> endpoint.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr)))
+    public Optional<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
+        return Try.of(() -> endpoint.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr.toString())))
                 .map(WSHentAktoerIdForIdentResponse::getAktoerId)
-                .toJavaOptional();
+                .toJavaOptional()
+                .map(AktoerId::new);
     }
 
     @Override
-    public Optional<String> hentFnrFraAktoerid(String aktoerid) {
+    public Optional<Fnr> hentFnrFraAktoerid(AktoerId aktoerid) {
         Optional<String> fnr = hentSingleFraDb(
                 db,
                 "SELECT FNR FROM BRUKER_DATA WHERE AKTOERID = ?",
@@ -86,23 +89,23 @@ public class AktoerServiceImpl implements AktoerService {
                 aktoerid
         );
 
-        if (fnr.isPresent()) { return fnr; }
+        if (fnr.isPresent()) { return fnr.map(Fnr::new); }
 
-        return hentFnrFraAktoerV1(aktoerid);
+        return hentFnrFraAktoerV1(aktoerid.toString());
     }
 
-    private Optional<String> hentFnrFraAktoerV1(String aktoerid) {
-        Optional<String> maybyFnr = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid)))
+    private Optional<Fnr> hentFnrFraAktoerV1(String aktoerid) {
+        Optional<String> maybeFnr = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid)))
                 .map(WSHentIdentForAktoerIdResponse::getIdent)
                 .toJavaOptional();
 
-        maybyFnr.ifPresent((fnr) -> {
+        maybeFnr.ifPresent((fnr) -> {
             upsert(db, "BRUKER_DATA")
                     .set("FNR", fnr)
                     .where(WhereClause.equals("AKTOERID", aktoerid))
                     .execute();
         });
 
-        return maybyFnr;
+        return maybeFnr.map(Fnr::new);
     }
 }

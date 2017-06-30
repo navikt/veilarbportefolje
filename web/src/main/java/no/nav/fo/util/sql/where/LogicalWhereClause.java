@@ -4,12 +4,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class LogicalWhereClause extends WhereClause {
-    private final WhereOperations operation;
+    private final WhereOperator operator;
     private final WhereClause wc1;
     private final WhereClause wc2;
 
-    public LogicalWhereClause(WhereOperations operation, WhereClause wc1, WhereClause wc2) {
-        this.operation = operation;
+    public LogicalWhereClause(WhereOperator operator, WhereClause wc1, WhereClause wc2) {
+        this.operator = operator;
         this.wc1 = wc1;
         this.wc2 = wc2;
 
@@ -23,7 +23,7 @@ public class LogicalWhereClause extends WhereClause {
 
     @Override
     public String toSql() {
-        return String.format("%s %s %s", this.wc1.toSql(), this.operation.sql, this.wc2.toSql());
+        return String.format("%s %s %s", this.wc1.toSql(), this.operator.sql, this.wc2.toSql());
     }
 
     @Override

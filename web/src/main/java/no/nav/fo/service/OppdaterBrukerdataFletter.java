@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 
 import no.nav.fo.database.PersistentOppdatering;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.BrukerinformasjonFraFeed;
 import no.nav.fo.exception.FantIkkePersonIdException;
@@ -23,7 +24,7 @@ public class OppdaterBrukerdataFletter {
 
 
     public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
-        String personId = aktoerService.hentPersonidFraAktoerid(bruker.getAktoerid()).orElseThrow( () -> {
+        String personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(bruker.getAktoerid())).orElseThrow(() -> {
             getLogger(OppdaterBrukerdataFletter.class).warn("Fant ikke personid for aktoerid {} ", bruker.getAktoerid());
             return new FantIkkePersonIdException(bruker.getAktoerid());
         });
