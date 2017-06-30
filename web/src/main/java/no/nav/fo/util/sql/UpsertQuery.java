@@ -37,8 +37,12 @@ public class UpsertQuery {
     }
 
     public Boolean execute() {
-        if (this.where == null || this.setParams.isEmpty()) {
-            throw new IllegalStateException("Invalid data");
+        if (this.tableName == null || this.where == null || this.setParams.isEmpty()) {
+            throw new SqlUtilsException(
+                    "I need more data to create a sql-statement. " +
+                            "Did you remember to specify table name, " +
+                            "what columns to set and a where clause?"
+            );
         }
 
         return

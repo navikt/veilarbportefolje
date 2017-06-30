@@ -10,7 +10,6 @@ import no.nav.fo.domene.Aktivitet.AktivitetTyper;
 import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
-import no.nav.fo.util.sql.SelectQuery;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -21,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -54,24 +54,27 @@ public class BrukerRepository {
     private JdbcTemplate db;
 
     @Inject
+    private DataSource ds;
+
+    @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
-                () -> new SelectQuery<VeilederId>(db, BRUKERDATA)
+                () ->
+
+                        SqlUtils.select(ds, BRUKERDATA, this::mapToVeilederId)
                         .column("VEILEDERIDENT")
-                        .whereEquals("AKTOERID", aktoerId.toString())
-                        .usingMapper(this::getVeilederident)
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
         ).onFailure(e -> LOG.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
-                () -> new SelectQuery<String>(db, OPPFOLGINGSBRUKER)
+                () -> SqlUtils.select(ds, OPPFOLGINGSBRUKER, this::mapToEnhet)
                         .column("NAV_KONTOR")
-                        .whereEquals("FODSELSNR", fnr.toString())
-                        .usingMapper(this::mapToEnhet)
+                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
         ).onFailure(e -> LOG.warn("Fant ikke oppfølgingsenhet for bruker med fnr {}", fnr));
     }
@@ -82,7 +85,7 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private VeilederId getVeilederident(ResultSet rs) {
+    private VeilederId mapToVeilederId(ResultSet rs) {
         return new VeilederId(rs.getString("VEILEDERIDENT"));
     }
 

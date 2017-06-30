@@ -4,12 +4,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class ComparativeWhereClause extends WhereClause {
-    private final WhereOperations operation;
+    private final WhereOperator operator;
     private final String field;
     private final Object value;
 
-    public ComparativeWhereClause(WhereOperations operation, String field, Object value) {
-        this.operation = operation;
+    public ComparativeWhereClause(WhereOperator operator, String field, Object value) {
+        this.operator = operator;
         this.field = field;
         this.value = value;
     }
@@ -22,7 +22,7 @@ public class ComparativeWhereClause extends WhereClause {
 
     @Override
     public String toSql() {
-        return String.format("%s %s ?", this.field, this.operation.sql);
+        return String.format("%s %s ?", this.field, this.operator.sql);
     }
 
     @Override
