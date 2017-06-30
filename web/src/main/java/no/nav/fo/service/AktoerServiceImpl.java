@@ -36,7 +36,7 @@ public class AktoerServiceImpl implements AktoerService {
         Optional<String> personid = hentSingleFraDb(
                 db,
                 "SELECT PERSONID FROM BRUKER_DATA WHERE AKTOERID = ?",
-                (data) -> (String) data.get("personid"),
+                (data) -> (String) data.get("PERSONID"),
                 aktoerid
         );
 
