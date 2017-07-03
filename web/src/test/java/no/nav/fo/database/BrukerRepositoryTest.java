@@ -514,4 +514,27 @@ public class BrukerRepositoryTest {
         assertTrue(result.isSuccess());
         assertEquals(expectedEnhet, result.get());
     }
+
+    @Test
+    public void skalHentePersonIdFraDatabase() throws Exception {
+        Fnr fnr = new Fnr("12345678900");
+
+        int execute = insert(jdbcTemplate, OPPFOLGINGSBRUKER)
+                .value("PERSON_ID", "123456")
+                .value("FODSELSNR", fnr.toString())
+                .value("NAV_KONTOR", "123")
+                .execute();
+
+        assertTrue(execute > 0);
+
+        Try<String> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        assertTrue(result.isSuccess());
+    }
+
+    @Test
+    public void skalFeileOmIngenPersonIdFinnes() throws Exception {
+        Fnr fnr = new Fnr("99999999999");
+        Try<String> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        assertTrue(result.isFailure());
+    }
 }

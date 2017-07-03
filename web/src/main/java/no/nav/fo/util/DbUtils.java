@@ -91,4 +91,11 @@ public class DbUtils {
         return String.valueOf(bd.intValue());
     }
 
+    public static String getCauseString(Throwable e) {
+        if (e.getCause() == null) {
+            return e.getMessage();
+
+        }
+        return e.getCause().toString();
+    }
 }

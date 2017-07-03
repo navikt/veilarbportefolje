@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
+import static no.nav.fo.util.DbUtils.getCauseString;
 import static no.nav.fo.util.sql.SqlUtils.*;
 
 public class ArbeidslisteRepository {
@@ -99,11 +100,4 @@ public class ArbeidslisteRepository {
                 toZonedDateTime(rs.getTimestamp("FRIST")));
     }
 
-    private static String getCauseString(Throwable e) {
-        if (e.getCause() == null) {
-            return e.getMessage();
-
-        }
-        return e.getCause().toString();
-    }
 }

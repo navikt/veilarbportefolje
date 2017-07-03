@@ -21,7 +21,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -41,6 +40,7 @@ import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
+import static no.nav.fo.util.sql.SqlUtils.select;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
@@ -63,16 +63,16 @@ public class BrukerRepository {
         return Try.of(
                 () ->
 
-                        SqlUtils.select(ds, BRUKERDATA, this::mapToVeilederId)
-                        .column("VEILEDERIDENT")
-                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                        .execute()
+                        select(ds, BRUKERDATA, this::mapToVeilederId)
+                                .column("VEILEDERIDENT")
+                                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                                .execute()
         ).onFailure(e -> LOG.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
-                () -> SqlUtils.select(ds, OPPFOLGINGSBRUKER, this::mapToEnhet)
+                () -> select(ds, OPPFOLGINGSBRUKER, this::mapToEnhet)
                         .column("NAV_KONTOR")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
@@ -168,17 +168,18 @@ public class BrukerRepository {
         return Optional.of((String) list.get(0).get("PERSON_ID"));
     }
 
-    public Optional<String> retrievePersonidFromFnr(String fnr) {
-        List<Map<String, Object>> list = db.queryForList(getPersonIdFromFnrSQL(), fnr);
-        if (list.size() != 1) {
-            LOG.warn(format("Fikk %d antall rader for bruker med fnr %s", list.size(), fnr));
-        }
-        BigDecimal personId = (BigDecimal) list.get(0).get("PERSON_ID");
+    public Try<String> retrievePersonidFromFnr(Fnr fnr) {
+        return Try.of(() ->
+                select(db.getDataSource(), OPPFOLGINGSBRUKER, this::personIdMapper)
+                        .column("PERSON_ID")
+                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
+    }
 
-        return
-                Optional.of(personId)
-                        .map(BigDecimal::intValue)
-                        .map(id -> Integer.toString(id));
+    @SneakyThrows
+    private String personIdMapper(ResultSet resultSet) {
+        return resultSet.getBigDecimal("PERSON_ID").toPlainString();
     }
 
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {

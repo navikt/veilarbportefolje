@@ -53,7 +53,7 @@ public class SelectQuery<T> {
     }
 
     private void validate() {
-        if (tableName == null || columnNames == null || this.where == null) {
+        if (tableName == null || columnNames.isEmpty()|| this.where == null) {
             throw new SqlUtilsException(
                     "I need more data to create a sql-statement. " +
                     "Did you remember to specify table, columns or a where clause?"

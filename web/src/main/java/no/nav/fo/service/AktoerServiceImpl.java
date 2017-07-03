@@ -47,8 +47,9 @@ public class AktoerServiceImpl implements AktoerService {
                     Try<WSHentIdentForAktoerIdResponse> response = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid.toString())));
 
                     Try<String> personId = Try.of(() -> brukerRepository
-                            .retrievePersonidFromFnr(response.get().getIdent())
-                            .orElseThrow(() -> new FantIkkeFnrException(response.get().getIdent())));
+                            .retrievePersonidFromFnr(new Fnr(response.get().getIdent()))
+                            .getOrElseThrow(() -> new FantIkkeFnrException(response.get().getIdent())));
+
                     brukerRepository.insertAktoeridToPersonidMapping(aktoerid.toString(), personId.get());
                     return personId.get();
                 }));
@@ -89,7 +90,9 @@ public class AktoerServiceImpl implements AktoerService {
                 aktoerid
         );
 
-        if (fnr.isPresent()) { return fnr.map(Fnr::new); }
+        if (fnr.isPresent()) {
+            return fnr.map(Fnr::new);
+        }
 
         return hentFnrFraAktoerV1(aktoerid.toString());
     }
