@@ -275,7 +275,7 @@ public class SolrService {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
         String nyeBrukere = "-veileder_id:*";
-        String inaktiveBrukere = "formidlingsgruppekode:ISERV AND veileder_id:*";
+        String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
         String iavtaltAktivitet = "iavtaltaktivitet:true";
