@@ -31,8 +31,8 @@ public class DeleteQuery {
         }
 
         int result;
-        try {
-            Connection conn = ds.getConnection();
+        try (Connection conn = ds.getConnection()) {
+
             PreparedStatement ps = conn.prepareStatement(createDeleteStatement());
             where.applyTo(ps, 1);
 

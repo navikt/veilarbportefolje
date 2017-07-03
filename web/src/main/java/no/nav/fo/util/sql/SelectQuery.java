@@ -39,8 +39,8 @@ public class SelectQuery<T> {
     public T execute() {
         validate();
 
-        try {
-            Connection conn = ds.getConnection();
+        try (Connection conn = ds.getConnection()) {
+
             PreparedStatement ps = conn.prepareStatement(createSelectStatement());
             where.applyTo(ps, 1);
             ResultSet resultSet = ps.executeQuery();
