@@ -147,7 +147,7 @@ public class SolrUtils {
         if (filtervalg.brukerstatus == Brukerstatus.NYE_BRUKERE) {
             oversiktStatements.add("-veileder_id:*");
         } else if (filtervalg.brukerstatus == Brukerstatus.INAKTIVE_BRUKERE) {
-            oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
+            oversiktStatements.add("(formidlingsgruppekode:ISERV)");
         } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_NAV) {
             oversiktStatements.add("(venterpasvarfranav:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER) {
