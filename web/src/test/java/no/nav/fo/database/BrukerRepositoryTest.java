@@ -166,22 +166,20 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalVareOppfolgningsbruker() throws Exception {
+    public void skalVareOppfolgningsbrukerPgaArenaStatus() throws Exception {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("kvalifiseringsgruppekode", "BATT");
         document.addField("formidlingsgruppekode", "IARBS");
-        document.addField("veileder_id", "V123456");
-        document.addField("oppfolging", true);
+        document.addField("oppfolging", false);
 
         assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
     }
 
     @Test
-    public void skalIkkeVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
+    public void skalIkkeVareOppfolgningsbrukerPgaFeilArenaStatusOgManglendeOppfolgingsflagg() throws Exception {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("kvalifiseringsgruppekode", "XXX");
         document.addField("formidlingsgruppekode", "ISERV");
-        document.addField("veileder_id", null);
         document.addField("oppfolging", false);
 
         assertThat(BrukerRepository.erOppfolgingsBruker(document)).isFalse();
@@ -190,9 +188,6 @@ public class BrukerRepositoryTest {
     @Test
     public void skalVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField("kvalifiseringsgruppekode", "XXX");
-        document.addField("formidlingsgruppekode", "ISERV");
-        document.addField("veileder_id", null);
         document.addField("oppfolging", true);
 
         assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();

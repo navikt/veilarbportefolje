@@ -10,6 +10,7 @@ import no.nav.fo.domene.Aktivitet.AktivitetTyper;
 import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -45,8 +46,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
 
-    static final private Logger LOG = getLogger(BrukerRepository.class);
-    private static final String IARBS = "IARBS";
+    private static final Logger LOG = getLogger(BrukerRepository.class);
     public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
     public static final String BRUKERDATA = "BRUKER_DATA";
 
@@ -536,12 +536,9 @@ public class BrukerRepository {
         if (oppfolgingsFlaggSatt(bruker)) {
             return true;
         }
-        String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
-
-        return !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
-                (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
-                        || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
-                        || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
+        String servicegruppekode = (String) bruker.get("kvalifiseringsgruppekode").getValue();
+        String formidlingsgruppekode = (String) bruker.get("formidlingsgruppekode").getValue();
+        return UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);
     }
 
     static boolean oppfolgingsFlaggSatt(SolrInputDocument bruker) {
