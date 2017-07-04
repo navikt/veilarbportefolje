@@ -2,7 +2,6 @@ package no.nav.fo.config;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.mock.AktoerServiceMock;
 import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.mock;
 })
 public class ApplicationConfigTest {
     @Bean
-    public AktoerService aktoerService() { return new AktoerServiceMock(); }
+    public AktoerService aktoerService() { return new AktoerServiceImpl(); }
 
     @Bean
     public AktoerV2 aktoerV2() {

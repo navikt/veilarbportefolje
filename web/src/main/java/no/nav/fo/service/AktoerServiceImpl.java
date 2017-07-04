@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class AktoerServiceImpl implements AktoerService {
 
     @Inject
-    private AktoerV2 endpoint;
+    private AktoerV2 soapService;
 
     @Inject
     private JdbcTemplate db;
@@ -52,26 +52,19 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Override
     public Optional<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
-        return Try.of(() -> endpoint.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr.toString())))
+        return Try.of(() -> soapService.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr.toString())))
                 .map(WSHentAktoerIdForIdentResponse::getAktoerId)
                 .toJavaOptional()
                 .map(AktoerId::new);
     }
 
     @Override
-    public Optional<Fnr> hentFnrFraAktoerid(AktoerId aktoerid) {
-        Optional<String> fnr = hentSingleFraDb(
-                db,
-                "SELECT FNR FROM BRUKER_DATA WHERE AKTOERID = ?",
-                (data) -> (String) data.get("FNR"),
-                aktoerid
-        );
-
-        if (fnr.isPresent()) {
-            return fnr.map(Fnr::new);
-        }
-
-        return hentFnrViaSoap(aktoerid).toJavaOptional();
+    public Optional<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
+        return
+                brukerRepository
+                        .retrieveFnr(aktoerId)
+                        .orElse(hentFnrViaSoap(aktoerId))
+                        .toJavaOptional();
     }
 
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
@@ -86,7 +79,7 @@ public class AktoerServiceImpl implements AktoerService {
 
         return
                 Try.of(
-                        () -> endpoint.hentIdentForAktoerId(soapRequest))
+                        () -> soapService.hentIdentForAktoerId(soapRequest))
                         .map(WSHentIdentForAktoerIdResponse::getIdent)
                         .map(Fnr::new)
                         .onFailure(e -> log.warn("SOAP-Kall mot baksystem (AktoerV2) feilet: {}", e.getMessage())

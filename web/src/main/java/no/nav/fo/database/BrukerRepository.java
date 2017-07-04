@@ -104,9 +104,22 @@ public class BrukerRepository {
         ).onFailure(e -> LOG.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
     }
 
+    public Try<Fnr> retrieveFnr(AktoerId aktoerId) {
+        return Try.of(
+                () -> select(db.getDataSource(), BRUKERDATA, this::fnrMapper)
+                        .column("FNR")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId));
+    }
+
     /**
      * MAPPING-FUNKSJONER
      */
+    @SneakyThrows
+    private Fnr fnrMapper(ResultSet rs) {
+        return new Fnr(rs.getString("FNR"));
+    }
 
     @SneakyThrows
     private String mapToEnhet(ResultSet rs) {
