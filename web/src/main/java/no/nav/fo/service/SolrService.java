@@ -1,7 +1,7 @@
 package no.nav.fo.service;
 
-import javaslang.control.Either;
-import javaslang.control.Try;
+import io.vavr.control.Either;
+import io.vavr.control.Try;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
@@ -43,7 +43,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class SolrService {
 
-    private static final Logger logger = getLogger(SolrService.class);
+    private static final Logger LOG = getLogger(SolrService.class);
 
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
@@ -73,11 +73,11 @@ public class SolrService {
     @Transactional
     public void hovedindeksering() {
         if (SolrUtils.isSlaveNode()) {
-            logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            LOG.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
 
-        logger.info("Starter hovedindeksering");
+        LOG.info("Starter hovedindeksering");
         LocalDateTime t0 = LocalDateTime.now();
 
         final int[] antallBrukere = {0};
@@ -88,11 +88,11 @@ public class SolrService {
             applyAktivitetStatuser(dokumenter, brukerRepository);
             applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
             addDocuments(dokumenter);
-            commit();
         });
         brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
         consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
 
+        commit();
         brukerRepository.updateTidsstempel(Timestamp.valueOf(t0));
 
         logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
@@ -102,26 +102,25 @@ public class SolrService {
     @Transactional
     public void deltaindeksering() {
         if (SolrUtils.isSlaveNode()) {
-            logger.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            LOG.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
 
-        logger.info("Starter deltaindeksering");
+        LOG.info("Starter deltaindeksering");
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);
 
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
-        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         if (dokumenter.isEmpty()) {
-            logger.info("Ingen nye dokumenter i databasen");
+            LOG.info("Ingen nye dokumenter i databasen");
             return;
         }
 
+        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         applyAktivitetStatuser(dokumenter, brukerRepository);
-
         addDocuments(dokumenter);
-        brukerRepository.updateTidsstempel(timestamp);
         commit();
+        brukerRepository.updateTidsstempel(timestamp);
 
         logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
     }
@@ -163,6 +162,8 @@ public class SolrService {
                                 solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
                                 solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
                                 solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
+
+                                LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
                             }
                     ));
         });
@@ -174,10 +175,10 @@ public class SolrService {
             QueryResponse response = solrClientSlave.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
             SolrUtils.checkSolrResponseCode(response.getStatus());
             SolrDocumentList results = response.getResults();
-            logger.debug(results.toString());
+            LOG.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException | IOException e) {
-            logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+            LOG.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
     }
@@ -195,9 +196,9 @@ public class SolrService {
         QueryResponse response = new QueryResponse();
         try {
             response = solrClientSlave.query(solrQuery);
-            logger.debug(response.toString());
+            LOG.debug(response.toString());
         } catch (SolrServerException | IOException e) {
-            logger.error("Spørring mot indeks feilet", e.getMessage(), e);
+            LOG.error("Spørring mot indeks feilet", e.getMessage(), e);
         }
 
         FacetField facetField = response.getFacetField(facetFieldString);
@@ -205,16 +206,16 @@ public class SolrService {
         return SolrUtils.mapFacetResults(facetField);
     }
 
-    public void indekserBrukerdata(String personId) {
-        logger.info("Legger bruker med personId {} til i indeksen ", personId);
-        SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId);
+    public void indekserBrukerdata(PersonId personId) {
+        LOG.info("Legger bruker med personId {} til i indeksen ", personId);
+        SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
 
-        logger.info("Legger bruker med personId {} til i indeksen ", personId);
+        LOG.info("Legger bruker med personId {} til i indeksen ", personId);
         applyAktivitetStatuser(brukerDokument, brukerRepository);
         applyArbeidslisteData(singletonList(brukerDokument), arbeidslisteRepository, aktoerService);
         addDocuments(singletonList(brukerDokument));
         commit();
-        logger.info("Bruker med personId {} lagt til i indeksen", personId);
+        LOG.info("Bruker med personId {} lagt til i indeksen", personId);
     }
 
     void indekserBrukerdata(AktoerId aktoerId) {
@@ -225,19 +226,19 @@ public class SolrService {
 
     public Try<UpdateResponse> commit() {
         return Try.of(() -> solrClientMaster.commit())
-                .onFailure(e -> logger.error("Kunne ikke gjennomføre commit ved indeksering!", e));
+                .onFailure(e -> LOG.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
     private List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
         // javaslang.collection-API brukes her pga sliding-metoden
-        javaslang.collection.List.ofAll(dokumenter)
+        io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(10000, 10000)
                 .forEach(docs -> {
                     try {
                         solrClientMaster.add(docs.toJavaList());
-                        logger.info(format("Legger til %d dokumenter i indeksen", docs.length()));
+                        LOG.info(format("Legger til %d dokumenter i indeksen", docs.length()));
                     } catch (SolrServerException | IOException e) {
-                        logger.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
+                        LOG.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
                     }
                 });
         return dokumenter;
@@ -252,9 +253,9 @@ public class SolrService {
             UpdateResponse response = solrClientMaster.deleteByQuery(query);
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
-            logger.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
+            LOG.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
-            logger.error(e.getMessage());
+            LOG.error(e.getMessage());
         }
     }
 
@@ -264,7 +265,7 @@ public class SolrService {
         long minutes = duration.toMinutes();
         long seconds = duration.getSeconds();
         String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
-        logger.info(logString);
+        LOG.info(logString);
 
         Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
         event.addFieldToReport("antall.oppdateringer", antall);
@@ -314,7 +315,7 @@ public class SolrService {
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter);
         } catch (SolrServerException | IOException e) {
-            logger.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
+            LOG.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
         }
 
         return statusTall;
@@ -361,7 +362,7 @@ public class SolrService {
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter);
         } catch (SolrServerException | IOException e) {
-            logger.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
+            LOG.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
         }
 
         return statusTall;
@@ -375,6 +376,6 @@ public class SolrService {
 
         return Try.of(() -> solrClientSlave.query(solrQuery))
                 .map(res -> res.getResults().stream().map(Bruker::of).collect(toList()))
-                .onFailure(e -> logger.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
+                .onFailure(e -> LOG.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
     }
 }

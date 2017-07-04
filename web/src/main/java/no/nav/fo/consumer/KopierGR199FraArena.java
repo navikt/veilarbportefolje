@@ -1,6 +1,6 @@
 package no.nav.fo.consumer;
 
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import no.nav.fo.service.ArenafilService;
 import no.nav.fo.service.SolrService;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;

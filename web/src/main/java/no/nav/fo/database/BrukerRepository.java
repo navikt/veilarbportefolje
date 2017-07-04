@@ -1,8 +1,8 @@
 package no.nav.fo.database;
 
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.control.Try;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
@@ -15,7 +15,6 @@ import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -30,16 +29,15 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
+import static no.nav.fo.util.sql.SqlUtils.insert;
 import static no.nav.fo.util.sql.SqlUtils.select;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -49,6 +47,7 @@ public class BrukerRepository {
     private static final String IARBS = "IARBS";
     public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
     public static final String BRUKERDATA = "BRUKER_DATA";
+    private final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
 
     @Inject
     private JdbcTemplate db;
@@ -61,12 +60,10 @@ public class BrukerRepository {
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
-                () ->
-
-                        select(ds, BRUKERDATA, this::mapToVeilederId)
-                                .column("VEILEDERIDENT")
-                                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                                .execute()
+                () -> select(ds, BRUKERDATA, this::mapToVeilederId)
+                        .column("VEILEDERIDENT")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
         ).onFailure(e -> LOG.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
@@ -79,6 +76,51 @@ public class BrukerRepository {
         ).onFailure(e -> LOG.warn("Fant ikke oppfølgingsenhet for bruker med fnr {}", fnr));
     }
 
+    public Try<Integer> insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
+        return
+                Try.of(
+                        () -> insert(db, AKTOERID_TO_PERSONID)
+                                .value("AKTOERID", aktoerId.toString())
+                                .value("PERSONID", personId.toString())
+                                .execute()
+                ).onFailure(e -> LOG.info("Kunne ikke inserte mapping Aktoerid {} -> personId {} i databasen: {}", aktoerId, personId, getCauseString(e)));
+    }
+
+    public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
+        return Try.of(
+                () -> select(db.getDataSource(), AKTOERID_TO_PERSONID, this::mapToPersonId)
+                        .column("PERSONID")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke personid for aktoerid {}: {}", aktoerId, getCauseString(e)));
+    }
+
+    public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
+        return Try.of(() ->
+                select(db.getDataSource(), OPPFOLGINGSBRUKER, this::personIdMapper)
+                        .column("PERSON_ID")
+                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
+    }
+
+    public Try<Fnr> retrieveFnr(AktoerId aktoerId) {
+        return Try.of(
+                () -> select(db.getDataSource(), BRUKERDATA, this::fnrMapper)
+                        .column("FNR")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId));
+    }
+
+    /**
+     * MAPPING-FUNKSJONER
+     */
+    @SneakyThrows
+    private Fnr fnrMapper(ResultSet rs) {
+        return new Fnr(rs.getString("FNR"));
+    }
+
     @SneakyThrows
     private String mapToEnhet(ResultSet rs) {
         return rs.getString("NAV_KONTOR");
@@ -87,6 +129,16 @@ public class BrukerRepository {
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
         return new VeilederId(rs.getString("VEILEDERIDENT"));
+    }
+
+    @SneakyThrows
+    private PersonId mapToPersonId(ResultSet rs) {
+        return new PersonId(rs.getString("PERSONID"));
+    }
+
+    @SneakyThrows
+    private PersonId personIdMapper(ResultSet resultSet) {
+        return new PersonId(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
     }
 
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
@@ -98,7 +150,6 @@ public class BrukerRepository {
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
-                applyAktivitetStatuser(brukerDokument, this);
                 prosess.accept(brukerDokument);
             }
         });
@@ -159,28 +210,6 @@ public class BrukerRepository {
         return db.queryForList(getPersonidFromAktoeridSQL(), aktoerId);
     }
 
-    public Optional<String> retrievePersonIdFromAktoerId(String aktoerId) {
-        List<Map<String, Object>> list = retrieveBruker(aktoerId);
-        if (list.size() != 1) {
-            LOG.warn(format("Fikk %d antall rader for bruker med aktoerId %s", list.size(), aktoerId));
-            return empty();
-        }
-        return Optional.of((String) list.get(0).get("PERSON_ID"));
-    }
-
-    public Try<String> retrievePersonidFromFnr(Fnr fnr) {
-        return Try.of(() ->
-                select(db.getDataSource(), OPPFOLGINGSBRUKER, this::personIdMapper)
-                        .column("PERSON_ID")
-                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
-                        .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
-    }
-
-    @SneakyThrows
-    private String personIdMapper(ResultSet resultSet) {
-        return resultSet.getBigDecimal("PERSON_ID").toPlainString();
-    }
 
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
         Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
@@ -317,13 +346,6 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
-    public void insertAktoeridToPersonidMapping(String aktoerId, String personId) {
-        try {
-            db.update(insertPersonidAktoeridMappingSQL(), aktoerId, personId);
-        } catch (DuplicateKeyException e) {
-            LOG.info("Aktoerid {} personId {} mapping finnes i databasen", aktoerId, personId);
-        }
-    }
 
     public void slettYtelsesdata() {
         SqlUtils.update(db, "bruker_data")

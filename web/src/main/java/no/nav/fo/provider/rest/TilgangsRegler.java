@@ -1,6 +1,6 @@
 package no.nav.fo.provider.rest;
 
-import javaslang.Tuple;
+import io.vavr.Tuple;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;

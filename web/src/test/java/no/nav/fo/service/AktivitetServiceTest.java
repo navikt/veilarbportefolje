@@ -7,6 +7,7 @@ import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
 import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.PersonId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -47,8 +48,8 @@ public class AktivitetServiceTest {
         int antallPersoner = 16259;
 
         List<String> aktoerids = new ArrayList<>(antallPersoner);
-        for(int i = 0; i< antallPersoner; i++) {
-            aktoerids.add("aktoerid"+ Integer.toString(i));
+        for (int i = 0; i < antallPersoner; i++) {
+            aktoerids.add("aktoerid" + Integer.toString(i));
         }
 
         ArgumentCaptor<AktivitetBrukerOppdatering> captor = ArgumentCaptor.forClass(AktivitetBrukerOppdatering.class);
@@ -59,7 +60,7 @@ public class AktivitetServiceTest {
 
         when(brukerRepository.getDistinctAktoerIdsFromAktivitet()).thenReturn(aktoerids);
 
-        when(brukerRepository.getAktiviteterForListOfAktoerid(anyList())).thenAnswer( invocationOnMock -> {
+        when(brukerRepository.getAktiviteterForListOfAktoerid(anyList())).thenAnswer(invocationOnMock -> {
             List<String> aktorer = (ArrayList<String>) invocationOnMock.getArguments()[0];
             return aktorer
                     .stream()
@@ -74,7 +75,9 @@ public class AktivitetServiceTest {
                     .collect(Collectors.toList());
         });
 
-        when(aktoerService.hentPersonidFraAktoerid(any(AktoerId.class))).thenAnswer(invocationOnMock -> Optional.of((invocationOnMock.getArguments()[0]).toString()));
+        when(aktoerService
+                .hentPersonidFraAktoerid(any(AktoerId.class)))
+                .thenAnswer(args -> Optional.of(new PersonId(args.getArgumentAt(0, AktoerId.class).toString())));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 

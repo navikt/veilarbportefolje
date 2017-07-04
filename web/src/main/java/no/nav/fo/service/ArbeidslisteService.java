@@ -1,6 +1,6 @@
 package no.nav.fo.service;
 
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
