@@ -1,6 +1,6 @@
 package no.nav.fo.database;
 
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;

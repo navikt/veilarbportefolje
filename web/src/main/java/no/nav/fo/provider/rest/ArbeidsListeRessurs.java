@@ -39,7 +39,6 @@ public class ArbeidsListeRessurs {
     @GET
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-
             ValideringsRegler.sjekkFnr(fnr);
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
