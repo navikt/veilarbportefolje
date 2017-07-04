@@ -1,11 +1,11 @@
 package no.nav.fo.service;
 
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
-import no.nav.fo.exception.FantIkkeFnrException;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.util.sql.where.WhereClause;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentRequest;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static no.nav.fo.util.sql.SqlUtils.upsert;
 
@@ -34,25 +35,32 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private BrukerRepository brukerRepository;
 
-    public Optional<String> hentPersonidFraAktoerid(AktoerId aktoerid) {
-        Optional<String> personid = hentSingleFraDb(
-                db,
-                "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?",
-                (data) -> (String) data.get("PERSONID"),
-                aktoerid.toString()
-        );
+    public Optional<String> hentPersonidFraAktoerid(AktoerId aktoerId) {
+        return
+                brukerRepository
+                        .retrievePersonid(aktoerId)
+                        .orElse(trySoapService(aktoerId))
+                        .map(PersonId::toString)
+                        .toJavaOptional();
+    }
 
-        return Optional.ofNullable(personid
-                .orElseGet(() -> {
-                    Try<WSHentIdentForAktoerIdResponse> response = Try.of(() -> endpoint.hentIdentForAktoerId(new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerid.toString())));
+    private Supplier<Try<? extends PersonId>> trySoapService(AktoerId aktoerId) {
+        return () -> hentFnrViaSoap(aktoerId)
+                .flatMap(brukerRepository::retrievePersonidFromFnr)
+                .andThen(personId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId))
+                .onFailure(e -> log.warn("Kunne ikke finne personId for aktoerId {}.", aktoerId));
+    }
 
-                    Try<String> personId = Try.of(() -> brukerRepository
-                            .retrievePersonidFromFnr(new Fnr(response.get().getIdent()))
-                            .getOrElseThrow(() -> new FantIkkeFnrException(response.get().getIdent())));
+    private Try<Fnr> hentFnrViaSoap(AktoerId aktoerId) {
+        WSHentIdentForAktoerIdRequest soapRequest = new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerId.toString());
 
-                    brukerRepository.insertAktoeridToPersonidMapping(aktoerid.toString(), personId.get());
-                    return personId.get();
-                }));
+        return
+                Try.of(
+                        () -> endpoint.hentIdentForAktoerId(soapRequest))
+                        .map(WSHentIdentForAktoerIdResponse::getIdent)
+                        .map(Fnr::new)
+                        .onFailure(e -> log.warn("SOAP-Kall mot aktoerService (AktoerV2) feilet: {}", e.getMessage())
+                        );
     }
 
     private static <T> Optional<T> hentSingleFraDb(JdbcTemplate db, String sql, Function<Map<String, Object>, T> mapper, Object... args) {

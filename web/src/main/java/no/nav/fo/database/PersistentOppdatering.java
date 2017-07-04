@@ -36,7 +36,7 @@ public class PersistentOppdatering {
     }
 
     public void lagreBrukeroppdateringerIDB(List<BrukerOppdatering> brukerOppdatering) {
-        javaslang.collection.List.ofAll(brukerOppdatering)
+        io.vavr.collection.List.ofAll(brukerOppdatering)
                 .sliding(1000, 1000)
                 .forEach(MetricsUtils.timed("GR199.upsert1000",(oppdateringer) -> {
                     Map<String, Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(oppdateringer

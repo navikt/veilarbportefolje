@@ -25,7 +25,7 @@ public class OppdaterBrukerdataFletter {
 
     public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
         String personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(bruker.getAktoerid())).orElseThrow(() -> {
-            getLogger(OppdaterBrukerdataFletter.class).warn("Fant ikke personid for aktoerid {} ", bruker.getAktoerid());
+            LOG.warn("Fant ikke personid for aktoerid {} ", bruker.getAktoerid());
             return new FantIkkePersonIdException(bruker.getAktoerid());
         });
         BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
