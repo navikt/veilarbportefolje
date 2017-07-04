@@ -111,14 +111,13 @@ public class SolrService {
         Timestamp timestamp = Timestamp.valueOf(t0);
 
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
-        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         if (dokumenter.isEmpty()) {
             LOG.info("Ingen nye dokumenter i databasen");
             return;
         }
 
+        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         applyAktivitetStatuser(dokumenter, brukerRepository);
-
         addDocuments(dokumenter);
         commit();
         brukerRepository.updateTidsstempel(timestamp);
