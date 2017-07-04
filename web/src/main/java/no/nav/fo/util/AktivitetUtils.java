@@ -3,6 +3,7 @@ package no.nav.fo.util;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Aktivitet.*;
 import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
@@ -21,8 +22,8 @@ public class AktivitetUtils {
     public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter, AktoerService aktoerService) {
         return aktoerAktiviteter
                 .stream()
-                .map( aktoerAktivitet -> {
-                    String personid = getPersonId(new AktoerId(aktoerAktivitet.getAktoerid()), aktoerService);
+                .map(aktoerAktivitet -> {
+                    String personid = getPersonId(new AktoerId(aktoerAktivitet.getAktoerid()), aktoerService).toString();
                     return konverterTilBrukerOppdatering(aktoerAktivitet.getAktiviteter(), aktoerAktivitet.getAktoerid(), personid);
                 })
                 .collect(toList());
@@ -43,7 +44,7 @@ public class AktivitetUtils {
 
 
     public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(String aktoerid, AktoerService aktoerService, BrukerRepository brukerRepository) {
-        String personid = getPersonId(new AktoerId(aktoerid), aktoerService);
+        String personid = getPersonId(new AktoerId(aktoerid), aktoerService).toString();
 
         List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
 
@@ -54,15 +55,15 @@ public class AktivitetUtils {
         return aktivitetStatusListe
                 .stream()
                 .filter(status -> !AktivitetFullfortStatuser.contains(status))
-                .anyMatch( match -> true);
+                .anyMatch(match -> true);
     }
 
     public static boolean erBrukerIAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
-                .filter( aktivitet -> !AktivitetFullfortStatuser.contains(aktivitet.getStatus()))
-                .filter( aktivitet -> erAktivitetIPeriode(aktivitet, today))
-                .anyMatch( match -> true);
+                .filter(aktivitet -> !AktivitetFullfortStatuser.contains(aktivitet.getStatus()))
+                .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
+                .anyMatch(match -> true);
 
     }
 
@@ -100,10 +101,10 @@ public class AktivitetUtils {
     }
 
     public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
-        for(SolrInputDocument document : dokumenter) {
+        for (SolrInputDocument document : dokumenter) {
             String personid = (String) document.get("person_id").getValue();
             Map<String, Timestamp> statusMap = brukerRepository.getAktivitetStatusMap(personid);
-            AktivitetData.aktivitetTyperList.forEach( (type) -> document.addField(type.toString(), statusMap.get(type.toString())));
+            AktivitetData.aktivitetTyperList.forEach((type) -> document.addField(type.toString(), statusMap.get(type.toString())));
         }
     }
 
@@ -111,8 +112,10 @@ public class AktivitetUtils {
         applyAktivitetStatuser(singletonList(dokument), brukerRepository);
     }
 
-    static String getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
-        return aktoerService.hentPersonidFraAktoerid(aktoerid).orElseThrow(() -> new FantIkkePersonIdException(format("Fant ikke personid for aktor id: %s", aktoerid)));
+    static PersonId getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
+        return aktoerService
+                .hentPersonidFraAktoerid(aktoerid)
+                .orElseThrow(() -> new FantIkkePersonIdException(format("Fant ikke personid for aktor id: %s", aktoerid)));
 
     }
 }

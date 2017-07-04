@@ -2,6 +2,7 @@ package no.nav.fo.database;
 
 import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.Brukerdata;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.MetricsUtils;
 
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -73,11 +73,11 @@ public class PersistentOppdatering {
     }
 
     public void lagreISolr(Brukerdata brukerdata) {
-        solrService.indekserBrukerdata(brukerdata.getPersonid());
+        solrService.indekserBrukerdata(new PersonId(brukerdata.getPersonid()));
     }
 
     private Brukerdata hentBruker(String personid) {
-        List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(asList(personid));
+        List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(singletonList(personid));
         if (brukerdata.isEmpty()) {
             return new Brukerdata().setPersonid(personid);
         }

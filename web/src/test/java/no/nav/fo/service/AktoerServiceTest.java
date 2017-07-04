@@ -28,7 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ApplicationConfigTest.class })
+@ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class AktoerServiceTest {
 
     @Inject
@@ -45,7 +45,7 @@ public class AktoerServiceTest {
 
 
     @Before
-    public  void setUp() throws Exception {
+    public void setUp() throws Exception {
 
         WSHentAktoerIdForIdentResponse aktoerIdResponse = new WSHentAktoerIdForIdentResponse().withAktoerId(AKTOERID_FRA_SOAP_TJENESTE);
         when(aktoerV2.hentAktoerIdForIdent(any())).thenReturn(aktoerIdResponse);
@@ -64,16 +64,16 @@ public class AktoerServiceTest {
     @Test
     public void skalFinnePersonIdFraDatabase() throws Exception {
         AktoerId aktoerId = new AktoerId("111");
-        String personId = "000";
+        PersonId personId = new PersonId("222");
         int result =
                 insert(db, "AKTOERID_TO_PERSONID")
-                        .value("PERSONID", personId)
+                        .value("PERSONID", personId.toString())
                         .value("AKTOERID", aktoerId.toString())
                         .execute();
 
         assertTrue(result > 0);
 
-        Optional<String> maybePersonId = aktoerService.hentPersonidFraAktoerid(aktoerId);
+        Optional<PersonId> maybePersonId = aktoerService.hentPersonidFraAktoerid(aktoerId);
         assertTrue(maybePersonId.isPresent());
         assertEquals(personId, maybePersonId.get());
     }
@@ -81,16 +81,17 @@ public class AktoerServiceTest {
     @Test
     public void skalFinnePersonIdViaSoapTjeneste() throws Exception {
         AktoerId aktoerId = new AktoerId("111");
-        String personId = "999";
+        PersonId personId = new PersonId("222");
 
-        int result = insert(db, OPPFOLGINGSBRUKER)
-                .value("PERSON_ID", personId)
-                .value("FODSELSNR", FNR_FRA_SOAP_TJENESTE)
-                .execute();
+        int result =
+                insert(db, OPPFOLGINGSBRUKER)
+                        .value("PERSON_ID", personId.toString())
+                        .value("FODSELSNR", FNR_FRA_SOAP_TJENESTE)
+                        .execute();
 
         assertTrue(result > 0);
 
-        Optional<String> maybePersonId = aktoerService.hentPersonidFraAktoerid(aktoerId);
+        Optional<PersonId> maybePersonId = aktoerService.hentPersonidFraAktoerid(aktoerId);
         assertTrue(maybePersonId.isPresent());
         assertEquals(personId, maybePersonId.get());
     }

@@ -31,12 +31,11 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private BrukerRepository brukerRepository;
 
-    public Optional<String> hentPersonidFraAktoerid(AktoerId aktoerId) {
+    public Optional<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         return
                 brukerRepository
                         .retrievePersonid(aktoerId)
                         .orElse(hentPersonIdViaSoap(aktoerId))
-                        .map(PersonId::toString)
                         .toJavaOptional();
     }
 

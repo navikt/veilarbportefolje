@@ -206,9 +206,9 @@ public class SolrService {
         return SolrUtils.mapFacetResults(facetField);
     }
 
-    public void indekserBrukerdata(String personId) {
+    public void indekserBrukerdata(PersonId personId) {
         LOG.info("Legger bruker med personId {} til i indeksen ", personId);
-        SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId);
+        SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
 
         LOG.info("Legger bruker med personId {} til i indeksen ", personId);
         applyAktivitetStatuser(brukerDokument, brukerRepository);

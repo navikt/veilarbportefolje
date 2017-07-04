@@ -24,10 +24,15 @@ public class OppdaterBrukerdataFletter {
 
 
     public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
-        String personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(bruker.getAktoerid())).orElseThrow(() -> {
-            LOG.warn("Fant ikke personid for aktoerid {} ", bruker.getAktoerid());
-            return new FantIkkePersonIdException(bruker.getAktoerid());
-        });
+
+        String personId =
+                aktoerService
+                        .hentPersonidFraAktoerid(new AktoerId(bruker.getAktoerid()))
+                        .orElseThrow(() -> {
+                            LOG.warn("Fant ikke personid for aktoerid {}", bruker.getAktoerid());
+                            return new FantIkkePersonIdException(bruker.getAktoerid());
+                        }).toString();
+
         BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
         persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
     }
