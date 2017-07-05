@@ -2,6 +2,7 @@ package no.nav.fo.mock;
 
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
 
 import java.util.Optional;
@@ -17,8 +18,8 @@ public class AktoerServiceMock implements AktoerService {
     public static final String AKTOER_ID_FAIL = "9999999999992";
 
     @Override
-    public Optional<String> hentPersonidFraAktoerid(AktoerId aktoerid) {
-        return Optional.of(PERSON_ID);
+    public Optional<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid) {
+        return Optional.of(PERSON_ID).map(PersonId::new);
     }
 
 

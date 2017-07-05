@@ -1,6 +1,6 @@
 package no.nav.fo.service;
 
-import javaslang.control.Try;
+import io.vavr.control.Try;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

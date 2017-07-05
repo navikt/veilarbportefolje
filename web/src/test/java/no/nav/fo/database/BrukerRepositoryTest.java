@@ -1,7 +1,7 @@
 package no.nav.fo.database;
 
 import com.google.common.base.Joiner;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.Aktivitet.AktivitetDTO;
 import no.nav.fo.domene.Aktivitet.AktivitetData;
@@ -514,22 +514,33 @@ public class BrukerRepositoryTest {
     public void skalHentePersonIdFraDatabase() throws Exception {
         Fnr fnr = new Fnr("12345678900");
 
+        PersonId expectedPersonId = new PersonId("123456");
         int execute = insert(jdbcTemplate, OPPFOLGINGSBRUKER)
-                .value("PERSON_ID", "123456")
+                .value("PERSON_ID", expectedPersonId.toString())
                 .value("FODSELSNR", fnr.toString())
                 .value("NAV_KONTOR", "123")
                 .execute();
 
         assertTrue(execute > 0);
 
-        Try<String> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
         assertTrue(result.isSuccess());
+        assertEquals(expectedPersonId, result.get());
     }
 
     @Test
     public void skalFeileOmIngenPersonIdFinnes() throws Exception {
         Fnr fnr = new Fnr("99999999999");
-        Try<String> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
         assertTrue(result.isFailure());
+    }
+
+    @Test
+    public void skalInserteAktoerIdToPersonMapping() throws Exception {
+        AktoerId aktoerId = new AktoerId("99999");
+        PersonId personId = new PersonId("99999999");
+        Try<Integer> result = brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
+        assertTrue(result.isSuccess());
+        assertTrue(result.get() == 1);
     }
 }

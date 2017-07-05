@@ -1,6 +1,6 @@
 package no.nav.fo.service;
 
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeRequest;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeResponse;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;

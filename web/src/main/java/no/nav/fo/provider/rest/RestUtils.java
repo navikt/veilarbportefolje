@@ -1,6 +1,6 @@
 package no.nav.fo.provider.rest;
 
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import no.nav.fo.exception.RestBadGateWayException;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.exception.RestTilgangException;
@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -25,16 +26,12 @@ class RestUtils {
         statusmap.put(RestNotFoundException.class, Response.Status.NOT_FOUND);
     }
 
-    static Response createResponse(Try.CheckedSupplier<Object> supplier) {
-        return createResponse(supplier, OK);
+    static Response createResponse(Supplier<Object> supplier) {
+        return createResponse(Try.ofSupplier(supplier), OK);
     }
 
-    static Response createResponse(Try<Object> supplier) {
-        return createResponse(supplier, OK);
-    }
-
-    static Response createResponse(Try.CheckedSupplier<Object> supplier, Response.Status status) {
-        return createResponse(Try.of(supplier), status);
+    static Response createResponse(Supplier<Object> supplier, Response.Status status) {
+        return createResponse(Try.ofSupplier(supplier), status);
     }
 
     static Response createResponse(Try<Object> response, Response.Status status) {
