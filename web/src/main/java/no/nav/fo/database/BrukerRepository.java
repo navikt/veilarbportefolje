@@ -251,12 +251,15 @@ public class BrukerRepository {
     }
 
     public List<AktoerAktiviteter> getAktiviteterForListOfAktoerid(Collection<String> aktoerids) {
+        if (aktoerids.isEmpty()) {
+            return emptyList();
+        }
+
         Map<String, Object> params = new HashMap<>();
         Map<String, List<AktivitetDTO>> aktoerTilAktiviteterMap = new HashMap<>(aktoerids.size());
         List<AktoerAktiviteter> aktoerAktiviteter = new ArrayList<>(aktoerids.size());
 
         params.put("aktoerids", aktoerids);
-
         List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(getAktiviteterForAktoeridsSql(), params);
 
         queryResult.forEach(aktivitet -> {

@@ -38,6 +38,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
+import static no.nav.fo.util.MetricsUtils.timed;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -53,6 +54,7 @@ public class SolrService {
     private BrukerRepository brukerRepository;
     private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
+    private AktivitetService aktivitetService;
 
     @Inject
     public SolrService(
@@ -60,7 +62,8 @@ public class SolrService {
             @Named("solrClientSlave") SolrClient solrClientSlave,
             BrukerRepository brukerRepository,
             ArbeidslisteRepository arbeidslisteRepository,
-            AktoerService aktoerService
+            AktoerService aktoerService,
+            AktivitetService aktivitetService
     ) {
 
         this.solrClientMaster = solrClientMaster;
@@ -68,10 +71,12 @@ public class SolrService {
         this.brukerRepository = brukerRepository;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
+        this.aktivitetService = aktivitetService;
     }
 
     @Transactional
     public void hovedindeksering() {
+        timed("aktiviteter.utled.statuser", () -> {aktivitetService.utledOgLagreAlleAktivitetstatuser(); return null; });
         if (SolrUtils.isSlaveNode()) {
             LOG.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;

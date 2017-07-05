@@ -81,7 +81,7 @@ public class AktoerServiceImpl implements AktoerService {
                         () -> soapService.hentIdentForAktoerId(soapRequest))
                         .map(WSHentIdentForAktoerIdResponse::getIdent)
                         .map(Fnr::new)
-                        .onFailure(e -> log.warn("SOAP-Kall mot baksystem (AktoerV2) feilet: {}", e.getMessage())
+                        .onFailure(e -> log.warn("SOAP-Kall mot baksystem (AktoerV2) feilet for aktoerId {} | {}", aktoerId, e.getMessage())
                         );
     }
 
