@@ -71,11 +71,11 @@ public class UnderOppfolgingReglerTest {
     }
 
 
-    @Test
+//    @Test
     public void sjekkUnderOppfolging_AlleKombinasjoner() {
         for (String fgKode : FORMIDLINGSGRUPPEKODER) {
             for (String kgKode : KVALIFISERINGSGRUPPEKODER) {
-                System.out.println(String.format("[%s] [%s] - [%s]", fgKode, kgKode, UnderOppfolgingRegler.erUnderOppfolging(fgKode, kgKode)));
+                System.out.println(String.format("[%s] [%s] - [%s]", fgKode, kgKode, erUnderOppfolging(fgKode, kgKode)));
             }
             System.out.println("-------");
         }
