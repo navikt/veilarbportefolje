@@ -76,7 +76,14 @@ public class SolrService {
 
     @Transactional
     public void hovedindeksering() {
-        timed("aktiviteter.utled.statuser", () -> {aktivitetService.utledOgLagreAlleAktivitetstatuser(); return null; });
+
+        Try.of(() ->
+                timed("aktiviteter.utled.statuser", () -> {
+                    aktivitetService.utledOgLagreAlleAktivitetstatuser();
+                    return null;
+                })
+        ).onFailure(e -> LOG.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
+
         if (SolrUtils.isSlaveNode()) {
             LOG.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
