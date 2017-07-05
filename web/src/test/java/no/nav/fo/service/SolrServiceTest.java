@@ -42,14 +42,12 @@ public class SolrServiceTest {
     private ArbeidslisteRepository arbeidslisteRepository;
     @Mock
     private AktoerService aktoerService;
-    @Mock
-    private AktivitetService aktivitetService;
 
     private SolrService service;
 
     @Before
     public void setup() {
-        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, aktivitetService);
+        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 
     @Test
