@@ -27,4 +27,25 @@ VALUES (
   '9999999999991',
   'jobbsoeking',
   'fullfort'
+);
+
+INSERT INTO AKTIVITETER (
+  AKTIVITETID,
+  AKTOERID,
+  AKTIVITETTYPE,
+  AVTALT,
+  FRADATO,
+  TILDATO,
+  OPPDATERTDATO,
+  STATUS
+)
+VALUES (
+  '99',
+  '9999',
+  'jobbsoeking',
+  1,
+  SYSDATE - 1,
+  SYSDATE,
+  SYSDATE,
+  'fullfort'
 )
