@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.dialogarena.types.Pingable;
@@ -61,8 +62,11 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
-        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
+    public AktivitetService aktivitetService() {
+        return new AktivitetService();}
+
+    @Bean
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 
     @Bean

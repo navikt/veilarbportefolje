@@ -31,6 +31,4 @@ public class ServiceConfig {
     @Bean
     public AktoerService aktoerService() { return new AktoerServiceImpl(); }
 
-    @Bean
-    public AktivitetService aktivitetService() { return new AktivitetService(); }
 }
