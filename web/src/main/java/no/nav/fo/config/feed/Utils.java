@@ -1,6 +1,7 @@
 package no.nav.fo.config.feed;
 
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -15,17 +16,19 @@ public class Utils {
     }
 
     public static Pingable urlPing(String name, String url) {
+        PingMetadata metadata = new PingMetadata(url, name, true);
+
         return () -> {
             try {
                 HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
                 connection.connect();
                 if (connection.getResponseCode() == 200) {
-                    return Pingable.Ping.lyktes(name);
+                    return Pingable.Ping.lyktes(metadata);
                 }
             } catch (IOException e) {
-                return Pingable.Ping.feilet(name, e);
+                return Pingable.Ping.feilet(metadata, e);
             }
-            return Pingable.Ping.feilet(name, new RuntimeException("Noe gikk feil."));
+            return Pingable.Ping.feilet(metadata, new RuntimeException("URL-Ping feilet."));
         };
     }
 }

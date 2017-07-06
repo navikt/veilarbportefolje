@@ -1,6 +1,6 @@
 package no.nav.fo.config;
 
-import no.nav.fo.internal.IsAliveServlet;
+import no.nav.apiapp.ApiApplication;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientMock;
@@ -15,6 +15,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+
+import static no.nav.apiapp.ApiApplication.Sone.FSS;
 
 @EnableAspectJAutoProxy
 @EnableScheduling
@@ -31,16 +33,11 @@ import javax.sql.DataSource;
         AbacContext.class,
         CacheConfig.class
 })
-public class LocalApplicationConfig {
+public class LocalApplicationConfig implements ApiApplication{
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean
-    public IsAliveServlet isAliveServlet() {
-        return new IsAliveServlet();
     }
 
     @Bean
@@ -56,5 +53,10 @@ public class LocalApplicationConfig {
     @Bean
     public PepClient pepClient() {
         return new PepClientMock();
+    }
+
+    @Override
+    public Sone getSone() {
+        return FSS;
     }
 }

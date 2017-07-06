@@ -18,10 +18,15 @@
     </properties>
 
     <dependencies>
+
         <!--FELLESBIBLIOTEKER-->
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>feed</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>api-app</artifactId>
         </dependency>
 
         <!-- Virksomhetstjenester -->
@@ -344,11 +349,6 @@
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>api-app</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
