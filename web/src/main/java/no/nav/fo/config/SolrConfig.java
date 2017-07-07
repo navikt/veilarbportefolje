@@ -5,6 +5,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
+import no.nav.fo.service.SolrServiceImpl;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.http.HttpException;
@@ -66,7 +67,7 @@ public class SolrConfig {
         return new AktivitetService();}
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 
     @Bean

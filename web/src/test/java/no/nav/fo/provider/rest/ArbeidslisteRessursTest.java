@@ -1,4 +1,4 @@
-package no.nav.fo.provider.rest.localintegration;
+package no.nav.fo.provider.rest;
 
 import com.squareup.okhttp.Response;
 import no.nav.fo.testutil.LocalIntegrationTest;
@@ -16,7 +16,7 @@ import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
+public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     private static final JdbcTemplate DB = new JdbcTemplate(ds);
 
