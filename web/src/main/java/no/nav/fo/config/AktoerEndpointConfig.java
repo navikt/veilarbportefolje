@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static java.lang.System.getProperty;
+import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
-import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
 
 @Configuration
 public class AktoerEndpointConfig {
@@ -21,12 +21,18 @@ public class AktoerEndpointConfig {
 
     @Bean
     public Pingable aktoerV2Ping() {
+        Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
+                "Aktoer via SOAP" + System.getProperty("aktoer.endpoint.url"),
+                "Sjekker om Aktoer-tjenesten svarer.",
+                true
+        );
+
         return () -> {
             try {
                 factory().ping();
-                return lyktes("AKTOER_V2");
+                return lyktes(metadata);
             } catch (Exception e) {
-                return feilet("AKTOER_V2", e);
+                return feilet(metadata, e);
             }
         };
     }

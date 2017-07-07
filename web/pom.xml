@@ -18,10 +18,15 @@
     </properties>
 
     <dependencies>
+
         <!--FELLESBIBLIOTEKER-->
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>feed</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>api-app</artifactId>
         </dependency>
 
         <!-- Virksomhetstjenester -->
@@ -58,10 +63,6 @@
         </dependency>
 
         <!--Dialogarena-->
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>common-web</artifactId>
-        </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>common-test</artifactId>
@@ -342,15 +343,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>api-app</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
             <scope>test</scope>
@@ -358,7 +350,13 @@
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.modig</groupId>
+            <artifactId>modig-security-core</artifactId>
             <type>test-jar</type>
+            <scope>runtime</scope>
         </dependency>
 
     </dependencies>

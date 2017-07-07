@@ -16,47 +16,15 @@
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-    <listener>
-        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-    </listener>
-
+    <!--CONFIG FOR API-APP-->
     <context-param>
-        <param-name>contextClass</param-name>
-        <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
-    </context-param>
-
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
+        <param-name>springContekstKlasse</param-name>
         <param-value>no.nav.fo.config.ApplicationConfig</param-value>
     </context-param>
+    <listener>
+        <listener-class>no.nav.apiapp.ApiAppServletContextListener</listener-class>
+    </listener>
 
-    <servlet>
-        <servlet-name>selftest</servlet-name>
-        <servlet-class>no.nav.fo.internal.SelftestServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>selftest</servlet-name>
-        <url-pattern>/internal/selftest</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>selftest-json</servlet-name>
-        <servlet-class>no.nav.fo.internal.SelftestJsonServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>selftest-json</servlet-name>
-        <url-pattern>/internal/selftest.json</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>isAlive</servlet-name>
-        <servlet-class>no.nav.fo.internal.IsAliveServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>isAlive</servlet-name>
-        <url-pattern>/internal/isAlive</url-pattern>
-    </servlet-mapping>
     <servlet>
         <servlet-name>reindekserytelser</servlet-name>
         <servlet-class>no.nav.fo.internal.ReindekserYtelserServlet</servlet-class>
@@ -82,46 +50,6 @@
     <servlet-mapping>
         <servlet-name>restservlet</servlet-name>
         <url-pattern>/tjenester/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>swagger</servlet-name>
-        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>
-                io.swagger.jaxrs.listing,
-                no.nav.fo.provider.rest
-            </param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>swagger</servlet-name>
-        <url-pattern>internal/api/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>Jersey2Config</servlet-name>
-        <servlet-class>io.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
-        <init-param>
-            <param-name>api.version</param-name>
-            <param-value>1.0.0</param-value>
-        </init-param>
-        <init-param>
-            <param-name>swagger.api.basepath</param-name>
-            <param-value>/veilarbportefolje/api</param-value>
-        </init-param>
-        <load-on-startup>2</load-on-startup>
-    </servlet>
-    <servlet>
-        <servlet-name>SwaggerUI</servlet-name>
-        <servlet-class>no.nav.fo.config.SwaggerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>SwaggerUI</servlet-name>
-        <url-pattern>/internal/swagger/*</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

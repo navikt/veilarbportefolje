@@ -26,7 +26,7 @@ INSERT INTO BRUKER_DATA
 )
 VALUES
   (
-    '9999999999999',
+    '9999999999991',
     'testident',
     SYSDATE,
     '9999',
@@ -37,7 +37,22 @@ VALUES
     NULL,
     'J',
     SYSDATE,
-    NULL,
+    SYSDATE,
     NULL,
     NULL
   );
+
+INSERT INTO ARBEIDSLISTE (
+  AKTOERID,
+  SIST_ENDRET_AV_VEILEDERIDENT,
+  KOMMENTAR,
+  FRIST,
+  ENDRINGSTIDSPUNKT
+)
+VALUES (
+  '9999999999991',
+  'testident',
+  'Dette er en kommentar',
+  SYSDATE,
+  SYSDATE
+)

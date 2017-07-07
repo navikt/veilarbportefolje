@@ -72,6 +72,8 @@ public class SolrService {
 
     @Transactional
     public void hovedindeksering() {
+
+
         if (SolrUtils.isSlaveNode()) {
             LOG.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;

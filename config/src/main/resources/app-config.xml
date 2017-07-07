@@ -5,8 +5,7 @@
     <name>VeilArbPortefolje</name>
 
     <selftest>
-        <path>veilarbportefolje/internal/selftest.json</path>
-        <humanReadablePath>veilarbportefolje/internal/selftest</humanReadablePath>
+        <path>veilarbportefolje/internal/selftest</path>
     </selftest>
 
     <artifacts>

@@ -18,12 +18,18 @@ public class VirksomhetEnhetEndpointConfigMock {
     public Pingable virksomhetEnhetPing() {
         Enhet virksomhetEnhet = new EnhetMock();
 
+        Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
+                "SOAP via " + System.getProperty("norg.virksomhet_enhet.url"),
+                "Tjeneste for å hente ut enheter (NAV Kontor) som veiel",
+                true
+        );
+
         return () -> {
             try {
                 virksomhetEnhet.ping();
-                return Pingable.Ping.lyktes("VirksomhetEnhet");
+                return Pingable.Ping.lyktes(metadata);
             } catch (Exception e) {
-                return Pingable.Ping.feilet("Feilet", e);
+                return Pingable.Ping.feilet(metadata, e);
             }
         };
     }
