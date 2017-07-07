@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import static no.nav.fo.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.mock.AktoerServiceMock.*;
@@ -32,6 +33,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         super.setUp();
         DB.execute("truncate table " + BRUKERDATA);
         DB.execute("truncate table " + OPPFOLGINGSBRUKER);
+        DB.execute("truncate table " + ARBEIDSLISTE);
     }
 
     @Test
@@ -107,16 +109,16 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
 
     @Test
     public void skalReturnereNotFoundVedUthenting() throws Exception {
-        insertNotFoundBruker();
-        int actual = get("/tjenester/arbeidsliste/" + FNR_FAIL).code();
+        insertSuccessfulBruker();
+        int actual = get("/tjenester/arbeidsliste/" + FNR).code();
         int expected = 404;
         assertEquals(expected, actual);
     }
 
     @Test
     public void skalReturnereNotFoundVedSletting() throws Exception {
-        insertNotFoundBruker();
-        int actual = delete("/tjenester/arbeidsliste/" + "12345678901").code();
+        insertSuccessfulBruker();
+        int actual = delete("/tjenester/arbeidsliste/" + FNR).code();
         int expected = 404;
         assertEquals(expected, actual);
     }
@@ -208,7 +210,7 @@ public class ArbeidsListeLocalIntegrationTest extends LocalIntegrationTest {
         insert(DB, BRUKERDATA)
                 .value("PERSONID", NOT_FOUND_PERSONID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
-                .value("AKTOERID", AKTOER_ID)
+                .value("AKTOERID", "NOPE")
                 .execute();
     }
 
