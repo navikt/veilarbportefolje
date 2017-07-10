@@ -326,7 +326,7 @@ public class BrukerRepository {
         boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
                 (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
                         || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
-                        || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
+                        || innsatsgruppe.equals("VURDI"))));
 
         return aktivStatus || bruker.get("veileder_id").getValue() != null;
     }
