@@ -1,11 +1,21 @@
 package no.nav.fo.provider.rest;
 
+import io.vavr.collection.Seq;
+import io.vavr.control.Validation;
 import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestValideringException;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
@@ -49,4 +59,35 @@ class ValideringsRegler {
         }
     }
 
+    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste) {
+        return
+                Validation
+                        .combine(
+                                validateFnr(arbeidsliste.getFnr()),
+                                validateVeilderId(arbeidsliste.getVeilederId()),
+                                validateKommentar(arbeidsliste.getKommentar()),
+                                validateFrist(arbeidsliste.getFrist())
+                        )
+                        .ap(ArbeidslisteData::of);
+    }
+
+    private static Validation<String, Timestamp> validateFrist(String frist) {
+        Timestamp timestamp = Timestamp.from(Instant.parse(frist));
+        return valid(timestamp);
+    }
+
+    private static Validation<String, String> validateKommentar(String kommentar) {
+        return valid(kommentar);
+    }
+
+    private static Validation<String, VeilederId> validateVeilderId(String veilederId) {
+        return valid(new VeilederId(veilederId));
+    }
+
+    private static Validation<String, Fnr> validateFnr(String fnr) {
+        if (fnr != null && fnr.matches("\\d{11}")) {
+            return valid(new Fnr(fnr));
+        }
+        return invalid(format("%s er ikke et gyldig fnr", fnr));
+    }
 }

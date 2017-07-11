@@ -1,6 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import io.vavr.Tuple;
+import io.vavr.control.Validation;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
@@ -14,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -67,9 +70,13 @@ public class TilgangsRegler {
         }
     }
 
-    static void erVeilederForBruker(ArbeidslisteService arbeidslisteService, Fnr fnr) {
+    static Validation<String, Fnr> erVeilederForBruker(ArbeidslisteService arbeidslisteService, Fnr fnr) {
         SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
         VeilederId veilederId = new VeilederId(subjectHandler.getUid());
-        test("er veileder for bruker", fnr, arbeidslisteService.erVeilederForBruker(fnr, veilederId));
+
+        if (arbeidslisteService.erVeilederForBruker(fnr, veilederId)) {
+            return valid(fnr);
+        }
+        return invalid(format("Veileder %s er ikke veileder for bruker med fnr %s", veilederId, fnr));
     }
 }

@@ -1,8 +1,11 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.fo.domene.Fnr;
-import no.nav.fo.domene.VeilederId;
+import io.vavr.collection.List;
+import io.vavr.collection.Seq;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
+import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
@@ -18,12 +21,14 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.function.Function;
 
+import static io.vavr.collection.List.empty;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.*;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
+import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
 
 @Api(value = "arbeidsliste")
-@Path("/arbeidsliste/{fnr}")
+@Path("/arbeidsliste/")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeRessurs {
@@ -36,7 +41,36 @@ public class ArbeidsListeRessurs {
     @Inject
     private BrukertilgangService brukertilgangService;
 
+    @PUT
+    public Response putArbeidsListe(List<ArbeidslisteRequest> arbeidsliste) {
+        Response.ResponseBuilder response = Response.ok();
+
+        List<String> tilgangErrors = arbeidsliste
+                .map(ArbeidslisteRequest::getFnr)
+                .map(Fnr::new)
+                .map(fnr -> TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr))
+                .filter(Validation::isInvalid)
+                .map(Validation::getError);
+
+        if (tilgangErrors.isEmpty()) {
+            RestResponse<AktoerId> responseBody =
+                    arbeidsliste
+                            .map(
+                                    elem ->
+                                            validerArbeidsliste(elem)
+                                                    .map(arbeidslisteService::createArbeidsliste)
+                                                    .fold(validationErrors(response), data(response))
+                            )
+                            .reduce(RestResponse::merge);
+
+            return response.entity(responseBody).build();
+        }
+        RestResponse<Arbeidsliste> body = new RestResponse<>(tilgangErrors, empty());
+        return response.status(FORBIDDEN).entity(body).build();
+    }
+
     @GET
+    @Path("{fnr}/")
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
             ValideringsRegler.sjekkFnr(fnr);
@@ -49,8 +83,8 @@ public class ArbeidsListeRessurs {
         });
     }
 
-
     @PUT
+    @Path("{fnr}/")
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
             ValideringsRegler.sjekkFnr(fnr);
@@ -65,6 +99,7 @@ public class ArbeidsListeRessurs {
     }
 
     @POST
+    @Path("{fnr}/")
     public Response postArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
             ValideringsRegler.sjekkFnr(fnr);
@@ -79,6 +114,7 @@ public class ArbeidsListeRessurs {
     }
 
     @DELETE
+    @Path("{fnr}/")
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
             ValideringsRegler.sjekkFnr(fnr);
@@ -101,5 +137,22 @@ public class ArbeidsListeRessurs {
                 .setVeilederId(new VeilederId(body.getVeilederId()))
                 .setKommentar(body.getKommentar())
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
+    }
+
+    private Function<Try<AktoerId>, RestResponse<AktoerId>> data(Response.ResponseBuilder response) {
+        return data -> {
+            if (data.isFailure()) {
+                response.status(NOT_FOUND);
+                return new RestResponse<>(List.of(data.getCause().getMessage()), empty());
+            }
+            return RestResponse.of(data.get());
+        };
+    }
+
+    private Function<Seq<String>, RestResponse<AktoerId>> validationErrors(Response.ResponseBuilder response) {
+        return validationErr -> {
+            response.status(BAD_REQUEST);
+            return new RestResponse<>(validationErr.toList(), empty());
+        };
     }
 }
