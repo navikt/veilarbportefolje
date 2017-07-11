@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 @Configuration
 public class DialogaktorfeedConfig {
@@ -30,6 +30,9 @@ public class DialogaktorfeedConfig {
     @Value("${dialogaktor.feed.consumer.pollingrate.cron}")
     private String polling;
 
+    @Value("${dialogaktor.feed.pagesize :? 500}")
+    private int pageSize;
+
     @Bean
     public FeedConsumer<DialogDataFraFeed> dialogDataFraFeedFeedConsumer(JdbcTemplate db, DialogDataFeedHandler callback) {
         FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(
@@ -40,7 +43,8 @@ public class DialogaktorfeedConfig {
         )
                 .pollingInterval(polling)
                 .callback(callback)
-                .interceptors(asList(new OidcFeedOutInterceptor()));
+                .pageSize(pageSize)
+                .interceptors(singletonList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);
     }

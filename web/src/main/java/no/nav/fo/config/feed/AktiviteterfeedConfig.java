@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 @Configuration
 public class AktiviteterfeedConfig {
@@ -30,6 +30,9 @@ public class AktiviteterfeedConfig {
     @Value("${aktiviteter.feed.consumer.pollingrate.cron}")
     private String polling;
 
+    @Value("${dialogaktor.feed.pagesize :? 500}")
+    private int pageSize;
+
     @Bean
     public FeedConsumer<AktivitetDataFraFeed> aktivitetDataFraFeedFeedConsumer(JdbcTemplate db, AktivitetFeedHandler callback, BrukerRepository brukerRepository) {
         FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(
@@ -40,7 +43,8 @@ public class AktiviteterfeedConfig {
         )
                 .pollingInterval(polling)
                 .callback(callback)
-                .interceptors(asList(new OidcFeedOutInterceptor()));
+                .pageSize(pageSize)
+                .interceptors(singletonList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);
     }

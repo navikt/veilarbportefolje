@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 @Configuration
 public class TilordningerfeedConfig {
@@ -32,6 +32,9 @@ public class TilordningerfeedConfig {
     @Value("${tilordninger.feed.consumer.pollingratewebhook.cron}")
     private String webhookPolling;
 
+    @Value("${tilordninger.feed.pagesize ?: 500}")
+    private int pageSize;
+
     @Bean
     public FeedConsumer<BrukerOppdatertInformasjon> brukerOppdatertInformasjonFeedConsumer(JdbcTemplate db, TilordningFeedHandler callback) {
         FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(
@@ -43,7 +46,8 @@ public class TilordningerfeedConfig {
                 .pollingInterval(polling)
                 .webhookPollingInterval(webhookPolling)
                 .callback(callback)
-                .interceptors(asList(new OidcFeedOutInterceptor()));
+                .pageSize(pageSize)
+                .interceptors(singletonList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);
     }
