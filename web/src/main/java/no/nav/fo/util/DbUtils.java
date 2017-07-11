@@ -64,13 +64,13 @@ public class DbUtils {
         document.addField("kjonn", FodselsnummerUtils.lagKjonn(fieldGetter.apply(rs, "fodselsnr")));
         document.addField("ytelse", fieldGetter.apply(rs, "ytelse"));
         document.addField("utlopsdato", parseDato(fieldGetter.apply(rs, "utlopsdato")));
-        document.addField("utlopsdato_mnd_fasett", fieldGetter.apply(rs, "utlopsdatofasett"));
+        document.addField("utlopsdatofasett", fieldGetter.apply(rs, "utlopsdatofasett"));
         document.addField("dagputlopuke", parseInt(fieldGetter.apply(rs, "dagputlopuke")));
-        document.addField("dagputlopuke_fasett", fieldGetter.apply(rs, "dagputlopukefasett"));
+        document.addField("dagputlopukefasett", fieldGetter.apply(rs, "dagputlopukefasett"));
         document.addField("permutlopuke", parseInt(fieldGetter.apply(rs, "permutlopuke")));
-        document.addField("permutlopuke_fasett", fieldGetter.apply(rs, "permutlopukefasett"));
+        document.addField("permutlopukefasett", fieldGetter.apply(rs, "permutlopukefasett"));
         document.addField("aapmaxtiduke", parseInt(fieldGetter.apply(rs, "aapmaxtiduke")));
-        document.addField("aapmaxtiduke_fasett", fieldGetter.apply(rs, "aapmaxtidukefasett"));
+        document.addField("aapmaxtidukefasett", fieldGetter.apply(rs, "aapmaxtidukefasett"));
 
         return document;
     }

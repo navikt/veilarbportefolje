@@ -19,7 +19,6 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
     DagpengerUkeFasettMapping permutlopUkeFasett;
     Integer aapmaxtidUke;
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
-    FasettMapping fasettMapping;
 
     public BrukerinformasjonFraFil(String personid) {
         this.personid = personid;
@@ -35,7 +34,6 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
         return bruker
                 .setYtelse(ytelse)
                 .setUtlopsdato(utlopsdato)
-                .setUtlopsFasett(fasettMapping)
                 .setUtlopsFasett(utlopsdatoFasett)
                 .setDagputlopUke(dagputlopUke)
                 .setDagputlopUkeFasett(dagputlopUkeFasett)

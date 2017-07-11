@@ -29,8 +29,12 @@ public class Bruker {
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
     ManedFasettMapping utlopsdatoFasett;
-    LocalDateTime aapMaxtid;
-    KvartalFasettMapping aapMaxtidFasett;
+    Integer dagputlopUke;
+    DagpengerUkeFasettMapping dagputlopUkeFasett;
+    Integer permutlopUke;
+    DagpengerUkeFasettMapping permutlopUkeFasett;
+    Integer aapmaxtidUke;
+    AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
 
 
     public static Bruker of(SolrDocument document) {
@@ -48,9 +52,13 @@ public class Bruker {
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
                 .setUtlopsdato(dato((Date) document.get("utlopsdato")))
-                .setUtlopsdatoFasett(ManedFasettMapping.of((String) document.get("utlopsdato_mnd_fasett")))
-                .setAapMaxtid(dato((Date) document.get("aap_maxtid")))
-                .setAapMaxtidFasett(KvartalFasettMapping.of((String) document.get("aap_maxtid_fasett")));
+                .setUtlopsdatoFasett(ManedFasettMapping.of((String) document.get("utlopsdatofasett")))
+                .setDagputlopUke((Integer) document.get("dagputlopuke"))
+                .setDagputlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("dagputlopukefasett")))
+                .setPermutlopUke((Integer) document.get("permutlopuke"))
+                .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("permutlopukefasett")))
+                .setAapmaxtidUke((Integer) document.get("aapmaxtiduke"))
+                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of((String) document.get("aapmaxtidukefasett")));
     }
 
     static LocalDateTime dato(Date dato) {
