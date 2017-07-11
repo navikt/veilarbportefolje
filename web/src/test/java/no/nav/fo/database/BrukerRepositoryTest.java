@@ -2,10 +2,7 @@ package no.nav.fo.database;
 
 import com.google.common.base.Joiner;
 import no.nav.fo.config.ApplicationConfigTest;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.KvartalMapping;
-import no.nav.fo.domene.ManedMapping;
-import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.domene.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.assertj.core.api.Assertions;
@@ -29,10 +26,12 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
+import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ApplicationConfigTest.class})
+@ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class BrukerRepositoryTest {
 
     @Inject
@@ -74,10 +73,11 @@ public class BrukerRepositoryTest {
     @Test
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
-        String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
+        String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
-                "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
+                "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+                "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -92,10 +92,11 @@ public class BrukerRepositoryTest {
     @Test
     public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
-        String[] skalHaDatabaseFelter = new String[] {"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
+        String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT"};
+                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+                "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -120,7 +121,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalReturnerePersonidFraDB() {
-        List<Map<String,Object>> mapping = brukerRepository.retrievePersonid("11111111");
+        List<Map<String, Object>> mapping = brukerRepository.retrievePersonid("11111111");
         String personid = (String) mapping.get(0).get("PERSONID");
         Assertions.assertThat(personid).isEqualTo("222222");
     }
@@ -128,9 +129,9 @@ public class BrukerRepositoryTest {
     @Test
     public void skalOppdatereOmBrukerFinnes() {
         Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12);
         Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
@@ -143,12 +144,24 @@ public class BrukerRepositoryTest {
     }
 
 
-
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
 
-        Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", LocalDateTime.now(), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1);
+        Brukerdata brukerdata = brukerdata(
+                "aktoerid",
+                "personid",
+                "veielderid",
+                LocalDateTime.now(),
+                YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(),
+                ManedFasettMapping.MND1,
+                3,
+                DagpengerUkeFasettMapping.UKE2_5,
+                3,
+                DagpengerUkeFasettMapping.UKE2_5,
+                2,
+                UKE_UNDER12
+        );
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
 
@@ -172,36 +185,57 @@ public class BrukerRepositoryTest {
     public void skalFiltrereBrukere() {
         List<SolrInputDocument> aktiveBrukere = new ArrayList<>();
         brukerRepository.prosesserBrukere(3, BrukerRepository::erOppfolgingsBruker, aktiveBrukere::add);
-        assertThat(aktiveBrukere.size()).isEqualTo(50);
+        assertThat(aktiveBrukere.size()).isEqualTo(51);
 
         List<SolrInputDocument> oppdaterteAktiveBrukere = brukerRepository.retrieveOppdaterteBrukere();
         assertThat(oppdaterteAktiveBrukere.size()).isEqualTo(2);
     }
 
-    private Brukerdata brukerdata(String aktoerid, String personId, String veileder, LocalDateTime tildeltTidspunkt, YtelseMapping ytelse,
-                                  LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett) {
+    private Brukerdata brukerdata(
+            String aktoerid,
+            String personId,
+            String veileder,
+            LocalDateTime tildeltTidspunkt,
+            YtelseMapping ytelse,
+            LocalDateTime utlopsdato,
+            ManedFasettMapping utlopsdatoFasett,
+            Integer dagpUtlopUke,
+            DagpengerUkeFasettMapping dagpUtlopUkeFasett,
+            Integer permutlopUke,
+            DagpengerUkeFasettMapping permutlopUkeFasett,
+            Integer aapmaxtidUke,
+            AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett
+    ) {
         return new Brukerdata()
                 .setAktoerid(aktoerid)
                 .setPersonid(personId)
                 .setVeileder(veileder)
                 .setTildeltTidspunkt(tildeltTidspunkt)
-                .setAapMaxtidFasett(aapMaxtidFasett)
-                .setAapMaxtid(aapMaxtid)
-                .setUtlopsdatoFasett(utlopsdatoFasett)
                 .setUtlopsdato(utlopsdato)
+                .setUtlopsFasett(utlopsdatoFasett)
+                .setDagputlopUke(dagpUtlopUke)
+                .setDagputlopUkeFasett(dagpUtlopUkeFasett)
+                .setPermutlopUke(permutlopUke)
+                .setPermutlopUkeFasett(permutlopUkeFasett)
+                .setAapmaxtidUke(aapmaxtidUke)
+                .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
                 .setYtelse(ytelse);
 
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
         assertThat(b1.getPersonid()).isEqualTo(b2.getPersonid());
-        assertThat(b1.getAapMaxtid()).isEqualTo(b2.getAapMaxtid());
         assertThat(b1.getAktoerid()).isEqualTo(b2.getAktoerid());
-        assertThat(b1.getAapMaxtidFasett()).isEqualTo(b2.getAapMaxtidFasett());
         assertThat(b1.getTildeltTidspunkt()).isEqualTo(b2.getTildeltTidspunkt());
         assertThat(b1.getVeileder()).isEqualTo(b2.getVeileder());
         assertThat(b1.getUtlopsdato()).isEqualTo(b2.getUtlopsdato());
-        assertThat(b1.getUtlopsdatoFasett()).isEqualTo(b2.getUtlopsdatoFasett());
+        assertThat(b1.getUtlopsFasett()).isEqualTo(b2.getUtlopsFasett());
+        assertThat(b1.getDagputlopUke()).isEqualTo(b2.getDagputlopUke());
+        assertThat(b1.getDagputlopUkeFasett()).isEqualTo(b2.getDagputlopUkeFasett());
+        assertThat(b1.getPermutlopUke()).isEqualTo(b2.getPermutlopUke());
+        assertThat(b1.getPermutlopUkeFasett()).isEqualTo(b2.getPermutlopUkeFasett());
+        assertThat(b1.getAapmaxtidUke()).isEqualTo(b2.getAapmaxtidUke());
+        assertThat(b1.getAapmaxtidUkeFasett()).isEqualTo(b2.getAapmaxtidUkeFasett());
         assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
     }
 

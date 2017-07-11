@@ -3,7 +3,7 @@ package no.nav.fo.provider.rest;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.domene.Bruker;
 import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.domene.Mapping;
+import no.nav.fo.domene.FasettMapping;
 import no.nav.fo.domene.YtelseFilter;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
@@ -23,8 +23,8 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static no.nav.fo.domene.KvartalMapping.*;
-import static no.nav.fo.domene.ManedMapping.*;
+import static no.nav.fo.domene.KvartalFasettMapping.*;
+import static no.nav.fo.domene.ManedFasettMapping.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -119,7 +119,7 @@ public class DiagramControllerTest {
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
-        Map<Mapping, Long> gruppering = (Map<Mapping, Long>) response.getEntity();
+        Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
         Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
 
         assertThat(gruppering).hasSize(12);
@@ -138,7 +138,7 @@ public class DiagramControllerTest {
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
 
-        Map<Mapping, Long> gruppering = (Map<Mapping, Long>) response.getEntity();
+        Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
         Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
 
         assertThat(gruppering).hasSize(16);

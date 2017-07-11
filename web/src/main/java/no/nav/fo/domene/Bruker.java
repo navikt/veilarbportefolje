@@ -28,9 +28,9 @@ public class Bruker {
     String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
-    ManedMapping utlopsdatoFasett;
+    ManedFasettMapping utlopsdatoFasett;
     LocalDateTime aapMaxtid;
-    KvartalMapping aapMaxtidFasett;
+    KvartalFasettMapping aapMaxtidFasett;
 
 
     public static Bruker of(SolrDocument document) {
@@ -48,9 +48,9 @@ public class Bruker {
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
                 .setUtlopsdato(dato((Date) document.get("utlopsdato")))
-                .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
+                .setUtlopsdatoFasett(ManedFasettMapping.of((String) document.get("utlopsdato_mnd_fasett")))
                 .setAapMaxtid(dato((Date) document.get("aap_maxtid")))
-                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")));
+                .setAapMaxtidFasett(KvartalFasettMapping.of((String) document.get("aap_maxtid_fasett")));
     }
 
     static LocalDateTime dato(Date dato) {

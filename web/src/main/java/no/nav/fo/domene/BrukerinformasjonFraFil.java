@@ -12,9 +12,14 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
     String personid;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
-    ManedMapping utlopsdatoFasett;
-    LocalDateTime aapMaxtid;
-    KvartalMapping aapMaxtidFasett;
+    ManedFasettMapping utlopsdatoFasett;
+    Integer dagputlopUke;
+    DagpengerUkeFasettMapping dagputlopUkeFasett;
+    Integer permutlopUke;
+    DagpengerUkeFasettMapping permutlopUkeFasett;
+    Integer aapmaxtidUke;
+    AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
+    FasettMapping fasettMapping;
 
     public BrukerinformasjonFraFil(String personid) {
         this.personid = personid;
@@ -30,8 +35,13 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
         return bruker
                 .setYtelse(ytelse)
                 .setUtlopsdato(utlopsdato)
-                .setUtlopsdatoFasett(utlopsdatoFasett)
-                .setAapMaxtid(aapMaxtid)
-                .setAapMaxtidFasett(aapMaxtidFasett);
+                .setUtlopsFasett(fasettMapping)
+                .setUtlopsFasett(utlopsdatoFasett)
+                .setDagputlopUke(dagputlopUke)
+                .setDagputlopUkeFasett(dagputlopUkeFasett)
+                .setPermutlopUke(permutlopUke)
+                .setPermutlopUkeFasett(permutlopUkeFasett)
+                .setAapmaxtidUke(aapmaxtidUke)
+                .setAapmaxtidUkeFasett(aapmaxtidUkeFasett);
     }
 }

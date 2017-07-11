@@ -49,12 +49,12 @@ public class DiagramController {
             ValideringsRegler.harYtelsesFilter(filtervalg);
             TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
-            Function<Bruker, Mapping> mapper = brukerMapping(filtervalg.ytelse);
-            List<Mapping> alleFacetter = fasetter(filtervalg.ytelse);
+            Function<Bruker, FasettMapping> mapper = brukerMapping(filtervalg.ytelse);
+            List<FasettMapping> alleFacetter = fasetter(filtervalg.ytelse);
 
             List<Bruker> brukere = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
 
-            Map<Mapping, Long> facetterteBrukere = brukere
+            Map<FasettMapping, Long> facetterteBrukere = brukere
                     .stream()
                     .filter((bruker) -> mapper.apply(bruker) != null)
                     .collect(groupingBy(mapper, counting()));
@@ -65,11 +65,11 @@ public class DiagramController {
         });
     }
 
-    private static Function<Bruker, Mapping> brukerMapping(YtelseFilter ytelse) {
+    private static Function<Bruker, FasettMapping> brukerMapping(YtelseFilter ytelse) {
         return ytelse == YtelseFilter.AAP_MAXTID ? Bruker::getAapMaxtidFasett : Bruker::getUtlopsdatoFasett;
     }
 
-    private static List<Mapping> fasetter(YtelseFilter ytelse) {
-        return (ytelse == YtelseFilter.AAP_MAXTID) ? asList(KvartalMapping.values()) : asList(ManedMapping.values());
+    private static List<FasettMapping> fasetter(YtelseFilter ytelse) {
+        return (ytelse == YtelseFilter.AAP_MAXTID) ? asList(KvartalFasettMapping.values()) : asList(ManedFasettMapping.values());
     }
 }

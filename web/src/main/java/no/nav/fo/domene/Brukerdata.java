@@ -21,20 +21,28 @@ public class Brukerdata {
     private LocalDateTime tildeltTidspunkt;
     private YtelseMapping ytelse;
     private LocalDateTime utlopsdato;
-    private ManedMapping utlopsdatoFasett;
-    private LocalDateTime aapMaxtid;
-    private KvartalMapping aapMaxtidFasett;
+    private FasettMapping utlopsFasett;
+    private Integer dagputlopUke;
+    private DagpengerUkeFasettMapping dagputlopUkeFasett;
+    private Integer permutlopUke;
+    private DagpengerUkeFasettMapping permutlopUkeFasett;
+    private Integer aapmaxtidUke;
+    private AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
 
     public UpdateQuery toUpdateQuery(JdbcTemplate db) {
         return SqlUtils.update(db, "bruker_data")
                 .set("VEILEDERIDENT", veileder)
                 .set("TILDELT_TIDSPUNKT", toTimestamp(tildeltTidspunkt))
                 .set("AKTOERID", aktoerid)
-                .set("YTELSE", ytelse != null ? ytelse.toString() : null)
+                .set("YTELSE", safeToString(ytelse))
                 .set("UTLOPSDATO", toTimestamp(utlopsdato))
-                .set("UTLOPSDATOFASETT", utlopsdatoFasett != null ? utlopsdatoFasett.toString() : null)
-                .set("AAPMAXTID", toTimestamp(aapMaxtid))
-                .set("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
+                .set("UTLOPSDATOFASETT", safeToString(utlopsFasett))
+                .set("DAGPUTLOPUKE", safeToString(dagputlopUke))
+                .set("DAGPUTLOPUKEFASETT", safeToString(dagputlopUkeFasett))
+                .set("PERMUTLOPUKE", safeToString(permutlopUke))
+                .set("PERMUTLOPUKEFASETT", safeToString(permutlopUkeFasett))
+                .set("AAPMAXTIDUKE", safeToString(aapmaxtidUke))
+                .set("AAPMAXTIDUKEFASETT", safeToString(aapmaxtidUkeFasett))
                 .whereEquals("PERSONID", personid);
     }
 
@@ -43,13 +51,16 @@ public class Brukerdata {
                 .value("VEILEDERIDENT", veileder)
                 .value("TILDELT_TIDSPUNKT", toTimestamp(tildeltTidspunkt))
                 .value("AKTOERID", aktoerid)
-                .value("YTELSE", ytelse != null ? ytelse.toString() : null)
+                .value("YTELSE", safeToString(ytelse))
                 .value("UTLOPSDATO", toTimestamp(utlopsdato))
-                .value("UTLOPSDATOFASETT", utlopsdatoFasett != null ? utlopsdatoFasett.toString() : null)
-                .value("AAPMAXTID", toTimestamp(aapMaxtid))
-                .value("AAPMAXTIDFASETT", aapMaxtidFasett != null ? aapMaxtidFasett.toString() : null)
+                .value("UTLOPSDATOFASETT", safeToString(utlopsFasett))
+                .value("DAGPUTLOPUKE", safeToString(dagputlopUke))
+                .value("DAGPUTLOPUKEFASETT", safeToString(dagputlopUkeFasett))
+                .value("PERMUTLOPUKE", safeToString(permutlopUke))
+                .value("PERMUTLOPUKEFASETT", safeToString(permutlopUkeFasett))
+                .value("AAPMAXTIDUKE", safeToString(aapmaxtidUke))
+                .value("AAPMAXTIDUKEFASETT", safeToString(aapmaxtidUkeFasett))
                 .value("PERSONID", personid);
-
     }
 
 
@@ -62,9 +73,13 @@ public class Brukerdata {
                 .add("AKTOERID", Brukerdata::getAktoerid, String.class)
                 .add("YTELSE", (bruker) -> safeToString(bruker.ytelse), String.class)
                 .add("UTLOPSDATO", (bruker) -> toTimestamp(bruker.utlopsdato), Timestamp.class)
-                .add("UTLOPSDATOFASETT", (bruker) -> safeToString(bruker.utlopsdatoFasett), String.class)
-                .add("AAPMAXTID", (bruker) -> toTimestamp(bruker.aapMaxtid), Timestamp.class)
-                .add("AAPMAXTIDFASETT", (bruker) -> safeToString(bruker.aapMaxtidFasett), String.class)
+                .add("UTLOPSDATOFASETT", (bruker) -> safeToString(bruker.utlopsFasett), String.class)
+                .add("DAGPUTLOPUKE", (bruker) -> bruker.dagputlopUke, Integer.class)
+                .add("DAGPUTLOPUKEFASETT", (bruker) -> safeToString(bruker.dagputlopUkeFasett), String.class)
+                .add("PERMUTLOPUKE", (bruker) -> bruker.permutlopUke, Integer.class)
+                .add("PERMUTLOPUKEFASETT", (bruker) -> safeToString(bruker.permutlopUkeFasett), String.class)
+                .add("AAPMAXTIDUKE", (bruker) -> bruker.aapmaxtidUke, Integer.class)
+                .add("AAPMAXTIDUKEFASETT", (bruker) -> safeToString(bruker.aapmaxtidUkeFasett), String.class)
                 .addWhereClause("PERSONID", (bruker) -> bruker.personid)
                 .execute(data);
     }
