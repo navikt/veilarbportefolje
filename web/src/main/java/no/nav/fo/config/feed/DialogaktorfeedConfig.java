@@ -30,7 +30,7 @@ public class DialogaktorfeedConfig {
     @Value("${dialogaktor.feed.consumer.pollingrate.cron}")
     private String polling;
 
-    @Value("${dialogaktor.feed.pagesize :? 500}")
+    @Value("${dialogaktor.feed.pagesize ?: 500}")
     private int pageSize;
 
     @Bean
