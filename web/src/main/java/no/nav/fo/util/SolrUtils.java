@@ -89,7 +89,9 @@ public class SolrUtils {
         put("etternavn", Bruker::getEtternavn);
         put("fodselsnummer", Bruker::getFnr);
         put("utlopsdato", Bruker::getUtlopsdato);
-        put("aapMaxtid", Bruker::getAapmaxtidUkeFasett);
+        put("aapmaxtidUke", Bruker::getAapmaxtidUke);
+        put("dagputlopUke", Bruker::getDagputlopUke);
+        put("permutlopUke", Bruker::getPermutlopUke);
     }};
 
     public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField) {
