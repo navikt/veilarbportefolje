@@ -1,8 +1,11 @@
 package no.nav.fo.domene.Aktivitet;
 
 public enum AktivitetTyper {
+    egenaktivitet,
     jobbsoeking,
-    egenaktivitet;
+    sokeavtale,
+    behandling,
+    ijobb;
 
     public static boolean contains(String value) {
         try {
