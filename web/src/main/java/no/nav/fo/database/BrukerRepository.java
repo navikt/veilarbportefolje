@@ -79,11 +79,11 @@ public class BrukerRepository {
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
                         .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
-                        .setDagputlopUke(intValue((BigDecimal)data.get("DAGPUTLOPUKE")))
+                        .setDagputlopUke(intValue(data.get("DAGPUTLOPUKE")))
                         .setDagputlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("DAGPUTLOPUKEFASETT")))
-                        .setPermutlopUke(intValue((BigDecimal)data.get("PERMUTLOPUKE")))
+                        .setPermutlopUke(intValue(data.get("PERMUTLOPUKE")))
                         .setPermutlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("PERMUTLOPUKEFASETT")))
-                        .setAapmaxtidUke(intValue((BigDecimal)data.get("AAPMAXTIDUKE")))
+                        .setAapmaxtidUke(intValue(data.get("AAPMAXTIDUKE")))
                         .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT"))))
                 .collect(toList());
     }
@@ -340,8 +340,16 @@ public class BrukerRepository {
         return aktivStatus || bruker.get("veileder_id").getValue() != null;
     }
 
-    public static Integer intValue(BigDecimal value) {
-        return value.intValue();
+    public static Integer intValue(Object value) {
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal)value).intValue();
+        } else if (value instanceof Integer) {
+            return (Integer)value;
+        } else if (value instanceof String){
+            return Integer.parseInt((String)value);
+        } else {
+            throw new RuntimeException("Kunne ikke finne intValue av: " + value.toString());
+        }
     }
 
     public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
