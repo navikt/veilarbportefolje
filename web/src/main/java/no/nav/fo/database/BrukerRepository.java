@@ -79,11 +79,11 @@ public class BrukerRepository {
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
                         .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
-                        .setDagputlopUke((Integer)data.get("DAGPUTLOPUKE"))
+                        .setDagputlopUke(intValue((BigDecimal)data.get("DAGPUTLOPUKE")))
                         .setDagputlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("DAGPUTLOPUKEFASETT")))
-                        .setPermutlopUke((Integer)data.get("PERMUTLOPUKE"))
+                        .setPermutlopUke(intValue((BigDecimal)data.get("PERMUTLOPUKE")))
                         .setPermutlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("PERMUTLOPUKEFASETT")))
-                        .setAapmaxtidUke((Integer)data.get("AAPMAXTIDUKE"))
+                        .setAapmaxtidUke(intValue((BigDecimal)data.get("AAPMAXTIDUKE")))
                         .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT"))))
                 .collect(toList());
     }
@@ -338,6 +338,10 @@ public class BrukerRepository {
                         || innsatsgruppe.equals("VURDI"))));
 
         return aktivStatus || bruker.get("veileder_id").getValue() != null;
+    }
+
+    public static Integer intValue(BigDecimal value) {
+        return value.intValue();
     }
 
     public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
