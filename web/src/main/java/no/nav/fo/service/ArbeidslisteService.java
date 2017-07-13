@@ -77,14 +77,11 @@ public class ArbeidslisteService {
 
     public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
         AktoerId aktoerId = hentAktoerId(fnr);
-        System.out.println(aktoerId);
-        Boolean orElseThrow = brukerRepository
+
+        return brukerRepository
                 .retrieveVeileder(aktoerId)
-                .peek(System.out::println)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .getOrElseThrow(() -> new RestTilgangException("Fant ikke nåværende veileder for bruker"));
-
-        return orElseThrow;
     }
 
 }

@@ -24,8 +24,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.function.Function;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
@@ -49,7 +47,7 @@ public class ArbeidsListeRessurs {
     public Response putArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
         if (tilgangErrors.length() > 0) {
-            return new RestResponse<>(tilgangErrors.toJavaList(), emptyList()).forbidden();
+            return RestResponse.of(tilgangErrors.toJavaList()).forbidden();
         }
 
         RestResponse<AktoerId> response =
@@ -167,10 +165,10 @@ public class ArbeidsListeRessurs {
         return validerArbeidsliste(bruker)
                 .map(arbeidslisteService::createArbeidsliste)
                 .fold(
-                        validationErr -> new RestResponse<AktoerId>(validationErr.toJavaList(), emptyList()),
+                        validationErr -> RestResponse.of(validationErr.toJavaList()),
                         result -> {
                             if (result.isFailure()) {
-                                return new RestResponse<>(singletonList(result.getCause().getMessage()), emptyList());
+                                return RestResponse.of(result.getCause().getMessage());
                             }
                             return RestResponse.of(result.get());
 
