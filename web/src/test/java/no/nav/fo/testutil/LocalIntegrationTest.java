@@ -151,7 +151,7 @@ public abstract class LocalIntegrationTest {
         Jetty.JettyBuilder builder = Jetty.usingWar()
                 .at(contextPath)
                 .port(jettyPort)
-                .overrideWebXml()
+                .overrideWebXml(new File("src/test/resources/localintegration-web.xml"))
                 .disableAnnotationScanning();
 
         DevelopmentSecurity.ISSOSecurityConfig issoSecurityConfig =

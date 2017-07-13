@@ -1,9 +1,15 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
+import io.vavr.collection.List;
+import io.vavr.control.Validation;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.RestResponse;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestNotFoundException;
+import no.nav.fo.exception.RestTilgangException;
+import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.ArbeidslisteService;
@@ -21,9 +27,10 @@ import java.util.function.Function;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
+import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
 
 @Api(value = "arbeidsliste")
-@Path("/arbeidsliste/{fnr}")
+@Path("/arbeidsliste/")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeRessurs {
@@ -36,10 +43,31 @@ public class ArbeidsListeRessurs {
     @Inject
     private BrukertilgangService brukertilgangService;
 
+    @PUT
+    public Response putArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
+        List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
+        if (tilgangErrors.length() > 0) {
+            return RestResponse.of(tilgangErrors.toJavaList()).forbidden();
+        }
+
+        RestResponse<AktoerId> response =
+                List.ofAll(arbeidsliste)
+                        .map(this::opprettArbeidsliste)
+                        .reduce(RestResponse::merge);
+
+        return response.data.isEmpty() ? response.badRequest() : response.created();
+    }
+
     @GET
+    @Path("{fnr}/")
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
@@ -49,12 +77,20 @@ public class ArbeidsListeRessurs {
         });
     }
 
-
     @PUT
+    @Path("{fnr}/")
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
-            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
+            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+            if (validateVeileder.isInvalid()) {
+                throw new RestTilgangException(validateVeileder.getError());
+            }
 
             return arbeidslisteService
                     .createArbeidsliste(data(body, new Fnr(fnr)))
@@ -65,9 +101,15 @@ public class ArbeidsListeRessurs {
     }
 
     @POST
+    @Path("{fnr}/")
     public Response postArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
@@ -79,10 +121,19 @@ public class ArbeidsListeRessurs {
     }
 
     @DELETE
+    @Path("{fnr}/")
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
-            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
+            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+            if (validateVeileder.isInvalid()) {
+                throw new RestTilgangException(validateVeileder.getError());
+            }
 
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
@@ -101,5 +152,27 @@ public class ArbeidsListeRessurs {
                 .setVeilederId(new VeilederId(body.getVeilederId()))
                 .setKommentar(body.getKommentar())
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
+    }
+
+    private List<String> getTilgangErrors(java.util.List<ArbeidslisteRequest> arbeidsliste) {
+        return List.ofAll(arbeidsliste)
+                .map(bruker -> TilgangsRegler.erVeilederForBruker(arbeidslisteService, bruker.getFnr()))
+                .filter(Validation::isInvalid)
+                .map(Validation::getError);
+    }
+
+    private RestResponse<AktoerId> opprettArbeidsliste(ArbeidslisteRequest bruker) {
+        return validerArbeidsliste(bruker)
+                .map(arbeidslisteService::createArbeidsliste)
+                .fold(
+                        validationErr -> RestResponse.of(validationErr.toJavaList()),
+                        result -> {
+                            if (result.isFailure()) {
+                                return RestResponse.of(result.getCause().getMessage());
+                            }
+                            return RestResponse.of(result.get());
+
+                        }
+                );
     }
 }
