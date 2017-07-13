@@ -1,7 +1,6 @@
 package no.nav.fo.provider.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.jackson.datatype.VavrModule;
 
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
@@ -24,7 +23,6 @@ public class DateTimeObjectMapperProvider implements ContextResolver<ObjectMappe
 
     private static ObjectMapper createObjectMapper() {
         return new ObjectMapper()
-                .registerModule(dateModule())
-                .registerModule(new VavrModule());
+                .registerModule(dateModule());
     }
 }

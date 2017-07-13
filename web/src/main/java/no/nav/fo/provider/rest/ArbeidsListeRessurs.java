@@ -2,10 +2,11 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import io.vavr.collection.List;
-import io.vavr.collection.Seq;
-import io.vavr.control.Try;
 import io.vavr.control.Validation;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.RestResponse;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.exception.RestValideringException;
@@ -26,7 +27,7 @@ import java.util.function.Function;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.*;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
 
@@ -46,29 +47,17 @@ public class ArbeidsListeRessurs {
 
     @PUT
     public Response putArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
-        Response.ResponseBuilder response = Response.status(201);
-
-        List<String> tilgangErrors =
-                List.ofAll(arbeidsliste)
-                        .map(bruker -> TilgangsRegler.erVeilederForBruker(arbeidslisteService, bruker.getFnr()))
-                        .filter(Validation::isInvalid)
-                        .map(Validation::getError);
-
-        if (tilgangErrors.isEmpty()) {
-            RestResponse<AktoerId> responseBody =
-                    List.ofAll(arbeidsliste)
-                            .map(
-                                    elem ->
-                                            validerArbeidsliste(elem)
-                                                    .map(arbeidslisteService::createArbeidsliste)
-                                                    .fold(validationErrors(response), data(response))
-                            )
-                            .reduce(RestResponse::merge);
-
-            return response.entity(responseBody).build();
+        List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
+        if (tilgangErrors.length() > 0) {
+            return new RestResponse<>(tilgangErrors.toJavaList(), emptyList()).forbidden();
         }
-        RestResponse<Arbeidsliste> body = new RestResponse<>(tilgangErrors.toJavaList(), emptyList());
-        return response.status(FORBIDDEN).entity(body).build();
+
+        RestResponse<AktoerId> response =
+                List.ofAll(arbeidsliste)
+                        .map(this::opprettArbeidsliste)
+                        .reduce(RestResponse::merge);
+
+        return response.data.isEmpty() ? response.badRequest() : response.created();
     }
 
     @GET
@@ -167,20 +156,25 @@ public class ArbeidsListeRessurs {
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
     }
 
-    private Function<Try<AktoerId>, RestResponse<AktoerId>> data(Response.ResponseBuilder response) {
-        return data -> {
-            if (data.isFailure()) {
-                response.status(NOT_FOUND);
-                return new RestResponse<>(singletonList(data.getCause().getMessage()), emptyList());
-            }
-            return RestResponse.of(data.get());
-        };
+    private List<String> getTilgangErrors(java.util.List<ArbeidslisteRequest> arbeidsliste) {
+        return List.ofAll(arbeidsliste)
+                .map(bruker -> TilgangsRegler.erVeilederForBruker(arbeidslisteService, bruker.getFnr()))
+                .filter(Validation::isInvalid)
+                .map(Validation::getError);
     }
 
-    private Function<Seq<String>, RestResponse<AktoerId>> validationErrors(Response.ResponseBuilder response) {
-        return validationErr -> {
-            response.status(BAD_REQUEST);
-            return new RestResponse<>(validationErr.toJavaList(), emptyList());
-        };
+    private RestResponse<AktoerId> opprettArbeidsliste(ArbeidslisteRequest bruker) {
+        return validerArbeidsliste(bruker)
+                .map(arbeidslisteService::createArbeidsliste)
+                .fold(
+                        validationErr -> new RestResponse<AktoerId>(validationErr.toJavaList(), emptyList()),
+                        result -> {
+                            if (result.isFailure()) {
+                                return new RestResponse<>(singletonList(result.getCause().getMessage()), emptyList());
+                            }
+                            return RestResponse.of(result.get());
+
+                        }
+                );
     }
 }

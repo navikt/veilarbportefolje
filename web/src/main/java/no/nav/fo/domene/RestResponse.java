@@ -2,11 +2,13 @@ package no.nav.fo.domene;
 
 import lombok.Value;
 
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static javax.ws.rs.core.Response.Status.*;
 
 @Value
 public class RestResponse<T> {
@@ -25,4 +27,27 @@ public class RestResponse<T> {
         return new RestResponse<>(errorsCopy, dataCopy);
     }
 
+    public Response ok() {
+        return createResponse(OK);
+    }
+
+    public Response created() {
+        return createResponse(CREATED);
+    }
+
+    public Response forbidden() {
+        return createResponse(FORBIDDEN);
+    }
+
+    public Response badRequest() {
+        return createResponse(BAD_REQUEST);
+    }
+
+    public Response notFound() {
+        return createResponse(NOT_FOUND);
+    }
+
+    private Response createResponse(Response.Status status) {
+        return Response.status(status).entity(this).build();
+    }
 }
