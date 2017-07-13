@@ -78,7 +78,7 @@ public class TilgangsRegler {
                 ValideringsRegler
                         .validerFnr(fnr)
                         .map(validFnr -> arbeidslisteService.erVeilederForBruker(validFnr, veilederId))
-                        .get();
+                        .getOrElse(false);
 
         if (erVeilederForBruker) {
             return valid(new Fnr(fnr));
