@@ -70,12 +70,18 @@ public class TilgangsRegler {
         }
     }
 
-    static Validation<String, Fnr> erVeilederForBruker(ArbeidslisteService arbeidslisteService, Fnr fnr) {
+    static Validation<String, Fnr> erVeilederForBruker(ArbeidslisteService arbeidslisteService, String fnr) {
         SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
         VeilederId veilederId = new VeilederId(subjectHandler.getUid());
 
-        if (arbeidslisteService.erVeilederForBruker(fnr, veilederId)) {
-            return valid(fnr);
+        Boolean erVeilederForBruker =
+                ValideringsRegler
+                        .validerFnr(fnr)
+                        .map(validFnr -> arbeidslisteService.erVeilederForBruker(validFnr, veilederId))
+                        .get();
+
+        if (erVeilederForBruker) {
+            return valid(new Fnr(fnr));
         }
         return invalid(format("Veileder %s er ikke veileder for bruker med fnr %s", veilederId, fnr));
     }

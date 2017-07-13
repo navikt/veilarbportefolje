@@ -63,7 +63,7 @@ class ValideringsRegler {
         return
                 Validation
                         .combine(
-                                validateFnr(arbeidsliste.getFnr()),
+                                validerFnr(arbeidsliste.getFnr()),
                                 validateVeilderId(arbeidsliste.getVeilederId()),
                                 validateKommentar(arbeidsliste.getKommentar()),
                                 validateFrist(arbeidsliste.getFrist())
@@ -84,7 +84,7 @@ class ValideringsRegler {
         return valid(new VeilederId(veilederId));
     }
 
-    private static Validation<String, Fnr> validateFnr(String fnr) {
+    public static Validation<String, Fnr> validerFnr(String fnr) {
         if (fnr != null && fnr.matches("\\d{11}")) {
             return valid(new Fnr(fnr));
         }

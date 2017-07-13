@@ -7,6 +7,8 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
+import no.nav.fo.exception.RestTilgangException;
+import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.ArbeidslisteService;
@@ -21,7 +23,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.function.Function;
 
-import static io.vavr.collection.List.empty;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.*;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
@@ -42,19 +45,18 @@ public class ArbeidsListeRessurs {
     private BrukertilgangService brukertilgangService;
 
     @PUT
-    public Response putArbeidsListe(List<ArbeidslisteRequest> arbeidsliste) {
-        Response.ResponseBuilder response = Response.ok();
+    public Response putArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
+        Response.ResponseBuilder response = Response.status(201);
 
-        List<String> tilgangErrors = arbeidsliste
-                .map(ArbeidslisteRequest::getFnr)
-                .map(Fnr::new)
-                .map(fnr -> TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr))
-                .filter(Validation::isInvalid)
-                .map(Validation::getError);
+        List<String> tilgangErrors =
+                List.ofAll(arbeidsliste)
+                        .map(bruker -> TilgangsRegler.erVeilederForBruker(arbeidslisteService, bruker.getFnr()))
+                        .filter(Validation::isInvalid)
+                        .map(Validation::getError);
 
         if (tilgangErrors.isEmpty()) {
             RestResponse<AktoerId> responseBody =
-                    arbeidsliste
+                    List.ofAll(arbeidsliste)
                             .map(
                                     elem ->
                                             validerArbeidsliste(elem)
@@ -65,7 +67,7 @@ public class ArbeidsListeRessurs {
 
             return response.entity(responseBody).build();
         }
-        RestResponse<Arbeidsliste> body = new RestResponse<>(tilgangErrors, empty());
+        RestResponse<Arbeidsliste> body = new RestResponse<>(tilgangErrors.toJavaList(), emptyList());
         return response.status(FORBIDDEN).entity(body).build();
     }
 
@@ -73,7 +75,12 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
@@ -87,8 +94,16 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
-            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
+            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+            if (validateVeileder.isInvalid()) {
+                throw new RestTilgangException(validateVeileder.getError());
+            }
 
             return arbeidslisteService
                     .createArbeidsliste(data(body, new Fnr(fnr)))
@@ -102,7 +117,12 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Response postArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
@@ -117,8 +137,16 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-            ValideringsRegler.sjekkFnr(fnr);
-            TilgangsRegler.erVeilederForBruker(arbeidslisteService, new Fnr(fnr));
+
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
+
+            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+            if (validateVeileder.isInvalid()) {
+                throw new RestTilgangException(validateVeileder.getError());
+            }
 
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
@@ -143,7 +171,7 @@ public class ArbeidsListeRessurs {
         return data -> {
             if (data.isFailure()) {
                 response.status(NOT_FOUND);
-                return new RestResponse<>(List.of(data.getCause().getMessage()), empty());
+                return new RestResponse<>(singletonList(data.getCause().getMessage()), emptyList());
             }
             return RestResponse.of(data.get());
         };
@@ -152,7 +180,7 @@ public class ArbeidsListeRessurs {
     private Function<Seq<String>, RestResponse<AktoerId>> validationErrors(Response.ResponseBuilder response) {
         return validationErr -> {
             response.status(BAD_REQUEST);
-            return new RestResponse<>(validationErr.toList(), empty());
+            return new RestResponse<>(validationErr.toJavaList(), emptyList());
         };
     }
 }

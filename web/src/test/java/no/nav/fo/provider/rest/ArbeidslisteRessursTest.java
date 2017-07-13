@@ -2,10 +2,13 @@ package no.nav.fo.provider.rest;
 
 import com.squareup.okhttp.Response;
 import no.nav.fo.testutil.LocalIntegrationTest;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.Arrays;
 
 import static no.nav.fo.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
@@ -21,11 +24,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     private static final JdbcTemplate DB = new JdbcTemplate(ds);
 
     private static final String TEST_VEILEDERID = "testident";
-
-    private static final String NOT_FOUND_PERSONID = "11111";
-
-    private static final String UNAUTHORIZED_FNR = "11111111111";
-    private static final String UNAUTHORIZED_PERSONID = "1111";
 
     @Override
     @Before
@@ -63,6 +61,54 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         int deleteStatus = delete(path).code();
         assertEquals(200, deleteStatus);
+    }
+
+    @Test
+    public void skalOppretteArbeidsliste() throws Exception {
+        insertSuccessfulBruker();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject bruker1 = new JSONObject()
+                .put("fnr", FNR)
+                .put("veilederId", TEST_VEILEDERID)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "2017-10-10T00:00:00Z");
+
+        JSONObject bruker2 = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("veilederId", TEST_VEILEDERID)
+                .put("kommentar", "Dette er en kommentar2")
+                .put("frist", "2017-10-10T00:00:00Z");
+
+        JSONArray json = new JSONArray(Arrays.asList(bruker1, bruker2));
+
+        Response response = put(path, json.toString());
+        assertEquals(201, response.code());
+
+    }
+
+    @Test
+    public void skalIkkeHatilgang() throws Exception {
+        insertSuccessfulBruker();
+        insertUnauthorizedBruker();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject bruker = new JSONObject()
+                .put("fnr", FNR_UNAUTHORIZED)
+                .put("veilederId", TEST_VEILEDERID)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "2017-10-10T00:00:00Z");
+
+        JSONObject bruker2 = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("veilederId", TEST_VEILEDERID)
+                .put("kommentar", "Dette er en kommentar2")
+                .put("frist", "2017-10-10T00:00:00Z");
+
+        JSONArray json = new JSONArray(Arrays.asList(bruker, bruker2));
+
+        Response response = put(path, json.toString());
+        assertEquals(403, response.code());
     }
 
     @Test
@@ -156,7 +202,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     @Test
     public void skalHaTilgangsKontroll() throws Exception {
         insertUnauthorizedBruker();
-        String path = "/tjenester/arbeidsliste/" + UNAUTHORIZED_FNR;
+        String path = "/tjenester/arbeidsliste/" + FNR_UNAUTHORIZED;
         JSONObject json = new JSONObject()
                 .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
@@ -178,18 +224,20 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     }
 
     private static void insertSuccessfulBruker() {
-        insert(DB, BRUKERDATA)
+        int result = insert(DB, BRUKERDATA)
                 .value("PERSONID", PERSON_ID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", AKTOER_ID)
                 .execute();
 
-        insert(DB, OPPFOLGINGSBRUKER)
+        assertTrue(result > 0);
+
+        int result2 = insert(DB, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", PERSON_ID)
                 .value("FODSELSNR", FNR)
                 .value("NAV_KONTOR", NAV_SANDE_ID)
-                .value("FORNAVN", "TEST")
-                .value("ETTERNAVN", "ETTERNAVN")
+                .value("FORNAVN", "REODOR")
+                .value("ETTERNAVN", "FELGEN")
                 .value("RETTIGHETSGRUPPEKODE", "AAP")
                 .value("FORMIDLINGSGRUPPEKODE", "ARBS")
                 .value("KVALIFISERINGSGRUPPEKODE", "VARIG")
@@ -198,34 +246,24 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
                 .value("ER_DOED", "N")
                 .execute();
 
-    }
-
-    private static void insertNotFoundBruker() {
-        insert(DB, OPPFOLGINGSBRUKER)
-                .value("PERSON_ID", NOT_FOUND_PERSONID)
-                .value("FODSELSNR", FNR_FAIL)
-                .value("NAV_KONTOR", NAV_SANDE_ID)
-                .execute();
-
-        insert(DB, BRUKERDATA)
-                .value("PERSONID", NOT_FOUND_PERSONID)
-                .value("VEILEDERIDENT", TEST_VEILEDERID)
-                .value("AKTOERID", "NOPE")
-                .execute();
+        assertTrue(result2 > 0);
     }
 
     private static void insertUnauthorizedBruker() {
-        insert(DB, OPPFOLGINGSBRUKER)
-                .value("PERSON_ID", UNAUTHORIZED_PERSONID)
-                .value("FODSELSNR", UNAUTHORIZED_FNR)
+        int result = insert(DB, OPPFOLGINGSBRUKER)
+                .value("PERSON_ID", PERSON_ID_UNAUTHORIZED)
+                .value("FODSELSNR", FNR_UNAUTHORIZED)
                 .value("NAV_KONTOR", "XOXOXO")
                 .execute();
 
-        insert(DB, BRUKERDATA)
-                .value("PERSONID", UNAUTHORIZED_PERSONID)
-                .value("VEILEDERIDENT", "X22222")
-                .value("AKTOERID", UNAUTHORIZED_FNR)
-                .execute();
-    }
+        assertTrue(result > 0);
 
+        int result2 = insert(DB, BRUKERDATA)
+                .value("PERSONID", PERSON_ID_UNAUTHORIZED)
+                .value("VEILEDERIDENT", "X22222")
+                .value("AKTOERID", AKTOER_ID_UNAUTHORIZED)
+                .execute();
+
+        assertTrue(result2 > 0);
+    }
 }
