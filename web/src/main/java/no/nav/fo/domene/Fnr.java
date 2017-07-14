@@ -1,6 +1,5 @@
 package no.nav.fo.domene;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Value;
 import no.nav.fo.exception.UgyldigFnrException;
@@ -21,7 +20,6 @@ public class Fnr {
     }
 
     @Override
-    @JsonValue
     public String toString() {
         return fnr;
     }
