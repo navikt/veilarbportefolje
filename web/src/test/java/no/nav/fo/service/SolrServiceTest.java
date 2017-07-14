@@ -47,7 +47,7 @@ public class SolrServiceTest {
 
     @Before
     public void setup() {
-        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 
     @Test

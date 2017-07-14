@@ -32,7 +32,7 @@ public class ArbeidslisteRepository {
     @Inject
     private DataSource ds;
 
-    private static final String ARBEIDSLISTE = "ARBEIDSLISTE";
+    public static final String ARBEIDSLISTE = "ARBEIDSLISTE";
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(

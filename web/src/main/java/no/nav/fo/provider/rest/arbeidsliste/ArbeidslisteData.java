@@ -18,4 +18,12 @@ public class ArbeidslisteData {
     Timestamp frist;
     Timestamp endringstidspunkt;
     Boolean isOppfolgendeVeileder;
+
+    public static ArbeidslisteData of(Fnr fnr, VeilederId veilederId, String kommentar, Timestamp frist) {
+        return
+                new ArbeidslisteData(fnr)
+                        .setVeilederId(veilederId)
+                        .setKommentar(kommentar)
+                        .setFrist(frist);
+    }
 }

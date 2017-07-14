@@ -40,19 +40,19 @@ public class ArbeidslisteService {
         data.setAktoerId(aktoerId);
         return arbeidslisteRepository
                 .insertArbeidsliste(data)
-                .andThen(solrService::indekserBrukerdata);
+                .onSuccess(solrService::indekserBrukerdata);
     }
 
     public Try<AktoerId> updateArbeidsliste(ArbeidslisteData data) {
         return arbeidslisteRepository
                 .updateArbeidsliste(data.setAktoerId(hentAktoerId(data.getFnr())))
-                .andThen(solrService::indekserBrukerdata);
+                .onSuccess(solrService::indekserBrukerdata);
     }
 
     public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
         return arbeidslisteRepository
                 .deleteArbeidsliste(hentAktoerId(fnr))
-                .andThen(() -> solrService.deltaindeksering());
+                .onSuccess(solrService::indekserBrukerdata);
     }
 
     public String hentEnhet(Fnr fnr) {
@@ -77,6 +77,7 @@ public class ArbeidslisteService {
 
     public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
         AktoerId aktoerId = hentAktoerId(fnr);
+
         return brukerRepository
                 .retrieveVeileder(aktoerId)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
