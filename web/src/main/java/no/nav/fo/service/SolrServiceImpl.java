@@ -231,7 +231,7 @@ public class SolrServiceImpl implements SolrService {
     public void indekserBrukerdata(AktoerId aktoerId) {
         aktoerService
                 .hentPersonidFraAktoerid(aktoerId)
-                .ifPresent(this::indekserBrukerdata);
+                .onSuccess(this::indekserBrukerdata);
     }
 
     @Override

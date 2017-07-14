@@ -1,11 +1,10 @@
 package no.nav.fo.mock;
 
+import io.vavr.control.Try;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
-
-import java.util.Optional;
 
 public class AktoerServiceMock implements AktoerService {
 
@@ -25,36 +24,36 @@ public class AktoerServiceMock implements AktoerService {
 
 
     @Override
-    public Optional<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid) {
-        return Optional.of(PERSON_ID).map(PersonId::new);
+    public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid) {
+        return Try.success(PERSON_ID).map(PersonId::new);
     }
 
     @Override
-    public Optional<AktoerId> hentAktoeridFraPersonid(String personid) {
-        return Optional.of(AKTOER_ID).map(AktoerId::new);
+    public Try<AktoerId> hentAktoeridFraPersonid(String personid) {
+        return Try.success(AKTOER_ID).map(AktoerId::new);
     }
 
     @Override
-    public Optional<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
+    public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
         if (new Fnr(FNR_FAIL).equals(fnr)) {
-            return Optional.of(AKTOER_ID_FAIL).map(AktoerId::new);
+            return Try.success(AKTOER_ID_FAIL).map(AktoerId::new);
         } else if (new Fnr(FNR_UNAUTHORIZED).equals(fnr)) {
-            return Optional.of(AKTOER_ID_UNAUTHORIZED).map(AktoerId::new);
+            return Try.success(AKTOER_ID_UNAUTHORIZED).map(AktoerId::new);
         }
-        return Optional.of(AKTOER_ID).map(AktoerId::new);
+        return Try.success(AKTOER_ID).map(AktoerId::new);
     }
 
     @Override
-    public Optional<Fnr> hentFnrFraAktoerid(AktoerId aktoerid) {
+    public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerid) {
         return getTestFnr(aktoerid);
     }
 
-    private static Optional<Fnr> getTestFnr(AktoerId aktoerId) {
-        Optional<String> result = Optional.of(FNR);
+    private static Try<Fnr> getTestFnr(AktoerId aktoerId) {
+        Try<String> result = Try.success(FNR);
         if (new AktoerId(AKTOER_ID_FAIL).equals(aktoerId)) {
-            result = Optional.empty();
+            result = Try.failure(new RuntimeException());
         } else if (new AktoerId(AKTOER_ID_UNAUTHORIZED).equals(aktoerId)) {
-            return Optional.of(FNR_FAIL).map(Fnr::new);
+            result = Try.success(FNR_FAIL);
         }
         return result.map(Fnr::new);
     }

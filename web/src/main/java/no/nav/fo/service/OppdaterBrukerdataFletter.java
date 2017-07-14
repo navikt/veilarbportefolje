@@ -5,6 +5,7 @@ import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.BrukerinformasjonFraFeed;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import org.slf4j.Logger;
 
@@ -28,10 +29,11 @@ public class OppdaterBrukerdataFletter {
         String personId =
                 aktoerService
                         .hentPersonidFraAktoerid(new AktoerId(bruker.getAktoerid()))
-                        .orElseThrow(() -> {
+                        .map(PersonId::toString)
+                        .getOrElseThrow(() -> {
                             LOG.warn("Fant ikke personid for aktoerid {}", bruker.getAktoerid());
                             return new FantIkkePersonIdException(bruker.getAktoerid());
-                        }).toString();
+                        });
 
         BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
         persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));

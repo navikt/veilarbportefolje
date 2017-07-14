@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.Aktivitet.AktivitetBrukerOppdatering;
@@ -19,7 +20,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
@@ -77,7 +77,7 @@ public class AktivitetServiceTest {
 
         when(aktoerService
                 .hentPersonidFraAktoerid(any(AktoerId.class)))
-                .thenAnswer(args -> Optional.of(new PersonId(args.getArgumentAt(0, AktoerId.class).toString())));
+                .thenAnswer(args -> Try.success(new PersonId(args.getArgumentAt(0, AktoerId.class).toString())));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 

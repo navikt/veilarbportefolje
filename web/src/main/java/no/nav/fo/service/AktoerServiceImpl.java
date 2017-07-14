@@ -16,7 +16,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 @Slf4j
@@ -31,16 +30,15 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private BrukerRepository brukerRepository;
 
-    public Optional<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
+    public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         return
                 brukerRepository
                         .retrievePersonid(aktoerId)
-                        .orElse(hentPersonIdViaSoap(aktoerId))
-                        .toJavaOptional();
+                        .orElse(hentPersonIdViaSoap(aktoerId));
     }
 
     @Override
-    public Optional<AktoerId> hentAktoeridFraPersonid(String personid) {
+    public Try<AktoerId> hentAktoeridFraPersonid(String personid) {
         return hentSingleFraDb(
                 db,
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ?",
@@ -50,20 +48,18 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     @Override
-    public Optional<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
+    public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
         return Try.of(() -> soapService.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr.toString())))
                 .map(WSHentAktoerIdForIdentResponse::getAktoerId)
-                .toJavaOptional()
                 .map(AktoerId::new);
     }
 
     @Override
-    public Optional<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
+    public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
         return
                 brukerRepository
                         .retrieveFnr(aktoerId)
-                        .orElse(hentFnrViaSoap(aktoerId))
-                        .toJavaOptional();
+                        .orElse(hentFnrViaSoap(aktoerId));
     }
 
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
@@ -85,11 +81,11 @@ public class AktoerServiceImpl implements AktoerService {
                         );
     }
 
-    private static <T> Optional<T> hentSingleFraDb(JdbcTemplate db, String sql, Function<Map<String, Object>, T> mapper, Object... args) {
+    private static <T> Try<T> hentSingleFraDb(JdbcTemplate db, String sql, Function<Map<String, Object>, T> mapper, Object... args) {
         List<Map<String, Object>> data = db.queryForList(sql, args);
         if (data.size() != 1) {
-            return Optional.empty();
+            return Try.failure(new RuntimeException("Kunne ikke hente single fra Db"));
         }
-        return Optional.of(mapper.apply(data.get(0)));
+        return Try.success(mapper.apply(data.get(0)));
     }
 }

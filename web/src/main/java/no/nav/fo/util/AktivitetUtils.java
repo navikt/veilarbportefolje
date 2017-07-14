@@ -1,10 +1,10 @@
 package no.nav.fo.util;
 
+import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Aktivitet.*;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 
-import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.domene.Aktivitet.AktivitetData.aktivitetTyperList;
@@ -112,10 +111,9 @@ public class AktivitetUtils {
         applyAktivitetStatuser(singletonList(dokument), brukerRepository);
     }
 
-    static PersonId getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
+    static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
         return aktoerService
-                .hentPersonidFraAktoerid(aktoerid)
-                .orElseThrow(() -> new FantIkkePersonIdException(format("Fant ikke personid for aktor id: %s", aktoerid)));
+                .hentPersonidFraAktoerid(aktoerid);
 
     }
 }

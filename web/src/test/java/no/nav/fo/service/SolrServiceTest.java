@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import io.vavr.control.Try;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
@@ -55,7 +56,7 @@ public class SolrServiceTest {
         SolrInputDocument dummyDocument = new SolrInputDocument();
         dummyDocument.addField("person_id", "dummy");
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
-        when(aktoerService.hentAktoeridFraPersonid(anyString())).thenReturn(Optional.of(AKTOER_ID).map(AktoerId::new));
+        when(aktoerService.hentAktoeridFraPersonid(anyString())).thenReturn(Try.success(AKTOER_ID).map(AktoerId::new));
         System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();

@@ -1,14 +1,13 @@
 package no.nav.fo.service;
 
+import io.vavr.control.Try;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
 
-import java.util.Optional;
-
 public interface AktoerService {
-    Optional<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid);
-    Optional<AktoerId> hentAktoeridFraPersonid(String personid);
-    Optional<AktoerId> hentAktoeridFraFnr(Fnr fnr);
-    Optional<Fnr> hentFnrFraAktoerid(AktoerId aktoerid);
+    Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid);
+    Try<AktoerId> hentAktoeridFraPersonid(String personid);
+    Try<AktoerId> hentAktoeridFraFnr(Fnr fnr);
+    Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerid);
 }

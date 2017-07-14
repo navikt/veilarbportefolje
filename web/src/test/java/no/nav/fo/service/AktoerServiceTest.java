@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 import io.vavr.collection.List;
+import io.vavr.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
@@ -17,7 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-import java.util.Optional;
 
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.mock.AktoerServiceMock.*;
@@ -65,17 +65,17 @@ public class AktoerServiceTest {
     public void skalFinnePersonIdFraDatabase() throws Exception {
         AktoerId aktoerId = new AktoerId("111");
         PersonId personId = new PersonId("222");
-        int result =
+        int updated =
                 insert(db, "AKTOERID_TO_PERSONID")
                         .value("PERSONID", personId.toString())
                         .value("AKTOERID", aktoerId.toString())
                         .execute();
 
-        assertTrue(result > 0);
+        assertTrue(updated > 0);
 
-        Optional<PersonId> maybePersonId = aktoerService.hentPersonidFraAktoerid(aktoerId);
-        assertTrue(maybePersonId.isPresent());
-        assertEquals(personId, maybePersonId.get());
+        Try<PersonId> result = aktoerService.hentPersonidFraAktoerid(aktoerId);
+        assertTrue(result.isSuccess());
+        assertEquals(personId, result.get());
     }
 
     @Test
@@ -83,17 +83,17 @@ public class AktoerServiceTest {
         AktoerId aktoerId = new AktoerId("111");
         PersonId personId = new PersonId("222");
 
-        int result =
+        int updated =
                 insert(db, OPPFOLGINGSBRUKER)
                         .value("PERSON_ID", personId.toString())
                         .value("FODSELSNR", FNR_FRA_SOAP_TJENESTE)
                         .execute();
 
-        assertTrue(result > 0);
+        assertTrue(updated > 0);
 
-        Optional<PersonId> maybePersonId = aktoerService.hentPersonidFraAktoerid(aktoerId);
-        assertTrue(maybePersonId.isPresent());
-        assertEquals(personId, maybePersonId.get());
+        Try<PersonId> result = aktoerService.hentPersonidFraAktoerid(aktoerId);
+        assertTrue(result.isSuccess());
+        assertEquals(personId, result.get());
     }
 
     @Test
@@ -111,40 +111,40 @@ public class AktoerServiceTest {
     public void skalHenteAktoerIdFraPersonId() throws Exception {
         PersonId personId = new PersonId(PERSON_ID);
         AktoerId aktoerId = new AktoerId(AKTOER_ID);
-        int result = insert(db, "AKTOERID_TO_PERSONID")
+        int updated = insert(db, "AKTOERID_TO_PERSONID")
                 .value("AKTOERID", aktoerId.toString())
                 .value("PERSONID", personId.toString())
                 .execute();
 
-        assertTrue(result > 0);
+        assertTrue(updated > 0);
 
-        Optional<AktoerId> maybeAktoerId = aktoerService.hentAktoeridFraPersonid(PERSON_ID);
-        assertTrue(maybeAktoerId.isPresent());
-        assertEquals(aktoerId, maybeAktoerId.get());
+        Try<AktoerId> result = aktoerService.hentAktoeridFraPersonid(PERSON_ID);
+        assertTrue(result.isSuccess());
+        assertEquals(aktoerId, result.get());
     }
 
     @Test
     public void skalHenteAktoerIdFraFnrViaSoap() throws Exception {
         Fnr fnr = new Fnr(FNR);
-        Optional<AktoerId> maybeAktoerId = aktoerService.hentAktoeridFraFnr(fnr);
-        assertTrue(maybeAktoerId.isPresent());
-        assertEquals(new AktoerId(AKTOERID_FRA_SOAP_TJENESTE), maybeAktoerId.get());
+        Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(fnr);
+        assertTrue(aktoerId.isSuccess());
+        assertEquals(new AktoerId(AKTOERID_FRA_SOAP_TJENESTE), aktoerId.get());
     }
 
     @Test
     public void skalHenteFnrFraAktoerIdFraDb() throws Exception {
         AktoerId aktoerId = new AktoerId(AKTOER_ID);
         Fnr fnr = new Fnr(FNR);
-        int result = insert(db, "BRUKER_DATA")
+        int updated = insert(db, "BRUKER_DATA")
                 .value("PERSONID", PERSON_ID)
                 .value("FNR", fnr.toString())
                 .value("AKTOERID", aktoerId.toString())
                 .execute();
-        assertTrue(result > 0);
+        assertTrue(updated > 0);
 
-        Optional<Fnr> maybeFnr = aktoerService.hentFnrFraAktoerid(aktoerId);
-        assertTrue(maybeFnr.isPresent());
-        assertEquals(fnr, maybeFnr.get()
+        Try<Fnr> result = aktoerService.hentFnrFraAktoerid(aktoerId);
+        assertTrue(result.isSuccess());
+        assertEquals(fnr, result.get()
         );
     }
 }

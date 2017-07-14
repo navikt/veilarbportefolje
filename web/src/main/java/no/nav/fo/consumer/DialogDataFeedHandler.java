@@ -1,6 +1,7 @@
 package no.nav.fo.consumer;
 
 
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
@@ -52,7 +53,8 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         try {
             MetricsUtils.timed("feed.dialog.objekt",
                     () -> {
-                        DialogBrukerOppdatering oppdatering = new DialogBrukerOppdatering(dialog, aktoerService.hentPersonidFraAktoerid(new AktoerId(dialog.aktorId)).map(PersonId::toString));
+                        Try<PersonId> personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(dialog.aktorId));
+                        DialogBrukerOppdatering oppdatering = new DialogBrukerOppdatering(dialog, personId.toJavaOptional().map(PersonId::toString));
                         persistentOppdatering.lagre(oppdatering);
                         return null;
                     },

@@ -9,7 +9,6 @@ import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestBadGateWayException;
 import no.nav.fo.exception.RestNotFoundException;
-import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
@@ -29,29 +28,47 @@ public class ArbeidslisteService {
     private SolrService solrService;
 
     public Try<Arbeidsliste> getArbeidsliste(ArbeidslisteData data) {
-        AktoerId aktoerId = hentAktoerId(data.getFnr());
+        Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
+        if (aktoerId.isFailure()) {
+            return Try.failure(aktoerId.getCause());
+        }
+
         return arbeidslisteRepository
-                .retrieveArbeidsliste(aktoerId)
-                .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId));
+                .retrieveArbeidsliste(aktoerId.get())
+                .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId.get()));
     }
 
     public Try<AktoerId> createArbeidsliste(ArbeidslisteData data) {
-        AktoerId aktoerId = hentAktoerId(data.getFnr());
-        data.setAktoerId(aktoerId);
+
+        Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
+        if (aktoerId.isFailure()) {
+            return Try.failure(aktoerId.getCause());
+        }
+
+        data.setAktoerId(aktoerId.get());
         return arbeidslisteRepository
                 .insertArbeidsliste(data)
                 .onSuccess(solrService::indekserBrukerdata);
     }
 
     public Try<AktoerId> updateArbeidsliste(ArbeidslisteData data) {
+        Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
+        if (aktoerId.isFailure()) {
+            return Try.failure(aktoerId.getCause());
+        }
+
         return arbeidslisteRepository
-                .updateArbeidsliste(data.setAktoerId(hentAktoerId(data.getFnr())))
+                .updateArbeidsliste(data.setAktoerId(aktoerId.get()))
                 .onSuccess(solrService::indekserBrukerdata);
     }
 
     public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
+        Try<AktoerId> aktoerId = hentAktoerId(fnr);
+        if (aktoerId.isFailure()) {
+            return Try.failure(aktoerId.getCause());
+        }
         return arbeidslisteRepository
-                .deleteArbeidsliste(hentAktoerId(fnr))
+                .deleteArbeidsliste(aktoerId.get())
                 .onSuccess(solrService::indekserBrukerdata);
     }
 
@@ -61,10 +78,9 @@ public class ArbeidslisteService {
                 .getOrElseThrow(x -> new RestBadGateWayException("Kunne ikke hente enhet for denne brukeren"));
     }
 
-    private AktoerId hentAktoerId(Fnr fnr) {
+    private Try<AktoerId> hentAktoerId(Fnr fnr) {
         return aktoerService
-                .hentAktoeridFraFnr(fnr)
-                .orElseThrow(() -> new RestBadGateWayException("Fant ikke aktoerId for gitt fnr"));
+                .hentAktoeridFraFnr(fnr);
     }
 
     private Arbeidsliste setOppfolgendeVeileder(Arbeidsliste arbeidsliste, AktoerId aktoerId) {
@@ -76,12 +92,10 @@ public class ArbeidslisteService {
     }
 
     public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
-        AktoerId aktoerId = hentAktoerId(fnr);
-
-        return brukerRepository
-                .retrieveVeileder(aktoerId)
-                .map(currentVeileder -> currentVeileder.equals(veilederId))
-                .getOrElseThrow(() -> new RestTilgangException("Fant ikke nåværende veileder for bruker"));
+        return
+                hentAktoerId(fnr)
+                        .flatMap(brukerRepository::retrieveVeileder)
+                        .map(currentVeileder -> currentVeileder.equals(veilederId))
+                        .getOrElse(false);
     }
-
 }
