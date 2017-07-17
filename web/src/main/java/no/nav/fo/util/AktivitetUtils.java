@@ -1,6 +1,7 @@
 package no.nav.fo.util;
 
 import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.Aktivitet.*;
 import no.nav.fo.domene.AktoerId;
@@ -16,13 +17,16 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.domene.Aktivitet.AktivitetData.aktivitetTyperList;
 
+@Slf4j
 public class AktivitetUtils {
 
     public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter, AktoerService aktoerService) {
         return aktoerAktiviteter
                 .stream()
                 .map(aktoerAktivitet -> {
-                    String personid = getPersonId(new AktoerId(aktoerAktivitet.getAktoerid()), aktoerService).toString();
+                    String personid = getPersonId(new AktoerId(aktoerAktivitet.getAktoerid()), aktoerService)
+                            .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e))
+                            .get().personId;
                     return konverterTilBrukerOppdatering(aktoerAktivitet.getAktiviteter(), aktoerAktivitet.getAktoerid(), personid);
                 })
                 .collect(toList());
@@ -43,7 +47,9 @@ public class AktivitetUtils {
 
 
     public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(String aktoerid, AktoerService aktoerService, BrukerRepository brukerRepository) {
-        String personid = getPersonId(new AktoerId(aktoerid), aktoerService).toString();
+        String personid = getPersonId(new AktoerId(aktoerid), aktoerService)
+                .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerid, e))
+                .get().personId;
 
         List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
 
