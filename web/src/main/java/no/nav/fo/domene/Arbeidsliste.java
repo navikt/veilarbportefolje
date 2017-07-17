@@ -20,9 +20,11 @@ public class Arbeidsliste {
     final String kommentar;
     final ZonedDateTime frist;
     Boolean isOppfolgendeVeileder;
+    Boolean arbeidslisteAktiv;
 
     public static Arbeidsliste of(SolrDocument brukerDokument) {
 
+        Boolean arbeidslisteAktiv = (Boolean) brukerDokument.get("arbeidsliste_aktiv");
         VeilederId sistEndretAv = new VeilederId((String) brukerDokument.get("arbeidsliste_sistendretavveileder"));
         ZonedDateTime endringstidspunkt = toZonedDateTime((Date) brukerDokument.get("arbeidsliste_endringstidspunkt"));
         String kommentar = (String) brukerDokument.get("arbeidsliste_kommentar");
@@ -30,6 +32,7 @@ public class Arbeidsliste {
         Boolean isOppfolgendeVeileder = (Boolean) brukerDokument.get("arbeidsliste_er_oppfolgende_veileder");
 
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, kommentar, frist)
-                .setIsOppfolgendeVeileder(isOppfolgendeVeileder);
+                .setIsOppfolgendeVeileder(isOppfolgendeVeileder)
+                .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 }
