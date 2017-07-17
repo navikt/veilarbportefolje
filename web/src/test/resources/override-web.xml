@@ -10,11 +10,4 @@
         <param-name>springContekstKlasse</param-name>
         <param-value>no.nav.fo.config.LocalApplicationConfig</param-value>
     </context-param>
-
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Ubeskyttet</web-resource-name>
-            <url-pattern>/*</url-pattern>
-        </web-resource-collection>
-    </security-constraint>
 </web-app>
