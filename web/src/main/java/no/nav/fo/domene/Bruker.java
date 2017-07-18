@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -76,5 +77,9 @@ public class Bruker {
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
 
+    }
+
+    public ZonedDateTime getArbeidslisteFrist() {
+        return arbeidsliste.getFrist();
     }
 }

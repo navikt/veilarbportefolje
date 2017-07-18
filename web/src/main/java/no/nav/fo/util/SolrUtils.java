@@ -96,6 +96,8 @@ public class SolrUtils {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getUtlopsdato);
         } else if ("aapMaxtid".equals(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getAapMaxtid);
+        } else if ("arbeidsliste_frist".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getArbeidslisteFrist);
         }
         brukere.sort(brukerErNyComparator());
         return brukere;
