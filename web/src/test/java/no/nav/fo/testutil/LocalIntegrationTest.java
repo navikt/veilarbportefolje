@@ -155,7 +155,7 @@ public abstract class LocalIntegrationTest {
                 .disableAnnotationScanning();
 
         DevelopmentSecurity.ISSOSecurityConfig issoSecurityConfig =
-                new DevelopmentSecurity.ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV);
+                new DevelopmentSecurity.ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV.toString());
 
         return DevelopmentSecurity
                 .setupISSO(builder, issoSecurityConfig)

@@ -1,5 +1,7 @@
 package no.nav.fo.config;
 
+import no.nav.dialogarena.config.fasit.DbCredentials;
+import no.nav.dialogarena.config.fasit.ServiceUser;
 import no.nav.fo.database.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -10,11 +12,11 @@ import java.sql.Statement;
 
 public class LocalJndiContextConfig {
 
-    public static SingleConnectionDataSource setupOracleDataSource() {
+    public static SingleConnectionDataSource setupOracleDataSource(DbCredentials dbCredentials) {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
-        ds.setUrl("jdbc:oracle:thin:@d26dbfl020.test.local:1521/VEILARBPORTEFOLJE_T6");
-        ds.setUsername("VEILARBPORTEFOLJE_T6");
-        ds.setPassword("!!CHANGE ME!!");
+        ds.setUrl(dbCredentials.getUrl());
+        ds.setUsername(dbCredentials.getUsername());
+        ds.setPassword(dbCredentials.getPassword());
         ds.setSuppressClose(true);
         return ds;
     }
@@ -39,6 +41,11 @@ public class LocalJndiContextConfig {
         flyway.migrate();
 
         return ds;
+    }
+
+    public static void setServiceUserCredentials(ServiceUser serviceUser) {
+        System.setProperty("no.nav.modig.security.systemuser.username", serviceUser.getUsername());
+        System.setProperty("no.nav.modig.security.systemuser.password", serviceUser.getPassword());
     }
 
 }
