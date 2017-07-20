@@ -34,6 +34,9 @@ public class Bruker {
     LocalDateTime aapMaxtid;
     KvartalMapping aapMaxtidFasett;
     Arbeidsliste arbeidsliste;
+    LocalDateTime venterPaSvarFraNAV;
+    LocalDateTime venterPaSvarFraBruker;
+    LocalDateTime nyesteUtlopteAktivitet;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -53,7 +56,11 @@ public class Bruker {
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
                 .setAapMaxtid(toLocalDateTime((Date) document.get("aap_maxtid")))
                 .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
-                .setArbeidsliste(Arbeidsliste.of(document));
+                .setArbeidsliste(Arbeidsliste.of(document))
+                .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
+                .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
+                .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
+                ;
     }
 
     private static String getDiskresjonskode(SolrDocument document) {

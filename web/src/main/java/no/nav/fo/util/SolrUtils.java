@@ -98,6 +98,12 @@ public class SolrUtils {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getAapMaxtid);
         } else if ("arbeidsliste_frist".equals(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getArbeidslisteFrist);
+        } else if ("VENTER_PA_SVAR_FRA_NAV".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraNAV);
+        } else if ("VENTER_PA_SVAR_FRA_BRUKER".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraBruker);
+        } else if ("UTLOPTE_AKTIVITETER".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getNyesteUtlopteAktivitet);
         }
         brukere.sort(brukerErNyComparator());
         return brukere;
