@@ -36,7 +36,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     @Test
     public void skalOppretteOgSletteListe() throws Exception {
         skalOppretteArbeidsliste();
-        String path = "/tjenester/arbeidsliste/deletes";
+        String path = "/tjenester/arbeidsliste/delete";
         assertFalse(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
 
         JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2));
@@ -49,7 +49,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     @Test
     public void ugyldigFnrSkalGiBadRequest() {
-        String path = "/tjenester/arbeidsliste/deletes";
+        String path = "/tjenester/arbeidsliste/delete";
         JSONArray json = new JSONArray(Arrays.asList(FNR, "UGYLDIG_FNR"));
         Response response = post(path, json.toString());
 
@@ -59,7 +59,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     @Test
     public void responseSkalInneholdeFeiledeFnr() throws Exception {
         skalOppretteArbeidsliste();
-        String path = "/tjenester/arbeidsliste/deletes";
+        String path = "/tjenester/arbeidsliste/delete";
         String fnrUtenArbeidsliste = "00000000000";
 
         JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2, fnrUtenArbeidsliste));

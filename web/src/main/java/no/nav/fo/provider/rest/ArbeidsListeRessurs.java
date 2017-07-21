@@ -145,7 +145,7 @@ public class ArbeidsListeRessurs {
     }
 
     @POST
-    @Path("/deletes")
+    @Path("/delete")
     public Response deleteArbeidsliseListe(java.util.List<String> fnrs) {
         return createResponse(() -> {
             java.util.List<String> feiledeFnrs = new ArrayList<>();
