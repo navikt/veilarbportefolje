@@ -22,8 +22,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.function.Function;
 
+import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
@@ -139,6 +141,38 @@ public class ArbeidsListeRessurs {
                     .deleteArbeidsliste(new Fnr(fnr))
                     .map(x -> "Arbeidsliste slettet")
                     .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
+        });
+    }
+
+    @POST
+    @Path("/deletes")
+    public Response deleteArbeidsliseListe(java.util.List<String> fnrs) {
+        return createResponse(() -> {
+            java.util.List<String> feiledeFnrs = new ArrayList<>();
+            java.util.List<String> okFnrs = new ArrayList<>();
+
+            Validation<java.util.List<String>, java.util.List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
+            if (validerFnrs.isInvalid()) {
+                throw new RestValideringException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+            }
+
+            validerFnrs.get()
+                    .forEach( (fnr) -> arbeidslisteService
+                            .deleteArbeidsliste(fnr)
+                            .onSuccess( (aktoerid) -> {
+                                okFnrs.add(fnr.toString());
+                                LOG.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
+                            })
+                            .onFailure( (error) -> {
+                                feiledeFnrs.add(fnr.toString());
+                                LOG.warn("Kunne ikke slette arbeidsliste for fnr {}", fnr.toString(), error);
+                            })
+                            );
+
+            if(feiledeFnrs.size() == fnrs.size()) {
+                throw new InternalServerErrorException();
+            }
+            return RestResponse.of(okFnrs, feiledeFnrs);
         });
     }
 

@@ -11,6 +11,7 @@ import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -98,5 +99,17 @@ class ValideringsRegler {
             return valid(new Fnr(fnr));
         }
         return invalid(format("%s er ikke et gyldig fnr", fnr));
+    }
+
+    public static Validation<List<String>, List<Fnr>> validerFnrs(List<String> fnrs) {
+        List<Fnr> validerteFnrs = new ArrayList<>();
+
+        fnrs.forEach((fnr) -> {
+            if (fnr != null && fnr.matches("\\d{11}")) {
+                validerteFnrs.add(new Fnr(fnr));
+            }
+        });
+
+        return validerteFnrs.size() == fnrs.size() ? valid(validerteFnrs) : invalid(fnrs);
     }
 }

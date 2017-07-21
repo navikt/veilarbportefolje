@@ -27,6 +27,10 @@ public class RestResponse<T> {
         return new RestResponse<>(error, emptyList());
     }
 
+    public static <T> RestResponse<T> of(List<T> data, List<String> error) {
+        return new RestResponse<>(error, data);
+    }
+
     public static <T> RestResponse<T> merge(RestResponse<T> response1, RestResponse<T> response2) {
         ArrayList<String> errorsCopy = new ArrayList<>(response1.getError());
         errorsCopy.addAll(response2.getError());

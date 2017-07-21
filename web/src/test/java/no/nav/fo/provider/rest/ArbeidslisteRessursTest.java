@@ -16,8 +16,7 @@ import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static no.nav.fo.util.sql.SqlUtils.insert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
@@ -35,37 +34,48 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     }
 
     @Test
-    public void skalOppretteOppdatereHenteOgSlette() throws Exception {
-        insertSuccessfulBruker();
-        String path = "/tjenester/arbeidsliste/" + FNR;
+    public void skalOppretteOgSletteListe() throws Exception {
+        skalOppretteArbeidsliste();
+        String path = "/tjenester/arbeidsliste/deletes";
+        assertFalse(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
 
-        JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", "2017-10-10T00:00:00Z");
+        JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2));
 
-        int putStatus = put(path, json.toString()).code();
-        assertEquals(201, putStatus);
+        Response response = post(path, json.toString());
 
-        String expectedKommentar = "Dette er en NY kommentar";
-        json.put("kommentar", expectedKommentar);
-        int postStatus = post(path, json.toString()).code();
-        assertEquals(200, postStatus);
+        assertEquals(200, response.code());
+        assertTrue(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
+    }
 
-        Response getResponse = get(path);
-        assertEquals(200, getResponse.code());
+    @Test
+    public void ugyldigFnrSkalGiBadRequest() {
+        String path = "/tjenester/arbeidsliste/deletes";
+        JSONArray json = new JSONArray(Arrays.asList(FNR, "UGYLDIG_FNR"));
+        Response response = post(path, json.toString());
 
-        String jsonAfterUpdate = getResponse.body().string();
-        String actualKommentar = (String) new JSONObject(jsonAfterUpdate).get("kommentar");
-        assertEquals(expectedKommentar, actualKommentar);
+        assertEquals(400, response.code());
+    }
 
-        int deleteStatus = delete(path).code();
-        assertEquals(200, deleteStatus);
+    @Test
+    public void responseSkalInneholdeFeiledeFnr() throws Exception {
+        skalOppretteArbeidsliste();
+        String path = "/tjenester/arbeidsliste/deletes";
+        String fnrUtenArbeidsliste = "00000000000";
+
+        JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2, fnrUtenArbeidsliste));
+        Response response = post(path, json.toString());
+
+        JSONObject responseJSON = new JSONObject(response.body().string());
+
+        assertTrue(responseJSON.get("error").toString().contains(fnrUtenArbeidsliste));
+        assertTrue(responseJSON.get("data").toString().contains(FNR));
+        assertTrue(responseJSON.get("data").toString().contains(FNR_2));
+
     }
 
     @Test
     public void skalOppretteArbeidsliste() throws Exception {
-        insertSuccessfulBruker();
+        insertSuccessfulBrukere();
         String path = "/tjenester/arbeidsliste/";
 
         JSONObject bruker1 = new JSONObject()
@@ -89,7 +99,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     @Test
     public void skalIkkeHatilgang() throws Exception {
-        insertSuccessfulBruker();
+        insertSuccessfulBrukere();
         insertUnauthorizedBruker();
         String path = "/tjenester/arbeidsliste/";
 
@@ -113,7 +123,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     @Test
     public void skalReturnereUtcStreng() throws Exception {
-        insertSuccessfulBruker();
+        insertSuccessfulBrukere();
         String path = "/tjenester/arbeidsliste/" + FNR;
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
@@ -134,7 +144,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     @Test
     public void skalReturnereOppfolgendeVeilederFlagg() throws Exception {
-        insertSuccessfulBruker();
+        insertSuccessfulBrukere();
         String path = "/tjenester/arbeidsliste/" + FNR;
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
@@ -155,7 +165,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     @Test
     public void skalReturnereNotFoundVedUthenting() throws Exception {
-        insertSuccessfulBruker();
+        insertSuccessfulBrukere();
         int actual = get("/tjenester/arbeidsliste/" + FNR).code();
         int expected = 404;
         assertEquals(expected, actual);
@@ -163,7 +173,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     @Test
     public void skalReturnereNotFoundVedSletting() throws Exception {
-        insertSuccessfulBruker();
+        insertSuccessfulBrukere();
         int actual = delete("/tjenester/arbeidsliste/" + FNR).code();
         int expected = 404;
         assertEquals(expected, actual);
@@ -186,7 +196,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
     @Test
     public void skalKunneOppretteSammeArbeidslisteToGanger() throws Exception {
-        insertSuccessfulBruker();
+        insertSuccessfulBrukere();
         String path = "/tjenester/arbeidsliste/" + FNR;
         JSONObject json = new JSONObject()
                 .put("veilederId", TEST_VEILEDERID)
@@ -223,7 +233,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         assertEquals(expected, actualPost);
     }
 
-    private static void insertSuccessfulBruker() {
+    private static void insertSuccessfulBrukere() {
         int result = insert(DB, BRUKERDATA)
                 .value("PERSONID", PERSON_ID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
@@ -247,6 +257,32 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
                 .execute();
 
         assertTrue(result2 > 0);
+
+        int result3 = insert(DB, BRUKERDATA)
+                .value("PERSONID", PERSON_ID_2)
+                .value("VEILEDERIDENT", TEST_VEILEDERID)
+                .value("AKTOERID", AKTOER_ID_2)
+                .execute();
+
+        assertTrue(result3 > 0);
+
+        int result4 = insert(DB, OPPFOLGINGSBRUKER)
+                .value("PERSON_ID", PERSON_ID_2)
+                .value("FODSELSNR", FNR_2)
+                .value("NAV_KONTOR", NAV_SANDE_ID)
+                .value("FORNAVN", "REODOR")
+                .value("ETTERNAVN", "FELGEN")
+                .value("RETTIGHETSGRUPPEKODE", "AAP")
+                .value("FORMIDLINGSGRUPPEKODE", "ARBS")
+                .value("KVALIFISERINGSGRUPPEKODE", "VARIG")
+                .value("RETTIGHETSGRUPPEKODE", "IYT")
+                .value("SPERRET_ANSATT", "N")
+                .value("ER_DOED", "N")
+                .execute();
+
+        assertTrue(result4 > 0);
+
+
     }
 
     private static void insertUnauthorizedBruker() {

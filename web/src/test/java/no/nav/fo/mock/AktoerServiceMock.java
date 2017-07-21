@@ -1,10 +1,14 @@
 package no.nav.fo.mock;
 
 import io.vavr.control.Try;
+import lombok.Data;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AktoerServiceMock implements AktoerService {
 
@@ -16,11 +20,22 @@ public class AktoerServiceMock implements AktoerService {
     public static final String PERSON_ID = "9991";
     public static final String PERSON_ID_2 = "9992";
     public static final String PERSON_ID_UNAUTHORIZED = "9900";
+    public static final String PERSON_ID_FAIL = "9000";
 
     public static final String AKTOER_ID = "9999999999991";
     public static final String AKTOER_ID_2 = "9999999999992";
     public static final String AKTOER_ID_FAIL = "9999999999990";
     public static final String AKTOER_ID_UNAUTHORIZED = "9999999999900";
+
+    public Map<String, Testbruker> testbrukere;
+
+    public AktoerServiceMock() {
+        testbrukere = new HashMap<>();
+        testbrukere.put("BRUKER1", new Testbruker().setAktoer_id(AKTOER_ID).setPerson_id(PERSON_ID).setFnr(FNR));
+        testbrukere.put("BRUKER2", new Testbruker().setAktoer_id(AKTOER_ID_2).setPerson_id(PERSON_ID_2).setFnr(FNR_2));
+        testbrukere.put("BRUKER_FAIL", new Testbruker().setAktoer_id(AKTOER_ID_FAIL).setPerson_id(PERSON_ID_FAIL).setFnr(FNR_FAIL));
+        testbrukere.put("BRUKER_UNAUTHORIZED", new Testbruker().setAktoer_id(AKTOER_ID_UNAUTHORIZED).setPerson_id(PERSON_ID_UNAUTHORIZED).setFnr(FNR_UNAUTHORIZED));
+    }
 
 
     @Override
@@ -40,7 +55,7 @@ public class AktoerServiceMock implements AktoerService {
         } else if (new Fnr(FNR_UNAUTHORIZED).equals(fnr)) {
             return Try.success(AKTOER_ID_UNAUTHORIZED).map(AktoerId::new);
         }
-        return Try.success(AKTOER_ID).map(AktoerId::new);
+        return Try.success(finnAktoerid(fnr)).map(AktoerId::new);
     }
 
     @Override
@@ -56,5 +71,15 @@ public class AktoerServiceMock implements AktoerService {
             result = Try.success(FNR_FAIL);
         }
         return result.map(Fnr::new);
+    }
+
+    private String finnAktoerid(Fnr fnr) {
+        final String[] aktoerid = {null};
+        testbrukere.forEach((key, value) -> {
+            if(value.getFnr().equals(fnr.toString())){
+                aktoerid[0] = value.getAktoer_id();
+            }
+        });
+        return aktoerid[0];
     }
 }
