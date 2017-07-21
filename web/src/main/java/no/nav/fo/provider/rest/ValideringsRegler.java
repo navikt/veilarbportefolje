@@ -105,7 +105,7 @@ class ValideringsRegler {
         List<Fnr> validerteFnrs = new ArrayList<>();
 
         fnrs.forEach((fnr) -> {
-            if (fnr != null && fnr.matches("\\d{11}")) {
+            if (validerFnr(fnr).isValid()) {
                 validerteFnrs.add(new Fnr(fnr));
             }
         });
