@@ -3,6 +3,7 @@ package no.nav.fo.provider.rest;
 import io.swagger.annotations.Api;
 import io.vavr.collection.List;
 import io.vavr.control.Validation;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.RestResponse;
@@ -183,7 +184,7 @@ public class ArbeidsListeRessurs {
 
     private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {
         return new ArbeidslisteData(fnr)
-                .setVeilederId(new VeilederId(body.getVeilederId()))
+                .setVeilederId(new VeilederId(SubjectHandler.getSubjectHandler().getUid()))
                 .setKommentar(body.getKommentar())
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
     }

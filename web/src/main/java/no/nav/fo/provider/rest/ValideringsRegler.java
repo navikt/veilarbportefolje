@@ -4,7 +4,6 @@ import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Fnr;
-import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
@@ -74,7 +73,6 @@ class ValideringsRegler {
                 Validation
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
-                                validateVeilderId(arbeidsliste.getVeilederId()),
                                 validateKommentar(arbeidsliste.getKommentar()),
                                 validateFrist(arbeidsliste.getFrist())
                         )
@@ -88,10 +86,6 @@ class ValideringsRegler {
 
     private static Validation<String, String> validateKommentar(String kommentar) {
         return valid(kommentar);
-    }
-
-    private static Validation<String, VeilederId> validateVeilderId(String veilederId) {
-        return valid(new VeilederId(veilederId));
     }
 
     public static Validation<String, Fnr> validerFnr(String fnr) {

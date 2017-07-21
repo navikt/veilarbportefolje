@@ -80,13 +80,11 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         JSONObject bruker1 = new JSONObject()
                 .put("fnr", FNR)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
         JSONObject bruker2 = new JSONObject()
                 .put("fnr", FNR_2)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar2")
                 .put("frist", "2017-10-10T00:00:00Z");
 
@@ -105,13 +103,11 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         JSONObject bruker = new JSONObject()
                 .put("fnr", FNR_UNAUTHORIZED)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
         JSONObject bruker2 = new JSONObject()
                 .put("fnr", FNR_2)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar2")
                 .put("frist", "2017-10-10T00:00:00Z");
 
@@ -128,7 +124,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", expectedUtcString);
 
@@ -149,7 +144,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", expectedUtcString);
 
@@ -199,7 +193,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         insertSuccessfulBrukere();
         String path = "/tjenester/arbeidsliste/" + FNR;
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
@@ -214,7 +207,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         insertUnauthorizedBruker();
         String path = "/tjenester/arbeidsliste/" + FNR_UNAUTHORIZED;
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
