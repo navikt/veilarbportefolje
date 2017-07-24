@@ -95,12 +95,12 @@ class ValideringsRegler {
         return invalid(format("%s er ikke et gyldig fnr", fnr));
     }
 
-    public static Validation<List<String>, List<Fnr>> validerFnrs(List<String> fnrs) {
+    public static Validation<List<Fnr>, List<Fnr>> validerFnrs(List<Fnr> fnrs) {
         List<Fnr> validerteFnrs = new ArrayList<>();
 
         fnrs.forEach((fnr) -> {
-            if (validerFnr(fnr).isValid()) {
-                validerteFnrs.add(new Fnr(fnr));
+            if (validerFnr(fnr.toString()).isValid()) {
+                validerteFnrs.add(fnr);
             }
         });
 
