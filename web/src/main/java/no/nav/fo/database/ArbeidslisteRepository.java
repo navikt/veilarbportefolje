@@ -40,7 +40,7 @@ public class ArbeidslisteRepository {
                         .column("*")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Kunne ikke hente ut arbeidsliste fra db: {}", getCauseString(e)));
+        ).onFailure(e -> LOG.warn("Kunne ikke hente ut arbeidsliste fra db for aktoerid {}: {}",aktoerId, getCauseString(e)));
     }
 
     public Try<AktoerId> insertArbeidsliste(ArbeidslisteData data) {
@@ -80,9 +80,18 @@ public class ArbeidslisteRepository {
         ).onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste i db: {}", getCauseString(e)));
     }
 
+    public boolean harBrukerArbeidsliste(AktoerId aktoerId) {
+        return !db.queryForList("SELECT aktoerid FROM arbeidsliste where aktoerid=?",aktoerId.toString()).isEmpty();
+    }
+
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
         return Try.of(
                 () -> {
+                    if(!harBrukerArbeidsliste(aktoerID)) {
+                        LOG.info("Finner ingen arbeidsliste å slette for aktoerid {}", aktoerID);
+                        return aktoerID;
+                    }
+
                     delete(ds, ARBEIDSLISTE)
                             .where(WhereClause.equals("AKTOERID", aktoerID.toString()))
                             .execute();
