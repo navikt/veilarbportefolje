@@ -87,11 +87,6 @@ public class ArbeidslisteRepository {
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
         return Try.of(
                 () -> {
-                    if(!harBrukerArbeidsliste(aktoerID)) {
-                        LOG.info("Finner ingen arbeidsliste å slette for aktoerid {}", aktoerID);
-                        return aktoerID;
-                    }
-
                     delete(ds, ARBEIDSLISTE)
                             .where(WhereClause.equals("AKTOERID", aktoerID.toString()))
                             .execute();

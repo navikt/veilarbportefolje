@@ -1,6 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import com.squareup.okhttp.Response;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.testutil.LocalIntegrationTest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -8,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static no.nav.fo.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
@@ -39,7 +42,10 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         String path = "/tjenester/arbeidsliste/delete";
         assertFalse(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
 
-        JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2));
+        List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
+        JSONArray json = new JSONArray(arbeidslisteRequests);
 
         Response response = post(path, json.toString());
 
@@ -61,8 +67,12 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         skalOppretteArbeidsliste();
         String path = "/tjenester/arbeidsliste/delete";
         String fnrUtenArbeidsliste = "00000000000";
+        List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(fnrUtenArbeidsliste));
 
-        JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2, fnrUtenArbeidsliste));
+        JSONArray json = new JSONArray(arbeidslisteRequests);
         Response response = post(path, json.toString());
 
         JSONObject responseJSON = new JSONObject(response.body().string());
