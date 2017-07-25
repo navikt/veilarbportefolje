@@ -3,6 +3,7 @@ package no.nav.fo.provider.rest;
 import io.swagger.annotations.Api;
 import io.vavr.collection.List;
 import io.vavr.control.Validation;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.RestResponse;
@@ -24,6 +25,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -146,12 +148,17 @@ public class ArbeidsListeRessurs {
 
     @POST
     @Path("/delete")
-    public Response deleteArbeidsliseListe(java.util.List<String> fnrs) {
+    public Response deleteArbeidsliseListe(java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         return createResponse(() -> {
             java.util.List<String> feiledeFnrs = new ArrayList<>();
             java.util.List<String> okFnrs = new ArrayList<>();
 
-            Validation<java.util.List<String>, java.util.List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
+            java.util.List<Fnr> fnrs = arbeidslisteData
+                    .stream()
+                    .map(data -> new Fnr(data.getFnr()))
+                    .collect(Collectors.toList());
+
+            Validation<java.util.List<Fnr>, java.util.List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
             if (validerFnrs.isInvalid()) {
                 throw new RestValideringException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
             }
@@ -183,7 +190,7 @@ public class ArbeidsListeRessurs {
 
     private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {
         return new ArbeidslisteData(fnr)
-                .setVeilederId(new VeilederId(body.getVeilederId()))
+                .setVeilederId(new VeilederId(SubjectHandler.getSubjectHandler().getUid()))
                 .setKommentar(body.getKommentar())
                 .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
     }

@@ -4,7 +4,6 @@ import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Fnr;
-import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
@@ -74,7 +73,6 @@ class ValideringsRegler {
                 Validation
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
-                                validateVeilderId(arbeidsliste.getVeilederId()),
                                 validateKommentar(arbeidsliste.getKommentar()),
                                 validateFrist(arbeidsliste.getFrist())
                         )
@@ -90,10 +88,6 @@ class ValideringsRegler {
         return valid(kommentar);
     }
 
-    private static Validation<String, VeilederId> validateVeilderId(String veilederId) {
-        return valid(new VeilederId(veilederId));
-    }
-
     public static Validation<String, Fnr> validerFnr(String fnr) {
         if (fnr != null && fnr.matches("\\d{11}")) {
             return valid(new Fnr(fnr));
@@ -101,12 +95,12 @@ class ValideringsRegler {
         return invalid(format("%s er ikke et gyldig fnr", fnr));
     }
 
-    public static Validation<List<String>, List<Fnr>> validerFnrs(List<String> fnrs) {
+    public static Validation<List<Fnr>, List<Fnr>> validerFnrs(List<Fnr> fnrs) {
         List<Fnr> validerteFnrs = new ArrayList<>();
 
         fnrs.forEach((fnr) -> {
-            if (validerFnr(fnr).isValid()) {
-                validerteFnrs.add(new Fnr(fnr));
+            if (validerFnr(fnr.toString()).isValid()) {
+                validerteFnrs.add(fnr);
             }
         });
 

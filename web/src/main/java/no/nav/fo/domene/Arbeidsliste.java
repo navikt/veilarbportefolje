@@ -25,7 +25,7 @@ public class Arbeidsliste {
     public static Arbeidsliste of(SolrDocument brukerDokument) {
 
         Boolean arbeidslisteAktiv = (Boolean) brukerDokument.get("arbeidsliste_aktiv");
-        VeilederId sistEndretAv = new VeilederId((String) brukerDokument.get("arbeidsliste_sistendretavveileder"));
+        VeilederId sistEndretAv = new VeilederId((String) brukerDokument.get("arbeidsliste_sist_endret_av_veilederid"));
         ZonedDateTime endringstidspunkt = toZonedDateTime((Date) brukerDokument.get("arbeidsliste_endringstidspunkt"));
         String kommentar = (String) brukerDokument.get("arbeidsliste_kommentar");
         ZonedDateTime frist = toZonedDateTime((Date) brukerDokument.get("arbeidsliste_frist"));

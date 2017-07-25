@@ -1,6 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import com.squareup.okhttp.Response;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.testutil.LocalIntegrationTest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -8,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static no.nav.fo.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
@@ -39,7 +42,10 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         String path = "/tjenester/arbeidsliste/delete";
         assertFalse(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
 
-        JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2));
+        List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
+        JSONArray json = new JSONArray(arbeidslisteRequests);
 
         Response response = post(path, json.toString());
 
@@ -61,8 +67,12 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         skalOppretteArbeidsliste();
         String path = "/tjenester/arbeidsliste/delete";
         String fnrUtenArbeidsliste = "00000000000";
+        List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(fnrUtenArbeidsliste));
 
-        JSONArray json = new JSONArray(Arrays.asList(FNR, FNR_2, fnrUtenArbeidsliste));
+        JSONArray json = new JSONArray(arbeidslisteRequests);
         Response response = post(path, json.toString());
 
         JSONObject responseJSON = new JSONObject(response.body().string());
@@ -80,13 +90,11 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         JSONObject bruker1 = new JSONObject()
                 .put("fnr", FNR)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
         JSONObject bruker2 = new JSONObject()
                 .put("fnr", FNR_2)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar2")
                 .put("frist", "2017-10-10T00:00:00Z");
 
@@ -105,13 +113,11 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         JSONObject bruker = new JSONObject()
                 .put("fnr", FNR_UNAUTHORIZED)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
         JSONObject bruker2 = new JSONObject()
                 .put("fnr", FNR_2)
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar2")
                 .put("frist", "2017-10-10T00:00:00Z");
 
@@ -128,7 +134,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", expectedUtcString);
 
@@ -149,7 +154,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", expectedUtcString);
 
@@ -199,7 +203,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         insertSuccessfulBrukere();
         String path = "/tjenester/arbeidsliste/" + FNR;
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
@@ -214,7 +217,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         insertUnauthorizedBruker();
         String path = "/tjenester/arbeidsliste/" + FNR_UNAUTHORIZED;
         JSONObject json = new JSONObject()
-                .put("veilederId", TEST_VEILEDERID)
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 

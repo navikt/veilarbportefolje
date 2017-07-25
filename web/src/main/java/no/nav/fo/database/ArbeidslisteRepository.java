@@ -40,7 +40,7 @@ public class ArbeidslisteRepository {
                         .column("*")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Kunne ikke hente ut arbeidsliste fra db: {}", getCauseString(e)));
+        );
     }
 
     public Try<AktoerId> insertArbeidsliste(ArbeidslisteData data) {

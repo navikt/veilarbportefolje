@@ -34,7 +34,7 @@ public class AktoerServiceImpl implements AktoerService {
         return
                 brukerRepository
                         .retrievePersonid(aktoerId)
-                        .orElse(hentPersonIdViaSoap(aktoerId));
+                        .orElse(() ->  hentPersonIdViaSoap(aktoerId));
     }
 
     @Override

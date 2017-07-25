@@ -25,6 +25,8 @@ import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -74,6 +76,7 @@ public class AktoerServiceTest {
         assertTrue(updated > 0);
 
         Try<PersonId> result = aktoerService.hentPersonidFraAktoerid(aktoerId);
+        verify(aktoerV2, never()).hentIdentForAktoerId(any());
         assertTrue(result.isSuccess());
         assertEquals(personId, result.get());
     }
