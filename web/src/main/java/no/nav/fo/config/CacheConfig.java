@@ -26,8 +26,8 @@ public class CacheConfig implements CachingConfigurer {
     public static final String modiaOppfolgingCache = "modiaOppfolgingCache";
     public static final String brukerTilgangCache = "brukerTilgangCache";
 
-    private static String brukerTilgangProperty = "veilarbportefolje.tilgangtilbrukercache.seconds";
-    private static int brukertilgangCacheSeconds = parseInt(getProperty(brukerTilgangProperty, "3600"));
+    private static String cacheTTLProperty = "veilarbportefolje.tilgangtilbrukercache.seconds";
+    private static int cacheTimeToLive = parseInt(getProperty(cacheTTLProperty, "3600"));
 
     @Bean
     public net.sf.ehcache.CacheManager ehCacheManager() {
@@ -66,7 +66,7 @@ public class CacheConfig implements CachingConfigurer {
         CacheConfiguration config = new CacheConfiguration(name, maxEntries);
         config.setMemoryStoreEvictionPolicy("LRU");
         config.setTimeToIdleSeconds(3600);
-        config.setTimeToLiveSeconds(brukertilgangCacheSeconds);
+        config.setTimeToLiveSeconds(cacheTimeToLive);
         return config;
     }
 }
