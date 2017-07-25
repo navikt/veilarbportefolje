@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 import javaslang.control.Try;
+import no.nav.fo.config.CacheConfig;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -27,7 +28,7 @@ public class PepClientImpl implements PepClient {
         this.pep = pep;
     }
 
-    @Cacheable("brukertilgangCache")
+    @Cacheable(CacheConfig.kode7Cache)
     public boolean isSubjectAuthorizedToSeeKode7(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -38,7 +39,7 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable("brukertilgangCache")
+    @Cacheable(CacheConfig.kode6Cache)
     public boolean isSubjectAuthorizedToSeeKode6(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -49,7 +50,7 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable("brukertilgangCache")
+    @Cacheable(CacheConfig.egenAnsattCache)
     public boolean isSubjectAuthorizedToSeeEgenAnsatt(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -60,7 +61,7 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable("brukertilgangCache")
+    @Cacheable(CacheConfig.modiaOppfolgingCache)
     public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -78,7 +79,7 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable("brukertilgangCache")
+    @Cacheable(CacheConfig.brukerTilgangCache)
     public boolean tilgangTilBruker(String token, String fnr) {
         BiasedDecisionResponse callAllowed;
         try {
