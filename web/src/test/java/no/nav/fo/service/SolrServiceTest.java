@@ -1,6 +1,9 @@
 package no.nav.fo.service;
 
+import io.vavr.control.Try;
+import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Filtervalg;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -22,6 +25,7 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.mock.AktoerServiceMock.AKTOER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -35,19 +39,24 @@ public class SolrServiceTest {
     private SolrClient solrClientSlave;
     @Mock
     private SolrClient solrClientMaster;
+    @Mock
+    private ArbeidslisteRepository arbeidslisteRepository;
+    @Mock
+    private AktoerService aktoerService;
 
     private SolrService service;
 
     @Before
     public void setup() {
-        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository);
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 
     @Test
     public void deltaindekseringSkalOppdatereTidsstempel() throws Exception {
-        when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(
-                new SolrInputDocument()
-        ));
+        SolrInputDocument dummyDocument = new SolrInputDocument();
+        dummyDocument.addField("person_id", "dummy");
+        when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
+        when(aktoerService.hentAktoeridFraPersonid(anyString())).thenReturn(Try.success(AKTOER_ID).map(AktoerId::new));
         System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();

@@ -1,17 +1,36 @@
 package no.nav.fo.provider.rest;
 
+import io.vavr.collection.Seq;
+import io.vavr.control.Validation;
 import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.Fnr;
 import no.nav.fo.exception.RestValideringException;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
+import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
-    private static List<String> sortFields = asList("ikke_satt", "etternavn", "fodselsnummer", "utlopsdato", "aapMaxtid");
+    private static List<String> sortFields = asList(
+            "ikke_satt",
+            "etternavn",
+            "fodselsnummer",
+            "utlopsdato",
+            "aapMaxtid",
+            "arbeidsliste_frist",
+            "VENTER_PA_SVAR_FRA_NAV",
+            "VENTER_PA_SVAR_FRA_BRUKER",
+            "UTLOPTE_AKTIVITETER");
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
@@ -35,6 +54,10 @@ class ValideringsRegler {
         test("ytelsesfilter", filtervalg.ytelse, filtervalg.ytelse != null);
     }
 
+    static void sjekkFnr(String fnr) {
+        test("fnr", fnr, fnr.matches("\\d{11}"));
+    }
+
     private static void test(String navn, Object data, Supplier<Boolean> matches) {
         test(navn, data, matches.get());
     }
@@ -43,5 +66,44 @@ class ValideringsRegler {
         if (!matches) {
             throw new RestValideringException(format("sjekk av %s feilet, %s", navn, data));
         }
+    }
+
+    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste) {
+        return
+                Validation
+                        .combine(
+                                validerFnr(arbeidsliste.getFnr()),
+                                validateKommentar(arbeidsliste.getKommentar()),
+                                validateFrist(arbeidsliste.getFrist())
+                        )
+                        .ap(ArbeidslisteData::of);
+    }
+
+    private static Validation<String, Timestamp> validateFrist(String frist) {
+        Timestamp timestamp = Timestamp.from(Instant.parse(frist));
+        return valid(timestamp);
+    }
+
+    private static Validation<String, String> validateKommentar(String kommentar) {
+        return valid(kommentar);
+    }
+
+    public static Validation<String, Fnr> validerFnr(String fnr) {
+        if (fnr != null && fnr.matches("\\d{11}")) {
+            return valid(new Fnr(fnr));
+        }
+        return invalid(format("%s er ikke et gyldig fnr", fnr));
+    }
+
+    public static Validation<List<Fnr>, List<Fnr>> validerFnrs(List<Fnr> fnrs) {
+        List<Fnr> validerteFnrs = new ArrayList<>();
+
+        fnrs.forEach((fnr) -> {
+            if (validerFnr(fnr.toString()).isValid()) {
+                validerteFnrs.add(fnr);
+            }
+        });
+
+        return validerteFnrs.size() == fnrs.size() ? valid(validerteFnrs) : invalid(fnrs);
     }
 }

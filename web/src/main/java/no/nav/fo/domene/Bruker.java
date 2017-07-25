@@ -4,12 +4,14 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.util.DateUtils.toLocalDateTime;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Data
@@ -31,7 +33,10 @@ public class Bruker {
     ManedMapping utlopsdatoFasett;
     LocalDateTime aapMaxtid;
     KvartalMapping aapMaxtidFasett;
-
+    Arbeidsliste arbeidsliste;
+    LocalDateTime venterPaSvarFraNAV;
+    LocalDateTime venterPaSvarFraBruker;
+    LocalDateTime nyesteUtlopteAktivitet;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -44,22 +49,19 @@ public class Bruker {
                 .setErDoed((Boolean) document.get("er_doed"))
                 .setSikkerhetstiltak(getSikkerhetstiltak(document))
                 .setFodselsdagIMnd((int) document.get("fodselsdag_i_mnd"))
-                .setFodselsdato(dato((Date)document.get("fodselsdato")))
+                .setFodselsdato(toLocalDateTime((Date) document.get("fodselsdato")))
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
-                .setUtlopsdato(dato((Date) document.get("utlopsdato")))
+                .setUtlopsdato(toLocalDateTime((Date) document.get("utlopsdato")))
                 .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
-                .setAapMaxtid(dato((Date) document.get("aap_maxtid")))
-                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")));
+                .setAapMaxtid(toLocalDateTime((Date) document.get("aap_maxtid")))
+                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
+                .setArbeidsliste(Arbeidsliste.of(document))
+                .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
+                .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
+                .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
+                ;
     }
-
-    static LocalDateTime dato(Date dato) {
-        if (dato == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
-    }
-
 
     private static String getDiskresjonskode(SolrDocument document) {
         String diskresjonskode = (String) document.get("diskresjonskode");
@@ -82,5 +84,9 @@ public class Bruker {
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
 
+    }
+
+    public ZonedDateTime getArbeidslisteFrist() {
+        return arbeidsliste.getFrist();
     }
 }

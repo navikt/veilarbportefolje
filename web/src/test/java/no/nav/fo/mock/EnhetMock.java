@@ -7,10 +7,10 @@ import no.nav.virksomhet.tjenester.enhet.v1.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ***REMOVED*** on 11.03.2017.
- */
 public class EnhetMock implements Enhet {
+
+    public static final String NAV_SANDE_ID = "0713";
+
     @Override
     public WSFinnEnhetListeResponse finnEnhetListe(WSFinnEnhetListeRequest request) {
         return null;
@@ -36,8 +36,10 @@ public class EnhetMock implements Enhet {
     public WSHentEnhetListeResponse hentEnhetListe(WSHentEnhetListeRequest request) throws HentEnhetListeUgyldigInput, HentEnhetListeRessursIkkeFunnet {
         Ressurs ressurs = createRessurs("Arne","And",request.getRessursId());
         List<no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet> enhetliste = new ArrayList<>();
-        enhetliste.add(createEnhet("0713","NAV SANDE"));
+        enhetliste.add(createEnhet(NAV_SANDE_ID,"NAV SANDE"));
         enhetliste.add(createEnhet("0104","NAV MOSS"));
+        enhetliste.add(createEnhet("0100","NAV ØSTFOLD"));
+        enhetliste.add(createEnhet("0709","NAV LARVIK"));
 
         return new WSHentEnhetListeResponse().withEnhetListe(enhetliste).withRessurs(ressurs);
     }

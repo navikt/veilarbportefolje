@@ -1,8 +1,8 @@
 package no.nav.fo.consumer;
 
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.control.Try;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.*;

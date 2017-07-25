@@ -15,8 +15,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
 
-import java.util.Optional;
-
 import static java.lang.System.setProperty;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -38,10 +36,9 @@ public class EnhetControllerTest {
 
     @Before
     public void setup() {
-        setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
+        setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
         InternbrukerSubjectHandler.setVeilederIdent("testident");
         System.clearProperty("portefolje.pilot.enhetliste");
-
     }
 
     @Test

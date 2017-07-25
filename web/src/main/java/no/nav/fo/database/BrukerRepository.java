@@ -1,46 +1,145 @@
 package no.nav.fo.database;
 
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.KvartalMapping;
-import no.nav.fo.domene.ManedMapping;
-import no.nav.fo.domene.YtelseMapping;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
+import lombok.SneakyThrows;
+import no.nav.fo.domene.Aktivitet.AktivitetDTO;
+import no.nav.fo.domene.Aktivitet.AktivitetData;
+import no.nav.fo.domene.Aktivitet.AktivitetTyper;
+import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
+import no.nav.fo.domene.*;
+import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.SqlUtils;
+import no.nav.fo.util.sql.UpsertQuery;
+import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
-import java.math.BigDecimal;
+import javax.sql.DataSource;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.util.DbUtils.mapResultSetTilDokument;
+import static no.nav.fo.util.DateUtils.timestampFromISO8601;
+import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
+import static no.nav.fo.util.sql.SqlUtils.insert;
+import static no.nav.fo.util.sql.SqlUtils.select;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
 
-    static final private Logger LOG = getLogger(BrukerRepository.class);
+    private static final Logger LOG = getLogger(BrukerRepository.class);
+    public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
+    public static final String BRUKERDATA = "BRUKER_DATA";
+    private final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
 
     @Inject
     private JdbcTemplate db;
 
     @Inject
+    private DataSource ds;
+
+    @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
+        return Try.of(
+                () -> select(ds, BRUKERDATA, this::mapToVeilederId)
+                        .column("VEILEDERIDENT")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
+    }
+
+    public Try<String> retrieveEnhet(Fnr fnr) {
+        return Try.of(
+                () -> select(ds, OPPFOLGINGSBRUKER, this::mapToEnhet)
+                        .column("NAV_KONTOR")
+                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke oppfølgingsenhet for bruker med fnr {}", fnr));
+    }
+
+    public Try<Integer> insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
+        return
+                Try.of(
+                        () -> insert(db, AKTOERID_TO_PERSONID)
+                                .value("AKTOERID", aktoerId.toString())
+                                .value("PERSONID", personId.toString())
+                                .execute()
+                ).onFailure(e -> LOG.info("Kunne ikke inserte mapping Aktoerid {} -> personId {} i databasen: {}", aktoerId, personId, getCauseString(e)));
+    }
+
+    public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
+        return Try.of(
+                () -> select(db.getDataSource(), AKTOERID_TO_PERSONID, this::mapToPersonId)
+                        .column("PERSONID")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke personid for aktoerid {}: {}", aktoerId, getCauseString(e)));
+    }
+
+    public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
+        return Try.of(() ->
+                select(db.getDataSource(), OPPFOLGINGSBRUKER, this::personIdMapper)
+                        .column("PERSON_ID")
+                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
+    }
+
+    public Try<Fnr> retrieveFnr(AktoerId aktoerId) {
+        return Try.of(
+                () -> select(db.getDataSource(), BRUKERDATA, this::fnrMapper)
+                        .column("FNR")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
+        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId));
+    }
+
+    /**
+     * MAPPING-FUNKSJONER
+     */
+    @SneakyThrows
+    private Fnr fnrMapper(ResultSet rs) {
+        return new Fnr(rs.getString("FNR"));
+    }
+
+    @SneakyThrows
+    private String mapToEnhet(ResultSet rs) {
+        return rs.getString("NAV_KONTOR");
+    }
+
+    @SneakyThrows
+    private VeilederId mapToVeilederId(ResultSet rs) {
+        return new VeilederId(rs.getString("VEILEDERIDENT"));
+    }
+
+    @SneakyThrows
+    private PersonId mapToPersonId(ResultSet rs) {
+        return new PersonId(rs.getString("PERSONID"));
+    }
+
+    @SneakyThrows
+    private PersonId personIdMapper(ResultSet resultSet) {
+        return new PersonId(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
+    }
 
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
@@ -49,12 +148,13 @@ public class BrukerRepository {
     public void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
-            SolrInputDocument bruker = mapResultSetTilDokument(rs);
-            if (filter.test(bruker)) {
-                prosess.accept(bruker);
+            SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
+            if (filter.test(brukerDokument)) {
+                prosess.accept(brukerDokument);
             }
         });
     }
+
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
         List<SolrInputDocument> brukere = new ArrayList<>();
@@ -65,8 +165,14 @@ public class BrukerRepository {
         return brukere.stream().filter(BrukerRepository::erOppfolgingsBruker).collect(toList());
     }
 
-    public List<Map<String, Object>> retrieveBrukermedBrukerdata(String personId) {
-        return db.queryForList(retrieveBrukerMedBrukerdataSQL(), personId);
+    public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
+        String[] args = new String[]{personId};
+        return db.query(retrieveBrukerMedBrukerdataSQL(), args, (rs) -> {
+            if (rs.isBeforeFirst()) {
+                rs.next();
+            }
+            return mapResultSetTilDokument(rs);
+        });
     }
 
     public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
@@ -78,12 +184,18 @@ public class BrukerRepository {
                         .setAktoerid((String) data.get("AKTOERID"))
                         .setVeileder((String) data.get("VEILEDERIDENT"))
                         .setPersonid((String) data.get("PERSONID"))
-                        .setTildeltTidspunkt(toLocalDateTime((Timestamp) data.get("TILDELT_TIDSPUNKT")))
+                        .setTildeltTidspunkt((Timestamp) data.get("TILDELT_TIDSPUNKT"))
                         .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
                         .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
                         .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
-                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))).collect(toList());
+                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
+                        .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
+                        .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
+                        .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
+                        .setIAvtaltAktivitet(parse0OR1((String) data.get("IAVTALTAKTIVITET")))
+                        .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET")))
+                .collect(toList());
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
@@ -98,15 +210,6 @@ public class BrukerRepository {
         return db.queryForList(getPersonidFromAktoeridSQL(), aktoerId);
     }
 
-    public Optional<BigDecimal> retrievePersonidFromFnr(String fnr) {
-        List<Map<String, Object>> list = db.queryForList(getPersonIdFromFnrSQL(), fnr);
-        if (list.size() != 1) {
-            LOG.warn(format("Fikk %d antall rader for bruker med fnr %s", list.size(), fnr));
-            return empty();
-        }
-        BigDecimal personId = (BigDecimal) list.get(0).get("PERSON_ID");
-        return Optional.ofNullable(personId);
-    }
 
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
         Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
@@ -135,6 +238,95 @@ public class BrukerRepository {
         return brukere;
     }
 
+    public Timestamp getAktiviteterSistOppdatert() {
+        return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
+    }
+
+    public List<AktivitetDTO> getAktiviteterForAktoerid(String aktoerid) {
+        return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
+                .stream()
+                .map(BrukerRepository::mapToAktivitetDTO)
+                .filter(aktivitet -> AktivitetTyper.contains(aktivitet.getAktivitetType()))
+                .collect(toList());
+    }
+
+    public List<AktoerAktiviteter> getAktiviteterForListOfAktoerid(Collection<String> aktoerids) {
+        if (aktoerids.isEmpty()) {
+            return emptyList();
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        Map<String, List<AktivitetDTO>> aktoerTilAktiviteterMap = new HashMap<>(aktoerids.size());
+        List<AktoerAktiviteter> aktoerAktiviteter = new ArrayList<>(aktoerids.size());
+
+        params.put("aktoerids", aktoerids);
+        List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(getAktiviteterForAktoeridsSql(), params);
+
+        queryResult.forEach(aktivitet -> {
+            String aktoerid = (String) aktivitet.get("AKTOERID");
+            if (aktoerTilAktiviteterMap.containsKey(aktoerid)) {
+                aktoerTilAktiviteterMap.get(aktoerid).add(mapToAktivitetDTO(aktivitet));
+            } else {
+                List<AktivitetDTO> liste = new ArrayList<>();
+                liste.add(mapToAktivitetDTO(aktivitet));
+                aktoerTilAktiviteterMap.put(aktoerid, liste);
+            }
+        });
+
+        aktoerTilAktiviteterMap.forEach((key, value) -> aktoerAktiviteter.add(new AktoerAktiviteter(key).setAktiviteter(value)));
+
+        return aktoerAktiviteter;
+    }
+
+    private static AktivitetDTO mapToAktivitetDTO(Map<String, Object> map) {
+        return new AktivitetDTO()
+                .setAktivitetType((String) map.get("AKTIVITETTYPE"))
+                .setStatus((String) map.get("STATUS"))
+                .setFraDato((Timestamp) map.get("FRADATO"))
+                .setTilDato((Timestamp) map.get("TILDATO"));
+    }
+
+    public void setAktiviteterSistOppdatert(String sistOppdatert) {
+        db.update("UPDATE METADATA SET aktiviteter_sist_oppdatert = ?", timestampFromISO8601(sistOppdatert));
+    }
+
+    public void upsertAktivitet(AktivitetDataFraFeed aktivitet) {
+        getAktivitetUpsertQuery(this.db, aktivitet).execute();
+    }
+
+    public void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {
+        aktiviteter.forEach(this::upsertAktivitet);
+    }
+
+    public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
+        aktivitetstatus.forEach((aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid));
+    }
+
+    public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
+        getUpsertAktivitetStatuserForBrukerQuery(aktivitettype, this.db, status, aktoerid, personid).execute();
+    }
+
+    public Map<String, Timestamp> getAktivitetStatusMap(String personid) {
+        Map<String, Boolean> statusMap = new HashMap<>();
+        Map<String, Timestamp> statusMapTimestamp = new HashMap<>();
+
+        List<Map<String, Object>> statuserFraDb = db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER where PERSONID=?", personid);
+
+        AktivitetData.aktivitetTyperList.forEach((type) -> statusMap.put(type.toString(), kanskjeVerdi(statuserFraDb, type.toString())));
+
+        //Lagrer mapping til Date for å håndtere dato på aktiviteter i fremtiden.
+        statusMap.forEach((key, value) -> statusMapTimestamp.put(key, value ? new Timestamp(Instant.now().toEpochMilli()) : null));
+
+        return statusMapTimestamp;
+    }
+
+    public List<String> getDistinctAktoerIdsFromAktivitet() {
+        return db.queryForList("SELECT DISTINCT AKTOERID FROM AKTIVITETER")
+                .stream()
+                .map(map -> (String) map.get("AKTOERID"))
+                .collect(toList());
+
+    }
 
     private <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);
@@ -154,20 +346,9 @@ public class BrukerRepository {
     }
 
     void upsertBrukerdata(Brukerdata brukerdata) {
-        try {
-            brukerdata.toInsertQuery(db).execute();
-        } catch (DuplicateKeyException e) {
-            brukerdata.toUpdateQuery(db).execute();
-        }
+        brukerdata.toUpsertQuery(db).execute();
     }
 
-    public void insertAktoeridToPersonidMapping(String aktoerId, String personId) {
-        try {
-            db.update(insertPersonidAktoeridMappingSQL(), aktoerId, personId);
-        } catch (DuplicateKeyException e) {
-            LOG.info("Aktoerid {} personId {} mapping finnes i databasen", aktoerId, personId);
-        }
-    }
 
     public void slettYtelsesdata() {
         SqlUtils.update(db, "bruker_data")
@@ -179,6 +360,28 @@ public class BrukerRepository {
                 .execute();
     }
 
+    static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, AktivitetDataFraFeed aktivitet) {
+        return SqlUtils.upsert(db, "AKTIVITETER")
+                .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
+                .set("AKTOERID", aktivitet.getAktorId())
+                .set("AKTIVITETTYPE", aktivitet.getAktivitetType().toLowerCase())
+                .set("AVTALT", aktivitet.isAvtalt())
+                .set("FRADATO", aktivitet.getFraDato())
+                .set("TILDATO", aktivitet.getTilDato())
+                .set("OPPDATERTDATO", aktivitet.getEndretDato())
+                .set("STATUS", aktivitet.getStatus().toLowerCase())
+                .set("AKTIVITETID", aktivitet.getAktivitetId());
+    }
+
+    static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid) {
+        return SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER")
+                .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
+                .set("STATUS", status)
+                .set("PERSONID", personid)
+                .set("AKTIVITETTYPE", aktivitetstype)
+                .set("AKTOERID", aktoerid);
+    }
+
     String retrieveBrukereSQL() {
         return
                 "SELECT " +
@@ -188,7 +391,7 @@ public class BrukerRepository {
                         "etternavn, " +
                         "nav_kontor, " +
                         "formidlingsgruppekode, " +
-                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "iserv_fra_dato, " +
                         "kvalifiseringsgruppekode, " +
                         "rettighetsgruppekode, " +
                         "hovedmaalkode, " +
@@ -196,14 +399,19 @@ public class BrukerRepository {
                         "fr_kode, " +
                         "sperret_ansatt, " +
                         "er_doed, " +
-                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "doed_fra_dato, " +
                         "tidsstempel, " +
                         "veilederident, " +
                         "ytelse, " +
-                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett " +
+                        "aapmaxtid, " +
+                        "aapmaxtidfasett, " +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav, " +
+                        "nyesteutlopteaktivitet, " +
+                        "iavtaltaktivitet " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -221,7 +429,7 @@ public class BrukerRepository {
                         "etternavn, " +
                         "nav_kontor, " +
                         "formidlingsgruppekode, " +
-                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "iserv_fra_dato, " +
                         "kvalifiseringsgruppekode, " +
                         "rettighetsgruppekode, " +
                         "hovedmaalkode, " +
@@ -229,14 +437,19 @@ public class BrukerRepository {
                         "fr_kode, " +
                         "sperret_ansatt, " +
                         "er_doed, " +
-                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "doed_fra_dato, " +
                         "tidsstempel, " +
                         "veilederident, " +
                         "ytelse," +
-                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett " +
+                        "aapmaxtid, " +
+                        "aapmaxtidfasett, " +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav, " +
+                        "nyesteutlopteaktivitet, " +
+                        "iavtaltaktivitet " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -255,7 +468,7 @@ public class BrukerRepository {
                         "etternavn, " +
                         "nav_kontor, " +
                         "formidlingsgruppekode, " +
-                        "TO_CHAR(iserv_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(iserv_fra_dato, 'HH24:MI:SS') || 'Z' AS iserv_fra_dato, " +
+                        "iserv_fra_dato, " +
                         "kvalifiseringsgruppekode, " +
                         "rettighetsgruppekode, " +
                         "hovedmaalkode, " +
@@ -263,14 +476,19 @@ public class BrukerRepository {
                         "fr_kode, " +
                         "sperret_ansatt, " +
                         "er_doed, " +
-                        "TO_CHAR(doed_fra_dato, 'YYYY-MM-DD') || 'T' || TO_CHAR(doed_fra_dato, 'HH24:MI:SS') || 'Z' AS doed_fra_dato, " +
+                        "doed_fra_dato, " +
                         "tidsstempel, " +
                         "veilederident," +
                         "ytelse, " +
-                        "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
+                        "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett  " +
+                        "aapmaxtid, " +
+                        "aapmaxtidfasett, " +
+                        "oppfolging, " +
+                        "venterpasvarfrabruker, " +
+                        "venterpasvarfranav, " +
+                        "nyesteutlopteaktivitet, " +
+                        "iavtaltaktivitet " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -312,6 +530,7 @@ public class BrukerRepository {
         return "INSERT INTO AKTOERID_TO_PERSONID VALUES (?,?)";
     }
 
+
     String retrieveBrukerSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
     }
@@ -320,15 +539,35 @@ public class BrukerRepository {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
 
+    String getAktiviteterForAktoeridSql() {
+        return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?";
+    }
+
+    String getAktiviteterForAktoeridsSql() {
+        return
+                "SELECT " +
+                        "AKTOERID, " +
+                        "AKTIVITETTYPE, " +
+                        "STATUS, " +
+                        "FRADATO, " +
+                        "TILDATO " +
+                        "FROM " +
+                        "AKTIVITETER " +
+                        "WHERE " +
+                        "AKTOERID in (:aktoerids)";
+    }
+
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
-        String innsatsgruppe = (String) bruker.get("kvalifiseringsgruppekode").getValue();
+        if (oppfolgingsFlaggSatt(bruker)) {
+            return true;
+        }
+        String servicegruppekode = (String) bruker.get("kvalifiseringsgruppekode").getValue();
+        String formidlingsgruppekode = (String) bruker.get("formidlingsgruppekode").getValue();
+        return UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);
+    }
 
-        boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
-                (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
-                        || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
-                        || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
-
-        return aktivStatus || bruker.get("veileder_id").getValue() != null;
+    static boolean oppfolgingsFlaggSatt(SolrInputDocument bruker) {
+        return (Boolean) bruker.get("oppfolging").getValue();
     }
 
     public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
@@ -347,5 +586,14 @@ public class BrukerRepository {
         return string != null ? KvartalMapping.valueOf(string) : null;
     }
 
-
+    private Boolean kanskjeVerdi(List<Map<String, Object>> statuserFraDb, String type) {
+        for (Map<String, Object> rad : statuserFraDb) {
+            String aktivitetType = (String) rad.get("AKTIVITETTYPE");
+            if (type.equals(aktivitetType)) {
+                //med hsql driveren settes det inn false/true og med oracle settes det inn 0/1.
+                return Boolean.valueOf((String) rad.get("STATUS")) || "1".equals(rad.get("STATUS"));
+            }
+        }
+        return false;
+    }
 }

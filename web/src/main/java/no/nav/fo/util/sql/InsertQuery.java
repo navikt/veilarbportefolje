@@ -24,8 +24,8 @@ public class InsertQuery {
         return this;
     }
 
-    public void execute() {
-        db.update(createSqlStatement(), insertParams.values().toArray());
+    public int execute() {
+        return db.update(createSqlStatement(), insertParams.values().toArray());
     }
 
     private String createSqlStatement() {

@@ -2,10 +2,10 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.domene.Bruker;
-import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.domene.Portefolje;
-import no.nav.fo.domene.StatusTall;
+import no.nav.fo.domene.*;
+import no.nav.fo.exception.RestNotFoundException;
+import no.nav.fo.exception.RestTilgangException;
+import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -14,7 +14,6 @@ import no.nav.fo.util.TokenUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -25,28 +24,29 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Api(value = "Veileder")
 @Path("/veileder")
 @Produces(APPLICATION_JSON)
 public class VeilederController {
 
-    private static final Logger logger = getLogger(VeilederController.class);
-
     private BrukertilgangService brukertilgangService;
     private SolrService solrService;
     private PepClient pepClient;
+    private ArbeidslisteService arbeidslisteService;
 
     @Inject
     public VeilederController(
             BrukertilgangService brukertilgangService,
             SolrService solrService,
-            PepClient pepClient
+            PepClient pepClient,
+            ArbeidslisteService arbeidslisteService
     ) {
+
         this.brukertilgangService = brukertilgangService;
         this.solrService = solrService;
         this.pepClient = pepClient;
+        this.arbeidslisteService = arbeidslisteService;
     }
 
     @POST
@@ -99,10 +99,28 @@ public class VeilederController {
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
             if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return new StatusTall().setTotalt(0).setInaktiveBrukere(0);
+                return new StatusTall();
             }
 
             return solrService.hentStatusTallForVeileder(enhet, veilederIdent);
         });
     }
+
+    @GET
+    @Path("/{veilederident}/arbeidsliste")
+    public Response hentArbeidsliste(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
+        return createResponse(() -> {
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
+                throw new RestTilgangException("Enhet er ikke med i pilot");
+            }
+
+            return solrService
+                    .hentBrukereMedArbeidsliste(new VeilederId(veilederIdent), enhet)
+                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke finne noen brukere med arbeidsliste"));
+        });
+    }
+
 }

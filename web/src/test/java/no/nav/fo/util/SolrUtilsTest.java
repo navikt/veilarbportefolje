@@ -98,7 +98,7 @@ public class SolrUtilsTest {
     public void skalByggSolrQueryMedInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.brukerstatus = Brukerstatus.INAKTIVE_BRUKERE;
-        String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV AND veileder_id:*)";
+        String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 

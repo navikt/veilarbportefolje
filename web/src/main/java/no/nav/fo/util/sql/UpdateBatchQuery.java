@@ -1,7 +1,7 @@
 package no.nav.fo.util.sql;
 
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -75,6 +75,8 @@ public class UpdateBatchQuery<T> {
             ps.setString(i, (String) value);
         } else if (Timestamp.class == type) {
             ps.setTimestamp(i, (Timestamp) value);
+        } else if (Boolean.class == type) {
+            ps.setBoolean(i, (Boolean) value);
         }
     }
 

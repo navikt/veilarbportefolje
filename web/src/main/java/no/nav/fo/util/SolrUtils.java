@@ -7,7 +7,10 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -93,6 +96,14 @@ public class SolrUtils {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getUtlopsdato);
         } else if ("aapMaxtid".equals(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getAapMaxtid);
+        } else if ("arbeidsliste_frist".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getArbeidslisteFrist);
+        } else if ("VENTER_PA_SVAR_FRA_NAV".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraNAV);
+        } else if ("VENTER_PA_SVAR_FRA_BRUKER".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraBruker);
+        } else if ("UTLOPTE_AKTIVITETER".equals(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getNyesteUtlopteAktivitet);
         }
         brukere.sort(brukerErNyComparator());
         return brukere;
@@ -144,7 +155,17 @@ public class SolrUtils {
         if (filtervalg.brukerstatus == Brukerstatus.NYE_BRUKERE) {
             oversiktStatements.add("-veileder_id:*");
         } else if (filtervalg.brukerstatus == Brukerstatus.INAKTIVE_BRUKERE) {
-            oversiktStatements.add("(formidlingsgruppekode:ISERV AND veileder_id:*)");
+            oversiktStatements.add("(formidlingsgruppekode:ISERV)");
+        } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_NAV) {
+            oversiktStatements.add("(venterpasvarfranav:*)");
+        } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER) {
+            oversiktStatements.add("(venterpasvarfrabruker:*)");
+        } else if (filtervalg.brukerstatus == Brukerstatus.I_AVTALT_AKTIVITET ) {
+            oversiktStatements.add("(iavtaltaktivitet:true)");
+        } else if(filtervalg.brukerstatus == Brukerstatus.IKKE_I_AVTALT_AKTIVITET) {
+            oversiktStatements.add("(-iavtaltaktivitet:true)");
+        } else if(filtervalg.brukerstatus == Brukerstatus.UTLOPTE_AKTIVITETER) {
+            oversiktStatements.add("(nyesteutlopteaktivitet:*)");
         }
 
 

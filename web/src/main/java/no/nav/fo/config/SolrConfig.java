@@ -1,8 +1,13 @@
 package no.nav.fo.config;
 
+import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.service.AktivitetService;
+import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
+import no.nav.fo.service.SolrServiceImpl;
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -58,19 +63,27 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository) {
-        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository);
+    public AktivitetService aktivitetService() {
+        return new AktivitetService();}
+
+    @Bean
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 
     @Bean
     public Pingable solrServerPing() {
         SolrClient solrClient = solrClientSlave();
+        PingMetadata metadata = new PingMetadata("HTTP via " + System.getProperty("veilarbportefolje.solr.brukercore.url"),
+                "Solr-indeks for portefolje",
+                true
+        );
+
         return () -> {
             try {
                 solrClient.ping();
-                return Pingable.Ping.lyktes("VeilArbPortefoljeIndeks");
+                return Pingable.Ping.lyktes(metadata);
             } catch (Exception e) {
-                return Pingable.Ping.feilet("VeilArbPortefoljeIndeks", e);
+                return Pingable.Ping.feilet(metadata, e);
             }
         };
     }

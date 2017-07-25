@@ -1,12 +1,8 @@
 package no.nav.fo.config;
 
-import no.nav.fo.consumer.OppdaterBrukerdataListener;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
-import no.nav.fo.service.PepClientImpl;
-import no.nav.fo.service.SolrService;
+import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import org.apache.solr.client.solrj.SolrClient;
@@ -23,6 +19,8 @@ import static org.mockito.Mockito.mock;
         DatabaseConfigTest.class
 })
 public class ApplicationConfigTest {
+    @Bean
+    public AktoerService aktoerService() { return new AktoerServiceImpl(); }
 
     @Bean
     public AktoerV2 aktoerV2() {
@@ -46,11 +44,6 @@ public class ApplicationConfigTest {
 
     @Bean
     public PersistentOppdatering persistentOppdatering() { return new PersistentOppdatering(); }
-
-    @Bean
-    public OppdaterBrukerdataListener oppdaterBrukerdataListener() {
-        return new OppdaterBrukerdataListener();
-    }
 
     @Bean
     public SolrService solrService() {

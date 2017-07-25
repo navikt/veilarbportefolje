@@ -1,51 +1,51 @@
 package no.nav.fo.config;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.command.ActiveMQQueue;
+import no.nav.dialogarena.config.fasit.DbCredentials;
+import no.nav.dialogarena.config.fasit.ServiceUser;
+import no.nav.fo.database.testdriver.TestDriver;
+import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class LocalJndiContextConfig {
-    public static void setupJndiLocalContext() {
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.eclipse.jetty.jndi.InitialContextFactory");
-        System.setProperty(Context.URL_PKG_PREFIXES, "org.apache.naming");
 
-        try {
-            InitialContext ctx = new InitialContext();
-            ctx.createSubcontext("java:/");
-            ctx.createSubcontext("java:/jboss/");
-            ctx.createSubcontext("java:/jboss/datasources/");
-            ctx.createSubcontext("java:/jboss/jms/");
-
-            ctx.bind("java:/jboss/datasources/veilarbportefoljeDB", createDataSource());
-            ctx.bind("java:jboss/mqConnectionFactory", createConnectionFactory());
-            ctx.bind("java:jboss/jms/endreVeilederKo", createQueue());
-
-        } catch (NamingException e) {
-
-        }
-    }
-
-    private static DataSource createDataSource() {
+    public static SingleConnectionDataSource setupOracleDataSource(DbCredentials dbCredentials) {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
-        ds.setUrl("jdbc:oracle:thin:@d26dbfl020.test.local:1521/VEILARBPORTEFOLJE_T5");
-        ds.setUsername("VEILARBPORTEFOLJE");
-        ds.setPassword("Ham5IcBNBZ1s");
+        ds.setUrl(dbCredentials.getUrl());
+        ds.setUsername(dbCredentials.getUsername());
+        ds.setPassword(dbCredentials.getPassword());
         ds.setSuppressClose(true);
         return ds;
     }
 
-    private static ConnectionFactory createConnectionFactory() {
-        return new ActiveMQConnectionFactory("tcp://localhost:61616");
+    public static SingleConnectionDataSource setupInMemoryDatabase() {
+        SingleConnectionDataSource ds = new SingleConnectionDataSource();
+        ds.setSuppressClose(true);
+        ds.setDriverClassName(TestDriver.class.getName());
+        ds.setUrl(TestDriver.URL);
+        ds.setUsername("sa");
+        ds.setPassword("");
+
+        try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+            st.execute("SET DATABASE SQL SYNTAX ORA TRUE;");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        Flyway flyway = new Flyway();
+        flyway.setLocations("testmigration");
+        flyway.setDataSource(ds);
+        flyway.migrate();
+
+        return ds;
     }
 
-    private static Destination createQueue() {
-        return new ActiveMQQueue("portefolje");
+    public static void setServiceUserCredentials(ServiceUser serviceUser) {
+        System.setProperty("no.nav.modig.security.systemuser.username", serviceUser.getUsername());
+        System.setProperty("no.nav.modig.security.systemuser.password", serviceUser.getPassword());
     }
+
 }

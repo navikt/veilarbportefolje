@@ -1,8 +1,6 @@
 package no.nav.fo.config;
 
-import no.nav.fo.consumer.OppdaterBrukerdataListener;
-import no.nav.fo.internal.IsAliveServlet;
-import no.nav.fo.internal.PingConfig;
+import no.nav.apiapp.ApiApplication;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientMock;
@@ -18,34 +16,28 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
+import static no.nav.apiapp.ApiApplication.Sone.FSS;
+
 @EnableAspectJAutoProxy
 @EnableScheduling
 @Configuration
 @Import({
-        OppdaterBrukerdataListener.class,
         DatabaseConfig.class,
-        MessageQueueConfig.class,
         VirksomhetEnhetEndpointConfigMock.class,
-        ServiceConfig.class,
+        LocalServiceConfig.class,
         SolrConfig.class,
         AktoerEndpointConfig.class,
         ArenafilConfig.class,
         MetricsConfig.class,
         AktoerEndpointConfig.class,
         AbacContext.class,
-        CacheConfig.class,
-        PingConfig.class
+        CacheConfig.class
 })
-public class LocalApplicationConfig {
+public class LocalApplicationConfig implements ApiApplication{
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean
-    public IsAliveServlet isAliveServlet() {
-        return new IsAliveServlet();
     }
 
     @Bean
@@ -61,5 +53,10 @@ public class LocalApplicationConfig {
     @Bean
     public PepClient pepClient() {
         return new PepClientMock();
+    }
+
+    @Override
+    public Sone getSone() {
+        return FSS;
     }
 }
