@@ -25,6 +25,7 @@ public class CacheConfig implements CachingConfigurer {
     public static final String egenAnsattCache = "egenAnsattCache";
     public static final String modiaOppfolgingCache = "modiaOppfolgingCache";
     public static final String brukerTilgangCache = "brukerTilgangCache";
+    public static final String tilgangTilEnhetCache = "tilgangTilEnhetCache";
 
     private static String cacheTTLProperty = "veilarbportefolje.tilgangtilbrukercache.seconds";
     private static int cacheTimeToLive = parseInt(getProperty(cacheTTLProperty, "3600"));
@@ -37,6 +38,7 @@ public class CacheConfig implements CachingConfigurer {
         config.addCache(createCache(egenAnsattCache, 4000));
         config.addCache(createCache(modiaOppfolgingCache, 10000));
         config.addCache(createCache(brukerTilgangCache, 10000));
+        config.addCache(createCache(tilgangTilEnhetCache, 5000));
 
         return net.sf.ehcache.CacheManager.newInstance(config);
     }
