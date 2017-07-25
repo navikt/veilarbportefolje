@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 
+import no.nav.fo.config.CacheConfig;
 import no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -12,7 +13,7 @@ public class BrukertilgangService {
     @Inject
     VirksomhetEnhetService virksomhetEnhetService;
 
-    @Cacheable("brukertilgangCache")
+    @Cacheable(CacheConfig.tilgangTilEnhetCache)
     public boolean harBrukerTilgang(String ident, String enhet) {
         return virksomhetEnhetService
                 .hentEnheter(ident)
