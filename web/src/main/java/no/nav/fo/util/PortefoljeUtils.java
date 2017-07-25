@@ -37,13 +37,13 @@ public class PortefoljeUtils {
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-        if("6".equals(diskresjonskode)) {// && !pepClient.isSubjectAuthorizedToSeeKode6(token)) {
+        if("6".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode6(token)) {
             return fjernKonfidensiellInfo(bruker);
         }
-        if("7".equals(diskresjonskode)) {// && !pepClient.isSubjectAuthorizedToSeeKode7(token)) {
+        if("7".equals(diskresjonskode) && !pepClient.isSubjectAuthorizedToSeeKode7(token)) {
             return fjernKonfidensiellInfo(bruker);
         }
-        if(bruker.isEgenAnsatt()) {// && !pepClient.isSubjectAuthorizedToSeeEgenAnsatt(token)) {
+        if(bruker.isEgenAnsatt() && !pepClient.isSubjectAuthorizedToSeeEgenAnsatt(token)) {
             return fjernKonfidensiellInfo(bruker);
         }
         return bruker;
