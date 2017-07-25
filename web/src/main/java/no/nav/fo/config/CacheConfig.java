@@ -13,26 +13,30 @@ import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static java.lang.Integer.parseInt;
+import static java.lang.System.getProperty;
+
 
 @Configuration
 @EnableCaching
 public class CacheConfig implements CachingConfigurer {
+    public static final String kode6Cache = "kode6Cache";
+    public static final String kode7Cache = "kode7Cache";
+    public static final String egenAnsattCache = "egenAnsattCache";
+    public static final String modiaOppfolgingCache = "modiaOppfolgingCache";
+    public static final String brukerTilgangCache = "brukerTilgangCache";
 
-    String cacheConfig = System.getProperty("veilarbportefolje.tilgangtilbrukercache.seconds") == null ? "3600" :
-            System.getProperty("veilarbportefolje.tilgangtilbrukercache.seconds");
-
-    int brukertilgangCacheSeconds = Integer.parseInt(cacheConfig);
+    private static String brukerTilgangProperty = "veilarbportefolje.tilgangtilbrukercache.seconds";
+    private static int brukertilgangCacheSeconds = parseInt(getProperty(brukerTilgangProperty, "3600"));
 
     @Bean
     public net.sf.ehcache.CacheManager ehCacheManager() {
-        CacheConfiguration cacheConfiguration = new CacheConfiguration();
-        cacheConfiguration.setName("brukertilgangCache");
-        cacheConfiguration.setMaxEntriesLocalHeap(10000);
-        cacheConfiguration.setMemoryStoreEvictionPolicy("LRU");
-        cacheConfiguration.setTimeToIdleSeconds(3600);
-        cacheConfiguration.setTimeToLiveSeconds(brukertilgangCacheSeconds);
         net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
-        config.addCache(cacheConfiguration);
+        config.addCache(createCache(kode6Cache, 4000));
+        config.addCache(createCache(kode7Cache, 4000));
+        config.addCache(createCache(egenAnsattCache, 4000));
+        config.addCache(createCache(modiaOppfolgingCache, 10000));
+        config.addCache(createCache(brukerTilgangCache, 10000));
 
         return net.sf.ehcache.CacheManager.newInstance(config);
     }
@@ -56,5 +60,13 @@ public class CacheConfig implements CachingConfigurer {
     @Override
     public CacheErrorHandler errorHandler() {
         return null;
+    }
+
+    private static CacheConfiguration createCache(String name, int maxEntries) {
+        CacheConfiguration config = new CacheConfiguration(name, maxEntries);
+        config.setMemoryStoreEvictionPolicy("LRU");
+        config.setTimeToIdleSeconds(3600);
+        config.setTimeToLiveSeconds(brukertilgangCacheSeconds);
+        return config;
     }
 }
