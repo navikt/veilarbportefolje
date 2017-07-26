@@ -1,6 +1,8 @@
 package no.nav.fo.internal;
 
 
+import no.nav.brukerdialog.security.pingable.IssoIsAliveHelsesjekk;
+import no.nav.brukerdialog.security.pingable.IssoSystemBrukerTokenHelsesjekk;
 import no.nav.fo.service.PepClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
@@ -11,9 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 @Configuration
 public class PingConfig {
@@ -46,26 +45,10 @@ public class PingConfig {
     }
 
     @Bean
-    public Pingable issoPing() throws IOException {
-        PingMetadata metadata = new PingMetadata(
-                "ISSO via " + System.getProperty("isso.isalive.url"),
-                "Sjekker om is-alive til ISSO svarer. Single-signon pålogging.",
-                true
-        );
+    public Pingable issoPing() { return new IssoIsAliveHelsesjekk(); }
 
-        return () -> {
-            try {
-                HttpURLConnection connection = (HttpURLConnection) new URL(System.getProperty("isso.isalive.url")).openConnection();
-                connection.connect();
-                if (connection.getResponseCode() == 200) {
-                    return Pingable.Ping.lyktes(metadata);
-                }
-                return Pingable.Ping.feilet(metadata, new Exception("Statuskode: " + connection.getResponseCode()));
-            } catch (Exception e) {
-                return Pingable.Ping.feilet(metadata, e);
-            }
-        };
-    }
+    @Bean
+    public Pingable SystemBrukerToken() { return new IssoSystemBrukerTokenHelsesjekk(); }
 
     @Bean
     public Pingable nfsPing() {
@@ -81,28 +64,6 @@ public class PingConfig {
                 return Pingable.Ping.lyktes(metadata);
             } else {
                 return Pingable.Ping.feilet(metadata, new FileNotFoundException("File not found at " + filpath + filnavn));
-            }
-        };
-    }
-
-    @Bean
-    public Pingable aktivitetPing() throws IOException {
-        PingMetadata metadata = new PingMetadata(
-                "" + System.getProperty("aktiviteter.feed.isalive.url"),
-                "Sjekker om is-alive til VeilarbAktivitet svarer.",
-                false
-        );
-
-        return () -> {
-            try {
-                HttpURLConnection connection = (HttpURLConnection) new URL(System.getProperty("aktiviteter.feed.isalive.url")).openConnection();
-                connection.connect();
-                if (connection.getResponseCode() == 200) {
-                    return Pingable.Ping.lyktes(metadata);
-                }
-                return Pingable.Ping.feilet(metadata, new Exception("Statuskode: " + connection.getResponseCode()));
-            } catch (Exception e) {
-                return Pingable.Ping.feilet(metadata, e);
             }
         };
     }
