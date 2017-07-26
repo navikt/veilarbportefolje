@@ -7,7 +7,6 @@ import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.AktivitetService;
-import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +17,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
+
 
 @Configuration
 public class AktiviteterfeedConfig {
@@ -35,13 +36,14 @@ public class AktiviteterfeedConfig {
 
     @Bean
     public FeedConsumer<AktivitetDataFraFeed> aktivitetDataFraFeedFeedConsumer(JdbcTemplate db, AktivitetFeedHandler callback, BrukerRepository brukerRepository) {
-        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(
+        BaseConfig<AktivitetDataFraFeed> baseConfig = new BaseConfig<>(
                 AktivitetDataFraFeed.class,
                 Utils.apply(AktiviteterfeedConfig::sisteEndring, brukerRepository),
                 host,
                 "aktiviteter"
-        )
-                .pollingInterval(polling)
+        );
+
+        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new PollingConfig(polling))
                 .callback(callback)
                 .pageSize(pageSize)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
@@ -52,11 +54,6 @@ public class AktiviteterfeedConfig {
     @Bean
     public AktivitetFeedHandler aktivitetFeedHandler(BrukerRepository brukerRepository, AktivitetService aktivitetService) {
         return new AktivitetFeedHandler(brukerRepository, aktivitetService);
-    }
-
-    @Bean
-    public Pingable aktiviteterfeedPingable() {
-        return Utils.urlPing("aktiviteterfeed", isaliveUrl);
     }
 
     private static String sisteEndring(BrukerRepository brukerRepository) {

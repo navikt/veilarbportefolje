@@ -7,7 +7,6 @@ import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.AktoerService;
-import no.nav.sbl.dialogarena.types.Pingable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 @Configuration
 public class DialogaktorfeedConfig {
@@ -35,13 +35,14 @@ public class DialogaktorfeedConfig {
 
     @Bean
     public FeedConsumer<DialogDataFraFeed> dialogDataFraFeedFeedConsumer(JdbcTemplate db, DialogDataFeedHandler callback) {
-        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(
+        BaseConfig<DialogDataFraFeed> baseConfig = new BaseConfig<>(
                 DialogDataFraFeed.class,
                 Utils.apply(DialogaktorfeedConfig::sisteEndring, db),
                 host,
                 "dialogaktor"
-        )
-                .pollingInterval(polling)
+        );
+
+        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new PollingConfig(polling))
                 .callback(callback)
                 .pageSize(pageSize)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
@@ -57,10 +58,5 @@ public class DialogaktorfeedConfig {
     @Bean
     public DialogDataFeedHandler dialogDataFeedHandler(PersistentOppdatering persistentOppdatering, JdbcTemplate db, AktoerService aktoerService) {
         return new DialogDataFeedHandler(persistentOppdatering, db, aktoerService);
-    }
-
-    @Bean
-    public Pingable dialogaktorfeedPingable() {
-        return Utils.urlPing("dialogaktorfeed", isaliveUrl);
     }
 }
