@@ -19,9 +19,8 @@ import org.springframework.context.annotation.Import;
         AktiviteterfeedConfig.class
 })
 public class FeedConfig {
-    static {
-        FeedConsumer.applicationApiroot = "veilarbportefolje/tjenester";
-    }
+
+    public static String FEED_API_ROOT = "veilarbportefolje/tjenester";
 
     @Bean
     public FeedController feedController(
