@@ -166,6 +166,8 @@ public class SolrUtils {
             oversiktStatements.add("(-iavtaltaktivitet:true)");
         } else if(filtervalg.brukerstatus == Brukerstatus.UTLOPTE_AKTIVITETER) {
             oversiktStatements.add("(nyesteutlopteaktivitet:*)");
+        } else if(filtervalg.brukerstatus == Brukerstatus.MIN_ARBEIDSLISTE) {
+            oversiktStatements.add("(arbeidsliste_aktiv:*)");
         }
 
 

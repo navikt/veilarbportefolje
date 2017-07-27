@@ -343,6 +343,7 @@ public class SolrServiceImpl implements SolrService {
         String iavtaltAktivitet = "iavtaltaktivitet:true";
         String ikkeIAvtaltAktivitet = "-iavtaltaktivitet:true";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
+        String minArbeidsliste = "arbeidsliste_aktiv:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
@@ -352,6 +353,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFacetQuery(iavtaltAktivitet);
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
+        solrQuery.addFacetQuery(minArbeidsliste);
 
         solrQuery.setRows(0);
 
@@ -366,6 +368,7 @@ public class SolrServiceImpl implements SolrService {
             long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
             long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
             long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
+            long antallIarbeidsliste = response.getFacetQuery().get(minArbeidsliste);
             statusTall
                     .setTotalt(antallTotalt)
                     .setInaktiveBrukere(antallInaktiveBrukere)
@@ -373,7 +376,8 @@ public class SolrServiceImpl implements SolrService {
                     .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
                     .setIavtaltAktivitet(antalliavtaltAktivitet)
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
-                    .setUtlopteAktiviteter(antallUtlopteAktiviteter);
+                    .setUtlopteAktiviteter(antallUtlopteAktiviteter)
+                    .setMinArbeidsliste(antallIarbeidsliste);
         } catch (SolrServerException | IOException e) {
             LOG.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
         }

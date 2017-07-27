@@ -14,4 +14,5 @@ public class StatusTall {
     private long iavtaltAktivitet;
     private long ikkeIavtaltAktivitet;
     private long utlopteAktiviteter;
+    private long minArbeidsliste;
 }
