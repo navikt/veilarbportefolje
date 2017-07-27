@@ -39,6 +39,16 @@ public class RestResponse<T> {
         return new RestResponse<>(errorsCopy, dataCopy);
     }
 
+    public void addData(T data) {
+        this.data.add(data);
+    }
+
+    public void addError(String error) {
+        this.error.add(error);
+    }
+
+    public boolean containsError() { return !error.isEmpty(); }
+
     public Response ok() {
         return createResponse(OK);
     }

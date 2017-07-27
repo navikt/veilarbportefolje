@@ -4,10 +4,7 @@ import io.swagger.annotations.Api;
 import io.vavr.collection.List;
 import io.vavr.control.Validation;
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.Fnr;
-import no.nav.fo.domene.RestResponse;
-import no.nav.fo.domene.VeilederId;
+import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.exception.RestValideringException;
@@ -54,10 +51,16 @@ public class ArbeidsListeRessurs {
             return RestResponse.of(tilgangErrors.toJavaList()).forbidden();
         }
 
-        RestResponse<AktoerId> response =
-                List.ofAll(arbeidsliste)
-                        .map(this::opprettArbeidsliste)
-                        .reduce(RestResponse::merge);
+        RestResponse<String> response = new RestResponse<>(new ArrayList<>(), new ArrayList<>());
+
+        arbeidsliste.forEach( request -> {
+            RestResponse<AktoerId> opprettArbeidsliste = opprettArbeidsliste(request);
+            if(opprettArbeidsliste.containsError()) {
+                response.addError(request.getFnr());
+            } else {
+                response.addData(request.getFnr());
+            }
+        });
 
         return response.data.isEmpty() ? response.badRequest() : response.created();
     }
