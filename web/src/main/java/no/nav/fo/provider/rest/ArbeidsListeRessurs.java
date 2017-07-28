@@ -100,11 +100,11 @@ public class ArbeidsListeRessurs {
                 throw new RestTilgangException(validateVeileder.getError());
             }
 
-            return arbeidslisteService
-                    .createArbeidsliste(data(body, new Fnr(fnr)))
-                    .map(x -> "Arbeidsliste opprettet.")
+            arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
                     .onFailure(e -> LOG.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+
+            return arbeidslisteService.getArbeidsliste(new ArbeidslisteData(new Fnr(fnr))).get();
         }, CREATED);
     }
 
@@ -120,11 +120,12 @@ public class ArbeidsListeRessurs {
 
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
-            return arbeidslisteService
+            arbeidslisteService
                     .updateArbeidsliste(data(body, new Fnr(fnr)))
-                    .map(x -> "Arbeidsliste oppdatert.")
                     .onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+
+            return arbeidslisteService.getArbeidsliste(new ArbeidslisteData(new Fnr(fnr))).get();
         });
     }
 
