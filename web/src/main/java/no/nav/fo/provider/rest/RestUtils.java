@@ -1,10 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import io.vavr.control.Try;
-import no.nav.fo.exception.RestBadGateWayException;
-import no.nav.fo.exception.RestNotFoundException;
-import no.nav.fo.exception.RestTilgangException;
-import no.nav.fo.exception.RestValideringException;
+import no.nav.fo.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +21,7 @@ class RestUtils {
         statusmap.put(RestValideringException.class, Response.Status.BAD_REQUEST);
         statusmap.put(RestBadGateWayException.class, Response.Status.BAD_GATEWAY);
         statusmap.put(RestNotFoundException.class, Response.Status.NOT_FOUND);
+        statusmap.put(RestNoContentException.class, Response.Status.NO_CONTENT);
     }
 
     static Response createResponse(Supplier<Object> supplier) {

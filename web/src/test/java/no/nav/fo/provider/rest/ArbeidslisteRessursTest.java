@@ -101,7 +101,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         JSONArray json = new JSONArray(Arrays.asList(bruker1, bruker2));
 
-        Response response = put(path, json.toString());
+        Response response = post(path, json.toString());
         assertEquals(201, response.code());
 
     }
@@ -124,7 +124,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         JSONArray json = new JSONArray(Arrays.asList(bruker, bruker2));
 
-        Response response = put(path, json.toString());
+        Response response = post(path, json.toString());
         assertEquals(403, response.code());
     }
 
@@ -138,7 +138,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", expectedUtcString);
 
-        int putStatus = put(path, json.toString()).code();
+        int putStatus = post(path, json.toString()).code();
         assertEquals(201, putStatus);
 
         Response response = get(path);
@@ -158,7 +158,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", expectedUtcString);
 
-        int putStatus = put(path, json.toString()).code();
+        int putStatus = post(path, json.toString()).code();
         assertEquals(201, putStatus);
 
         Response response = get(path);
@@ -169,10 +169,10 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
 
     @Test
-    public void skalReturnereNotFoundVedUthenting() throws Exception {
+    public void skalReturnereNoContentVedUthenting() throws Exception {
         insertSuccessfulBrukere();
         int actual = get("/tjenester/arbeidsliste/" + FNR).code();
-        int expected = 404;
+        int expected = 204;
         assertEquals(expected, actual);
     }
 
@@ -207,9 +207,9 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
 
-        int putStatus1 = put(path, json.toString()).code();
+        int putStatus1 = post(path, json.toString()).code();
         assertEquals(201, putStatus1);
-        int putStatus2 = put(path, json.toString()).code();
+        int putStatus2 = post(path, json.toString()).code();
         assertEquals(201, putStatus2);
     }
 
