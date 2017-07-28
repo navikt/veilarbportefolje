@@ -180,7 +180,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     public void skalReturnereNotFoundVedSletting() throws Exception {
         insertSuccessfulBrukere();
         int actual = delete("/tjenester/arbeidsliste/" + FNR).code();
-        int expected = 404;
+        int expected = 400;
         assertEquals(expected, actual);
     }
 

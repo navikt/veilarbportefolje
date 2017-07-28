@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
@@ -131,24 +132,20 @@ public class ArbeidsListeRessurs {
 
     @DELETE
     @Path("{fnr}/")
-    public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
-        return createResponse(() -> {
+    public void deleteArbeidsliste(@PathParam("fnr") String fnr) {
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        if (validateFnr.isInvalid()) {
+            throw new RestValideringException(validateFnr.getError());
+        }
 
-            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-            if (validateFnr.isInvalid()) {
-                throw new RestValideringException(validateFnr.getError());
-            }
+        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+        if (validateVeileder.isInvalid()) {
+            throw new RestTilgangException(validateVeileder.getError());
+        }
 
-            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
-            if (validateVeileder.isInvalid()) {
-                throw new RestTilgangException(validateVeileder.getError());
-            }
-
-            return arbeidslisteService
-                    .deleteArbeidsliste(new Fnr(fnr))
-                    .map(x -> "Arbeidsliste slettet")
-                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
-        });
+        arbeidslisteService
+                .deleteArbeidsliste(new Fnr(fnr))
+                .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
     }
 
     @POST
