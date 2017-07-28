@@ -8,6 +8,7 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.RestResponse;
 import no.nav.fo.domene.VeilederId;
+import no.nav.fo.exception.RestNoContentException;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.exception.RestValideringException;
@@ -47,8 +48,8 @@ public class ArbeidsListeRessurs {
     @Inject
     private BrukertilgangService brukertilgangService;
 
-    @PUT
-    public Response putArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
+    @POST
+    public Response opprettArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
         if (tilgangErrors.length() > 0) {
             return RestResponse.of(tilgangErrors.toJavaList()).forbidden();
@@ -77,13 +78,13 @@ public class ArbeidsListeRessurs {
             return arbeidslisteService
                     .getArbeidsliste(new ArbeidslisteData(new Fnr(fnr)))
                     .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
-                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke finne arbeidsliste for bruker"));
+                    .getOrElseThrow(() -> new RestNoContentException("Kunne ikke finne arbeidsliste for bruker"));
         });
     }
 
-    @PUT
+    @POST
     @Path("{fnr}/")
-    public Response putArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
+    public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
 
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
@@ -104,9 +105,9 @@ public class ArbeidsListeRessurs {
         }, CREATED);
     }
 
-    @POST
+    @PUT
     @Path("{fnr}/")
-    public Response postArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
+    public Response oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
 
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
