@@ -75,6 +75,7 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
                             arbeidslisteService.deleteArbeidsliste(new AktoerId(bruker.getAktoerid()));
                         }
                         if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus)) {
+                            brukerRepository.deleteBrukerdata(personId);
                             solrService.slettBruker(personId);
                             return null;
                         }

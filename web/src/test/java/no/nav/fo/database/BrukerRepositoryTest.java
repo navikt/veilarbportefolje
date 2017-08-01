@@ -35,6 +35,7 @@ import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -575,5 +576,22 @@ public class BrukerRepositoryTest {
 
         Date upDated = (Date) brukerRepository.db.queryForList("SELECT tilordning_sist_oppdatert from METADATA").get(0).get("tilordning_sist_oppdatert");
         assertEquals(date, upDated);
+    }
+
+    @Test
+    public void skalSletteBrukerdata() throws Exception {
+        Brukerdata brukerdata = new Brukerdata()
+                .setPersonid("123456")
+                .setAktoerid("AKTOERID")
+                .setVeileder("VEIELDER");
+
+        brukerRepository.upsertBrukerdata(brukerdata);
+
+        assertFalse(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
+
+        brukerRepository.deleteBrukerdata(new PersonId("123456"));
+
+        assertTrue(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
+
     }
 }
