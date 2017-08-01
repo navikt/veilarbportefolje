@@ -2,9 +2,11 @@ package no.nav.fo.config.feed;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.TilordningFeedHandler;
+import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
+import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -56,8 +58,8 @@ public class TilordningerfeedConfig {
     }
 
     @Bean
-    public TilordningFeedHandler tilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter) {
-        return new TilordningFeedHandler(oppdaterBrukerdataFletter);
+    public TilordningFeedHandler tilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter, ArbeidslisteService arbeidslisteService, BrukerRepository brukerRepository) {
+        return new TilordningFeedHandler(oppdaterBrukerdataFletter, arbeidslisteService, brukerRepository);
     }
 
     private static String sisteEndring(JdbcTemplate db) {

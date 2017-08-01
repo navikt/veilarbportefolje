@@ -88,7 +88,9 @@ public class ArbeidslisteRepository {
                             .execute();
                     return aktoerID;
                 }
-        ).onFailure(e -> LOG.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
+        )
+                .onSuccess((aktoerid) -> LOG.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
+                .onFailure(e -> LOG.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
     }
 
     @SneakyThrows

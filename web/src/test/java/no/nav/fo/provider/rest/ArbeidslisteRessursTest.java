@@ -63,24 +63,20 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     }
 
     @Test
-    public void responseSkalInneholdeFeiledeFnr() throws Exception {
+    public void responseSkalInneholdeListeMedFnr() throws Exception {
         skalOppretteArbeidsliste();
         String path = "/tjenester/arbeidsliste/delete";
-        String fnrUtenArbeidsliste1 = "00000000000";
-        String fnrUtenArbeidsliste2 = "00000000001";
         List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
         arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
-        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(fnrUtenArbeidsliste1));
-        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(fnrUtenArbeidsliste2));
+        arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
 
         JSONArray json = new JSONArray(arbeidslisteRequests);
         Response response = post(path, json.toString());
 
         JSONObject responseJSON = new JSONObject(response.body().string());
 
-        assertTrue(responseJSON.get("error").toString().contains(fnrUtenArbeidsliste1));
-        assertTrue(responseJSON.get("error").toString().contains(fnrUtenArbeidsliste2));
         assertTrue(responseJSON.get("data").toString().contains(FNR));
+        assertTrue(responseJSON.get("data").toString().contains(FNR_2));
 
     }
 
@@ -173,14 +169,6 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         insertSuccessfulBrukere();
         int actual = get("/tjenester/arbeidsliste/" + FNR).code();
         int expected = 204;
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void skalReturnereNotFoundVedSletting() throws Exception {
-        insertSuccessfulBrukere();
-        int actual = delete("/tjenester/arbeidsliste/" + FNR).code();
-        int expected = 404;
         assertEquals(expected, actual);
     }
 

@@ -558,9 +558,10 @@ public class BrukerRepository {
     }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
-        if (oppfolgingsFlaggSatt(bruker)) {
-            return true;
-        }
+        return oppfolgingsFlaggSatt(bruker) || erOppfolgingsBrukerIarena(bruker);
+    }
+
+    static boolean erOppfolgingsBrukerIarena(SolrInputDocument bruker) {
         String servicegruppekode = (String) bruker.get("kvalifiseringsgruppekode").getValue();
         String formidlingsgruppekode = (String) bruker.get("formidlingsgruppekode").getValue();
         return UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);

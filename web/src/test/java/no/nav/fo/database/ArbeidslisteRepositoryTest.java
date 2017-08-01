@@ -71,12 +71,6 @@ public class ArbeidslisteRepositoryTest {
     }
 
     @Test
-    public void skalReturnereFailureVedSletting() throws Exception {
-        Try<AktoerId> result = repo.deleteArbeidsliste(new AktoerId("asdajsdklajsdkl"));
-        assertTrue(result.isFailure());
-    }
-
-    @Test
     public void skalReturnereFailureVedFeil() throws Exception {
         Try<AktoerId> result = repo.insertArbeidsliste(data.setAktoerId(null));
         assertTrue(result.isFailure());
