@@ -3,19 +3,18 @@ package no.nav.fo.consumer;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.BrukerOppdatering;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.*;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.SolrService;
 import no.nav.fo.util.MetricsUtils;
+import no.nav.fo.util.OppfolgingUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -30,21 +29,26 @@ import java.util.Optional;
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
     private final PersistentOppdatering persistentOppdatering;
-    private final JdbcTemplate db;
     private final AktoerService aktoerService;
+    private final BrukerRepository brukerRepository;
+    private final SolrService solrService;
 
     @Inject
-    public DialogDataFeedHandler(PersistentOppdatering persistentOppdatering, JdbcTemplate db, AktoerService aktoerService) {
+    public DialogDataFeedHandler(PersistentOppdatering persistentOppdatering,
+                                 AktoerService aktoerService,
+                                 BrukerRepository brukerRepository,
+                                 SolrService solrService) {
         this.persistentOppdatering = persistentOppdatering;
-        this.db = db;
         this.aktoerService = aktoerService;
+        this.brukerRepository = brukerRepository;
+        this.solrService = solrService;
     }
 
     @Override
     @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
         data.forEach(this::behandleDialogData);
-        db.update("UPDATE METADATA SET dialogaktor_sist_oppdatert = ?", Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+        brukerRepository.updateMetadata("dialogaktor_sist_oppdatert", Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
         event.report();
     }
@@ -55,6 +59,14 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                     () -> {
                         Try<PersonId> personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(dialog.aktorId));
                         DialogBrukerOppdatering oppdatering = new DialogBrukerOppdatering(dialog, personId.toJavaOptional().map(PersonId::toString));
+
+                        Try<Oppfolgingstatus> oppfolgingstatuses = brukerRepository.retrieveOppfolgingstatus(personId.getOrNull());
+
+                        if(oppfolgingstatuses.isSuccess() && !OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatuses.get())) {
+                            solrService.slettBruker(personId.get());
+                            return null;
+                        }
+
                         persistentOppdatering.lagre(oppdatering);
                         return null;
                     },

@@ -2,11 +2,13 @@ package no.nav.fo.config.feed;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.DialogDataFeedHandler;
+import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.SolrService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,7 +58,10 @@ public class DialogaktorfeedConfig {
     }
 
     @Bean
-    public DialogDataFeedHandler dialogDataFeedHandler(PersistentOppdatering persistentOppdatering, JdbcTemplate db, AktoerService aktoerService) {
-        return new DialogDataFeedHandler(persistentOppdatering, db, aktoerService);
+    public DialogDataFeedHandler dialogDataFeedHandler(PersistentOppdatering persistentOppdatering,
+                                                       AktoerService aktoerService,
+                                                       BrukerRepository brukerRepository,
+                                                       SolrService solrService) {
+        return new DialogDataFeedHandler(persistentOppdatering, aktoerService, brukerRepository, solrService);
     }
 }

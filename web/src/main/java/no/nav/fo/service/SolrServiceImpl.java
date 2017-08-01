@@ -195,6 +195,16 @@ public class SolrServiceImpl implements SolrService {
     }
 
     @Override
+    public void slettBruker(Fnr fnr) {
+        slettBruker(fnr.toString());
+    }
+
+    @Override
+    public void slettBruker(PersonId personid) {
+        deleteDocuments("person_id:"+ personid.toString());
+    }
+
+    @Override
     public FacetResults hentPortefoljestorrelser(String enhetId) {
 
         String facetFieldString = "veileder_id";

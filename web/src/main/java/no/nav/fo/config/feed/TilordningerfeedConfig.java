@@ -6,8 +6,10 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
+import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+import no.nav.fo.service.SolrService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,8 +60,12 @@ public class TilordningerfeedConfig {
     }
 
     @Bean
-    public TilordningFeedHandler tilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter, ArbeidslisteService arbeidslisteService, BrukerRepository brukerRepository) {
-        return new TilordningFeedHandler(oppdaterBrukerdataFletter, arbeidslisteService, brukerRepository);
+    public TilordningFeedHandler tilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
+                                                       ArbeidslisteService arbeidslisteService,
+                                                       BrukerRepository brukerRepository,
+                                                       AktoerService aktoerService,
+                                                       SolrService solrService) {
+        return new TilordningFeedHandler(oppdaterBrukerdataFletter, arbeidslisteService, brukerRepository, aktoerService, solrService);
     }
 
     private static String sisteEndring(JdbcTemplate db) {

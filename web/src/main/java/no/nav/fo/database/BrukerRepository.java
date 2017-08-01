@@ -40,6 +40,7 @@ import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static no.nav.fo.util.sql.SqlUtils.select;
+import static no.nav.fo.util.sql.SqlUtils.update;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
@@ -48,15 +49,33 @@ public class BrukerRepository {
     public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
     public static final String BRUKERDATA = "BRUKER_DATA";
     private final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
+    private final String METADATA = "METADATA";
+    public static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
+    public static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
+    public static final String OPPFOLGING = "oppfolging";
+
 
     @Inject
-    private JdbcTemplate db;
+    JdbcTemplate db;
 
     @Inject
     private DataSource ds;
 
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public void updateMetadata(String name, Date date) {
+        update(db,METADATA).set(name, date).execute();
+    }
+
+    public Try<Oppfolgingstatus> retrieveOppfolgingstatus(PersonId personId) {
+        if(personId == null) {
+            return Try.failure(new NullPointerException());
+        }
+        return Try.of(
+                () -> db.query(retrieveOppfolgingstatusSql(), new String[]{personId.toString()}, this::mapToOppfolgingstatus)
+        ).onFailure(e -> LOG.warn("Feil ved uthenting av Arena statuskoder for personid {}", personId, e));
+    }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
@@ -110,7 +129,7 @@ public class BrukerRepository {
                         .column("FNR")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId));
+        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId,e));
     }
 
     /**
@@ -129,6 +148,18 @@ public class BrukerRepository {
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
         return new VeilederId(rs.getString("VEILEDERIDENT"));
+    }
+
+    @SneakyThrows
+    private Oppfolgingstatus mapToOppfolgingstatus(ResultSet rs) {
+        if(rs.isBeforeFirst()) {
+            rs.next();
+        }
+        return new Oppfolgingstatus()
+                .setFormidlingsgruppekode(rs.getString(FORMIDLINGSGRUPPEKODE))
+                .setServicegruppekode(rs.getString(KVALIFISERINGSGRUPPEKODE))
+                .setVeileder(rs.getString("veilederident"))
+                .setOppfolgingsbruker(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
     }
 
     @SneakyThrows
@@ -380,6 +411,21 @@ public class BrukerRepository {
                 .set("PERSONID", personid)
                 .set("AKTIVITETTYPE", aktivitetstype)
                 .set("AKTOERID", aktoerid);
+    }
+
+    private String retrieveOppfolgingstatusSql() {
+        return "SELECT " +
+                "formidlingsgruppekode, " +
+                "kvalifiseringsgruppekode, " +
+                "bruker_data.oppfolging, " +
+                "veilederident " +
+                "FROM " +
+                "oppfolgingsbruker " +
+                "LEFT JOIN bruker_data " +
+                "ON " +
+                "bruker_data.personid = oppfolgingsbruker.person_id " +
+                "WHERE " +
+                "person_id = ? ";
     }
 
     String retrieveBrukereSQL() {

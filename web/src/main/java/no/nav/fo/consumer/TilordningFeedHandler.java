@@ -1,18 +1,20 @@
 package no.nav.fo.consumer;
 
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.domene.*;
+import no.nav.fo.exception.FantIkkeOppfolgingsbrukerException;
+import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+import no.nav.fo.service.SolrService;
 import no.nav.fo.util.OppfolgingUtils;
 import no.nav.fo.util.MetricsUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.sql.Date;
@@ -25,25 +27,33 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     private static final Logger LOG = getLogger(TilordningFeedHandler.class);
 
+    public static final String TILORDNING_SIST_OPPDATERT = "tilordning_sist_oppdatert";
+
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
+    private AktoerService aktoerService;
+    private SolrService solrService;
 
     @Inject
-    public TilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter, ArbeidslisteService arbeidslisteService, BrukerRepository brukerRepository) {
+    public TilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
+                                 ArbeidslisteService arbeidslisteService,
+                                 BrukerRepository brukerRepository,
+                                 AktoerService aktoerService,
+                                 SolrService solrService) {
         this.oppdaterBrukerdataFletter = oppdaterBrukerdataFletter;
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
-    }
+        this.aktoerService = aktoerService;
+        this.solrService = solrService;
 
-    @Inject
-    private JdbcTemplate db;
+    }
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
         LOG.debug(String.format("Feed-data mottatt: %s", data));
         data.forEach(this::behandleObjektFraFeed);
-        db.update("UPDATE METADATA SET tilordning_sist_oppdatert = ?", Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
+        brukerRepository.updateMetadata(TILORDNING_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
         event.report();
     }
@@ -53,8 +63,20 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
             MetricsUtils.timed(
                     "feed.situasjon.objekt",
                     () -> {
-                        if(OppfolgingUtils.skalArbeidslisteSlettes(bruker, brukerRepository)) {
+                        AktoerId aktoerId = new AktoerId(bruker.getAktoerid());
+                        PersonId personId = aktoerService.hentPersonidFraAktoerid(aktoerId)
+                                .getOrElseThrow(() -> new FantIkkePersonIdException(aktoerId));
+
+                        Oppfolgingstatus oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personId)
+                                .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId))
+                                .setOppfolgingsbruker(bruker.getOppfolging());
+
+                        if(OppfolgingUtils.skalArbeidslisteSlettes(oppfolgingstatus, bruker.getVeileder())) {
                             arbeidslisteService.deleteArbeidsliste(new AktoerId(bruker.getAktoerid()));
+                        }
+                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus)) {
+                            solrService.slettBruker(personId);
+                            return null;
                         }
                         oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker);
                         return null;

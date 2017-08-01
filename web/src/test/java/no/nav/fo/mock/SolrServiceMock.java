@@ -42,6 +42,16 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
+    public void slettBruker(Fnr fnr) {
+
+    }
+
+    @Override
+    public void slettBruker(PersonId personId) {
+
+    }
+
+    @Override
     public void indekserBrukerdata(PersonId personId) {
 
     }

@@ -2,9 +2,17 @@ package no.nav.fo.consumer;
 
 
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Oppfolgingstatus;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.exception.FantIkkeOppfolgingsbrukerException;
+import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktivitetService;
+import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.SolrService;
+import no.nav.fo.util.OppfolgingUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 
@@ -21,11 +29,18 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     private BrukerRepository brukerRepository;
     private AktivitetService aktivitetService;
+    private AktoerService aktoerService;
+    private SolrService solrService;
 
     @Inject
-    public AktivitetFeedHandler(BrukerRepository brukerRepository, AktivitetService aktivitetService) {
+    public AktivitetFeedHandler(BrukerRepository brukerRepository,
+                                AktivitetService aktivitetService,
+                                AktoerService aktoerService,
+                                SolrService solrService) {
         this.brukerRepository = brukerRepository;
         this.aktivitetService = aktivitetService;
+        this.aktoerService = aktoerService;
+        this.solrService = solrService;
     }
 
     @Override
@@ -62,6 +77,17 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         try {
             timed("feed.aktivitet.indekseraktivitet",
                     () -> {
+                        AktoerId aktoerId = new AktoerId(aktoerid);
+                        PersonId personId = aktoerService.hentPersonidFraAktoerid(aktoerId)
+                                .getOrElseThrow(() -> new FantIkkePersonIdException(aktoerId));
+
+                        Oppfolgingstatus oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personId)
+                                .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId));
+
+                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus)) {
+                            solrService.slettBruker(personId);
+                            return null;
+                        }
                         aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerid);
                         return null;
                     },

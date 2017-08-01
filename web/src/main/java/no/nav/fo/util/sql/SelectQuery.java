@@ -44,7 +44,9 @@ public class SelectQuery<T> {
 
             where.applyTo(ps, 1);
             ResultSet resultSet = ps.executeQuery();
-            resultSet.next();
+            if(!resultSet.next()) {
+                throw new SqlUtilEmptyResultSetException(ps.toString());
+            }
             return mapper.apply(resultSet);
 
         } catch (SQLException e) {
