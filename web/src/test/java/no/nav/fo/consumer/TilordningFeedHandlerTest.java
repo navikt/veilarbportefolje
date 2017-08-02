@@ -69,7 +69,7 @@ public class TilordningFeedHandlerTest {
 
         verify(arbeidslisteService, times(1)).deleteArbeidsliste(aktoerId);
         verify(solrService, times(1)).slettBruker(personId);
-        verify(oppdaterBrukerdataFletter, never()).tilordneVeilederTilPersonId(any());
+        verify(oppdaterBrukerdataFletter, never()).tilordneVeilederTilPersonId(any(), any());
     }
 
 

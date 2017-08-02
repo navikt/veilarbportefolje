@@ -3,6 +3,7 @@ package no.nav.fo.service;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.domene.PersonId;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class EndringAvVeilederTest {
                 .setVeileder("X111111")
                 .setEndretTimestamp(Timestamp.valueOf("2017-01-14 13:33:16.000000"));
 
-        oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker);
+        oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker, new PersonId(PERSON_ID));
 
         String veileder = (String) brukerRepository.retrieveBruker(AKTOER_ID).get(0).get("VEILEDERIDENT");
         String personid = (String) brukerRepository.retrievePersonid(AKTOER_ID).get(0).get("PERSONID");
