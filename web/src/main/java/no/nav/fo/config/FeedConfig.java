@@ -2,7 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.config.feed.AktiviteterfeedConfig;
 import no.nav.fo.config.feed.DialogaktorfeedConfig;
-import no.nav.fo.config.feed.TilordningerfeedConfig;
+import no.nav.fo.config.feed.SituasjonerfeedConfig;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({
         DialogaktorfeedConfig.class,
-        TilordningerfeedConfig.class,
+        SituasjonerfeedConfig.class,
         AktiviteterfeedConfig.class
 })
 public class FeedConfig {
@@ -30,9 +30,9 @@ public class FeedConfig {
     ) {
         FeedController feedController = new FeedController();
 
-        feedController.addFeed("tilordninger", brukerOppdatertInformasjonFeedConsumer);
-        feedController.addFeed("dialogaktor", dialogDataFraFeedFeedConsumer);
-        feedController.addFeed("aktiviteter", aktivitetDataFraFeedFeedConsumer);
+        feedController.addFeed(BrukerOppdatertInformasjon.FEED_NAME, brukerOppdatertInformasjonFeedConsumer);
+        feedController.addFeed(DialogDataFraFeed.FEED_NAME, dialogDataFraFeedFeedConsumer);
+        feedController.addFeed(AktivitetDataFraFeed.FEED_NAME, aktivitetDataFraFeedFeedConsumer);
 
         return feedController;
     }

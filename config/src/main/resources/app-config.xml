@@ -33,7 +33,7 @@
         <applicationProperties alias="portefolje.pilot.properties"/>
         <applicationProperties alias="dialogaktorfeed.properties"/>
         <applicationProperties alias="aktiviteterfeed.properties"/>
-        <applicationProperties alias="brukertilordningerfeed.properties"/>
+        <applicationProperties alias="situasjonfeed.properties"/>
 
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>

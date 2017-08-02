@@ -23,11 +23,11 @@ import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
+public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
-    private static final Logger LOG = getLogger(TilordningFeedHandler.class);
+    private static final Logger LOG = getLogger(SituasjonFeedHandler.class);
 
-    public static final String TILORDNING_SIST_OPPDATERT = "tilordning_sist_oppdatert";
+    public static final String SITUASJON_SIST_OPPDATERT = "situasjon_sist_oppdatert";
 
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
     private ArbeidslisteService arbeidslisteService;
@@ -36,11 +36,11 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
     private SolrService solrService;
 
     @Inject
-    public TilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
-                                 ArbeidslisteService arbeidslisteService,
-                                 BrukerRepository brukerRepository,
-                                 AktoerService aktoerService,
-                                 SolrService solrService) {
+    public SituasjonFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
+                                ArbeidslisteService arbeidslisteService,
+                                BrukerRepository brukerRepository,
+                                AktoerService aktoerService,
+                                SolrService solrService) {
         this.oppdaterBrukerdataFletter = oppdaterBrukerdataFletter;
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
@@ -53,7 +53,7 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
         LOG.debug(String.format("Feed-data mottatt: %s", data));
         data.forEach(this::behandleObjektFraFeed);
-        brukerRepository.updateMetadata(TILORDNING_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
+        brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
         event.report();
     }
@@ -79,7 +79,7 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
                             solrService.slettBruker(personId);
                             return null;
                         }
-                        oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker, personId);
+                        oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);
                         return null;
                         },
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}

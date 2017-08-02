@@ -19,7 +19,7 @@ public class OppdaterBrukerdataFletter {
     PersistentOppdatering persistentOppdatering;
 
 
-    public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker, PersonId personId) {
+    public void oppdaterSituasjonForBruker(BrukerOppdatertInformasjon bruker, PersonId personId) {
 
         BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId.toString());
         persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));

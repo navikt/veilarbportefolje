@@ -29,7 +29,7 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.consumer.TilordningFeedHandler.TILORDNING_SIST_OPPDATERT;
+import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.*;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
@@ -572,9 +572,9 @@ public class BrukerRepositoryTest {
     public void skalOppdatereMetadata() throws Exception {
         Date date = new Date();
 
-        brukerRepository.updateMetadata(TILORDNING_SIST_OPPDATERT, date);
+        brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, date);
 
-        Date upDated = (Date) brukerRepository.db.queryForList("SELECT tilordning_sist_oppdatert from METADATA").get(0).get("tilordning_sist_oppdatert");
+        Date upDated = (Date) brukerRepository.db.queryForList("SELECT situasjon_sist_oppdatert from METADATA").get(0).get("situasjon_sist_oppdatert");
         assertEquals(date, upDated);
     }
 
