@@ -63,7 +63,10 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                         Try<Oppfolgingstatus> oppfolgingstatuses = brukerRepository.retrieveOppfolgingstatus(personId.getOrNull());
 
                         if(oppfolgingstatuses.isSuccess() &&
-                                !OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatuses.get().getFormidlingsgruppekode(),oppfolgingstatuses.get().getServicegruppekode(),oppfolgingstatuses.get().isOppfolgingsbruker())) {
+                                !OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatuses.get().getFormidlingsgruppekode(),
+                                                                        oppfolgingstatuses.get().getServicegruppekode(),
+                                                                        oppfolgingstatuses.get().isOppfolgingsbruker())) {
+
                             solrService.slettBruker(personId.get());
                             return null;
                         }
