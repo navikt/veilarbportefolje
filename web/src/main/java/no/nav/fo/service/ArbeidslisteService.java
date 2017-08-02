@@ -27,8 +27,8 @@ public class ArbeidslisteService {
     @Inject
     private SolrService solrService;
 
-    public Try<Arbeidsliste> getArbeidsliste(ArbeidslisteData data) {
-        Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
+    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
+        Try<AktoerId> aktoerId = hentAktoerId(fnr);
         if (aktoerId.isFailure()) {
             return Try.failure(aktoerId.getCause());
         }
@@ -36,6 +36,13 @@ public class ArbeidslisteService {
         return arbeidslisteRepository
                 .retrieveArbeidsliste(aktoerId.get())
                 .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId.get()));
+    }
+
+    public Try<Arbeidsliste> getArbeidsliste(AktoerId aktoerId) {
+
+        return arbeidslisteRepository
+                .retrieveArbeidsliste(aktoerId)
+                .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId));
     }
 
     public Try<AktoerId> createArbeidsliste(ArbeidslisteData data) {

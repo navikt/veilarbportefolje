@@ -185,9 +185,9 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     }
 
     @Test
-    public void skalReturnereBadGateway() throws Exception {
+    public void skalReturnereInternalServerError() throws Exception {
         insertUnauthorizedBruker();
-        int expected = 502;
+        int expected = 500;
         int actual = get("/tjenester/arbeidsliste/" + FNR_FAIL).code();
         assertEquals(expected, actual);
     }
@@ -222,6 +222,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
                 .put("frist", "2017-10-10T00:00:00Z");
 
         int expected = 403;
+        int expectedGet = 200;
 
         int actualPut = put(path, json.toString()).code();
         assertEquals(expected, actualPut);
@@ -230,7 +231,7 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         assertEquals(expected, actualDelete);
 
         int actualGet = get(path).code();
-        assertEquals(expected, actualGet);
+        assertEquals(expectedGet, actualGet);
 
         int actualPost = post(path, json.toString()).code();
         assertEquals(expected, actualPost);
