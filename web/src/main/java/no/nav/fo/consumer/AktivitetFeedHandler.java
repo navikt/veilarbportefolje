@@ -84,7 +84,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                         Oppfolgingstatus oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personId)
                                 .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId));
 
-                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus)) {
+                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(), oppfolgingstatus.isOppfolgingsbruker())) {
                             solrService.slettBruker(personId);
                             return null;
                         }

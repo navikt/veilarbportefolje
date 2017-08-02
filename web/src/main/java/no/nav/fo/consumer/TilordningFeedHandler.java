@@ -71,10 +71,10 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
                                 .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId))
                                 .setOppfolgingsbruker(bruker.getOppfolging());
 
-                        if(OppfolgingUtils.skalArbeidslisteSlettes(oppfolgingstatus, bruker.getVeileder())) {
+                        if(OppfolgingUtils.skalArbeidslisteSlettes(oppfolgingstatus.getVeileder(), bruker.getVeileder(), bruker.getOppfolging())) {
                             arbeidslisteService.deleteArbeidsliste(new AktoerId(bruker.getAktoerid()));
                         }
-                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus)) {
+                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(),bruker.getOppfolging())) {
                             brukerRepository.deleteBrukerdata(personId);
                             solrService.slettBruker(personId);
                             return null;
