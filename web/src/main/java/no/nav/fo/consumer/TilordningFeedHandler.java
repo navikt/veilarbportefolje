@@ -79,7 +79,7 @@ public class TilordningFeedHandler implements FeedCallback<BrukerOppdatertInform
                             solrService.slettBruker(personId);
                             return null;
                         }
-                        oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker);
+                        oppdaterBrukerdataFletter.tilordneVeilederTilPersonId(bruker, personId);
                         return null;
                         },
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}

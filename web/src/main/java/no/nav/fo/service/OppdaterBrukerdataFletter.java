@@ -2,11 +2,9 @@ package no.nav.fo.service;
 
 
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.BrukerinformasjonFraFeed;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.exception.FantIkkePersonIdException;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -18,24 +16,12 @@ public class OppdaterBrukerdataFletter {
     private static final Logger LOG = getLogger(OppdaterBrukerdataFletter.class);
 
     @Inject
-    private AktoerService aktoerService;
-
-    @Inject
     PersistentOppdatering persistentOppdatering;
 
 
-    public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker) {
+    public void tilordneVeilederTilPersonId(BrukerOppdatertInformasjon bruker, PersonId personId) {
 
-        String personId =
-                aktoerService
-                        .hentPersonidFraAktoerid(new AktoerId(bruker.getAktoerid()))
-                        .map(PersonId::toString)
-                        .getOrElseThrow(() -> {
-                            LOG.warn("Fant ikke personid for aktoerid {}", bruker.getAktoerid());
-                            return new FantIkkePersonIdException(bruker.getAktoerid());
-                        });
-
-        BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId);
+        BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId.toString());
         persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
     }
 }
