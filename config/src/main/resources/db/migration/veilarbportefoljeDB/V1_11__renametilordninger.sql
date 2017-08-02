@@ -1,0 +1,1 @@
+ALTER TABLE METADATA RENAME COLUMN tilordning_sist_oppdatert TO situasjon_sist_oppdatert;

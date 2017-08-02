@@ -79,6 +79,12 @@ public class ArbeidslisteService {
                 .onSuccess(solrService::indekserBrukerdata);
     }
 
+    public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerId) {
+        return arbeidslisteRepository
+                .deleteArbeidsliste(aktoerId)
+                .onSuccess(solrService::indekserBrukerdata);
+    }
+
     public String hentEnhet(Fnr fnr) {
         return brukerRepository
                 .retrieveEnhet(fnr)

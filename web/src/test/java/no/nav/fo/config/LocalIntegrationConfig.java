@@ -63,8 +63,8 @@ public class LocalIntegrationConfig implements ApiApplication {
     }
 
     @Bean
-    public PepClientImpl pepClient() {
-        return mock(PepClientImpl.class);
+    public PepClient pepClient() {
+        return new PepClientMock();
     }
 
     @Bean

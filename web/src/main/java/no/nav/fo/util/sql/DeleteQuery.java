@@ -37,9 +37,6 @@ public class DeleteQuery {
             where.applyTo(ps, 1);
 
             result = ps.executeUpdate();
-            if (result == 0) {
-                throw new SqlUtilsException("Could not delete row");
-            }
 
         } catch (SQLException e) {
             throw new SqlUtilsException(e);

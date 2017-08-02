@@ -12,6 +12,7 @@ import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
+import no.nav.fo.service.PepClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +53,12 @@ public class ArbeidsListeRessurs {
     @Inject
     private AktoerService aktoerService;
 
+    @Inject
+    private PepClient pepClient;
+
     @POST
     public Response opprettArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
+        TilgangsRegler.tilgangTilOppfolging(pepClient);
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
         if (tilgangErrors.length() > 0) {
             return RestResponse.of(tilgangErrors.toJavaList()).forbidden();
@@ -77,7 +82,7 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
-
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
@@ -109,7 +114,7 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
@@ -134,7 +139,7 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Response oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
-
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
@@ -153,11 +158,13 @@ public class ArbeidsListeRessurs {
 
     @DELETE
     @Path("{fnr}/")
-    public void deleteArbeidsliste(@PathParam("fnr") String fnr) {
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        if (validateFnr.isInvalid()) {
-            throw new RestValideringException(validateFnr.getError());
-        }
+    public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
+        return createResponse(() -> {
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
 
         Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
         if (validateVeileder.isInvalid()) {
@@ -166,15 +173,17 @@ public class ArbeidsListeRessurs {
 
         sjekkTilgangTilEnhet(new Fnr(fnr));
 
-        arbeidslisteService
-                .deleteArbeidsliste(new Fnr(fnr))
-                .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
+            return arbeidslisteService
+                    .deleteArbeidsliste(new Fnr(fnr))
+                    .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
+        });
     }
 
     @POST
     @Path("/delete")
     public Response deleteArbeidsliseListe(java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         return createResponse(() -> {
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
             java.util.List<String> feiledeFnrs = new ArrayList<>();
             java.util.List<String> okFnrs = new ArrayList<>();
 

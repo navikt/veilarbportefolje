@@ -1,11 +1,15 @@
 package no.nav.fo.config.feed;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.consumer.TilordningFeedHandler;
+import no.nav.fo.consumer.SituasjonFeedHandler;
+import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
+import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
+import no.nav.fo.service.SolrService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,29 +25,29 @@ import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 
 @Configuration
-public class TilordningerfeedConfig {
-    @Value("${tilordninger.feed.isalive.url}")
+public class SituasjonerfeedConfig {
+    @Value("${situasjon.feed.isalive.url}")
     private String isaliveUrl;
 
-    @Value("${tilordninger.feed.producer.url}")
+    @Value("${situasjon.feed.producer.url}")
     private String host;
 
-    @Value("${tilordninger.feed.consumer.pollingrate.cron}")
+    @Value("${situasjon.feed.consumer.pollingrate.cron}")
     private String polling;
 
-    @Value("${tilordninger.feed.consumer.pollingratewebhook.cron}")
+    @Value("${situasjon.feed.consumer.pollingratewebhook.cron}")
     private String webhookPolling;
 
-    @Value("${tilordninger.feed.pagesize ?: 500}")
+    @Value("${situasjon.feed.pagesize ?: 500}")
     private int pageSize;
 
     @Bean
-    public FeedConsumer<BrukerOppdatertInformasjon> brukerOppdatertInformasjonFeedConsumer(JdbcTemplate db, TilordningFeedHandler callback) {
+    public FeedConsumer<BrukerOppdatertInformasjon> brukerOppdatertInformasjonFeedConsumer(JdbcTemplate db, SituasjonFeedHandler callback) {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
-                Utils.apply(TilordningerfeedConfig::sisteEndring, db),
+                Utils.apply(SituasjonerfeedConfig::sisteEndring, db),
                 host,
-                "tilordninger"
+                BrukerOppdatertInformasjon.FEED_NAME
         );
 
         WebhookPollingConfig webhookPollingConfig = new WebhookPollingConfig(webhookPolling,FEED_API_ROOT);
@@ -56,12 +60,16 @@ public class TilordningerfeedConfig {
     }
 
     @Bean
-    public TilordningFeedHandler tilordningFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter) {
-        return new TilordningFeedHandler(oppdaterBrukerdataFletter);
+    public SituasjonFeedHandler situasjonFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
+                                                      ArbeidslisteService arbeidslisteService,
+                                                      BrukerRepository brukerRepository,
+                                                      AktoerService aktoerService,
+                                                      SolrService solrService) {
+        return new SituasjonFeedHandler(oppdaterBrukerdataFletter, arbeidslisteService, brukerRepository, aktoerService, solrService);
     }
 
     private static String sisteEndring(JdbcTemplate db) {
-        Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT tilordning_sist_oppdatert from METADATA").get(0).get("tilordning_sist_oppdatert");
+        Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT situasjon_sist_oppdatert from METADATA").get(0).get("situasjon_sist_oppdatert");
         return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
     }
 }

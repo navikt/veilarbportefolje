@@ -29,12 +29,13 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
-import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
+import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
+import static no.nav.fo.database.BrukerRepository.*;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -542,5 +543,55 @@ public class BrukerRepositoryTest {
         Try<Integer> result = brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         assertTrue(result.isSuccess());
         assertTrue(result.get() == 1);
+    }
+
+    @Test
+    public void skalHenteOppfolgingstatus() throws Exception {
+        PersonId personId = new PersonId("123456");
+
+        insert(jdbcTemplate, OPPFOLGINGSBRUKER)
+                .value("PERSON_ID", personId.toString())
+                .value("FODSELSNR", "123123")
+                .value(KVALIFISERINGSGRUPPEKODE, "TESTKODE")
+                .value(FORMIDLINGSGRUPPEKODE, "TESTKODE")
+                .execute();
+        insert(jdbcTemplate, BRUKERDATA)
+                .value("PERSONID", personId.toString())
+                .value("OPPFOLGING", "J")
+                .value("VEILEDERIDENT", "TESTIDENT")
+                .execute();
+
+        Oppfolgingstatus status = brukerRepository.retrieveOppfolgingstatus(personId).get();
+        assertEquals(status.getFormidlingsgruppekode(), "TESTKODE");
+        assertEquals(status.getServicegruppekode(), "TESTKODE");
+        assertEquals(status.getVeileder(), "TESTIDENT");
+        assertTrue(status.isOppfolgingsbruker());
+    }
+
+    @Test
+    public void skalOppdatereMetadata() throws Exception {
+        Date date = new Date();
+
+        brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, date);
+
+        Date upDated = (Date) brukerRepository.db.queryForList("SELECT situasjon_sist_oppdatert from METADATA").get(0).get("situasjon_sist_oppdatert");
+        assertEquals(date, upDated);
+    }
+
+    @Test
+    public void skalSletteBrukerdata() throws Exception {
+        Brukerdata brukerdata = new Brukerdata()
+                .setPersonid("123456")
+                .setAktoerid("AKTOERID")
+                .setVeileder("VEIELDER");
+
+        brukerRepository.upsertBrukerdata(brukerdata);
+
+        assertFalse(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
+
+        brukerRepository.deleteBrukerdata(new PersonId("123456"));
+
+        assertTrue(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
+
     }
 }
