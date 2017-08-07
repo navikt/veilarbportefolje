@@ -5,6 +5,7 @@ import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.PersonId;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -21,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
@@ -105,6 +107,19 @@ public class SolrServiceTest {
         assertThat(service.byggQueryString("0100", Optional.empty())).isEqualTo("enhet_id: 0100");
         assertThat(service.byggQueryString("0100", Optional.of(""))).isEqualTo("enhet_id: 0100");
         assertThat(service.byggQueryString("0100", Optional.of("Z900000"))).isEqualTo("veileder_id: Z900000 AND enhet_id: 0100");
+    }
+
+    @Test
+    public void skalIkkeLeggeTilIIndeksOmBrukerIkkeErUnderOppfolging() throws Exception {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.setField("oppfolging",false);
+        solrInputDocument.setField("person_id","dummy");
+        solrInputDocument.setField("kvalifiseringsgruppekode","dummy");
+        solrInputDocument.setField("formidlingsgruppekode","dummy");
+        when(brukerRepository.retrieveBrukermedBrukerdata(any())).thenReturn(solrInputDocument);
+
+        service.indekserBrukerdata(new PersonId("dummy"));
+        verify(solrClientMaster, never()).add(any(Collection.class));
     }
 
     private QueryResponse queryResponse(int status, SolrDocumentList data) {
