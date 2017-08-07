@@ -1,5 +1,6 @@
 package no.nav.fo.config.feed;
 
+import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.SituasjonFeedHandler;
 import no.nav.fo.database.BrukerRepository;
@@ -55,7 +56,8 @@ public class SituasjonerfeedConfig {
         FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new PollingConfig(polling), webhookPollingConfig)
                 .callback(callback)
                 .pageSize(pageSize)
-                .interceptors(singletonList(new OidcFeedOutInterceptor()));
+                .interceptors(singletonList(new OidcFeedOutInterceptor()))
+                .authorizatioModule(new OidcFeedAuthorizationModule());
         return new FeedConsumer<>(config);
     }
 
