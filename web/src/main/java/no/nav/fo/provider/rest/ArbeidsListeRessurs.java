@@ -4,12 +4,12 @@ import io.swagger.annotations.Api;
 import io.vavr.collection.List;
 import io.vavr.control.Validation;
 import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
-import no.nav.fo.exception.RestNoContentException;
-import no.nav.fo.exception.RestTilgangException;
-import no.nav.fo.exception.RestValideringException;
+import no.nav.fo.exception.*;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
+import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,12 @@ public class ArbeidsListeRessurs {
 
     @Inject
     private BrukertilgangService brukertilgangService;
+
+    @Inject
+    private BrukerRepository brukerRepository;
+
+    @Inject
+    private AktoerService aktoerService;
 
     @Inject
     private PepClient pepClient;
@@ -81,12 +88,25 @@ public class ArbeidsListeRessurs {
                 throw new RestValideringException(validateFnr.getError());
             }
 
-            sjekkTilgangTilEnhet(new Fnr(fnr));
+            Fnr newFnr = new Fnr(fnr);
+            AktoerId aktoerId = aktoerService.hentAktoeridFraFnr(newFnr).getOrElseThrow(() -> new FantIkkeAktoerIdException(newFnr));
 
-            return arbeidslisteService
-                    .getArbeidsliste(new ArbeidslisteData(new Fnr(fnr)))
-                    .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
-                    .getOrElseThrow(() -> new RestNoContentException("Kunne ikke finne arbeidsliste for bruker"));
+            VeilederId veilederId = brukerRepository.retrieveVeileder(aktoerId).getOrElseThrow(() -> new FantIkkeVeilederException(aktoerId.toString()));
+
+            String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
+            boolean erOppfolgendeVeileder = Objects.equals(innloggetVeileder, veilederId.toString());
+            String enhet = arbeidslisteService.hentEnhet(newFnr);
+            boolean harVeilederTilgang = brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet);
+
+            if (harVeilederTilgang) {
+                return arbeidslisteService
+                        .getArbeidsliste(aktoerId)
+                        .map(arbeidsliste -> arbeidsliste.setIsOppfolgendeVeileder(erOppfolgendeVeileder).setHarVeilederTilgang(true))
+                        .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
+                        .getOrElseThrow(() -> new RestNoContentException("Kunne ikke finne arbeidsliste for bruker"));
+            } else {
+                return new Arbeidsliste(null, null, null, null).setHarVeilederTilgang(false);
+            }
         });
     }
 
@@ -105,11 +125,13 @@ public class ArbeidsListeRessurs {
                 throw new RestTilgangException(validateVeileder.getError());
             }
 
+            sjekkTilgangTilEnhet(new Fnr(fnr));
+
             arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
                     .onFailure(e -> LOG.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new ArbeidslisteData(new Fnr(fnr))).get();
+            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get();
         }, CREATED);
     }
 
@@ -130,7 +152,7 @@ public class ArbeidsListeRessurs {
                     .onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new ArbeidslisteData(new Fnr(fnr))).get();
+            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get();
         });
     }
 
@@ -148,6 +170,8 @@ public class ArbeidsListeRessurs {
         if (validateVeileder.isInvalid()) {
             throw new RestTilgangException(validateVeileder.getError());
         }
+
+        sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))

@@ -38,9 +38,7 @@ import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
-import static no.nav.fo.util.sql.SqlUtils.insert;
-import static no.nav.fo.util.sql.SqlUtils.select;
-import static no.nav.fo.util.sql.SqlUtils.update;
+import static no.nav.fo.util.sql.SqlUtils.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
@@ -131,6 +129,18 @@ public class BrukerRepository {
                         .execute()
         ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId,e));
     }
+
+    public Try<PersonId> deleteBrukerdata(PersonId personId) {
+        return Try.of(
+                () -> {
+                    delete(db.getDataSource(),BRUKERDATA)
+                            .where(WhereClause.equals("PERSONID", personId.toString()))
+                            .execute();
+                    return personId;
+                }
+        ).onFailure((e) -> LOG.warn("Kunne ikke slette brukerdata for personid {}",personId.toString(), e));
+    }
+
 
     /**
      * MAPPING-FUNKSJONER

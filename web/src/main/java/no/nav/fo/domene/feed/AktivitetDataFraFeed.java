@@ -9,6 +9,8 @@ import java.sql.Timestamp;
 @Accessors(chain = true)
 public class AktivitetDataFraFeed implements Comparable<AktivitetDataFraFeed> {
 
+    public static final String FEED_NAME = "aktiviteter";
+
     String aktivitetId;
     String aktorId;
 

@@ -226,10 +226,12 @@ public class SolrServiceImpl implements SolrService {
 
     @Override
     public void indekserBrukerdata(PersonId personId) {
-        LOG.info("Legger bruker med personId {} til i indeksen ", personId);
         SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
-
+        if(!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
+            return;
+        }
         LOG.info("Legger bruker med personId {} til i indeksen ", personId);
+
         applyAktivitetStatuser(brukerDokument, brukerRepository);
         applyArbeidslisteData(singletonList(brukerDokument), arbeidslisteRepository, aktoerService);
         addDocuments(singletonList(brukerDokument));

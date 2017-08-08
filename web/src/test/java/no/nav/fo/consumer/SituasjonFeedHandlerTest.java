@@ -21,7 +21,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TilordningFeedHandlerTest {
+public class SituasjonFeedHandlerTest {
 
     @Mock
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
@@ -39,7 +39,7 @@ public class TilordningFeedHandlerTest {
     private SolrService solrService;
 
     @InjectMocks
-    private TilordningFeedHandler tilordningFeedHandler;
+    private SituasjonFeedHandler situasjonFeedHandler;
 
     @Before
     public void resetMocks() {
@@ -65,11 +65,11 @@ public class TilordningFeedHandlerTest {
         when(aktoerService.hentFnrFraAktoerid(any())).thenReturn(Try.success(fnr));
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(personId));
 
-        tilordningFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(bruker));
+        situasjonFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(bruker));
 
         verify(arbeidslisteService, times(1)).deleteArbeidsliste(aktoerId);
         verify(solrService, times(1)).slettBruker(personId);
-        verify(oppdaterBrukerdataFletter, never()).tilordneVeilederTilPersonId(any());
+        verify(oppdaterBrukerdataFletter, never()).oppdaterSituasjonForBruker(any(), any());
     }
 
 

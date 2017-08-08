@@ -21,6 +21,7 @@ public class Arbeidsliste {
     final ZonedDateTime frist;
     Boolean isOppfolgendeVeileder;
     Boolean arbeidslisteAktiv;
+    Boolean harVeilederTilgang;
 
     public static Arbeidsliste of(SolrDocument brukerDokument) {
 
