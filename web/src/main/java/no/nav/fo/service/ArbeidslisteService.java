@@ -7,7 +7,6 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
-import no.nav.fo.exception.RestBadGateWayException;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
@@ -85,10 +84,9 @@ public class ArbeidslisteService {
                 .onSuccess(solrService::indekserBrukerdata);
     }
 
-    public String hentEnhet(Fnr fnr) {
+    public Try<String> hentEnhet(Fnr fnr) {
         return brukerRepository
-                .retrieveEnhet(fnr)
-                .getOrElseThrow(x -> new RestBadGateWayException("Kunne ikke hente enhet for denne brukeren"));
+                .retrieveEnhet(fnr);
     }
 
     private Try<AktoerId> hentAktoerId(Fnr fnr) {
