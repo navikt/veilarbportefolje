@@ -2,10 +2,7 @@ package no.nav.fo.database;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.KvartalMapping;
-import no.nav.fo.domene.ManedMapping;
-import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.domene.*;
 import no.nav.fo.util.sql.SqlUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -79,11 +76,16 @@ public class BrukerRepository {
                         .setVeileder((String) data.get("VEILEDERIDENT"))
                         .setPersonid((String) data.get("PERSONID"))
                         .setTildeltTidspunkt(toLocalDateTime((Timestamp) data.get("TILDELT_TIDSPUNKT")))
-                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
-                        .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
-                        .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
-                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))).collect(toList());
+                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
+                        .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
+                        .setDagputlopUke(intValue(data.get("DAGPUTLOPUKE")))
+                        .setDagputlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("DAGPUTLOPUKEFASETT")))
+                        .setPermutlopUke(intValue(data.get("PERMUTLOPUKE")))
+                        .setPermutlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("PERMUTLOPUKEFASETT")))
+                        .setAapmaxtidUke(intValue(data.get("AAPMAXTIDUKE")))
+                        .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT"))))
+                .collect(toList());
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
@@ -174,8 +176,12 @@ public class BrukerRepository {
                 .set("ytelse", null)
                 .set("utlopsdato", null)
                 .set("utlopsdatoFasett", null)
-                .set("aapMaxtid", null)
-                .set("aapMaxtidFasett", null)
+                .set("dagputlopuke", null)
+                .set("dagputlopukefasett", null)
+                .set("permutlopuke", null)
+                .set("permutlopukefasett", null)
+                .set("aapmaxtiduke", null)
+                .set("aapmaxtidukefasett", null)
                 .execute();
     }
 
@@ -202,8 +208,9 @@ public class BrukerRepository {
                         "ytelse, " +
                         "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett " +
+                        "dagputlopuke, dagputlopukefasett, " +
+                        "permutlopuke, permutlopukefasett, " +
+                        "aapmaxtiduke, aapmaxtidukefasett " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -235,8 +242,9 @@ public class BrukerRepository {
                         "ytelse," +
                         "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett " +
+                        "dagputlopuke, dagputlopukefasett, " +
+                        "permutlopuke, permutlopukefasett, " +
+                        "aapmaxtiduke, aapmaxtidukefasett " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -269,8 +277,9 @@ public class BrukerRepository {
                         "ytelse, " +
                         "TO_CHAR(utlopsdato, 'YYYY-MM-DD') || 'T' || TO_CHAR(utlopsdato, 'HH24:MI:SS') || 'Z' AS utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "TO_CHAR(aapmaxtid, 'YYYY-MM-DD') || 'T' || TO_CHAR(aapmaxtid, 'HH24:MI:SS') || 'Z' AS aapmaxtid, " +
-                        "aapmaxtidfasett  " +
+                        "dagputlopuke, dagputlopukefasett, " +
+                        "permutlopuke, permutlopukefasett, " +
+                        "aapmaxtiduke, aapmaxtidukefasett " +
                         "FROM " +
                         "oppfolgingsbruker " +
                         "LEFT JOIN bruker_data " +
@@ -326,26 +335,44 @@ public class BrukerRepository {
         boolean aktivStatus = !(bruker.get("formidlingsgruppekode").getValue().equals("ISERV") ||
                 (bruker.get("formidlingsgruppekode").getValue().equals("IARBS") && (innsatsgruppe.equals("BKART")
                         || innsatsgruppe.equals("IVURD") || innsatsgruppe.equals("KAP11")
-                        || innsatsgruppe.equals("VARIG") || innsatsgruppe.equals("VURDI"))));
+                        || innsatsgruppe.equals("VURDI"))));
 
         return aktivStatus || bruker.get("veileder_id").getValue() != null;
+    }
+
+    public static Integer intValue(Object value) {
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal)value).intValue();
+        } else if (value instanceof Integer) {
+            return (Integer)value;
+        } else if (value instanceof String){
+            return Integer.parseInt((String)value);
+        } else {
+            throw new RuntimeException("Kunne ikke finne intValue av: " + value.toString());
+        }
     }
 
     public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
         return timestamp != null ? timestamp.toLocalDateTime() : null;
     }
 
-    private ManedMapping manedmappingOrNull(String string) {
-        return string != null ? ManedMapping.valueOf(string) : null;
+    private ManedFasettMapping manedmappingOrNull(String string) {
+        return string != null ? ManedFasettMapping.valueOf(string) : null;
     }
 
     private YtelseMapping ytelsemappingOrNull(String string) {
         return string != null ? YtelseMapping.valueOf(string) : null;
     }
 
-    private KvartalMapping kvartalmappingOrNull(String string) {
-        return string != null ? KvartalMapping.valueOf(string) : null;
+    private KvartalFasettMapping kvartalmappingOrNull(String string) {
+        return string != null ? KvartalFasettMapping.valueOf(string) : null;
     }
 
+    private AAPMaxtidUkeFasettMapping aapMaxtidUkeFasettMappingOrNull(String string) {
+        return string != null ? AAPMaxtidUkeFasettMapping.valueOf(string) : null;
+    }
 
+    private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
+        return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
+    }
 }

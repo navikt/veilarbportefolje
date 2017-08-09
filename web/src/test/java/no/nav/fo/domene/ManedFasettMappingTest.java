@@ -15,16 +15,16 @@ import static java.time.Month.*;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.domene.ManedMapping.*;
+import static no.nav.fo.domene.ManedFasettMapping.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
-public class ManedMappingTest {
+public class ManedFasettMappingTest {
     private final LocalDateTime startDato;
     private final LocalDateTime dato;
-    private final Optional<ManedMapping> resultat;
+    private final Optional<ManedFasettMapping> resultat;
 
-    public ManedMappingTest(LocalDateTime startDato, LocalDateTime dato, Optional<ManedMapping> resultat) {
+    public ManedFasettMappingTest(LocalDateTime startDato, LocalDateTime dato, Optional<ManedFasettMapping> resultat) {
         this.startDato = startDato;
         this.dato = dato;
         this.resultat = resultat;
@@ -72,7 +72,7 @@ public class ManedMappingTest {
 
     @Test
     public void skalGiRiktigVerdi() {
-        Optional<ManedMapping> actual = finnManed(this.startDato, this.dato);
+        Optional<ManedFasettMapping> actual = finnManed(this.startDato, this.dato);
 
         assertThat(actual.isPresent()).isEqualTo(this.resultat.isPresent());
         this.resultat.ifPresent((res) -> assertThat(actual.get()).isEqualTo(res));

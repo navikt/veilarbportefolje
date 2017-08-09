@@ -11,7 +11,14 @@ import static java.util.Arrays.asList;
 
 class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
-    private static List<String> sortFields = asList("ikke_satt", "etternavn", "fodselsnummer", "utlopsdato", "aapMaxtid");
+    private static List<String> sortFields = asList(
+            "ikke_satt",
+            "etternavn",
+            "fodselsnummer",
+            "utlopsdato",
+            "dagputlopUke",
+            "permutlopUke",
+            "aapmaxtidUke");
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
