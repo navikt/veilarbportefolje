@@ -24,7 +24,9 @@
         <directory name="loependeytelserremount" mapToProperty="loependeytelser.path" temporary="false">
             <mountOnNfs customNFSResourceAlias="filmottak.loependeYtelser.nfs" />
         </directory>
-
+        <directory name="tiltakmount" mapToProperty="tiltak.path" temporary="false">
+            <mountOnNfs customNFSResourceAlias="filmottak.tiltak.nfs" />
+        </directory>
         <applicationCertificate alias="srvveilarbportefolje"/>
         <datasource alias="veilarbportefoljeDB" jndi="java:/jboss/datasources/veilarbportefoljeDB">
             <pool maxPoolSize="300" minPoolSize="1"/>
