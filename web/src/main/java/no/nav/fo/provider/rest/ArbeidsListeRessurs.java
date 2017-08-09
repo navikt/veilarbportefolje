@@ -2,6 +2,7 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import io.vavr.collection.List;
+import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.database.BrukerRepository;
@@ -80,34 +81,36 @@ public class ArbeidsListeRessurs {
 
     @GET
     @Path("{fnr}/")
-    public Response getArbeidsListe(@PathParam("fnr") String fnr) {
-        return createResponse(() -> {
-            TilgangsRegler.tilgangTilOppfolging(pepClient);
-            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-            if (validateFnr.isInvalid()) {
-                throw new RestValideringException(validateFnr.getError());
-            }
+    public Arbeidsliste getArbeidsListe(@PathParam("fnr") String fnr) {
+        TilgangsRegler.tilgangTilOppfolging(pepClient);
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        if (validateFnr.isInvalid()) {
+            throw new RestValideringException(validateFnr.getError());
+        }
 
-            Fnr newFnr = new Fnr(fnr);
-            AktoerId aktoerId = aktoerService.hentAktoeridFraFnr(newFnr).getOrElseThrow(() -> new FantIkkeAktoerIdException(newFnr));
+        String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
 
-            VeilederId veilederId = brukerRepository.retrieveVeileder(aktoerId).getOrElseThrow(() -> new FantIkkeVeilederException(aktoerId.toString()));
+        Fnr newFnr = new Fnr(fnr);
+        Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(newFnr);
 
-            String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
-            boolean erOppfolgendeVeileder = Objects.equals(innloggetVeileder, veilederId.toString());
-            String enhet = arbeidslisteService.hentEnhet(newFnr);
-            boolean harVeilederTilgang = brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet);
+        boolean erOppfolgendeVeileder = aktoerId.flatMap(brukerRepository::retrieveVeileder)
+                .map(Object::toString)
+                .map(v -> Objects.equals(innloggetVeileder, v))
+                .getOrElse(false);
 
-            if (harVeilederTilgang) {
-                return arbeidslisteService
-                        .getArbeidsliste(aktoerId)
-                        .map(arbeidsliste -> arbeidsliste.setIsOppfolgendeVeileder(erOppfolgendeVeileder).setHarVeilederTilgang(true))
-                        .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
-                        .getOrElseThrow(() -> new RestNoContentException("Kunne ikke finne arbeidsliste for bruker"));
-            } else {
-                return new Arbeidsliste(null, null, null, null).setHarVeilederTilgang(false);
-            }
-        });
+        boolean harVeilederTilgang = arbeidslisteService.hentEnhet(newFnr)
+                .map(enhet -> brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet))
+                .getOrElse(false);
+
+        if (harVeilederTilgang) {
+            return aktoerId
+                    .flatMap(arbeidslisteService::getArbeidsliste)
+                    .map(arbeidsliste -> arbeidsliste.setIsOppfolgendeVeileder(erOppfolgendeVeileder).setHarVeilederTilgang(true))
+                    .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
+                    .getOrElseThrow(() -> new RestNoContentException("Kunne ikke finne arbeidsliste for bruker"));
+        } else {
+            return new Arbeidsliste(null, null, null, null).setHarVeilederTilgang(false);
+        }
     }
 
     @POST
@@ -218,7 +221,7 @@ public class ArbeidsListeRessurs {
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        String enhet = arbeidslisteService.hentEnhet(fnr);
+        String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new RestBadGateWayException("Kunne ikke hente enhet for denne brukeren"));
         TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
     }
 

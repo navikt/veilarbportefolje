@@ -173,10 +173,9 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
     }
 
     @Test
-    public void skalReturnereInternalServerError() throws Exception {
-        insertUnauthorizedBruker();
-        int expected = 500;
-        int actual = get("/tjenester/arbeidsliste/" + FNR_FAIL).code();
+    public void skalReturnereTomArbeidslisteSelvOmVeilederOgEllerEnhetMangler() throws Exception {
+        int actual = get("/tjenester/arbeidsliste/" + FNR).code();
+        int expected = 200;
         assertEquals(expected, actual);
     }
 
