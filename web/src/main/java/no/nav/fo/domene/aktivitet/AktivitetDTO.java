@@ -1,4 +1,4 @@
-package no.nav.fo.domene.Aktivitet;
+package no.nav.fo.domene.aktivitet;
 
 
 import lombok.Data;

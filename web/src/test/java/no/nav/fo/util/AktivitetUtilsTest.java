@@ -1,9 +1,10 @@
 package no.nav.fo.util;
 
-import no.nav.fo.domene.Aktivitet.AktivitetDTO;
-import no.nav.fo.domene.Aktivitet.AktivitetData;
-import no.nav.fo.domene.Aktivitet.AktivitetFullfortStatuser;
 import org.junit.Test;
+
+import no.nav.fo.domene.aktivitet.AktivitetDTO;
+import no.nav.fo.domene.aktivitet.AktivitetData;
+import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
 
 import java.time.LocalDate;
 

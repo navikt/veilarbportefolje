@@ -4,8 +4,8 @@ package no.nav.fo.service;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.domene.Aktivitet.AktivitetBrukerOppdatering;
-import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
+import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
+import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.BatchConsumer;
 
