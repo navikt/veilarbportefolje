@@ -559,8 +559,7 @@ public class BrukerRepository {
     }
 
     String updateTidsstempelSQL() {
-        return
-                "UPDATE METADATA SET SIST_INDEKSERT = ?";
+        return "UPDATE METADATA SET SIST_INDEKSERT = ?";
     }
 
     String getPersonidFromAktoeridSQL() {
@@ -582,24 +581,19 @@ public class BrukerRepository {
                         "fodselsnr in (:fnrs)";
     }
 
-    String insertPersonidAktoeridMappingSQL() {
-        return "INSERT INTO AKTOERID_TO_PERSONID VALUES (?,?)";
-    }
-
-
-    String retrieveBrukerSQL() {
+    private String retrieveBrukerSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
     }
 
-    String retrieveBrukerdataSQL() {
+    private String retrieveBrukerdataSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
 
-    String getAktiviteterForAktoeridSql() {
+    private String getAktiviteterForAktoeridSql() {
         return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?";
     }
 
-    String getAktiviteterForAktoeridsSql() {
+    private String getAktiviteterForAktoeridsSql() {
         return
                 "SELECT " +
                         "AKTOERID, " +
@@ -617,7 +611,7 @@ public class BrukerRepository {
         return oppfolgingsFlaggSatt(bruker) || erOppfolgingsBrukerIarena(bruker);
     }
 
-    static boolean erOppfolgingsBrukerIarena(SolrInputDocument bruker) {
+    private static boolean erOppfolgingsBrukerIarena(SolrInputDocument bruker) {
         String servicegruppekode = (String) bruker.get("kvalifiseringsgruppekode").getValue();
         String formidlingsgruppekode = (String) bruker.get("formidlingsgruppekode").getValue();
         return UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);
@@ -627,7 +621,7 @@ public class BrukerRepository {
         return (Boolean) bruker.get("oppfolging").getValue();
     }
 
-    public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
+    private static LocalDateTime toLocalDateTime(Timestamp timestamp) {
         return timestamp != null ? timestamp.toLocalDateTime() : null;
     }
 
