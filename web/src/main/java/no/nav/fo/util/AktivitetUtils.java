@@ -73,10 +73,9 @@ public class AktivitetUtils {
     }
 
     public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
-        LocalDate fraDato = aktivitet.getFraDato().toLocalDateTime().toLocalDate();
         LocalDate tilDato = aktivitet.getTilDato().toLocalDateTime().toLocalDate();
 
-        return fraDato.isBefore(today.plusDays(1)) && tilDato.plusDays(1).isAfter(today);
+        return today.isBefore(tilDato.plusDays(1));
     }
 
     public static AktivitetDTO finnNyesteUtlopteAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
