@@ -124,6 +124,7 @@ public class SolrServiceImpl implements SolrService {
 
         applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         applyAktivitetStatuser(dokumenter, brukerRepository);
+        applyTiltak(dokumenter, brukerRepository);
         addDocuments(dokumenter);
         commit();
         brukerRepository.updateTidsstempel(timestamp);
