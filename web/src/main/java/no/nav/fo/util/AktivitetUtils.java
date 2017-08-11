@@ -117,6 +117,16 @@ public class AktivitetUtils {
         applyAktivitetStatuser(singletonList(dokument), brukerRepository);
     }
 
+    public static void applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
+        dokumenter.stream().forEach(document -> {
+            String personid = (String) document.get("person_id").getValue();
+            List<String> tiltak = brukerRepository.getTiltak(personid);
+            if(!tiltak.isEmpty()) {
+                document.addField("tiltak", tiltak);
+            }
+        });
+    }
+
     static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
         return aktoerService
                 .hentPersonidFraAktoerid(aktoerid);

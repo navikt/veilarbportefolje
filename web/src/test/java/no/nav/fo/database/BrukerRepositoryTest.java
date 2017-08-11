@@ -52,6 +52,7 @@ public class BrukerRepositoryTest {
         try {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"))));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -593,5 +594,12 @@ public class BrukerRepositoryTest {
 
         assertTrue(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
 
+    }
+
+    @Test
+    public void skalHenteBrukersTiltak() throws Exception {
+        insertoppfolgingsbrukerTestData();
+        assertThat(brukerRepository.getTiltak("2343601")).containsExactly("Tiltak1", "Tiltak2");
+        assertThat(brukerRepository.getTiltak("2343602")).containsExactly("Tiltak2");
     }
 }
