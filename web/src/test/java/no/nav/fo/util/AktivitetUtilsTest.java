@@ -163,7 +163,7 @@ public class AktivitetUtilsTest {
     @Test
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField("person_id", "123");
+        solrInputDocument.addField("person_id", "12345678910");
         when(brukerRepository.getTiltak(anyString())).thenReturn(Lists.emptyList());
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
