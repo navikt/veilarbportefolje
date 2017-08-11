@@ -3,9 +3,9 @@ package no.nav.fo.util;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.Aktivitet.*;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.aktivitet.*;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -15,7 +15,7 @@ import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.domene.Aktivitet.AktivitetData.aktivitetTyperList;
+import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 
 @Slf4j
 public class AktivitetUtils {
@@ -73,10 +73,9 @@ public class AktivitetUtils {
     }
 
     public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
-        LocalDate fraDato = aktivitet.getFraDato().toLocalDateTime().toLocalDate();
         LocalDate tilDato = aktivitet.getTilDato().toLocalDateTime().toLocalDate();
 
-        return fraDato.isBefore(today.plusDays(1)) && tilDato.plusDays(1).isAfter(today);
+        return today.isBefore(tilDato.plusDays(1));
     }
 
     public static AktivitetDTO finnNyesteUtlopteAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {

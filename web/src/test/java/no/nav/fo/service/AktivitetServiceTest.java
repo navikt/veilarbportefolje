@@ -3,12 +3,13 @@ package no.nav.fo.service;
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.domene.Aktivitet.AktivitetBrukerOppdatering;
-import no.nav.fo.domene.Aktivitet.AktivitetDTO;
-import no.nav.fo.domene.Aktivitet.AktivitetData;
-import no.nav.fo.domene.Aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
+import no.nav.fo.domene.aktivitet.AktivitetDTO;
+import no.nav.fo.domene.aktivitet.AktivitetData;
+import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
