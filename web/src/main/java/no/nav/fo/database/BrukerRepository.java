@@ -348,7 +348,7 @@ public class BrukerRepository {
         } else if (value instanceof String){
             return Integer.parseInt((String)value);
         } else {
-            throw new RuntimeException("Kunne ikke finne intValue av: " + value.toString());
+            return null;
         }
     }
 
