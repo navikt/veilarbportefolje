@@ -165,14 +165,17 @@ public class SolrServiceImpl implements SolrService {
                     .map(arbeidslisteRepository::retrieveArbeidsliste)
                     .map(result -> result.onSuccess(
                             arbeidsliste -> {
-                                solrDokument.setField("arbeidsliste_aktiv", true);
-                                solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
-                                solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
-                                solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
-                                solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
-                                solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
+                                if(arbeidsliste != null) {
+                                    solrDokument.setField("arbeidsliste_aktiv", true);
+                                    solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
+                                    solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
+                                    solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
+                                    solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
+                                    solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
 
-                                LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
+                                    LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
+                                }
+
                             }
                     ));
         });

@@ -67,9 +67,9 @@ public class ArbeidsListeRessurs {
 
         RestResponse<String> response = new RestResponse<>(new ArrayList<>(), new ArrayList<>());
 
-        arbeidsliste.forEach( request -> {
+        arbeidsliste.forEach(request -> {
             RestResponse<AktoerId> opprettArbeidsliste = opprettArbeidsliste(request);
-            if(opprettArbeidsliste.containsError()) {
+            if (opprettArbeidsliste.containsError()) {
                 response.addError(request.getFnr());
             } else {
                 response.addData(request.getFnr());
@@ -81,36 +81,36 @@ public class ArbeidsListeRessurs {
 
     @GET
     @Path("{fnr}/")
-    public Arbeidsliste getArbeidsListe(@PathParam("fnr") String fnr) {
-        TilgangsRegler.tilgangTilOppfolging(pepClient);
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        if (validateFnr.isInvalid()) {
-            throw new RestValideringException(validateFnr.getError());
-        }
+    public Response getArbeidsListe(@PathParam("fnr") String fnr) {
+        return createResponse(() -> {
+            TilgangsRegler.tilgangTilOppfolging(pepClient);
+            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            if (validateFnr.isInvalid()) {
+                throw new RestValideringException(validateFnr.getError());
+            }
 
-        String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
+            String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
 
-        Fnr newFnr = new Fnr(fnr);
-        Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(newFnr);
+            Fnr newFnr = new Fnr(fnr);
+            Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(newFnr);
 
-        boolean erOppfolgendeVeileder = aktoerId.flatMap(brukerRepository::retrieveVeileder)
-                .map(Object::toString)
-                .map(v -> Objects.equals(innloggetVeileder, v))
-                .getOrElse(false);
+            boolean erOppfolgendeVeileder = aktoerId.flatMap(brukerRepository::retrieveVeileder)
+                    .map(Object::toString)
+                    .map(v -> Objects.equals(innloggetVeileder, v))
+                    .getOrElse(false);
 
-        boolean harVeilederTilgang = arbeidslisteService.hentEnhet(newFnr)
-                .map(enhet -> brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet))
-                .getOrElse(false);
+            boolean harVeilederTilgang = arbeidslisteService.hentEnhet(newFnr)
+                    .map(enhet -> brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet))
+                    .getOrElse(false);
 
-        if (harVeilederTilgang) {
-            return aktoerId
+            Arbeidsliste arbeidsliste = aktoerId
                     .flatMap(arbeidslisteService::getArbeidsliste)
-                    .map(arbeidsliste -> arbeidsliste.setIsOppfolgendeVeileder(erOppfolgendeVeileder).setHarVeilederTilgang(true))
-                    .onFailure(e -> LOG.warn("Kunne ikke hente arbeidsliste: {}", e.getMessage()))
-                    .getOrElseThrow(() -> new RestNoContentException("Kunne ikke finne arbeidsliste for bruker"));
-        } else {
-            return new Arbeidsliste(null, null, null, null).setHarVeilederTilgang(false);
-        }
+                    .getOrElse(this::emptyArbeidsliste)
+                    .setIsOppfolgendeVeileder(erOppfolgendeVeileder)
+                    .setHarVeilederTilgang(harVeilederTilgang);
+
+            return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
+        });
     }
 
     @POST
@@ -134,7 +134,7 @@ public class ArbeidsListeRessurs {
                     .onFailure(e -> LOG.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get();
+            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
         }, CREATED);
     }
 
@@ -169,15 +169,16 @@ public class ArbeidsListeRessurs {
                 throw new RestValideringException(validateFnr.getError());
             }
 
-        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
-        if (validateVeileder.isInvalid()) {
-            throw new RestTilgangException(validateVeileder.getError());
-        }
+            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+            if (validateVeileder.isInvalid()) {
+                throw new RestTilgangException(validateVeileder.getError());
+            }
 
-        sjekkTilgangTilEnhet(new Fnr(fnr));
+            sjekkTilgangTilEnhet(new Fnr(fnr));
 
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
+                    .map((a) -> new Arbeidsliste(null,null,null,null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
                     .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
         });
     }
@@ -201,19 +202,19 @@ public class ArbeidsListeRessurs {
             }
 
             validerFnrs.get()
-                    .forEach( (fnr) -> arbeidslisteService
+                    .forEach((fnr) -> arbeidslisteService
                             .deleteArbeidsliste(fnr)
-                            .onSuccess( (aktoerid) -> {
+                            .onSuccess((aktoerid) -> {
                                 okFnrs.add(fnr.toString());
                                 LOG.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
                             })
-                            .onFailure( (error) -> {
+                            .onFailure((error) -> {
                                 feiledeFnrs.add(fnr.toString());
                                 LOG.warn("Kunne ikke slette arbeidsliste for fnr {}", fnr.toString(), error);
                             })
-                            );
+                    );
 
-            if(feiledeFnrs.size() == fnrs.size()) {
+            if (feiledeFnrs.size() == fnrs.size()) {
                 throw new InternalServerErrorException();
             }
             return RestResponse.of(okFnrs, feiledeFnrs);
@@ -252,5 +253,9 @@ public class ArbeidsListeRessurs {
 
                         }
                 );
+    }
+
+    private Arbeidsliste emptyArbeidsliste() {
+        return new Arbeidsliste(null, null, null, null);
     }
 }

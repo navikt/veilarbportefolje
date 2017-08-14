@@ -165,11 +165,15 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
 
     @Test
-    public void skalReturnereNoContentVedUthenting() throws Exception {
+    public void skalReturnereTomArbeidslisteUthenting() throws Exception {
+        int expected = 200;
         insertSuccessfulBrukere();
-        int actual = get("/tjenester/arbeidsliste/" + FNR).code();
-        int expected = 204;
-        assertEquals(expected, actual);
+        Response resp = get("/tjenester/arbeidsliste/" + FNR);
+        JSONObject json = new JSONObject(resp.body().string());
+
+
+        assertEquals(json.get("arbeidslisteAktiv").toString(), "null");
+        assertEquals(expected, resp.code());
     }
 
     @Test
@@ -219,10 +223,12 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         int actualGet = get(path).code();
         assertEquals(expectedGet, actualGet);
+        assertEquals(new JSONObject(get(path).body().string()).getBoolean("harVeilederTilgang"), false);
 
         int actualPost = post(path, json.toString()).code();
         assertEquals(expected, actualPost);
     }
+
 
     private static void insertSuccessfulBrukere() {
         int result = insert(DB, BRUKERDATA)
