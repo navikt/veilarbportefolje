@@ -134,7 +134,7 @@ public class ArbeidsListeRessurs {
                     .onFailure(e -> LOG.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get();
+            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
         }, CREATED);
     }
 
@@ -178,6 +178,7 @@ public class ArbeidsListeRessurs {
 
             return arbeidslisteService
                     .deleteArbeidsliste(new Fnr(fnr))
+                    .map((a) -> new Arbeidsliste(null,null,null,null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
                     .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
         });
     }
