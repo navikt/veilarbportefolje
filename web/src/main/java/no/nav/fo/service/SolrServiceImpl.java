@@ -89,9 +89,7 @@ public class SolrServiceImpl implements SolrService {
 
         BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
             antallBrukere[0] += dokumenter.size();
-            applyAktivitetStatuser(dokumenter, brukerRepository);
-            applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-            applyTiltak(dokumenter, brukerRepository);
+            leggDataTilSolrDocument(dokumenter);
             addDocuments(dokumenter);
         });
         brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
@@ -122,10 +120,18 @@ public class SolrServiceImpl implements SolrService {
             return;
         }
 
-        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-        applyAktivitetStatuser(dokumenter, brukerRepository);
-        applyTiltak(dokumenter, brukerRepository);
-        addDocuments(dokumenter);
+        List<SolrInputDocument> oppfolgingsbrukere = dokumenter.stream()
+                .filter(BrukerRepository::erOppfolgingsBruker)
+                .collect(toList());
+
+        leggDataTilSolrDocument(oppfolgingsbrukere);
+        addDocuments(oppfolgingsbrukere);
+
+
+        dokumenter.stream()
+                .filter((bruker) -> !BrukerRepository.erOppfolgingsBruker(bruker))
+                .forEach( (bruker) -> slettBruker(bruker.get("fnr").toString()));
+
         commit();
         brukerRepository.updateTidsstempel(timestamp);
 
@@ -155,6 +161,12 @@ public class SolrServiceImpl implements SolrService {
                 .map((ident) -> isBlank(ident) ? null : ident)
                 .map((ident) -> "veileder_id: " + ident + " AND enhet_id: " + enhetId)
                 .orElse("enhet_id: " + enhetId);
+    }
+
+    private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
+        applyAktivitetStatuser(dokumenter, brukerRepository);
+        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
+        applyTiltak(dokumenter, brukerRepository);
     }
 
     private static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
@@ -238,8 +250,7 @@ public class SolrServiceImpl implements SolrService {
         }
         LOG.info("Legger bruker med personId {} til i indeksen ", personId);
 
-        applyAktivitetStatuser(brukerDokument, brukerRepository);
-        applyArbeidslisteData(singletonList(brukerDokument), arbeidslisteRepository, aktoerService);
+        leggDataTilSolrDocument(singletonList(brukerDokument));
         addDocuments(singletonList(brukerDokument));
         commit();
         LOG.info("Bruker med personId {} lagt til i indeksen", personId);

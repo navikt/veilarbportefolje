@@ -197,21 +197,6 @@ public class BrukerRepositoryTest {
         assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
     }
 
-
-    @Test
-    public void skalFiltrereBrukere() {
-        insertoppfolgingsbrukerTestData();
-        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-
-
-        List<SolrInputDocument> aktiveBrukere = new ArrayList<>();
-        brukerRepository.prosesserBrukere(3, BrukerRepository::erOppfolgingsBruker, aktiveBrukere::add);
-        assertThat(aktiveBrukere.size()).isEqualTo(50);
-
-        List<SolrInputDocument> oppdaterteAktiveBrukere = brukerRepository.retrieveOppdaterteBrukere();
-        assertThat(oppdaterteAktiveBrukere.size()).isEqualTo(2);
-    }
-
     private Brukerdata brukerdata(String aktoerid, String personId, String veileder, Timestamp tildeltTidspunkt, YtelseMapping ytelse,
                                   LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett, boolean oppfolging) {
         return new Brukerdata()

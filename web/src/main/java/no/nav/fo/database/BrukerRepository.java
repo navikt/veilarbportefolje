@@ -203,7 +203,7 @@ public class BrukerRepository {
         db.query(retrieveOppdaterteBrukereSQL(), rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         });
-        return brukere.stream().filter(BrukerRepository::erOppfolgingsBruker).collect(toList());
+        return brukere;
     }
 
     public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
