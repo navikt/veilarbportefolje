@@ -35,6 +35,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>reindeksertiltak</servlet-name>
+        <servlet-class>no.nav.fo.internal.ReindekserTiltakServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>reindeksertiltak</servlet-name>
+        <url-pattern>/internal/reindeksertiltak</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>restservlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>

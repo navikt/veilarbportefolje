@@ -34,6 +34,7 @@
         <applicationProperties alias="dialogaktorfeed.properties"/>
         <applicationProperties alias="aktiviteterfeed.properties"/>
         <applicationProperties alias="situasjonfeed.properties"/>
+        <applicationProperties alias="tiltak.properties"/>
 
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
