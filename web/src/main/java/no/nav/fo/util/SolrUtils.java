@@ -7,10 +7,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,6 +45,7 @@ public class SolrUtils {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery(queryString);
         leggTilFiltervalg(solrQuery, filtervalg);
+        solrQuery.addSort("person_id", SolrQuery.ORDER.asc);
         return solrQuery;
     }
 
