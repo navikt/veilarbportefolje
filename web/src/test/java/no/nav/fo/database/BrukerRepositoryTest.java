@@ -530,10 +530,10 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalFeileOmIngenPersonIdFinnes() throws Exception {
+    public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
         Fnr fnr = new Fnr("99999999999");
         Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
-        assertTrue(result.isFailure());
+        assertTrue(result.get() == null);
     }
 
     @Test

@@ -135,19 +135,11 @@ public class AktoerServiceTest {
     }
 
     @Test
-    public void skalHenteFnrFraAktoerIdFraDb() throws Exception {
+    public void skalIKKEHenteFnrFraAktoerIdFraDb() throws Exception {
         AktoerId aktoerId = new AktoerId(AKTOER_ID);
-        Fnr fnr = new Fnr(FNR);
-        int updated = insert(db, "BRUKER_DATA")
-                .value("PERSONID", PERSON_ID)
-                .value("FNR", fnr.toString())
-                .value("AKTOERID", aktoerId.toString())
-                .execute();
-        assertTrue(updated > 0);
 
         Try<Fnr> result = aktoerService.hentFnrFraAktoerid(aktoerId);
         assertTrue(result.isSuccess());
-        assertEquals(fnr, result.get()
-        );
+        assertEquals(new Fnr(FNR_FRA_SOAP_TJENESTE), result.get());
     }
 }
