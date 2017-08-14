@@ -36,6 +36,7 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
+import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -90,6 +91,7 @@ public class SolrServiceImpl implements SolrService {
             antallBrukere[0] += dokumenter.size();
             applyAktivitetStatuser(dokumenter, brukerRepository);
             applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
+            applyTiltak(dokumenter, brukerRepository);
             addDocuments(dokumenter);
         });
         brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
@@ -122,6 +124,7 @@ public class SolrServiceImpl implements SolrService {
 
         applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         applyAktivitetStatuser(dokumenter, brukerRepository);
+        applyTiltak(dokumenter, brukerRepository);
         addDocuments(dokumenter);
         commit();
         brukerRepository.updateTidsstempel(timestamp);

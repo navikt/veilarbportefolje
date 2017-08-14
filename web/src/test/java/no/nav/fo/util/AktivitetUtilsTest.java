@@ -1,20 +1,34 @@
 package no.nav.fo.util;
 
+import no.nav.fo.config.ApplicationConfigTest;
+import no.nav.fo.database.BrukerRepository;
+import org.apache.solr.common.SolrInputDocument;
+import org.assertj.core.util.Lists;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.context.ContextConfiguration;
 
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktivitetData;
 import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 
 import static java.util.Arrays.asList;
 import static no.nav.fo.util.AktivitetUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 
-
+@RunWith(MockitoJUnitRunner.class)
+@ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class AktivitetUtilsTest {
 
+    @Mock
+    private BrukerRepository brukerRepository;
 
     @Test
     public void aktivitetErAktiv() {
@@ -124,6 +138,29 @@ public class AktivitetUtilsTest {
         AktivitetDTO nyesteIkkeFullforte = finnNyesteUtlopteAktivAktivitet(asList(denEldsteAktiviteten, denNyesteAktiviteten), today);
 
         assertThat(nyesteIkkeFullforte).isNull();
+    }
+
+    @Test
+    public void skalLeggeTilTiltakPaSolrDokument() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("person_id", "123");
+        when(brukerRepository.getTiltak(anyString())).thenReturn(Arrays.asList("Tiltak1", "Tiltak2"));
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.keySet()).containsExactly("person_id", "tiltak");
+        assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactly("Tiltak1", "Tiltak2");
+    }
+
+    @Test
+    public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("person_id", "12345678910");
+        when(brukerRepository.getTiltak(anyString())).thenReturn(Lists.emptyList());
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.keySet()).containsExactly("person_id");
     }
 
 

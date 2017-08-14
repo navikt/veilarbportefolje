@@ -390,6 +390,14 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
+    public List<String> getTiltak(String personId) {
+        return db.queryForList(
+            "SELECT " +
+                "VERDI AS TILTAK " +
+                "FROM BRUKERTILTAK " +
+                "LEFT JOIN TILTAKKODEVERK ON TILTAKKODEVERK.KODE = BRUKERTILTAK.TILTAKSKODE " +
+                "WHERE PERSONID = ?", String.class, personId);
+    }
 
     public void slettYtelsesdata() {
         SqlUtils.update(db, "bruker_data")
