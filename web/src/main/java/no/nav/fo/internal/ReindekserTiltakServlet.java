@@ -1,5 +1,7 @@
 package no.nav.fo.internal;
 
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
 import no.nav.fo.consumer.GR202.KopierGR202FraArena;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -22,7 +24,13 @@ public class ReindekserTiltakServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<String> files = kopierGR202FraArena.kopier();
+        List<String> files = null;
+        try {
+            files = kopierGR202FraArena.kopier();
+        } catch (JSchException | SftpException e) {
+            resp.getWriter().write(e.getMessage());
+            return;
+        }
         if(files.isEmpty()) {
             resp.getWriter().write("Ingen filer");
         }

@@ -18,10 +18,9 @@ public class KopierGR202FraArena {
     @Value("${tiltak.sftp.url}")
     private String sftpUrl;
 
-    public List<String> kopier() {
+    public List<String> kopier() throws JSchException, SftpException {
         JSch jSch = new JSch();
         List<String> files = new ArrayList<>();
-        try {
             Session session = jSch.getSession(sftpBrukernavn, sftpUrl, 22);
             session.setConfig("StrictHostKeyChecking", "no");
             session.connect();
@@ -40,9 +39,6 @@ public class KopierGR202FraArena {
 //            channelSftp.get("/gr202/t5/arena_paagaaende_aktiviteter.xml", "arena_paagaaende_aktiviteter.xml");
             channelSftp.exit();
             session.disconnect();
-        } catch (JSchException | SftpException e) {
-            e.printStackTrace();
-        }
         return files;
     }
 }
