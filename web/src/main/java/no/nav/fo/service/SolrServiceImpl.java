@@ -210,6 +210,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(String fnr) {
         deleteDocuments("fnr:" + fnr);
+        commit();
     }
 
     @Override
@@ -220,6 +221,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:"+ personid.toString());
+        commit();
     }
 
     @Override
