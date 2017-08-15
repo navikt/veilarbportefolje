@@ -28,12 +28,14 @@ public class KopierGR202FraArena {
             Channel channel = session.openChannel("sftp");
             channel.connect();
             ChannelSftp channelSftp = (ChannelSftp) channel;
-            String gr202Path = "/gr202";
-            channelSftp.cd(gr202Path);
-            Vector gr202Files = channelSftp.ls(gr202Path);
+//            String gr202Path = "/gr202";
+//            channelSftp.cd(gr202Path);
+            files.add("host: "+session.getHost());
+            files.add("connected: "+session.isConnected());
+            Vector gr202Files = channelSftp.ls("");
             for(int i = 0; i < gr202Files.size(); i++) {
                 ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) gr202Files.get(i);
-                files.add(gr202Path+": "+entry.getFilename());
+                files.add(entry.getFilename());
             }
 //            channelSftp.get("/gr202/t5/arena_paagaaende_aktiviteter.xml", "arena_paagaaende_aktiviteter.xml");
             channelSftp.exit();
