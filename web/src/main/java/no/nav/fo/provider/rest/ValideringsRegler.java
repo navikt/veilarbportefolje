@@ -75,13 +75,13 @@ class ValideringsRegler {
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
                                 validateKommentar(arbeidsliste.getKommentar()),
-                                validateFrist(arbeidsliste.getFrist())
+                                validateFrist(arbeidsliste.getFrist(), arbeidsliste.isRedigering())
                         )
                         .ap(ArbeidslisteData::of);
     }
 
-    private static Validation<String, Timestamp> validateFrist(String frist) {
-        if (frist == null) {
+    private static Validation<String, Timestamp> validateFrist(String frist, boolean redigering) {
+        if (frist == null || redigering) {
             return valid(null);
         }
         Timestamp dato = Timestamp.from(Instant.parse(frist));
