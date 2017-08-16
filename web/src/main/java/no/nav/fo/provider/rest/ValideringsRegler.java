@@ -80,6 +80,9 @@ class ValideringsRegler {
     }
 
     private static Validation<String, Timestamp> validateFrist(String frist) {
+        if (frist == null) {
+            return valid(null);
+        }
         Timestamp timestamp = Timestamp.from(Instant.parse(frist));
         return valid(timestamp);
     }
