@@ -237,12 +237,28 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         JSONObject utenDato = new JSONObject()
                 .put("fnr", FNR_2)
-                .put("kommentar", "Dette er en kommentar2");
+                .put("kommentar", "Dette er en kommentar");
 
         JSONArray json = new JSONArray(singletonList(utenDato));
 
         Response response = post(path, json.toString());
         assertEquals(201, response.code());
+    }
+
+    @Test
+    public void datoSkalVaereFramITid() throws Exception {
+        insertSuccessfulBrukere();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject utenDato = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "1985-07-23T00:00:00Z");
+
+        JSONArray json = new JSONArray(singletonList(utenDato));
+
+        Response response = post(path, json.toString());
+        assertEquals(400, response.code());
     }
 
     private static void insertSuccessfulBrukere() {

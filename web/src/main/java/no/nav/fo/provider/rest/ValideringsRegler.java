@@ -10,6 +10,7 @@ import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -83,8 +84,12 @@ class ValideringsRegler {
         if (frist == null) {
             return valid(null);
         }
-        Timestamp timestamp = Timestamp.from(Instant.parse(frist));
-        return valid(timestamp);
+        Timestamp dato = Timestamp.from(Instant.parse(frist));
+        return isBeforeToday(dato) ? invalid("Fristen kan ikke settes til den tidligere dato") : valid(dato);
+    }
+
+    private static boolean isBeforeToday(Timestamp timestamp) {
+        return timestamp.toLocalDateTime().toLocalDate().isBefore(LocalDate.now());
     }
 
     private static Validation<String, String> validateKommentar(String kommentar) {
