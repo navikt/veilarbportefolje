@@ -8,7 +8,7 @@ import java.util.Set;
 public class UnderOppfolgingRegler {
 
     static final Set<String> ARBEIDSOKERKODER = new HashSet<>(asList("ARBS", "RARBS", "PARBS"));
-    static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI"));
+    static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     static final String IKKE_ARBEIDSSOKER = "IARBS";
 
     // Logikken som utleder om en bruker er under oppfolging kjøres også i VeilArbSituasjon.
