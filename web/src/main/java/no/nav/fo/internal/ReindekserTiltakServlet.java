@@ -26,18 +26,18 @@ public class ReindekserTiltakServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         List<String> files = null;
         try {
-            files = kopierGR202FraArena.kopier();
+            kopierGR202FraArena.kopier();
         } catch (JSchException | SftpException e) {
             resp.getWriter().write(e.getMessage());
             return;
         }
-        if(files.isEmpty()) {
+        /*if(files.isEmpty()) {
             resp.getWriter().write("Ingen filer");
         }
         else {
             for(String s : files) {
                 resp.getWriter().write(s);
             }
-        }
+        }*/
     }
 }

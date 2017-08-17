@@ -1,10 +1,13 @@
 package no.nav.fo.consumer.GR202;
 
 import com.jcraft.jsch.*;
+import org.apache.commons.vfs2.*;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.nio.file.FileSystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -18,8 +21,21 @@ public class KopierGR202FraArena {
     @Value("${tiltak.sftp.url}")
     private String sftpUrl;
 
-    public List<String> kopier() throws JSchException, SftpException {
-        JSch jSch = new JSch();
+    public void kopier() throws JSchException, SftpException, FileSystemException {
+
+        FileSystemOptions fsOptions = new FileSystemOptions();
+        SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions, "no");
+        FileSystemManager fsManager = VFS.getManager();
+        String uri = "sftp://"+sftpBrukernavn+"@"+sftpUrl+"/gr202/t5/arena_paagaaende_aktiviteter.xml";
+//        String uri = sftpUrl;
+        FileObject fo = fsManager.resolveFile(uri, fsOptions);
+
+        FileObject newFo = fsManager.resolveFile("arena_paagaaende_aktiviteter.xml");
+        newFo.copyFrom(fo, Selectors.SELECT_SELF);
+
+
+
+        /*JSch jSch = new JSch();
         List<String> files = new ArrayList<>();
             Session session = jSch.getSession(sftpBrukernavn, sftpUrl, 22);
             session.setConfig("StrictHostKeyChecking", "no");
@@ -39,6 +55,6 @@ public class KopierGR202FraArena {
 //            channelSftp.get("/gr202/t5/arena_paagaaende_aktiviteter.xml", "arena_paagaaende_aktiviteter.xml");
             channelSftp.exit();
             session.disconnect();
-        return files;
+        return files;*/
     }
 }
