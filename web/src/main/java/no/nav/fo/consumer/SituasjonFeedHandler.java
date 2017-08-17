@@ -77,6 +77,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                         if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(),bruker.getOppfolging())) {
                             brukerRepository.deleteBrukerdata(personId);
                             solrService.slettBruker(personId);
+                            solrService.commit();
                             return null;
                         }
                         oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);

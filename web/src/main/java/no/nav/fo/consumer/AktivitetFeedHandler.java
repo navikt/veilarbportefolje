@@ -86,6 +86,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
                         if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(), oppfolgingstatus.isOppfolgingsbruker())) {
                             solrService.slettBruker(personId);
+                            solrService.commit();
                             return null;
                         }
                         aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerid);

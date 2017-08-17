@@ -130,7 +130,7 @@ public class SolrServiceImpl implements SolrService {
 
         dokumenter.stream()
                 .filter((bruker) -> !BrukerRepository.erOppfolgingsBruker(bruker))
-                .forEach( (bruker) -> slettBruker(bruker.get("fnr").toString()));
+                .forEach( (bruker) -> slettBruker((String) bruker.get("fnr").getValue()));
 
         commit();
         brukerRepository.updateTidsstempel(timestamp);
@@ -210,7 +210,6 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(String fnr) {
         deleteDocuments("fnr:" + fnr);
-        commit();
     }
 
     @Override
@@ -221,7 +220,6 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:"+ personid.toString());
-        commit();
     }
 
     @Override
