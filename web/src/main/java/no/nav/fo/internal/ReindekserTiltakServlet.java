@@ -15,21 +15,26 @@ import java.util.List;
 public class ReindekserTiltakServlet extends HttpServlet {
 
     private KopierGR202FraArena kopierGR202FraArena;
+    private boolean ismasternode;
 
     @Override
     public void init() throws ServletException {
         this.kopierGR202FraArena = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(KopierGR202FraArena.class);
+        this.ismasternode = Boolean.valueOf(System.getProperty("cluster.ismasternode", "false"));
         super.init();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         List<String> files = null;
-        try {
-            kopierGR202FraArena.kopier();
-        } catch (JSchException | SftpException e) {
-            resp.getWriter().write(e.getMessage());
-            return;
+        if(this.ismasternode) {
+            try {
+                kopierGR202FraArena.kopier();
+            } catch (JSchException | SftpException e) {
+                e.printStackTrace();
+                resp.getWriter().write(e.getMessage());
+                resp.getWriter().write(e.getStackTrace().toString());
+            }
         }
         /*if(files.isEmpty()) {
             resp.getWriter().write("Ingen filer");
