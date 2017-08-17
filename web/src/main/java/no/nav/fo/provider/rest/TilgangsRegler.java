@@ -28,12 +28,12 @@ public class TilgangsRegler {
         String veilederId = subjectHandler.getUid();
         String token = TokenUtils.getTokenBody(subjectHandler.getSubject());
 
-        test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, token));
+//        test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, token));
     }
 
     static void tilgangTilEnhet(BrukertilgangService brukertilgangService, String enhet) {
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
-        tilgangTilEnhet(brukertilgangService, enhet, veilederId);
+//        tilgangTilEnhet(brukertilgangService, enhet, veilederId);
     }
 
     static boolean enhetErIPilot(String enhet) {

@@ -1,6 +1,7 @@
 package no.nav.fo.util;
 
 import no.nav.fo.domene.*;
+import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -148,7 +149,7 @@ public class SolrUtils {
         }
 
         List<String> oversiktStatements = new ArrayList<>();
-        List<String> filtrerBrukereStatements = new ArrayList<>();
+        final List<String> filtrerBrukereStatements = new ArrayList<>();
 
         if (filtervalg.brukerstatus == Brukerstatus.NYE_BRUKERE) {
             oversiktStatements.add("-veileder_id:*");
@@ -178,6 +179,14 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
 
+        for (Map.Entry<String, AktivitetFiltervalg> entry: filtervalg.aktiviteter.entrySet()) {
+            if(entry.getValue() == AktivitetFiltervalg.JA) {
+                filtrerBrukereStatements.add(entry.getKey().toLowerCase() + ":*");
+            } else if (entry.getValue() == AktivitetFiltervalg.NEI) {
+                filtrerBrukereStatements.add("-" + entry.getKey().toLowerCase() + ":*");
+            }
+        }
+
 
         if (filtervalg.harYtelsefilter()) {
             filtrerBrukereStatements.add(orStatement(filtervalg.ytelse.underytelser, SolrUtils::ytelseFilter));
@@ -194,6 +203,10 @@ public class SolrUtils {
                     .map(statement -> "(" + statement + ")")
                     .collect(Collectors.joining(" AND ")));
         }
+    }
+
+    private static <T> String aktivitetFilter(T t) {
+        return "behandling:*";
     }
 
     private static String ytelseFilter(YtelseMapping ytelse) {
@@ -230,5 +243,9 @@ public class SolrUtils {
 
     static String veilederFilter(String veileder) {
         return "veileder_id:" + veileder;
+    }
+
+    static String aktivitetFilter(String aktivitet) {
+        return "erter";
     }
 }
