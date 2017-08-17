@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static no.nav.fo.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
@@ -229,6 +230,53 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         assertEquals(expected, actualPost);
     }
 
+    @Test
+    public void datoFeltSkalVaereValgfritt() throws Exception {
+        insertSuccessfulBrukere();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject utenDato = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("kommentar", "Dette er en kommentar");
+
+        JSONArray json = new JSONArray(singletonList(utenDato));
+
+        Response response = post(path, json.toString());
+        assertEquals(201, response.code());
+    }
+
+    @Test
+    public void datoSkalVaereFramITid() throws Exception {
+        insertSuccessfulBrukere();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject utenDato = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "1985-07-23T00:00:00Z");
+
+        JSONArray json = new JSONArray(singletonList(utenDato));
+
+        Response response = post(path, json.toString());
+        assertEquals(400, response.code());
+    }
+
+    @Test
+    public void datoSkalKunneSettesTilbakeITidVedRedigering() throws Exception {
+        insertSuccessfulBrukere();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject utenDato = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "1985-07-23T00:00:00Z")
+                .put("redigering", true);
+
+        JSONArray json = new JSONArray(singletonList(utenDato));
+
+        Response response = post(path, json.toString());
+        assertEquals(201, response.code());
+    }
 
     private static void insertSuccessfulBrukere() {
         int result = insert(DB, BRUKERDATA)
