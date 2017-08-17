@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static no.nav.fo.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
@@ -165,11 +166,15 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
 
     @Test
-    public void skalReturnereNoContentVedUthenting() throws Exception {
+    public void skalReturnereTomArbeidslisteUthenting() throws Exception {
+        int expected = 200;
         insertSuccessfulBrukere();
-        int actual = get("/tjenester/arbeidsliste/" + FNR).code();
-        int expected = 204;
-        assertEquals(expected, actual);
+        Response resp = get("/tjenester/arbeidsliste/" + FNR);
+        JSONObject json = new JSONObject(resp.body().string());
+
+
+        assertEquals(json.get("arbeidslisteAktiv").toString(), "null");
+        assertEquals(expected, resp.code());
     }
 
     @Test
@@ -219,9 +224,58 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
 
         int actualGet = get(path).code();
         assertEquals(expectedGet, actualGet);
+        assertEquals(new JSONObject(get(path).body().string()).getBoolean("harVeilederTilgang"), false);
 
         int actualPost = post(path, json.toString()).code();
         assertEquals(expected, actualPost);
+    }
+
+    @Test
+    public void datoFeltSkalVaereValgfritt() throws Exception {
+        insertSuccessfulBrukere();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject utenDato = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("kommentar", "Dette er en kommentar");
+
+        JSONArray json = new JSONArray(singletonList(utenDato));
+
+        Response response = post(path, json.toString());
+        assertEquals(201, response.code());
+    }
+
+    @Test
+    public void datoSkalVaereFramITid() throws Exception {
+        insertSuccessfulBrukere();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject utenDato = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "1985-07-23T00:00:00Z");
+
+        JSONArray json = new JSONArray(singletonList(utenDato));
+
+        Response response = post(path, json.toString());
+        assertEquals(400, response.code());
+    }
+
+    @Test
+    public void datoSkalKunneSettesTilbakeITidVedRedigering() throws Exception {
+        insertSuccessfulBrukere();
+        String path = "/tjenester/arbeidsliste/";
+
+        JSONObject utenDato = new JSONObject()
+                .put("fnr", FNR_2)
+                .put("kommentar", "Dette er en kommentar")
+                .put("frist", "1985-07-23T00:00:00Z")
+                .put("redigering", true);
+
+        JSONArray json = new JSONArray(singletonList(utenDato));
+
+        Response response = post(path, json.toString());
+        assertEquals(201, response.code());
     }
 
     private static void insertSuccessfulBrukere() {

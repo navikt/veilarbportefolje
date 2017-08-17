@@ -89,9 +89,7 @@ public class SolrServiceImpl implements SolrService {
 
         BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
             antallBrukere[0] += dokumenter.size();
-            applyAktivitetStatuser(dokumenter, brukerRepository);
-            applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-            applyTiltak(dokumenter, brukerRepository);
+            leggDataTilSolrDocument(dokumenter);
             addDocuments(dokumenter);
         });
         brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
@@ -122,10 +120,18 @@ public class SolrServiceImpl implements SolrService {
             return;
         }
 
-        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-        applyAktivitetStatuser(dokumenter, brukerRepository);
-        applyTiltak(dokumenter, brukerRepository);
-        addDocuments(dokumenter);
+        List<SolrInputDocument> oppfolgingsbrukere = dokumenter.stream()
+                .filter(BrukerRepository::erOppfolgingsBruker)
+                .collect(toList());
+
+        leggDataTilSolrDocument(oppfolgingsbrukere);
+        addDocuments(oppfolgingsbrukere);
+
+
+        dokumenter.stream()
+                .filter((bruker) -> !BrukerRepository.erOppfolgingsBruker(bruker))
+                .forEach( (bruker) -> slettBruker((String) bruker.get("fnr").getValue()));
+
         commit();
         brukerRepository.updateTidsstempel(timestamp);
 
@@ -157,6 +163,12 @@ public class SolrServiceImpl implements SolrService {
                 .orElse("enhet_id: " + enhetId);
     }
 
+    private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
+        applyAktivitetStatuser(dokumenter, brukerRepository);
+        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
+        applyTiltak(dokumenter, brukerRepository);
+    }
+
     private static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
         brukere.forEach(solrDokument -> {
             String personId = (String) solrDokument.get("person_id").getValue();
@@ -165,14 +177,17 @@ public class SolrServiceImpl implements SolrService {
                     .map(arbeidslisteRepository::retrieveArbeidsliste)
                     .map(result -> result.onSuccess(
                             arbeidsliste -> {
-                                solrDokument.setField("arbeidsliste_aktiv", true);
-                                solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
-                                solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
-                                solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
-                                solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
-                                solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
+                                if(arbeidsliste != null) {
+                                    solrDokument.setField("arbeidsliste_aktiv", true);
+                                    solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
+                                    solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
+                                    solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
+                                    solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
+                                    solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
 
-                                LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
+                                    LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
+                                }
+
                             }
                     ));
         });
@@ -195,11 +210,6 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(String fnr) {
         deleteDocuments("fnr:" + fnr);
-    }
-
-    @Override
-    public void slettBruker(Fnr fnr) {
-        slettBruker(fnr.toString());
     }
 
     @Override
@@ -235,8 +245,7 @@ public class SolrServiceImpl implements SolrService {
         }
         LOG.info("Legger bruker med personId {} til i indeksen ", personId);
 
-        applyAktivitetStatuser(brukerDokument, brukerRepository);
-        applyArbeidslisteData(singletonList(brukerDokument), arbeidslisteRepository, aktoerService);
+        leggDataTilSolrDocument(singletonList(brukerDokument));
         addDocuments(singletonList(brukerDokument));
         commit();
         LOG.info("Bruker med personId {} lagt til i indeksen", personId);

@@ -23,8 +23,6 @@ public interface SolrService {
 
     void slettBruker(PersonId personId);
 
-    void slettBruker(Fnr fnr);
-
     void indekserBrukerdata(PersonId personId);
 
     void indekserBrukerdata(AktoerId aktoerId);

@@ -31,10 +31,12 @@ public class AktoerServiceImpl implements AktoerService {
     private BrukerRepository brukerRepository;
 
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
-        return
-                brukerRepository
-                        .retrievePersonid(aktoerId)
-                        .orElse(() ->  hentPersonIdViaSoap(aktoerId));
+        Try<PersonId> personid = brukerRepository.retrievePersonid(aktoerId);
+
+        if(personid.isSuccess() && personid.get() == null) {
+            return hentPersonIdViaSoap(aktoerId);
+        }
+        return personid;
     }
 
     @Override
@@ -56,10 +58,7 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Override
     public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
-        return
-                brukerRepository
-                        .retrieveFnr(aktoerId)
-                        .orElse(hentFnrViaSoap(aktoerId));
+        return hentFnrViaSoap(aktoerId);
     }
 
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
