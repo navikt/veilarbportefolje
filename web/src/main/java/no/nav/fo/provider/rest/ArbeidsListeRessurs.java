@@ -7,7 +7,9 @@ import io.vavr.control.Validation;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
-import no.nav.fo.exception.*;
+import no.nav.fo.exception.RestBadGateWayException;
+import no.nav.fo.exception.RestTilgangException;
+import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.AktoerService;
@@ -185,7 +187,7 @@ public class ArbeidsListeRessurs {
 
     @POST
     @Path("/delete")
-    public Response deleteArbeidsliseListe(java.util.List<ArbeidslisteRequest> arbeidslisteData) {
+    public Response deleteArbeidslisteListe(java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             java.util.List<String> feiledeFnrs = new ArrayList<>();
