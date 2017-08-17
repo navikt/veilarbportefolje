@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.File;
 import java.nio.file.FileSystem;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,16 +23,18 @@ public class KopierGR202FraArena {
     private String sftpUrl;
 
     public void kopier() throws JSchException, SftpException, FileSystemException {
-
+        logger.debug("Setter i gang kopiering av tiltak");
         FileSystemOptions fsOptions = new FileSystemOptions();
         SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions, "no");
         FileSystemManager fsManager = VFS.getManager();
         String uri = "sftp://"+sftpBrukernavn+"@"+sftpUrl+"/gr202/t5/arena_paagaaende_aktiviteter.xml";
 //        String uri = sftpUrl;
         FileObject fo = fsManager.resolveFile(uri, fsOptions);
+        logger.debug("Fra: "+fo.getURL().toString());
 
-        FileObject newFo = fsManager.resolveFile("arena_paagaaende_aktiviteter.xml");
+        FileObject newFo = fsManager.resolveFile("file:///arena_paagaaende_aktiviteter.xml");
         newFo.copyFrom(fo, Selectors.SELECT_SELF);
+        logger.debug("Til: "+newFo.getURL().toString());
 
 
 
