@@ -14,8 +14,12 @@ import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
+import no.nav.metrics.MetricsFactory;
 import org.apache.solr.common.SolrInputDocument;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import org.slf4j.Logger;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -390,13 +394,78 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
-    public List<String> getTiltak(String personId) {
+    public List<String> getBrukertiltak(String personId) {
         return db.queryForList(
             "SELECT " +
                 "VERDI AS TILTAK " +
                 "FROM BRUKERTILTAK " +
                 "LEFT JOIN TILTAKKODEVERK ON TILTAKKODEVERK.KODE = BRUKERTILTAK.TILTAKSKODE " +
                 "WHERE PERSONID = ?", String.class, personId);
+    }
+
+    public void slettBrukertiltak() {
+        db.execute("TRUNCATE TABLE brukertiltak");
+    }
+
+    public void slettEnhettiltak() {
+        db.execute("TRUNCATE TABLE enhettiltak");
+    }
+
+    public void insertBrukertiltak(Bruker brukerTiltak) {
+        brukerTiltak.getTiltaksaktivitetListe().forEach(
+            tiltak -> {
+                try {
+                    SqlUtils.insert(db, "brukertiltak")
+                        .value("personid", brukerTiltak.getPersonident())
+                        .value("tiltakskode", tiltak.getTiltakstype())
+                        .execute();
+                } catch (DataIntegrityViolationException e) {
+                    String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", brukerTiltak.getPersonident(), tiltak.getTiltakstype());
+                    LOG.warn(logMsg);
+                    MetricsFactory.createEvent("veilarbportefolje.insertBrukertiltak.feilet").report();
+                }
+
+            }
+        );
+    }
+
+    public void slettTiltakskoder() {
+        db.execute("DELETE FROM tiltakkodeverk");
+    }
+
+    public void insertTiltakskoder(Tiltakstyper tiltakskoder) {
+        SqlUtils.insert(db, "tiltakkodeverk")
+            .value("kode", tiltakskoder.getValue())
+            .value("verdi", tiltakskoder.getTermnavn())
+            .execute();
+    }
+
+    public Map<String, List<String>> getEnhetMedPersonIder() {
+        List<Map<String, Object>> maps = db.queryForList("SELECT FODSELSNR, NAV_KONTOR FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL");
+
+        Map<String, List<String>> reduce = new HashMap<>();
+        maps.forEach(dbRadMap -> {
+            String enhet = (String) dbRadMap.get("NAV_KONTOR");
+            String ident = dbRadMap.get("FODSELSNR").toString();
+            List<String> brukereForEnhet = reduce.getOrDefault(enhet, new ArrayList<>());
+            brukereForEnhet.add(ident);
+            reduce.put(enhet, brukereForEnhet);
+        });
+
+        return reduce;
+    }
+
+    public void insertEnhettiltak(String enhet, String tiltak) {
+        try {
+            SqlUtils.insert(db, "ENHETTILTAK")
+                .value("ENHETID", enhet)
+                .value("TILTAKSKODE", tiltak)
+                .execute();
+        } catch (DataIntegrityViolationException e) {
+            LOG.error("Feil med insert av tiltak for enhet", e);
+            MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
+        }
+
     }
 
     public void slettYtelsesdata() {

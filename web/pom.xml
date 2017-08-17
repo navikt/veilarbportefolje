@@ -36,6 +36,13 @@
             <classifier>jaxb</classifier>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav.meldinger.virksomhet</groupId>
+            <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
+            <classifier>jaxb</classifier>
+        </dependency>
+
+
         <!--oidc-security-->
         <dependency>
             <groupId>no.nav.dialogarena</groupId>
