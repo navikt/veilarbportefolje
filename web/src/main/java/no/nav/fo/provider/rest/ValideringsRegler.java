@@ -81,10 +81,13 @@ class ValideringsRegler {
     }
 
     private static Validation<String, Timestamp> validateFrist(String frist, boolean redigering) {
-        if (frist == null || redigering) {
+        if (frist == null) {
             return valid(null);
         }
         Timestamp dato = Timestamp.from(Instant.parse(frist));
+        if (redigering) {
+            return valid(dato);
+        }
         return isBeforeToday(dato) ? invalid("Fristen kan ikke settes til den tidligere dato") : valid(dato);
     }
 
