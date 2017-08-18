@@ -7,7 +7,8 @@ public enum AktivitetTyper {
     behandling,
     ijobb,
     samtalereferat,
-    mote;
+    mote,
+    tiltak;
 
     public static boolean contains(String value) {
         try {
