@@ -1,6 +1,7 @@
 package no.nav.fo.util;
 
 import no.nav.fo.domene.*;
+import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -9,9 +10,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
@@ -405,6 +404,22 @@ public class SolrUtilsTest {
 
         assertThat(filter.harAktiveFilter()).isTrue();
         assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
+    }
+
+    @Test
+    public void skalLeggeTilGruppeAktivitetFilter() throws Exception {
+        Filtervalg filter = new Filtervalg();
+        filter.aktiviteter.put(AktivitetTyper.behandling.toString(), AktivitetFiltervalg.JA);
+        filter.aktiviteter.put(AktivitetTyper.jobbsoeking.toString(), AktivitetFiltervalg.NEI);
+        filter.aktiviteter.put(AktivitetTyper.mote.toString(), AktivitetFiltervalg.NA);
+
+        assertThat(filter.harAktiveFilter()).isTrue();
+        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
+                "(behandling:*) AND (-jobbsoeking:*)"
+        );
+        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).doesNotContain(
+                "mote:*"
+        );
     }
 
     @Test

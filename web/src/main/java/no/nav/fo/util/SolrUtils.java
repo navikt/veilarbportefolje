@@ -205,10 +205,6 @@ public class SolrUtils {
         }
     }
 
-    private static <T> String aktivitetFilter(T t) {
-        return "behandling:*";
-    }
-
     private static String ytelseFilter(YtelseMapping ytelse) {
         return "ytelse:" + ytelse;
     }
@@ -243,9 +239,5 @@ public class SolrUtils {
 
     static String veilederFilter(String veileder) {
         return "veileder_id:" + veileder;
-    }
-
-    static String aktivitetFilter(String aktivitet) {
-        return "erter";
     }
 }

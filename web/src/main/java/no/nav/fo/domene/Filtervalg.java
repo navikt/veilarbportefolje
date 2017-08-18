@@ -34,7 +34,8 @@ public class Filtervalg {
                 !formidlingsgruppe.isEmpty() ||
                 !servicegruppe.isEmpty() ||
                 !rettighetsgruppe.isEmpty() ||
-                !veiledere.isEmpty();
+                !veiledere.isEmpty() ||
+                !aktiviteter.isEmpty();
     }
 
     private boolean harBrukerstatus() {
