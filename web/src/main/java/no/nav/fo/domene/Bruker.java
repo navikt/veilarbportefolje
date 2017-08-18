@@ -37,6 +37,7 @@ public class Bruker {
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
+    List<String> brukertiltak;
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -60,6 +61,7 @@ public class Bruker {
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
                 .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
+                .setBrukertiltak(getBrukertiltak(document))
                 ;
     }
 
@@ -78,6 +80,15 @@ public class Bruker {
             return emptyList();
         } else {
             return singletonList(kode);
+        }
+    }
+
+    private static List<String> getBrukertiltak(SolrDocument document) {
+        String tiltak = (String) document.get("tiltak");
+        if (tiltak == null) {
+            return emptyList();
+        } else {
+            return singletonList(tiltak);
         }
     }
 
