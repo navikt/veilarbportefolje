@@ -1,6 +1,5 @@
 package no.nav.fo.database;
 
-import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.EnhetTiltak;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -27,26 +26,30 @@ public class EnhetTiltakRepository {
 
     public static final String ENHETTILTAK = "ENHETTILTAK";
 
-    public Try<EnhetTiltak> retrieveEnhettiltak(String enhet) {
-        return Try.of(
-                () -> select(ds, ENHETTILTAK, EnhetTiltakRepository::enhettiltakMapper)
-                        .column("TILTAKSKODE")
-                        .where(WhereClause.equals("ENHETID", enhet))
-                        .execute()
-                        .setEnhet(enhet)
-        );
+    public EnhetTiltak retrieveEnhettiltak(String enhet) {
+
+        List<String> liste = select(ds, ENHETTILTAK, EnhetTiltakRepository::mapperTEST)
+                .column("TILTAKSKODE")
+                .where(WhereClause.equals("ENHETID", enhet))
+                .execute();
+
+        if (liste == null) {
+            liste = new ArrayList<>();
+        }
+
+        return new EnhetTiltak().setEnhet(enhet).setTiltak(liste);
+
     }
 
     @SneakyThrows
-    private static EnhetTiltak enhettiltakMapper(ResultSet rs) {
+    private static List<String> mapperTEST(ResultSet rs) {
         List<String> tiltak = new ArrayList<>();
 
         while(rs.next()) {
             tiltak.add(rs.getString("tiltakskode"));
         }
 
-        return new EnhetTiltak()
-                .setTiltak(tiltak);
-    }
+        return tiltak;
 
+    }
 }

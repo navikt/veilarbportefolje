@@ -1,6 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
+import io.vavr.control.Try;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.EnhetTiltak;
