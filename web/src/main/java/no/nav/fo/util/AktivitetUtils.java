@@ -1,6 +1,5 @@
 package no.nav.fo.util;
 
-import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
