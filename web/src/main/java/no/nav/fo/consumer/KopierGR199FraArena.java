@@ -58,12 +58,7 @@ public class KopierGR199FraArena {
         Supplier<Try<InputStream>> hentfil = () -> arenafilService.hentArenafil(new File(filpath, filnavn));
         logger.info("Starter reindeksering...");
 
-        Try.of(() ->
-                timed("aktiviteter.utled.statuser", () -> {
-                    aktivitetService.utledOgLagreAlleAktivitetstatuser();
-                    return null;
-                })
-        ).onFailure(e -> logger.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
+        aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
 
         Consumer<Throwable> stopped = (t) -> this.isRunning = false;
 

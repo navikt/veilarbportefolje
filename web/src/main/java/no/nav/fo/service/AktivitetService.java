@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
@@ -30,6 +31,14 @@ public class AktivitetService {
     @Inject
     private PersistentOppdatering persistentOppdatering;
 
+    public void tryUtledOgLagreAlleAktivitetstatuser() {
+        Try.of(() ->
+                timed("aktiviteter.utled.alle.statuser", () -> {
+                    utledOgLagreAlleAktivitetstatuser();
+                    return null;
+                })
+        ).onFailure(e -> log.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
+    }
 
     public void utledOgLagreAlleAktivitetstatuser() {
         List<String> aktoerider = brukerRepository.getDistinctAktoerIdsFromAktivitet();
