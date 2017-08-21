@@ -24,10 +24,8 @@ import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 @Configuration
 public class AktiviteterfeedConfig {
-    @Value("${aktiviteter.feed.isalive.url}")
-    private String isaliveUrl;
 
-    @Value("${aktiviteter.feed.producer.url}")
+    @Value("${veilarbaktivitet.api.url}")
     private String host;
 
     @Value("${aktiviteter.feed.consumer.pollingrate.cron}")
