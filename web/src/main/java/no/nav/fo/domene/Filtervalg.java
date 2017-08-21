@@ -23,6 +23,7 @@ public class Filtervalg {
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
     public List<String> veiledere = new ArrayList<>();
     public Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
+    public List<String> tiltakstyper = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harBrukerstatus() ||
@@ -35,7 +36,8 @@ public class Filtervalg {
                 !servicegruppe.isEmpty() ||
                 !rettighetsgruppe.isEmpty() ||
                 !veiledere.isEmpty() ||
-                !aktiviteter.isEmpty();
+                !aktiviteter.isEmpty() ||
+                !tiltakstyper.isEmpty();
     }
 
     private boolean harBrukerstatus() {

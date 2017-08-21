@@ -178,6 +178,7 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakFilter));
 
         for (Map.Entry<String, AktivitetFiltervalg> entry: filtervalg.aktiviteter.entrySet()) {
             if(entry.getValue() == AktivitetFiltervalg.JA) {
@@ -239,5 +240,9 @@ public class SolrUtils {
 
     static String veilederFilter(String veileder) {
         return "veileder_id:" + veileder;
+    }
+
+    static String tiltakFilter(String tiltak) {
+        return "tiltak:" + tiltak;
     }
 }

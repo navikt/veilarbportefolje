@@ -1,5 +1,6 @@
 package no.nav.fo.database;
 
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.EnhetTiltak;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -24,14 +25,10 @@ public class EnhetTiltakRepository {
     @Inject
     private DataSource ds;
 
-    public static final String ENHETTILTAK = "ENHETTILTAK";
 
     public EnhetTiltak retrieveEnhettiltak(String enhet) {
 
-        List<String> liste = select(ds, ENHETTILTAK, EnhetTiltakRepository::mapperTEST)
-                .column("TILTAKSKODE")
-                .where(WhereClause.equals("ENHETID", enhet))
-                .execute();
+        List<String> liste = db.query(retrieveSql(), new String[]{enhet}, EnhetTiltakRepository::rowMapper);
 
         if (liste == null) {
             liste = new ArrayList<>();
@@ -42,14 +39,20 @@ public class EnhetTiltakRepository {
     }
 
     @SneakyThrows
-    private static List<String> mapperTEST(ResultSet rs) {
+    private static List<String> rowMapper(ResultSet rs) {
         List<String> tiltak = new ArrayList<>();
 
         while(rs.next()) {
-            tiltak.add(rs.getString("tiltakskode"));
+            tiltak.add(rs.getString("verdi"));
         }
 
         return tiltak;
 
+    }
+
+    public String retrieveSql() {
+        return "SELECT verdi FROM tiltakkodeverk JOIN enhettiltak" +
+                " ON enhettiltak.tiltakkode = tiltakkodeverk.kode" +
+                "WHERE enhettiltak.enhetid= ? ";
     }
 }
