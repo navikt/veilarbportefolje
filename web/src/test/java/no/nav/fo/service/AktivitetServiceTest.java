@@ -4,12 +4,11 @@ import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
-import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetData;
-import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
+import no.nav.fo.domene.aktivitet.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -19,6 +18,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +43,14 @@ public class AktivitetServiceTest {
 
     @InjectMocks
     private AktivitetService aktivitetService;
+
+    @Before
+    public void resetMock() {
+        reset(aktoerService, brukerRepository, persistentOppdatering);
+    }
+
+    private static final String AKTOERID_TEST = "AKTOERID_TEST";
+    private static final String PERSONID_TEST = "PERSONID_TEST";
 
     @Test
     public void skalKalleLagreForAlleAktoerider() {
@@ -90,5 +98,43 @@ public class AktivitetServiceTest {
                 .collect(Collectors.toList());
 
         assertThat(capturedAktoerids).containsAll(aktoerids);
+    }
+
+    @Test
+    public void brukerMedEnAvtaltAktivAktivitet() {
+        AktoerAktiviteter aktiviteter = new AktoerAktiviteter(AKTOERID_TEST);
+        aktiviteter.setAktiviteter(singletonList(new AktivitetDTO()
+                .setTilDato(Timestamp.valueOf(LocalDate.now().plusDays(10).atStartOfDay()))
+                .setAktivitetType(AktivitetTyper.mote.toString())));
+
+        ArgumentCaptor<BrukerOppdatering> captor = ArgumentCaptor.forClass(BrukerOppdatering.class);
+
+        when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId(PERSONID_TEST)));
+        aktivitetService.utledOgLagreAktivitetstatuser(singletonList(AKTOERID_TEST));
+
+        verify(persistentOppdatering, times(1)).hentDataOgLagre(captor.capture());
+        AktivitetBrukerOppdatering oppdatering = (AktivitetBrukerOppdatering) captor.getValue();
+        assertThat(oppdatering.getIAvtaltAktivitet()).isEqualTo(true);
+    }
+
+    @Test
+    public void brukerMedEnAvtaltAktivAktivitetHovedindeksering() {
+        AktoerAktiviteter aktiviteter = new AktoerAktiviteter(AKTOERID_TEST);
+        aktiviteter.setAktiviteter(singletonList(new AktivitetDTO()
+                .setTilDato(Timestamp.valueOf(LocalDate.now().plusDays(10).atStartOfDay()))
+                .setAktivitetType(AktivitetTyper.mote.toString())));
+
+        ArgumentCaptor<BrukerOppdatering> captor = ArgumentCaptor.forClass(BrukerOppdatering.class);
+
+        when(brukerRepository.getDistinctAktoerIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
+        when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId(PERSONID_TEST)));
+
+        aktivitetService.utledOgLagreAlleAktivitetstatuser();
+
+        verify(persistentOppdatering, times(1)).hentDataOgLagre(captor.capture());
+        AktivitetBrukerOppdatering oppdatering = (AktivitetBrukerOppdatering) captor.getValue();
+        assertThat(oppdatering.getIAvtaltAktivitet()).isEqualTo(true);
     }
 }
