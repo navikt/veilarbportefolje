@@ -27,7 +27,7 @@ public class SolrController {
     @GET
     public boolean hovedIndeksering() {
         Try.of(() ->
-                timed("aktiviteter.utled.statuser", () -> {
+                timed("aktiviteter.utled.alle.statuser", () -> {
                     aktivitetService.utledOgLagreAlleAktivitetstatuser();
                     return null;
                 })

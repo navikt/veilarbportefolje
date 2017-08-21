@@ -11,10 +11,12 @@ import no.nav.fo.util.BatchConsumer;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
+import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetService {
@@ -32,7 +34,7 @@ public class AktivitetService {
     public void utledOgLagreAlleAktivitetstatuser() {
         List<String> aktoerider = brukerRepository.getDistinctAktoerIdsFromAktivitet();
 
-        BatchConsumer<String> consumer = batchConsumer(10000, this::utledOgLagreAktivitetstatuser);
+        BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
 
         utledOgLagreAktivitetstatuser(aktoerider, consumer);
         consumer.flush();
@@ -46,10 +48,18 @@ public class AktivitetService {
 
     public void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
 
-        List<AktoerAktiviteter> aktoerAktiviteter = brukerRepository.getAktiviteterForListOfAktoerid(aktoerider);
-        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService);
+        timed(
+                "aktiviteter.utled.alle.statuser",
+                () -> {
+                    List<AktoerAktiviteter> aktoerAktiviteter = brukerRepository.getAktiviteterForListOfAktoerid(aktoerider);
+                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService);
 
-        aktivitetBrukerOppdateringer.forEach( oppdatering -> persistentOppdatering.hentDataOgLagre(oppdatering));
+                    aktivitetBrukerOppdateringer.forEach( oppdatering -> persistentOppdatering.hentDataOgLagre(oppdatering));
+                    return null;
+                    },
+                (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
+        );
+
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(String aktoerid) {
