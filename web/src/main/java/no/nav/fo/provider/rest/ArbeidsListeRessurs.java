@@ -157,7 +157,7 @@ public class ArbeidsListeRessurs {
                     .onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get();
+            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
         });
     }
 
