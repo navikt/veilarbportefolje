@@ -35,6 +35,10 @@
         <applicationProperties alias="aktiviteterfeed.properties"/>
         <applicationProperties alias="situasjonfeed.properties"/>
 
+        <rest alias="veilArbSituasjonAPI" mapToProperty="veilarbsituasjon.api" />
+        <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
+        <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
+
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
