@@ -61,7 +61,8 @@ public class AktivitetService {
                 "aktiviteter.utled.statuser",
                 () -> {
                     List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", ()-> brukerRepository.getAktiviteterForListOfAktoerid(aktoerider));
-                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = timed("aktiviteter.konverter.til.brukeroppdatering", ()->AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
+                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
+                            timed("aktiviteter.konverter.til.brukeroppdatering", ()->AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
                     timed("aktiviteter.persistent.lagring", () -> {
                         aktivitetBrukerOppdateringer.forEach( oppdatering -> persistentOppdatering.hentDataOgLagre(oppdatering));
