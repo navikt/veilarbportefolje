@@ -26,13 +26,7 @@ public class SolrController {
     @Path("hovedindeksering")
     @GET
     public boolean hovedIndeksering() {
-        Try.of(() ->
-                timed("aktiviteter.utled.statuser", () -> {
-                    aktivitetService.utledOgLagreAlleAktivitetstatuser();
-                    return null;
-                })
-        ).onFailure(e -> log.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
-
+        aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
         solrService.hovedindeksering();
         return true;
     }

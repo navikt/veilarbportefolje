@@ -1,5 +1,6 @@
 package no.nav.fo.util;
 
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
@@ -24,11 +25,14 @@ public class AktivitetUtils {
         return aktoerAktiviteter
                 .stream()
                 .map(aktoerAktivitet -> {
-                    String personid = getPersonId(new AktoerId(aktoerAktivitet.getAktoerid()), aktoerService)
-                            .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e))
-                            .get().personId;
-                    return konverterTilBrukerOppdatering(aktoerAktivitet.getAktiviteter(), aktoerAktivitet.getAktoerid(), personid);
+                    Try<PersonId> personid = getPersonId(new AktoerId(aktoerAktivitet.getAktoerid()), aktoerService)
+                            .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e));
+
+                    return personid.isSuccess() && personid.get() != null ?
+                            konverterTilBrukerOppdatering(aktoerAktivitet.getAktiviteter(), aktoerAktivitet.getAktoerid(), personid.get().personId) :
+                            null;
                 })
+                .filter(Objects::nonNull)
                 .collect(toList());
     }
 
@@ -73,6 +77,9 @@ public class AktivitetUtils {
     }
 
     public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
+        if(aktivitet.getTilDato() == null) {
+            return true; // Aktivitet er aktiv dersom tildato ikke er satt
+        }
         LocalDate tilDato = aktivitet.getTilDato().toLocalDateTime().toLocalDate();
 
         return today.isBefore(tilDato.plusDays(1));
@@ -82,6 +89,7 @@ public class AktivitetUtils {
         return aktiviteter
                 .stream()
                 .filter(aktivitet -> !AktivitetFullfortStatuser.contains(aktivitet.getStatus()))
+                .filter(aktivitet -> Objects.nonNull(aktivitet.getTilDato()))
                 .filter(aktivitet -> aktivitet.getTilDato().toLocalDateTime().toLocalDate().isBefore(today))
                 .sorted(Comparator.comparing(AktivitetDTO::getTilDato))
                 .findFirst()
@@ -120,7 +128,7 @@ public class AktivitetUtils {
         dokumenter.stream().forEach(document -> {
             String personid = (String) document.get("person_id").getValue();
             List<String> tiltak = brukerRepository.getTiltak(personid);
-            if(!tiltak.isEmpty()) {
+            if (!tiltak.isEmpty()) {
                 document.addField("tiltak", tiltak);
             }
         });
@@ -129,6 +137,5 @@ public class AktivitetUtils {
     static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
         return aktoerService
                 .hentPersonidFraAktoerid(aktoerid);
-
     }
 }
