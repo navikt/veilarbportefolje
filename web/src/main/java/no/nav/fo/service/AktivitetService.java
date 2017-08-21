@@ -49,7 +49,7 @@ public class AktivitetService {
     public void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
 
         timed(
-                "aktiviteter.utled.alle.statuser",
+                "aktiviteter.utled.statuser",
                 () -> {
                     List<AktoerAktiviteter> aktoerAktiviteter = brukerRepository.getAktiviteterForListOfAktoerid(aktoerider);
                     List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService);
