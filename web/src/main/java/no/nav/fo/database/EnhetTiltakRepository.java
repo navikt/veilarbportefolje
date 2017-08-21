@@ -1,29 +1,21 @@
 package no.nav.fo.database;
 
-import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.EnhetTiltak;
-import no.nav.fo.util.sql.where.WhereClause;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
-import static no.nav.fo.util.sql.SqlUtils.*;
 
 public class EnhetTiltakRepository {
     private static Logger LOG = LoggerFactory.getLogger(EnhetTiltakRepository.class);
 
     @Inject
     private JdbcTemplate db;
-
-    @Inject
-    private DataSource ds;
 
 
     public EnhetTiltak retrieveEnhettiltak(String enhet) {
@@ -52,7 +44,7 @@ public class EnhetTiltakRepository {
 
     public String retrieveSql() {
         return "SELECT verdi FROM tiltakkodeverk JOIN enhettiltak" +
-                " ON enhettiltak.tiltakkode = tiltakkodeverk.kode" +
-                "WHERE enhettiltak.enhetid= ? ";
+                " ON enhettiltak.tiltakskode = tiltakkodeverk.kode" +
+                " WHERE enhettiltak.enhetid= ? ";
     }
 }

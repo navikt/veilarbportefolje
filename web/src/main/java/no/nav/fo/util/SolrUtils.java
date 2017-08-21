@@ -1,7 +1,6 @@
 package no.nav.fo.util;
 
 import no.nav.fo.domene.*;
-import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
