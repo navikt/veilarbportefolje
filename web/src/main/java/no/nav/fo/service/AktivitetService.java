@@ -60,10 +60,13 @@ public class AktivitetService {
         timed(
                 "aktiviteter.utled.statuser",
                 () -> {
-                    List<AktoerAktiviteter> aktoerAktiviteter = brukerRepository.getAktiviteterForListOfAktoerid(aktoerider);
-                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService);
+                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", ()-> brukerRepository.getAktiviteterForListOfAktoerid(aktoerider));
+                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = timed("aktiviteter.konverter.til.brukeroppdatering", ()->AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
-                    aktivitetBrukerOppdateringer.forEach( oppdatering -> persistentOppdatering.hentDataOgLagre(oppdatering));
+                    timed("aktiviteter.persistent.lagring", () -> {
+                        aktivitetBrukerOppdateringer.forEach( oppdatering -> persistentOppdatering.hentDataOgLagre(oppdatering));
+                        return null;
+                    });
                     return null;
                     },
                 (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
