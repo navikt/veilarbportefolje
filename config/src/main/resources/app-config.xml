@@ -35,6 +35,7 @@
         <applicationProperties alias="aktiviteterfeed.properties"/>
         <applicationProperties alias="situasjonfeed.properties"/>
 
+        <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <rest alias="veilArbSituasjonAPI" mapToProperty="veilarbsituasjon.api" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
         <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
