@@ -135,7 +135,11 @@ public class SolrServiceImpl implements SolrService {
         commit();
         brukerRepository.updateTidsstempel(timestamp);
 
-        logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
+        int antall = dokumenter.size();
+        Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
+        event.addFieldToReport("antall.oppdateringer", antall);
+        event.report();
+        logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
     @Override
@@ -308,10 +312,6 @@ public class SolrServiceImpl implements SolrService {
         long seconds = duration.getSeconds();
         String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         LOG.info(logString);
-
-        Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
-        event.addFieldToReport("antall.oppdateringer", antall);
-        event.report();
     }
 
     @Override
