@@ -107,15 +107,16 @@ public class AktivitetServiceTest {
                 .setTilDato(Timestamp.valueOf(LocalDate.now().plusDays(10).atStartOfDay()))
                 .setAktivitetType(AktivitetTyper.mote.toString())));
 
-        ArgumentCaptor<BrukerOppdatering> captor = ArgumentCaptor.forClass(BrukerOppdatering.class);
+        ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
         when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId(PERSONID_TEST)));
         aktivitetService.utledOgLagreAktivitetstatuser(singletonList(AKTOERID_TEST));
 
-        verify(persistentOppdatering, times(1)).hentDataOgLagre(captor.capture());
-        AktivitetBrukerOppdatering oppdatering = (AktivitetBrukerOppdatering) captor.getValue();
-        assertThat(oppdatering.getIAvtaltAktivitet()).isEqualTo(true);
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
+        List<AktivitetBrukerOppdatering> oppdatering =  captor.getValue();
+        assertThat(oppdatering.get(0).getIAvtaltAktivitet()).isEqualTo(true);
+
     }
 
     @Test
@@ -125,7 +126,7 @@ public class AktivitetServiceTest {
                 .setTilDato(Timestamp.valueOf(LocalDate.now().plusDays(10).atStartOfDay()))
                 .setAktivitetType(AktivitetTyper.mote.toString())));
 
-        ArgumentCaptor<BrukerOppdatering> captor = ArgumentCaptor.forClass(BrukerOppdatering.class);
+        ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
         when(brukerRepository.getDistinctAktoerIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
         when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
@@ -133,8 +134,8 @@ public class AktivitetServiceTest {
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 
-        verify(persistentOppdatering, times(1)).hentDataOgLagre(captor.capture());
-        AktivitetBrukerOppdatering oppdatering = (AktivitetBrukerOppdatering) captor.getValue();
-        assertThat(oppdatering.getIAvtaltAktivitet()).isEqualTo(true);
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
+        List<AktivitetBrukerOppdatering> oppdatering =  captor.getValue();
+        assertThat(oppdatering.get(0).getIAvtaltAktivitet()).isEqualTo(true);
     }
 }
