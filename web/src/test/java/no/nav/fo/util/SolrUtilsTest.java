@@ -407,6 +407,30 @@ public class SolrUtilsTest {
     }
 
     @Test
+    public void skalLeggeTilGruppeYtelseFilter() throws Exception {
+        Filtervalg filter = new Filtervalg();
+        filter.ytelse = YtelseFilter.DAGPENGER;
+
+        assertThat(filter.harAktiveFilter()).isTrue();
+        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
+                "(ytelse:ORDINARE_DAGPENGER OR ytelse:DAGPENGER_MED_PERMITTERING OR ytelse:DAGPENGER_OVRIGE)"
+        );
+    }
+
+
+    @Test
+    public void skalLeggeTilSpesifikkAktivitetFilter() {
+        Filtervalg filter = new Filtervalg();
+        filter.aktiviteter.put(AktivitetTyper.sokeavtale.toString(), AktivitetFiltervalg.JA);
+
+        assertThat(filter.harAktiveFilter()).isTrue();
+        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
+                "(sokeavtale:*)"
+        );
+
+    }
+
+    @Test
     public void skalLeggeTilGruppeAktivitetFilter() throws Exception {
         Filtervalg filter = new Filtervalg();
         filter.aktiviteter.put(AktivitetTyper.behandling.toString(), AktivitetFiltervalg.JA);
@@ -419,17 +443,6 @@ public class SolrUtilsTest {
         );
         assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).doesNotContain(
                 "mote:*"
-        );
-    }
-
-    @Test
-    public void skalLeggeTilGruppeYtelseFilter() throws Exception {
-        Filtervalg filter = new Filtervalg();
-        filter.ytelse = YtelseFilter.DAGPENGER;
-
-        assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
-                "(ytelse:ORDINARE_DAGPENGER OR ytelse:DAGPENGER_MED_PERMITTERING OR ytelse:DAGPENGER_OVRIGE)"
         );
     }
 

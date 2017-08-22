@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.EnhetTiltakRepository;
 import no.nav.fo.domene.EnhetTiltak;
@@ -13,7 +14,7 @@ public class TiltakService {
     @Inject
     private EnhetTiltakRepository enhetTiltakRepository;
 
-    public EnhetTiltak hentEnhettiltak(String enhet) {
+    public Try<EnhetTiltak> hentEnhettiltak(String enhet) {
         return enhetTiltakRepository.retrieveEnhettiltak(enhet);
     }
 }

@@ -1,5 +1,6 @@
 package no.nav.fo.database;
 
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.EnhetTiltak;
 import org.slf4j.Logger;
@@ -8,8 +9,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class EnhetTiltakRepository {
     private static Logger LOG = LoggerFactory.getLogger(EnhetTiltakRepository.class);
@@ -17,33 +19,27 @@ public class EnhetTiltakRepository {
     @Inject
     private JdbcTemplate db;
 
+    public Try<EnhetTiltak> retrieveEnhettiltak(String enhet) {
 
-    public EnhetTiltak retrieveEnhettiltak(String enhet) {
-
-        List<String> liste = db.query(retrieveSql(), new String[]{enhet}, EnhetTiltakRepository::rowMapper);
-
-        if (liste == null) {
-            liste = new ArrayList<>();
-        }
-
-        return new EnhetTiltak().setEnhet(enhet).setTiltak(liste);
-
+        return Try.of(
+                () -> db.query(retrieveSql(), new String[]{enhet}, EnhetTiltakRepository::rowMapper)
+        ).onFailure(e -> LOG.warn("Finner ikke tiltak for enhet med enhetid {}", enhet));
     }
 
     @SneakyThrows
-    private static List<String> rowMapper(ResultSet rs) {
-        List<String> tiltak = new ArrayList<>();
+    private static EnhetTiltak rowMapper(ResultSet rs) {
+        Map<String,String> tiltak = new HashMap<>();
 
         while(rs.next()) {
-            tiltak.add(rs.getString("verdi"));
+            tiltak.put(rs.getString("kode"), rs.getString("verdi"));
         }
 
-        return tiltak;
+        return new EnhetTiltak().setTiltak(tiltak);
 
     }
 
-    public String retrieveSql() {
-        return "SELECT verdi FROM tiltakkodeverk JOIN enhettiltak" +
+    private String retrieveSql() {
+        return "SELECT verdi, kode FROM tiltakkodeverk JOIN enhettiltak" +
                 " ON enhettiltak.tiltakskode = tiltakkodeverk.kode" +
                 " WHERE enhettiltak.enhetid= ? ";
     }

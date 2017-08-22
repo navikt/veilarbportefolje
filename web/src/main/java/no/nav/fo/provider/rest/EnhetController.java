@@ -122,7 +122,8 @@ public class EnhetController {
                 return new EnhetTiltak();
             }
 
-            return tiltakService.hentEnhettiltak(enhet);
+            return tiltakService.hentEnhettiltak(enhet)
+                    .getOrElse(new EnhetTiltak());
         });
     }
 }
