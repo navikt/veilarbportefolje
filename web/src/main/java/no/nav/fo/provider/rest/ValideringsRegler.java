@@ -19,6 +19,7 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 
 class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
@@ -81,7 +82,7 @@ class ValideringsRegler {
     }
 
     private static Validation<String, Timestamp> validateFrist(String frist, boolean redigering) {
-        if (frist == null) {
+        if (nullOrEmpty(frist)) {
             return valid(null);
         }
         Timestamp dato = Timestamp.from(Instant.parse(frist));
