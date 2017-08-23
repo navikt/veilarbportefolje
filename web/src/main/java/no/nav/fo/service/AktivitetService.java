@@ -13,7 +13,6 @@ import no.nav.fo.util.BatchConsumer;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
