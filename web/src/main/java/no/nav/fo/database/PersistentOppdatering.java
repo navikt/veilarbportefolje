@@ -35,7 +35,7 @@ public class PersistentOppdatering {
         lagreISolr(hentDataOgLagre(brukerOppdatering));
     }
 
-    public void lagreBrukeroppdateringerIDB(List<BrukerOppdatering> brukerOppdatering) {
+    public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {
         io.vavr.collection.List.ofAll(brukerOppdatering)
                 .sliding(1000, 1000)
                 .forEach(MetricsUtils.timed("GR199.upsert1000",(oppdateringer) -> {

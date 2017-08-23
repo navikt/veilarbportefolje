@@ -13,7 +13,6 @@ import no.nav.fo.util.BatchConsumer;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
@@ -45,14 +44,11 @@ public class AktivitetService {
 
         BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
 
-        utledOgLagreAktivitetstatuser(aktoerider, consumer);
+        aktoerider.forEach(consumer);
+
         consumer.flush();
 
         log.info("Aktivitetstatuser for {} brukere utledet og lagret i databasen", aktoerider.size());
-    }
-
-    public void utledOgLagreAktivitetstatuser(List<String> aktoerider, Consumer<String> prosess) {
-        aktoerider.forEach(prosess);
     }
 
     public void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
@@ -65,7 +61,7 @@ public class AktivitetService {
                             timed("aktiviteter.konverter.til.brukeroppdatering", ()->AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
                     timed("aktiviteter.persistent.lagring", () -> {
-                        aktivitetBrukerOppdateringer.forEach( oppdatering -> persistentOppdatering.hentDataOgLagre(oppdatering));
+                        persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
                         return null;
                     });
                     return null;
