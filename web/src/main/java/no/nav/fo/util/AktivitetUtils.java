@@ -111,18 +111,6 @@ public class AktivitetUtils {
         return aktivitetTypeTilStatus;
     }
 
-    public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
-        for (SolrInputDocument document : dokumenter) {
-            String personid = (String) document.get("person_id").getValue();
-            Map<String, Timestamp> statusMap = brukerRepository.getAktivitetStatusMap(personid);
-            AktivitetData.aktivitetTyperList.forEach((type) -> document.addField(type.toString(), statusMap.get(type.toString())));
-        }
-    }
-
-    public static void applyAktivitetStatuser(SolrInputDocument dokument, BrukerRepository brukerRepository) {
-        applyAktivitetStatuser(singletonList(dokument), brukerRepository);
-    }
-
     public static void applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
         dokumenter.stream().forEach(document -> {
             String personid = (String) document.get("person_id").getValue();

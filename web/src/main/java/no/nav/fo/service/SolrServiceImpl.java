@@ -35,7 +35,6 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
@@ -168,7 +167,6 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        applyAktivitetStatuser(dokumenter, brukerRepository);
         applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         applyTiltak(dokumenter, brukerRepository);
     }
