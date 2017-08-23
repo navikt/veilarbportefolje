@@ -17,6 +17,7 @@
     <resources>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <rest alias="veilarbportefolje.solr.brukercore" mapToProperty="veilarbportefolje.solr.brukercore" />
+        <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <ldap alias="ldap" mapToProperty="ldap"/>
 
         <webservice mapToProperty="norg.virksomhet_enhet" alias="virksomhet:Enhet_v1"/>
@@ -35,6 +36,11 @@
         <applicationProperties alias="aktiviteterfeed.properties"/>
         <applicationProperties alias="situasjonfeed.properties"/>
         <applicationProperties alias="tiltak.properties"/>
+
+        <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
+        <rest alias="veilArbSituasjonAPI" mapToProperty="veilarbsituasjon.api" />
+        <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
+        <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
 
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>

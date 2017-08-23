@@ -35,7 +35,6 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
@@ -135,7 +134,11 @@ public class SolrServiceImpl implements SolrService {
         commit();
         brukerRepository.updateTidsstempel(timestamp);
 
-        logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
+        int antall = dokumenter.size();
+        Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
+        event.addFieldToReport("antall.oppdateringer", antall);
+        event.report();
+        logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
     @Override
@@ -164,7 +167,6 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        applyAktivitetStatuser(dokumenter, brukerRepository);
         applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
         applyTiltak(dokumenter, brukerRepository);
     }
@@ -301,10 +303,6 @@ public class SolrServiceImpl implements SolrService {
         long seconds = duration.getSeconds();
         String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         LOG.info(logString);
-
-        Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
-        event.addFieldToReport("antall.oppdateringer", antall);
-        event.report();
     }
 
     @Override

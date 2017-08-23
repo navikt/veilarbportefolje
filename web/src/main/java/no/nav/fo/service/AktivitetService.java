@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
@@ -11,10 +12,11 @@ import no.nav.fo.util.BatchConsumer;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Objects;
 
 import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
+import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetService {
@@ -28,28 +30,45 @@ public class AktivitetService {
     @Inject
     private PersistentOppdatering persistentOppdatering;
 
+    public void tryUtledOgLagreAlleAktivitetstatuser() {
+        Try.of(() ->
+                timed("aktiviteter.utled.alle.statuser", () -> {
+                    utledOgLagreAlleAktivitetstatuser();
+                    return null;
+                })
+        ).onFailure(e -> log.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
+    }
 
     public void utledOgLagreAlleAktivitetstatuser() {
         List<String> aktoerider = brukerRepository.getDistinctAktoerIdsFromAktivitet();
 
-        BatchConsumer<String> consumer = batchConsumer(10000, this::utledOgLagreAktivitetstatuser);
+        BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
 
-        utledOgLagreAktivitetstatuser(aktoerider, consumer);
+        aktoerider.forEach(consumer);
+
         consumer.flush();
 
         log.info("Aktivitetstatuser for {} brukere utledet og lagret i databasen", aktoerider.size());
     }
 
-    public void utledOgLagreAktivitetstatuser(List<String> aktoerider, Consumer<String> prosess) {
-        aktoerider.forEach(prosess);
-    }
-
     public void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
 
-        List<AktoerAktiviteter> aktoerAktiviteter = brukerRepository.getAktiviteterForListOfAktoerid(aktoerider);
-        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService);
+        timed(
+                "aktiviteter.utled.statuser",
+                () -> {
+                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", ()-> brukerRepository.getAktiviteterForListOfAktoerid(aktoerider));
+                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
+                            timed("aktiviteter.konverter.til.brukeroppdatering", ()->AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
-        aktivitetBrukerOppdateringer.forEach( oppdatering -> persistentOppdatering.hentDataOgLagre(oppdatering));
+                    timed("aktiviteter.persistent.lagring", () -> {
+                        persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
+                        return null;
+                    });
+                    return null;
+                    },
+                (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
+        );
+
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(String aktoerid) {

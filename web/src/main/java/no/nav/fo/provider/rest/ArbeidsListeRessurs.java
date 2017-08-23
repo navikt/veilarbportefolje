@@ -33,6 +33,7 @@ import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
 
@@ -157,7 +158,7 @@ public class ArbeidsListeRessurs {
                     .onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get();
+            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
         });
     }
 
@@ -229,10 +230,11 @@ public class ArbeidsListeRessurs {
     }
 
     private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {
+        Timestamp frist = nullOrEmpty(body.getFrist()) ? null : Timestamp.from(Instant.parse(body.getFrist()));
         return new ArbeidslisteData(fnr)
                 .setVeilederId(new VeilederId(SubjectHandler.getSubjectHandler().getUid()))
                 .setKommentar(body.getKommentar())
-                .setFrist(Timestamp.from(Instant.parse(body.getFrist())));
+                .setFrist(frist);
     }
 
     private List<String> getTilgangErrors(java.util.List<ArbeidslisteRequest> arbeidsliste) {

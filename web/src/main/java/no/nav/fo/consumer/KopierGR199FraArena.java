@@ -1,6 +1,7 @@
 package no.nav.fo.consumer;
 
 import io.vavr.control.Try;
+import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.ArenafilService;
 import no.nav.fo.service.SolrService;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
@@ -37,6 +38,9 @@ public class KopierGR199FraArena {
     @Inject
     SolrService solrService;
 
+    @Inject
+    AktivitetService aktivitetService;
+
     boolean isRunning = false;
 
     private IndekserYtelserHandler indekserHandler;
@@ -52,8 +56,9 @@ public class KopierGR199FraArena {
     public void kopierOgIndekser() {
         isRunning = true;
         Supplier<Try<InputStream>> hentfil = () -> arenafilService.hentArenafil(new File(filpath, filnavn));
-
         logger.info("Starter reindeksering...");
+
+        aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
 
         Consumer<Throwable> stopped = (t) -> this.isRunning = false;
 

@@ -76,6 +76,15 @@ public class AktivitetUtilsTest {
     }
 
     @Test
+    public void aktivitetMedNullTilDatoErAktiv() {
+        AktivitetDTO aktivitet = new AktivitetDTO();
+
+        LocalDate today1 = LocalDate.parse("2017-06-09");
+
+        assertThat(erAktivitetIPeriode(aktivitet, today1)).isTrue();
+    }
+
+    @Test
     public void brukerErIAktivAktivitet() {
         String fullfortStatus = AktivitetData.fullførteStatuser.get(0).toString();
         String ikkeFullfortStatus = "enStatusSomIkkeErfullfort";
