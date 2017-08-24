@@ -6,7 +6,6 @@ import no.nav.fo.domene.TiltakForEnhet;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
-import org.apache.commons.collections15.map.HashedMap;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,7 +70,7 @@ public class KopierGR202FraArena {
         tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(brukerRepository::insertTiltakskoder);
         tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(brukerRepository::insertBrukertiltak);
 
-        Map<String, Bruker> personIdTilBruker = new HashedMap<>();
+        Map<String, Bruker> personIdTilBruker = new HashMap<>();
         tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> personIdTilBruker.put(bruker.getPersonident(), bruker));
 
         List<TiltakForEnhet> tiltakForEnhet = brukerRepository.getEnhetMedPersonIder().entrySet().stream()
