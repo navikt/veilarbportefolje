@@ -38,6 +38,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
+import static no.nav.fo.util.MetricsUtils.timed;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -175,23 +176,26 @@ public class SolrServiceImpl implements SolrService {
         brukere.forEach(solrDokument -> {
             String personId = (String) solrDokument.get("person_id").getValue();
 
-            aktoerService.hentAktoeridFraPersonid(personId)
-                    .map(arbeidslisteRepository::retrieveArbeidsliste)
-                    .map(result -> result.onSuccess(
-                            arbeidsliste -> {
-                                if(arbeidsliste != null) {
-                                    solrDokument.setField("arbeidsliste_aktiv", true);
-                                    solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
-                                    solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
-                                    solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
-                                    solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
-                                    solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
+            timed("indeksering.applyarbeidslistedata", () -> {
+                aktoerService.hentAktoeridFraPersonid(personId)
+                        .map(arbeidslisteRepository::retrieveArbeidsliste)
+                        .map(result -> result.onSuccess(
+                                arbeidsliste -> {
+                                    if (arbeidsliste != null) {
+                                        solrDokument.setField("arbeidsliste_aktiv", true);
+                                        solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
+                                        solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
+                                        solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
+                                        solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
+                                        solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
 
-                                    LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
+                                        LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
+                                    }
+
                                 }
-
-                            }
-                    ));
+                        ));
+                return null;
+            });
         });
     }
 
