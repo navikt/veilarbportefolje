@@ -254,6 +254,12 @@
                 <version>${okhttp.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>jsch</groupId>
+                <artifactId>jsch</artifactId>
+                <version>0.1.44</version>
+                <scope>runtime</scope>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
