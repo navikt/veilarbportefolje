@@ -2,6 +2,7 @@ package no.nav.fo.consumer.GR202;
 
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.TiltakForEnhet;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import org.apache.commons.vfs2.*;
@@ -15,6 +16,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.log;
@@ -34,7 +38,7 @@ public class KopierGR202FraArena {
     }
 
     public void hentTiltaksOgPopulerDatabase() {
-            timed("GR202.hentfil", this::hentFil)
+        timed("GR202.hentfil", this::hentFil)
                 .onFailure(log(logger, "Kunne ikke hente tiltaksfil"))
                 .flatMap(timed("GR202.unmarshall", this::unmarshall))
                 .onFailure(log(logger, "Kunne ikke unmarshalle tiltaksfilen"))
@@ -46,19 +50,21 @@ public class KopierGR202FraArena {
         brukerRepository.slettBrukertiltak();
         brukerRepository.slettEnhettiltak();
         brukerRepository.slettTiltakskoder();
+
         tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(brukerRepository::insertTiltakskoder);
         tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(brukerRepository::insertBrukertiltak);
 
-        brukerRepository.getEnhetMedPersonIder().entrySet().stream().flatMap(entrySet -> entrySet.getValue().stream()
-            .flatMap(personId -> tiltakOgAktiviteterForBrukere.getBrukerListe().stream()
-                .filter(bruker -> bruker.getPersonident().equals(personId))
-                .flatMap(bruker -> bruker.getTiltaksaktivitetListe().stream()
-                    .map(Tiltaksaktivitet::getTiltakstype)
-                    .map(tiltak -> new TiltakForEnhet(entrySet.getKey(), tiltak))
-                )
-            ))
-            .distinct()
-            .forEach(tiltakForEnhet -> brukerRepository.insertEnhettiltak(tiltakForEnhet.getEnhetid(), tiltakForEnhet.getTiltakskode()));
+        List<TiltakForEnhet> tiltakForEnhet = brukerRepository.getEnhetMedPersonIder().entrySet().stream().flatMap(entrySet -> entrySet.getValue().stream()
+                .flatMap(personId -> tiltakOgAktiviteterForBrukere.getBrukerListe().stream()
+                        .filter(bruker -> bruker.getPersonident().equals(personId))
+                        .flatMap(bruker -> bruker.getTiltaksaktivitetListe().stream()
+                                .map(Tiltaksaktivitet::getTiltakstype)
+                                .map(tiltak -> new TiltakForEnhet(entrySet.getKey(), tiltak))
+                        )
+                ))
+                .distinct()
+                .collect(Collectors.toList());
+        brukerRepository.insertEnhettiltak(tiltakForEnhet);
     }
 
     private Try<FileObject> hentFil() {
@@ -79,41 +85,5 @@ public class KopierGR202FraArena {
             JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = (JAXBElement<TiltakOgAktiviteterForBrukere>) unmarshaller.unmarshal(fileObject.getContent().getInputStream());
             return jaxbElement.getValue();
         });
-    }
-
-    private class TiltakForEnhet {
-        private String enhetid;
-        private String tiltakskode;
-
-        TiltakForEnhet(String enhetid, String tiltakskode) {
-            this.enhetid = enhetid;
-            this.tiltakskode = tiltakskode;
-        }
-
-        String getEnhetid() {
-            return enhetid;
-        }
-
-        String getTiltakskode() {
-            return tiltakskode;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            TiltakForEnhet that = (TiltakForEnhet) o;
-
-            if (!getEnhetid().equals(that.getEnhetid())) return false;
-            return getTiltakskode().equals(that.getTiltakskode());
-        }
-
-        @Override
-        public int hashCode() {
-            int result = getEnhetid().hashCode();
-            result = 31 * result + getTiltakskode().hashCode();
-            return result;
-        }
     }
 }

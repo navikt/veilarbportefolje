@@ -15,6 +15,7 @@ import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
+import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.solr.common.SolrInputDocument;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
@@ -25,7 +26,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -455,17 +458,27 @@ public class BrukerRepository {
         return reduce;
     }
 
-    public void insertEnhettiltak(String enhet, String tiltak) {
-        try {
-            SqlUtils.insert(db, "ENHETTILTAK")
-                .value("ENHETID", enhet)
-                .value("TILTAKSKODE", tiltak)
-                .execute();
-        } catch (DataIntegrityViolationException e) {
-            LOG.error("Feil med insert av tiltak for enhet", e);
-            MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
-        }
-
+    public void insertEnhettiltak(List<TiltakForEnhet> tiltakListe) {
+        batchProcess(1000, tiltakListe, timed("GR202.insertEnhetTiltak", tiltakForEnhetBatch -> {
+            try {
+                PreparedStatement ps = ds.getConnection().prepareStatement("INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)");
+                tiltakForEnhetBatch.forEach(tiltakForEnhet -> {
+                    try {
+                        ps.setString(1, tiltakForEnhet.getEnhetid());
+                        ps.setString(2, tiltakForEnhet.getTiltakskode());
+                        ps.addBatch();
+                        ps.clearParameters();
+                    } catch (SQLException e) {
+                        LOG.error("Kunne ikke lage batch-query for TiltakForEnhet", e);
+                    }
+                });
+                ps.executeBatch();
+                LOG.info("################## Batch oppdaterte tiltak #######################");
+            } catch (SQLException e) {
+                LOG.error("Kunne ikke lagre TiltakForEnhet i databasen", e);
+                MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
+            }
+        }));
     }
 
     public void slettYtelsesdata() {
