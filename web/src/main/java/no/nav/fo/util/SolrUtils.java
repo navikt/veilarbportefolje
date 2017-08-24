@@ -177,14 +177,25 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
-        filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakFilter));
 
         for (Map.Entry<String, AktivitetFiltervalg> entry: filtervalg.aktiviteter.entrySet()) {
-            if(entry.getValue() == AktivitetFiltervalg.JA) {
-                filtrerBrukereStatements.add(entry.getKey().toLowerCase() + ":*");
-            } else if (entry.getValue() == AktivitetFiltervalg.NEI) {
-                filtrerBrukereStatements.add("-" + entry.getKey().toLowerCase() + ":*");
+            if (!entry.getKey().equals("TILTAK") || !filtervalg.harTiltakstypeFilter()) {
+                if (entry.getValue() == AktivitetFiltervalg.JA) {
+                    filtrerBrukereStatements.add(entry.getKey().toLowerCase() + ":*");
+                } else if (entry.getValue() == AktivitetFiltervalg.NEI) {
+
+                    filtrerBrukereStatements.add("-" + entry.getKey().toLowerCase() + ":*");
+                }
             }
+        }
+
+        if (filtervalg.harAktivitetTiltakFilter() && filtervalg.harTiltakstypeFilter()) {
+            if (filtervalg.aktiviteter.get("TILTAK") == AktivitetFiltervalg.JA) {
+                filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakJaFilter));
+            }
+            else if (filtervalg.aktiviteter.get("TILTAK") == AktivitetFiltervalg.NEI) {
+                filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakNeiFilter));
+                }
         }
 
 
@@ -241,7 +252,11 @@ public class SolrUtils {
         return "veileder_id:" + veileder;
     }
 
-    static String tiltakFilter(String tiltak) {
+    static String tiltakJaFilter(String tiltak) {
         return "tiltak:" + tiltak;
     }
+    static String tiltakNeiFilter(String tiltak) {
+        return "-tiltak:" + tiltak;
+    }
+
 }
