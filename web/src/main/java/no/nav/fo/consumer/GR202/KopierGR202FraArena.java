@@ -30,6 +30,15 @@ public class KopierGR202FraArena {
     @Value("${tiltak.sftp.URI}")
     private String URI;
 
+    @Value("${environment.name}")
+    private String miljo;
+
+    @Value("{veilarbportefolje.filmottak.sftp.login.username}")
+    private String filmottakBrukernavn;
+
+    @Value("{veilarbportefolje.filmottak.sftp.login.password}")
+    private String filmottakPassord;
+
     private final BrukerRepository brukerRepository;
 
     @Inject
@@ -79,7 +88,8 @@ public class KopierGR202FraArena {
         try {
             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions, "no");
             FileSystemManager fsManager = VFS.getManager();
-            return Try.of(() -> fsManager.resolveFile(URI, fsOptions));
+            String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
+            return Try.of(() -> fsManager.resolveFile(komplettURI, fsOptions));
         } catch (FileSystemException e) {
             logger.info("Henting av tiltaksfil feilet");
             return Try.failure(e);

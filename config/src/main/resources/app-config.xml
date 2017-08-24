@@ -35,7 +35,7 @@
         <applicationProperties alias="dialogaktorfeed.properties"/>
         <applicationProperties alias="aktiviteterfeed.properties"/>
         <applicationProperties alias="situasjonfeed.properties"/>
-        <applicationProperties alias="tiltak.properties"/>
+        <applicationProperties alias="tiltak.t.properties"/>
 
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <rest alias="veilArbSituasjonAPI" mapToProperty="veilarbsituasjon.api" />
@@ -47,6 +47,7 @@
         <baseUrl alias="isso-issuer"/>
         <baseUrl alias="isso.isalive"/>
         <credential alias="isso-rp-user"/>
+        <credential alias="veilarbportefolje.filmottak.sftp.login"/>
     </resources>
 
     <exposed-services>
