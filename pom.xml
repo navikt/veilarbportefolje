@@ -40,7 +40,6 @@
         <json.version>20151123</json.version>
         <jetty.version>9.3.0.M2</jetty.version>
         <vavr.version>0.9.0</vavr.version>
-        <jsch.version>0.1.44</jsch.version>
 
         <!-- Test -->
         <junit.version>4.12</junit.version>
@@ -254,11 +253,6 @@
                 <artifactId>okhttp</artifactId>
                 <version>${okhttp.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>jsch</groupId>
-                <artifactId>jsch</artifactId>
-                <version>${jsch.version}</version>
             </dependency>
 
         </dependencies>
