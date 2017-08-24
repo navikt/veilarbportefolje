@@ -3,8 +3,10 @@ package no.nav.fo.consumer.GR202;
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.TiltakForEnhet;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
+import org.apache.commons.collections15.map.HashedMap;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.slf4j.Logger;
@@ -18,6 +20,7 @@ import javax.xml.bind.Unmarshaller;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -58,14 +61,16 @@ public class KopierGR202FraArena {
         tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(brukerRepository::insertTiltakskoder);
         tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(brukerRepository::insertBrukertiltak);
 
-        List<TiltakForEnhet> tiltakForEnhet = brukerRepository.getEnhetMedPersonIder().entrySet().stream().flatMap(entrySet -> entrySet.getValue().stream()
-                .flatMap(personId -> tiltakOgAktiviteterForBrukere.getBrukerListe().stream()
-                        .filter(bruker -> bruker.getPersonident().equals(personId))
-                        .flatMap(bruker -> bruker.getTiltaksaktivitetListe().stream()
+        Map<String, Bruker> personIdTilBruker = new HashedMap<>();
+        tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> personIdTilBruker.put(bruker.getPersonident(), bruker));
+
+        List<TiltakForEnhet> tiltakForEnhet = brukerRepository.getEnhetMedPersonIder().entrySet().stream()
+                .flatMap(entrySet -> entrySet.getValue().stream()
+                        .filter(personId -> personIdTilBruker.get(personId) != null)
+                        .flatMap(personId -> personIdTilBruker.get(personId).getTiltaksaktivitetListe().stream()
                                 .map(Tiltaksaktivitet::getTiltakstype)
                                 .map(tiltak -> new TiltakForEnhet(entrySet.getKey(), tiltak))
-                        )
-                ))
+                        ))
                 .distinct()
                 .collect(Collectors.toList());
         brukerRepository.insertEnhettiltak(tiltakForEnhet);

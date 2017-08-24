@@ -459,7 +459,7 @@ public class BrukerRepository {
     }
 
     public void insertEnhettiltak(List<TiltakForEnhet> tiltakListe) {
-        batchProcess(1000, tiltakListe, timed("GR202.insertEnhetTiltak", tiltakForEnhetBatch -> {
+        batchProcess(1, tiltakListe, timed("GR202.insertEnhetTiltak", tiltakForEnhetBatch -> {
             try {
                 PreparedStatement ps = ds.getConnection().prepareStatement("INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)");
                 tiltakForEnhetBatch.forEach(tiltakForEnhet -> {
@@ -473,7 +473,6 @@ public class BrukerRepository {
                     }
                 });
                 ps.executeBatch();
-                LOG.info("################## Batch oppdaterte tiltak #######################");
             } catch (SQLException e) {
                 LOG.error("Kunne ikke lagre TiltakForEnhet i databasen", e);
                 MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
