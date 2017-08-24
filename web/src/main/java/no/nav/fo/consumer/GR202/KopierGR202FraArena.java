@@ -47,6 +47,13 @@ public class KopierGR202FraArena {
     }
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {
+
+        logger.info("Populerer database");
+        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(0).getValue());
+        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(0).getTermnavn());
+        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(1).getValue());
+        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(1).getTermnavn());
+
         brukerRepository.slettBrukertiltak();
         brukerRepository.slettEnhettiltak();
         brukerRepository.slettTiltakskoder();
