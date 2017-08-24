@@ -36,10 +36,10 @@ public class KopierGR202FraArena {
     @Value("${environment.name}")
     private String miljo;
 
-    @Value("{veilarbportefolje.filmottak.sftp.login.username}")
+    @Value("${veilarbportefolje.filmottak.sftp.login.username}")
     private String filmottakBrukernavn;
 
-    @Value("{veilarbportefolje.filmottak.sftp.login.password}")
+    @Value("${veilarbportefolje.filmottak.sftp.login.password}")
     private String filmottakPassord;
 
     private final BrukerRepository brukerRepository;
