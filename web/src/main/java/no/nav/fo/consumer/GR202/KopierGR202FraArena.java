@@ -38,6 +38,7 @@ public class KopierGR202FraArena {
     }
 
     public void hentTiltaksOgPopulerDatabase() {
+        logger.info("Starter oppdatering av tiltak fra Arena..");
         timed("GR202.hentfil", this::hentFil)
                 .onFailure(log(logger, "Kunne ikke hente tiltaksfil"))
                 .flatMap(timed("GR202.unmarshall", this::unmarshall))
@@ -48,11 +49,7 @@ public class KopierGR202FraArena {
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {
 
-        logger.info("Populerer database");
-        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(0).getValue());
-        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(0).getTermnavn());
-        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(1).getValue());
-        logger.info(tiltakOgAktiviteterForBrukere.getTiltakskodeListe().get(1).getTermnavn());
+        logger.info("Starter populering database");
 
         brukerRepository.slettBrukertiltak();
         brukerRepository.slettEnhettiltak();
@@ -72,24 +69,32 @@ public class KopierGR202FraArena {
                 .distinct()
                 .collect(Collectors.toList());
         brukerRepository.insertEnhettiltak(tiltakForEnhet);
+
+        logger.info("Ferdige med å populere database");
     }
 
     private Try<FileObject> hentFil() {
+        logger.info("Starter henting av tiltaksfil");
         FileSystemOptions fsOptions = new FileSystemOptions();
         try {
             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions, "no");
             FileSystemManager fsManager = VFS.getManager();
             return Try.of(() -> fsManager.resolveFile(URI, fsOptions));
         } catch (FileSystemException e) {
+            logger.info("Henting av tiltaksfil feilet");
             return Try.failure(e);
+        } finally {
+            logger.info("Henting av tiltaksfil ferdig!");
         }
     }
 
     private Try<TiltakOgAktiviteterForBrukere> unmarshall(FileObject fileObject) {
+        logger.info("Starter unmarshalling av tiltaksfil");
         return Try.of(() -> {
             JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1");
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
             JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = (JAXBElement<TiltakOgAktiviteterForBrukere>) unmarshaller.unmarshal(fileObject.getContent().getInputStream());
+            logger.info("Unmarshalling av tiltaksfil ferdig!");
             return jaxbElement.getValue();
         });
     }
