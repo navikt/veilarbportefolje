@@ -61,7 +61,7 @@ public class KopierGR202FraArena {
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {
 
-        logger.info("Starter populering database");
+        logger.info("Starter populering av database");
 
         brukerRepository.slettBrukertiltak();
         brukerRepository.slettEnhettiltak();
