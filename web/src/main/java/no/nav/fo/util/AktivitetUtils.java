@@ -5,15 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.domene.aktivitet.*;
+import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
+import no.nav.fo.domene.aktivitet.AktivitetDTO;
+import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
+import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 
@@ -111,7 +112,7 @@ public class AktivitetUtils {
         return aktivitetTypeTilStatus;
     }
 
-    public static void applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
+    public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
         dokumenter.stream().forEach(document -> {
             String personid = (String) document.get("person_id").getValue();
             List<String> tiltak = brukerRepository.getTiltak(personid);
@@ -119,6 +120,7 @@ public class AktivitetUtils {
                 document.addField("tiltak", tiltak);
             }
         });
+        return null;
     }
 
     static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
