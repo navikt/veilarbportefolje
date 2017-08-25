@@ -26,13 +26,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -459,25 +457,33 @@ public class BrukerRepository {
     }
 
     public void insertEnhettiltak(List<TiltakForEnhet> tiltakListe) {
-        batchProcess(1, tiltakListe, timed("GR202.insertEnhetTiltak", tiltakForEnhetBatch -> {
-            try {
-                PreparedStatement ps = ds.getConnection().prepareStatement("INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)");
-                tiltakForEnhetBatch.forEach(tiltakForEnhet -> {
-                    try {
-                        ps.setString(1, tiltakForEnhet.getEnhetid());
-                        ps.setString(2, tiltakForEnhet.getTiltakskode());
-                        ps.addBatch();
-                        ps.clearParameters();
-                    } catch (SQLException e) {
-                        LOG.error("Kunne ikke lage batch-query for TiltakForEnhet", e);
-                    }
-                });
-                ps.executeBatch();
-            } catch (SQLException e) {
-                LOG.error("Kunne ikke lagre TiltakForEnhet i databasen", e);
-                MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
+        try {
+            final Connection dsConnection =  ds.getConnection();
+            final PreparedStatement ps = dsConnection.prepareStatement("INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)");
+
+            batchProcess(1, tiltakListe, timed("GR202.insertEnhetTiltak", tiltakForEnhetBatch -> {
+                lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
+            }));
+
+            dsConnection.close();
+        } catch (SQLException e) {
+            LOG.error("Kunne ikke koble til database for å lagre Tiltak for enhet", e);
+        }
+    }
+
+    private void lagreTiltakForEnhetBatch(Collection<TiltakForEnhet> tiltakForEnhetBatch, PreparedStatement ps) {
+        try {
+            for (TiltakForEnhet tiltakForEnhet : tiltakForEnhetBatch) {
+                ps.setString(1, tiltakForEnhet.getEnhetid());
+                ps.setString(2, tiltakForEnhet.getTiltakskode());
+                ps.addBatch();
+                ps.clearParameters();
             }
-        }));
+            ps.executeBatch();
+        } catch (SQLException e) {
+            LOG.error("Kunne ikke lagre TiltakForEnhet i databasen");
+            MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
+        }
     }
 
     public void slettYtelsesdata() {
