@@ -18,9 +18,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -67,8 +65,18 @@ public class KopierGR202FraArena {
         brukerRepository.slettEnhettiltak();
         brukerRepository.slettTiltakskoder();
 
-        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(brukerRepository::insertTiltakskoder);
-        tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(brukerRepository::insertBrukertiltak);
+        Set<String> tiltakskoder = new HashSet<>();
+        Set<String> brukerTiltak = new HashSet<>();
+        Set<String> enhetTiltak = new HashSet<>();
+
+        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakskode -> {
+            brukerRepository.insertTiltakskoder(tiltakskode);
+            tiltakskoder.add(tiltakskode.getValue());
+        });
+
+        tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> {
+            brukerRepository.insertBrukertiltak(bruker, brukerTiltak);
+        });
 
         Map<String, Bruker> personIdTilBruker = new HashMap<>();
         tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> personIdTilBruker.put(bruker.getPersonident(), bruker));
@@ -77,7 +85,10 @@ public class KopierGR202FraArena {
                 .flatMap(entrySet -> entrySet.getValue().stream()
                         .filter(personId -> personIdTilBruker.get(personId) != null)
                         .flatMap(personId -> personIdTilBruker.get(personId).getTiltaksaktivitetListe().stream()
-                                .map(Tiltaksaktivitet::getTiltakstype)
+                                .map(tiltaksaktivitet -> {
+                                    enhetTiltak.add(tiltaksaktivitet.getTiltakstype());
+                                    return tiltaksaktivitet.getTiltakstype();
+                                })
                                 .map(tiltak -> new TiltakForEnhet(entrySet.getKey(), tiltak))
                         ))
                 .distinct()
@@ -85,6 +96,20 @@ public class KopierGR202FraArena {
         brukerRepository.insertEnhettiltak(tiltakForEnhet);
 
         logger.info("Ferdige med å populere database");
+
+
+        logSet(tiltakskoder, "KODEVERK");
+        logSet(brukerTiltak, "BRUKERTILTAK");
+        logSet(enhetTiltak, "ENHETTILTAK");
+
+    }
+
+    private void logSet(Set<String> strengSet, String navn) {
+        StringBuilder tiltakskoderStreng = new StringBuilder(String.format("\n\nUTSKRIFT %s (%d):", navn, strengSet.size()));
+        for (String tiltakskode : strengSet) {
+            tiltakskoderStreng.append(String.format("\n%s", tiltakskode));
+        }
+        logger.info(tiltakskoderStreng.toString());
     }
 
     private Try<FileObject> hentFil() {

@@ -412,16 +412,17 @@ public class BrukerRepository {
         db.execute("TRUNCATE TABLE enhettiltak");
     }
 
-    public void insertBrukertiltak(Bruker brukerTiltak) {
-        brukerTiltak.getTiltaksaktivitetListe().forEach(
+    public void insertBrukertiltak(Bruker bruker, Set<String> brukerTiltak) {
+        bruker.getTiltaksaktivitetListe().forEach(
             tiltak -> {
+                brukerTiltak.add(tiltak.getTiltakstype());
                 try {
                     SqlUtils.insert(db, "brukertiltak")
-                        .value("personid", brukerTiltak.getPersonident())
+                        .value("personid", bruker.getPersonident())
                         .value("tiltakskode", tiltak.getTiltakstype())
                         .execute();
                 } catch (DataIntegrityViolationException e) {
-                    String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", brukerTiltak.getPersonident(), tiltak.getTiltakstype());
+                    String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", bruker.getPersonident(), tiltak.getTiltakstype());
                     LOG.warn(logMsg);
                     MetricsFactory.createEvent("veilarbportefolje.insertBrukertiltak.feilet").report();
                 }
