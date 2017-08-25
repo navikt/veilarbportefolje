@@ -6,10 +6,10 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetData;
 import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
@@ -23,7 +23,6 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -34,8 +33,10 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.*;
+import static no.nav.fo.util.DbUtils.parse0OR1;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
@@ -283,8 +284,8 @@ public class BrukerRepository {
         return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
     }
 
-    public List<AktivitetDTO> getAktiviteterForAktoerid(String aktoerid) {
-        return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid)
+    public List<AktivitetDTO> getAktiviteterForAktoerid(AktoerId aktoerid) {
+        return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid.toString())
                 .stream()
                 .map(BrukerRepository::mapToAktivitetDTO)
                 .filter(aktivitet -> AktivitetTyper.contains(aktivitet.getAktivitetType()))
@@ -339,26 +340,44 @@ public class BrukerRepository {
         aktiviteter.forEach(this::upsertAktivitet);
     }
 
-    public void upsertAktivitetStatuserForBruker(Map<String, Boolean> aktivitetstatus, String aktoerid, String personid) {
-        aktivitetstatus.forEach((aktivitettype, status) -> upsertAktivitetStatuserForBruker(aktivitettype, status, aktoerid, personid));
+
+    public void upsertAktivitetStatus(AktivitetStatus a) {
+        getUpsertAktivitetStatuserForBrukerQuery(a.getAktivitetType(), this.db, a.isAktiv(),
+                a.getAktoerid().aktoerId, a.getPersonid().personId, a.getNesteUtlop())
+                .execute();
     }
 
-    public void upsertAktivitetStatuserForBruker(String aktivitettype, boolean status, String aktoerid, String personid) {
-        getUpsertAktivitetStatuserForBrukerQuery(aktivitettype, this.db, status, aktoerid, personid).execute();
+    public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId,String>> finnesIdb) {
+        Map<Boolean, List<AktivitetStatus>> eksisterendeStatuser = aktivitetStatuses
+                .stream()
+                .collect(groupingBy((data) -> finnesIdb.contains(Tuple.of(data.getPersonid(),data.getAktivitetType()))));
+
+        AktivitetStatus.batchUpdate(this.db, eksisterendeStatuser.getOrDefault(true, emptyList()));
+
+        eksisterendeStatuser.getOrDefault(false, emptyList())
+                .forEach(this::upsertAktivitetStatus);
     }
 
-    public Map<String, Timestamp> getAktivitetStatusMap(String personid) {
-        Map<String, Boolean> statusMap = new HashMap<>();
-        Map<String, Timestamp> statusMapTimestamp = new HashMap<>();
+    public Map<PersonId,Set<AktivitetStatus>> getAktivitetstatusForBrukere(Collection<PersonId> personIds) {
 
-        List<Map<String, Object>> statuserFraDb = db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER where PERSONID=?", personid);
+        Map<String, Object> params = new HashMap<>();
+        params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
 
-        AktivitetData.aktivitetTyperList.forEach((type) -> statusMap.put(type.toString(), kanskjeVerdi(statuserFraDb, type.toString())));
-
-        //Lagrer mapping til Date for å håndtere dato på aktiviteter i fremtiden.
-        statusMap.forEach((key, value) -> statusMapTimestamp.put(key, value ? new Timestamp(Instant.now().toEpochMilli()) : null));
-
-        return statusMapTimestamp;
+        return namedParameterJdbcTemplate
+                .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
+                .stream()
+                .map( row -> new AktivitetStatus()
+                        .setAktiv(parse0OR1((String) row.get("STATUS")))
+                        .setAktivitetType((String) row.get("AKTIVITETTYPE"))
+                        .setAktoerid(new AktoerId((String) row.get("AKTOERID")))
+                        .setPersonid(new PersonId((String) row.get("PERSONID")))
+                        .setNesteUtlop((Timestamp) row.get("NESTE_UTLOPSDATO")))
+                .filter((aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType())))
+                .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
+                        (oldValue, newValue) -> {
+                            oldValue.addAll(newValue);
+                            return oldValue;
+                }));
     }
 
     public List<String> getDistinctAktoerIdsFromAktivitet() {
@@ -422,13 +441,14 @@ public class BrukerRepository {
                 .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
 
-    static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid) {
+    static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
         return SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER")
                 .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
-                .set("STATUS", status)
+                .set("STATUS", boolTo0OR1(status))
                 .set("PERSONID", personid)
                 .set("AKTIVITETTYPE", aktivitetstype)
-                .set("AKTOERID", aktoerid);
+                .set("AKTOERID", aktoerid)
+                .set("NESTE_UTLOPSDATO", nesteUtlopsdato);
     }
 
     private String retrieveOppfolgingstatusSql() {
@@ -520,7 +540,7 @@ public class BrukerRepository {
                         "ON " +
                         "bruker_data.personid = oppfolgingsbruker.person_id " +
                         "WHERE " +
-                        "person_id = ? ";
+                        "person_id = ?";
     }
 
     String retrieveOppdaterteBrukereSQL() {
@@ -613,6 +633,20 @@ public class BrukerRepository {
                         "AKTIVITETER " +
                         "WHERE " +
                         "AKTOERID in (:aktoerids)";
+    }
+
+    private String getAktivitetStatuserForListOfPersonIds() {
+        return
+                "SELECT " +
+                        "PERSONID, " +
+                        "AKTOERID, " +
+                        "AKTIVITETTYPE, " +
+                        "STATUS, " +
+                        "NESTE_UTLOPSDATO " +
+                        "FROM " +
+                        "BRUKERSTATUS_AKTIVITETER " +
+                        "WHERE " +
+                        "PERSONID in (:personids)";
     }
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {

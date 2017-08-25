@@ -2,6 +2,7 @@ package no.nav.fo.consumer;
 
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Oppfolgingstatus;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
@@ -62,14 +63,14 @@ public class AktivitetFeedHandlerTest {
 
         aktivitetFeedHandler.call("dontcare", data);
 
-        ArgumentCaptor<String> aktoeridCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<AktoerId> aktoeridCaptor = ArgumentCaptor.forClass(AktoerId.class);
 
         verify(aktivitetService, times(2)).utledOgIndekserAktivitetstatuserForAktoerid(aktoeridCaptor.capture());
-        List<String> capturedAktoerids = aktoeridCaptor.getAllValues();
+        List<AktoerId> capturedAktoerids = aktoeridCaptor.getAllValues();
 
 
-        assertThat(capturedAktoerids).contains("AktoerID1");
-        assertThat(capturedAktoerids).contains("AktoerID2");
+        assertThat(capturedAktoerids).contains(AktoerId.of("AktoerID1"));
+        assertThat(capturedAktoerids).contains(AktoerId.of("AktoerID2"));
     }
 
     @Test
