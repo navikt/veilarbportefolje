@@ -19,6 +19,7 @@ import javax.xml.bind.Unmarshaller;
 
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -42,19 +43,28 @@ public class KopierGR202FraArena {
 
     private final BrukerRepository brukerRepository;
 
+    private boolean isRunning;
+
     @Inject
     public KopierGR202FraArena(BrukerRepository brukerRepository) {
         this.brukerRepository = brukerRepository;
+        this.isRunning = false;
     }
 
-    public void hentTiltaksOgPopulerDatabase() {
+    public boolean isRunning() {
+        return this.isRunning;
+    }
+
+    public void hentTiltakOgPopulerDatabase() {
+        this.isRunning = true;
+        Consumer<Throwable> stopped = (t) -> this.isRunning = false;
         logger.info("Starter oppdatering av tiltak fra Arena..");
         timed("GR202.hentfil", this::hentFil)
-                .onFailure(log(logger, "Kunne ikke hente tiltaksfil"))
+                .onFailure(log(logger, "Kunne ikke hente tiltaksfil").andThen(stopped))
                 .flatMap(timed("GR202.unmarshall", this::unmarshall))
-                .onFailure(log(logger, "Kunne ikke unmarshalle tiltaksfilen"))
+                .onFailure(log(logger, "Kunne ikke unmarshalle tiltaksfilen").andThen(stopped))
                 .andThen(timed("GR202.populatedb", this::populerDatabase))
-                .onFailure(log(logger, "Kunne ikke populere database"));
+                .onFailure(log(logger, "Kunne ikke populere database").andThen(stopped));
     }
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {

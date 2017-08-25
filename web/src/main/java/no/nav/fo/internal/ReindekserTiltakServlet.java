@@ -1,6 +1,8 @@
 package no.nav.fo.internal;
 
 import no.nav.fo.consumer.GR202.KopierGR202FraArena;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -10,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class ReindekserTiltakServlet extends HttpServlet {
+
+    static Logger logger = LoggerFactory.getLogger(ReindekserTiltakServlet.class);
 
     private KopierGR202FraArena kopierGR202FraArena;
     private boolean ismasternode;
@@ -24,7 +28,15 @@ public class ReindekserTiltakServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if(this.ismasternode) {
-            kopierGR202FraArena.hentTiltaksOgPopulerDatabase();
+            if(!kopierGR202FraArena.isRunning()) {
+                logger.info("Setter i gang oppdatering av tiltak");
+                resp.getWriter().write("Setter i gang oppdatering av tiltak");
+                kopierGR202FraArena.hentTiltakOgPopulerDatabase();
+            }
+            else {
+                logger.info("Kunne ikke starte oppdatering av tiltak fordi den allerede kjører");
+                resp.getWriter().write("Kunne ikke starte oppdatering av tiltak fordi den allerede kjører");
+            }
         }
     }
 }
