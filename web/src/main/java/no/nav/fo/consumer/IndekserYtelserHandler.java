@@ -42,25 +42,20 @@ public class IndekserYtelserHandler {
 
     public synchronized void indekser(LoependeYtelser ytelser) {
         logger.info("Sletter ytelsesdata fra DB");
-        MetricsUtils.timed("GR199.slettytelser", () -> {
-            brukerRepository.slettYtelsesdata();
-            return null;
-        });
+        MetricsUtils.timed("GR199.slettytelser", () -> brukerRepository.slettYtelsesdata());
 
         batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtakListe) -> {
             LocalDateTime now = now();
 
             Map<String, Optional<String>> brukererIDB = brukererIDB(vedtakListe);
 
-            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleOppdateringer = timed("GR199.lagoppdatering", () -> {
-                        return vedtakListe
-                                .stream()
-                                .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((personId) -> Tuple.of(personId, vedtak)))
-                                .filter(Optional::isPresent)
-                                .map(Optional::get)
-                                .map(this.lagBrukeroppdatering(now))
-                                .collect(partitioningBy(Try::isSuccess));
-                    }
+            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleOppdateringer = timed("GR199.lagoppdatering", () -> vedtakListe
+                    .stream()
+                    .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((personId) -> Tuple.of(personId, vedtak)))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(this.lagBrukeroppdatering(now))
+                    .collect(partitioningBy(Try::isSuccess))
             );
 
             alleOppdateringer
@@ -74,7 +69,7 @@ public class IndekserYtelserHandler {
                     .collect(toList());
 
             logger.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
-            timed("GR199.lagreOppdateringer", () -> { persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter); return null; });
+            timed("GR199.lagreOppdateringer", () -> persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter));
         });
         logger.info("Lagring av ytelser ferdig!");
     }

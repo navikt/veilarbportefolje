@@ -1,7 +1,10 @@
 package no.nav.fo.consumer;
 
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.domene.Oppfolgingstatus;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.exception.FantIkkeOppfolgingsbrukerException;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.feed.consumer.FeedCallback;
@@ -9,8 +12,8 @@ import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.SolrService;
-import no.nav.fo.util.OppfolgingUtils;
 import no.nav.fo.util.MetricsUtils;
+import no.nav.fo.util.OppfolgingUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -78,10 +81,8 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                             brukerRepository.deleteBrukerdata(personId);
                             solrService.slettBruker(personId);
                             solrService.commit();
-                            return null;
                         }
                         oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);
-                        return null;
                         },
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );

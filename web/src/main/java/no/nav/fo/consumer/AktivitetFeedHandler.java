@@ -65,7 +65,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         try{
             timed(
                     "feed.aktivitet.objekt",
-                    () -> { brukerRepository.upsertAktivitet(aktivitet); return null;},
+                    () -> brukerRepository.upsertAktivitet(aktivitet),
                     (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase()); }}
                     );
         }catch(Exception e) {
@@ -87,10 +87,8 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                         if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(), oppfolgingstatus.isOppfolgingsbruker())) {
                             solrService.slettBruker(personId);
                             solrService.commit();
-                            return null;
                         }
                         aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerid);
-                        return null;
                     },
                     (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktoerid).toUpperCase()); }}
             );

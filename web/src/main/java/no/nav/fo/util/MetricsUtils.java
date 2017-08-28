@@ -18,7 +18,7 @@ public class MetricsUtils {
         return (S s) -> {
             boolean hasFailed = false;
             Timer timer = MetricsFactory.createTimer(navn);
-            T t = null;
+            T t;
             try {
                 timer.start();
                 t = function.apply(s);
@@ -39,6 +39,14 @@ public class MetricsUtils {
         };
     }
 
+    public static <S> Function<S, Void> timed(String navn, Runnable runnable) {
+        return timed(navn, runnableToFunction(runnable), null);
+    }
+
+    public static <S> Function<S, Void> timed(String navn, Runnable runnable, BiConsumer<Timer, Boolean> tagsAppender) {
+        return timed(navn, runnableToFunction(runnable), tagsAppender);
+    }
+
     public static <S> S timed(String navn, Supplier<S> supplier) {
         return timed(navn, supplier, null);
     }
@@ -57,6 +65,10 @@ public class MetricsUtils {
 
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
         return (S s) -> { consumer.accept(s); return null; };
+    }
+
+    private static <S> Function<S, Void> runnableToFunction(Runnable runnable) {
+        return (S s) -> { runnable.run();return null; };
     }
 
     private static <S> Consumer<S> functionToConsumer(Function<S, Void> function) {

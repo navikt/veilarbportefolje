@@ -69,11 +69,8 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                             persistentOppdatering.hentDataOgLagre(oppdatering);
                             solrService.slettBruker(personId.get());
                             solrService.commit();
-                            return null;
                         }
-
                         persistentOppdatering.lagre(oppdatering);
-                        return null;
                     },
                     (timer, hasFailed) -> {
                         if (hasFailed) {

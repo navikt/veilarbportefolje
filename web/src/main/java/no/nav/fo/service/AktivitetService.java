@@ -30,14 +30,10 @@ public class AktivitetService {
     @Inject
     private PersistentOppdatering persistentOppdatering;
 
-    public Object tryUtledOgLagreAlleAktivitetstatuser() {
+    public void tryUtledOgLagreAlleAktivitetstatuser() {
         Try.of(() ->
-                timed("aktiviteter.utled.alle.statuser", () -> {
-                    utledOgLagreAlleAktivitetstatuser();
-                    return null;
-                })
+                timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
         ).onFailure(e -> log.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
-        return null;
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
@@ -61,11 +57,7 @@ public class AktivitetService {
                     List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
                             timed("aktiviteter.konverter.til.brukeroppdatering", () -> AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
-                    timed("aktiviteter.persistent.lagring", () -> {
-                        persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
-                        return null;
-                    });
-                    return null;
+                    timed("aktiviteter.persistent.lagring", () -> persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer));
                 },
                 (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
         );

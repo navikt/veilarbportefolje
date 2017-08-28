@@ -1,7 +1,6 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.SolrService;
@@ -12,6 +11,7 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import static io.vavr.control.Try.run;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static no.nav.fo.util.MetricsUtils.timed;
 
@@ -32,12 +32,7 @@ public class SolrController {
         runAsync(
                 () -> {
                     timed("indeksering.applyarbeidslistedata", () -> aktivitetService.tryUtledOgLagreAlleAktivitetstatuser());
-                    Try.of(
-                            () -> {
-                                solrService.hovedindeksering();
-                                return null;
-                            }
-                    ).onFailure(this::rapporterFeil);
+                    run(() -> solrService.hovedindeksering()).onFailure(this::rapporterFeil);
                 }
         );
         return "Indeksering startet";
