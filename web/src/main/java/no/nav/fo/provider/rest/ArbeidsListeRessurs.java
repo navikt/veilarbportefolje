@@ -152,6 +152,7 @@ public class ArbeidsListeRessurs {
             }
 
             sjekkTilgangTilEnhet(new Fnr(fnr));
+            validerArbeidsliste(body, true);
 
             arbeidslisteService
                     .updateArbeidsliste(data(body, new Fnr(fnr)))
@@ -244,8 +245,8 @@ public class ArbeidsListeRessurs {
                 .map(Validation::getError);
     }
 
-    private RestResponse<AktoerId> opprettArbeidsliste(ArbeidslisteRequest bruker) {
-        return validerArbeidsliste(bruker)
+    private RestResponse<AktoerId> opprettArbeidsliste(ArbeidslisteRequest arbeidslisteRequest) {
+        return validerArbeidsliste(arbeidslisteRequest, false)
                 .map(arbeidslisteService::createArbeidsliste)
                 .fold(
                         validationErr -> RestResponse.of(validationErr.toJavaList()),
