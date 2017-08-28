@@ -161,19 +161,9 @@ public class AktivitetUtilsTest {
         AktoerId aktoerId = new AktoerId("aktoerid");
         Timestamp nyesteUtlop = new Timestamp(0);
 
-        AktivitetStatus a1 = new AktivitetStatus()
-                .setAktiv(true)
-                .setAktivitetType("aktivitetstype1")
-                .setAktoerid(aktoerId)
-                .setPersonid(personId)
-                .setNesteUtlop(nyesteUtlop);
 
-        AktivitetStatus a2 = new AktivitetStatus()
-                .setAktiv(false)
-                .setAktivitetType("aktivitetstype2")
-                .setAktoerid(aktoerId)
-                .setPersonid(personId)
-                .setNesteUtlop(nyesteUtlop);
+        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1",true, nyesteUtlop);
+        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype2",false, nyesteUtlop);
 
         Set<AktivitetStatus> aktivitetStatuses = new HashSet<>();
         aktivitetStatuses.add(a1);

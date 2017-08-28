@@ -1,7 +1,7 @@
 package no.nav.fo.domene;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Value;
+import lombok.experimental.Wither;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.sql.UpdateBatchQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -10,8 +10,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Timestamp;
 import java.util.List;
 
-@Data
-@Accessors(chain = true)
+@Value(staticConstructor = "of")
+@Wither
 public class AktivitetStatus {
     private PersonId personid;
     private AktoerId aktoerid;

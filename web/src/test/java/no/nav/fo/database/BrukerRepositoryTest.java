@@ -577,17 +577,11 @@ public class BrukerRepositoryTest {
         PersonId personId2 = new PersonId("personid2");
         AktoerId aktoerId2 = new AktoerId("aktoerid2");
 
-        AktivitetStatus a1 = new AktivitetStatus().setAktiv(true).setAktivitetType(aktivitetstype1)
-                .setAktoerid(aktoerId1).setPersonid(personId1).setNesteUtlop(new Timestamp(0));
 
-        AktivitetStatus a2 = new AktivitetStatus().setAktiv(false).setAktivitetType(aktivitetstype2)
-                .setAktoerid(aktoerId1).setPersonid(personId1).setNesteUtlop(new Timestamp(0));
-
-        AktivitetStatus b1 = new AktivitetStatus().setAktiv(true).setAktivitetType(aktivitetstype1)
-                .setAktoerid(aktoerId2).setPersonid(personId2).setNesteUtlop(new Timestamp(0));
-
-        AktivitetStatus b2 = new AktivitetStatus().setAktiv(false).setAktivitetType(aktivitetstype2)
-                .setAktoerid(aktoerId2).setPersonid(personId2).setNesteUtlop(new Timestamp(0));
+        AktivitetStatus a1 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype1,true, new Timestamp(0));
+        AktivitetStatus a2 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype2,false, new Timestamp(0));
+        AktivitetStatus b1 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype1,true, new Timestamp(0));
+        AktivitetStatus b2 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype2,false, new Timestamp(0));
 
         Set<AktivitetStatus> aktiviteter1 = new HashSet<>();
         Set<AktivitetStatus> aktiviteter2 = new HashSet<>();
@@ -617,14 +611,10 @@ public class BrukerRepositoryTest {
         PersonId personId = new PersonId("111111");
         AktoerId aktoerId = new AktoerId("222222");
 
-        AktivitetStatus a1 = new AktivitetStatus().setAktiv(true).setAktivitetType(aktivitetstype1)
-                .setAktoerid(aktoerId).setPersonid(personId).setNesteUtlop(new Timestamp(0));
+        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, true, new Timestamp(0));
+        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, false, new Timestamp(0));
+        AktivitetStatus a3 = AktivitetStatus.of(personId, aktoerId, aktivitetstype2, false, new Timestamp(0));
 
-        AktivitetStatus a2 = new AktivitetStatus().setAktiv(false).setAktivitetType(aktivitetstype1)
-                .setAktoerid(aktoerId).setPersonid(personId).setNesteUtlop(new Timestamp(0));
-
-        AktivitetStatus a3 = new AktivitetStatus().setAktiv(false).setAktivitetType(aktivitetstype2)
-                .setAktoerid(aktoerId).setPersonid(personId).setNesteUtlop(new Timestamp(0));
 
         brukerRepository.upsertAktivitetStatus(a1);
         brukerRepository.insertOrUpdateAktivitetStatus(asList(a2,a3),singletonList(Tuple.of(personId,aktivitetstype1)));

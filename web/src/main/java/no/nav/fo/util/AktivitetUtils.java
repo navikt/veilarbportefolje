@@ -123,12 +123,15 @@ public class AktivitetUtils {
 
                     boolean aktivitetErIkkeFullfortEllerUtlopt = !aktiviteterIPeriodeMedAktivtStatus.isEmpty();
 
-                        aktiveAktiviteter.add(new AktivitetStatus()
-                                .setAktivitetType(aktivitetsype)
-                                .setNesteUtlop(datoForNesteUtlop)
-                                .setPersonid(personId)
-                                .setAktoerid(aktoerId)
-                                .setAktiv(aktivitetErIkkeFullfortEllerUtlopt));
+                    aktiveAktiviteter.add(
+                            AktivitetStatus.of(
+                                    personId,
+                                    aktoerId,
+                                    aktivitetsype,
+                                    aktivitetErIkkeFullfortEllerUtlopt,
+                                    datoForNesteUtlop
+                            )
+                    );
                 });
 
         return aktiveAktiviteter;
@@ -171,7 +174,7 @@ public class AktivitetUtils {
                 .filter((aktivitetStatus -> Objects.nonNull(aktivitetStatus.getNesteUtlop())))
                 .collect(toMap(AktivitetStatus::getAktivitetType,
                         (aktivitetStatus -> DateUtils.iso8601FromTimestamp(aktivitetStatus.getNesteUtlop())),
-                        (v1,v2) -> v2));
+                        (v1, v2) -> v2));
 
         String aktiviteterUtlopsdatoJSON = new JSONObject(aktivitTilUtlopsdato).toString();
 

@@ -367,12 +367,13 @@ public class BrukerRepository {
         return namedParameterJdbcTemplate
                 .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()
-                .map( row -> new AktivitetStatus()
-                        .setAktiv(parse0OR1((String) row.get("STATUS")))
-                        .setAktivitetType((String) row.get("AKTIVITETTYPE"))
-                        .setAktoerid(new AktoerId((String) row.get("AKTOERID")))
-                        .setPersonid(new PersonId((String) row.get("PERSONID")))
-                        .setNesteUtlop((Timestamp) row.get("NESTE_UTLOPSDATO")))
+                .map( row -> AktivitetStatus.of(
+                        new PersonId((String) row.get("PERSONID")),
+                        new AktoerId((String) row.get("AKTOERID")),
+                        (String) row.get("AKTIVITETTYPE"),
+                        parse0OR1((String) row.get("STATUS")),
+                        (Timestamp) row.get("NESTE_UTLOPSDATO"))
+                        )
                 .filter((aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType())))
                 .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
                         (oldValue, newValue) -> {
