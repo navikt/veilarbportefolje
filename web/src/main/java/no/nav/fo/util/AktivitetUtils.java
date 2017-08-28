@@ -171,9 +171,9 @@ public class AktivitetUtils {
         Map<String, String> aktivitTilUtlopsdato = aktivitetStatuser
                 .stream()
                 .filter(AktivitetStatus::isAktiv)
-                .filter((aktivitetStatus -> Objects.nonNull(aktivitetStatus.getNesteUtlop())))
+                .filter(aktivitetStatus -> Objects.nonNull(aktivitetStatus.getNesteUtlop()))
                 .collect(toMap(AktivitetStatus::getAktivitetType,
-                        (aktivitetStatus -> DateUtils.iso8601FromTimestamp(aktivitetStatus.getNesteUtlop())),
+                        aktivitetStatus -> DateUtils.iso8601FromTimestamp(aktivitetStatus.getNesteUtlop()),
                         (v1, v2) -> v2));
 
         String aktiviteterUtlopsdatoJSON = new JSONObject(aktivitTilUtlopsdato).toString();

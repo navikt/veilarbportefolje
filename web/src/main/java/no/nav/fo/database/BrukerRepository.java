@@ -374,7 +374,7 @@ public class BrukerRepository {
                         parse0OR1((String) row.get("STATUS")),
                         (Timestamp) row.get("NESTE_UTLOPSDATO"))
                         )
-                .filter((aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType())))
+                .filter(aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType()))
                 .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
                         (oldValue, newValue) -> {
                             oldValue.addAll(newValue);
