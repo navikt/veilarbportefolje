@@ -36,7 +36,7 @@
 
     <servlet>
         <servlet-name>reindeksertiltak</servlet-name>
-        <servlet-class>no.nav.fo.internal.ReindekserTiltakServlet</servlet-class>
+        <servlet-class>no.nav.fo.filmottak.TiltakServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>reindeksertiltak</servlet-name>

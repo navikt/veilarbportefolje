@@ -1,6 +1,5 @@
-package no.nav.fo.internal;
+package no.nav.fo.filmottak;
 
-import no.nav.fo.consumer.GR202.KopierGR202FraArena;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -11,16 +10,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class ReindekserTiltakServlet extends HttpServlet {
+public class TiltakServlet extends HttpServlet {
 
-    static Logger logger = LoggerFactory.getLogger(ReindekserTiltakServlet.class);
+    static Logger logger = LoggerFactory.getLogger(TiltakServlet.class);
 
-    private KopierGR202FraArena kopierGR202FraArena;
+    private TiltakHandler tiltakHandler;
     private boolean ismasternode;
 
     @Override
     public void init() throws ServletException {
-        this.kopierGR202FraArena = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(KopierGR202FraArena.class);
+        this.tiltakHandler = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(TiltakHandler.class);
         this.ismasternode = Boolean.valueOf(System.getProperty("cluster.ismasternode", "false"));
         super.init();
     }
@@ -28,10 +27,10 @@ public class ReindekserTiltakServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if(this.ismasternode) {
-            if(!kopierGR202FraArena.isRunning()) {
+            if(!tiltakHandler.isRunning()) {
                 logger.info("Setter i gang oppdatering av tiltak");
                 resp.getWriter().write("Setter i gang oppdatering av tiltak");
-                kopierGR202FraArena.hentTiltakOgPopulerDatabase();
+                tiltakHandler.hentTiltakOgPopulerDatabase();
             }
             else {
                 logger.info("Kunne ikke starte oppdatering av tiltak fordi den allerede kjører");

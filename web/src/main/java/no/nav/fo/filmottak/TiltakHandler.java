@@ -1,11 +1,9 @@
-package no.nav.fo.consumer.GR202;
+package no.nav.fo.filmottak;
 
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.TiltakForEnhet;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.slf4j.Logger;
@@ -26,8 +24,8 @@ import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.log;
 
 
-public class KopierGR202FraArena {
-    static Logger logger = LoggerFactory.getLogger(KopierGR202FraArena.class);
+public class TiltakHandler {
+    static Logger logger = LoggerFactory.getLogger(TiltakHandler.class);
 
     @Value("${tiltak.sftp.URI}")
     private String URI;
@@ -41,13 +39,13 @@ public class KopierGR202FraArena {
     @Value("${veilarbportefolje.filmottak.sftp.login.password}")
     private String filmottakPassord;
 
-    private final BrukerRepository brukerRepository;
+    private final TiltakRepository tiltakrepository;
 
     private boolean isRunning;
 
     @Inject
-    public KopierGR202FraArena(BrukerRepository brukerRepository) {
-        this.brukerRepository = brukerRepository;
+    public TiltakHandler(TiltakRepository tiltakRepository) {
+        this.tiltakrepository = tiltakRepository;
         this.isRunning = false;
     }
 
@@ -71,27 +69,27 @@ public class KopierGR202FraArena {
 
         logger.info("Starter populering av database");
 
-        brukerRepository.slettBrukertiltak();
-        brukerRepository.slettEnhettiltak();
-        brukerRepository.slettTiltakskoder();
+        tiltakrepository.slettBrukertiltak();
+        tiltakrepository.slettEnhettiltak();
+        tiltakrepository.slettTiltakskoder();
 
         Set<String> tiltakskoder = new HashSet<>();
         Set<String> brukerTiltak = new HashSet<>();
         Set<String> enhetTiltak = new HashSet<>();
 
         tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakskode -> {
-            brukerRepository.insertTiltakskoder(tiltakskode);
+            tiltakrepository.insertTiltakskoder(tiltakskode);
             tiltakskoder.add(tiltakskode.getValue());
         });
 
         tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> {
-            brukerRepository.insertBrukertiltak(bruker, brukerTiltak);
+            tiltakrepository.insertBrukertiltak(bruker, brukerTiltak);
         });
 
         Map<String, Bruker> personIdTilBruker = new HashMap<>();
         tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> personIdTilBruker.put(bruker.getPersonident(), bruker));
 
-        List<TiltakForEnhet> tiltakForEnhet = brukerRepository.getEnhetMedPersonIder().entrySet().stream()
+        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetMedPersonIder().entrySet().stream()
                 .flatMap(entrySet -> entrySet.getValue().stream()
                         .filter(personId -> personIdTilBruker.get(personId) != null)
                         .flatMap(personId -> personIdTilBruker.get(personId).getTiltaksaktivitetListe().stream()
@@ -103,7 +101,7 @@ public class KopierGR202FraArena {
                         ))
                 .distinct()
                 .collect(Collectors.toList());
-        brukerRepository.insertEnhettiltak(tiltakForEnhet);
+        tiltakrepository.insertEnhettiltak(tiltakForEnhet);
 
         logger.info("Ferdige med å populere database");
 

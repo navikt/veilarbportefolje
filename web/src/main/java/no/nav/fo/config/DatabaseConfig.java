@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.filmottak.TiltakRepository;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
@@ -40,6 +41,11 @@ public class DatabaseConfig {
     @Bean
     public BrukerRepository brukerRepository() {
         return new BrukerRepository();
+    }
+
+    @Bean
+    public TiltakRepository tiltakRepository() {
+        return new TiltakRepository();
     }
 
     @Bean

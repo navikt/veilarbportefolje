@@ -1,4 +1,4 @@
-package no.nav.fo.domene;
+package no.nav.fo.filmottak;
 
 public class TiltakForEnhet {
     private String enhetid;

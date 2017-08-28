@@ -1,9 +1,10 @@
 package no.nav.fo.config;
 
-import no.nav.fo.consumer.GR202.KopierGR202FraArena;
+import no.nav.fo.filmottak.TiltakHandler;
 import no.nav.fo.consumer.IndekserYtelserHandler;
 import no.nav.fo.consumer.KopierGR199FraArena;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.filmottak.TiltakRepository;
 import no.nav.fo.service.ArenafilService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,7 @@ public class ArenafilConfig {
     }
 
     @Bean
-    public KopierGR202FraArena kopierGR202FraArena(BrukerRepository brukerRepository) {
-        return new KopierGR202FraArena(brukerRepository);
+    public TiltakHandler kopierGR202FraArena(TiltakRepository tiltakRepository) {
+        return new TiltakHandler(tiltakRepository);
     }
 }
