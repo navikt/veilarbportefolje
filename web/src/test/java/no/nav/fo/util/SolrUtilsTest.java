@@ -417,35 +417,6 @@ public class SolrUtilsTest {
         );
     }
 
-
-    @Test
-    public void skalLeggeTilSpesifikkAktivitetFilter() {
-        Filtervalg filter = new Filtervalg();
-        filter.aktiviteter.put(AktivitetTyper.sokeavtale.toString(), AktivitetFiltervalg.JA);
-
-        assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
-                "(sokeavtale:*)"
-        );
-
-    }
-
-    @Test
-    public void skalLeggeTilGruppeAktivitetFilter() throws Exception {
-        Filtervalg filter = new Filtervalg();
-        filter.aktiviteter.put(AktivitetTyper.behandling.toString(), AktivitetFiltervalg.JA);
-        filter.aktiviteter.put(AktivitetTyper.jobbsoeking.toString(), AktivitetFiltervalg.NEI);
-        filter.aktiviteter.put(AktivitetTyper.mote.toString(), AktivitetFiltervalg.NA);
-
-        assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
-                "(behandling:*) AND (-jobbsoeking:*)"
-        );
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).doesNotContain(
-                "mote:*"
-        );
-    }
-
     @Test
     public void skalLeggeTilInnsatsgruppeFilter() {
         String prefix = "kvalifiseringsgruppekode:";
