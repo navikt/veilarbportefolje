@@ -17,9 +17,7 @@ import java.security.Security;
 
 import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.util.Util.setProperty;
-import static no.nav.fo.config.LocalJndiContextConfig.setServiceUserCredentials;
-import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
-import static no.nav.fo.config.LocalJndiContextConfig.setupOracleDataSource;
+import static no.nav.fo.config.LocalJndiContextConfig.*;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
 import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
