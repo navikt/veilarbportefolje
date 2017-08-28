@@ -69,6 +69,12 @@
             </dependency>
 
             <dependency>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>rest</artifactId>
+                <version>1-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
                 <version>${json.version}</version>
