@@ -266,16 +266,19 @@ public class ArbeidslisteRessursTest extends LocalIntegrationTest {
         insertSuccessfulBrukere();
         String path = "/tjenester/arbeidsliste/";
 
+        // opprett
         JSONObject utenDato = new JSONObject()
                 .put("fnr", FNR_2)
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", "1985-07-23T00:00:00Z")
-                .put("redigering", true);
-
+                .put("frist", "2100-07-23T00:00:00Z")
+                .put("kommentar", "Dette er en kommentar");
         JSONArray json = new JSONArray(singletonList(utenDato));
+        Response opprettResponse = post(path, json.toString());
+        assertEquals(201, opprettResponse.code());
 
-        Response response = post(path, json.toString());
-        assertEquals(201, response.code());
+        // oppdater
+        utenDato.put("frist", "1985-07-23T00:00:00Z");
+        Response oppdaterResponse = put(path + FNR_2, utenDato.toString());
+        assertEquals(200, oppdaterResponse.code());
     }
 
     private static void insertSuccessfulBrukere() {

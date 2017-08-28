@@ -19,6 +19,7 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 
 class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
@@ -69,19 +70,19 @@ class ValideringsRegler {
         }
     }
 
-    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste) {
+    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste, boolean redigering) {
         return
                 Validation
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
                                 validateKommentar(arbeidsliste.getKommentar()),
-                                validateFrist(arbeidsliste.getFrist(), arbeidsliste.isRedigering())
+                                validateFrist(arbeidsliste.getFrist(), redigering)
                         )
                         .ap(ArbeidslisteData::of);
     }
 
     private static Validation<String, Timestamp> validateFrist(String frist, boolean redigering) {
-        if (frist == null) {
+        if (nullOrEmpty(frist)) {
             return valid(null);
         }
         Timestamp dato = Timestamp.from(Instant.parse(frist));

@@ -23,10 +23,8 @@ import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 @Configuration
 public class DialogaktorfeedConfig {
-    @Value("${dialogaktor.feed.isalive.url}")
-    private String isaliveUrl;
 
-    @Value("${dialogaktor.feed.producer.url}")
+    @Value("${veilarbdialog.api.url}")
     private String host;
 
     @Value("${dialogaktor.feed.consumer.pollingrate.cron}")

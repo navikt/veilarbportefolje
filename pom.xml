@@ -61,8 +61,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>api-app-bom</artifactId>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>bom</artifactId>
                 <version>RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
