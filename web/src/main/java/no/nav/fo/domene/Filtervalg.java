@@ -48,8 +48,8 @@ public class Filtervalg {
         return ytelse != null;
     }
 
-    public boolean harAktivitetTiltakFilter() {
-        return aktiviteter != null && aktiviteter.get("TILTAK") != AktivitetFiltervalg.NA;
+    public boolean harAktivitetFilter() {
+        return tiltakstyper != null;
     }
 
     public boolean harTiltakstypeFilter() {

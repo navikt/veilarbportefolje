@@ -16,6 +16,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class SolrUtils {
+    static String TILTAK = "TILTAK";
 
     private static Locale locale = new Locale("no", "NO");
     private static Collator collator = Collator.getInstance(locale);
@@ -178,26 +179,20 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
 
-        for (Map.Entry<String, AktivitetFiltervalg> entry: filtervalg.aktiviteter.entrySet()) {
-            if (!entry.getKey().equals("TILTAK") || !filtervalg.harTiltakstypeFilter()) {
-                if (entry.getValue() == AktivitetFiltervalg.JA) {
-                    filtrerBrukereStatements.add(entry.getKey().toLowerCase() + ":*");
-                } else if (entry.getValue() == AktivitetFiltervalg.NEI) {
 
-                    filtrerBrukereStatements.add("-" + entry.getKey().toLowerCase() + ":*");
+        if(filtervalg.harAktivitetFilter()) {
+            filtervalg.aktiviteter.forEach( (key, value) -> {
+                if(key.equals(TILTAK)) {
+                    leggTilTiltakJaNeiFilter(filtrerBrukereStatements, value);
+                } else {
+                    leggTilAktivitetFiltervalg(filtrerBrukereStatements, key, value);
                 }
-            }
+            });
         }
 
-        if (filtervalg.harAktivitetTiltakFilter() && filtervalg.harTiltakstypeFilter()) {
-            if (filtervalg.aktiviteter.get("TILTAK") == AktivitetFiltervalg.JA) {
-                filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakJaFilter));
-            }
-            else if (filtervalg.aktiviteter.get("TILTAK") == AktivitetFiltervalg.NEI) {
-                filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakNeiFilter));
-                }
+        if(filtervalg.harTiltakstypeFilter()) {
+            filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakJaFilter));
         }
-
 
         if (filtervalg.harYtelsefilter()) {
             filtrerBrukereStatements.add(orStatement(filtervalg.ytelse.underytelser, SolrUtils::ytelseFilter));
@@ -213,6 +208,24 @@ public class SolrUtils {
                     .filter(StringUtils::isNotBlank)
                     .map(statement -> "(" + statement + ")")
                     .collect(Collectors.joining(" AND ")));
+        }
+    }
+
+    static void leggTilAktivitetFiltervalg(List<String> filtrerBrukereStatements, String key, AktivitetFiltervalg value) {
+        if(AktivitetFiltervalg.JA.equals(value)) {
+            filtrerBrukereStatements.add("aktiviteter:"+key.toLowerCase());
+        }
+        if(AktivitetFiltervalg.NEI.equals(value)) {
+            filtrerBrukereStatements.add("-aktiviteter:" + key.toLowerCase());
+        }
+    }
+
+    static void leggTilTiltakJaNeiFilter(List<String> filtrerBrukereStatements, AktivitetFiltervalg value) {
+        if(AktivitetFiltervalg.JA.equals(value)) {
+            filtrerBrukereStatements.add("tiltak:*");
+        }
+        if(AktivitetFiltervalg.NEI.equals(value)) {
+            filtrerBrukereStatements.add("-tiltak:*");
         }
     }
 
@@ -255,8 +268,4 @@ public class SolrUtils {
     static String tiltakJaFilter(String tiltak) {
         return "tiltak:" + tiltak;
     }
-    static String tiltakNeiFilter(String tiltak) {
-        return "-tiltak:" + tiltak;
-    }
-
 }

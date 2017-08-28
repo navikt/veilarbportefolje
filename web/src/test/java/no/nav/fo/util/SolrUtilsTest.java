@@ -489,6 +489,54 @@ public class SolrUtilsTest {
         assertThat(sortert.get(3).getEtternavn()).isEqualTo("Øran");
         assertThat(sortert.get(4).getEtternavn()).isEqualTo("Aabelson");
         assertThat(sortert.get(5).getEtternavn()).isEqualTo("Åran");
-
     }
+
+    @Test
+    public void skalLeggeTilTiltaksfiler() {
+        List<String> tiltakstyper = asList("tiltak1", "tiltak2");
+
+        Filtervalg filtervalg = new Filtervalg().setTiltakstyper(tiltakstyper);
+
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).contains("(tiltak:tiltak1 OR tiltak:tiltak2)");
+    }
+
+    @Test
+    public void skalLeggeTilTiltakJa() {
+        Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
+        aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.JA);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+
+        assertThat(solrQuery.getFilterQueries()).contains("(tiltak:*)");
+    }
+
+    @Test
+    public void skalLeggeTilTiltakNei() {
+        Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
+        aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NEI);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+
+        assertThat(solrQuery.getFilterQueries()).contains("(-tiltak:*)");
+    }
+
+    @Test
+    public void skalIkkeLeggeTilTiltakJaEllerNei() {
+        Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
+        aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NA);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+
+        asList(solrQuery.getFilterQueries()).forEach( (filter) -> assertThat(filter).doesNotContain("tiltak"));
+    }
+
+    @Test
+    public void skalLeggeTilAktiviteter() {
+        Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
+        aktivitetFiltervalg.put("aktivitet1", AktivitetFiltervalg.JA);
+        aktivitetFiltervalg.put("aktivitet2", AktivitetFiltervalg.NEI);
+
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+
+        assertThat(solrQuery.getFilterQueries()).contains("(aktiviteter:aktivitet1) AND (-aktiviteter:aktivitet2)");
+    }
+
 }
