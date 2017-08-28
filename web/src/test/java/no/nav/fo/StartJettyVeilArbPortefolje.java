@@ -17,9 +17,7 @@ import java.security.Security;
 
 import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.util.Util.setProperty;
-import static no.nav.fo.config.LocalJndiContextConfig.setServiceUserCredentials;
-import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
-import static no.nav.fo.config.LocalJndiContextConfig.setupOracleDataSource;
+import static no.nav.fo.config.LocalJndiContextConfig.*;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
 import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
@@ -60,7 +58,7 @@ public class StartJettyVeilArbPortefolje {
                 .sslPort(9594)
                 .port(9595)
                 .addDatasource(dataSource, DatabaseConfig.JNDI_NAME)
-                .overrideWebXml(), new ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV.toString()))
+                .overrideWebXml(), new ISSOSecurityConfig(APPLICATION_NAME))
                 .configureForJaspic()
                 .buildJetty();
 
