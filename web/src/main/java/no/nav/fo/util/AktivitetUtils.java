@@ -8,7 +8,6 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.aktivitet.*;
 import no.nav.fo.service.AktoerService;
-import no.nav.tjeneste.virksomhet.aktoer.v2.binding.Aktoer;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONObject;
 
@@ -181,7 +180,7 @@ public class AktivitetUtils {
     }
 
 
-    public static void applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
+    public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
         dokumenter.stream().forEach(document -> {
             String personid = (String) document.get("person_id").getValue();
             List<String> tiltak = brukerRepository.getTiltak(personid);
@@ -189,6 +188,7 @@ public class AktivitetUtils {
                 document.addField("tiltak", tiltak);
             }
         });
+        return null;
     }
 
     static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {

@@ -183,8 +183,9 @@ public class BrukerRepository {
         return new PersonId(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
     }
 
-    public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
+    public Object prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
+        return null;
     }
 
     public void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {

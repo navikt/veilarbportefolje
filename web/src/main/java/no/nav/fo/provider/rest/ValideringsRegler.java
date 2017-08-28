@@ -70,13 +70,13 @@ class ValideringsRegler {
         }
     }
 
-    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste) {
+    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste, boolean redigering) {
         return
                 Validation
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
                                 validateKommentar(arbeidsliste.getKommentar()),
-                                validateFrist(arbeidsliste.getFrist(), arbeidsliste.isRedigering())
+                                validateFrist(arbeidsliste.getFrist(), redigering)
                         )
                         .ap(ArbeidslisteData::of);
     }
