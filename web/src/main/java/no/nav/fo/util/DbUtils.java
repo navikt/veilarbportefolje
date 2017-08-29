@@ -1,5 +1,6 @@
 package no.nav.fo.util;
 
+import no.nav.fo.domene.AktivitetStatus;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -8,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static no.nav.fo.util.DateUtils.toIsoUTC;
 
@@ -87,6 +90,10 @@ public class DbUtils {
         return "1".equals(value);
     }
 
+    public static String boolTo0OR1(boolean bool) {
+        return bool ? "1" : "0";
+    }
+
     public static String numberToString(BigDecimal bd) {
         return String.valueOf(bd.intValue());
     }
@@ -97,5 +104,11 @@ public class DbUtils {
 
         }
         return e.getCause().toString();
+    }
+
+    public static Set<AktivitetStatus> toSet(AktivitetStatus aktivitetStatus) {
+        Set<AktivitetStatus> set = new HashSet<>();
+        set.add(aktivitetStatus);
+        return set;
     }
 }

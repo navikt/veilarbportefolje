@@ -1,12 +1,11 @@
 package no.nav.fo.database;
 
 import com.google.common.base.Joiner;
+import io.vavr.Tuple;
 import io.vavr.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetData;
-import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import org.apache.commons.io.IOUtils;
@@ -31,6 +30,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.*;
+import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -288,33 +288,10 @@ public class BrukerRepositoryTest {
 
     }
 
-    @Test
-    public void skalReturnereNullPaaAlleStatuserDersomBrukerIkkeFinnes() {
-        Map<String, Timestamp> statuser = brukerRepository.getAktivitetStatusMap("jegfinnesikke");
-
-        statuser.forEach((key, value) -> {
-            assertThat(value).isNull();
-            assertThat(statuser).containsKey(key);
-        });
-    }
-
-    @Test
-    public void skalReturnereKorrektStatusPaaAktivitet() {
-        List<AktivitetTyper> aktivitetTyper = AktivitetData.aktivitetTyperList;
-        Map<String, Boolean> aktivitetTypeTilStatus = new HashMap<>();
-        aktivitetTypeTilStatus.put(aktivitetTyper.get(0).toString(), false);
-        aktivitetTypeTilStatus.put(aktivitetTyper.get(1).toString(), true);
-
-        brukerRepository.upsertAktivitetStatuserForBruker(aktivitetTypeTilStatus, "aktoerid", "personid");
-        Map<String, Timestamp> typeTilTimestamp = brukerRepository.getAktivitetStatusMap("personid");
-
-        assertThat(typeTilTimestamp.get(aktivitetTyper.get(0).toString())).isNull();
-        assertThat(typeTilTimestamp.get(aktivitetTyper.get(1).toString())).isNotNull();
-    }
 
     @Test
     public void skalHenteAlleAktiviteterForBruker() {
-        String aktivitettpe = AktivitetData.aktivitetTyperList.get(0).toString();
+        String aktivitettpe = aktivitetTyperList.get(0).toString();
 
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
                 .setAktivitetId("aktivitetid1")
@@ -348,7 +325,7 @@ public class BrukerRepositoryTest {
         brukerRepository.upsertAktivitet(aktivitet1);
         brukerRepository.upsertAktivitet(aktivitet2);
 
-        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid("aktoerid");
+        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(AktoerId.of("aktoerid"));
 
         assertThat(aktiviteter).contains(aktivitetDTO1);
         assertThat(aktiviteter).contains(aktivitetDTO2);
@@ -412,7 +389,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteListeMedAktiviteterForAktorids() {
-        String aktivitettype = AktivitetData.aktivitetTyperList.get(0).toString();
+        String aktivitettype = aktivitetTyperList.get(0).toString();
 
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed().setAktivitetId("id1").setAktivitetType(aktivitettype)
                 .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
@@ -588,5 +565,62 @@ public class BrukerRepositoryTest {
         insertoppfolgingsbrukerTestData();
         assertThat(brukerRepository.getBrukertiltak("2343601")).containsExactly("Tiltak1", "Tiltak2");
         assertThat(brukerRepository.getBrukertiltak("2343602")).containsExactly("Tiltak2");
+    }
+
+    @Test
+    public void skalOppdatereAktivitetstatusForBruker() {
+        String aktivitetstype1 = aktivitetTyperList.get(0).toString();
+        String aktivitetstype2 = aktivitetTyperList.get(1).toString();
+        PersonId personId1 = new PersonId("personid1");
+        AktoerId aktoerId1 = new AktoerId("aktoerid1");
+
+        PersonId personId2 = new PersonId("personid2");
+        AktoerId aktoerId2 = new AktoerId("aktoerid2");
+
+
+        AktivitetStatus a1 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype1,true, new Timestamp(0));
+        AktivitetStatus a2 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype2,false, new Timestamp(0));
+        AktivitetStatus b1 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype1,true, new Timestamp(0));
+        AktivitetStatus b2 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype2,false, new Timestamp(0));
+
+        Set<AktivitetStatus> aktiviteter1 = new HashSet<>();
+        Set<AktivitetStatus> aktiviteter2 = new HashSet<>();
+        aktiviteter1.add(a1);
+        aktiviteter1.add(a2);
+        aktiviteter2.add(b1);
+        aktiviteter2.add(b2);
+
+        aktiviteter1.forEach(brukerRepository::upsertAktivitetStatus);
+        aktiviteter2.forEach(brukerRepository::upsertAktivitetStatus);
+
+        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(asList(personId1, personId2));
+
+        assertThat(aktivitetStatuser.get(personId1)).containsExactlyInAnyOrder(a1, a2);
+        assertThat(aktivitetStatuser.get(personId2)).containsExactlyInAnyOrder(b1, b2);
+    }
+
+    @Test
+    public void skalReturnereTomtMapDersomIngenBrukerHarAktivitetstatusIDB() {
+        assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(new PersonId("personid")))).isEqualTo(new HashMap<>());
+    }
+
+    @Test
+    public void skalUpdateAktivteterSomAlleredeFinnes() {
+        String aktivitetstype1 = aktivitetTyperList.get(0).toString();
+        String aktivitetstype2 = aktivitetTyperList.get(1).toString();
+        PersonId personId = new PersonId("111111");
+        AktoerId aktoerId = new AktoerId("222222");
+
+        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, true, new Timestamp(0));
+        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, false, new Timestamp(0));
+        AktivitetStatus a3 = AktivitetStatus.of(personId, aktoerId, aktivitetstype2, false, new Timestamp(0));
+
+
+        brukerRepository.upsertAktivitetStatus(a1);
+        brukerRepository.insertOrUpdateAktivitetStatus(asList(a2,a3),singletonList(Tuple.of(personId,aktivitetstype1)));
+
+        Set<AktivitetStatus> statuser = brukerRepository.getAktivitetstatusForBrukere(singletonList(personId)).get(personId);
+
+        assertThat(statuser).containsExactlyInAnyOrder(a2,a3);
     }
 }
