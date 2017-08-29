@@ -29,7 +29,7 @@ public class ArenafilConfig {
     }
 
     @Bean
-    public TiltakHandler kopierGR202FraArena(TiltakRepository tiltakRepository) {
+    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository) {
         return new TiltakHandler(tiltakRepository);
     }
 }
