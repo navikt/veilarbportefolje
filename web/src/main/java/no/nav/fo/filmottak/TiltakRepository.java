@@ -30,15 +30,15 @@ public class TiltakRepository extends BrukerRepository {
     @Inject
     private JdbcTemplate db;
 
-    public void slettBrukertiltak() {
+    void slettBrukertiltak() {
         db.execute("TRUNCATE TABLE brukertiltak");
     }
 
-    public void slettEnhettiltak() {
+    void slettEnhettiltak() {
         db.execute("TRUNCATE TABLE enhettiltak");
     }
 
-    public void insertBrukertiltak(Bruker bruker, Set<String> brukerTiltak) {
+    void insertBrukertiltak(Bruker bruker, Set<String> brukerTiltak) {
         bruker.getTiltaksaktivitetListe().forEach(
             tiltak -> {
                 brukerTiltak.add(tiltak.getTiltakstype());
@@ -57,18 +57,18 @@ public class TiltakRepository extends BrukerRepository {
         );
     }
 
-    public void slettTiltakskoder() {
+    void slettTiltakskoder() {
         db.execute("DELETE FROM tiltakkodeverk");
     }
 
-    public void insertTiltakskoder(Tiltakstyper tiltakskoder) {
+    void insertTiltakskoder(Tiltakstyper tiltakskoder) {
         SqlUtils.insert(db, "tiltakkodeverk")
             .value("kode", tiltakskoder.getValue())
             .value("verdi", tiltakskoder.getTermnavn())
             .execute();
     }
 
-    public Map<String, List<String>> getEnhetMedPersonIder() {
+    Map<String, List<String>> getEnhetMedPersonIder() {
         List<Map<String, Object>> maps = db.queryForList("SELECT FODSELSNR, NAV_KONTOR FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL");
 
         Map<String, List<String>> reduce = new HashMap<>();
