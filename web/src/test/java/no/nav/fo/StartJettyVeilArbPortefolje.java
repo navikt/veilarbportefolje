@@ -60,7 +60,7 @@ public class StartJettyVeilArbPortefolje {
                 .sslPort(9594)
                 .port(9595)
                 .addDatasource(dataSource, DatabaseConfig.JNDI_NAME)
-                .overrideWebXml(), new ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV.toString()))
+                .overrideWebXml(), new ISSOSecurityConfig(APPLICATION_NAME))
                 .configureForJaspic()
                 .buildJetty();
 

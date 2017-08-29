@@ -216,7 +216,7 @@ public class SolrUtils {
             filtrerBrukereStatements.add("aktiviteter:"+key.toLowerCase());
         }
         if(AktivitetFiltervalg.NEI.equals(value)) {
-            filtrerBrukereStatements.add("-aktiviteter:" + key.toLowerCase());
+            filtrerBrukereStatements.add("*:* AND -aktiviteter:" + key.toLowerCase());
         }
     }
 
@@ -225,7 +225,7 @@ public class SolrUtils {
             filtrerBrukereStatements.add("tiltak:*");
         }
         if(AktivitetFiltervalg.NEI.equals(value)) {
-            filtrerBrukereStatements.add("-tiltak:*");
+            filtrerBrukereStatements.add("*:* AND -tiltak:*");
         }
     }
 
