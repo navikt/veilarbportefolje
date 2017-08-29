@@ -487,7 +487,7 @@ public class SolrUtilsTest {
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NEI);
         SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
-        assertThat(solrQuery.getFilterQueries()).contains("(-tiltak:*)");
+        assertThat(solrQuery.getFilterQueries()).contains("(*:* AND -tiltak:*)");
     }
 
     @Test
@@ -507,7 +507,7 @@ public class SolrUtilsTest {
 
         SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
-        assertThat(solrQuery.getFilterQueries()).contains("(aktiviteter:aktivitet1) AND (-aktiviteter:aktivitet2)");
+        assertThat(solrQuery.getFilterQueries()).contains("(aktiviteter:aktivitet1) AND (*:* AND -aktiviteter:aktivitet2)");
     }
 
 }
