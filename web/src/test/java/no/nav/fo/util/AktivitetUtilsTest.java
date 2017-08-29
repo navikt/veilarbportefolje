@@ -224,6 +224,18 @@ public class AktivitetUtilsTest {
     }
 
     @Test
+    public void skalFinneUtlopsdatoNaarÉnerNull() {
+        String aktivitetstype = aktivitetTyperList.get(0).toString();
+        String IKKE_FULLFORT_STATUS = "IKKE_FULLFORT_STATUS";
+        Timestamp t1 = new Timestamp(200000000);
+        AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS);
+        AktivitetDTO a2 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t1);
+
+        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1,a2),LocalDate.ofEpochDay(0), AktoerId.of("aktoerid"), PersonId.of("personid"));
+        assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
+    }
+
+    @Test
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("person_id", "123");

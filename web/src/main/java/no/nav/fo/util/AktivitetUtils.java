@@ -117,6 +117,7 @@ public class AktivitetUtils {
                     Timestamp datoForNesteUtlop = aktiviteterIPeriodeMedAktivtStatus
                             .stream()
                             .map(AktivitetDTO::getTilDato)
+                            .filter(Objects::nonNull)
                             .sorted()
                             .findFirst()
                             .orElse(null);
