@@ -3,8 +3,6 @@ package no.nav.fo.domene.aktivitet;
 public enum AktivitetTyper {
     egen,
     stilling,
-    egenaktivitet,
-    jobbsoeking,
     sokeavtale,
     behandling,
     ijobb,

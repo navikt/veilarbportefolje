@@ -2,7 +2,7 @@ package no.nav.fo.util.sql;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import org.apache.commons.lang3.StringUtils;
+import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.joining;
@@ -20,8 +21,7 @@ public class UpdateBatchQuery<T> {
     private final JdbcTemplate db;
     private final String tableName;
     private final Map<String, Tuple2<Class, Function<T, Object>>> setParams;
-    private String whereParam;
-    private Function<T, String> whereValue;
+    private Function<T, WhereClause> whereClause;
 
     public UpdateBatchQuery(JdbcTemplate db, String tableName) {
         this.db = db;
@@ -37,9 +37,8 @@ public class UpdateBatchQuery<T> {
         return this;
     }
 
-    public UpdateBatchQuery<T> addWhereClause(String param, Function<T, String> paramValue) {
-        this.whereParam = param;
-        this.whereValue = paramValue;
+    public UpdateBatchQuery<T> addWhereClause(Function<T, WhereClause> whereClause) {
+        this.whereClause = whereClause;
         return this;
     }
 
@@ -48,7 +47,7 @@ public class UpdateBatchQuery<T> {
             return null;
         }
 
-        return db.batchUpdate(createSql(), new BatchPreparedStatementSetter() {
+        return db.batchUpdate(createSql(data.get(0)), new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 T t = data.get(i);
@@ -58,9 +57,10 @@ public class UpdateBatchQuery<T> {
                     setParam(ps, j++, param._1(), param._2.apply(t));
                 }
 
-                if (StringUtils.isNotBlank(whereParam)) {
-                    setParam(ps, j++, String.class, whereValue.apply(t));
+                if(Objects.nonNull(whereClause)) {
+                    whereClause.apply(t).applyTo(ps, j);
                 }
+
             }
 
             @Override
@@ -80,13 +80,13 @@ public class UpdateBatchQuery<T> {
         }
     }
 
-    String createSql() {
+    String createSql(T t) {
         StringBuilder sqlBuilder = new StringBuilder()
                 .append("update ").append(tableName)
                 .append(createSetStatement());
 
-        if (this.whereParam != null) {
-            sqlBuilder.append(" where ").append(whereParam).append(" = ?");
+        if (Objects.nonNull(whereClause)) {
+            sqlBuilder.append(" where ").append(whereClause.apply(t).toSql());
         }
 
         return sqlBuilder.toString();

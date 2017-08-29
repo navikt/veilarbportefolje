@@ -14,4 +14,8 @@ public class PersonId {
     public String toString() {
         return personId;
     }
+
+    public static PersonId of(String personId) {
+        return new PersonId(personId);
+    }
 }

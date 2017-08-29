@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @Data
 @Accessors(chain = true)
@@ -28,7 +28,7 @@ public class Brukerdata {
     private Boolean oppfolging;
     private Boolean iAvtaltAktivitet;
     private Timestamp nyesteUtlopteAktivitet;
-    private Map<String, Boolean> aktivitetStatus;
+    private Set<AktivitetStatus> aktiviteter;
 
     public UpdateQuery toUpdateQuery(JdbcTemplate db) {
         return SqlUtils.update(db, "bruker_data")
@@ -100,7 +100,7 @@ public class Brukerdata {
                 .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .add("IAVTALTAKTIVITET", (bruker) -> booleanTo0OR1(bruker.iAvtaltAktivitet), String.class)
                 .add("NYESTEUTLOPTEAKTIVITET", (bruker) ->  bruker.nyesteUtlopteAktivitet, Timestamp.class)
-                .addWhereClause("PERSONID", (bruker) -> bruker.personid)
+                .addWhereClause((bruker) -> WhereClause.equals("PERSONID",bruker.personid))
                 .execute(data);
     }
 
