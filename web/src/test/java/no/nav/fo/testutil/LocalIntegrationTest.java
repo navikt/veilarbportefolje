@@ -25,7 +25,6 @@ import java.net.*;
 import static com.squareup.okhttp.MediaType.parse;
 import static java.lang.System.setProperty;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
-import static no.nav.fo.StartJettyVeilArbPortefolje.TEST_ENV;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
 
@@ -155,7 +154,7 @@ public abstract class LocalIntegrationTest {
                 .disableAnnotationScanning();
 
         DevelopmentSecurity.ISSOSecurityConfig issoSecurityConfig =
-                new DevelopmentSecurity.ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV.toString());
+                new DevelopmentSecurity.ISSOSecurityConfig(APPLICATION_NAME);
 
         return DevelopmentSecurity
                 .setupISSO(builder, issoSecurityConfig)
