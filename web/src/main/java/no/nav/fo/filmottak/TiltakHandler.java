@@ -1,7 +1,6 @@
 package no.nav.fo.filmottak;
 
 import io.vavr.control.Try;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import org.apache.commons.vfs2.*;
@@ -25,7 +24,7 @@ import static no.nav.fo.util.StreamUtils.log;
 
 
 public class TiltakHandler {
-    static Logger logger = LoggerFactory.getLogger(TiltakHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(TiltakHandler.class);
 
     @Value("${tiltak.sftp.URI}")
     private String URI;
@@ -49,12 +48,20 @@ public class TiltakHandler {
         this.isRunning = false;
     }
 
-    public boolean isRunning() {
+    public void startOppdateringAvTiltakIDatabasen() {
+        if(this.isRunning()) {
+            logger.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
+            return;
+        }
+        this.isRunning = true;
+        hentTiltakOgPopulerDatabase();
+    }
+
+    private boolean isRunning() {
         return this.isRunning;
     }
 
-    public void hentTiltakOgPopulerDatabase() {
-        this.isRunning = true;
+    private void hentTiltakOgPopulerDatabase() {
         Consumer<Throwable> stopped = (t) -> this.isRunning = false;
         logger.info("Starter oppdatering av tiltak fra Arena..");
         timed("GR202.hentfil", this::hentFil)
@@ -62,7 +69,8 @@ public class TiltakHandler {
                 .flatMap(timed("GR202.unmarshall", this::unmarshall))
                 .onFailure(log(logger, "Kunne ikke unmarshalle tiltaksfilen").andThen(stopped))
                 .andThen(timed("GR202.populatedb", this::populerDatabase))
-                .onFailure(log(logger, "Kunne ikke populere database").andThen(stopped));
+                .onFailure(log(logger, "Kunne ikke populere database").andThen(stopped))
+                .andThen(() -> this.isRunning = false);
     }
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {

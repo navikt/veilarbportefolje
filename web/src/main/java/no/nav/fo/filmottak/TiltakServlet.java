@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class TiltakServlet extends HttpServlet {
 
-    static Logger logger = LoggerFactory.getLogger(TiltakServlet.class);
+    private static Logger logger = LoggerFactory.getLogger(TiltakServlet.class);
 
     private TiltakHandler tiltakHandler;
     private boolean ismasternode;
@@ -27,15 +27,9 @@ public class TiltakServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if(this.ismasternode) {
-            if(!tiltakHandler.isRunning()) {
-                logger.info("Setter i gang oppdatering av tiltak");
-                resp.getWriter().write("Setter i gang oppdatering av tiltak");
-                tiltakHandler.hentTiltakOgPopulerDatabase();
-            }
-            else {
-                logger.info("Kunne ikke starte oppdatering av tiltak fordi den allerede kjører");
-                resp.getWriter().write("Kunne ikke starte oppdatering av tiltak fordi den allerede kjører");
-            }
+            logger.info("Setter i gang oppdatering av tiltak");
+            resp.getWriter().write("Setter i gang oppdatering av tiltak");
+            tiltakHandler.startOppdateringAvTiltakIDatabasen();
         }
     }
 }
