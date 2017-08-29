@@ -22,6 +22,10 @@ public class DateUtils {
         return ZonedDateTime.ofInstant(timestamp.toInstant(), zoneId).toString();
     }
 
+    static String iso8601FromTimestamp(Timestamp timestamp) {
+        return iso8601FromTimestamp(timestamp, ZoneId.systemDefault());
+    }
+
     static String toIsoUTC(Timestamp timestamp) {
         if(timestamp == null) {
             return null;

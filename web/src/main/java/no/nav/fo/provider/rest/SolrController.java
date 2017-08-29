@@ -12,8 +12,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import static io.vavr.control.Try.run;
-import static java.util.concurrent.CompletableFuture.runAsync;
-import static no.nav.fo.util.MetricsUtils.timed;
 
 @Api(value = "Solr")
 @Path("solr")
@@ -28,21 +26,20 @@ public class SolrController {
 
     @Path("hovedindeksering")
     @GET
-    public String hovedIndeksering() {
-        runAsync(
-                () -> {
-                    timed("indeksering.applyarbeidslistedata", () -> aktivitetService.tryUtledOgLagreAlleAktivitetstatuser());
-                    run(() -> solrService.hovedindeksering()).onFailure(this::rapporterFeil);
-                }
-        );
-        return "Indeksering startet";
+    public boolean hovedIndeksering() {
+         aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
+                    run(() ->
+                                solrService.hovedindeksering()
+                    ).onFailure(this::rapporterFeil);
+
+        return true;
     }
 
     @Path("deltaindeksering")
     @GET
-    public String deltaIndeksering() {
-        runAsync(() -> solrService.deltaindeksering());
-        return "Indeksering startet";
+    public boolean deltaIndeksering() {
+        solrService.deltaindeksering();
+        return true;
     }
 
     private void rapporterFeil(Throwable e) {

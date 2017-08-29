@@ -86,7 +86,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                                 .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId));
 
                         if (erBrukerUnderOppfolging(oppfolgingstatus)) {
-                            aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerid);
+                            aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerId);
                         } else {
                             solrService.slettBruker(personId);
                             solrService.commit();

@@ -14,4 +14,8 @@ public class AktoerId {
     public String toString() {
         return aktoerId;
     }
+
+    public static AktoerId of(String aktoerid) {
+        return new AktoerId(aktoerid);
+    }
 }
