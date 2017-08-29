@@ -37,8 +37,9 @@ public class EnhetMock implements Enhet {
         Ressurs ressurs = createRessurs("Arne","And",request.getRessursId());
         List<no.nav.virksomhet.organisering.enhetogressurs.v1.Enhet> enhetliste = new ArrayList<>();
         enhetliste.add(createEnhet(NAV_SANDE_ID,"NAV SANDE"));
-        enhetliste.add(createEnhet("0104","NAV MOSS"));
         enhetliste.add(createEnhet("0100","NAV ØSTFOLD"));
+        enhetliste.add(createEnhet("0104","NAV MOSS"));
+        enhetliste.add(createEnhet("0105","NAV SARPSBORG"));
         enhetliste.add(createEnhet("0709","NAV LARVIK"));
 
         return new WSHentEnhetListeResponse().withEnhetListe(enhetliste).withRessurs(ressurs);
