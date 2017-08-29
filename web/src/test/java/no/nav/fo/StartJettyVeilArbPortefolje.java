@@ -24,7 +24,7 @@ import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
 
 public class StartJettyVeilArbPortefolje {
 
-    public static final TestEnvironment TEST_ENV = TestEnvironment.T6;
+    public static final TestEnvironment TEST_ENV = TestEnvironment.T4;
     public static final String APPLICATION_NAME = "veilarbportefolje";
     public static final String SERVICE_USER_NAME = "srvveilarbportefolje";
 

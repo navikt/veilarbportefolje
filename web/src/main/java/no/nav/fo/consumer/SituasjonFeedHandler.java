@@ -81,8 +81,9 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                             brukerRepository.deleteBrukerdata(personId);
                             solrService.slettBruker(personId);
                             solrService.commit();
+                        } else {
+                            oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);
                         }
-                        oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);
                         },
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );

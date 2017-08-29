@@ -10,7 +10,6 @@ import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
-import no.nav.fo.util.MetricsUtils;
 import no.nav.fo.util.OppfolgingUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -24,6 +23,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
@@ -55,7 +56,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
     private void behandleDialogData(DialogDataFraFeed dialog) {
         try {
-            MetricsUtils.timed("feed.dialog.objekt",
+            timed("feed.dialog.objekt",
                     () -> {
                         Try<PersonId> personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(dialog.aktorId));
                         DialogBrukerOppdatering oppdatering = new DialogBrukerOppdatering(dialog, personId.toJavaOptional().map(PersonId::toString));
@@ -69,8 +70,9 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                             persistentOppdatering.hentDataOgLagre(oppdatering);
                             solrService.slettBruker(personId.get());
                             solrService.commit();
+                        } else {
+                            persistentOppdatering.lagre(oppdatering);
                         }
-                        persistentOppdatering.lagre(oppdatering);
                     },
                     (timer, hasFailed) -> {
                         if (hasFailed) {

@@ -39,12 +39,12 @@ public class MetricsUtils {
         };
     }
 
-    public static <S> Function<S, Void> timed(String navn, Runnable runnable) {
-        return timed(navn, runnableToFunction(runnable), null);
+    public static Runnable timed(String navn, Runnable runnable) {
+        return functionToRunnable(timed(navn, runnableToFunction(runnable), null));
     }
 
-    public static <S> Function<S, Void> timed(String navn, Runnable runnable, BiConsumer<Timer, Boolean> tagsAppender) {
-        return timed(navn, runnableToFunction(runnable), tagsAppender);
+    public static Runnable timed(String navn, Runnable runnable, BiConsumer<Timer, Boolean> tagsAppender) {
+        return functionToRunnable(timed(navn, runnableToFunction(runnable), tagsAppender));
     }
 
     public static <S> S timed(String navn, Supplier<S> supplier) {
@@ -67,8 +67,12 @@ public class MetricsUtils {
         return (S s) -> { consumer.accept(s); return null; };
     }
 
-    private static <S> Function<S, Void> runnableToFunction(Runnable runnable) {
-        return (S s) -> { runnable.run();return null; };
+    private static <S> Function<S, Runnable> runnableToFunction(Runnable runnable) {
+        return (S s) -> { runnable.run(); return runnable; };
+    }
+
+    private static <S> Runnable functionToRunnable(Function<S, Runnable> function) {
+        return function.apply(null);
     }
 
     private static <S> Consumer<S> functionToConsumer(Function<S, Void> function) {
