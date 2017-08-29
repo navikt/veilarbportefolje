@@ -16,6 +16,20 @@
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
+    <!--IKKE BENYTT RESTEASY-->
+    <context-param>
+        <param-name>resteasy.scan</param-name>
+        <param-value>false</param-value>
+    </context-param>
+    <context-param>
+        <param-name>resteasy.scan.providers</param-name>
+        <param-value>false</param-value>
+    </context-param>
+    <context-param>
+        <param-name>resteasy.scan.resources</param-name>
+        <param-value>false</param-value>
+    </context-param>
+
     <!--CONFIG FOR API-APP-->
     <context-param>
         <param-name>springContekstKlasse</param-name>
