@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 
 @Api(value = "Solr")
 @Path("solr")
@@ -27,22 +26,20 @@ public class SolrController {
 
     @Path("hovedindeksering")
     @GET
-    public String hovedIndeksering() {
-        runAsync( () -> {
+    public boolean hovedIndeksering() {
             aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
             Try.of(() -> {
                 solrService.hovedindeksering();
                 return null;
             }).onFailure(this::rapporterFeil);
-        });
-        return "Indeksering startet";
+        return true;
     }
 
     @Path("deltaindeksering")
     @GET
-    public String deltaIndeksering() {
-        runAsync(() -> solrService.deltaindeksering());
-        return "Indeksering startet";
+    public boolean deltaIndeksering() {
+        solrService.deltaindeksering();
+        return true;
     }
 
     private void rapporterFeil(Throwable e) {

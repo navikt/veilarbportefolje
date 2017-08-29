@@ -37,7 +37,7 @@ public class AktivitetService {
                     utledOgLagreAlleAktivitetstatuser();
                     return null;
                 })
-        ).onFailure(e -> log.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
+        ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
         return null;
     }
 
