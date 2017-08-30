@@ -62,7 +62,7 @@ public class FilmottakConfig {
     public Pingable nfsYtelserPing() {
         Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
             "NFS via" + System.getProperty("loependeytelser.path"),
-            "Sjekk om fil med brukere som mottar ytelser ligger på disk",
+            "Sjekker connection til fil med ytelser (nfs)",
             true
         );
 
@@ -81,7 +81,7 @@ public class FilmottakConfig {
         String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
         Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
             komplettURI,
-            "Sjekker connection til fil med brukere og tiltak",
+            "Sjekker connection til fil med tiltak (sftp)",
             true
         );
 
