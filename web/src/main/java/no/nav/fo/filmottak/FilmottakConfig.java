@@ -81,7 +81,7 @@ public class FilmottakConfig {
         String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
         Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
             komplettURI,
-            "Sjekker om fil appen for tilgang til fil med brukere og tiltak",
+            "Sjekker connection til fil med brukere og tiltak",
             true
         );
 
