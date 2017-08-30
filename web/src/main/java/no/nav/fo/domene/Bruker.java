@@ -1,16 +1,19 @@
 package no.nav.fo.domene;
 
+import io.vavr.control.Try;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
+import org.json.JSONObject;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DateUtils.toLocalDateTime;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -37,7 +40,10 @@ public class Bruker {
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
+    List<String> brukertiltak;
+    Map<String, Timestamp> aktiviteter;
 
+    @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
         return new Bruker()
                 .setFnr((String) document.get("fnr"))
@@ -60,7 +66,24 @@ public class Bruker {
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
                 .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
+                .setBrukertiltak(getBrukertiltak(document))
+                .setAktiviteter(lagAktiviteterMap( (List) document.get("aktiviteter"), (String) document.get("aktiviteter_utlopsdato_json")))
                 ;
+    }
+
+    private static Map<String, Timestamp> lagAktiviteterMap(List<String> aktiviteter, String aktiviteterUtlopsdatoJSON) {
+        if(Objects.isNull(aktiviteter)) {
+            return null;
+        }
+        JSONObject jsonObject = Objects.nonNull(aktiviteterUtlopsdatoJSON) ? new JSONObject(aktiviteterUtlopsdatoJSON): null;
+        Map<String, Timestamp> map = new HashMap<>();
+        aktiviteter.forEach( aktivitet -> map.put(aktivitet,toTimestampOrNull(jsonObject,aktivitet)));
+        return map;
+    }
+
+    private static Timestamp toTimestampOrNull(JSONObject jsonObject, String key) {
+        Try<Timestamp> timestampTry = Try.of(() -> timestampFromISO8601((String) jsonObject.get(key)));
+        return timestampTry.getOrNull();
     }
 
     private static String getDiskresjonskode(SolrDocument document) {
@@ -78,6 +101,15 @@ public class Bruker {
             return emptyList();
         } else {
             return singletonList(kode);
+        }
+    }
+
+    private static List<String> getBrukertiltak(SolrDocument document) {
+        String tiltak = (String) document.get("tiltak");
+        if (tiltak == null) {
+            return emptyList();
+        } else {
+            return singletonList(tiltak);
         }
     }
 

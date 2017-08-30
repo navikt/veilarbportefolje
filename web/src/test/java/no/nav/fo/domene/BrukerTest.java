@@ -3,11 +3,13 @@ package no.nav.fo.domene;
 import org.apache.solr.common.SolrDocument;
 import org.junit.Test;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Map;
 
 import static no.nav.fo.util.DateUtils.toLocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +52,39 @@ public class BrukerTest {
         assertThat(dato.getMonth()).isEqualTo(Month.MARCH);
         assertThat(dato.getDayOfMonth()).isEqualTo(30);
     }
+
+    @Test
+    public void skalLeggeTilAlleAktiviteter() {
+        SolrDocument solrDocument = createSolrDocument(null);
+        solrDocument.addField("aktiviteter", "aktivitet1");
+        solrDocument.addField("aktiviteter", "aktivitet2");
+        Bruker bruker = Bruker.of(solrDocument);
+        Map<String, Timestamp> map = bruker.getAktiviteter();
+        assertThat(map).containsOnlyKeys("aktivitet1", "aktivitet2");
+        assertThat(map.get("aktivitet1")).isNull();
+        assertThat(map.get("aktivitet2")).isNull();
+    }
+
+    @Test
+    public void skalLeggeTilDatoPaAktiviteter() {
+        SolrDocument solrDocument = createSolrDocument(null);
+        solrDocument.addField("aktiviteter", "aktivitet1");
+        solrDocument.addField("aktiviteter", "aktivitet2");
+        solrDocument.addField("aktiviteter_utlopsdato_json", "{\"aktivitet1\":\"1970-01-01T01:01:01Z\"}");
+        Bruker bruker = Bruker.of(solrDocument);
+        Map<String, Timestamp> map = bruker.getAktiviteter();
+        assertThat(map).containsOnlyKeys("aktivitet1", "aktivitet2");
+        assertThat(map.get("aktivitet1")).isNotNull();
+        assertThat(map.get("aktivitet2")).isNull();
+    }
+
+    @Test
+    public void skalIkkeTryneOmAktiviteterErNull() {
+        SolrDocument solrDocument = createSolrDocument(null);
+        Bruker bruker = Bruker.of(solrDocument);
+        Map<String, Timestamp> map = bruker.getAktiviteter();
+    }
+
 
     private SolrDocument createSolrDocument(String kode) {
         SolrDocument document = new SolrDocument();
