@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="remotedebug@d26jbsl01079.test.local" type="Remote" factoryName="Remote">
+    <option name="USE_SOCKET_TRANSPORT" value="true" />
+    <option name="SERVER_MODE" value="false" />
+    <option name="SHMEM_ADDRESS" value="javadebug" />
+    <option name="HOST" value="d26jbsl01079.test.local" />
+    <option name="PORT" value="8787" />
+    <method />
+  </configuration>
+</component>
