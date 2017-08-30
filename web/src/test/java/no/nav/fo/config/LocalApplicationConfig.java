@@ -23,7 +23,7 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
 @Configuration
 @Import({
         DatabaseConfig.class,
-        VirksomhetEnhetEndpointConfigMock.class,
+        VirksomhetEnhetEndpointConfig.class,
         LocalServiceConfig.class,
         SolrConfig.class,
         AktoerEndpointConfig.class,
