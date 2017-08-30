@@ -45,7 +45,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>reindekserytelser</servlet-name>
-        <url-pattern>/internal/reindekserytelser</url-pattern>
+        <url-pattern>/internal/oppdaterytelser</url-pattern>
     </servlet-mapping>
 
     <servlet>
