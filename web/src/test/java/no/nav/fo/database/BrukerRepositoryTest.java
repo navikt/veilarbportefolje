@@ -563,8 +563,8 @@ public class BrukerRepositoryTest {
     @Test
     public void skalHenteBrukersTiltak() throws Exception {
         insertoppfolgingsbrukerTestData();
-        assertThat(brukerRepository.getTiltak("2343601")).containsExactly("Tiltak1", "Tiltak2");
-        assertThat(brukerRepository.getTiltak("2343602")).containsExactly("Tiltak2");
+        assertThat(brukerRepository.getBrukertiltak("2343601")).containsExactly("Tiltak1", "Tiltak2");
+        assertThat(brukerRepository.getBrukertiltak("2343602")).containsExactly("Tiltak2");
     }
 
     @Test

@@ -1,7 +1,6 @@
-package no.nav.fo.internal;
+package no.nav.fo.filmottak.ytelser;
 
 import com.google.common.io.CharStreams;
-import no.nav.fo.consumer.KopierGR199FraArena;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -15,7 +14,7 @@ import java.net.URL;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 
-public class ReindekserYtelserServlet extends HttpServlet {
+public class YtelserServlet extends HttpServlet {
 
     private KopierGR199FraArena kopierGR199FraArena;
     private boolean ismasternode;
@@ -32,12 +31,8 @@ public class ReindekserYtelserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (this.ismasternode) {
-            if (kopierGR199FraArena.isRunning()) {
-                resp.getWriter().write("reindeksering kjører");
-            } else {
-                runAsync(() -> kopierGR199FraArena.kopierOgIndekser());
-                resp.getWriter().write("reindeksering startet");
-            }
+            runAsync(() -> kopierGR199FraArena.startOppdateringAvYtelser());
+            resp.getWriter().write("reindeksering startet");
             resp.setStatus(200);
         } else if (this.masternode.isEmpty()) {
             resp.getWriter().write("fant ikke masternoden");
