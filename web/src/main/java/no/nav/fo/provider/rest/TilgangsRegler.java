@@ -49,19 +49,9 @@ public class TilgangsRegler {
         return pilotenheter.isEmpty() || pilotenheter.contains(enhet);
     }
 
-    public static void tilgangTilPilot(String enhet) {
-        test("pilotenhet", enhet, enhetErIPilot(enhet));
-    }
 
     private static void tilgangTilEnhet(BrukertilgangService brukertilgangService, String enhet, String ident) {
         test("tilgang til enhet", Tuple.of(enhet, ident), brukertilgangService.harBrukerTilgang(ident, enhet));
-    }
-
-    public static void tilgangTilBruker(PepClient pep, String fnr) {
-        SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
-        String token = TokenUtils.getTokenBody(subjectHandler.getSubject());
-
-        pep.tilgangTilBruker(token, fnr);
     }
 
     static void test(String navn, Object data, boolean matches) {
