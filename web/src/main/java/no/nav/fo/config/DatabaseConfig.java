@@ -44,11 +44,6 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public TiltakRepository tiltakRepository() {
-        return new TiltakRepository();
-    }
-
-    @Bean
     public ArbeidslisteRepository arbeidslisteRepository() {
         return new ArbeidslisteRepository();
     }
