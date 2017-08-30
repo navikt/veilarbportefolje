@@ -1,6 +1,5 @@
 package no.nav.fo.filmottak;
 
-import io.vavr.control.Try;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
 import no.nav.fo.filmottak.ytelser.KopierGR199FraArena;
@@ -8,7 +7,6 @@ import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
