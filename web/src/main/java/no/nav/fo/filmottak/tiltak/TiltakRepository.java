@@ -1,4 +1,4 @@
-package no.nav.fo.filmottak;
+package no.nav.fo.filmottak.tiltak;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.util.sql.SqlUtils;

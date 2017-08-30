@@ -50,7 +50,7 @@
 
     <servlet>
         <servlet-name>oppdatertiltak</servlet-name>
-        <servlet-class>no.nav.fo.filmottak.TiltakServlet</servlet-class>
+        <servlet-class>no.nav.fo.filmottak.tiltak.TiltakServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>oppdatertiltak</servlet-name>

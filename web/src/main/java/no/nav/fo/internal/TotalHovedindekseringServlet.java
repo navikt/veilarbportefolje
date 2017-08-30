@@ -1,6 +1,6 @@
 package no.nav.fo.internal;
 
-import no.nav.fo.filmottak.TiltakHandler;
+import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.service.SolrService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

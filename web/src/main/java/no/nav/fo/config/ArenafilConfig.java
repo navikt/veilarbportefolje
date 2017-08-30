@@ -1,10 +1,9 @@
 package no.nav.fo.config;
 
-import no.nav.fo.filmottak.TiltakHandler;
+import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.consumer.IndekserYtelserHandler;
 import no.nav.fo.consumer.KopierGR199FraArena;
-import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.filmottak.TiltakRepository;
+import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import no.nav.fo.service.ArenafilService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

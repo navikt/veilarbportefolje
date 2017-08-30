@@ -1,4 +1,4 @@
-package no.nav.fo.filmottak;
+package no.nav.fo.filmottak.tiltak;
 
 import io.vavr.control.Try;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
