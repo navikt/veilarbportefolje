@@ -29,4 +29,7 @@ public class LocalServiceConfig {
     @Bean
     public AktoerService aktoerService() { return new AktoerServiceImpl(); }
 
+    @Bean
+    public TiltakService tiltakService() { return new TiltakService(); }
+
 }
