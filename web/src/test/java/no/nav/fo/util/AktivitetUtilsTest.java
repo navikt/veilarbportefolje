@@ -239,7 +239,7 @@ public class AktivitetUtilsTest {
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("person_id", "123");
-        when(brukerRepository.getTiltak(anyString())).thenReturn(Arrays.asList("Tiltak1", "Tiltak2"));
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Arrays.asList("Tiltak1", "Tiltak2"));
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
@@ -251,7 +251,7 @@ public class AktivitetUtilsTest {
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("person_id", "12345678910");
-        when(brukerRepository.getTiltak(anyString())).thenReturn(Lists.emptyList());
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Lists.emptyList());
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 

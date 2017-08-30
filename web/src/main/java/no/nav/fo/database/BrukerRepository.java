@@ -21,10 +21,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -120,15 +120,6 @@ public class BrukerRepository {
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
         ).onFailure(e -> LOG.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
-    }
-
-    public Try<Fnr> retrieveFnr(AktoerId aktoerId) {
-        return Try.of(
-                () -> select(db.getDataSource(), BRUKERDATA, this::fnrMapper)
-                        .column("FNR")
-                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                        .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId,e));
     }
 
     public Try<PersonId> deleteBrukerdata(PersonId personId) {
@@ -411,7 +402,7 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
-    public List<String> getTiltak(String personId) {
+    public List<String> getBrukertiltak(String personId) {
         return db.queryForList(
             "SELECT " +
                 "VERDI AS TILTAK " +

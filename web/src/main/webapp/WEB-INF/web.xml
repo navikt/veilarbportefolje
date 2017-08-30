@@ -49,6 +49,25 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>oppdatertiltak</servlet-name>
+        <servlet-class>no.nav.fo.filmottak.TiltakServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>oppdatertiltak</servlet-name>
+        <url-pattern>/internal/oppdatertiltak</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>totalhovedindeksering</servlet-name>
+        <servlet-class>no.nav.fo.internal.TotalHovedindekseringServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>totalhovedindeksering</servlet-name>
+        <url-pattern>/internal/totalhovedindeksering</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
         <servlet-name>restservlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
