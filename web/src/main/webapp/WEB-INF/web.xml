@@ -41,7 +41,7 @@
 
     <servlet>
         <servlet-name>reindekserytelser</servlet-name>
-        <servlet-class>no.nav.fo.internal.ReindekserYtelserServlet</servlet-class>
+        <servlet-class>no.nav.fo.filmottak.ytelser.YtelserServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>reindekserytelser</servlet-name>
