@@ -34,9 +34,7 @@ import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
