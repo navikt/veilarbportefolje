@@ -31,12 +31,8 @@ public class YtelserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (this.ismasternode) {
-            if (kopierGR199FraArena.isRunning()) {
-                resp.getWriter().write("reindeksering kjører");
-            } else {
-                runAsync(() -> kopierGR199FraArena.kopierOgIndekser());
-                resp.getWriter().write("reindeksering startet");
-            }
+            runAsync(() -> kopierGR199FraArena.startOppdateringAvYtelser());
+            resp.getWriter().write("reindeksering startet");
             resp.setStatus(200);
         } else if (this.masternode.isEmpty()) {
             resp.getWriter().write("fant ikke masternoden");
