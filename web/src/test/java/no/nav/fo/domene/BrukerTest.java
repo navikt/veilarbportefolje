@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import static no.nav.fo.util.DateUtils.toLocalDateTime;
@@ -83,6 +84,32 @@ public class BrukerTest {
         SolrDocument solrDocument = createSolrDocument(null);
         Bruker bruker = Bruker.of(solrDocument);
         Map<String, Timestamp> map = bruker.getAktiviteter();
+    }
+
+    @Test
+    public void skalReturnereNesteAktivitetUtlopsdato() {
+        Timestamp t1 = new Timestamp(1000000000);
+        Timestamp t2 = new Timestamp(2000000000);
+        Map<String, Timestamp> map = new HashMap<>();
+        map.put("a1", t1 );
+        map.put("a2", t2 );
+
+        Bruker bruker =  new Bruker().setAktiviteter(map);
+        assertThat(bruker.getNesteAktivitetUtlopsdatoOrElseEpoch0()).isEqualTo(t1);
+    }
+
+    @Test
+    public void skalReturnereEpoch0OmIngenUtlopsdatoerForAktivteter() {
+        Map<String, Timestamp> map = new HashMap<>();
+        map.put("a1", null);
+        Bruker bruker = new Bruker().setAktiviteter(map);
+        assertThat(bruker.getNesteAktivitetUtlopsdatoOrElseEpoch0()).isEqualTo(new Timestamp(0));
+    }
+
+    @Test
+    public void skalReturnereEpoch0OmAktivteterIkkeErDefiner() {
+        Bruker bruker = new Bruker();
+        assertThat(bruker.getNesteAktivitetUtlopsdatoOrElseEpoch0()).isEqualTo(new Timestamp(0));
     }
 
 

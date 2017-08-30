@@ -121,4 +121,18 @@ public class Bruker {
     public ZonedDateTime getArbeidslisteFrist() {
         return arbeidsliste.getFrist();
     }
+
+    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
+    public Timestamp getNesteAktivitetUtlopsdatoOrElseEpoch0() {
+        if(Objects.isNull(aktiviteter)) {
+            return new Timestamp(0);
+        }
+        return aktiviteter
+                .values()
+                .stream()
+                .filter(Objects::nonNull)
+                .sorted()
+                .findFirst()
+                .orElse(new Timestamp(0));
+    }
 }

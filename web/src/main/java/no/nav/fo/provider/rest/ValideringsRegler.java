@@ -32,7 +32,8 @@ class ValideringsRegler {
             "arbeidsliste_frist",
             "VENTER_PA_SVAR_FRA_NAV",
             "VENTER_PA_SVAR_FRA_BRUKER",
-            "UTLOPTE_AKTIVITETER");
+            "UTLOPTE_AKTIVITETER",
+            "I_AVTALT_AKTIVITET");
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
