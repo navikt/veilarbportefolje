@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -108,9 +106,14 @@ public class Bruker {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static List<String> getBrukertiltak(SolrDocument document) {
-        return (List) document.get("tiltak");
+        List<String> tiltak = (List<String>) document.get("tiltak");
+
+        if (Objects.isNull(tiltak)) {
+            return emptyList();
+        } else {
+            return tiltak;
+        }
     }
 
     public boolean erKonfidensiell() {
