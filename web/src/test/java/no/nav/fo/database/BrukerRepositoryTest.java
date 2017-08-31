@@ -70,11 +70,11 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table aktiviteter");
         jdbcTemplate.execute("truncate table brukertiltak");
         jdbcTemplate.execute("truncate table tiltakkodeverk");
+        insertoppfolgingsbrukerTestData();
     }
 
     @Test
     public void skalHenteUtAlleBrukereFraDatabasen() {
-        insertoppfolgingsbrukerTestData();
         List<Map<String, Object>> brukere = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL());
 
         assertThat(brukere.size()).isEqualTo(72);
@@ -82,7 +82,6 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
-        insertoppfolgingsbrukerTestData();
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
@@ -95,7 +94,6 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteKunNyesteBrukereFraDatabasen() {
-        insertoppfolgingsbrukerTestData();
         jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
 
         List<Map<String, Object>> nyeBrukere = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL());
@@ -105,7 +103,6 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
-        insertoppfolgingsbrukerTestData();
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
@@ -136,7 +133,6 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalReturnerePersonidFraDB() {
-        insertoppfolgingsbrukerTestData();
         List<Map<String, Object>> mapping = brukerRepository.retrievePersonid("11111111");
         String personid = (String) mapping.get(0).get("PERSONID");
         Assertions.assertThat(personid).isEqualTo("222222");
@@ -213,9 +209,6 @@ public class BrukerRepositoryTest {
         List<SolrInputDocument> aktiveBrukere = new ArrayList<>();
         brukerRepository.prosesserBrukere(3, BrukerRepository::erOppfolgingsBruker, aktiveBrukere::add);
         assertThat(aktiveBrukere.size()).isEqualTo(51);
-
-        List<SolrInputDocument> oppdaterteAktiveBrukere = brukerRepository.retrieveOppdaterteBrukere();
-        assertThat(oppdaterteAktiveBrukere.size()).isEqualTo(2);
     }
 
     @Test
@@ -480,7 +473,7 @@ public class BrukerRepositoryTest {
                 .setOppfolging(true)
                 .setTildeltTidspunkt(Timestamp.from(Instant.now()))
                 .setUtlopsdato(LocalDateTime.now())
-                .setUtlopsFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
+                .setUtlopsFasett(ManedFasettMapping.MND1)
                 .setVeileder("Veileder")
                 .setVenterPaSvarFraBruker(LocalDateTime.now())
                 .setVenterPaSvarFraNav(LocalDateTime.now())
@@ -614,7 +607,6 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteBrukersTiltak() throws Exception {
-        insertoppfolgingsbrukerTestData();
         assertThat(brukerRepository.getBrukertiltak("2343601")).containsExactly("A", "B");
         assertThat(brukerRepository.getBrukertiltak("2343602")).containsExactly("B");
     }
