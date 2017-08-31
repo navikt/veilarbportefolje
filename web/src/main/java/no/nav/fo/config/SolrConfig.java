@@ -63,10 +63,6 @@ public class SolrConfig {
     }
 
     @Bean
-    public AktivitetService aktivitetService() {
-        return new AktivitetService();}
-
-    @Bean
     public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
     }
 

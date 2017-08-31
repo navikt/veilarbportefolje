@@ -12,6 +12,7 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -26,6 +27,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Api(value = "Enhet")
 @Path("/enhet")
+@Component
 @Produces(APPLICATION_JSON)
 public class EnhetController {
 
