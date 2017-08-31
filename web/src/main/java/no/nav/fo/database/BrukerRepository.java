@@ -405,9 +405,8 @@ public class BrukerRepository {
     public List<String> getBrukertiltak(String personId) {
         return db.queryForList(
             "SELECT " +
-                "VERDI AS TILTAK " +
+                "TILTAKSKODE AS TILTAK " +
                 "FROM BRUKERTILTAK " +
-                "LEFT JOIN TILTAKKODEVERK ON TILTAKKODEVERK.KODE = BRUKERTILTAK.TILTAKSKODE " +
                 "WHERE PERSONID = ?", String.class, personId);
     }
 
