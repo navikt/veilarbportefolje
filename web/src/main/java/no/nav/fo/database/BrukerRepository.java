@@ -21,22 +21,19 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.*;
-import static no.nav.fo.util.DbUtils.parse0OR1;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
@@ -51,7 +48,6 @@ public class BrukerRepository {
     private final String METADATA = "METADATA";
     public static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     public static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
-    public static final String OPPFOLGING = "oppfolging";
 
 
     @Inject
