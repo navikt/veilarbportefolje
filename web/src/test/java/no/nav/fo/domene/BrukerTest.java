@@ -112,6 +112,23 @@ public class BrukerTest {
         assertThat(bruker.getNesteAktivitetUtlopsdatoOrElseEpoch0()).isEqualTo(new Timestamp(0));
     }
 
+    @Test
+    public void skalReturnereUtlopsdatoForAktivitet() {
+        Timestamp t1 = new Timestamp(1000000000);
+        Map<String, Timestamp> map = new HashMap<>();
+        map.put("a1", t1 );
+        Bruker bruker = new Bruker().setAktiviteter(map);
+        assertThat(bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0("aktiviteter_a1")).isEqualTo(t1);
+    }
+
+    @Test
+    public void skalReturnereEpoch0OmUtlopsdatoForAktivitetIkkeFinnes() {
+        Timestamp t1 = new Timestamp(1000000000);
+        Map<String, Timestamp> map = new HashMap<>();
+        map.put("a1", t1 );
+        Bruker bruker = new Bruker();
+        assertThat(bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0("aktiviteter_finnesikke")).isEqualTo(new Timestamp(0));
+    }
 
     private SolrDocument createSolrDocument(String kode) {
         SolrDocument document = new SolrDocument();

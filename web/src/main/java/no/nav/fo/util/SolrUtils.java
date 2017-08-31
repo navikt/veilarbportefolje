@@ -7,10 +7,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -108,6 +105,8 @@ public class SolrUtils {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getNyesteUtlopteAktivitet);
         } else if("I_AVTALT_AKTIVITET".equals(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
+        } else if(Objects.nonNull(sortField) && sortField.contains("aktivitet_")) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0(sortField));
         }
         brukere.sort(brukerErNyComparator());
         return brukere;

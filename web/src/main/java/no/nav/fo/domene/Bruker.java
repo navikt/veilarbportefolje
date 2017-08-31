@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -42,6 +44,8 @@ public class Bruker {
     LocalDateTime nyesteUtlopteAktivitet;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter;
+
+    private static Logger log = LoggerFactory.getLogger(Bruker.class);
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
@@ -104,13 +108,9 @@ public class Bruker {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static List<String> getBrukertiltak(SolrDocument document) {
-        String tiltak = (String) document.get("tiltak");
-        if (tiltak == null) {
-            return emptyList();
-        } else {
-            return singletonList(tiltak);
-        }
+        return (List) document.get("tiltak");
     }
 
     public boolean erKonfidensiell() {
@@ -134,5 +134,18 @@ public class Bruker {
                 .sorted()
                 .findFirst()
                 .orElse(new Timestamp(0));
+    }
+
+    public Timestamp getNesteUtlopsdatoForAktivitetOrElseEpoch0(String aktivitetstypeSortering) {
+        if(Objects.isNull(aktiviteter)) {
+            return new Timestamp(0);
+        }
+
+        String aktivitetstype = Try.of(() -> aktivitetstypeSortering.split("_")[1])
+                .onFailure((t) -> log.error("Sorteringsfelt for aktiviteter må starte med AKTIVITETER_", t))
+                .getOrElseThrow(() -> new IllegalArgumentException());
+
+        return Optional.ofNullable(aktiviteter.get(aktivitetstype.toLowerCase())).orElse(new Timestamp(0));
+
     }
 }
