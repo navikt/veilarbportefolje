@@ -20,12 +20,6 @@ public class PingConfig {
     @Inject
     private PepClient pep;
 
-    @Value("${loependeytelser.path}")
-    String filpath;
-
-    @Value("${loependeytelser.filnavn}")
-    String filnavn;
-
     @Bean
     public Pingable pepPing() {
         PingMetadata metadata = new PingMetadata(
@@ -49,22 +43,4 @@ public class PingConfig {
 
     @Bean
     public Pingable SystemBrukerToken() { return new IssoSystemBrukerTokenHelsesjekk(); }
-
-    @Bean
-    public Pingable nfsPing() {
-        PingMetadata metadata = new PingMetadata(
-                "NFS via" + System.getProperty("loependeytelser.path"),
-                "Sjekk om fil med brukere som mottar ytelser ligger på disk",
-                true
-        );
-
-        return () -> {
-            File file = new File(filpath, filnavn);
-            if (file.exists()) {
-                return Pingable.Ping.lyktes(metadata);
-            } else {
-                return Pingable.Ping.feilet(metadata, new FileNotFoundException("File not found at " + filpath + filnavn));
-            }
-        };
-    }
 }

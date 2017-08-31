@@ -1,4 +1,4 @@
-package no.nav.fo.filmottak;
+package no.nav.fo.filmottak.tiltak;
 
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.util.sql.SqlUtils;
@@ -83,16 +83,13 @@ public class TiltakRepository extends BrukerRepository {
         return reduce;
     }
 
-    public void insertEnhettiltak(List<TiltakForEnhet> tiltakListe) {
-        try {
-            final Connection dsConnection =  ds.getConnection();
+    void insertEnhettiltak(List<TiltakForEnhet> tiltakListe) {
+        try (final Connection dsConnection =  ds.getConnection()){
             final PreparedStatement ps = dsConnection.prepareStatement("INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)");
 
             batchProcess(1, tiltakListe, timed("GR202.insertEnhetTiltak", tiltakForEnhetBatch -> {
                 lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
             }));
-
-            dsConnection.close();
         } catch (SQLException e) {
             logger.error("Kunne ikke koble til database for å lagre Tiltak for enhet", e);
         }

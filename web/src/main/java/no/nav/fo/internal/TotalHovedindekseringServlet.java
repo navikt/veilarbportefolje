@@ -1,6 +1,7 @@
 package no.nav.fo.internal;
 
-import no.nav.fo.filmottak.TiltakHandler;
+import no.nav.fo.filmottak.tiltak.TiltakHandler;
+import no.nav.fo.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.service.SolrService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +20,13 @@ public class TotalHovedindekseringServlet extends HttpServlet {
     private boolean ismasternode;
     private SolrService solrService;
     private TiltakHandler tiltakHandler;
+    private KopierGR199FraArena kopierGR199FraArena;
 
     @Override
     public void init() throws ServletException {
         this.tiltakHandler = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(TiltakHandler.class);
         this.solrService = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(SolrService.class);
+        this.kopierGR199FraArena = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(KopierGR199FraArena.class);
         this.ismasternode = Boolean.valueOf(System.getProperty("cluster.ismasternode", "false"));
         super.init();
     }
@@ -36,6 +39,9 @@ public class TotalHovedindekseringServlet extends HttpServlet {
     }
 
     private void kjorProsess() {
+        logger.info("Setter i gang oppdatering av ytelser i databasen");
+        kopierGR199FraArena.startOppdateringAvYtelser();
+        logger.info("Ferdig med oppdatering av ytelser");
         logger.info("Setter i gang oppdatering av tiltak i databasen");
         tiltakHandler.startOppdateringAvTiltakIDatabasen();
         logger.info("Ferdig med oppdatering av tiltak");

@@ -1,4 +1,4 @@
-package no.nav.fo.filmottak;
+package no.nav.fo.filmottak.tiltak;
 
 public class TiltakForEnhet {
     private String enhetid;

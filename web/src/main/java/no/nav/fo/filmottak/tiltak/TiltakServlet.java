@@ -1,4 +1,4 @@
-package no.nav.fo.filmottak;
+package no.nav.fo.filmottak.tiltak;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

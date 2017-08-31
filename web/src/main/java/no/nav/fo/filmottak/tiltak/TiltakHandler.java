@@ -1,6 +1,7 @@
-package no.nav.fo.filmottak;
+package no.nav.fo.filmottak.tiltak;
 
 import io.vavr.control.Try;
+import no.nav.fo.filmottak.FileUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import org.apache.commons.vfs2.*;
@@ -128,12 +129,9 @@ public class TiltakHandler {
 
     private Try<FileObject> hentFil() {
         logger.info("Starter henting av tiltaksfil");
-        FileSystemOptions fsOptions = new FileSystemOptions();
         try {
-            SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions, "no");
-            FileSystemManager fsManager = VFS.getManager();
             String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
-            return Try.of(() -> fsManager.resolveFile(komplettURI, fsOptions));
+            return FileUtils.hentTiltakFil(komplettURI);
         } catch (FileSystemException e) {
             logger.info("Henting av tiltaksfil feilet");
             return Try.failure(e);

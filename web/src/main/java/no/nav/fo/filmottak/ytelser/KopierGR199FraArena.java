@@ -1,15 +1,13 @@
-package no.nav.fo.consumer;
+package no.nav.fo.filmottak.ytelser;
 
 import io.vavr.control.Try;
 import no.nav.fo.service.AktivitetService;
-import no.nav.fo.service.ArenafilService;
-import no.nav.fo.service.SolrService;
+import no.nav.fo.filmottak.FileUtils;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.metrics.aspects.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
@@ -24,7 +22,7 @@ import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.log;
 
 public class KopierGR199FraArena {
-    static Logger logger = LoggerFactory.getLogger(KopierGR199FraArena.class);
+    private static Logger logger = LoggerFactory.getLogger(KopierGR199FraArena.class);
 
     @Value("${loependeytelser.path}")
     String filpath;
@@ -36,27 +34,29 @@ public class KopierGR199FraArena {
     boolean isMaster;
 
     @Inject
-    SolrService solrService;
+    private AktivitetService aktivitetService;
 
-    @Inject
-    AktivitetService aktivitetService;
-
-    boolean isRunning = false;
+    private boolean isRunning = false;
 
     private IndekserYtelserHandler indekserHandler;
-    private ArenafilService arenafilService;
 
-    public KopierGR199FraArena(IndekserYtelserHandler indekserHandler, ArenafilService arenafilService) {
+    public KopierGR199FraArena(IndekserYtelserHandler indekserHandler) {
         this.indekserHandler = indekserHandler;
-        this.arenafilService = arenafilService;
+    }
+
+    public void startOppdateringAvYtelser() {
+        if(this.isRunning()) {
+            logger.info("Kunne ikke starte ny oppdatering av ytelser fordi den allerede er midt i en oppdatering");
+            return;
+        }
+        this.isRunning = true;
+        kopierOgIndekser();
     }
 
     @Timed(name = "GR199.kopierOgIndekser")
-    @Scheduled(cron = "${filmottak.loependeYtelser.cron}")
-    public void kopierOgIndekser() {
-        isRunning = true;
-        Supplier<Try<InputStream>> hentfil = () -> arenafilService.hentArenafil(new File(filpath, filnavn));
-        logger.info("Starter reindeksering...");
+    void kopierOgIndekser() {
+        Supplier<Try<InputStream>> hentfil = () -> FileUtils.lesYtelsesFil(new File(filpath, filnavn));
+        logger.info("Starter oppdatering av ytelser...");
 
         aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
 
@@ -68,15 +68,13 @@ public class KopierGR199FraArena {
                 .onFailure(log(logger, "Unmarshalling feilet").andThen(stopped))
                 .andThen(timed("GR199.indekser", indekserHandler::indekser))
                 .onFailure(log(logger, "Indeksering feilet").andThen(stopped))
-                .andThen(() -> solrService.hovedindeksering())
-                .onFailure(log(logger, "Feil under hovedindeksering").andThen(stopped))
                 .andThen(() -> {
                     this.isRunning = false;
-                    logger.info("Reindeksering ferdig...");
+                    logger.info("Oppdatering av ytelser ferdig...");
                 });
     }
 
-    public boolean isRunning() {
+    boolean isRunning() {
         return this.isRunning;
     }
 

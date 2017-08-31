@@ -1,6 +1,6 @@
 package no.nav.fo.routes;
 
-import no.nav.fo.consumer.IndekserYtelserHandler;
+import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerinformasjonFraFil;
