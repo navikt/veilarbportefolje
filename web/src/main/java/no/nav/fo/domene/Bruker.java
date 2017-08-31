@@ -30,13 +30,18 @@ public class Bruker {
     String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
-    ManedMapping utlopsdatoFasett;
-    LocalDateTime aapMaxtid;
-    KvartalMapping aapMaxtidFasett;
+    ManedFasettMapping utlopsdatoFasett;
+    Integer dagputlopUke;
+    DagpengerUkeFasettMapping dagputlopUkeFasett;
+    Integer permutlopUke;
+    DagpengerUkeFasettMapping permutlopUkeFasett;
+    Integer aapmaxtidUke;
+    AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
+
 
     public static Bruker of(SolrDocument document) {
         return new Bruker()
@@ -53,14 +58,17 @@ public class Bruker {
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
                 .setUtlopsdato(toLocalDateTime((Date) document.get("utlopsdato")))
-                .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
-                .setAapMaxtid(toLocalDateTime((Date) document.get("aap_maxtid")))
-                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
+                .setUtlopsdatoFasett(ManedFasettMapping.of((String) document.get("utlopsdatofasett")))
+                .setDagputlopUke((Integer) document.get("dagputlopuke"))
+                .setDagputlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("dagputlopukefasett")))
+                .setPermutlopUke((Integer) document.get("permutlopuke"))
+                .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("permutlopukefasett")))
+                .setAapmaxtidUke((Integer) document.get("aapmaxtiduke"))
+                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of((String) document.get("aapmaxtidukefasett")))
                 .setArbeidsliste(Arbeidsliste.of(document))
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
-                .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
-                ;
+                .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")));
     }
 
     private static String getDiskresjonskode(SolrDocument document) {

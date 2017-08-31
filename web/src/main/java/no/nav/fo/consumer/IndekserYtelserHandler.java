@@ -15,24 +15,36 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.*;
 import static no.nav.fo.domene.Utlopsdato.utlopsdato;
-import static no.nav.fo.domene.Utlopsdato.utlopsdatoUtregning;
-import static no.nav.fo.domene.YtelseMapping.AAP_MAXTID;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 
 
 public class IndekserYtelserHandler {
     static Logger logger = LoggerFactory.getLogger(IndekserYtelserHandler.class);
+    static final Map<YtelseMapping, BiConsumer<LoependeVedtak, BrukerinformasjonFraFil>> ytelsesSpesifikeFelter = new HashMap<>();
+
+    static {
+        ytelsesSpesifikeFelter.put(YtelseMapping.TILTAKSPENGER, IndekserYtelserHandler::settUtlopsdatoOgMndFasett);
+        ytelsesSpesifikeFelter.put(YtelseMapping.AAP_UNNTAK, IndekserYtelserHandler::settUtlopsdatoOgMndFasett);
+        ytelsesSpesifikeFelter.put(YtelseMapping.DAGPENGER_OVRIGE, IndekserYtelserHandler::settDagpUke);
+        ytelsesSpesifikeFelter.put(YtelseMapping.ORDINARE_DAGPENGER, IndekserYtelserHandler::settDagpUke);
+        ytelsesSpesifikeFelter.put(YtelseMapping.AAP_MAXTID, (vedtak, brukerinfo) -> {
+            settUtlopsdatoOgMndFasett(vedtak, brukerinfo);
+            settAapMaxtidUke(vedtak, brukerinfo);
+        });
+        ytelsesSpesifikeFelter.put(YtelseMapping.DAGPENGER_MED_PERMITTERING, (vedtak, brukerinfo) -> {
+            settPermittertDagpUke(vedtak, brukerinfo);
+            settDagpUke(vedtak, brukerinfo);
+        });
+    }
 
     @Inject
     private PersistentOppdatering persistentOppdatering;
@@ -74,7 +86,10 @@ public class IndekserYtelserHandler {
                     .collect(toList());
 
             logger.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
-            timed("GR199.lagreOppdateringer", () -> { persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter); return null; });
+            timed("GR199.lagreOppdateringer", () -> {
+                persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter);
+                return null;
+            });
         });
         logger.info("Lagring av ytelser ferdig!");
     }
@@ -97,22 +112,35 @@ public class IndekserYtelserHandler {
             BrukerinformasjonFraFil brukerinfo = new BrukerinformasjonFraFil(personId);
 
             YtelseMapping ytelseMapping = YtelseMapping.of(vedtak).orElseThrow(() -> new FantIngenYtelseMappingException(vedtak));
-
-            LocalDateTime utlopsdato = utlopsdato(now, vedtak);
-
             brukerinfo.setYtelse(ytelseMapping);
-            brukerinfo.setUtlopsdato(utlopsdato);
 
-            ManedMapping.finnManed(now, utlopsdato).ifPresent(brukerinfo::setUtlopsdatoFasett);
-
-            if (AAP_MAXTID.sjekk.test(vedtak)) {
-                LocalDateTime maxtid = utlopsdatoUtregning(now, vedtak.getAaptellere());
-                brukerinfo.setAapMaxtid(maxtid);
-
-                KvartalMapping.finnKvartal(now, maxtid).ifPresent(brukerinfo::setAapMaxtidFasett);
-            }
+            ytelsesSpesifikeFelter.get(ytelseMapping).accept(vedtak, brukerinfo);
 
             return brukerinfo;
         });
+    }
+
+    private static void settUtlopsdatoOgMndFasett(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {
+        LocalDateTime utlopsdato = utlopsdato(vedtak);
+        brukerinfo.setUtlopsdato(utlopsdato);
+        ManedFasettMapping.finnManed(now(), utlopsdato).ifPresent(brukerinfo::setUtlopsdatoFasett);
+    }
+
+    private static void settAapMaxtidUke(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {
+        int antallUkerIgjen = vedtak.getAaptellere().getAntallUkerIgjen().intValue();
+        brukerinfo.setAapmaxtidUke(antallUkerIgjen);
+        AAPMaxtidUkeFasettMapping.finnUkemapping(antallUkerIgjen).ifPresent(brukerinfo::setAapmaxtidUkeFasett);
+    }
+
+    private static void settDagpUke(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {
+        int antallUkerIgjen = vedtak.getDagpengetellere().getAntallUkerIgjen().intValue();
+        brukerinfo.setDagputlopUke(antallUkerIgjen);
+        DagpengerUkeFasettMapping.finnUkemapping(antallUkerIgjen).ifPresent(brukerinfo::setDagputlopUkeFasett);
+    }
+
+    private static void settPermittertDagpUke(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {
+        int antallUkerIgjen = vedtak.getDagpengetellere().getAntallUkerIgjenUnderPermittering().intValue();
+        brukerinfo.setPermutlopUke(antallUkerIgjen);
+        DagpengerUkeFasettMapping.finnUkemapping(antallUkerIgjen).ifPresent(brukerinfo::setPermutlopUkeFasett);
     }
 }

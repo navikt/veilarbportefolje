@@ -52,6 +52,10 @@
         <exposedRest name="no.nav.fo.solrindeks.hovedindeksering" path="/veilarbportefolje/tjenester/solr/hovedindeksering"/>
         <exposedRest name="no.nav.fo.solrindeks.deltaindeksering" path="/veilarbportefolje/tjenester/solr/deltaindeksering"/>
     </exposed-services>
+  
+    <serverOptions>
+        <memoryParameters resourceAlias="veilarb-memparams"/>
+    </serverOptions>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
     <security serviceUserResourceAlias="srvveilarbportefolje">

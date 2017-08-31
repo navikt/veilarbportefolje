@@ -87,8 +87,8 @@ public class IndekserYtelserHandlerTest {
     @Test
     public void leggerTilManedFasetteringOmUtlopsdatoErInnenforSammeKalenderar() throws Exception {
         LoependeYtelser ytelser = lagLoependeYtelser(asList(
-                lagVedtak("10108000397", new BigInteger("52"), BigInteger.TEN), //TESTFAMILIE // Utenfor kalenderåret
-                lagVedtak("10108000399") //TESTFAMILIE
+                lagVedtak("10108000397", new BigInteger("53"), BigInteger.TEN), //TESTFAMILIE // Utenfor kalenderåret
+                lagVedtak("10108000399", "AA", "AAP") //TESTFAMILIE
         ));
 
         handler.indekser(ytelser);
@@ -140,8 +140,8 @@ public class IndekserYtelserHandlerTest {
         assertThat(oppdateringer).hasSize(1);
 
         assertThat(oppdateringer.get(0).getPersonid()).isNotNull();
-        assertThat(oppdateringer.get(0).getAapMaxtid()).isNull();
-        assertThat(oppdateringer.get(0).getAapMaxtidFasett()).isNull();
+        assertThat(oppdateringer.get(0).getAapmaxtidUke()).isNull();
+        assertThat(oppdateringer.get(0).getAapmaxtidUkeFasett()).isNull();
     }
 
     private LoependeYtelser lagLoependeYtelser(List<LoependeVedtak> vedtak) {

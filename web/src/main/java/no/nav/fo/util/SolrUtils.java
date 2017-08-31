@@ -19,6 +19,7 @@ public class SolrUtils {
 
     private static Locale locale = new Locale("no", "NO");
     private static Collator collator = Collator.getInstance(locale);
+
     static {
         collator.setStrength(Collator.PRIMARY);
     }
@@ -64,7 +65,7 @@ public class SolrUtils {
         boolean ascending = "ascending".equals(sortOrder);
 
         Comparator<S> allowNullComparator = (o1, o2) -> {
-            if(o1 == null && o2 == null) return 0;
+            if (o1 == null && o2 == null) return 0;
             if (o1 == null) return -1;
             if (o2 == null) return 1;
 
@@ -85,24 +86,24 @@ public class SolrUtils {
         return brukere;
     }
 
+    private static Map<String, Function<Bruker, Comparable>> sortFieldMap = new HashMap<String, Function<Bruker, Comparable>>() {{
+        put("etternavn", Bruker::getEtternavn);
+        put("fodselsnummer", Bruker::getFnr);
+        put("utlopsdato", Bruker::getUtlopsdato);
+        put("aapmaxtidUke", Bruker::getAapmaxtidUke);
+        put("dagputlopUke", Bruker::getDagputlopUke);
+        put("permutlopUke", Bruker::getPermutlopUke);
+        put("arbeidsliste_frist", Bruker::getArbeidslisteFrist);
+        put("VENTER_PA_SVAR_FRA_NAV", Bruker::getVenterPaSvarFraNAV);
+        put("VENTER_PA_SVAR_FRA_BRUKER", Bruker::getVenterPaSvarFraBruker);
+        put("UTLOPTE_AKTIVITETER", Bruker::getNyesteUtlopteAktivitet);
+    }};
+
     public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField) {
-        if ("etternavn".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getEtternavn);
-        } else if ("fodselsnummer".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getFnr);
-        } else if ("utlopsdato".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getUtlopsdato);
-        } else if ("aapMaxtid".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getAapMaxtid);
-        } else if ("arbeidsliste_frist".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getArbeidslisteFrist);
-        } else if ("VENTER_PA_SVAR_FRA_NAV".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraNAV);
-        } else if ("VENTER_PA_SVAR_FRA_BRUKER".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraBruker);
-        } else if ("UTLOPTE_AKTIVITETER".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getNyesteUtlopteAktivitet);
+        if (sortFieldMap.containsKey(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
         }
+
         brukere.sort(brukerErNyComparator());
         return brukere;
     }

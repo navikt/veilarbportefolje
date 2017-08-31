@@ -21,6 +21,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -63,11 +64,11 @@ public class BrukerRepository {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public void updateMetadata(String name, Date date) {
-        update(db,METADATA).set(name, date).execute();
+        update(db, METADATA).set(name, date).execute();
     }
 
     public Try<Oppfolgingstatus> retrieveOppfolgingstatus(PersonId personId) {
-        if(personId == null) {
+        if (personId == null) {
             return Try.failure(new NullPointerException());
         }
         return Try.of(
@@ -127,18 +128,18 @@ public class BrukerRepository {
                         .column("FNR")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId,e));
+        ).onFailure(e -> LOG.warn("Fant ikke fnr for aktoerId {}", aktoerId, e));
     }
 
     public Try<PersonId> deleteBrukerdata(PersonId personId) {
         return Try.of(
                 () -> {
-                    delete(db.getDataSource(),BRUKERDATA)
+                    delete(db.getDataSource(), BRUKERDATA)
                             .where(WhereClause.equals("PERSONID", personId.toString()))
                             .execute();
                     return personId;
                 }
-        ).onFailure((e) -> LOG.warn("Kunne ikke slette brukerdata for personid {}",personId.toString(), e));
+        ).onFailure((e) -> LOG.warn("Kunne ikke slette brukerdata for personid {}", personId.toString(), e));
     }
 
 
@@ -162,7 +163,7 @@ public class BrukerRepository {
 
     @SneakyThrows
     private Oppfolgingstatus mapToOppfolgingstatus(ResultSet rs) {
-        if(rs.isBeforeFirst()) {
+        if (rs.isBeforeFirst()) {
             rs.next();
         }
         return new Oppfolgingstatus()
@@ -226,11 +227,15 @@ public class BrukerRepository {
                         .setVeileder((String) data.get("VEILEDERIDENT"))
                         .setPersonid((String) data.get("PERSONID"))
                         .setTildeltTidspunkt((Timestamp) data.get("TILDELT_TIDSPUNKT"))
-                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
-                        .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
-                        .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
-                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
+                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
+                        .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
+                        .setDagputlopUke(intValue(data.get("DAGPUTLOPUKE")))
+                        .setDagputlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("DAGPUTLOPUKEFASETT")))
+                        .setPermutlopUke(intValue(data.get("PERMUTLOPUKE")))
+                        .setPermutlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("PERMUTLOPUKEFASETT")))
+                        .setAapmaxtidUke(intValue(data.get("AAPMAXTIDUKE")))
+                        .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
                         .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
@@ -392,11 +397,11 @@ public class BrukerRepository {
 
     public List<String> getTiltak(String personId) {
         return db.queryForList(
-            "SELECT " +
-                "VERDI AS TILTAK " +
-                "FROM BRUKERTILTAK " +
-                "LEFT JOIN TILTAKKODEVERK ON TILTAKKODEVERK.KODE = BRUKERTILTAK.TILTAKSKODE " +
-                "WHERE PERSONID = ?", String.class, personId);
+                "SELECT " +
+                        "VERDI AS TILTAK " +
+                        "FROM BRUKERTILTAK " +
+                        "LEFT JOIN TILTAKKODEVERK ON TILTAKKODEVERK.KODE = BRUKERTILTAK.TILTAKSKODE " +
+                        "WHERE PERSONID = ?", String.class, personId);
     }
 
     public void slettYtelsesdata() {
@@ -404,8 +409,12 @@ public class BrukerRepository {
                 .set("ytelse", null)
                 .set("utlopsdato", null)
                 .set("utlopsdatoFasett", null)
-                .set("aapMaxtid", null)
-                .set("aapMaxtidFasett", null)
+                .set("dagputlopuke", null)
+                .set("dagputlopukefasett", null)
+                .set("permutlopuke", null)
+                .set("permutlopukefasett", null)
+                .set("aapmaxtiduke", null)
+                .set("aapmaxtidukefasett", null)
                 .execute();
     }
 
@@ -469,8 +478,9 @@ public class BrukerRepository {
                         "ytelse, " +
                         "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "aapmaxtid, " +
-                        "aapmaxtidfasett, " +
+                        "dagputlopuke, dagputlopukefasett, " +
+                        "permutlopuke, permutlopukefasett, " +
+                        "aapmaxtiduke, aapmaxtidukefasett, " +
                         "oppfolging, " +
                         "venterpasvarfrabruker, " +
                         "venterpasvarfranav, " +
@@ -507,8 +517,9 @@ public class BrukerRepository {
                         "ytelse," +
                         "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "aapmaxtid, " +
-                        "aapmaxtidfasett, " +
+                        "dagputlopuke, dagputlopukefasett, " +
+                        "permutlopuke, permutlopukefasett, " +
+                        "aapmaxtiduke, aapmaxtidukefasett, " +
                         "oppfolging, " +
                         "venterpasvarfrabruker, " +
                         "venterpasvarfranav, " +
@@ -546,8 +557,9 @@ public class BrukerRepository {
                         "ytelse, " +
                         "utlopsdato, " +
                         "utlopsdatofasett, " +
-                        "aapmaxtid, " +
-                        "aapmaxtidfasett, " +
+                        "dagputlopuke, dagputlopukefasett, " +
+                        "permutlopuke, permutlopukefasett, " +
+                        "aapmaxtiduke, aapmaxtidukefasett, " +
                         "oppfolging, " +
                         "venterpasvarfrabruker, " +
                         "venterpasvarfranav, " +
@@ -629,20 +641,40 @@ public class BrukerRepository {
         return (Boolean) bruker.get("oppfolging").getValue();
     }
 
+    public static Integer intValue(Object value) {
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal) value).intValue();
+        } else if (value instanceof Integer) {
+            return (Integer) value;
+        } else if (value instanceof String) {
+            return Integer.parseInt((String) value);
+        } else {
+            return null;
+        }
+    }
+
     private static LocalDateTime toLocalDateTime(Timestamp timestamp) {
         return timestamp != null ? timestamp.toLocalDateTime() : null;
     }
 
-    private ManedMapping manedmappingOrNull(String string) {
-        return string != null ? ManedMapping.valueOf(string) : null;
+    private ManedFasettMapping manedmappingOrNull(String string) {
+        return string != null ? ManedFasettMapping.valueOf(string) : null;
     }
 
     private YtelseMapping ytelsemappingOrNull(String string) {
         return string != null ? YtelseMapping.valueOf(string) : null;
     }
 
-    private KvartalMapping kvartalmappingOrNull(String string) {
-        return string != null ? KvartalMapping.valueOf(string) : null;
+    private KvartalFasettMapping kvartalmappingOrNull(String string) {
+        return string != null ? KvartalFasettMapping.valueOf(string) : null;
+    }
+
+    private AAPMaxtidUkeFasettMapping aapMaxtidUkeFasettMappingOrNull(String string) {
+        return string != null ? AAPMaxtidUkeFasettMapping.valueOf(string) : null;
+    }
+
+    private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
+        return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
     }
 
     private Boolean kanskjeVerdi(List<Map<String, Object>> statuserFraDb, String type) {
