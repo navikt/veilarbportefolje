@@ -470,39 +470,40 @@ public class BrukerRepository {
                 "person_id = ? ";
     }
 
+    private static String baseSelect = "SELECT " +
+            "person_id, " +
+            "fodselsnr, " +
+            "fornavn, " +
+            "etternavn, " +
+            "nav_kontor, " +
+            "formidlingsgruppekode, " +
+            "iserv_fra_dato, " +
+            "kvalifiseringsgruppekode, " +
+            "rettighetsgruppekode, " +
+            "hovedmaalkode, " +
+            "sikkerhetstiltak_type_kode, " +
+            "fr_kode, " +
+            "sperret_ansatt, " +
+            "er_doed, " +
+            "doed_fra_dato, " +
+            "tidsstempel, " +
+            "veilederident, " +
+            "ytelse, " +
+            "utlopsdato, " +
+            "utlopsdatofasett, " +
+            "dagputlopuke, dagputlopukefasett, " +
+            "permutlopuke, permutlopukefasett, " +
+            "aapmaxtiduke, aapmaxtidukefasett, " +
+            "oppfolging, " +
+            "venterpasvarfrabruker, " +
+            "venterpasvarfranav, " +
+            "nyesteutlopteaktivitet, " +
+            "iavtaltaktivitet " +
+            "FROM " +
+            "oppfolgingsbruker ";
+
     String retrieveBrukereSQL() {
-        return
-                "SELECT " +
-                        "person_id, " +
-                        "fodselsnr, " +
-                        "fornavn, " +
-                        "etternavn, " +
-                        "nav_kontor, " +
-                        "formidlingsgruppekode, " +
-                        "iserv_fra_dato, " +
-                        "kvalifiseringsgruppekode, " +
-                        "rettighetsgruppekode, " +
-                        "hovedmaalkode, " +
-                        "sikkerhetstiltak_type_kode, " +
-                        "fr_kode, " +
-                        "sperret_ansatt, " +
-                        "er_doed, " +
-                        "doed_fra_dato, " +
-                        "tidsstempel, " +
-                        "veilederident, " +
-                        "ytelse, " +
-                        "utlopsdato, " +
-                        "utlopsdatofasett, " +
-                        "dagputlopuke, dagputlopukefasett, " +
-                        "permutlopuke, permutlopukefasett, " +
-                        "aapmaxtiduke, aapmaxtidukefasett, " +
-                        "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav, " +
-                        "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet " +
-                        "FROM " +
-                        "oppfolgingsbruker " +
+        return baseSelect +
                         "LEFT JOIN bruker_data " +
                         "ON " +
                         "bruker_data.personid = oppfolgingsbruker.person_id";
@@ -510,38 +511,7 @@ public class BrukerRepository {
     }
 
     String retrieveBrukerMedBrukerdataSQL() {
-        return
-                "SELECT " +
-                        "person_id, " +
-                        "fodselsnr, " +
-                        "fornavn, " +
-                        "etternavn, " +
-                        "nav_kontor, " +
-                        "formidlingsgruppekode, " +
-                        "iserv_fra_dato, " +
-                        "kvalifiseringsgruppekode, " +
-                        "rettighetsgruppekode, " +
-                        "hovedmaalkode, " +
-                        "sikkerhetstiltak_type_kode, " +
-                        "fr_kode, " +
-                        "sperret_ansatt, " +
-                        "er_doed, " +
-                        "doed_fra_dato, " +
-                        "tidsstempel, " +
-                        "veilederident, " +
-                        "ytelse," +
-                        "utlopsdato, " +
-                        "utlopsdatofasett, " +
-                        "dagputlopuke, dagputlopukefasett, " +
-                        "permutlopuke, permutlopukefasett, " +
-                        "aapmaxtiduke, aapmaxtidukefasett, " +
-                        "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav, " +
-                        "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet " +
-                        "FROM " +
-                        "oppfolgingsbruker " +
+        return baseSelect +
                         "LEFT JOIN bruker_data " +
                         "ON " +
                         "bruker_data.personid = oppfolgingsbruker.person_id " +
@@ -550,38 +520,7 @@ public class BrukerRepository {
     }
 
     String retrieveOppdaterteBrukereSQL() {
-        return
-                "SELECT " +
-                        "person_id, " +
-                        "fodselsnr, " +
-                        "fornavn, " +
-                        "etternavn, " +
-                        "nav_kontor, " +
-                        "formidlingsgruppekode, " +
-                        "iserv_fra_dato, " +
-                        "kvalifiseringsgruppekode, " +
-                        "rettighetsgruppekode, " +
-                        "hovedmaalkode, " +
-                        "sikkerhetstiltak_type_kode, " +
-                        "fr_kode, " +
-                        "sperret_ansatt, " +
-                        "er_doed, " +
-                        "doed_fra_dato, " +
-                        "tidsstempel, " +
-                        "veilederident," +
-                        "ytelse, " +
-                        "utlopsdato, " +
-                        "utlopsdatofasett, " +
-                        "dagputlopuke, dagputlopukefasett, " +
-                        "permutlopuke, permutlopukefasett, " +
-                        "aapmaxtiduke, aapmaxtidukefasett, " +
-                        "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav, " +
-                        "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet " +
-                        "FROM " +
-                        "oppfolgingsbruker " +
+        return baseSelect +
                         "LEFT JOIN bruker_data " +
                         "ON " +
                         "bruker_data.personid = oppfolgingsbruker.person_id " +
@@ -694,26 +633,11 @@ public class BrukerRepository {
         return string != null ? YtelseMapping.valueOf(string) : null;
     }
 
-    private KvartalFasettMapping kvartalmappingOrNull(String string) {
-        return string != null ? KvartalFasettMapping.valueOf(string) : null;
-    }
-
     private AAPMaxtidUkeFasettMapping aapMaxtidUkeFasettMappingOrNull(String string) {
         return string != null ? AAPMaxtidUkeFasettMapping.valueOf(string) : null;
     }
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
-    }
-
-    private Boolean kanskjeVerdi(List<Map<String, Object>> statuserFraDb, String type) {
-        for (Map<String, Object> rad : statuserFraDb) {
-            String aktivitetType = (String) rad.get("AKTIVITETTYPE");
-            if (type.equals(aktivitetType)) {
-                //med hsql driveren settes det inn false/true og med oracle settes det inn 0/1.
-                return Boolean.valueOf((String) rad.get("STATUS")) || "1".equals(rad.get("STATUS"));
-            }
-        }
-        return false;
     }
 }
