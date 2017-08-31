@@ -104,12 +104,13 @@ public class Bruker {
         }
     }
 
-    private static List<String> getBrukertiltak(SolrDocument document) {
-        String tiltak = (String) document.get("tiltak");
-        if (tiltak == null) {
-            return emptyList();
+    private static List getBrukertiltak(SolrDocument document) {
+        List tiltak = (List) document.get("tiltak");
+
+        if (Objects.isNull(tiltak)) {
+            return null;
         } else {
-            return singletonList(tiltak);
+            return tiltak;
         }
     }
 
