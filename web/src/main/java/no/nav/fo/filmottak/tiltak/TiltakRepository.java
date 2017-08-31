@@ -1,6 +1,5 @@
 package no.nav.fo.filmottak.tiltak;
 
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
@@ -20,7 +19,7 @@ import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class TiltakRepository extends BrukerRepository {
+public class TiltakRepository {
 
     private static final Logger logger = getLogger(TiltakRepository.class);
 
