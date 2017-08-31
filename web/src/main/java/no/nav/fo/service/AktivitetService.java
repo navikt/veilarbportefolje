@@ -5,6 +5,7 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
+import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.util.AktivitetUtils;
@@ -30,13 +31,14 @@ public class AktivitetService {
     @Inject
     private PersistentOppdatering persistentOppdatering;
 
-    public void tryUtledOgLagreAlleAktivitetstatuser() {
+    public Object tryUtledOgLagreAlleAktivitetstatuser() {
         Try.of(() ->
                 timed("aktiviteter.utled.alle.statuser", () -> {
                     utledOgLagreAlleAktivitetstatuser();
                     return null;
                 })
-        ).onFailure(e -> log.error("Kunne ikke lagre alle aktive statuser: {}", e.getMessage()));
+        ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
+        return null;
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
@@ -56,22 +58,22 @@ public class AktivitetService {
         timed(
                 "aktiviteter.utled.statuser",
                 () -> {
-                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", ()-> brukerRepository.getAktiviteterForListOfAktoerid(aktoerider));
+                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", () -> brukerRepository.getAktiviteterForListOfAktoerid(aktoerider));
                     List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
-                            timed("aktiviteter.konverter.til.brukeroppdatering", ()->AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
+                            timed("aktiviteter.konverter.til.brukeroppdatering", () -> AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
                     timed("aktiviteter.persistent.lagring", () -> {
                         persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
                         return null;
                     });
                     return null;
-                    },
+                },
                 (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
         );
 
     }
 
-    public void utledOgIndekserAktivitetstatuserForAktoerid(String aktoerid) {
+    public void utledOgIndekserAktivitetstatuserForAktoerid(AktoerId aktoerid) {
         persistentOppdatering.lagre(hentAktivitetBrukerOppdatering(aktoerid, aktoerService, brukerRepository));
     }
 }

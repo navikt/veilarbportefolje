@@ -35,6 +35,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
@@ -90,9 +91,9 @@ public class SolrServiceImpl implements SolrService {
         BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
             antallBrukere[0] += dokumenter.size();
             leggDataTilSolrDocument(dokumenter);
-            addDocuments(dokumenter);
+            addDocumentsToIndex(dokumenter);
         });
-        brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
+        timed("indeksering.prosesserbrukere", () -> brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer));
         consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
 
         commit();
@@ -125,12 +126,11 @@ public class SolrServiceImpl implements SolrService {
                 .collect(toList());
 
         leggDataTilSolrDocument(oppfolgingsbrukere);
-        addDocuments(oppfolgingsbrukere);
-
+        addDocumentsToIndex(oppfolgingsbrukere);
 
         dokumenter.stream()
                 .filter((bruker) -> !BrukerRepository.erOppfolgingsBruker(bruker))
-                .forEach( (bruker) -> slettBruker((String) bruker.get("fnr").getValue()));
+                .forEach((bruker) -> slettBruker((String) bruker.get("fnr").getValue()));
 
         commit();
         brukerRepository.updateTidsstempel(timestamp);
@@ -168,35 +168,34 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-        applyTiltak(dokumenter, brukerRepository);
+        applyAktivitetStatuser(dokumenter, brukerRepository);
+        timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService));
+        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository));
     }
 
-    private static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
+    private static Object applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
         brukere.forEach(solrDokument -> {
             String personId = (String) solrDokument.get("person_id").getValue();
 
-            timed("indeksering.applyarbeidslistedata", () -> {
-                aktoerService.hentAktoeridFraPersonid(personId)
-                        .map(arbeidslisteRepository::retrieveArbeidsliste)
-                        .map(result -> result.onSuccess(
-                                arbeidsliste -> {
-                                    if (arbeidsliste != null) {
-                                        solrDokument.setField("arbeidsliste_aktiv", true);
-                                        solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
-                                        solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
-                                        solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
-                                        solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
-                                        solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
+            aktoerService.hentAktoeridFraPersonid(personId)
+                    .map(arbeidslisteRepository::retrieveArbeidsliste)
+                    .map(result -> result.onSuccess(
+                            arbeidsliste -> {
+                                if (arbeidsliste != null) {
+                                    solrDokument.setField("arbeidsliste_aktiv", true);
+                                    solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
+                                    solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
+                                    solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
+                                    solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
+                                    solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
 
-                                        LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
-                                    }
-
+                                    LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
                                 }
-                        ));
-                return null;
-            });
+
+                            }
+                    ));
         });
+        return null;
     }
 
     private List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
@@ -220,7 +219,7 @@ public class SolrServiceImpl implements SolrService {
 
     @Override
     public void slettBruker(PersonId personid) {
-        deleteDocuments("person_id:"+ personid.toString());
+        deleteDocuments("person_id:" + personid.toString());
     }
 
     @Override
@@ -246,13 +245,13 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void indekserBrukerdata(PersonId personId) {
         SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
-        if(!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
+        if (!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
             return;
         }
         LOG.info("Legger bruker med personId {} til i indeksen ", personId);
 
         leggDataTilSolrDocument(singletonList(brukerDokument));
-        addDocuments(singletonList(brukerDokument));
+        addDocumentsToIndex(singletonList(brukerDokument));
         commit();
         LOG.info("Bruker med personId {} lagt til i indeksen", personId);
     }
@@ -270,19 +269,21 @@ public class SolrServiceImpl implements SolrService {
                 .onFailure(e -> LOG.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
-    private List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
+    private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {
         // javaslang.collection-API brukes her pga sliding-metoden
-        io.vavr.collection.List.ofAll(dokumenter)
-                .sliding(10000, 10000)
-                .forEach(docs -> {
-                    try {
-                        solrClientMaster.add(docs.toJavaList());
-                        LOG.info(format("Legger til %d dokumenter i indeksen", docs.length()));
-                    } catch (SolrServerException | IOException e) {
-                        LOG.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
-                    }
-                });
-        return dokumenter;
+        return timed("indeksering.adddocumentstoindex", () -> {
+            io.vavr.collection.List.ofAll(dokumenter)
+                    .sliding(10000, 10000)
+                    .forEach(docs -> {
+                        try {
+                            solrClientMaster.add(docs.toJavaList());
+                            LOG.info(format("Legger til %d dokumenter i indeksen", docs.length()));
+                        } catch (SolrServerException | IOException e) {
+                            LOG.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
+                        }
+                    });
+            return dokumenter;
+        });
     }
 
     private void deleteAllDocuments() {

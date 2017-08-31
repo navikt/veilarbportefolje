@@ -1,6 +1,7 @@
 package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
+import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientMock;
@@ -23,11 +24,11 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
 @Configuration
 @Import({
         DatabaseConfig.class,
-        VirksomhetEnhetEndpointConfigMock.class,
+        VirksomhetEnhetEndpointConfig.class,
         LocalServiceConfig.class,
         SolrConfig.class,
         AktoerEndpointConfig.class,
-        ArenafilConfig.class,
+        FilmottakConfig.class,
         MetricsConfig.class,
         AktoerEndpointConfig.class,
         AbacContext.class,

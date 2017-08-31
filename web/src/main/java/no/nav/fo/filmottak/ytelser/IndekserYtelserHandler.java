@@ -1,4 +1,4 @@
-package no.nav.fo.consumer;
+package no.nav.fo.filmottak.ytelser;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;

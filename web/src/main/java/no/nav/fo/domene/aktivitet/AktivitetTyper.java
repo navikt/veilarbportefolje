@@ -3,12 +3,12 @@ package no.nav.fo.domene.aktivitet;
 public enum AktivitetTyper {
     egen,
     stilling,
-    egenaktivitet,
-    jobbsoeking,
     sokeavtale,
     behandling,
     ijobb,
-    mote;
+    samtalereferat,
+    mote,
+    tiltak;
 
     public static boolean contains(String value) {
         try {

@@ -89,7 +89,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                             solrService.commit();
                             return null;
                         }
-                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerid);
+                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerId);
                         return null;
                     },
                     (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktoerid).toUpperCase()); }}

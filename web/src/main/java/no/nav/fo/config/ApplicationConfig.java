@@ -1,6 +1,7 @@
 package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
+import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
@@ -28,7 +29,7 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         ServiceConfig.class,
         SolrConfig.class,
         AktoerEndpointConfig.class,
-        ArenafilConfig.class,
+        FilmottakConfig.class,
         MetricsConfig.class,
         AktoerEndpointConfig.class,
         CacheConfig.class,

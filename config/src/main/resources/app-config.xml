@@ -35,6 +35,7 @@
         <applicationProperties alias="dialogaktorfeed.properties"/>
         <applicationProperties alias="aktiviteterfeed.properties"/>
         <applicationProperties alias="situasjonfeed.properties"/>
+        <applicationProperties alias="tiltak.properties"/>
 
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <rest alias="veilArbSituasjonAPI" mapToProperty="veilarbsituasjon.api" />
@@ -46,11 +47,15 @@
         <baseUrl alias="isso-issuer"/>
         <baseUrl alias="isso.isalive"/>
         <credential alias="isso-rp-user"/>
+        <credential alias="veilarbportefolje.filmottak.sftp.login"/>
     </resources>
 
     <exposed-services>
-        <exposedRest name="no.nav.fo.solrindeks.hovedindeksering" path="/veilarbportefolje/tjenester/solr/hovedindeksering"/>
-        <exposedRest name="no.nav.fo.solrindeks.deltaindeksering" path="/veilarbportefolje/tjenester/solr/deltaindeksering"/>
+        <exposedRest name="no.nav.fo.portefolje.hovedindeksering" path="/veilarbportefolje/tjenester/solr/hovedindeksering"/>
+        <exposedRest name="no.nav.fo.portefolje.deltaindeksering" path="/veilarbportefolje/tjenester/solr/deltaindeksering"/>
+        <exposedRest name="no.nav.fo.portefolje.oppdatertiltak" path="/veilarbportefolje/internal/oppdatertiltak"/>
+        <exposedRest name="no.nav.fo.portefolje.oppdaterytelser" path="/veilarbportefolje/internal/oppdaterytelser"/>
+        <exposedRest name="no.nav.fo.portefolje.totalhovedindeksering" path="/veilarbportefolje/internal/totalhovedindeksering"/>
     </exposed-services>
   
     <serverOptions>
