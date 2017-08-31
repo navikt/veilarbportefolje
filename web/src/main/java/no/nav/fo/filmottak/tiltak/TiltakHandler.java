@@ -27,7 +27,7 @@ import static no.nav.fo.util.StreamUtils.log;
 public class TiltakHandler {
     private static Logger logger = LoggerFactory.getLogger(TiltakHandler.class);
 
-    @Value("${tiltak.sftp.URI}")
+    @Value("${filmottak.tiltak.sftp.URI}")
     private String URI;
 
     @Value("${environment.name}")

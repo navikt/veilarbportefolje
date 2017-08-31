@@ -23,7 +23,7 @@ public class FilmottakConfig {
     @Value("${loependeytelser.filnavn}")
     String filnavn;
 
-    @Value("${tiltak.sftp.URI}")
+    @Value("${filmottak.tiltak.sftp.URI}")
     private String URI;
 
     @Value("${veilarbportefolje.filmottak.sftp.login.username}")
