@@ -52,7 +52,7 @@ public class AktivitetStatus {
         InsertBatchQuery<AktivitetStatus> insertQuery = new InsertBatchQuery<>(db, "BRUKERSTATUS_AKTIVITETER");
 
         return insertQuery
-                .add("PERSONID", (a -> a.getPersonid().toString()), String.class)
+                .add("PERSONID", (a) -> a.getPersonid().toString(), String.class)
                 .add("AKTOERID", AktivitetStatus::aktoeridOrElseNull, String.class)
                 .add("AKTIVITETTYPE", AktivitetStatus::getAktivitetType, String.class)
                 .add("STATUS", (a) -> DbUtils.boolTo0OR1(a.isAktiv()), String.class)
