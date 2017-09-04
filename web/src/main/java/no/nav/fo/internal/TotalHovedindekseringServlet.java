@@ -6,6 +6,7 @@ import no.nav.fo.service.SolrService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Component
 public class TotalHovedindekseringServlet extends HttpServlet {
     private static Logger logger = LoggerFactory.getLogger(TotalHovedindekseringServlet.class);
 
