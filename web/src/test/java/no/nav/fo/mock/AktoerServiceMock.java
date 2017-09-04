@@ -1,7 +1,6 @@
 package no.nav.fo.mock;
 
 import io.vavr.control.Try;
-import lombok.Data;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
@@ -56,6 +55,11 @@ public class AktoerServiceMock implements AktoerService {
             return Try.success(AKTOER_ID_UNAUTHORIZED).map(AktoerId::new);
         }
         return Try.success(finnAktoerid(fnr)).map(AktoerId::new);
+    }
+
+    @Override
+    public Try<PersonId> hentPersonidFromFnr(Fnr fnr) {
+        return null;
     }
 
     @Override

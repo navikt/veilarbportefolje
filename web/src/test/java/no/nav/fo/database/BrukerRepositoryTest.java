@@ -598,6 +598,16 @@ public class BrukerRepositoryTest {
     }
 
     @Test
+    public void skalInserteOgSletteAktivitetstatus() {
+        String aktivitetstype = "aktivitetstype";
+        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(new PersonId("personid"), new AktoerId("aktivitetid"),aktivitetstype,true,null);
+        brukerRepository.insertAktivitetStatus(aktivitetStatus);
+        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isNotEmpty();
+        brukerRepository.slettAlleAktivitetstatus(aktivitetstype);
+        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isEmpty();
+    }
+
+    @Test
     public void skalReturnereTomtMapDersomIngenBrukerHarAktivitetstatusIDB() {
         assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(new PersonId("personid")))).isEqualTo(new HashMap<>());
     }

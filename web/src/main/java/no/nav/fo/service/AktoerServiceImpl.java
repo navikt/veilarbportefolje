@@ -57,6 +57,16 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     @Override
+    public Try<PersonId> hentPersonidFromFnr(Fnr fnr) {
+        return hentSingleFraDb(
+                db,
+                "SELECT PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR = ?",
+                (data) -> String.valueOf(((Number) data.get("person_id")).intValue()),
+                fnr.toString()
+        ).map(PersonId::new);
+    }
+
+    @Override
     public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
         return hentFnrViaSoap(aktoerId);
     }

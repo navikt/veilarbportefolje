@@ -9,5 +9,6 @@ public interface AktoerService {
     Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid);
     Try<AktoerId> hentAktoeridFraPersonid(String personid);
     Try<AktoerId> hentAktoeridFraFnr(Fnr fnr);
+    Try<PersonId> hentPersonidFromFnr(Fnr fnr);
     Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerid);
 }

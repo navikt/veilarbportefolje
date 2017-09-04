@@ -11,6 +11,7 @@ import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.UnderOppfolgingRegler;
+import no.nav.fo.util.sql.InsertQuery;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -44,6 +45,7 @@ public class BrukerRepository {
     private static final Logger LOG = getLogger(BrukerRepository.class);
     public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
     public static final String BRUKERDATA = "BRUKER_DATA";
+    public static final String BRUKERSTATUS_AKTIVITETER = "BRUKERSTATUS_AKTIVITETER";
     private final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
     private final String METADATA = "METADATA";
     public static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
@@ -62,6 +64,8 @@ public class BrukerRepository {
     public void updateMetadata(String name, Date date) {
         update(db,METADATA).set(name, date).execute();
     }
+
+    public void slettAlleAktivitetstatus(String aktivitettype) { db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '"+aktivitettype+"'");}
 
     public Try<Oppfolgingstatus> retrieveOppfolgingstatus(PersonId personId) {
         if(personId == null) {
@@ -335,6 +339,12 @@ public class BrukerRepository {
                 .execute();
     }
 
+    public void insertAktivitetStatus(AktivitetStatus a) {
+        getInsertAktivitetStatuserForBrukerQuery(a.getAktivitetType(), this.db, a.isAktiv(),
+                a.getAktoerid().aktoerId, a.getPersonid().personId, a.getNesteUtlop())
+                .execute();
+    }
+
     public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId,String>> finnesIdb) {
         Map<Boolean, List<AktivitetStatus>> eksisterendeStatuser = aktivitetStatuses
                 .stream()
@@ -430,13 +440,22 @@ public class BrukerRepository {
     }
 
     static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
-        return SqlUtils.upsert(db, "BRUKERSTATUS_AKTIVITETER")
+        return SqlUtils.upsert(db, BRUKERSTATUS_AKTIVITETER)
                 .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
                 .set("STATUS", boolTo0OR1(status))
                 .set("PERSONID", personid)
                 .set("AKTIVITETTYPE", aktivitetstype)
                 .set("AKTOERID", aktoerid)
                 .set("NESTE_UTLOPSDATO", nesteUtlopsdato);
+    }
+
+    static InsertQuery getInsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
+        return SqlUtils.insert(db, BRUKERSTATUS_AKTIVITETER)
+                .value("STATUS", boolTo0OR1(status))
+                .value("PERSONID", personid)
+                .value("AKTIVITETTYPE", aktivitetstype)
+                .value("AKTOERID", aktoerid)
+                .value("NESTE_UTLOPSDATO", nesteUtlopsdato);
     }
 
     private String retrieveOppfolgingstatusSql() {

@@ -1,0 +1,1 @@
+alter table brukerstatus_aktiviteter modify(aktoerid null);
