@@ -75,6 +75,11 @@ public class ApplicationConfig implements ApiApplication {
         return FSS;
     }
 
+    @Bean
+    public HovedindekseringScheduler hovedindekseringScheduler() {
+        return new HovedindekseringScheduler();
+    }
+
     @Override
     public void startup(ServletContext servletContext) {
         forwardTjenesterTilApi(servletContext);
