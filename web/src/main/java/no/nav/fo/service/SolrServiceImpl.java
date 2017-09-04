@@ -168,7 +168,7 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        applyAktivitetStatuser(dokumenter, brukerRepository);
+        timed("indeksering.applyaktiviteter",() -> {applyAktivitetStatuser(dokumenter, brukerRepository); return null;});
         timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService));
         timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository));
     }

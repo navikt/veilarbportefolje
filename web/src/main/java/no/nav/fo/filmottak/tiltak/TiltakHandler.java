@@ -152,7 +152,9 @@ public class TiltakHandler {
             return;
         }
         AktivitetStatus aktivitetStatus = utledAktivitetstatusForTiltak(bruker, personId);
-        brukerRepository.insertAktivitetStatus(aktivitetStatus);
+        if(Objects.nonNull(aktivitetStatus)){
+            brukerRepository.insertAktivitetStatus(aktivitetStatus);
+        }
     }
 
     private void utledOgLagreGruppeaktiviteter(Bruker bruker) {
@@ -161,7 +163,9 @@ public class TiltakHandler {
             return;
         }
         AktivitetStatus aktivitetStatus = utledGruppeaktivitetstatus(bruker, personId);
-        brukerRepository.insertAktivitetStatus(aktivitetStatus);
+        if(Objects.nonNull(aktivitetStatus)){
+            brukerRepository.insertAktivitetStatus(aktivitetStatus);
+        }
     }
 
 
