@@ -608,6 +608,16 @@ public class BrukerRepositoryTest {
     }
 
     @Test
+    public void skalInserteBatchAvAktivitetstatuser() {
+        List<AktivitetStatus> statuser = new ArrayList<>();
+        statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"),"a1",true, new Timestamp(0)));
+        statuser.add(AktivitetStatus.of(PersonId.of("pid2"), AktoerId.of("aid2"),"a2",true, new Timestamp(0)));
+
+        brukerRepository.insertAktivitetstatuser(statuser);
+        assertThat(brukerRepository.db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER").size()).isEqualTo(2);
+    }
+
+    @Test
     public void skalReturnereTomtMapDersomIngenBrukerHarAktivitetstatusIDB() {
         assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(new PersonId("personid")))).isEqualTo(new HashMap<>());
     }

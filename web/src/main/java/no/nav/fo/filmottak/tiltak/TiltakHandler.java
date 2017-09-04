@@ -110,12 +110,12 @@ public class TiltakHandler {
         });
 
         MetricsUtils.timed("tiltak.insert.as.aktivitet", () -> {
-            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(this::utledOgLagreAktivitetstatusForTiltak);
+            utledOgLagreAktivitetstatusForTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
             return null;
         });
 
         MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
-            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(this::utledOgLagreGruppeaktiviteter);
+            utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
             return null;
         });
 
@@ -146,26 +146,44 @@ public class TiltakHandler {
 
     }
 
-    private void utledOgLagreAktivitetstatusForTiltak(Bruker bruker) {
-        PersonId personId = personIdErElseNull(new Fnr(bruker.getPersonident()));
-        if(Objects.isNull(personId)) {
-            return;
-        }
-        AktivitetStatus aktivitetStatus = utledAktivitetstatusForTiltak(bruker, personId);
-        if(Objects.nonNull(aktivitetStatus)){
-            brukerRepository.insertAktivitetStatus(aktivitetStatus);
-        }
+    private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {
+        io.vavr.collection.List.ofAll(brukere)
+                .sliding(1000,1000)
+                .forEach((brukereVavr) -> {
+                    List<Bruker> brukereJavaBatch = brukereVavr.toJavaList();
+                    List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
+                            .stream()
+                            .map(bruker -> {
+                                Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
+                                return personId.map(p -> utledAktivitetstatusForTiltak(bruker, p)).orElse(null);
+                            })
+                            .filter(Objects::nonNull)
+                            .collect(toList());
+                    brukerRepository.insertAktivitetstatuser(aktivitetStatuses);
+                });
     }
 
-    private void utledOgLagreGruppeaktiviteter(Bruker bruker) {
-        PersonId personId = personIdErElseNull(new Fnr(bruker.getPersonident()));
-        if(Objects.isNull(personId)) {
-            return;
-        }
-        AktivitetStatus aktivitetStatus = utledGruppeaktivitetstatus(bruker, personId);
-        if(Objects.nonNull(aktivitetStatus)){
-            brukerRepository.insertAktivitetStatus(aktivitetStatus);
-        }
+
+    private void utledOgLagreGruppeaktiviteter(List<Bruker> brukere) {
+        io.vavr.collection.List.ofAll(brukere)
+                .sliding(1000,1000)
+                .forEach((brukereVavr) -> {
+                    List<Bruker> brukereJavaBatch = brukereVavr.toJavaList();
+                    List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
+                            .stream()
+                            .map(bruker -> {
+                                Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
+                                return personId.map(p -> utledGruppeaktivitetstatus(bruker, p)).orElse(null);
+                            })
+                            .filter(Objects::nonNull)
+                            .collect(toList());
+                    brukerRepository.insertAktivitetstatuser(aktivitetStatuses);
+
+                });
     }
 
 
@@ -180,7 +198,7 @@ public class TiltakHandler {
     private PersonId personIdErElseNull(Fnr fnr) {
         return aktoerService
                 .hentPersonidFromFnr(fnr)
-                .onFailure((t) -> logger.warn("Kunne ikke finne personId for fnr {}", fnr.toString(), t))
+                .onFailure((t) -> logger.warn("Kunne ikke finne personId for fnr {}", fnr.toString()))
                 .getOrNull();
     }
 

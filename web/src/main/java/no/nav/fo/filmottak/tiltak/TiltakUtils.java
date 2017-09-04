@@ -47,7 +47,7 @@ public class TiltakUtils {
                 .findFirst()
                 .orElse(null);
 
-        return AktivitetStatus.of(personId, new AktoerId(null), tiltak, true, nesteUtlopsdato);
+        return AktivitetStatus.of(personId, new AktoerId(null), gruppeaktivitet, true, nesteUtlopsdato);
     }
 
     static Timestamp toTimestamp(XMLGregorianCalendar calendar) {

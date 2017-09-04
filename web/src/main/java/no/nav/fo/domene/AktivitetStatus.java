@@ -3,12 +3,14 @@ package no.nav.fo.domene;
 import lombok.Value;
 import lombok.experimental.Wither;
 import no.nav.fo.util.DbUtils;
+import no.nav.fo.util.sql.InsertBatchQuery;
 import no.nav.fo.util.sql.UpdateBatchQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Value(staticConstructor = "of")
 @Wither
@@ -44,6 +46,24 @@ public class AktivitetStatus {
                         (status) -> WhereClause.equals("PERSONID", status.getPersonid().toString())
                                 .and(WhereClause.equals("AKTIVITETTYPE", status.getAktivitetType())))
                 .execute(data);
+    }
+
+    public static int[] batchInsert(JdbcTemplate db, List<AktivitetStatus> data) {
+        InsertBatchQuery<AktivitetStatus> insertQuery = new InsertBatchQuery<>(db, "BRUKERSTATUS_AKTIVITETER");
+
+        return insertQuery
+                .add("PERSONID", (a -> a.getPersonid().toString()), String.class)
+                .add("AKTOERID", AktivitetStatus::aktoeridOrElseNull, String.class)
+                .add("AKTIVITETTYPE", AktivitetStatus::getAktivitetType, String.class)
+                .add("STATUS", (a) -> DbUtils.boolTo0OR1(a.isAktiv()), String.class)
+                .add("NESTE_UTLOPSDATO", AktivitetStatus::getNesteUtlop, Timestamp.class)
+                .execute(data);
+    }
+
+    public String aktoeridOrElseNull() {
+        return Optional.ofNullable(aktoerid)
+                .map(AktoerId::toString)
+                .orElse(null);
     }
 }
 

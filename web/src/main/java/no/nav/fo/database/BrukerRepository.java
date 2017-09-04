@@ -245,7 +245,6 @@ public class BrukerRepository {
         return db.queryForList(getPersonidFromAktoeridSQL(), aktoerId);
     }
 
-
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
         Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
 
@@ -338,6 +337,10 @@ public class BrukerRepository {
         getUpsertAktivitetStatuserForBrukerQuery(a.getAktivitetType(), this.db, a.isAktiv(),
                 a.getAktoerid().aktoerId, a.getPersonid().personId, a.getNesteUtlop())
                 .execute();
+    }
+
+    public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
+        AktivitetStatus.batchInsert(db,statuser);
     }
 
     public void insertAktivitetStatus(AktivitetStatus a) {
