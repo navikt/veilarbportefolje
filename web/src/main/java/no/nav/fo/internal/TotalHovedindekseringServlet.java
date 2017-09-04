@@ -5,7 +5,6 @@ import no.nav.fo.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.service.SolrService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -34,24 +33,7 @@ public class TotalHovedindekseringServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if(this.ismasternode) {
-            kjorProsess();
+            HovedindekseringUtils.totalHovedindeksering(kopierGR199FraArena, tiltakHandler, solrService);
         }
-    }
-
-    private void kjorProsess() {
-        logger.info("Setter i gang oppdatering av ytelser i databasen");
-        kopierGR199FraArena.startOppdateringAvYtelser();
-        logger.info("Ferdig med oppdatering av ytelser");
-        logger.info("Setter i gang oppdatering av tiltak i databasen");
-        tiltakHandler.startOppdateringAvTiltakIDatabasen();
-        logger.info("Ferdig med oppdatering av tiltak");
-        logger.info("Setter i gang hovedindeksering");
-        solrService.hovedindeksering();
-        logger.info("Ferdig med hovedindeksering");
-    }
-
-    @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
-    private void prosessScheduler() {
-        kjorProsess();
     }
 }
