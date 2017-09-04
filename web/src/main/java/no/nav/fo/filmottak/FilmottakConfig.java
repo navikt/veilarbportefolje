@@ -85,7 +85,7 @@ public class FilmottakConfig {
 
         return () -> {
             try {
-                FileObject fileObject = FileUtils.hentTiltakFil(komplettURI).get();
+                FileObject fileObject = FilmottakFileUtils.hentTiltakFil(komplettURI).get();
                 if(fileObject.exists()) {
                     return Pingable.Ping.lyktes(metadata);
                 }

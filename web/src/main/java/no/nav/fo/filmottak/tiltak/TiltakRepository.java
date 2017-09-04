@@ -38,6 +38,10 @@ public class TiltakRepository extends BrukerRepository {
         db.execute("TRUNCATE TABLE enhettiltak");
     }
 
+    void slettTiltakskoder() {
+        db.execute("DELETE FROM tiltakkodeverk");
+    }
+
     void insertBrukertiltak(Bruker bruker, Set<String> brukerTiltak) {
         bruker.getTiltaksaktivitetListe().forEach(
             tiltak -> {
@@ -55,10 +59,6 @@ public class TiltakRepository extends BrukerRepository {
 
             }
         );
-    }
-
-    void slettTiltakskoder() {
-        db.execute("DELETE FROM tiltakkodeverk");
     }
 
     void insertTiltakskoder(Tiltakstyper tiltakskoder) {

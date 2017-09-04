@@ -1,20 +1,15 @@
 package no.nav.fo.filmottak.tiltak;
 
 import io.vavr.control.Try;
-import no.nav.fo.filmottak.FileUtils;
+import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import org.apache.commons.vfs2.*;
-import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
-
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -67,7 +62,7 @@ public class TiltakHandler {
         logger.info("Starter oppdatering av tiltak fra Arena..");
         timed("GR202.hentfil", this::hentFil)
                 .onFailure(log(logger, "Kunne ikke hente tiltaksfil").andThen(stopped))
-                .flatMap(timed("GR202.unmarshall", this::unmarshall))
+                .flatMap(timed("GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
                 .onFailure(log(logger, "Kunne ikke unmarshalle tiltaksfilen").andThen(stopped))
                 .andThen(timed("GR202.populatedb", this::populerDatabase))
                 .onFailure(log(logger, "Kunne ikke populere database").andThen(stopped))
@@ -133,23 +128,12 @@ public class TiltakHandler {
         logger.info("Starter henting av tiltaksfil");
         try {
             String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
-            return FileUtils.hentTiltakFil(komplettURI);
+            return FilmottakFileUtils.hentTiltakFil(komplettURI);
         } catch (FileSystemException e) {
             logger.info("Henting av tiltaksfil feilet");
             return Try.failure(e);
         } finally {
             logger.info("Henting av tiltaksfil ferdig!");
         }
-    }
-
-    private Try<TiltakOgAktiviteterForBrukere> unmarshall(FileObject fileObject) {
-        logger.info("Starter unmarshalling av tiltaksfil");
-        return Try.of(() -> {
-            JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1");
-            Unmarshaller unmarshaller = jaxb.createUnmarshaller();
-            JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = (JAXBElement<TiltakOgAktiviteterForBrukere>) unmarshaller.unmarshal(fileObject.getContent().getInputStream());
-            logger.info("Unmarshalling av tiltaksfil ferdig!");
-            return jaxbElement.getValue();
-        });
     }
 }
