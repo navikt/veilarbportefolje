@@ -1,11 +1,9 @@
 package no.nav.fo.filmottak;
 
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
-import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
 import no.nav.fo.filmottak.ytelser.KopierGR199FraArena;
-import no.nav.fo.service.AktoerService;
+import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
@@ -80,7 +78,7 @@ public class FilmottakConfig {
     public Pingable sftpTiltakPing() {
         String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
         Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
-            komplettURI,
+            this.URI,
             "Sjekker connection til fil med tiltak (sftp)",
             true
         );

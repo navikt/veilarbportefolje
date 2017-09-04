@@ -50,7 +50,6 @@ public class BrukerRepository {
     private final String METADATA = "METADATA";
     public static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     public static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
-    public static final String OPPFOLGING = "oppfolging";
 
 
     @Inject
