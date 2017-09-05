@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -51,7 +52,6 @@ public class BrukerRepository {
     public static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     public static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
-
     @Inject
     JdbcTemplate db;
 
@@ -62,13 +62,15 @@ public class BrukerRepository {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public void updateMetadata(String name, Date date) {
-        update(db,METADATA).set(name, date).execute();
+        update(db, METADATA).set(name, date).execute();
     }
 
-    public void slettAlleAktivitetstatus(String aktivitettype) { db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '"+aktivitettype+"'");}
+    public void slettAlleAktivitetstatus(String aktivitettype) {
+        db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
+    }
 
     public Try<Oppfolgingstatus> retrieveOppfolgingstatus(PersonId personId) {
-        if(personId == null) {
+        if (personId == null) {
             return Try.failure(new NullPointerException());
         }
         return Try.of(
@@ -125,12 +127,12 @@ public class BrukerRepository {
     public Try<PersonId> deleteBrukerdata(PersonId personId) {
         return Try.of(
                 () -> {
-                    delete(db.getDataSource(),BRUKERDATA)
+                    delete(db.getDataSource(), BRUKERDATA)
                             .where(WhereClause.equals("PERSONID", personId.toString()))
                             .execute();
                     return personId;
                 }
-        ).onFailure((e) -> LOG.warn("Kunne ikke slette brukerdata for personid {}",personId.toString(), e));
+        ).onFailure((e) -> LOG.warn("Kunne ikke slette brukerdata for personid {}", personId.toString(), e));
     }
 
 
@@ -154,7 +156,7 @@ public class BrukerRepository {
 
     @SneakyThrows
     private Oppfolgingstatus mapToOppfolgingstatus(ResultSet rs) {
-        if(rs.isBeforeFirst()) {
+        if (rs.isBeforeFirst()) {
             rs.next();
         }
         return new Oppfolgingstatus()
@@ -174,9 +176,8 @@ public class BrukerRepository {
         return new PersonId(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
     }
 
-    public Object prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
+    public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
-        return null;
     }
 
     public void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
@@ -219,11 +220,15 @@ public class BrukerRepository {
                         .setVeileder((String) data.get("VEILEDERIDENT"))
                         .setPersonid((String) data.get("PERSONID"))
                         .setTildeltTidspunkt((Timestamp) data.get("TILDELT_TIDSPUNKT"))
-                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
-                        .setAapMaxtid(toLocalDateTime((Timestamp) data.get("AAPMAXTID")))
-                        .setAapMaxtidFasett(kvartalmappingOrNull((String) data.get("AAPMAXTIDFASETT")))
-                        .setUtlopsdatoFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
+                        .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
+                        .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
+                        .setDagputlopUke(intValue(data.get("DAGPUTLOPUKE")))
+                        .setDagputlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("DAGPUTLOPUKEFASETT")))
+                        .setPermutlopUke(intValue(data.get("PERMUTLOPUKE")))
+                        .setPermutlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("PERMUTLOPUKEFASETT")))
+                        .setAapmaxtidUke(intValue(data.get("AAPMAXTIDUKE")))
+                        .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
                         .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
@@ -339,7 +344,7 @@ public class BrukerRepository {
     }
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
-        AktivitetStatus.batchInsert(db,statuser);
+        AktivitetStatus.batchInsert(db, statuser);
     }
 
     public void insertAktivitetStatus(AktivitetStatus a) {
@@ -348,10 +353,10 @@ public class BrukerRepository {
                 .execute();
     }
 
-    public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId,String>> finnesIdb) {
+    public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId, String>> finnesIdb) {
         Map<Boolean, List<AktivitetStatus>> eksisterendeStatuser = aktivitetStatuses
                 .stream()
-                .collect(groupingBy((data) -> finnesIdb.contains(Tuple.of(data.getPersonid(),data.getAktivitetType()))));
+                .collect(groupingBy((data) -> finnesIdb.contains(Tuple.of(data.getPersonid(), data.getAktivitetType()))));
 
         AktivitetStatus.batchUpdate(this.db, eksisterendeStatuser.getOrDefault(true, emptyList()));
 
@@ -359,7 +364,7 @@ public class BrukerRepository {
                 .forEach(this::upsertAktivitetStatus);
     }
 
-    public Map<PersonId,Set<AktivitetStatus>> getAktivitetstatusForBrukere(Collection<PersonId> personIds) {
+    public Map<PersonId, Set<AktivitetStatus>> getAktivitetstatusForBrukere(Collection<PersonId> personIds) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
@@ -367,19 +372,19 @@ public class BrukerRepository {
         return namedParameterJdbcTemplate
                 .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()
-                .map( row -> AktivitetStatus.of(
+                .map(row -> AktivitetStatus.of(
                         new PersonId((String) row.get("PERSONID")),
                         new AktoerId((String) row.get("AKTOERID")),
                         (String) row.get("AKTIVITETTYPE"),
                         parse0OR1((String) row.get("STATUS")),
                         (Timestamp) row.get("NESTE_UTLOPSDATO"))
-                        )
+                )
                 .filter(aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType()))
                 .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
                         (oldValue, newValue) -> {
                             oldValue.addAll(newValue);
                             return oldValue;
-                }));
+                        }));
     }
 
     public List<String> getDistinctAktoerIdsFromAktivitet() {
@@ -413,10 +418,10 @@ public class BrukerRepository {
 
     public List<String> getBrukertiltak(String personId) {
         return db.queryForList(
-            "SELECT " +
-                "TILTAKSKODE AS TILTAK " +
-                "FROM BRUKERTILTAK " +
-                "WHERE PERSONID = ?", String.class, personId);
+                "SELECT " +
+                        "TILTAKSKODE AS TILTAK " +
+                        "FROM BRUKERTILTAK " +
+                        "WHERE PERSONID = ?", String.class, personId);
     }
 
     public void slettYtelsesdata() {
@@ -424,8 +429,12 @@ public class BrukerRepository {
                 .set("ytelse", null)
                 .set("utlopsdato", null)
                 .set("utlopsdatoFasett", null)
-                .set("aapMaxtid", null)
-                .set("aapMaxtidFasett", null)
+                .set("dagputlopuke", null)
+                .set("dagputlopukefasett", null)
+                .set("permutlopuke", null)
+                .set("permutlopukefasett", null)
+                .set("aapmaxtiduke", null)
+                .set("aapmaxtidukefasett", null)
                 .execute();
     }
 
@@ -476,120 +485,62 @@ public class BrukerRepository {
                 "person_id = ? ";
     }
 
+    private static String baseSelect = "SELECT " +
+            "person_id, " +
+            "fodselsnr, " +
+            "fornavn, " +
+            "etternavn, " +
+            "nav_kontor, " +
+            "formidlingsgruppekode, " +
+            "iserv_fra_dato, " +
+            "kvalifiseringsgruppekode, " +
+            "rettighetsgruppekode, " +
+            "hovedmaalkode, " +
+            "sikkerhetstiltak_type_kode, " +
+            "fr_kode, " +
+            "sperret_ansatt, " +
+            "er_doed, " +
+            "doed_fra_dato, " +
+            "tidsstempel, " +
+            "veilederident, " +
+            "ytelse, " +
+            "utlopsdato, " +
+            "utlopsdatofasett, " +
+            "dagputlopuke, dagputlopukefasett, " +
+            "permutlopuke, permutlopukefasett, " +
+            "aapmaxtiduke, aapmaxtidukefasett, " +
+            "oppfolging, " +
+            "venterpasvarfrabruker, " +
+            "venterpasvarfranav, " +
+            "nyesteutlopteaktivitet, " +
+            "iavtaltaktivitet " +
+            "FROM " +
+            "oppfolgingsbruker ";
+
     String retrieveBrukereSQL() {
-        return
-                "SELECT " +
-                        "person_id, " +
-                        "fodselsnr, " +
-                        "fornavn, " +
-                        "etternavn, " +
-                        "nav_kontor, " +
-                        "formidlingsgruppekode, " +
-                        "iserv_fra_dato, " +
-                        "kvalifiseringsgruppekode, " +
-                        "rettighetsgruppekode, " +
-                        "hovedmaalkode, " +
-                        "sikkerhetstiltak_type_kode, " +
-                        "fr_kode, " +
-                        "sperret_ansatt, " +
-                        "er_doed, " +
-                        "doed_fra_dato, " +
-                        "tidsstempel, " +
-                        "veilederident, " +
-                        "ytelse, " +
-                        "utlopsdato, " +
-                        "utlopsdatofasett, " +
-                        "aapmaxtid, " +
-                        "aapmaxtidfasett, " +
-                        "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav, " +
-                        "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet " +
-                        "FROM " +
-                        "oppfolgingsbruker " +
-                        "LEFT JOIN bruker_data " +
-                        "ON " +
-                        "bruker_data.personid = oppfolgingsbruker.person_id";
+        return baseSelect +
+                "LEFT JOIN bruker_data " +
+                "ON " +
+                "bruker_data.personid = oppfolgingsbruker.person_id";
 
     }
 
     String retrieveBrukerMedBrukerdataSQL() {
-        return
-                "SELECT " +
-                        "person_id, " +
-                        "fodselsnr, " +
-                        "fornavn, " +
-                        "etternavn, " +
-                        "nav_kontor, " +
-                        "formidlingsgruppekode, " +
-                        "iserv_fra_dato, " +
-                        "kvalifiseringsgruppekode, " +
-                        "rettighetsgruppekode, " +
-                        "hovedmaalkode, " +
-                        "sikkerhetstiltak_type_kode, " +
-                        "fr_kode, " +
-                        "sperret_ansatt, " +
-                        "er_doed, " +
-                        "doed_fra_dato, " +
-                        "tidsstempel, " +
-                        "veilederident, " +
-                        "ytelse," +
-                        "utlopsdato, " +
-                        "utlopsdatofasett, " +
-                        "aapmaxtid, " +
-                        "aapmaxtidfasett, " +
-                        "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav, " +
-                        "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet " +
-                        "FROM " +
-                        "oppfolgingsbruker " +
-                        "LEFT JOIN bruker_data " +
-                        "ON " +
-                        "bruker_data.personid = oppfolgingsbruker.person_id " +
-                        "WHERE " +
-                        "person_id = ?";
+        return baseSelect +
+                "LEFT JOIN bruker_data " +
+                "ON " +
+                "bruker_data.personid = oppfolgingsbruker.person_id " +
+                "WHERE " +
+                "person_id = ?";
     }
 
     String retrieveOppdaterteBrukereSQL() {
-        return
-                "SELECT " +
-                        "person_id, " +
-                        "fodselsnr, " +
-                        "fornavn, " +
-                        "etternavn, " +
-                        "nav_kontor, " +
-                        "formidlingsgruppekode, " +
-                        "iserv_fra_dato, " +
-                        "kvalifiseringsgruppekode, " +
-                        "rettighetsgruppekode, " +
-                        "hovedmaalkode, " +
-                        "sikkerhetstiltak_type_kode, " +
-                        "fr_kode, " +
-                        "sperret_ansatt, " +
-                        "er_doed, " +
-                        "doed_fra_dato, " +
-                        "tidsstempel, " +
-                        "veilederident," +
-                        "ytelse, " +
-                        "utlopsdato, " +
-                        "utlopsdatofasett, " +
-                        "aapmaxtid, " +
-                        "aapmaxtidfasett, " +
-                        "oppfolging, " +
-                        "venterpasvarfrabruker, " +
-                        "venterpasvarfranav, " +
-                        "nyesteutlopteaktivitet, " +
-                        "iavtaltaktivitet " +
-                        "FROM " +
-                        "oppfolgingsbruker " +
-                        "LEFT JOIN bruker_data " +
-                        "ON " +
-                        "bruker_data.personid = oppfolgingsbruker.person_id " +
-                        "WHERE " +
-                        "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
+        return baseSelect +
+                "LEFT JOIN bruker_data " +
+                "ON " +
+                "bruker_data.personid = oppfolgingsbruker.person_id " +
+                "WHERE " +
+                "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
 
     String retrieveSistIndeksertSQL() {
@@ -602,10 +553,6 @@ public class BrukerRepository {
 
     String getPersonidFromAktoeridSQL() {
         return "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?";
-    }
-
-    String getPersonIdFromFnrSQL() {
-        return "SELECT PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR= ?";
     }
 
     String getPersonIdsFromFnrsSQL() {
@@ -673,30 +620,35 @@ public class BrukerRepository {
         return (Boolean) bruker.get("oppfolging").getValue();
     }
 
+    public static Integer intValue(Object value) {
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal) value).intValue();
+        } else if (value instanceof Integer) {
+            return (Integer) value;
+        } else if (value instanceof String) {
+            return Integer.parseInt((String) value);
+        } else {
+            return null;
+        }
+    }
+
     private static LocalDateTime toLocalDateTime(Timestamp timestamp) {
         return timestamp != null ? timestamp.toLocalDateTime() : null;
     }
 
-    private ManedMapping manedmappingOrNull(String string) {
-        return string != null ? ManedMapping.valueOf(string) : null;
+    private ManedFasettMapping manedmappingOrNull(String string) {
+        return string != null ? ManedFasettMapping.valueOf(string) : null;
     }
 
     private YtelseMapping ytelsemappingOrNull(String string) {
         return string != null ? YtelseMapping.valueOf(string) : null;
     }
 
-    private KvartalMapping kvartalmappingOrNull(String string) {
-        return string != null ? KvartalMapping.valueOf(string) : null;
+    private AAPMaxtidUkeFasettMapping aapMaxtidUkeFasettMappingOrNull(String string) {
+        return string != null ? AAPMaxtidUkeFasettMapping.valueOf(string) : null;
     }
 
-    private Boolean kanskjeVerdi(List<Map<String, Object>> statuserFraDb, String type) {
-        for (Map<String, Object> rad : statuserFraDb) {
-            String aktivitetType = (String) rad.get("AKTIVITETTYPE");
-            if (type.equals(aktivitetType)) {
-                //med hsql driveren settes det inn false/true og med oracle settes det inn 0/1.
-                return Boolean.valueOf((String) rad.get("STATUS")) || "1".equals(rad.get("STATUS"));
-            }
-        }
-        return false;
+    private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
+        return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
     }
 }

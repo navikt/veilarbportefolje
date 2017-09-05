@@ -55,6 +55,10 @@ public class MetricsUtils {
         return functionToConsumer(timed(navn, consumerToFunction(consumer), tagsAppender));
     }
 
+    public static Runnable timed(String navn, Runnable runnable) {
+        return functionToRunnable(timed(navn, runnableToFunction(runnable)));
+    }
+
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
         return (S s) -> { consumer.accept(s); return null; };
     }
@@ -70,4 +74,16 @@ public class MetricsUtils {
     private static <S> Supplier<S> functionToSupplier(Function<Void, S> function) {
         return () -> function.apply(null);
     }
+
+    private static Runnable functionToRunnable(Function<?, ?> function) {
+        return () -> function.apply(null);
+    }
+
+    private static Function<Void, Void> runnableToFunction(Runnable runnable) {
+        return aVoid -> {
+            runnable.run();
+            return null;
+        };
+    }
+
 }

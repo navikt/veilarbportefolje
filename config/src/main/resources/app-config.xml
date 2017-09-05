@@ -56,6 +56,10 @@
         <exposedRest name="no.nav.fo.portefolje.oppdaterytelser" path="/veilarbportefolje/internal/oppdaterytelser"/>
         <exposedRest name="no.nav.fo.portefolje.totalhovedindeksering" path="/veilarbportefolje/internal/totalhovedindeksering"/>
     </exposed-services>
+  
+    <serverOptions>
+        <memoryParameters resourceAlias="veilarb-memparams"/>
+    </serverOptions>
 
     <loadBalancer isAlive="/veilarbportefolje/internal/isAlive" />
     <security serviceUserResourceAlias="srvveilarbportefolje">

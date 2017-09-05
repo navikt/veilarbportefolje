@@ -16,17 +16,17 @@ import static java.time.Month.*;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.domene.KvartalMapping.*;
+import static no.nav.fo.domene.KvartalFasettMapping.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
-public class KvartalMappingTest {
+public class KvartalFasettMappingTest {
 
     private final LocalDateTime startDato;
     private final LocalDateTime dato;
-    private final Optional<KvartalMapping> resultat;
+    private final Optional<KvartalFasettMapping> resultat;
 
-    public KvartalMappingTest(LocalDateTime startDato, LocalDateTime dato, Optional<KvartalMapping> resultat) {
+    public KvartalFasettMappingTest(LocalDateTime startDato, LocalDateTime dato, Optional<KvartalFasettMapping> resultat) {
         this.startDato = startDato;
         this.dato = dato;
         this.resultat = resultat;
@@ -80,7 +80,7 @@ public class KvartalMappingTest {
 
     @Test
     public void skalGiRiktigVerdi() {
-        Optional<KvartalMapping> actual = finnKvartal(this.startDato, this.dato);
+        Optional<KvartalFasettMapping> actual = finnKvartal(this.startDato, this.dato);
 
         assertThat(actual.isPresent()).isEqualTo(this.resultat.isPresent());
         this.resultat.ifPresent((res) -> assertThat(actual.get()).isEqualTo(res));

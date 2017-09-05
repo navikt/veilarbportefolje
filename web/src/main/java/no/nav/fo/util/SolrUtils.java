@@ -20,6 +20,7 @@ public class SolrUtils {
 
     private static Locale locale = new Locale("no", "NO");
     private static Collator collator = Collator.getInstance(locale);
+
     static {
         collator.setStrength(Collator.PRIMARY);
     }
@@ -65,7 +66,7 @@ public class SolrUtils {
         boolean ascending = "ascending".equals(sortOrder);
 
         Comparator<S> allowNullComparator = (o1, o2) -> {
-            if(o1 == null && o2 == null) return 0;
+            if (o1 == null && o2 == null) return 0;
             if (o1 == null) return -1;
             if (o2 == null) return 1;
 
@@ -86,28 +87,25 @@ public class SolrUtils {
         return brukere;
     }
 
+    private static Map<String, Function<Bruker, Comparable>> sortFieldMap = new HashMap<String, Function<Bruker, Comparable>>() {{
+        put("etternavn", Bruker::getEtternavn);
+        put("fodselsnummer", Bruker::getFnr);
+        put("utlopsdato", Bruker::getUtlopsdato);
+        put("aapmaxtidUke", Bruker::getAapmaxtidUke);
+        put("dagputlopUke", Bruker::getDagputlopUke);
+        put("permutlopUke", Bruker::getPermutlopUke);
+        put("arbeidsliste_frist", Bruker::getArbeidslisteFrist);
+        put("VENTER_PA_SVAR_FRA_NAV", Bruker::getVenterPaSvarFraNAV);
+        put("VENTER_PA_SVAR_FRA_BRUKER", Bruker::getVenterPaSvarFraBruker);
+        put("UTLOPTE_AKTIVITETER", Bruker::getNyesteUtlopteAktivitet);
+        put("I_AVTALT_AKTIVITET", Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
+    }};
+
     public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField) {
-        if ("etternavn".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getEtternavn);
-        } else if ("fodselsnummer".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getFnr);
-        } else if ("utlopsdato".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getUtlopsdato);
-        } else if ("aapMaxtid".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getAapMaxtid);
-        } else if ("arbeidsliste_frist".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getArbeidslisteFrist);
-        } else if ("VENTER_PA_SVAR_FRA_NAV".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraNAV);
-        } else if ("VENTER_PA_SVAR_FRA_BRUKER".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getVenterPaSvarFraBruker);
-        } else if ("UTLOPTE_AKTIVITETER".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getNyesteUtlopteAktivitet);
-        } else if("I_AVTALT_AKTIVITET".equals(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
-        } else if(Objects.nonNull(sortField) && sortField.contains("aktivitet_")) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0(sortField));
+        if (sortFieldMap.containsKey(sortField)) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
         }
+
         brukere.sort(brukerErNyComparator());
         return brukere;
     }
@@ -163,13 +161,13 @@ public class SolrUtils {
             oversiktStatements.add("(venterpasvarfranav:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER) {
             oversiktStatements.add("(venterpasvarfrabruker:*)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.I_AVTALT_AKTIVITET ) {
+        } else if (filtervalg.brukerstatus == Brukerstatus.I_AVTALT_AKTIVITET) {
             oversiktStatements.add("(iavtaltaktivitet:true)");
-        } else if(filtervalg.brukerstatus == Brukerstatus.IKKE_I_AVTALT_AKTIVITET) {
+        } else if (filtervalg.brukerstatus == Brukerstatus.IKKE_I_AVTALT_AKTIVITET) {
             oversiktStatements.add("(-iavtaltaktivitet:true)");
-        } else if(filtervalg.brukerstatus == Brukerstatus.UTLOPTE_AKTIVITETER) {
+        } else if (filtervalg.brukerstatus == Brukerstatus.UTLOPTE_AKTIVITETER) {
             oversiktStatements.add("(nyesteutlopteaktivitet:*)");
-        } else if(filtervalg.brukerstatus == Brukerstatus.MIN_ARBEIDSLISTE) {
+        } else if (filtervalg.brukerstatus == Brukerstatus.MIN_ARBEIDSLISTE) {
             oversiktStatements.add("(arbeidsliste_aktiv:*)");
         }
 
@@ -184,9 +182,9 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
 
 
-        if(filtervalg.harAktivitetFilter()) {
-            filtervalg.aktiviteter.forEach( (key, value) -> {
-                if(key.equals(TILTAK)) {
+        if (filtervalg.harAktivitetFilter()) {
+            filtervalg.aktiviteter.forEach((key, value) -> {
+                if (key.equals(TILTAK)) {
                     leggTilTiltakJaNeiFilter(filtrerBrukereStatements, value);
                 } else {
                     leggTilAktivitetFiltervalg(filtrerBrukereStatements, key, value);
@@ -194,7 +192,7 @@ public class SolrUtils {
             });
         }
 
-        if(filtervalg.harTiltakstypeFilter()) {
+        if (filtervalg.harTiltakstypeFilter()) {
             filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakJaFilter));
         }
 
@@ -216,19 +214,19 @@ public class SolrUtils {
     }
 
     static void leggTilAktivitetFiltervalg(List<String> filtrerBrukereStatements, String key, AktivitetFiltervalg value) {
-        if(AktivitetFiltervalg.JA.equals(value)) {
-            filtrerBrukereStatements.add("aktiviteter:"+key.toLowerCase());
+        if (AktivitetFiltervalg.JA.equals(value)) {
+            filtrerBrukereStatements.add("aktiviteter:" + key.toLowerCase());
         }
-        if(AktivitetFiltervalg.NEI.equals(value)) {
+        if (AktivitetFiltervalg.NEI.equals(value)) {
             filtrerBrukereStatements.add("*:* AND -aktiviteter:" + key.toLowerCase());
         }
     }
 
     static void leggTilTiltakJaNeiFilter(List<String> filtrerBrukereStatements, AktivitetFiltervalg value) {
-        if(AktivitetFiltervalg.JA.equals(value)) {
+        if (AktivitetFiltervalg.JA.equals(value)) {
             filtrerBrukereStatements.add("tiltak:*");
         }
-        if(AktivitetFiltervalg.NEI.equals(value)) {
+        if (AktivitetFiltervalg.NEI.equals(value)) {
             filtrerBrukereStatements.add("*:* AND -tiltak:*");
         }
     }

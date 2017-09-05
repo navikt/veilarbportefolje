@@ -5,12 +5,12 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 
-public enum ManedMapping implements Mapping {
+public enum ManedFasettMapping implements FasettMapping {
     MND1, MND2, MND3, MND4,
     MND5, MND6, MND7, MND8,
     MND9, MND10, MND11, MND12;
 
-    public static Optional<ManedMapping> finnManed(LocalDateTime startDato, LocalDateTime dato) {
+    public static Optional<ManedFasettMapping> finnManed(LocalDateTime startDato, LocalDateTime dato) {
         int mndDiff = absoluttManedNummer(dato) - absoluttManedNummer(startDato);
         if (mndDiff < 0 || mndDiff > 11) {
             return empty();
@@ -19,7 +19,7 @@ public enum ManedMapping implements Mapping {
         return Optional.of(values()[mndDiff]);
     }
 
-    public static ManedMapping of(String s) {
+    public static ManedFasettMapping of(String s) {
         if (s == null) {
             return null;
         }
