@@ -35,6 +35,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>populerindeks</servlet-name>
+        <servlet-class>no.nav.fo.internal.PopulerIndekseringServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>populerindeks</servlet-name>
+        <url-pattern>/internal/populerindeks</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>totalhovedindeksering</servlet-name>
         <servlet-class>no.nav.fo.internal.TotalHovedindekseringServlet</servlet-class>
     </servlet>

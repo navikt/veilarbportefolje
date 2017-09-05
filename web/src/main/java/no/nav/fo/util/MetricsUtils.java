@@ -55,8 +55,8 @@ public class MetricsUtils {
         return functionToConsumer(timed(navn, consumerToFunction(consumer), tagsAppender));
     }
 
-    public static Runnable timed(String navn, Runnable runnable) {
-        return functionToRunnable(timed(navn, runnableToFunction(runnable)));
+    public static void timed(String navn, Runnable runnable) {
+        functionToRunnable(timed(navn, runnableToFunction(runnable))).run();
     }
 
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
