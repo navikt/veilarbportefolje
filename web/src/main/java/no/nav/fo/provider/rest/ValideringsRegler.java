@@ -40,7 +40,8 @@ class ValideringsRegler {
             "aktivitet_behandling",
             "aktivitet_mote",
             "aktivitet_egen",
-            "aktivitet_tiltak"); // TODO alle sortField i samme format
+            "aktivitet_tiltak",
+            "aktivitet_gruppeaktivitet"); // TODO alle sortField i samme format
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
