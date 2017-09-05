@@ -1,6 +1,6 @@
 package no.nav.fo.util;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
