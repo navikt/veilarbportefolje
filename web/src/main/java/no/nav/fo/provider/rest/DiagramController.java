@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.SolrService;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.POST;
@@ -24,6 +25,7 @@ import static no.nav.fo.provider.rest.RestUtils.createResponse;
 
 @Api(value = "Diagram")
 @Path("/diagram")
+@Component
 @Produces(APPLICATION_JSON)
 public class DiagramController {
 

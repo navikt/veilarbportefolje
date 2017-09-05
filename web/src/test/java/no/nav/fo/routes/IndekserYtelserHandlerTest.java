@@ -1,10 +1,10 @@
 package no.nav.fo.routes;
 
-import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerinformasjonFraFil;
 import no.nav.fo.domene.YtelseMapping;
+import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
 import no.nav.melding.virksomhet.loependeytelser.v1.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -29,7 +29,6 @@ import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Matchers.anyCollection;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -79,8 +78,7 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
-        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
         assertThat(captor.getValue()).hasSize(1);
     }
 
@@ -93,8 +91,7 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
-        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
 
         List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
         assertThat(oppdateringer).hasSize(2);
@@ -113,8 +110,7 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
-        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
 
         List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
         assertThat(oppdateringer).hasSize(2);
@@ -133,8 +129,7 @@ public class IndekserYtelserHandlerTest {
 
         handler.indekser(ytelser);
 
-        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(anyList());
-        verify(persistentOppdatering).lagreBrukeroppdateringerIDB(captor.capture());
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
 
         List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
         assertThat(oppdateringer).hasSize(1);

@@ -65,48 +65,39 @@ public class DiagramControllerTest {
     public static void before() {
         System.setProperty("disable.metrics.report", "true");
         System.setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", ThreadLocalSubjectHandler.class.getName());
+
     }
 
     @Before
     public void setUp() throws Exception {
         controller = new DiagramController(brukertilgangService, solr);
-        when(solr.hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(BRUKERE);
+        when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(BRUKERE);
     }
 
     @Test
     public void skalSjekkeTilgang() throws Exception {
-        when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(false);
-
+        when(brukertilgangService.harBrukerTilgang(any(),any())).thenReturn(false);
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
-
         assertThat(response.getStatus()).isEqualTo(FORBIDDEN.getStatusCode());
     }
 
     @Test
     public void skalGiFeilOmYtelseIkkeErValgt() throws Exception {
-        when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
-
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg());
-
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     }
 
     @Test
     public void skalHenteUtBrukereForEnhet() throws Exception {
-        when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
-
         controller.hentDiagramData(null, "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
-
-        verify(solr, times(1)).hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class));
+        verify(solr, times(1)).hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class));
     }
 
     @Test
     public void skalHenteUtBrukereForVeileder() throws Exception {
-        when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
-
         controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
-
-        verify(solr, times(1)).hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class));
+        verify(solr, times(1)).hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class));
     }
 
     @Test
@@ -114,8 +105,7 @@ public class DiagramControllerTest {
         List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
-        when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
-        when(solr.hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(brukere);
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(brukere);
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
@@ -133,8 +123,7 @@ public class DiagramControllerTest {
         List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
-        when(brukertilgangService.harBrukerTilgang(anyString(), anyString())).thenReturn(true);
-        when(solr.hentBrukere(anyString(), any(), anyString(), anyString(), any(Filtervalg.class))).thenReturn(brukere);
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(brukere);
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
 

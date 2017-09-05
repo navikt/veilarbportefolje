@@ -6,7 +6,10 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.domene.aktivitet.*;
+import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
+import no.nav.fo.domene.aktivitet.AktivitetDTO;
+import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
+import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONObject;
@@ -19,6 +22,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
+import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetUtils {
@@ -147,14 +151,17 @@ public class AktivitetUtils {
         io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(1000, 1000)
                 .forEach((dokumenterBatch) -> {
-                    List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
-                            .map((dokument) -> new PersonId((String) dokument.get("person_id").getValue())).collect(toList());
+                    timed("indeksering.applyaktiviteter1000", () -> {
+                        List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
+                                .map((dokument) -> new PersonId((String) dokument.get("person_id").getValue())).collect(toList());
 
-                    Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(personIds);
+                        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(personIds);
 
-                    dokumenterBatch.forEach((dokument) -> {
-                        PersonId personId = new PersonId((String) dokument.get("person_id").getValue());
-                        applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
+                        dokumenterBatch.forEach((dokument) -> {
+                            PersonId personId = new PersonId((String) dokument.get("person_id").getValue());
+                            applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
+                        });
+                        return null;
                     });
                 });
     }

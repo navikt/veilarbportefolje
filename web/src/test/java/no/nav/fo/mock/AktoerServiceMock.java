@@ -1,14 +1,15 @@
 package no.nav.fo.mock;
 
 import io.vavr.control.Try;
-import lombok.Data;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class AktoerServiceMock implements AktoerService {
 
@@ -59,8 +60,18 @@ public class AktoerServiceMock implements AktoerService {
     }
 
     @Override
+    public Try<PersonId> hentPersonidFromFnr(Fnr fnr) {
+        return null;
+    }
+
+    @Override
     public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerid) {
         return getTestFnr(aktoerid);
+    }
+
+    @Override
+    public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
+        return null;
     }
 
     private static Try<Fnr> getTestFnr(AktoerId aktoerId) {

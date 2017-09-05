@@ -37,9 +37,7 @@ import static no.nav.fo.util.sql.SqlUtils.insert;
 import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
@@ -641,6 +639,26 @@ public class BrukerRepositoryTest {
 
         assertThat(aktivitetStatuser.get(personId1)).containsExactlyInAnyOrder(a1, a2);
         assertThat(aktivitetStatuser.get(personId2)).containsExactlyInAnyOrder(b1, b2);
+    }
+
+    @Test
+    public void skalInserteOgSletteAktivitetstatus() {
+        String aktivitetstype = "aktivitetstype";
+        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(new PersonId("personid"), new AktoerId("aktivitetid"),aktivitetstype,true,null);
+        brukerRepository.insertAktivitetStatus(aktivitetStatus);
+        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isNotEmpty();
+        brukerRepository.slettAlleAktivitetstatus(aktivitetstype);
+        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isEmpty();
+    }
+
+    @Test
+    public void skalInserteBatchAvAktivitetstatuser() {
+        List<AktivitetStatus> statuser = new ArrayList<>();
+        statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"),"a1",true, new Timestamp(0)));
+        statuser.add(AktivitetStatus.of(PersonId.of("pid2"), AktoerId.of("aid2"),"a2",true, new Timestamp(0)));
+
+        brukerRepository.insertAktivitetstatuser(statuser);
+        assertThat(brukerRepository.db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER").size()).isEqualTo(2);
     }
 
     @Test

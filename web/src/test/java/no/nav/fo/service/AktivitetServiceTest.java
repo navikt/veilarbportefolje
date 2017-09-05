@@ -86,7 +86,7 @@ public class AktivitetServiceTest {
 
         when(aktoerService
                 .hentPersonidFraAktoerid(any(AktoerId.class)))
-                .thenAnswer(args -> Try.success(new PersonId(args.getArgumentAt(0, AktoerId.class).toString())));
+                .thenAnswer(args -> Try.success(new PersonId(args.getArgument(0).toString())));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 
