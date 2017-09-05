@@ -12,7 +12,7 @@ import static org.mockito.Mockito.*;
 public class MetricsUtilsTest {
 
     @Test
-    void supplier() {
+    public void supplier() {
         Supplier<String> supplier = () -> "Hello, world!";
         String value = MetricsUtils.timed("name", supplier);
 
@@ -20,7 +20,7 @@ public class MetricsUtilsTest {
     }
 
     @Test
-    void consumer() {
+    public void consumer() {
         Consumer<String> consumer = mock(Consumer.class);
         MetricsUtils.timed("name", consumer).accept("Hello, world!");
 
@@ -28,7 +28,7 @@ public class MetricsUtilsTest {
     }
 
     @Test
-    void runnable() {
+    public void runnable() {
         Runnable runnable = mock(Runnable.class);
         MetricsUtils.timed("name", runnable);
 
