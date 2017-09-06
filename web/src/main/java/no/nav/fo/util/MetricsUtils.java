@@ -39,14 +39,6 @@ public class MetricsUtils {
         };
     }
 
-    public static Runnable timed(String navn, Runnable runnable) {
-        return functionToRunnable(timed(navn, runnableToFunction(runnable), null));
-    }
-
-    public static Runnable timed(String navn, Runnable runnable, BiConsumer<Timer, Boolean> tagsAppender) {
-        return functionToRunnable(timed(navn, runnableToFunction(runnable), tagsAppender));
-    }
-
     public static <S> S timed(String navn, Supplier<S> supplier) {
         return timed(navn, supplier, null);
     }
@@ -63,16 +55,16 @@ public class MetricsUtils {
         return functionToConsumer(timed(navn, consumerToFunction(consumer), tagsAppender));
     }
 
+    public static void timed(String navn, Runnable runnable) {
+        functionToRunnable(timed(navn, runnableToFunction(runnable))).run();
+    }
+
+    public static void timed(String navn, Runnable runnable, BiConsumer<Timer, Boolean> tagsAppender) {
+        functionToRunnable(timed(navn, runnableToFunction(runnable), tagsAppender)).run();
+    }
+
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
         return (S s) -> { consumer.accept(s); return null; };
-    }
-
-    private static <S> Function<S, Runnable> runnableToFunction(Runnable runnable) {
-        return (S s) -> { runnable.run(); return runnable; };
-    }
-
-    private static <S> Runnable functionToRunnable(Function<S, Runnable> function) {
-        return function.apply(null);
     }
 
     private static <S> Consumer<S> functionToConsumer(Function<S, Void> function) {
@@ -86,4 +78,16 @@ public class MetricsUtils {
     private static <S> Supplier<S> functionToSupplier(Function<Void, S> function) {
         return () -> function.apply(null);
     }
+
+    private static Runnable functionToRunnable(Function<Void, Void> function) {
+        return () -> function.apply(null);
+    }
+
+    private static Function<Void, Void> runnableToFunction(Runnable runnable) {
+        return aVoid -> {
+            runnable.run();
+            return null;
+        };
+    }
+
 }

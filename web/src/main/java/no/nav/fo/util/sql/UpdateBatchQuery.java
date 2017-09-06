@@ -75,6 +75,12 @@ public class UpdateBatchQuery<T> {
             ps.setString(i, (String) value);
         } else if (Timestamp.class == type) {
             ps.setTimestamp(i, (Timestamp) value);
+        } else if (Integer.class == type) {
+            if (value != null) {
+                ps.setInt(i, (Integer) value);
+            } else {
+                ps.setInt(i, -1);
+            }
         } else if (Boolean.class == type) {
             ps.setBoolean(i, (Boolean) value);
         }

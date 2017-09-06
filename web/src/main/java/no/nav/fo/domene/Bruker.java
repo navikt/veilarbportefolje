@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.solr.common.SolrDocument;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -33,15 +35,21 @@ public class Bruker {
     String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
-    ManedMapping utlopsdatoFasett;
-    LocalDateTime aapMaxtid;
-    KvartalMapping aapMaxtidFasett;
+    ManedFasettMapping utlopsdatoFasett;
+    Integer dagputlopUke;
+    DagpengerUkeFasettMapping dagputlopUkeFasett;
+    Integer permutlopUke;
+    DagpengerUkeFasettMapping permutlopUkeFasett;
+    Integer aapmaxtidUke;
+    AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter;
+
+    private static Logger log = LoggerFactory.getLogger(Bruker.class);
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
@@ -59,9 +67,13 @@ public class Bruker {
                 .setKjonn((String) document.get("kjonn"))
                 .setYtelse(YtelseMapping.of((String) document.get("ytelse")))
                 .setUtlopsdato(toLocalDateTime((Date) document.get("utlopsdato")))
-                .setUtlopsdatoFasett(ManedMapping.of((String) document.get("utlopsdato_mnd_fasett")))
-                .setAapMaxtid(toLocalDateTime((Date) document.get("aap_maxtid")))
-                .setAapMaxtidFasett(KvartalMapping.of((String) document.get("aap_maxtid_fasett")))
+                .setUtlopsdatoFasett(ManedFasettMapping.of((String) document.get("utlopsdatofasett")))
+                .setDagputlopUke((Integer) document.get("dagputlopuke"))
+                .setDagputlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("dagputlopukefasett")))
+                .setPermutlopUke((Integer) document.get("permutlopuke"))
+                .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("permutlopukefasett")))
+                .setAapmaxtidUke((Integer) document.get("aapmaxtiduke"))
+                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of((String) document.get("aapmaxtidukefasett")))
                 .setArbeidsliste(Arbeidsliste.of(document))
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
@@ -105,11 +117,12 @@ public class Bruker {
     }
 
     private static List<String> getBrukertiltak(SolrDocument document) {
-        String tiltak = (String) document.get("tiltak");
-        if (tiltak == null) {
+        List<String> tiltak = (List<String>) document.get("tiltak");
+
+        if (Objects.isNull(tiltak)) {
             return emptyList();
         } else {
-            return singletonList(tiltak);
+            return tiltak;
         }
     }
 
@@ -120,5 +133,32 @@ public class Bruker {
 
     public ZonedDateTime getArbeidslisteFrist() {
         return arbeidsliste.getFrist();
+    }
+
+    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
+    public Timestamp getNesteAktivitetUtlopsdatoOrElseEpoch0() {
+        if(Objects.isNull(aktiviteter)) {
+            return new Timestamp(0);
+        }
+        return aktiviteter
+                .values()
+                .stream()
+                .filter(Objects::nonNull)
+                .sorted()
+                .findFirst()
+                .orElse(new Timestamp(0));
+    }
+
+    public Timestamp getNesteUtlopsdatoForAktivitetOrElseEpoch0(String aktivitetstypeSortering) {
+        if(Objects.isNull(aktiviteter)) {
+            return new Timestamp(0);
+        }
+
+        String aktivitetstype = Try.of(() -> aktivitetstypeSortering.split("_")[1])
+                .onFailure((t) -> log.error("Sorteringsfelt for aktiviteter må starte med AKTIVITETER_", t))
+                .getOrElseThrow(() -> new IllegalArgumentException());
+
+        return Optional.ofNullable(aktiviteter.get(aktivitetstype.toLowerCase())).orElse(new Timestamp(0));
+
     }
 }

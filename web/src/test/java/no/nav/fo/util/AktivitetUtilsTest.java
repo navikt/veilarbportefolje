@@ -237,24 +237,24 @@ public class AktivitetUtilsTest {
     @Test
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField("person_id", "123");
-        when(brukerRepository.getTiltak(anyString())).thenReturn(Arrays.asList("Tiltak1", "Tiltak2"));
+        solrInputDocument.addField("fnr", "123");
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Arrays.asList("Tiltak1", "Tiltak2"));
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
-        assertThat(solrInputDocument.keySet()).containsExactly("person_id", "tiltak");
+        assertThat(solrInputDocument.keySet()).containsExactly("fnr", "tiltak");
         assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactly("Tiltak1", "Tiltak2");
     }
 
     @Test
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField("person_id", "12345678910");
-        when(brukerRepository.getTiltak(anyString())).thenReturn(Lists.emptyList());
+        solrInputDocument.addField("fnr", "12345678910");
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Lists.emptyList());
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
-        assertThat(solrInputDocument.keySet()).containsExactly("person_id");
+        assertThat(solrInputDocument.keySet()).containsExactly("fnr");
     }
 
 

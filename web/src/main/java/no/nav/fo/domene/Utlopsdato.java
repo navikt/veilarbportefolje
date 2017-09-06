@@ -10,45 +10,11 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
 public class Utlopsdato {
-    private static final String DAGPENGER = "DAGP";
-
-    public static LocalDateTime utlopsdato(LocalDateTime now, LoependeVedtak loependeVedtak) {
+    public static LocalDateTime utlopsdato(LoependeVedtak loependeVedtak) {
         if (loependeVedtak.getVedtaksperiode() != null && loependeVedtak.getVedtaksperiode().getTom() != null) {
             return loependeVedtak.getVedtaksperiode().getTom().toGregorianCalendar().toZonedDateTime().toLocalDateTime();
         }
 
-        if (!DAGPENGER.equals(loependeVedtak.getSakstypeKode())) {
-            throw new YtelseManglerTOMDatoException(loependeVedtak);
-        }
-
-        return utlopsdatoUtregning(now, loependeVedtak.getDagpengetellere());
-    }
-
-    public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, Dagpengetellere dagpengetellere) {
-        return utlopsdatoUtregning(now, nullcheck(dagpengetellere.getAntallUkerIgjen()).intValue(), nullcheck(dagpengetellere.getAntallDagerIgjen()).intValue());
-    }
-
-    public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, AAPtellere aaptellere) {
-        return utlopsdatoUtregning(now, nullcheck(aaptellere.getAntallUkerIgjen()).intValue(), nullcheck(aaptellere.getAntallDagerIgjen()).intValue());
-    }
-
-    public static LocalDateTime utlopsdatoUtregning(LocalDateTime now, int antallUkerIgjen, int antallDagerIgjen) {
-        LocalDateTime utlopsdato = now
-                .minusDays(1)
-                .plusWeeks(antallUkerIgjen)
-                .plusDays(antallDagerIgjen);
-
-        while (utlopsdato.getDayOfWeek() == DayOfWeek.SATURDAY || utlopsdato.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            utlopsdato = utlopsdato.plusDays(1);
-        }
-
-        return utlopsdato;
-    }
-
-    private static BigInteger nullcheck(BigInteger bi) {
-        if (bi == null) {
-            return BigInteger.ZERO;
-        }
-        return bi;
+        throw new YtelseManglerTOMDatoException(loependeVedtak);
     }
 }

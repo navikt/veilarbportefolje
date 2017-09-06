@@ -1,7 +1,6 @@
 package no.nav.fo.service;
 
 
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
@@ -15,6 +14,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Objects;
 
+import static io.vavr.control.Try.run;
 import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -32,8 +32,8 @@ public class AktivitetService {
     private PersistentOppdatering persistentOppdatering;
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
-        Try.of(() ->
-                timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
+        run(
+                () -> timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
         ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
     }
 

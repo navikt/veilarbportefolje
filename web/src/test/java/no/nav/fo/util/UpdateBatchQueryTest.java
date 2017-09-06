@@ -33,14 +33,14 @@ public class UpdateBatchQueryTest {
     public void skalLageBatchUpdateQuery() throws Exception {
         LocalDateTime now = now();
         List<Brukerdata> brukerdata = asList(
-                new Brukerdata().setPersonid("abba").setYtelse(AAP_MAXTID).setAapMaxtid(now),
-                new Brukerdata().setPersonid("acdc").setYtelse(DAGPENGER_OVRIGE).setAapMaxtid(now),
-                new Brukerdata().setPersonid("aedc").setYtelse(AAP_UNNTAK).setAapMaxtid(now)
+                new Brukerdata().setPersonid("abba").setYtelse(AAP_MAXTID).setAapmaxtidUke(1),
+                new Brukerdata().setPersonid("acdc").setYtelse(DAGPENGER_OVRIGE).setAapmaxtidUke(2),
+                new Brukerdata().setPersonid("aedc").setYtelse(AAP_UNNTAK).setAapmaxtidUke(3)
         );
         List<Brukerdata> oppdatertBrukerdata = asList(
-                new Brukerdata().setPersonid("abba").setYtelse(AAP_UNNTAK).setAapMaxtid(now.minusDays(1)),
-                new Brukerdata().setPersonid("acdc").setYtelse(DAGPENGER_MED_PERMITTERING).setAapMaxtid(now.minusDays(1)),
-                new Brukerdata().setPersonid("aedc").setYtelse(AAP_MAXTID).setAapMaxtid(now.plusDays(1))
+                new Brukerdata().setPersonid("abba").setYtelse(AAP_UNNTAK).setAapmaxtidUke(2),
+                new Brukerdata().setPersonid("acdc").setYtelse(DAGPENGER_MED_PERMITTERING).setAapmaxtidUke(3),
+                new Brukerdata().setPersonid("aedc").setYtelse(AAP_MAXTID).setAapmaxtidUke(4)
         );
 
 

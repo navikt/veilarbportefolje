@@ -22,6 +22,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
+import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetUtils {
@@ -150,15 +151,18 @@ public class AktivitetUtils {
         io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(1000, 1000)
                 .forEach((dokumenterBatch) -> {
-                    List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
-                            .map((dokument) -> new PersonId((String) dokument.get("person_id").getValue())).collect(toList());
+                    timed("indeksering.applyaktiviteter1000", () -> {
+                        List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
+                                .map((dokument) -> new PersonId((String) dokument.get("person_id").getValue())).collect(toList());
 
-                    Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(personIds);
+                        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(personIds);
 
-                    dokumenterBatch.forEach((dokument) -> {
-                        PersonId personId = new PersonId((String) dokument.get("person_id").getValue());
-                        applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
-                    });
+                        dokumenterBatch.forEach((dokument) -> {
+                            PersonId personId = new PersonId((String) dokument.get("person_id").getValue());
+                            applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
+                        });
+                    },
+                            (timer, success) -> timer.addTagToReport("size", Objects.toString(dokumenter.size())));
                 });
     }
 
@@ -189,9 +193,9 @@ public class AktivitetUtils {
 
     public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
         dokumenter.stream().forEach(document -> {
-            String personid = (String) document.get("person_id").getValue();
-            List<String> tiltak = brukerRepository.getTiltak(personid);
-            if (!tiltak.isEmpty()) {
+            String personid = (String) document.get("fnr").getValue();
+            List<String> tiltak = brukerRepository.getBrukertiltak(personid);
+            if(!tiltak.isEmpty()) {
                 document.addField("tiltak", tiltak);
             }
         });

@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -18,6 +19,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Api(value = "Fjern brukere")
 @Path("/bruker")
+@Component
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class FjernbrukereController {

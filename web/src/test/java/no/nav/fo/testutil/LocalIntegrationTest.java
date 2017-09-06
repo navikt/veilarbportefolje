@@ -48,6 +48,9 @@ import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
  * }
  */
 public abstract class LocalIntegrationTest {
+    static {
+        setProperty("testmiljo", "t6");
+    }
 
     private static final String CONTEXT_NAME = LocalIntegrationTest.class.getSimpleName();
     private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());

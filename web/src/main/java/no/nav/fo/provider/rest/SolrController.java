@@ -6,6 +6,7 @@ import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.SolrService;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -15,6 +16,7 @@ import static io.vavr.control.Try.run;
 
 @Api(value = "Solr")
 @Path("solr")
+@Component
 @Slf4j
 public class SolrController {
 

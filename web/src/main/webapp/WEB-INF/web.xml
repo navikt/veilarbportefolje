@@ -6,29 +6,6 @@
          version="3.1">
 
     <display-name>veilarbportefolje</display-name>
-    <session-config>
-        <session-timeout>30</session-timeout>
-        <cookie-config>
-            <name>veilarbportefolje_JSESSIONID</name>
-            <http-only>true</http-only>
-            <secure>true</secure>
-        </cookie-config>
-        <tracking-mode>COOKIE</tracking-mode>
-    </session-config>
-
-    <!--IKKE BENYTT RESTEASY-->
-    <context-param>
-        <param-name>resteasy.scan</param-name>
-        <param-value>false</param-value>
-    </context-param>
-    <context-param>
-        <param-name>resteasy.scan.providers</param-name>
-        <param-value>false</param-value>
-    </context-param>
-    <context-param>
-        <param-name>resteasy.scan.resources</param-name>
-        <param-value>false</param-value>
-    </context-param>
 
     <!--CONFIG FOR API-APP-->
     <context-param>
@@ -41,34 +18,44 @@
 
     <servlet>
         <servlet-name>reindekserytelser</servlet-name>
-        <servlet-class>no.nav.fo.internal.ReindekserYtelserServlet</servlet-class>
+        <servlet-class>no.nav.fo.filmottak.ytelser.YtelserServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>reindekserytelser</servlet-name>
-        <url-pattern>/internal/reindekserytelser</url-pattern>
+        <url-pattern>/internal/oppdaterytelser</url-pattern>
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>restservlet</servlet-name>
-        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>
-                no.nav.fo.provider.rest,
-                no.nav.fo.feed.controller
-            </param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>
+        <servlet-name>oppdatertiltak</servlet-name>
+        <servlet-class>no.nav.fo.filmottak.tiltak.TiltakServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>restservlet</servlet-name>
-        <url-pattern>/tjenester/*</url-pattern>
+        <servlet-name>oppdatertiltak</servlet-name>
+        <url-pattern>/internal/oppdatertiltak</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>populerindeks</servlet-name>
+        <servlet-class>no.nav.fo.internal.PopulerIndekseringServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>populerindeks</servlet-name>
+        <url-pattern>/internal/populerindeks</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>totalhovedindeksering</servlet-name>
+        <servlet-class>no.nav.fo.internal.TotalHovedindekseringServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>totalhovedindeksering</servlet-name>
+        <url-pattern>/internal/totalhovedindeksering</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Ubeskyttet</web-resource-name>
+            <!-- TODO er dette riktig? -->
             <url-pattern>/tjenester/login</url-pattern>
             <url-pattern>/tjenester/solr/*</url-pattern>
             <url-pattern>/internal/*</url-pattern>
