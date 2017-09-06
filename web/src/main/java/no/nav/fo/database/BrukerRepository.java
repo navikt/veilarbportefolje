@@ -424,6 +424,24 @@ public class BrukerRepository {
                         "WHERE PERSONID = ?", String.class, personId);
     }
 
+    public Map<Fnr, Set<Brukertiltak>> getBrukertiltak(List<Fnr> fnrs) {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fnrs", fnrs.stream().map(Fnr::toString).collect(toList()));
+
+        return namedParameterJdbcTemplate
+                .queryForList(getBrukertiltakForListOfFnrSQL(), params)
+                .stream()
+                .map(row -> Brukertiltak.of(
+                        Fnr.of((String) row.get("FNR")), (String) row.get("TILTAK"))
+                )
+                .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
+                        (oldValue, newValue) -> {
+                            oldValue.addAll(newValue);
+                            return oldValue;
+                        }));
+    }
+
     public void slettYtelsesdata() {
         SqlUtils.update(db, "bruker_data")
                 .set("ytelse", null)
@@ -564,6 +582,14 @@ public class BrukerRepository {
                         "oppfolgingsbruker " +
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
+    }
+
+    String getBrukertiltakForListOfFnrSQL() {
+        return "SELECT " +
+                "TILTAKSKODE AS TILTAK, " +
+                "PERSONID as FNR " +
+                "FROM BRUKERTILTAK " +
+                "WHERE PERSONID in(:fnrs)";
     }
 
     private String retrieveBrukerSQL() {

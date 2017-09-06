@@ -31,7 +31,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -171,8 +170,8 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        String antallDokumenter = Objects.toString(dokumenter.size());
-        BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("size", antallDokumenter);
+        Boolean batch = dokumenter.size() > 1;
+        BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
         timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, brukerRepository), tagsAppeder);
         timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
         timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository),tagsAppeder);

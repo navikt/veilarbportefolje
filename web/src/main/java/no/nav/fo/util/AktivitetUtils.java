@@ -3,9 +3,7 @@ package no.nav.fo.util;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.AktivitetStatus;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
@@ -162,7 +160,7 @@ public class AktivitetUtils {
                             applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
                         });
                     },
-                            (timer, success) -> timer.addTagToReport("size", Objects.toString(dokumenter.size())));
+                            (timer, success) -> timer.addTagToReport("batch", dokumenter.size() > 1 ? "true" : "false"));
                 });
     }
 
@@ -192,12 +190,22 @@ public class AktivitetUtils {
 
 
     public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
-        dokumenter.stream().forEach(document -> {
-            String personid = (String) document.get("fnr").getValue();
-            List<String> tiltak = brukerRepository.getBrukertiltak(personid);
-            if(!tiltak.isEmpty()) {
-                document.addField("tiltak", tiltak);
-            }
+        io.vavr.collection.List.ofAll(dokumenter)
+                .sliding(1000,1000)
+                .forEach((dokumenterVavrBatch) -> {
+                    List<SolrInputDocument> dokumenterJavaBatch = dokumenterVavrBatch.toJavaList();
+                    List<Fnr> fnrs = dokumenterJavaBatch.stream()
+                            .map((dokument) -> Fnr.of((String) dokument.get("fnr").getValue()))
+                            .collect(toList());
+                    Map<Fnr, Set<Brukertiltak>> tiltak = brukerRepository.getBrukertiltak(fnrs);
+                    dokumenterJavaBatch.forEach(document -> {
+                        Fnr fnr = Fnr.of((String) document.get("fnr").getValue());
+                        Optional<Set<Brukertiltak>> brukertiltak = Optional.ofNullable(tiltak.get(fnr));
+                        if(brukertiltak.isPresent()) {
+                            List<String> tiltakliste = brukertiltak.get().stream().map(Brukertiltak::getTiltak).collect(toList());
+                            document.addField("tiltak", tiltakliste);
+                        }
+                });
         });
         return null;
     }

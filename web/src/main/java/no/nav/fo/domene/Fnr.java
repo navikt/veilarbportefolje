@@ -19,6 +19,10 @@ public class Fnr {
         }
     }
 
+    public static Fnr of(String fnr) {
+        return new Fnr(fnr);
+    }
+
     @Override
     public String toString() {
         return fnr;

@@ -2,9 +2,7 @@ package no.nav.fo.util;
 
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.AktivitetStatus;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktivitetData;
 import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
@@ -24,6 +22,7 @@ import static java.util.Arrays.asList;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.AktivitetUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -237,8 +236,17 @@ public class AktivitetUtilsTest {
     @Test
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField("fnr", "123");
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Arrays.asList("Tiltak1", "Tiltak2"));
+        Fnr fnr = Fnr.of("11111111111");
+        solrInputDocument.addField("fnr", fnr.toString());
+
+        Map<Fnr, Set<Brukertiltak>> tiltak = new HashMap<>();
+        Set<Brukertiltak> brukertiltakSet = new HashSet<>();
+
+        brukertiltakSet.add(Brukertiltak.of(fnr,"Tiltak1"));
+        brukertiltakSet.add(Brukertiltak.of(fnr,"Tiltak2"));
+        tiltak.put(fnr, brukertiltakSet);
+
+        when(brukerRepository.getBrukertiltak(anyList())).thenReturn(tiltak);
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 

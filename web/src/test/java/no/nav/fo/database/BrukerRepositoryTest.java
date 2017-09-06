@@ -8,7 +8,6 @@ import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
-import no.nav.fo.domene.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.assertj.core.api.Assertions;
@@ -31,11 +30,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.*;
+import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
+import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
-import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
-import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.*;
 
@@ -684,5 +683,23 @@ public class BrukerRepositoryTest {
         Set<AktivitetStatus> statuser = brukerRepository.getAktivitetstatusForBrukere(singletonList(personId)).get(personId);
 
         assertThat(statuser).containsExactlyInAnyOrder(a2,a3);
+    }
+
+    @Test
+    public void skalBrukertiltakForListeAvFnr() {
+        Fnr fnr1 = Fnr.of("11111111111");
+        Fnr fnr2 = Fnr.of("22222222222");
+
+        jdbcTemplate.execute("INSERT INTO TILTAKKODEVERK (KODE, VERDI) VALUES ('kode1', 'verdi1')");
+        jdbcTemplate.execute("INSERT INTO TILTAKKODEVERK (KODE, VERDI) VALUES ('kode2', 'verdi2')");
+        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,PERSONID) VALUES ('kode1','11111111111')");
+        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,PERSONID) VALUES ('kode2','11111111111')");
+        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,PERSONID) VALUES ('kode2','22222222222')");
+
+        Map<Fnr, Set<Brukertiltak>> brukertiltak = brukerRepository.getBrukertiltak(asList(fnr1,fnr2));
+
+        assertThat(brukertiltak.get(fnr1).size()).isEqualTo(2);
+        assertThat(brukertiltak.get(fnr2).size()).isEqualTo(1);
+
     }
 }

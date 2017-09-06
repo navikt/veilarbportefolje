@@ -1,6 +1,5 @@
 package no.nav.fo.util;
 
-import no.nav.fo.domene.AktivitetStatus;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -117,9 +116,9 @@ public class DbUtils {
         return e.getCause().toString();
     }
 
-    public static Set<AktivitetStatus> toSet(AktivitetStatus aktivitetStatus) {
-        Set<AktivitetStatus> set = new HashSet<>();
-        set.add(aktivitetStatus);
+    public static <S> Set<S> toSet(S s) {
+        Set<S> set = new HashSet<>();
+        set.add(s);
         return set;
     }
 }

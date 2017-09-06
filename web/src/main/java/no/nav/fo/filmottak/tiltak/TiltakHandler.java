@@ -106,17 +106,14 @@ public class TiltakHandler {
             tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> {
                 tiltakrepository.insertBrukertiltak(bruker, brukerTiltak);
             });
-            return null;
         });
 
         MetricsUtils.timed("tiltak.insert.as.aktivitet", () -> {
             utledOgLagreAktivitetstatusForTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
-            return null;
         });
 
         MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
             utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
-            return null;
         });
 
 
@@ -193,13 +190,6 @@ public class TiltakHandler {
             tiltakskoderStreng.append(String.format("\n%s", tiltakskode));
         }
         logger.info(tiltakskoderStreng.toString());
-    }
-
-    private PersonId personIdErElseNull(Fnr fnr) {
-        return aktoerService
-                .hentPersonidFromFnr(fnr)
-                .onFailure((t) -> logger.warn("Kunne ikke finne personId for fnr {}", fnr.toString()))
-                .getOrNull();
     }
 
     private Try<FileObject> hentFil() {
