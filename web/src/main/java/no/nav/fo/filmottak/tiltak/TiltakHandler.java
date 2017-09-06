@@ -166,22 +166,6 @@ public class TiltakHandler {
                 });
     }
 
-
-    private void logSet(Set<String> strengSet, String navn) {
-        StringBuilder tiltakskoderStreng = new StringBuilder(String.format("\n\nUTSKRIFT %s (%d):", navn, strengSet.size()));
-        for (String tiltakskode : strengSet) {
-            tiltakskoderStreng.append(String.format("\n%s", tiltakskode));
-        }
-        logger.info(tiltakskoderStreng.toString());
-    }
-
-    private PersonId personIdErElseNull(Fnr fnr) {
-        return aktoerService
-                .hentPersonidFromFnr(fnr)
-                .onFailure((t) -> logger.warn("Kunne ikke finne personId for fnr {}", fnr.toString()))
-                .getOrNull();
-    }
-
     private Try<FileObject> hentFil() {
         logger.info("Starter henting av tiltaksfil");
         try {
