@@ -44,8 +44,9 @@ public class AktoerServiceMock implements AktoerService {
         return Try.success(PERSON_ID).map(PersonId::new);
     }
 
+
     @Override
-    public Try<AktoerId> hentAktoeridFraPersonid(String personid) {
+    public Try<AktoerId> hentAktoeridFraPersonid(PersonId personid) {
         return Try.success(AKTOER_ID).map(AktoerId::new);
     }
 
@@ -70,7 +71,17 @@ public class AktoerServiceMock implements AktoerService {
     }
 
     @Override
+    public Try<Fnr> hentFnrFraPersonid(PersonId personId) {
+        return null;
+    }
+
+    @Override
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
+        return null;
+    }
+
+    @Override
+    public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
         return null;
     }
 

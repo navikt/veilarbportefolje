@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -95,7 +96,7 @@ public class SolrServiceImpl implements SolrService {
             leggDataTilSolrDocument(dokumenter);
             addDocumentsToIndex(dokumenter);
         });
-        timed("indeksering.prosesserbrukere", () -> brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer));
+        brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
         consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
 
         commit();
@@ -174,32 +175,28 @@ public class SolrServiceImpl implements SolrService {
         BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
         timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, brukerRepository), tagsAppeder);
         timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
-        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository),tagsAppeder);
+        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository), tagsAppeder);
     }
 
-    private static Object applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
-        brukere.forEach(solrDokument -> {
-            String personId = (String) solrDokument.get("person_id").getValue();
+    private static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
+        List<PersonId> personIds = brukere.stream().map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
+        Map<PersonId, Optional<AktoerId>> personIdToAktoerId = aktoerService.hentAktoeridsForPersonids(personIds);
+        List<AktoerId> aktoerids = personIdToAktoerId.values().stream().filter(Optional::isPresent).map(Optional::get).collect(toList());
 
-            aktoerService.hentAktoeridFraPersonid(personId)
-                    .map(arbeidslisteRepository::retrieveArbeidsliste)
-                    .map(result -> result.onSuccess(
-                            arbeidsliste -> {
-                                if (arbeidsliste != null) {
-                                    solrDokument.setField("arbeidsliste_aktiv", true);
-                                    solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
-                                    solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
-                                    solrDokument.setField("arbeidsliste_kommentar", arbeidsliste.getKommentar());
-                                    solrDokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.getFrist()));
-                                    solrDokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.getIsOppfolgendeVeileder());
+        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = arbeidslisteRepository.retrieveArbeidsliste(aktoerids);
 
-                                    LOG.info("Legger til arbeidsliste for bruker med personid {}", personId);
-                                }
-
-                            }
-                    ));
+        brukere.forEach((dokument) -> {
+            PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
+            Optional<Arbeidsliste> arbeidsliste = Optional.of(personId).flatMap(personIdToAktoerId::get).flatMap(arbeidslisteMap::get);
+            if (arbeidsliste.isPresent()) {
+                dokument.setField("arbeidsliste_aktiv", true);
+                dokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.get().getSistEndretAv().toString());
+                dokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.get().getEndringstidspunkt()));
+                dokument.setField("arbeidsliste_kommentar", arbeidsliste.get().getKommentar());
+                dokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.get().getFrist()));
+                dokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.get().getIsOppfolgendeVeileder());
+            }
         });
-        return null;
     }
 
     private List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {

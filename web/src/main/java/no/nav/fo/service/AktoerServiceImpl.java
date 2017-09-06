@@ -37,20 +37,22 @@ public class AktoerServiceImpl implements AktoerService {
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         Try<PersonId> personid = brukerRepository.retrievePersonid(aktoerId);
 
-        if(personid.isSuccess() && personid.get() == null) {
+        if (personid.isSuccess() && personid.get() == null) {
             return hentPersonIdViaSoap(aktoerId);
         }
         return personid;
     }
 
     @Override
-    public Try<AktoerId> hentAktoeridFraPersonid(String personid) {
+    public Try<AktoerId> hentAktoeridFraPersonid(PersonId personId) {
         return hentSingleFraDb(
                 db,
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ?",
-                (data) -> (String) data.get("aktoerid"),
-                personid
-        ).map(AktoerId::new);
+                (data) -> AktoerId.of((String) data.get("aktoerid")),
+                personId.toString()
+        ).orElse(() -> hentFnrFraPersonid(personId)
+                .flatMap(this::hentAktoeridFraFnr))
+                .onSuccess((aktoerId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId)));
     }
 
     @Override
@@ -75,11 +77,38 @@ public class AktoerServiceImpl implements AktoerService {
         return hentFnrViaSoap(aktoerId);
     }
 
+    @Override
+    public Try<Fnr> hentFnrFraPersonid(PersonId personId) {
+        return hentSingleFraDb(
+                db,
+                "SELECT FODSELSNR FROM OPPFOLGINGSBRUKER WHERE PERSON_ID = ?",
+                (data) -> Fnr.of((String) data.get("fodselsnr")),
+                personId.toString()
+        );
+    }
+
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
         Map<Fnr, Optional<PersonId>> typeMap = new HashMap<>();
         Map<String, Optional<String>> stringMap = brukerRepository.retrievePersonidFromFnrs(fnrs.stream().map(Fnr::toString).collect(toList()));
         stringMap.forEach((key, value) -> typeMap.put(new Fnr(key), value.map(PersonId::new)));
         return typeMap;
+    }
+
+    @Override
+    public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
+        Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = new HashMap<>(personIds.size());
+        Map<PersonId, Optional<AktoerId>> fromDb = brukerRepository.hentAktoeridsForPersonids(personIds);
+
+        fromDb.forEach((key, value) -> {
+                    if (value.isPresent()) {
+                        personIdToAktoeridMap.put(key, value);
+                    } else {
+                        personIdToAktoeridMap.put(key, hentAktoeridFraPersonid(key).toJavaOptional());
+                    }
+                }
+        );
+
+        return personIdToAktoeridMap;
     }
 
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
