@@ -7,6 +7,7 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
 import no.nav.metrics.MetricsFactory;
 import org.slf4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -69,18 +70,21 @@ public class TiltakRepository extends BrukerRepository {
     }
 
     Map<String, List<String>> getEnhetMedPersonIder() {
-        List<Map<String, Object>> maps = db.queryForList("SELECT FODSELSNR, NAV_KONTOR FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL");
+        List<EnhetTilFnr> enhetTilFnrList = db.query("SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL", new BeanPropertyRowMapper<>(EnhetTilFnr.class));
+        return mapEnhetTilFnrs(enhetTilFnrList);
+    }
 
-        Map<String, List<String>> reduce = new HashMap<>();
-        maps.forEach(dbRadMap -> {
-            String enhet = (String) dbRadMap.get("NAV_KONTOR");
-            String ident = dbRadMap.get("FODSELSNR").toString();
-            List<String> brukereForEnhet = reduce.getOrDefault(enhet, new ArrayList<>());
+    Map<String, List<String>> mapEnhetTilFnrs(List<EnhetTilFnr> raderFraDb) {
+        Map<String, List<String>> enhetTilFnrMap = new HashMap<>();
+
+        raderFraDb.forEach(rad -> {
+            String enhet = rad.getEnhetId();
+            String ident = rad.getFnr();
+            List<String> brukereForEnhet = enhetTilFnrMap.getOrDefault(enhet, new ArrayList<>());
             brukereForEnhet.add(ident);
-            reduce.put(enhet, brukereForEnhet);
+            enhetTilFnrMap.put(enhet, brukereForEnhet);
         });
-
-        return reduce;
+        return enhetTilFnrMap;
     }
 
     void insertEnhettiltak(List<TiltakForEnhet> tiltakListe) {

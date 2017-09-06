@@ -101,7 +101,7 @@ public class TiltakHandler {
                                     enhetTiltak.add(tiltaksaktivitet.getTiltakstype());
                                     return tiltaksaktivitet.getTiltakstype();
                                 })
-                                .map(tiltak -> new TiltakForEnhet(entrySet.getKey(), tiltak))
+                                .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
                         ))
                 .distinct()
                 .collect(Collectors.toList());
