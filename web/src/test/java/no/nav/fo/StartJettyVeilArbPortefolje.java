@@ -1,21 +1,15 @@
 package no.nav.fo;
 
-import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
-import org.apache.geronimo.components.jaspi.AuthConfigFactoryImpl;
 import org.eclipse.jetty.plus.jndi.Resource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import javax.security.auth.message.config.AuthConfigFactory;
-import java.security.Security;
-
 import static java.lang.System.getProperty;
-import static no.nav.dialogarena.config.util.Util.setProperty;
 import static no.nav.fo.config.LocalJndiContextConfig.*;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
@@ -34,15 +28,6 @@ public class StartJettyVeilArbPortefolje {
             dataSource = setupInMemoryDatabase();
         } else {
             dataSource = setupOracleDataSource(FasitUtils.getDbCredentials(APPLICATION_NAME));
-        }
-
-        if(Boolean.parseBoolean(getProperty("no-security"))) {
-            InternbrukerSubjectHandler.setVeilederIdent("!!CHANGE ME!!");
-            InternbrukerSubjectHandler.setServicebruker("!!CHANGE ME!!");
-            setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
-        }else {
-            System.setProperty("org.apache.geronimo.jaspic.configurationFile", "src/test/resources/jaspiconf.xml");
-            Security.setProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY, AuthConfigFactoryImpl.class.getCanonicalName());
         }
 
         setServiceUserCredentials(FasitUtils.getServiceUser(SERVICE_USER_NAME, APPLICATION_NAME));

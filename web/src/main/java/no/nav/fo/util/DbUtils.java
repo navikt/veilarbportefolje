@@ -49,10 +49,14 @@ public class DbUtils {
         document.addField("fodselsdato", FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")));
         document.addField("kjonn", FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")));
         document.addField("ytelse", rs.getString("ytelse"));
-        document.addField("utlopsdato_mnd_fasett", rs.getString("UTLOPSDATOFASETT"));
-        document.addField("aap_maxtid_fasett", rs.getString("AAPMAXTIDFASETT"));
-        document.addField("utlopsdato", toIsoUTC(rs.getTimestamp("UTLOPSDATO")));
-        document.addField("aap_maxtid", toIsoUTC(rs.getTimestamp("AAPMAXTID")));
+        document.addField("utlopsdato", toIsoUTC(rs.getTimestamp("utlopsdato")));
+        document.addField("utlopsdatofasett", rs.getString("utlopsdatofasett"));
+        document.addField("dagputlopuke", parseInt(rs.getString("dagputlopuke")));
+        document.addField("dagputlopukefasett", rs.getString("dagputlopukefasett"));
+        document.addField("permutlopuke", parseInt(rs.getString("permutlopuke")));
+        document.addField("permutlopukefasett", rs.getString("permutlopukefasett"));
+        document.addField("aapmaxtiduke", parseInt(rs.getString("aapmaxtiduke")));
+        document.addField("aapmaxtidukefasett", rs.getString("aapmaxtidukefasett"));
         document.addField("oppfolging", parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
         document.addField("venterpasvarfrabruker", toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")));
         document.addField("venterpasvarfranav", toIsoUTC(rs.getTimestamp("venterpasvarfranav")));
@@ -81,6 +85,13 @@ public class DbUtils {
             default:
                 throw new IllegalArgumentException(String.format("Kunne ikke parse verdi %s fra database til boolean", janei));
         }
+    }
+
+    static Integer parseInt(String integer) {
+        if (integer == null) {
+            return null;
+        }
+        return Integer.parseInt(integer);
     }
 
     public static Boolean parse0OR1(String value) {

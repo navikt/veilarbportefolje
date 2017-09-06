@@ -9,11 +9,6 @@ import org.springframework.context.annotation.Configuration;
 public class ServiceConfig {
 
     @Bean
-    public VirksomhetEnhetService virksomhetEnhetServiceImpl() {
-        return new VirksomhetEnhetService();
-    }
-
-    @Bean
     public BrukertilgangService sjekkBrukertilgang() {
         return new BrukertilgangService();
     }
@@ -29,7 +24,9 @@ public class ServiceConfig {
     }
 
     @Bean
-    public AktoerService aktoerService() { return new AktoerServiceImpl(); }
+    public AktivitetService aktivitetService() {
+        return new AktivitetService();
+    }
 
     @Bean
     public TiltakService tiltakService() { return new TiltakService(); }

@@ -5,6 +5,9 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.aktivitet.AktivitetDTO;
+import no.nav.fo.domene.aktivitet.AktivitetData;
+import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
 import org.apache.solr.common.SolrInputDocument;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
@@ -12,10 +15,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.context.ContextConfiguration;
-
-import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetData;
-import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;

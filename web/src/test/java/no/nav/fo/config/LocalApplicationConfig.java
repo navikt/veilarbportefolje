@@ -15,9 +15,11 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
 
 @EnableAspectJAutoProxy
 @EnableScheduling
@@ -25,14 +27,16 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
 @Import({
         DatabaseConfig.class,
         VirksomhetEnhetEndpointConfig.class,
-        LocalServiceConfig.class,
+        ServiceConfig.class,
+        ExternalServiceConfig.class,
         SolrConfig.class,
         AktoerEndpointConfig.class,
         FilmottakConfig.class,
         MetricsConfig.class,
         AktoerEndpointConfig.class,
         AbacContext.class,
-        CacheConfig.class
+        CacheConfig.class,
+        RestConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication{
 
@@ -60,4 +64,16 @@ public class LocalApplicationConfig implements ApiApplication{
     public Sone getSone() {
         return FSS;
     }
+
+    @Bean
+    public HovedindekseringScheduler hovedindekseringScheduler() {
+        return new HovedindekseringScheduler();
+    }
+
+
+    @Override
+    public void startup(ServletContext servletContext) {
+        forwardTjenesterTilApi(servletContext);
+    }
+
 }

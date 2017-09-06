@@ -1,4 +1,0 @@
-CREATE TABLE "METADATA"
-(
-  SIST_INDEKSERT             TIMESTAMP            NOT NULL
-);

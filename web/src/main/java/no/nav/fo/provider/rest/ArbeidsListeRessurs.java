@@ -18,6 +18,7 @@ import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -39,6 +40,7 @@ import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
 
 @Api(value = "arbeidsliste")
 @Path("/arbeidsliste/")
+@Component
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeRessurs {

@@ -10,7 +10,7 @@ import java.util.Optional;
 import static no.nav.fo.domene.YtelseMapping.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class YtelseMappingTest {
+public class YtelseFasettMappingTest {
     @Test
     public void skalKlassifisereOrdinareDagpenger() throws Exception {
         assertThat(YtelseMapping.of(lagVedtak("DAGP", "DAGO"))).isEqualTo(Optional.of(ORDINARE_DAGPENGER));

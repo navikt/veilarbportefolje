@@ -14,9 +14,13 @@ import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdResp
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -57,8 +61,25 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     @Override
+    public Try<PersonId> hentPersonidFromFnr(Fnr fnr) {
+        return hentSingleFraDb(
+                db,
+                "SELECT PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR = ?",
+                (data) -> String.valueOf(((Number) data.get("person_id")).intValue()),
+                fnr.toString()
+        ).map(PersonId::new);
+    }
+
+    @Override
     public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
         return hentFnrViaSoap(aktoerId);
+    }
+
+    public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
+        Map<Fnr, Optional<PersonId>> typeMap = new HashMap<>();
+        Map<String, Optional<String>> stringMap = brukerRepository.retrievePersonidFromFnrs(fnrs.stream().map(Fnr::toString).collect(toList()));
+        stringMap.forEach((key, value) -> typeMap.put(new Fnr(key), value.map(PersonId::new)));
+        return typeMap;
     }
 
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
