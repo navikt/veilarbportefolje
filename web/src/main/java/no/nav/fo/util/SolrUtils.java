@@ -105,6 +105,9 @@ public class SolrUtils {
         if (sortFieldMap.containsKey(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
         }
+        if(Objects.nonNull(sortField) && sortField.contains("aktivitet_")) {
+            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0(sortField));
+        }
 
         brukere.sort(brukerErNyComparator());
         return brukere;
