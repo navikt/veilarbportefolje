@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static no.nav.fo.util.DateUtils.toIsoUTC;
 
@@ -120,5 +121,9 @@ public class DbUtils {
         Set<S> set = new HashSet<>();
         set.add(s);
         return set;
+    }
+
+    public static <T> Predicate<T> not(Predicate<T> predicate) {
+        return (T t) -> !predicate.test(t);
     }
 }

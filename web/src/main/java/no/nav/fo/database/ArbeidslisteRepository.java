@@ -24,13 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
 import static no.nav.fo.util.DbUtils.getCauseString;
+import static no.nav.fo.util.DbUtils.not;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
 
@@ -148,9 +148,4 @@ public class ArbeidslisteRepository {
                 (String) rs.get("KOMMENTAR"),
                 toZonedDateTime((Timestamp) rs.get("FRIST")));
     }
-
-    private <T> Predicate<T> not(Predicate<T> predicate) {
-        return (T t) -> !predicate.test(t);
-    }
-
 }

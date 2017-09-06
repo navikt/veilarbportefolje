@@ -428,10 +428,6 @@ public class BrukerRepository {
 
     }
 
-    private <T> Predicate<T> not(Predicate<T> predicate) {
-        return (T t) -> !predicate.test(t);
-    }
-
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
         Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
                 .stream()

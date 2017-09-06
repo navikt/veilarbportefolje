@@ -52,7 +52,7 @@ public class AktoerServiceImpl implements AktoerService {
                 personId.toString()
         ).orElse(() -> hentFnrFraPersonid(personId)
                 .flatMap(this::hentAktoeridFraFnr))
-                .onSuccess((aktoerId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId)));
+                .onSuccess(aktoerId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId));
     }
 
     @Override
