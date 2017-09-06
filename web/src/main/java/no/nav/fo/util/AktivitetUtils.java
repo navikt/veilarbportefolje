@@ -161,8 +161,8 @@ public class AktivitetUtils {
                             PersonId personId = new PersonId((String) dokument.get("person_id").getValue());
                             applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
                         });
-                        return null;
-                    });
+                    },
+                            (timer, success) -> timer.addTagToReport("size", Objects.toString(dokumenter.size())));
                 });
     }
 

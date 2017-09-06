@@ -59,6 +59,10 @@ public class MetricsUtils {
         functionToRunnable(timed(navn, runnableToFunction(runnable))).run();
     }
 
+    public static void timed(String navn, Runnable runnable, BiConsumer<Timer, Boolean> tagsAppender) {
+        functionToRunnable(timed(navn, runnableToFunction(runnable), tagsAppender)).run();
+    }
+
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
         return (S s) -> { consumer.accept(s); return null; };
     }

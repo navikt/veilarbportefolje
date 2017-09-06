@@ -9,6 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 
+import static no.nav.fo.util.MetricsUtils.timed;
+
 public class HovedindekseringScheduler {
 
     private static Logger logger = LoggerFactory.getLogger(HovedindekseringScheduler.class);
@@ -28,15 +30,17 @@ public class HovedindekseringScheduler {
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
     public void prosessScheduler() {
         if(ismasternode) {
-            logger.info("Setter i gang oppdatering av ytelser i databasen");
-            kopierGR199FraArena.startOppdateringAvYtelser();
-            logger.info("Ferdig med oppdatering av ytelser");
-            logger.info("Setter i gang oppdatering av tiltak i databasen");
-            tiltakHandler.startOppdateringAvTiltakIDatabasen();
-            logger.info("Ferdig med oppdatering av tiltak");
-            logger.info("Setter i gang hovedindeksering");
-            solrService.hovedindeksering();
-            logger.info("Ferdig med hovedindeksering");
+            timed("indeksering.total", () -> {
+                logger.info("Setter i gang oppdatering av ytelser i databasen");
+                kopierGR199FraArena.startOppdateringAvYtelser();
+                logger.info("Ferdig med oppdatering av ytelser");
+                logger.info("Setter i gang oppdatering av tiltak i databasen");
+                tiltakHandler.startOppdateringAvTiltakIDatabasen();
+                logger.info("Ferdig med oppdatering av tiltak");
+                logger.info("Setter i gang hovedindeksering");
+                solrService.hovedindeksering();
+                logger.info("Ferdig med hovedindeksering");
+            });
         }
     }
 }

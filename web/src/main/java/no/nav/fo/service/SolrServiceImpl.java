@@ -10,6 +10,7 @@ import no.nav.fo.util.BatchConsumer;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.Timer;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -30,7 +31,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -168,9 +171,11 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        timed("indeksering.applyaktiviteter",() -> {applyAktivitetStatuser(dokumenter, brukerRepository); return null;});
-        timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService));
-        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository));
+        String antallDokumenter = Objects.toString(dokumenter.size());
+        BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("size", antallDokumenter);
+        timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, brukerRepository), tagsAppeder);
+        timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
+        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository),tagsAppeder);
     }
 
     private static Object applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
