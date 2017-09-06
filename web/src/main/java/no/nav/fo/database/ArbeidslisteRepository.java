@@ -63,7 +63,7 @@ public class ArbeidslisteRepository {
 
         batchProcess(1000, aktoerIds, (aktoerIdsBatch) -> {
             Map<String, Object> params = new HashMap<>();
-            params.put("aktoerids", aktoerIds.stream().map(AktoerId::toString).collect(toList()));
+            params.put("aktoerids", aktoerIdsBatch.stream().map(AktoerId::toString).collect(toList()));
 
             Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMapBatch =
                     namedParameterJdbcTemplate.queryForList(arbeidslisteSQL,
