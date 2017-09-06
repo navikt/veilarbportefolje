@@ -73,7 +73,7 @@ public class TiltakRepositoryTest {
             tiltaksaktivitet3
         ));
 
-        tiltakRepository.insertBrukertiltak(bruker, new HashSet<String>());
+        tiltakRepository.insertBrukertiltak(bruker);
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERTILTAK").size()).isEqualTo(3);
     }

@@ -42,10 +42,9 @@ public class TiltakRepository {
         db.execute("DELETE FROM tiltakkodeverk");
     }
 
-    void insertBrukertiltak(Bruker bruker, Set<String> brukerTiltak) {
+    void insertBrukertiltak(Bruker bruker) {
         bruker.getTiltaksaktivitetListe().forEach(
             tiltak -> {
-                brukerTiltak.add(tiltak.getTiltakstype());
                 try {
                     SqlUtils.insert(db, "brukertiltak")
                         .value("personid", bruker.getPersonident())
@@ -56,7 +55,6 @@ public class TiltakRepository {
                     logger.warn(logMsg);
                     MetricsFactory.createEvent("veilarbportefolje.insertBrukertiltak.feilet").report();
                 }
-
             }
         );
     }
@@ -108,7 +106,7 @@ public class TiltakRepository {
             }
             ps.executeBatch();
         } catch (SQLException e) {
-            logger.error("Kunne ikke lagre TiltakForEnhet i databasen");
+            logger.warn("Kunne ikke lagre TiltakForEnhet i databasen");
             MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
         }
     }

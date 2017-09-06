@@ -91,19 +91,10 @@ public class TiltakHandler {
         brukerRepository.slettAlleAktivitetstatus(tiltak);
         brukerRepository.slettAlleAktivitetstatus(gruppeaktivitet);
 
-        Set<String> tiltakskoder = new HashSet<>();
-        Set<String> brukerTiltak = new HashSet<>();
-        Set<String> enhetTiltak = new HashSet<>();
-
-        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakskode -> {
-            tiltakrepository.insertTiltakskoder(tiltakskode);
-            tiltakskoder.add(tiltakskode.getValue());
-        });
+        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::insertTiltakskoder);
 
         MetricsUtils.timed("tiltak.insert.alle", () -> {
-            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> {
-                tiltakrepository.insertBrukertiltak(bruker, brukerTiltak);
-            });
+            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::insertBrukertiltak);
             return null;
         });
 
@@ -125,10 +116,7 @@ public class TiltakHandler {
                 .flatMap(entrySet -> entrySet.getValue().stream()
                         .filter(personId -> personIdTilBruker.get(personId) != null)
                         .flatMap(personId -> personIdTilBruker.get(personId).getTiltaksaktivitetListe().stream()
-                                .map(tiltaksaktivitet -> {
-                                    enhetTiltak.add(tiltaksaktivitet.getTiltakstype());
-                                    return tiltaksaktivitet.getTiltakstype();
-                                })
+                                .map(tiltaksaktivitet -> tiltaksaktivitet.getTiltakstype())
                                 .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
                         ))
                 .distinct()
@@ -136,12 +124,6 @@ public class TiltakHandler {
         tiltakrepository.insertEnhettiltak(tiltakForEnhet);
 
         logger.info("Ferdige med å populere database");
-
-
-        logSet(tiltakskoder, "KODEVERK");
-        logSet(brukerTiltak, "BRUKERTILTAK");
-        logSet(enhetTiltak, "ENHETTILTAK");
-
     }
 
     private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {
