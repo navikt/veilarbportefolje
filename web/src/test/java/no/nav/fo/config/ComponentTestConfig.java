@@ -1,6 +1,5 @@
 package no.nav.fo.config;
 
-import io.vavr.control.Try;
 import no.nav.apiapp.ApiApplication;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.mock.AktoerServiceMock;
@@ -31,7 +30,7 @@ import static org.mockito.Mockito.when;
         ServiceConfig.class,
         RestConfig.class
 })
-public class LocalIntegrationConfig implements ApiApplication {
+public class ComponentTestConfig implements ApiApplication {
 
     @Bean
     public AktoerService aktoerService() {
