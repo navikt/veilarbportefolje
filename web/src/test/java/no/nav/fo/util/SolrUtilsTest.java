@@ -1,7 +1,6 @@
 package no.nav.fo.util;
 
 import no.nav.fo.domene.*;
-import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;

@@ -66,6 +66,7 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table brukerstatus_aktiviteter");
         jdbcTemplate.execute("truncate table aktiviteter");
         jdbcTemplate.execute("truncate table brukertiltak");
+        jdbcTemplate.execute("truncate table enhettiltak");
         jdbcTemplate.execute("truncate table tiltakkodeverk");
         insertoppfolgingsbrukerTestData();
     }
@@ -604,8 +605,8 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteBrukersTiltak() throws Exception {
-        assertThat(brukerRepository.getBrukertiltak("2343601")).containsExactly("A", "B");
-        assertThat(brukerRepository.getBrukertiltak("2343602")).containsExactly("B");
+        assertThat(brukerRepository.getBrukertiltak("11111111111")).containsExactly("T1");
+        assertThat(brukerRepository.getBrukertiltak("22222222222")).containsExactly("T2", "T1");
     }
 
     @Test

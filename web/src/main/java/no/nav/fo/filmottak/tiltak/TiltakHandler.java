@@ -1,15 +1,16 @@
 package no.nav.fo.filmottak.tiltak;
 
 import io.vavr.control.Try;
+import no.nav.fo.filmottak.FilmottakFileUtils;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.filmottak.FileUtils;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.util.MetricsUtils;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.slf4j.Logger;
@@ -17,9 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
+
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -32,7 +31,7 @@ import static no.nav.fo.util.StreamUtils.log;
 public class TiltakHandler {
     private static Logger logger = LoggerFactory.getLogger(TiltakHandler.class);
 
-    @Value("${tiltak.sftp.URI}")
+    @Value("${filmottak.tiltak.sftp.URI}")
     private String URI;
 
     @Value("${environment.name}")
@@ -76,7 +75,7 @@ public class TiltakHandler {
         logger.info("Starter oppdatering av tiltak fra Arena..");
         timed("GR202.hentfil", this::hentFil)
                 .onFailure(log(logger, "Kunne ikke hente tiltaksfil").andThen(stopped))
-                .flatMap(timed("GR202.unmarshall", this::unmarshall))
+                .flatMap(timed("GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
                 .onFailure(log(logger, "Kunne ikke unmarshalle tiltaksfilen").andThen(stopped))
                 .andThen(timed("GR202.populatedb", this::populerDatabase))
                 .onFailure(log(logger, "Kunne ikke populere database").andThen(stopped))
@@ -93,19 +92,10 @@ public class TiltakHandler {
         brukerRepository.slettAlleAktivitetstatus(tiltak);
         brukerRepository.slettAlleAktivitetstatus(gruppeaktivitet);
 
-        Set<String> tiltakskoder = new HashSet<>();
-        Set<String> brukerTiltak = new HashSet<>();
-        Set<String> enhetTiltak = new HashSet<>();
-
-        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakskode -> {
-            tiltakrepository.insertTiltakskoder(tiltakskode);
-            tiltakskoder.add(tiltakskode.getValue());
-        });
+        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::insertTiltakskoder);
 
         MetricsUtils.timed("tiltak.insert.alle", () -> {
-            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> {
-                tiltakrepository.insertBrukertiltak(bruker, brukerTiltak);
-            });
+            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::insertBrukertiltak);
         });
 
         MetricsUtils.timed("tiltak.insert.as.aktivitet", () -> {
@@ -124,23 +114,14 @@ public class TiltakHandler {
                 .flatMap(entrySet -> entrySet.getValue().stream()
                         .filter(personId -> personIdTilBruker.get(personId) != null)
                         .flatMap(personId -> personIdTilBruker.get(personId).getTiltaksaktivitetListe().stream()
-                                .map(tiltaksaktivitet -> {
-                                    enhetTiltak.add(tiltaksaktivitet.getTiltakstype());
-                                    return tiltaksaktivitet.getTiltakstype();
-                                })
-                                .map(tiltak -> new TiltakForEnhet(entrySet.getKey(), tiltak))
+                                .map(Tiltaksaktivitet::getTiltakstype)
+                                .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
                         ))
                 .distinct()
                 .collect(toList());
         tiltakrepository.insertEnhettiltak(tiltakForEnhet);
 
         logger.info("Ferdige med å populere database");
-
-
-        logSet(tiltakskoder, "KODEVERK");
-        logSet(brukerTiltak, "BRUKERTILTAK");
-        logSet(enhetTiltak, "ENHETTILTAK");
-
     }
 
     private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {
@@ -196,23 +177,12 @@ public class TiltakHandler {
         logger.info("Starter henting av tiltaksfil");
         try {
             String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
-            return FileUtils.hentTiltakFil(komplettURI);
+            return FilmottakFileUtils.hentTiltakFil(komplettURI);
         } catch (FileSystemException e) {
             logger.info("Henting av tiltaksfil feilet");
             return Try.failure(e);
         } finally {
             logger.info("Henting av tiltaksfil ferdig!");
         }
-    }
-
-    private Try<TiltakOgAktiviteterForBrukere> unmarshall(FileObject fileObject) {
-        logger.info("Starter unmarshalling av tiltaksfil");
-        return Try.of(() -> {
-            JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1");
-            Unmarshaller unmarshaller = jaxb.createUnmarshaller();
-            JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = (JAXBElement<TiltakOgAktiviteterForBrukere>) unmarshaller.unmarshal(fileObject.getContent().getInputStream());
-            logger.info("Unmarshalling av tiltaksfil ferdig!");
-            return jaxbElement.getValue();
-        });
     }
 }

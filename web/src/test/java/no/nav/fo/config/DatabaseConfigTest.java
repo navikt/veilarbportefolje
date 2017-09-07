@@ -3,6 +3,7 @@ package no.nav.fo.config;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.EnhetTiltakRepository;
+import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -36,4 +37,7 @@ public class DatabaseConfigTest {
 
     @Bean
     public BrukerRepository brukerRepository() { return new BrukerRepository(); }
+
+    @Bean
+    public TiltakRepository tiltakRepository() { return new TiltakRepository(); }
 }

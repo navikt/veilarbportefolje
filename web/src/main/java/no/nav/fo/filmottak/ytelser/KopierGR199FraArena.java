@@ -2,7 +2,7 @@ package no.nav.fo.filmottak.ytelser;
 
 import io.vavr.control.Try;
 import no.nav.fo.service.AktivitetService;
-import no.nav.fo.filmottak.FileUtils;
+import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.metrics.aspects.Timed;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ public class KopierGR199FraArena {
 
     @Timed(name = "GR199.kopierOgIndekser")
     void kopierOgIndekser() {
-        Supplier<Try<InputStream>> hentfil = () -> FileUtils.lesYtelsesFil(new File(filpath, filnavn));
+        Supplier<Try<InputStream>> hentfil = () -> FilmottakFileUtils.lesYtelsesFil(new File(filpath, filnavn));
         logger.info("Starter oppdatering av ytelser...");
 
         aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();

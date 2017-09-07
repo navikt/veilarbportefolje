@@ -25,7 +25,7 @@ public class FilmottakConfig {
     @Value("${loependeytelser.filnavn}")
     String filnavn;
 
-    @Value("${tiltak.sftp.URI}")
+    @Value("${filmottak.tiltak.sftp.URI}")
     private String URI;
 
     @Value("${veilarbportefolje.filmottak.sftp.login.username}")
@@ -87,7 +87,7 @@ public class FilmottakConfig {
 
         return () -> {
             try {
-                FileObject fileObject = FileUtils.hentTiltakFil(komplettURI).get();
+                FileObject fileObject = FilmottakFileUtils.hentTiltakFil(komplettURI).get();
                 if(fileObject.exists()) {
                     return Pingable.Ping.lyktes(metadata);
                 }

@@ -1,7 +1,6 @@
 package no.nav.fo.service;
 
 
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
@@ -15,6 +14,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Objects;
 
+import static io.vavr.control.Try.run;
 import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -31,14 +31,10 @@ public class AktivitetService {
     @Inject
     private PersistentOppdatering persistentOppdatering;
 
-    public Object tryUtledOgLagreAlleAktivitetstatuser() {
-        Try.of(() ->
-                timed("aktiviteter.utled.alle.statuser", () -> {
-                    utledOgLagreAlleAktivitetstatuser();
-                    return null;
-                })
+    public void tryUtledOgLagreAlleAktivitetstatuser() {
+        run(
+                () -> timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
         ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
-        return null;
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
@@ -62,11 +58,7 @@ public class AktivitetService {
                     List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
                             timed("aktiviteter.konverter.til.brukeroppdatering", () -> AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
-                    timed("aktiviteter.persistent.lagring", () -> {
-                        persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
-                        return null;
-                    });
-                    return null;
+                    timed("aktiviteter.persistent.lagring", () -> persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer));
                 },
                 (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
         );

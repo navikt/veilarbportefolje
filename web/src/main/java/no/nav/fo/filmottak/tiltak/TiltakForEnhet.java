@@ -1,13 +1,11 @@
 package no.nav.fo.filmottak.tiltak;
 
+import lombok.Value;
+
+@Value(staticConstructor = "of")
 public class TiltakForEnhet {
     private String enhetid;
     private String tiltakskode;
-
-    public TiltakForEnhet(String enhetid, String tiltakskode) {
-        this.enhetid = enhetid;
-        this.tiltakskode = tiltakskode;
-    }
 
     public String getEnhetid() {
         return enhetid;
