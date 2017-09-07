@@ -50,8 +50,7 @@
     </resources>
 
     <exposed-services>
-        <exposedRest name="no.nav.fo.portefolje.hovedindeksering" path="/veilarbportefolje/internal/hovedindeksering"/>
-        <exposedRest name="no.nav.fo.portefolje.deltaindeksering" path="/veilarbportefolje/internal/deltaindeksering"/>
+        <exposedRest name="no.nav.fo.portefolje.hovedindeksering" path="/veilarbportefolje/internal/populerindeks"/>
         <exposedRest name="no.nav.fo.portefolje.oppdatertiltak" path="/veilarbportefolje/internal/oppdatertiltak"/>
         <exposedRest name="no.nav.fo.portefolje.oppdaterytelser" path="/veilarbportefolje/internal/oppdaterytelser"/>
         <exposedRest name="no.nav.fo.portefolje.totalhovedindeksering" path="/veilarbportefolje/internal/totalhovedindeksering"/>

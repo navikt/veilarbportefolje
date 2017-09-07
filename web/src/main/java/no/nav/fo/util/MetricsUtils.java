@@ -18,7 +18,7 @@ public class MetricsUtils {
         return (S s) -> {
             boolean hasFailed = false;
             Timer timer = MetricsFactory.createTimer(navn);
-            T t = null;
+            T t;
             try {
                 timer.start();
                 t = function.apply(s);
@@ -79,7 +79,7 @@ public class MetricsUtils {
         return () -> function.apply(null);
     }
 
-    private static Runnable functionToRunnable(Function<?, ?> function) {
+    private static Runnable functionToRunnable(Function<Void, Void> function) {
         return () -> function.apply(null);
     }
 
