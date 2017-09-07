@@ -67,7 +67,10 @@ public class TiltakRepository {
     }
 
     Map<String, List<String>> getEnhetMedPersonIder() {
-        List<EnhetTilFnr> enhetTilFnrList = db.query("SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL", new BeanPropertyRowMapper<>(EnhetTilFnr.class));
+        List<EnhetTilFnr> enhetTilFnrList = db.query(
+            "SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL",
+            new BeanPropertyRowMapper<>(EnhetTilFnr.class)
+        );
         return mapEnhetTilFnrs(enhetTilFnrList);
     }
 
