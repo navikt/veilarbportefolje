@@ -94,7 +94,7 @@ public class TiltakHandler {
 
         tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::insertTiltakskoder);
 
-        MetricsUtils.timed("tiltak.insert.alle", () -> {
+        MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
             tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::insertBrukertiltak);
             return null;
         });
@@ -109,22 +109,28 @@ public class TiltakHandler {
             return null;
         });
 
-
-        Map<String, Bruker> fnrTilBruker = new HashMap<>();
-        tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> fnrTilBruker.put(bruker.getPersonident(), bruker));
-
-        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetTilFodselsnummereMap().entrySet().stream()
-                .flatMap(entrySet -> entrySet.getValue().stream()
-                        .filter(fnr -> fnrTilBruker.get(fnr) != null)
-                        .flatMap(fnr -> fnrTilBruker.get(fnr).getTiltaksaktivitetListe().stream()
-                                .map(Tiltaksaktivitet::getTiltakstype)
-                                .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
-                        ))
-                .distinct()
-                .collect(toList());
-        tiltakrepository.insertEnhettiltak(tiltakForEnhet);
+        MetricsUtils.timed("tiltak.insert.enhettiltak", () -> {
+            utledOgLagreEnhetTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
+            return null;
+        });
 
         logger.info("Ferdige med å populere database");
+    }
+
+    private void utledOgLagreEnhetTiltak(List<Bruker> brukere) {
+        Map<String, Bruker> fnrTilBruker = new HashMap<>();
+        brukere.forEach(bruker -> fnrTilBruker.put(bruker.getPersonident(), bruker));
+
+        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetTilFodselsnummereMap().entrySet().stream()
+            .flatMap(entrySet -> entrySet.getValue().stream()
+                .filter(fnr -> fnrTilBruker.get(fnr) != null)
+                .flatMap(fnr -> fnrTilBruker.get(fnr).getTiltaksaktivitetListe().stream()
+                    .map(Tiltaksaktivitet::getTiltakstype)
+                    .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
+                ))
+            .distinct()
+            .collect(toList());
+        tiltakrepository.insertEnhettiltak(tiltakForEnhet);
     }
 
     private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {
