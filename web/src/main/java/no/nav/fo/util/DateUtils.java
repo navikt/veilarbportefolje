@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Objects;
 
 public class DateUtils {
 
@@ -43,6 +44,9 @@ public class DateUtils {
     }
 
     public static String toUtcString(ZonedDateTime zonedDateTime) {
+        if(Objects.isNull(zonedDateTime)) {
+            return null;
+        }
         DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
         return zonedDateTime.format(formatter);
     }
