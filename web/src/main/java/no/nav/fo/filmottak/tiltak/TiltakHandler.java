@@ -130,8 +130,8 @@ public class TiltakHandler {
     private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {
         io.vavr.collection.List.ofAll(brukere)
                 .sliding(1000,1000)
-                .forEach((brukereVavr) -> {
-                    List<Bruker> brukereJavaBatch = brukereVavr.toJavaList();
+                .forEach((brukereSubList) -> {
+                    List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
                     Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
@@ -150,8 +150,8 @@ public class TiltakHandler {
     private void utledOgLagreGruppeaktiviteter(List<Bruker> brukere) {
         io.vavr.collection.List.ofAll(brukere)
                 .sliding(1000,1000)
-                .forEach((brukereVavr) -> {
-                    List<Bruker> brukereJavaBatch = brukereVavr.toJavaList();
+                .forEach((brukereSubList) -> {
+                    List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
                     Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch

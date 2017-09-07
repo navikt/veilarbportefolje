@@ -192,9 +192,9 @@ public class AktivitetUtils {
 
 
     public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
-        dokumenter.stream().forEach(document -> {
-            String personid = (String) document.get("fnr").getValue();
-            List<String> tiltak = brukerRepository.getBrukertiltak(personid);
+        dokumenter.forEach(document -> {
+            String fnr = (String) document.get("fnr").getValue();
+            List<String> tiltak = brukerRepository.getBrukertiltak(fnr);
             if(!tiltak.isEmpty()) {
                 document.addField("tiltak", tiltak);
             }
