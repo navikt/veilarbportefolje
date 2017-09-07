@@ -1,7 +1,6 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.SolrService;
@@ -13,6 +12,7 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import static io.vavr.control.Try.run;
 
 @Api(value = "Solr")
 @Path("solr")
@@ -29,11 +29,11 @@ public class SolrController {
     @Path("hovedindeksering")
     @GET
     public boolean hovedIndeksering() {
-            aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
-            Try.of(() -> {
-                solrService.hovedindeksering();
-                return null;
-            }).onFailure(this::rapporterFeil);
+         aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
+                    run(() ->
+                                solrService.hovedindeksering()
+                    ).onFailure(this::rapporterFeil);
+
         return true;
     }
 
