@@ -250,8 +250,8 @@ public class AktivitetUtilsTest {
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
-        assertThat(solrInputDocument.keySet()).containsExactly("fnr", "tiltak");
-        assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactly("Tiltak1", "Tiltak2");
+        assertThat(solrInputDocument.keySet()).containsExactlyInAnyOrder("fnr", "tiltak");
+        assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactlyInAnyOrder("Tiltak1", "Tiltak2");
     }
 
     @Test
