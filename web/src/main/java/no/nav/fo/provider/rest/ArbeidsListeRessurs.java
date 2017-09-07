@@ -86,6 +86,7 @@ public class ArbeidsListeRessurs {
     public Response getArbeidsListe(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
@@ -120,6 +121,7 @@ public class ArbeidsListeRessurs {
     public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
@@ -145,6 +147,7 @@ public class ArbeidsListeRessurs {
     public Response oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
@@ -166,6 +169,7 @@ public class ArbeidsListeRessurs {
     public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
