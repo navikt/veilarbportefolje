@@ -47,7 +47,7 @@ public class TiltakRepository {
             tiltak -> {
                 try {
                     SqlUtils.insert(db, "brukertiltak")
-                        .value("personid", bruker.getPersonident())
+                        .value("fodselsnr", bruker.getPersonident())
                         .value("tiltakskode", tiltak.getTiltakstype())
                         .execute();
                 } catch (DataIntegrityViolationException e) {
@@ -66,7 +66,7 @@ public class TiltakRepository {
             .execute();
     }
 
-    Map<String, List<String>> getEnhetMedPersonIder() {
+    Map<String, List<String>> getEnhetTilFodselsnummereMap() {
         List<EnhetTilFnr> enhetTilFnrList = db.query("SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL", new BeanPropertyRowMapper<>(EnhetTilFnr.class));
         return mapEnhetTilFnrs(enhetTilFnrList);
     }

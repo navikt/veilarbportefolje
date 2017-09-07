@@ -10,6 +10,7 @@ import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.util.MetricsUtils;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.slf4j.Logger;
@@ -109,14 +110,14 @@ public class TiltakHandler {
         });
 
 
-        Map<String, Bruker> personIdTilBruker = new HashMap<>();
-        tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> personIdTilBruker.put(bruker.getPersonident(), bruker));
+        Map<String, Bruker> fnrTilBruker = new HashMap<>();
+        tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> fnrTilBruker.put(bruker.getPersonident(), bruker));
 
-        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetMedPersonIder().entrySet().stream()
+        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetTilFodselsnummereMap().entrySet().stream()
                 .flatMap(entrySet -> entrySet.getValue().stream()
-                        .filter(personId -> personIdTilBruker.get(personId) != null)
-                        .flatMap(personId -> personIdTilBruker.get(personId).getTiltaksaktivitetListe().stream()
-                                .map(tiltaksaktivitet -> tiltaksaktivitet.getTiltakstype())
+                        .filter(fnr -> fnrTilBruker.get(fnr) != null)
+                        .flatMap(fnr -> fnrTilBruker.get(fnr).getTiltaksaktivitetListe().stream()
+                                .map(Tiltaksaktivitet::getTiltakstype)
                                 .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
                         ))
                 .distinct()
