@@ -1,5 +1,6 @@
 package no.nav.fo.filmottak.tiltak;
 
+import no.nav.fo.domene.Fnr;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
@@ -45,13 +46,14 @@ public class TiltakRepository {
     void insertBrukertiltak(Bruker bruker) {
         bruker.getTiltaksaktivitetListe().forEach(
             tiltak -> {
+                Fnr fnr = new Fnr(bruker.getPersonident());
                 try {
                     SqlUtils.insert(db, "brukertiltak")
-                        .value("fodselsnr", bruker.getPersonident())
+                        .value("fodselsnr", fnr.toString())
                         .value("tiltakskode", tiltak.getTiltakstype())
                         .execute();
                 } catch (DataIntegrityViolationException e) {
-                    String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", bruker.getPersonident(), tiltak.getTiltakstype());
+                    String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", fnr.toString(), tiltak.getTiltakstype());
                     logger.warn(logMsg);
                     MetricsFactory.createEvent("veilarbportefolje.insertBrukertiltak.feilet").report();
                 }
