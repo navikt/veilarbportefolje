@@ -1,7 +1,6 @@
 package no.nav.fo.filmottak;
 
 import io.vavr.control.Try;
-import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;

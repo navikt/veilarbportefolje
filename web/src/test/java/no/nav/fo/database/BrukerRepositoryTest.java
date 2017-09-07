@@ -699,8 +699,9 @@ public class BrukerRepositoryTest {
 
         Map<Fnr, Set<Brukertiltak>> brukertiltak = brukerRepository.getBrukertiltak(asList(fnr1,fnr2));
 
-        assertThat(brukertiltak.get(fnr1).size()).isEqualTo(2);
-        assertThat(brukertiltak.get(fnr2).size()).isEqualTo(1);
+        assertThat(brukertiltak.get(fnr1).stream().anyMatch(b -> b.getTiltak().equals("kode1"))).isTrue();
+        assertThat(brukertiltak.get(fnr1).stream().anyMatch(b -> b.getTiltak().equals("kode2"))).isTrue();
+        assertThat(brukertiltak.get(fnr2).stream().anyMatch(b -> b.getTiltak().equals("kode2"))).isTrue();
     }
 
     @Test
