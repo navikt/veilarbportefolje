@@ -14,6 +14,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import javax.ws.rs.core.UriBuilder;
@@ -26,33 +28,8 @@ import static java.lang.System.setProperty;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
-
-/**
- * Bruk denne klassen for å skrive integrajonstester som går mot en lokal instans av applikasjonen.
- * Denne klassen vil starte en lokal Jetty-server samt en in-memory database.
- * <p>
- * !!OBS!!
- * ==============================================================================
- * |        Unngå å gjør kall over nettverk! MOCK UT ALLE NETTVERKSKALL!         |
- * ===============================================================================
- * !!OBS!!
- * <p>
- * Eksempel:
- * <p>
- * public class MinLocalIntegrationTest extends LocalIntegrationTest {
- *
- * @Test public void skalReturnereOk() throws Exception {
- * Response response = get("/tjenester/arbeidsliste/12345678900");
- * assertEquals(200, response.code());
- * }
- * }
- */
-public abstract class LocalIntegrationTest {
-    static {
-        setProperty("testmiljo", "t6");
-    }
-
-    private static final String CONTEXT_NAME = LocalIntegrationTest.class.getSimpleName();
+public abstract class ComponentTest {
+    private static final String CONTEXT_NAME = ComponentTest.class.getSimpleName();
     private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());
     private static final OkHttpClient OKHTTPCLIENT = new OkHttpClient();
     protected static SingleConnectionDataSource ds;
@@ -150,7 +127,7 @@ public abstract class LocalIntegrationTest {
         return Jetty.usingWar()
                 .at(contextPath)
                 .port(jettyPort)
-                .overrideWebXml(new File("src/test/resources/localintegration-web.xml"))
+                .overrideWebXml(new File("src/test/resources/componenttest-web.xml"))
                 .disableAnnotationScanning()
                 .buildJetty();
     }
