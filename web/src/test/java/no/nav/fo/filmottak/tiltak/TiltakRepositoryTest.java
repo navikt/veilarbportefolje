@@ -1,10 +1,12 @@
 package no.nav.fo.filmottak.tiltak;
 
 import com.google.common.base.Joiner;
+import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 import io.vavr.collection.List;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepositoryTest;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Periode;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
 import org.apache.commons.io.IOUtils;
@@ -16,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
@@ -62,19 +65,36 @@ public class TiltakRepositoryTest {
         when(bruker.getPersonident()).thenReturn("11111111111");
         Tiltaksaktivitet tiltaksaktivitet1 = new Tiltaksaktivitet();
         tiltaksaktivitet1.setTiltakstype("A");
-        Tiltaksaktivitet tiltaksaktivitet2 = new Tiltaksaktivitet();
-        tiltaksaktivitet2.setTiltakstype("B");
-        Tiltaksaktivitet tiltaksaktivitet3 = new Tiltaksaktivitet();
-        tiltaksaktivitet3.setTiltakstype("C");
+        Periode periode1 = new Periode();
+        periode1.setTom(XMLGregorianCalendarImpl.createDateTime(2000, 6, 4, 16, 16,16));
+        tiltaksaktivitet1.setDeltakelsePeriode(periode1);
         when(bruker.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(
-            tiltaksaktivitet1,
-            tiltaksaktivitet2,
-            tiltaksaktivitet3
+            tiltaksaktivitet1
         ));
 
         tiltakRepository.insertBrukertiltak(bruker);
 
-        assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERTILTAK").size()).isEqualTo(3);
+        assertThat(jdbcTemplate.queryForMap("SELECT * FROM BRUKERTILTAK WHERE FODSELSNR = '11111111111'").keySet()).containsExactly("FODSELSNR", "TILTAKSKODE", "TILDATO");
+    }
+
+    @Test
+    public void skalInserteBrukertiltakNarPeriodeOgTildatoErNull() {
+        insertKodeverk();
+        Bruker bruker = mock(Bruker.class);
+        when(bruker.getPersonident()).thenReturn("11111111111");
+        Tiltaksaktivitet tiltaksaktivitet1 = new Tiltaksaktivitet();
+        tiltaksaktivitet1.setTiltakstype("A");
+        Tiltaksaktivitet tiltaksaktivitet2 = new Tiltaksaktivitet();
+        tiltaksaktivitet2.setTiltakstype("B");
+        tiltaksaktivitet2.setDeltakelsePeriode(new Periode());
+        when(bruker.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(
+            tiltaksaktivitet1,
+            tiltaksaktivitet2
+        ));
+
+        tiltakRepository.insertBrukertiltak(bruker);
+
+        assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERTILTAK").size()).isEqualTo(2);
     }
 
     @Test

@@ -237,13 +237,63 @@ public class AktivitetUtilsTest {
     @Test
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField("fnr", "123");
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Arrays.asList("Tiltak1", "Tiltak2"));
+        solrInputDocument.addField("fnr", "12345678910");
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(tiltakData());
+
+        System.setProperty("arena.aktivitet.datofilter", "2017-01-15");
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
-        assertThat(solrInputDocument.keySet()).containsExactly("fnr", "tiltak");
-        assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactly("Tiltak1", "Tiltak2");
+        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
+    }
+
+    @Test
+    public void skalFiltrereBortTiltakSomHarTildatoForDatofilter() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("fnr", "12345678910");
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(tiltakData());
+
+        System.setProperty("arena.aktivitet.datofilter", "2017-01-17");
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(1);
+    }
+
+    public void skalIkkeFiltrereNarDatofilterErNull() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("fnr", "12345678910");
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(tiltakData());
+
+        System.setProperty("arena.aktivitet.datofilter", null);
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
+    }
+
+    @Test
+    public void skalLeggeTilTiltakPaSolrDokumentNarTilDatoErNull() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("fnr", "12345678910");
+        List<Map<String, Object>> data = tiltakData();
+
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(data);
+        System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak")).isNull();
+
+        data.get(0).put("tildato", null);
+        data.get(1).put("tildato", null);
+        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(data);
+
+        System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
     }
 
     @Test
@@ -254,7 +304,23 @@ public class AktivitetUtilsTest {
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
-        assertThat(solrInputDocument.keySet()).containsExactly("fnr");
+        assertThat(solrInputDocument.keySet()).doesNotContain("tiltak");
+    }
+
+    private List<Map<String, Object>> tiltakData() {
+        List<Map<String, Object>> tiltakRader = new ArrayList<>();
+
+        Map<String, Object> tiltakRad = new HashMap<>();
+        tiltakRad.put("tiltak", "T1");
+        tiltakRad.put("tildato", Timestamp.valueOf("2017-01-16 00:00:00"));
+        tiltakRader.add(tiltakRad);
+
+        tiltakRad = new HashMap<>();
+        tiltakRad.put("tiltak", "T2");
+        tiltakRad.put("tildato", Timestamp.valueOf("2017-01-18 00:00:00"));
+        tiltakRader.add(tiltakRad);
+
+        return tiltakRader;
     }
 
 
