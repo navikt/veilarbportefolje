@@ -605,8 +605,11 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteBrukersTiltak() throws Exception {
-        assertThat(brukerRepository.getBrukertiltak("11111111111")).containsExactly("T1");
-        assertThat(brukerRepository.getBrukertiltak("22222222222")).containsExactly("T2", "T1");
+        List<Map<String, Object>> brukertiltak1 = brukerRepository.getBrukertiltak("11111111111");
+        List<Map<String, Object>> brukertiltak2 = brukerRepository.getBrukertiltak("22222222222");
+
+        assertThat(brukertiltak1.get(0)).containsKeys("tiltak", "tildato");
+        assertThat(brukertiltak2.get(0)).containsKeys("tiltak", "tildato");
     }
 
     @Test

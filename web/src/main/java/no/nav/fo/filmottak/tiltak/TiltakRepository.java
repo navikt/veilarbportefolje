@@ -3,6 +3,7 @@ package no.nav.fo.filmottak.tiltak;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Periode;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
 import no.nav.metrics.MetricsFactory;
 import org.slf4j.Logger;
@@ -12,9 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -51,6 +50,7 @@ public class TiltakRepository {
                     SqlUtils.insert(db, "brukertiltak")
                         .value("fodselsnr", fnr.toString())
                         .value("tiltakskode", tiltak.getTiltakstype())
+                        .value("tildato", hentUtTildato(tiltak.getDeltakelsePeriode()))
                         .execute();
                 } catch (DataIntegrityViolationException e) {
                     String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", fnr.toString(), tiltak.getTiltakstype());
@@ -59,6 +59,14 @@ public class TiltakRepository {
                 }
             }
         );
+    }
+
+    private Timestamp hentUtTildato(Periode periode) {
+        return Optional.ofNullable(periode).map(deltagelsePeriode ->
+                Optional.ofNullable(deltagelsePeriode.getTom())
+                    .map(TiltakUtils::toTimestamp)
+                    .orElse(null))
+                .orElse(null);
     }
 
     void insertTiltakskoder(Tiltakstyper tiltakskoder) {
