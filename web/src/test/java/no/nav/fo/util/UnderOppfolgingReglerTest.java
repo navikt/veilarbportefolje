@@ -55,16 +55,16 @@ public class UnderOppfolgingReglerTest {
     }    
     
     @Test
-    public void erUnderOppfolging_IARBS_true_for_BATT_BFORM_IKVAL_VURDU_OPPFI() {
-        for (String kgKode : asList("BATT", "IKVAL", "VURDU", "OPPFI", "BFORM")) {
+    public void erUnderOppfolging_IARBS_true_for_BATT_BFORM_IKVAL_VURDU_OPPFI_VARIG() {
+        for (String kgKode : asList("BATT", "IKVAL", "VURDU", "OPPFI", "BFORM", "VARIG")) {
             assertThat(erUnderOppfolging("IARBS", kgKode)).isTrue();
         }
     }
 
     @Test
-    public void erUnderOppfolging_IARBS_False_for_KAP11_IVURD_VURDI_VARIG_BKART() {
+    public void erUnderOppfolging_IARBS_False_for_KAP11_IVURD_VURDI_BKART() {
         assertThat(erUnderOppfolging("IARBS", null)).isFalse();
-        for (String kgKode : asList("KAP11", "IVURD", "VURDI", "VARIG", "BKART")) {
+        for (String kgKode : asList("KAP11", "IVURD", "VURDI", "BKART")) {
             assertThat(erUnderOppfolging("IARBS", kgKode)).isFalse();
         }
     }

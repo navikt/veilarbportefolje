@@ -6,7 +6,6 @@ import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
-import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
@@ -25,33 +24,33 @@ import java.net.*;
 import static com.squareup.okhttp.MediaType.parse;
 import static java.lang.System.setProperty;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
-import static no.nav.fo.StartJettyVeilArbPortefolje.TEST_ENV;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
 
 /**
  * Bruk denne klassen for å skrive integrajonstester som går mot en lokal instans av applikasjonen.
  * Denne klassen vil starte en lokal Jetty-server samt en in-memory database.
- *
- *                                    !!OBS!!
- *    ==============================================================================
- *   |        Unngå å gjør kall over nettverk! MOCK UT ALLE NETTVERKSKALL!         |
- *   ===============================================================================
- *                                    !!OBS!!
- *
+ * <p>
+ * !!OBS!!
+ * ==============================================================================
+ * |        Unngå å gjør kall over nettverk! MOCK UT ALLE NETTVERKSKALL!         |
+ * ===============================================================================
+ * !!OBS!!
+ * <p>
  * Eksempel:
- *
+ * <p>
  * public class MinLocalIntegrationTest extends LocalIntegrationTest {
  *
- *     @Test
- *     public void skalReturnereOk() throws Exception {
- *         Response response = get("/tjenester/arbeidsliste/12345678900");
- *         assertEquals(200, response.code());
- *     }
+ * @Test public void skalReturnereOk() throws Exception {
+ * Response response = get("/tjenester/arbeidsliste/12345678900");
+ * assertEquals(200, response.code());
  * }
- *
+ * }
  */
 public abstract class LocalIntegrationTest {
+    static {
+        setProperty("testmiljo", "t6");
+    }
 
     private static final String CONTEXT_NAME = LocalIntegrationTest.class.getSimpleName();
     private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());
@@ -148,18 +147,11 @@ public abstract class LocalIntegrationTest {
         setupProperties();
         setupDataSource();
 
-        Jetty.JettyBuilder builder = Jetty.usingWar()
+        return Jetty.usingWar()
                 .at(contextPath)
                 .port(jettyPort)
                 .overrideWebXml(new File("src/test/resources/localintegration-web.xml"))
-                .disableAnnotationScanning();
-
-        DevelopmentSecurity.ISSOSecurityConfig issoSecurityConfig =
-                new DevelopmentSecurity.ISSOSecurityConfig(APPLICATION_NAME, TEST_ENV.toString());
-
-        return DevelopmentSecurity
-                .setupISSO(builder, issoSecurityConfig)
-                .configureForJaspic()
+                .disableAnnotationScanning()
                 .buildJetty();
     }
 

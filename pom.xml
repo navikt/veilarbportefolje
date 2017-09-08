@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>3.2</version>
+        <version>2017.08.30.16.52</version>
     </parent>
 
     <name>veilarbportefolje</name>
@@ -29,55 +29,42 @@
         <modig-lang.version>1.1.0</modig-lang.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
+        <common-integrasjonsutils.version>0.0.11</common-integrasjonsutils.version>
 
 
         <!-- Tredjeparts -->
         <ehcache.version>2.10.3</ehcache.version>
-        <jersey.version>2.22.2</jersey.version>
-        <jackson.version>2.7.4</jackson.version>
-        <mockito.version>1.9.5</mockito.version>
         <solr.version>6.4.2</solr.version>
-        <json.version>20151123</json.version>
-        <jetty.version>9.3.0.M2</jetty.version>
         <vavr.version>0.9.0</vavr.version>
-
-        <!-- Test -->
-        <junit.version>4.12</junit.version>
-        <mockito.version>1.10.19</mockito.version>
-
-        <swagger.version>1.5.13</swagger.version>
-        <swagger-ui.version>2.2.10</swagger-ui.version>
+        <okhttp.version>2.7.5</okhttp.version>
 
         <sonar.exclusions>
-            **/Swagger*,
             **/mock/*,
             **/config/**,
-            **/selftest**
         </sonar.exclusions>
-        <okhttp.version>2.7.5</okhttp.version>
-        <common-integrasjonsutils.version>0.0.11</common-integrasjonsutils.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>api-app-bom</artifactId>
-                <version>RELEASE</version>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>bom</artifactId>
+                <version>RELEASE</version> <!-- TODO lås denne til samme versjon som mor-pommen før prodsetting -->
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>${json.version}</version>
             </dependency>
 
             <!-- Virksomhetstjenester -->
             <dependency>
                 <groupId>no.nav.meldinger.virksomhet</groupId>
                 <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
+                <version>1.0.0</version>
+                <classifier>jaxb</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>no.nav.meldinger.virksomhet</groupId>
+                <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
                 <version>1.0.0</version>
                 <classifier>jaxb</classifier>
             </dependency>
@@ -95,48 +82,6 @@
                 <version>${common-integrasjonsutils.version}</version>
             </dependency>
 
-            <!--Modig-->
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-lang</artifactId>
-                <version>${modig-lang.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.oracle</groupId>
-                <artifactId>ojdbc6</artifactId>
-                <version>11.2.0.3</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hsqldb</groupId>
-                <artifactId>hsqldb</artifactId>
-                <version>2.3.4</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!--Jersey-->
-            <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-server</artifactId>
-                <version>${jersey.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>2.4.0-b06</version>
-            </dependency>
-
-
-            <!--Jackson-->
-            <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-base</artifactId>
-                <version>${jackson.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-
             <!--Solr-->
             <dependency>
                 <groupId>org.apache.solr</groupId>
@@ -150,31 +95,7 @@
                 </exclusions>
             </dependency>
 
-            <!--Swagger-->
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-jersey2-jaxrs</artifactId>
-                <version>${swagger.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>${swagger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars</groupId>
-                <artifactId>swagger-ui</artifactId>
-                <version>${swagger-ui.version}</version>
-                <scope>runtime</scope>
-            </dependency>
 
-            <!--Diverse-->
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.9</version>
-            </dependency>
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
@@ -185,49 +106,11 @@
                 <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
                 <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
             </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.4</version>
-                <scope>runtime</scope>
-            </dependency>
 
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
                 <artifactId>ehcache</artifactId>
                 <version>${ehcache.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-plus</artifactId>
-                <version>${jetty.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>3.6.1</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>${mockito.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -246,7 +129,12 @@
                 <version>${okhttp.version}</version>
                 <scope>test</scope>
             </dependency>
-
+            <dependency>
+                <groupId>jsch</groupId>
+                <artifactId>jsch</artifactId>
+                <version>0.1.44</version>
+                <scope>runtime</scope>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

@@ -57,6 +57,7 @@ public class SolrServiceTest {
     public void deltaindekseringSkalOppdatereTidsstempel() throws Exception {
         SolrInputDocument dummyDocument = new SolrInputDocument();
         dummyDocument.addField("person_id", "dummy");
+        dummyDocument.addField("fnr", "dummyFnr");
         dummyDocument.addField("oppfolging", true);
         dummyDocument.addField("kvalifiseringsgruppekode", "dontcare");
         dummyDocument.addField("formidlingsgruppekode", "dontcare");

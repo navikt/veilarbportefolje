@@ -1,6 +1,7 @@
 package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
+import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientMock;
@@ -14,24 +15,28 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
 
 @EnableAspectJAutoProxy
 @EnableScheduling
 @Configuration
 @Import({
         DatabaseConfig.class,
-        VirksomhetEnhetEndpointConfigMock.class,
-        LocalServiceConfig.class,
+        VirksomhetEnhetEndpointConfig.class,
+        ServiceConfig.class,
+        ExternalServiceConfig.class,
         SolrConfig.class,
         AktoerEndpointConfig.class,
-        ArenafilConfig.class,
+        FilmottakConfig.class,
         MetricsConfig.class,
         AktoerEndpointConfig.class,
         AbacContext.class,
-        CacheConfig.class
+        CacheConfig.class,
+        RestConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication{
 
@@ -59,4 +64,16 @@ public class LocalApplicationConfig implements ApiApplication{
     public Sone getSone() {
         return FSS;
     }
+
+    @Bean
+    public HovedindekseringScheduler hovedindekseringScheduler() {
+        return new HovedindekseringScheduler();
+    }
+
+
+    @Override
+    public void startup(ServletContext servletContext) {
+        forwardTjenesterTilApi(servletContext);
+    }
+
 }

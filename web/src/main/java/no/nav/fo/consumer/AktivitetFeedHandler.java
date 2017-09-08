@@ -12,7 +12,6 @@ import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
-import no.nav.fo.util.OppfolgingUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 
@@ -21,6 +20,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.MetricsUtils.timed;
+import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
@@ -65,7 +65,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         try{
             timed(
                     "feed.aktivitet.objekt",
-                    () -> { brukerRepository.upsertAktivitet(aktivitet); return null;},
+                    () -> brukerRepository.upsertAktivitet(aktivitet),
                     (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase()); }}
                     );
         }catch(Exception e) {
@@ -75,7 +75,8 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     void behandleAktivitetdata( String aktoerid) {
         try {
-            timed("feed.aktivitet.indekseraktivitet",
+            timed(
+                    "feed.aktivitet.indekseraktivitet",
                     () -> {
                         AktoerId aktoerId = new AktoerId(aktoerid);
                         PersonId personId = aktoerService.hentPersonidFraAktoerid(aktoerId)
@@ -84,14 +85,14 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                         Oppfolgingstatus oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personId)
                                 .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId));
 
-                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(), oppfolgingstatus.isOppfolgingsbruker())) {
+                        if (erBrukerUnderOppfolging(oppfolgingstatus)) {
+                            aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerId);
+                        } else {
                             solrService.slettBruker(personId);
-                            return null;
+                            solrService.commit();
                         }
-                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerid);
-                        return null;
                     },
-                    (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktoerid).toUpperCase()); }}
+                    (timer, hasFailed) -> { if (hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktoerid).toUpperCase()); }}
             );
         }catch(Exception e) {
             LOG.error("Feil ved behandling av aktivitetdata for aktoerid: {}", aktoerid, e);

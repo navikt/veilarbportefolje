@@ -14,6 +14,7 @@ import no.nav.fo.util.TokenUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -27,6 +28,7 @@ import static no.nav.fo.provider.rest.RestUtils.createResponse;
 
 @Api(value = "Veileder")
 @Path("/veileder")
+@Component
 @Produces(APPLICATION_JSON)
 public class VeilederController {
 

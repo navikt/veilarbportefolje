@@ -19,6 +19,7 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 
 class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
@@ -27,11 +28,22 @@ class ValideringsRegler {
             "etternavn",
             "fodselsnummer",
             "utlopsdato",
-            "aapMaxtid",
+            "dagputlopUke",
+            "permutlopUke",
+            "aapmaxtidUke",
             "arbeidsliste_frist",
             "VENTER_PA_SVAR_FRA_NAV",
             "VENTER_PA_SVAR_FRA_BRUKER",
-            "UTLOPTE_AKTIVITETER");
+            "UTLOPTE_AKTIVITETER",
+            "I_AVTALT_AKTIVITET",
+            "aktivitet_ijobb",
+            "aktivitet_sokeavtale",
+            "aktivitet_stilling",
+            "aktivitet_behandling",
+            "aktivitet_mote",
+            "aktivitet_egen",
+            "aktivitet_tiltak",
+            "aktivitet_gruppeaktivitet"); // TODO alle sortField i samme format
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
@@ -69,19 +81,19 @@ class ValideringsRegler {
         }
     }
 
-    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste) {
+    static Validation<Seq<String>, ArbeidslisteData> validerArbeidsliste(ArbeidslisteRequest arbeidsliste, boolean redigering) {
         return
                 Validation
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
                                 validateKommentar(arbeidsliste.getKommentar()),
-                                validateFrist(arbeidsliste.getFrist(), arbeidsliste.isRedigering())
+                                validateFrist(arbeidsliste.getFrist(), redigering)
                         )
                         .ap(ArbeidslisteData::of);
     }
 
     private static Validation<String, Timestamp> validateFrist(String frist, boolean redigering) {
-        if (frist == null) {
+        if (nullOrEmpty(frist)) {
             return valid(null);
         }
         Timestamp dato = Timestamp.from(Instant.parse(frist));

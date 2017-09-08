@@ -10,6 +10,7 @@ import no.nav.fo.util.BatchConsumer;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.Timer;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -30,7 +31,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -39,6 +42,7 @@ import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
+import static no.nav.fo.util.MetricsUtils.timed;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -90,9 +94,9 @@ public class SolrServiceImpl implements SolrService {
         BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
             antallBrukere[0] += dokumenter.size();
             leggDataTilSolrDocument(dokumenter);
-            addDocuments(dokumenter);
+            addDocumentsToIndex(dokumenter);
         });
-        brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
+        timed("indeksering.prosesserbrukere", () -> brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer));
         consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
 
         commit();
@@ -125,17 +129,20 @@ public class SolrServiceImpl implements SolrService {
                 .collect(toList());
 
         leggDataTilSolrDocument(oppfolgingsbrukere);
-        addDocuments(oppfolgingsbrukere);
-
+        addDocumentsToIndex(oppfolgingsbrukere);
 
         dokumenter.stream()
                 .filter((bruker) -> !BrukerRepository.erOppfolgingsBruker(bruker))
-                .forEach( (bruker) -> slettBruker(bruker.get("fnr").toString()));
+                .forEach((bruker) -> slettBruker((String) bruker.get("fnr").getValue()));
 
         commit();
         brukerRepository.updateTidsstempel(timestamp);
 
-        logFerdig(t0, dokumenter.size(), DELTAINDEKSERING);
+        int antall = dokumenter.size();
+        Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
+        event.addFieldToReport("antall.oppdateringer", antall);
+        event.report();
+        logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
     @Override
@@ -164,12 +171,14 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        applyAktivitetStatuser(dokumenter, brukerRepository);
-        applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService);
-        applyTiltak(dokumenter, brukerRepository);
+        String antallDokumenter = Objects.toString(dokumenter.size());
+        BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("size", antallDokumenter);
+        timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, brukerRepository), tagsAppeder);
+        timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
+        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository),tagsAppeder);
     }
 
-    private static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
+    private static Object applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
         brukere.forEach(solrDokument -> {
             String personId = (String) solrDokument.get("person_id").getValue();
 
@@ -177,7 +186,7 @@ public class SolrServiceImpl implements SolrService {
                     .map(arbeidslisteRepository::retrieveArbeidsliste)
                     .map(result -> result.onSuccess(
                             arbeidsliste -> {
-                                if(arbeidsliste != null) {
+                                if (arbeidsliste != null) {
                                     solrDokument.setField("arbeidsliste_aktiv", true);
                                     solrDokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.getSistEndretAv().toString());
                                     solrDokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.getEndringstidspunkt()));
@@ -191,6 +200,7 @@ public class SolrServiceImpl implements SolrService {
                             }
                     ));
         });
+        return null;
     }
 
     private List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
@@ -210,18 +220,11 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(String fnr) {
         deleteDocuments("fnr:" + fnr);
-        commit();
-    }
-
-    @Override
-    public void slettBruker(Fnr fnr) {
-        slettBruker(fnr.toString());
     }
 
     @Override
     public void slettBruker(PersonId personid) {
-        deleteDocuments("person_id:"+ personid.toString());
-        commit();
+        deleteDocuments("person_id:" + personid.toString());
     }
 
     @Override
@@ -247,13 +250,13 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void indekserBrukerdata(PersonId personId) {
         SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
-        if(!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
+        if (!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
             return;
         }
         LOG.info("Legger bruker med personId {} til i indeksen ", personId);
 
         leggDataTilSolrDocument(singletonList(brukerDokument));
-        addDocuments(singletonList(brukerDokument));
+        addDocumentsToIndex(singletonList(brukerDokument));
         commit();
         LOG.info("Bruker med personId {} lagt til i indeksen", personId);
     }
@@ -271,19 +274,21 @@ public class SolrServiceImpl implements SolrService {
                 .onFailure(e -> LOG.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
-    private List<SolrInputDocument> addDocuments(List<SolrInputDocument> dokumenter) {
+    private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {
         // javaslang.collection-API brukes her pga sliding-metoden
-        io.vavr.collection.List.ofAll(dokumenter)
-                .sliding(10000, 10000)
-                .forEach(docs -> {
-                    try {
-                        solrClientMaster.add(docs.toJavaList());
-                        LOG.info(format("Legger til %d dokumenter i indeksen", docs.length()));
-                    } catch (SolrServerException | IOException e) {
-                        LOG.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
-                    }
-                });
-        return dokumenter;
+        return timed("indeksering.adddocumentstoindex", () -> {
+            io.vavr.collection.List.ofAll(dokumenter)
+                    .sliding(10000, 10000)
+                    .forEach(docs -> {
+                        try {
+                            solrClientMaster.add(docs.toJavaList());
+                            LOG.info(format("Legger til %d dokumenter i indeksen", docs.length()));
+                        } catch (SolrServerException | IOException e) {
+                            LOG.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
+                        }
+                    });
+            return dokumenter;
+        });
     }
 
     private void deleteAllDocuments() {
@@ -308,10 +313,6 @@ public class SolrServiceImpl implements SolrService {
         long seconds = duration.getSeconds();
         String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         LOG.info(logString);
-
-        Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
-        event.addFieldToReport("antall.oppdateringer", antall);
-        event.report();
     }
 
     @Override

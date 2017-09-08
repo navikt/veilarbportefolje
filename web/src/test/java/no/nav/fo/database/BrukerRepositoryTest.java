@@ -1,12 +1,11 @@
 package no.nav.fo.database;
 
 import com.google.common.base.Joiner;
+import io.vavr.Tuple;
 import io.vavr.control.Try;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetData;
-import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import org.apache.commons.io.IOUtils;
@@ -31,12 +30,13 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.*;
+import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
+import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
+import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
@@ -66,12 +66,13 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table brukerstatus_aktiviteter");
         jdbcTemplate.execute("truncate table aktiviteter");
         jdbcTemplate.execute("truncate table brukertiltak");
+        jdbcTemplate.execute("truncate table enhettiltak");
         jdbcTemplate.execute("truncate table tiltakkodeverk");
+        insertoppfolgingsbrukerTestData();
     }
 
     @Test
     public void skalHenteUtAlleBrukereFraDatabasen() {
-        insertoppfolgingsbrukerTestData();
         List<Map<String, Object>> brukere = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL());
 
         assertThat(brukere.size()).isEqualTo(72);
@@ -79,19 +80,18 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
-        insertoppfolgingsbrukerTestData();
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
-                "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
+                "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+                "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
 
     @Test
     public void skalHenteKunNyesteBrukereFraDatabasen() {
-        insertoppfolgingsbrukerTestData();
         jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
 
         List<Map<String, Object>> nyeBrukere = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL());
@@ -101,12 +101,12 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
-        insertoppfolgingsbrukerTestData();
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
                 "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
                 "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "AAPMAXTID", "AAPMAXTIDFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
+                "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+                "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -131,7 +131,6 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalReturnerePersonidFraDB() {
-        insertoppfolgingsbrukerTestData();
         List<Map<String, Object>> mapping = brukerRepository.retrievePersonid("11111111");
         String personid = (String) mapping.get(0).get("PERSONID");
         Assertions.assertThat(personid).isEqualTo("222222");
@@ -140,9 +139,9 @@ public class BrukerRepositoryTest {
     @Test
     public void skalOppdatereOmBrukerFinnes() {
         Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
+                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, true);
         Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
+                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
@@ -158,8 +157,22 @@ public class BrukerRepositoryTest {
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
 
-        Brukerdata brukerdata = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedMapping.MND1, LocalDateTime.now(), KvartalMapping.KV1, true);
+        Brukerdata brukerdata = brukerdata(
+                "aktoerid",
+                "personid",
+                "veielderid",
+                Timestamp.from(Instant.now()),
+                YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(),
+                ManedFasettMapping.MND1,
+                3,
+                DagpengerUkeFasettMapping.UKE2_5,
+                3,
+                DagpengerUkeFasettMapping.UKE2_5,
+                2,
+                UKE_UNDER12,
+                true
+        );
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
 
@@ -190,6 +203,13 @@ public class BrukerRepositoryTest {
     }
 
     @Test
+    public void skalFiltrereBrukere() {
+        List<SolrInputDocument> aktiveBrukere = new ArrayList<>();
+        brukerRepository.prosesserBrukere(3, BrukerRepository::erOppfolgingsBruker, aktiveBrukere::add);
+        assertThat(aktiveBrukere.size()).isEqualTo(51);
+    }
+
+    @Test
     public void skalVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("oppfolging", true);
@@ -197,30 +217,53 @@ public class BrukerRepositoryTest {
         assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
     }
 
-    private Brukerdata brukerdata(String aktoerid, String personId, String veileder, Timestamp tildeltTidspunkt, YtelseMapping ytelse,
-                                  LocalDateTime utlopsdato, ManedMapping utlopsdatoFasett, LocalDateTime aapMaxtid, KvartalMapping aapMaxtidFasett, boolean oppfolging) {
+    private Brukerdata brukerdata(
+            String aktoerid,
+            String personId,
+            String veileder,
+            Timestamp tildeltTidspunkt,
+            YtelseMapping ytelse,
+            LocalDateTime utlopsdato,
+            ManedFasettMapping utlopsdatoFasett,
+            Integer dagpUtlopUke,
+            DagpengerUkeFasettMapping dagpUtlopUkeFasett,
+            Integer permutlopUke,
+            DagpengerUkeFasettMapping permutlopUkeFasett,
+            Integer aapmaxtidUke,
+            AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett,
+            boolean oppfolging
+    ) {
         return new Brukerdata()
                 .setAktoerid(aktoerid)
                 .setPersonid(personId)
                 .setVeileder(veileder)
                 .setTildeltTidspunkt(tildeltTidspunkt)
-                .setAapMaxtidFasett(aapMaxtidFasett)
-                .setAapMaxtid(aapMaxtid)
-                .setUtlopsdatoFasett(utlopsdatoFasett)
                 .setUtlopsdato(utlopsdato)
+                .setUtlopsFasett(utlopsdatoFasett)
+                .setDagputlopUke(dagpUtlopUke)
+                .setDagputlopUkeFasett(dagpUtlopUkeFasett)
+                .setPermutlopUke(permutlopUke)
+                .setPermutlopUkeFasett(permutlopUkeFasett)
+                .setAapmaxtidUke(aapmaxtidUke)
+                .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
                 .setYtelse(ytelse)
                 .setOppfolging(oppfolging);
+
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
         assertThat(b1.getPersonid()).isEqualTo(b2.getPersonid());
-        assertThat(b1.getAapMaxtid()).isEqualTo(b2.getAapMaxtid());
         assertThat(b1.getAktoerid()).isEqualTo(b2.getAktoerid());
-        assertThat(b1.getAapMaxtidFasett()).isEqualTo(b2.getAapMaxtidFasett());
         assertThat(b1.getTildeltTidspunkt()).isEqualTo(b2.getTildeltTidspunkt());
         assertThat(b1.getVeileder()).isEqualTo(b2.getVeileder());
         assertThat(b1.getUtlopsdato()).isEqualTo(b2.getUtlopsdato());
-        assertThat(b1.getUtlopsdatoFasett()).isEqualTo(b2.getUtlopsdatoFasett());
+        assertThat(b1.getUtlopsFasett()).isEqualTo(b2.getUtlopsFasett());
+        assertThat(b1.getDagputlopUke()).isEqualTo(b2.getDagputlopUke());
+        assertThat(b1.getDagputlopUkeFasett()).isEqualTo(b2.getDagputlopUkeFasett());
+        assertThat(b1.getPermutlopUke()).isEqualTo(b2.getPermutlopUke());
+        assertThat(b1.getPermutlopUkeFasett()).isEqualTo(b2.getPermutlopUkeFasett());
+        assertThat(b1.getAapmaxtidUke()).isEqualTo(b2.getAapmaxtidUke());
+        assertThat(b1.getAapmaxtidUkeFasett()).isEqualTo(b2.getAapmaxtidUkeFasett());
         assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
     }
 
@@ -288,33 +331,10 @@ public class BrukerRepositoryTest {
 
     }
 
-    @Test
-    public void skalReturnereNullPaaAlleStatuserDersomBrukerIkkeFinnes() {
-        Map<String, Timestamp> statuser = brukerRepository.getAktivitetStatusMap("jegfinnesikke");
-
-        statuser.forEach((key, value) -> {
-            assertThat(value).isNull();
-            assertThat(statuser).containsKey(key);
-        });
-    }
-
-    @Test
-    public void skalReturnereKorrektStatusPaaAktivitet() {
-        List<AktivitetTyper> aktivitetTyper = AktivitetData.aktivitetTyperList;
-        Map<String, Boolean> aktivitetTypeTilStatus = new HashMap<>();
-        aktivitetTypeTilStatus.put(aktivitetTyper.get(0).toString(), false);
-        aktivitetTypeTilStatus.put(aktivitetTyper.get(1).toString(), true);
-
-        brukerRepository.upsertAktivitetStatuserForBruker(aktivitetTypeTilStatus, "aktoerid", "personid");
-        Map<String, Timestamp> typeTilTimestamp = brukerRepository.getAktivitetStatusMap("personid");
-
-        assertThat(typeTilTimestamp.get(aktivitetTyper.get(0).toString())).isNull();
-        assertThat(typeTilTimestamp.get(aktivitetTyper.get(1).toString())).isNotNull();
-    }
 
     @Test
     public void skalHenteAlleAktiviteterForBruker() {
-        String aktivitettpe = AktivitetData.aktivitetTyperList.get(0).toString();
+        String aktivitettpe = aktivitetTyperList.get(0).toString();
 
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
                 .setAktivitetId("aktivitetid1")
@@ -348,7 +368,7 @@ public class BrukerRepositoryTest {
         brukerRepository.upsertAktivitet(aktivitet1);
         brukerRepository.upsertAktivitet(aktivitet2);
 
-        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid("aktoerid");
+        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(AktoerId.of("aktoerid"));
 
         assertThat(aktiviteter).contains(aktivitetDTO1);
         assertThat(aktiviteter).contains(aktivitetDTO2);
@@ -412,7 +432,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteListeMedAktiviteterForAktorids() {
-        String aktivitettype = AktivitetData.aktivitetTyperList.get(0).toString();
+        String aktivitettype = aktivitetTyperList.get(0).toString();
 
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed().setAktivitetId("id1").setAktivitetType(aktivitettype)
                 .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
@@ -445,13 +465,13 @@ public class BrukerRepositoryTest {
                 .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
                 .setIAvtaltAktivitet(true)
                 .setPersonid("personid")
-                .setAapMaxtid(LocalDateTime.now())
-                .setAapMaxtidFasett(KvartalMapping.KV1)
+                .setAapmaxtidUke(1)
+                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
                 .setAktoerid("aktoerid")
                 .setOppfolging(true)
                 .setTildeltTidspunkt(Timestamp.from(Instant.now()))
                 .setUtlopsdato(LocalDateTime.now())
-                .setUtlopsdatoFasett(ManedMapping.MND1)
+                .setUtlopsFasett(ManedFasettMapping.MND1)
                 .setVeileder("Veileder")
                 .setVenterPaSvarFraBruker(LocalDateTime.now())
                 .setVenterPaSvarFraNav(LocalDateTime.now())
@@ -585,8 +605,84 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteBrukersTiltak() throws Exception {
-        insertoppfolgingsbrukerTestData();
-        assertThat(brukerRepository.getTiltak("2343601")).containsExactly("Tiltak1", "Tiltak2");
-        assertThat(brukerRepository.getTiltak("2343602")).containsExactly("Tiltak2");
+        assertThat(brukerRepository.getBrukertiltak("11111111111")).containsExactly("T1");
+        assertThat(brukerRepository.getBrukertiltak("22222222222")).containsExactly("T2", "T1");
+    }
+
+    @Test
+    public void skalOppdatereAktivitetstatusForBruker() {
+        String aktivitetstype1 = aktivitetTyperList.get(0).toString();
+        String aktivitetstype2 = aktivitetTyperList.get(1).toString();
+        PersonId personId1 = new PersonId("personid1");
+        AktoerId aktoerId1 = new AktoerId("aktoerid1");
+
+        PersonId personId2 = new PersonId("personid2");
+        AktoerId aktoerId2 = new AktoerId("aktoerid2");
+
+
+        AktivitetStatus a1 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype1,true, new Timestamp(0));
+        AktivitetStatus a2 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype2,false, new Timestamp(0));
+        AktivitetStatus b1 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype1,true, new Timestamp(0));
+        AktivitetStatus b2 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype2,false, new Timestamp(0));
+
+        Set<AktivitetStatus> aktiviteter1 = new HashSet<>();
+        Set<AktivitetStatus> aktiviteter2 = new HashSet<>();
+        aktiviteter1.add(a1);
+        aktiviteter1.add(a2);
+        aktiviteter2.add(b1);
+        aktiviteter2.add(b2);
+
+        aktiviteter1.forEach(brukerRepository::upsertAktivitetStatus);
+        aktiviteter2.forEach(brukerRepository::upsertAktivitetStatus);
+
+        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(asList(personId1, personId2));
+
+        assertThat(aktivitetStatuser.get(personId1)).containsExactlyInAnyOrder(a1, a2);
+        assertThat(aktivitetStatuser.get(personId2)).containsExactlyInAnyOrder(b1, b2);
+    }
+
+    @Test
+    public void skalInserteOgSletteAktivitetstatus() {
+        String aktivitetstype = "aktivitetstype";
+        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(new PersonId("personid"), new AktoerId("aktivitetid"),aktivitetstype,true,null);
+        brukerRepository.insertAktivitetStatus(aktivitetStatus);
+        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isNotEmpty();
+        brukerRepository.slettAlleAktivitetstatus(aktivitetstype);
+        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isEmpty();
+    }
+
+    @Test
+    public void skalInserteBatchAvAktivitetstatuser() {
+        List<AktivitetStatus> statuser = new ArrayList<>();
+        statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"),"a1",true, new Timestamp(0)));
+        statuser.add(AktivitetStatus.of(PersonId.of("pid2"), AktoerId.of("aid2"),"a2",true, new Timestamp(0)));
+
+        brukerRepository.insertAktivitetstatuser(statuser);
+        assertThat(brukerRepository.db.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER").size()).isEqualTo(2);
+    }
+
+    @Test
+    public void skalReturnereTomtMapDersomIngenBrukerHarAktivitetstatusIDB() {
+        assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(new PersonId("personid")))).isEqualTo(new HashMap<>());
+    }
+
+    @Test
+    public void skalUpdateAktivteterSomAlleredeFinnes() {
+        String aktivitetstype1 = aktivitetTyperList.get(0).toString();
+        String aktivitetstype2 = aktivitetTyperList.get(1).toString();
+        PersonId personId = new PersonId("111111");
+        AktoerId aktoerId = new AktoerId("222222");
+
+        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, true, new Timestamp(0));
+        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, false, new Timestamp(0));
+        AktivitetStatus a3 = AktivitetStatus.of(personId, aktoerId, aktivitetstype2, false, new Timestamp(0));
+
+
+        brukerRepository.upsertAktivitetStatus(a1);
+        brukerRepository.insertOrUpdateAktivitetStatus(asList(a2,a3),singletonList(Tuple.of(personId,aktivitetstype1)));
+
+        Set<AktivitetStatus> statuser = brukerRepository.getAktivitetstatusForBrukere(singletonList(personId)).get(personId);
+
+        assertThat(statuser).containsExactlyInAnyOrder(a2,a3);
     }
 }

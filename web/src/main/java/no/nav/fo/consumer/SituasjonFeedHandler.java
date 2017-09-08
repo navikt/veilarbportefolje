@@ -1,7 +1,10 @@
 package no.nav.fo.consumer;
 
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.domene.Oppfolgingstatus;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.exception.FantIkkeOppfolgingsbrukerException;
 import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.feed.consumer.FeedCallback;
@@ -9,7 +12,6 @@ import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.SolrService;
-import no.nav.fo.util.OppfolgingUtils;
 import no.nav.fo.util.MetricsUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -21,6 +23,8 @@ import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
+import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
@@ -71,17 +75,17 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                                 .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId))
                                 .setOppfolgingsbruker(bruker.getOppfolging());
 
-                        if(OppfolgingUtils.skalArbeidslisteSlettes(oppfolgingstatus.getVeileder(), bruker.getVeileder(), bruker.getOppfolging())) {
+                        if(skalArbeidslisteSlettes(oppfolgingstatus.getVeileder(), bruker.getVeileder(), bruker.getOppfolging())) {
                             arbeidslisteService.deleteArbeidsliste(new AktoerId(bruker.getAktoerid()));
                         }
-                        if(!OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(),bruker.getOppfolging())) {
+                        if (erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(),bruker.getOppfolging())) {
+                            oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);
+                        } else {
                             brukerRepository.deleteBrukerdata(personId);
                             solrService.slettBruker(personId);
-                            return null;
+                            solrService.commit();
                         }
-                        oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);
-                        return null;
-                        },
+                    },
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );
         }catch(Exception e) {

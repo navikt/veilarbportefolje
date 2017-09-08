@@ -5,13 +5,14 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.BrukerOppdatering;
+import no.nav.fo.domene.Brukerdata;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
-import no.nav.fo.util.MetricsUtils;
-import no.nav.fo.util.OppfolgingUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -24,6 +25,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static no.nav.fo.util.MetricsUtils.timed;
+import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
@@ -55,24 +59,23 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
     private void behandleDialogData(DialogDataFraFeed dialog) {
         try {
-            MetricsUtils.timed("feed.dialog.objekt",
+            timed("feed.dialog.objekt",
                     () -> {
                         Try<PersonId> personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(dialog.aktorId));
                         DialogBrukerOppdatering oppdatering = new DialogBrukerOppdatering(dialog, personId.toJavaOptional().map(PersonId::toString));
 
-                        Try<Oppfolgingstatus> oppfolgingstatuses = brukerRepository.retrieveOppfolgingstatus(personId.getOrNull());
-
-                        if(oppfolgingstatuses.isSuccess() &&
-                                !OppfolgingUtils.erBrukerUnderOppfolging(oppfolgingstatuses.get().getFormidlingsgruppekode(),
-                                                                        oppfolgingstatuses.get().getServicegruppekode(),
-                                                                        oppfolgingstatuses.get().isOppfolgingsbruker())) {
-                            persistentOppdatering.hentDataOgLagre(oppdatering);
-                            solrService.slettBruker(personId.get());
-                            return null;
-                        }
-
-                        persistentOppdatering.lagre(oppdatering);
-                        return null;
+                        brukerRepository
+                                .retrieveOppfolgingstatus(personId.getOrNull())
+                                .onSuccess(
+                                        status -> {
+                                            if (erBrukerUnderOppfolging(status)) {
+                                                persistentOppdatering.lagre(oppdatering);
+                                            } else {
+                                                persistentOppdatering.hentDataOgLagre(oppdatering);
+                                                solrService.slettBruker(personId.getOrNull());
+                                                solrService.commit();
+                                            }
+                                        });
                     },
                     (timer, hasFailed) -> {
                         if (hasFailed) {

@@ -27,10 +27,8 @@ import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 @Configuration
 public class SituasjonerfeedConfig {
-    @Value("${situasjon.feed.isalive.url}")
-    private String isaliveUrl;
 
-    @Value("${situasjon.feed.producer.url}")
+    @Value("${veilarbsituasjon.api.url}")
     private String host;
 
     @Value("${situasjon.feed.consumer.pollingrate.cron}")

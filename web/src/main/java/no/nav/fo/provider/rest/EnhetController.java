@@ -1,20 +1,18 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
+import io.vavr.control.Try;
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.domene.Bruker;
-import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.domene.Portefolje;
-import no.nav.fo.domene.StatusTall;
-import no.nav.fo.service.BrukertilgangService;
-import no.nav.fo.service.PepClient;
-import no.nav.fo.service.SolrService;
+import no.nav.fo.domene.*;
+import no.nav.fo.domene.EnhetTiltak;
+import no.nav.fo.service.*;
 import no.nav.fo.util.PortefoljeUtils;
 import no.nav.fo.util.TokenUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -29,6 +27,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Api(value = "Enhet")
 @Path("/enhet")
+@Component
 @Produces(APPLICATION_JSON)
 public class EnhetController {
 
@@ -37,11 +36,17 @@ public class EnhetController {
     private BrukertilgangService brukertilgangService;
     private SolrService solrService;
     private PepClient pepClient;
+    private TiltakService tiltakService;
 
     @Inject
-    public EnhetController(BrukertilgangService brukertilgangService, SolrService solrService, PepClient pepClient) {
+    public EnhetController(BrukertilgangService brukertilgangService,
+                           SolrService solrService,
+                           PepClient pepClient,
+                           TiltakService tiltakService)
+    {
         this.brukertilgangService = brukertilgangService;
         this.solrService = solrService;
+        this.tiltakService = tiltakService;
         this.pepClient = pepClient;
     }
 
@@ -106,6 +111,21 @@ public class EnhetController {
             }
 
             return solrService.hentStatusTallForPortefolje(enhet);
+        });
+    }
+
+    @GET
+    @Path("/{enhet}/tiltak")
+    public Response hentTiltak(@PathParam("enhet") String enhet) {
+        return createResponse(() -> {
+            ValideringsRegler.sjekkEnhet(enhet);
+
+            if (!TilgangsRegler.enhetErIPilot(enhet)) {
+                return new EnhetTiltak();
+            }
+
+            return tiltakService.hentEnhettiltak(enhet)
+                    .getOrElse(new EnhetTiltak());
         });
     }
 }

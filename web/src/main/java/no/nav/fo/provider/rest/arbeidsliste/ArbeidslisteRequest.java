@@ -9,5 +9,4 @@ public class ArbeidslisteRequest {
     String fnr;
     String kommentar;
     String frist;
-    boolean redigering;
 }
