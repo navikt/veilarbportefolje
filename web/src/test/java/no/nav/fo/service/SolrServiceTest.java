@@ -131,7 +131,7 @@ public class SolrServiceTest {
         solrInputDocument.setField("formidlingsgruppekode","dummy");
         when(brukerRepository.retrieveBrukermedBrukerdata(any())).thenReturn(solrInputDocument);
 
-        service.indekserBrukerdata(new PersonId("dummy"));
+        service.indekserBrukerdata(PersonId.of("dummy"));
         verify(solrClientMaster, never()).add(any(Collection.class));
     }
 

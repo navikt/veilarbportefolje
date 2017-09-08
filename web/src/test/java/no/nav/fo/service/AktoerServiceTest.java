@@ -63,8 +63,8 @@ public class AktoerServiceTest {
 
     @Test
     public void skalFinnePersonIdFraDatabase() throws Exception {
-        AktoerId aktoerId = new AktoerId("111");
-        PersonId personId = new PersonId("222");
+        AktoerId aktoerId = AktoerId.of("111");
+        PersonId personId = PersonId.of("222");
         int updated =
                 insert(db, "AKTOERID_TO_PERSONID")
                         .value("PERSONID", personId.toString())
@@ -81,8 +81,8 @@ public class AktoerServiceTest {
 
     @Test
     public void skalFinnePersonIdViaSoapTjeneste() throws Exception {
-        AktoerId aktoerId = new AktoerId("111");
-        PersonId personId = new PersonId("222");
+        AktoerId aktoerId = AktoerId.of("111");
+        PersonId personId = PersonId.of("222");
 
         int updated =
                 insert(db, OPPFOLGINGSBRUKER)
@@ -101,7 +101,7 @@ public class AktoerServiceTest {
     public void skalFortsetteVedFeil() throws Exception {
         List<String> aktoerIds = List.of("1", "2", "3", "4");
         int resultLength = aktoerIds
-                .map(AktoerId::new)
+                .map(AktoerId::of)
                 .map(aktoerService::hentPersonidFraAktoerid)
                 .length();
 
@@ -110,8 +110,8 @@ public class AktoerServiceTest {
 
     @Test
     public void skalHenteAktoerIdFraPersonId() throws Exception {
-        PersonId personId = new PersonId(PERSON_ID);
-        AktoerId aktoerId = new AktoerId(AKTOER_ID);
+        PersonId personId = PersonId.of(PERSON_ID);
+        AktoerId aktoerId = AktoerId.of(AKTOER_ID);
         int updated = insert(db, "AKTOERID_TO_PERSONID")
                 .value("AKTOERID", aktoerId.toString())
                 .value("PERSONID", personId.toString())
@@ -129,12 +129,12 @@ public class AktoerServiceTest {
         Fnr fnr = new Fnr(FNR);
         Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(fnr);
         assertTrue(aktoerId.isSuccess());
-        assertEquals(new AktoerId(AKTOERID_FRA_SOAP_TJENESTE), aktoerId.get());
+        assertEquals(AktoerId.of(AKTOERID_FRA_SOAP_TJENESTE), aktoerId.get());
     }
 
     @Test
     public void skalIKKEHenteFnrFraAktoerIdFraDb() throws Exception {
-        AktoerId aktoerId = new AktoerId(AKTOER_ID);
+        AktoerId aktoerId = AktoerId.of(AKTOER_ID);
 
         Try<Fnr> result = aktoerService.hentFnrFraAktoerid(aktoerId);
         assertTrue(result.isSuccess());

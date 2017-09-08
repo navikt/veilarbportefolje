@@ -487,8 +487,8 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteVeilederForBruker() throws Exception {
-        AktoerId aktoerId = new AktoerId("101010");
-        VeilederId expectedVeilederId = new VeilederId("X11111");
+        AktoerId aktoerId = AktoerId.of("101010");
+        VeilederId expectedVeilederId = VeilederId.of("X11111");
 
         insert(jdbcTemplate, BRUKERDATA)
                 .value("PERSONID", "123456")
@@ -523,7 +523,7 @@ public class BrukerRepositoryTest {
     public void skalHentePersonIdFraDatabase() throws Exception {
         Fnr fnr = new Fnr("12345678900");
 
-        PersonId expectedPersonId = new PersonId("123456");
+        PersonId expectedPersonId = PersonId.of("123456");
         int execute = insert(jdbcTemplate, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", expectedPersonId.toString())
                 .value("FODSELSNR", fnr.toString())
@@ -546,8 +546,8 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalInserteAktoerIdToPersonMapping() throws Exception {
-        AktoerId aktoerId = new AktoerId("99999");
-        PersonId personId = new PersonId("99999999");
+        AktoerId aktoerId = AktoerId.of("99999");
+        PersonId personId = PersonId.of("99999999");
         Try<Integer> result = brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         assertTrue(result.isSuccess());
         assertTrue(result.get() == 1);
@@ -555,7 +555,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteOppfolgingstatus() throws Exception {
-        PersonId personId = new PersonId("123456");
+        PersonId personId = PersonId.of("123456");
 
         insert(jdbcTemplate, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", personId.toString())
@@ -597,7 +597,7 @@ public class BrukerRepositoryTest {
 
         assertFalse(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
 
-        brukerRepository.deleteBrukerdata(new PersonId("123456"));
+        brukerRepository.deleteBrukerdata(PersonId.of("123456"));
 
         assertTrue(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
 
@@ -613,11 +613,11 @@ public class BrukerRepositoryTest {
     public void skalOppdatereAktivitetstatusForBruker() {
         String aktivitetstype1 = aktivitetTyperList.get(0).toString();
         String aktivitetstype2 = aktivitetTyperList.get(1).toString();
-        PersonId personId1 = new PersonId("personid1");
-        AktoerId aktoerId1 = new AktoerId("aktoerid1");
+        PersonId personId1 = PersonId.of("personid1");
+        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
 
-        PersonId personId2 = new PersonId("personid2");
-        AktoerId aktoerId2 = new AktoerId("aktoerid2");
+        PersonId personId2 = PersonId.of("personid2");
+        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
 
 
         AktivitetStatus a1 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype1,true, new Timestamp(0));
@@ -644,7 +644,7 @@ public class BrukerRepositoryTest {
     @Test
     public void skalInserteOgSletteAktivitetstatus() {
         String aktivitetstype = "aktivitetstype";
-        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(new PersonId("personid"), new AktoerId("aktivitetid"),aktivitetstype,true,null);
+        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(PersonId.of("personid"), AktoerId.of("aktivitetid"),aktivitetstype,true,null);
         brukerRepository.insertAktivitetStatus(aktivitetStatus);
         assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isNotEmpty();
         brukerRepository.slettAlleAktivitetstatus(aktivitetstype);
@@ -663,15 +663,15 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalReturnereTomtMapDersomIngenBrukerHarAktivitetstatusIDB() {
-        assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(new PersonId("personid")))).isEqualTo(new HashMap<>());
+        assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(PersonId.of("personid")))).isEqualTo(new HashMap<>());
     }
 
     @Test
     public void skalUpdateAktivteterSomAlleredeFinnes() {
         String aktivitetstype1 = aktivitetTyperList.get(0).toString();
         String aktivitetstype2 = aktivitetTyperList.get(1).toString();
-        PersonId personId = new PersonId("111111");
-        AktoerId aktoerId = new AktoerId("222222");
+        PersonId personId = PersonId.of("111111");
+        AktoerId aktoerId = AktoerId.of("222222");
 
         AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, true, new Timestamp(0));
         AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, false, new Timestamp(0));

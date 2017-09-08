@@ -6,7 +6,6 @@ import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.aktivitet.*;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,7 +85,7 @@ public class AktivitetServiceTest {
 
         when(aktoerService
                 .hentPersonidFraAktoerid(any(AktoerId.class)))
-                .thenAnswer(args -> Try.success(new PersonId(args.getArgument(0).toString())));
+                .thenAnswer(args -> Try.success(PersonId.of(args.getArgument(0).toString())));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 
@@ -111,7 +110,7 @@ public class AktivitetServiceTest {
         ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
         when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId(PERSONID_TEST)));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
         aktivitetService.utledOgLagreAktivitetstatuser(singletonList(AKTOERID_TEST));
 
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
@@ -131,7 +130,7 @@ public class AktivitetServiceTest {
 
         when(brukerRepository.getDistinctAktoerIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
         when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId(PERSONID_TEST)));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 

@@ -47,7 +47,7 @@ public class DialogDataFeedHandlerTest {
     public void skalIkkeKalleLagreDersomBrukerIkkeErUnderOppfolging() {
         DialogDataFraFeed dialogdata = new DialogDataFraFeed().setAktorId("aktoerid");
 
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId("123123")));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
         when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(false)));
 
         dialogDataFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(dialogdata));
@@ -59,7 +59,7 @@ public class DialogDataFeedHandlerTest {
     public void skalKalleLagreDersomBrukerErUnderOppfolging() {
         DialogDataFraFeed dialogdata = new DialogDataFraFeed().setAktorId("aktoerid");
 
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId("123123")));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
         when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(true)));
 
         dialogDataFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(dialogdata));
