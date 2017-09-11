@@ -450,7 +450,7 @@ public class BrukerRepository {
                 "SELECT " +
                         "TILTAKSKODE AS TILTAK " +
                         "FROM BRUKERTILTAK " +
-                        "WHERE PERSONID = ?", String.class, personId);
+                        "WHERE FODSELSNR = ?", String.class, personId);
     }
 
     public Map<Fnr, Set<Brukertiltak>> getBrukertiltak(List<Fnr> fnrs) {
@@ -616,9 +616,9 @@ public class BrukerRepository {
     String hentBrukertiltakForListeAvFnrSQL() {
         return "SELECT " +
                 "TILTAKSKODE AS TILTAK, " +
-                "PERSONID as FNR " +
+                "FODSELSNR as FNR " +
                 "FROM BRUKERTILTAK " +
-                "WHERE PERSONID in(:fnrs)";
+                "WHERE FODSELSNR in(:fnrs)";
     }
 
     private String retrieveBrukerSQL() {
