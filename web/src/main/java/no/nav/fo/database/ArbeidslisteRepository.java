@@ -59,25 +59,24 @@ public class ArbeidslisteRepository {
 
     public Map<AktoerId, Optional<Arbeidsliste>> retrieveArbeidsliste(List<AktoerId> aktoerIds) {
         Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = new HashMap<>(aktoerIds.size());
-        String arbeidslisteSQL = "SELECT * FROM ARBEIDSLISTE WHERE AKTOERID in(:aktoerids)";
+        String arbeidslisteSQL = "SELECT * FROM ARBEIDSLISTE WHERE AKTOERID IN(:aktoerids)";
 
         batchProcess(1000, aktoerIds, (aktoerIdsBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("aktoerids", aktoerIdsBatch.stream().map(AktoerId::toString).collect(toList()));
 
             Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMapBatch =
-                    namedParameterJdbcTemplate.queryForList(arbeidslisteSQL,
-                            params)
-                    .stream()
-                    .map((rs) -> Tuple.of(AktoerId.of((String) rs.get("AKTOERID")), arbeidslisteMapper(rs)))
-                    .collect(toMap(Tuple2::_1,(tuple)-> Optional.of(tuple._2())));
+                    namedParameterJdbcTemplate.queryForList(arbeidslisteSQL, params)
+                            .stream()
+                            .map((rs) -> Tuple.of(AktoerId.of((String) rs.get("AKTOERID")), arbeidslisteMapper(rs)))
+                            .collect(toMap(Tuple2::_1, (tuple) -> Optional.of(tuple._2())));
 
             arbeidslisteMap.putAll(arbeidslisteMapBatch);
         });
 
         aktoerIds.stream()
                 .filter(not(arbeidslisteMap::containsKey))
-                .forEach( aktoerId -> arbeidslisteMap.put(aktoerId, empty()));
+                .forEach(aktoerId -> arbeidslisteMap.put(aktoerId, empty()));
 
         return arbeidslisteMap;
     }
