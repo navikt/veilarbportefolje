@@ -58,7 +58,7 @@ public class AktivitetFeedHandlerTest {
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID2").setAvtalt(true));
 
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId("123123")));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
         when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(true)));
 
         aktivitetFeedHandler.call("dontcare", data);
@@ -89,7 +89,7 @@ public class AktivitetFeedHandlerTest {
     @Test
     public void skalIkkeIndeksereOmBrukerIkkeErUnderOppfolging() {
 
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(new PersonId("123123")));
+        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
         when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(false)));
 
         aktivitetFeedHandler.call("dontcare", Collections.singletonList(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true)));

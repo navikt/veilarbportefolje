@@ -69,7 +69,7 @@ public class TilgangsRegler {
 
     static Validation<String, Fnr> erVeilederForBruker(ArbeidslisteService arbeidslisteService, String fnr) {
         SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
-        VeilederId veilederId = new VeilederId(subjectHandler.getUid());
+        VeilederId veilederId = VeilederId.of(subjectHandler.getUid());
 
         Boolean erVeilederForBruker =
                 ValideringsRegler

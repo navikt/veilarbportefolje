@@ -134,7 +134,7 @@ public class ArbeidslisteRepository {
     @SneakyThrows
     private static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
         return new Arbeidsliste(
-                new VeilederId(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
+                VeilederId.of(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
                 toZonedDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
                 rs.getString("KOMMENTAR"),
                 toZonedDateTime(rs.getTimestamp("FRIST")));
@@ -142,7 +142,7 @@ public class ArbeidslisteRepository {
 
     private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
         return new Arbeidsliste(
-                new VeilederId((String) rs.get("SIST_ENDRET_AV_VEILEDERIDENT")),
+                VeilederId.of((String) rs.get("SIST_ENDRET_AV_VEILEDERIDENT")),
                 toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
                 (String) rs.get("KOMMENTAR"),
                 toZonedDateTime((Timestamp) rs.get("FRIST")));

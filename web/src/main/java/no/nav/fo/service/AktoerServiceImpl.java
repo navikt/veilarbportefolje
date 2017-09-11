@@ -59,7 +59,7 @@ public class AktoerServiceImpl implements AktoerService {
     public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
         return Try.of(() -> soapService.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr.toString())))
                 .map(WSHentAktoerIdForIdentResponse::getAktoerId)
-                .map(AktoerId::new);
+                .map(AktoerId::of);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class AktoerServiceImpl implements AktoerService {
                 "SELECT PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR = ?",
                 (data) -> String.valueOf(((Number) data.get("person_id")).intValue()),
                 fnr.toString()
-        ).map(PersonId::new);
+        ).map(PersonId::of);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class AktoerServiceImpl implements AktoerService {
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
         Map<Fnr, Optional<PersonId>> typeMap = new HashMap<>();
         Map<String, Optional<String>> stringMap = brukerRepository.retrievePersonidFromFnrs(fnrs.stream().map(Fnr::toString).collect(toList()));
-        stringMap.forEach((key, value) -> typeMap.put(new Fnr(key), value.map(PersonId::new)));
+        stringMap.forEach((key, value) -> typeMap.put(new Fnr(key), value.map(PersonId::of)));
         return typeMap;
     }
 

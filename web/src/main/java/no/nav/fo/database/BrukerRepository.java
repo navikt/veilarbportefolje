@@ -151,7 +151,7 @@ public class BrukerRepository {
 
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
-        return new VeilederId(rs.getString("VEILEDERIDENT"));
+        return VeilederId.of(rs.getString("VEILEDERIDENT"));
     }
 
     @SneakyThrows
@@ -168,12 +168,12 @@ public class BrukerRepository {
 
     @SneakyThrows
     private PersonId mapToPersonId(ResultSet rs) {
-        return new PersonId(rs.getString("PERSONID"));
+        return PersonId.of(rs.getString("PERSONID"));
     }
 
     @SneakyThrows
     private PersonId personIdMapper(ResultSet resultSet) {
-        return new PersonId(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
+        return PersonId.of(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
     }
 
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
@@ -406,8 +406,8 @@ public class BrukerRepository {
                 .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()
                 .map(row -> AktivitetStatus.of(
-                        new PersonId((String) row.get("PERSONID")),
-                        new AktoerId((String) row.get("AKTOERID")),
+                        PersonId.of((String) row.get("PERSONID")),
+                        AktoerId.of((String) row.get("AKTOERID")),
                         (String) row.get("AKTIVITETTYPE"),
                         parse0OR1((String) row.get("STATUS")),
                         (Timestamp) row.get("NESTE_UTLOPSDATO"))

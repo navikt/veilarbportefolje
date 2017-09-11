@@ -34,7 +34,7 @@ public class SolrServiceImplTest {
 
         SolrInputDocument dokument = new SolrInputDocument();
         dokument.setField("person_id", personId.toString());
-        Arbeidsliste arbeidsliste = new Arbeidsliste(new VeilederId("X111111"), toZonedDateTime(new Date(0)),"kommentar", toZonedDateTime(new Date(0)));
+        Arbeidsliste arbeidsliste = new Arbeidsliste(VeilederId.of("X111111"), toZonedDateTime(new Date(0)),"kommentar", toZonedDateTime(new Date(0)));
 
         when(aktoerService.hentAktoeridsForPersonids(any())).thenReturn(singletonMap(personId, Optional.of(aktoerId)));
         when(arbeidslisteRepository.retrieveArbeidsliste(anyList())).thenReturn(singletonMap(aktoerId, Optional.of(arbeidsliste)));
@@ -55,7 +55,7 @@ public class SolrServiceImplTest {
 
         SolrInputDocument dokument = new SolrInputDocument();
         dokument.setField("person_id", personId.toString());
-        Arbeidsliste arbeidsliste = new Arbeidsliste(new VeilederId("X111111"), toZonedDateTime(new Date(0)),"kommentar",null);
+        Arbeidsliste arbeidsliste = new Arbeidsliste(VeilederId.of("X111111"), toZonedDateTime(new Date(0)),"kommentar",null);
 
         when(aktoerService.hentAktoeridsForPersonids(any())).thenReturn(singletonMap(personId, Optional.of(aktoerId)));
         when(arbeidslisteRepository.retrieveArbeidsliste(anyList())).thenReturn(singletonMap(aktoerId, Optional.of(arbeidsliste)));

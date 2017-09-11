@@ -48,8 +48,8 @@ public class SituasjonFeedHandlerTest {
     @Test
     public void skalSletteBrukerOgArbeidslisteNaarDenIkkeErUnderOppfolging() {
         Fnr fnr = new Fnr("00000000000");
-        AktoerId aktoerId = new AktoerId("DUMMY");
-        PersonId personId = new PersonId("1111111");
+        AktoerId aktoerId = AktoerId.of("DUMMY");
+        PersonId personId = PersonId.of("1111111");
 
 
         Try<Oppfolgingstatus> arenaStatus = Try.success(new Oppfolgingstatus()

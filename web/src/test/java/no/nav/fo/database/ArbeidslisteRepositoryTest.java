@@ -39,14 +39,14 @@ public class ArbeidslisteRepositoryTest {
     @Before
     public void setUp() throws Exception {
         data = new ArbeidslisteData(new Fnr("01010101010"))
-                .setAktoerId(new AktoerId("22222222"))
-                .setVeilederId(new VeilederId("X11111"))
+                .setAktoerId(AktoerId.of("22222222"))
+                .setVeilederId(VeilederId.of("X11111"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar");
 
         data2 = new ArbeidslisteData(new Fnr("01010101011"))
-                .setAktoerId(new AktoerId("22222223"))
-                .setVeilederId(new VeilederId("X11112"))
+                .setAktoerId(AktoerId.of("22222223"))
+                .setVeilederId(VeilederId.of("X11112"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar");
 
@@ -66,7 +66,7 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalOppdatereEksisterendeArbeidsliste() throws Exception {
-        VeilederId expected = new VeilederId("TEST_ID");
+        VeilederId expected = VeilederId.of("TEST_ID");
         repo.updateArbeidsliste(data.setVeilederId(expected));
 
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
@@ -88,9 +88,9 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalHenteArbeidslisteForListeAvAktoerid() {
-        AktoerId aktoerId1 = new AktoerId("22222222");
-        AktoerId aktoerId2 = new AktoerId("22222223");
-        AktoerId aktoerId3 = new AktoerId("finnesikke");
+        AktoerId aktoerId1 = AktoerId.of("22222222");
+        AktoerId aktoerId2 = AktoerId.of("22222223");
+        AktoerId aktoerId3 = AktoerId.of("finnesikke");
         Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = repo.retrieveArbeidsliste(asList(aktoerId1,aktoerId2, aktoerId3));
         assertTrue(arbeidslisteMap.get(aktoerId1).isPresent());
         assertTrue(arbeidslisteMap.get(aktoerId2).isPresent());

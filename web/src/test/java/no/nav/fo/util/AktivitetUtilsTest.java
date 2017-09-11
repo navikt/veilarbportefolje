@@ -155,8 +155,8 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalLeggeTilAktiviteterPaSolrDokument() {
-        PersonId personId = new PersonId("persondid");
-        AktoerId aktoerId = new AktoerId("aktoerid");
+        PersonId personId = PersonId.of("persondid");
+        AktoerId aktoerId = AktoerId.of("aktoerid");
         Timestamp nyesteUtlop = new Timestamp(0);
 
 
@@ -187,7 +187,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalIkkeLeggeTilAktiviteter() {
-        PersonId personId = new PersonId("persondid");
+        PersonId personId = PersonId.of("persondid");
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("person_id", personId.toString());
 

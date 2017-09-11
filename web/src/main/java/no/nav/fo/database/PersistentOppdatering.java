@@ -111,7 +111,7 @@ public class PersistentOppdatering {
     }
 
     public void lagreISolr(Brukerdata brukerdata) {
-        solrService.indekserBrukerdata(new PersonId(brukerdata.getPersonid()));
+        solrService.indekserBrukerdata(PersonId.of(brukerdata.getPersonid()));
     }
 
     private Brukerdata hentBruker(String personid) {

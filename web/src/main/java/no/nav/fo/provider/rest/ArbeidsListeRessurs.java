@@ -239,7 +239,7 @@ public class ArbeidsListeRessurs {
     private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {
         Timestamp frist = nullOrEmpty(body.getFrist()) ? null : Timestamp.from(Instant.parse(body.getFrist()));
         return new ArbeidslisteData(fnr)
-                .setVeilederId(new VeilederId(SubjectHandler.getSubjectHandler().getUid()))
+                .setVeilederId(VeilederId.of(SubjectHandler.getSubjectHandler().getUid()))
                 .setKommentar(body.getKommentar())
                 .setFrist(frist);
     }

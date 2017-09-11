@@ -5,7 +5,7 @@ import lombok.Value;
 
 import static lombok.AccessLevel.PRIVATE;
 
-@Value
+@Value(staticConstructor = "of")
 @Getter(value = PRIVATE)
 public class AktoerId {
     public final String aktoerId;
@@ -13,9 +13,5 @@ public class AktoerId {
     @Override
     public String toString() {
         return aktoerId;
-    }
-
-    public static AktoerId of(String aktoerid) {
-        return new AktoerId(aktoerid);
     }
 }

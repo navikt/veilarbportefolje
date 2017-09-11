@@ -29,7 +29,7 @@ public class AktivitetUtils {
         return aktoerAktiviteter
                 .stream()
                 .map(aktoerAktivitet -> {
-                    AktoerId aktoerId = new AktoerId(aktoerAktivitet.getAktoerid());
+                    AktoerId aktoerId = AktoerId.of(aktoerAktivitet.getAktoerid());
                     Try<PersonId> personid = getPersonId(aktoerId, aktoerService)
                             .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e));
 
@@ -151,12 +151,12 @@ public class AktivitetUtils {
                 .forEach((dokumenterBatch) -> {
                     timed("indeksering.applyaktiviteter1000", () -> {
                         List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
-                                .map((dokument) -> new PersonId((String) dokument.get("person_id").getValue())).collect(toList());
+                                .map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
 
                         Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(personIds);
 
                         dokumenterBatch.forEach((dokument) -> {
-                            PersonId personId = new PersonId((String) dokument.get("person_id").getValue());
+                            PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
                             applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
                         });
                     },
