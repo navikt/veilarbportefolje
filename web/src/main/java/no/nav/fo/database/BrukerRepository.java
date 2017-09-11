@@ -459,7 +459,7 @@ public class BrukerRepository {
         params.put("fnrs", fnrs.stream().map(Fnr::toString).collect(toList()));
 
         return namedParameterJdbcTemplate
-                .queryForList(getBrukertiltakForListOfFnrSQL(), params)
+                .queryForList(hentBrukertiltakForListeAvFnrSQL(), params)
                 .stream()
                 .map(row -> Brukertiltak.of(
                         Fnr.of((String) row.get("FNR")), (String) row.get("TILTAK"))
@@ -613,7 +613,7 @@ public class BrukerRepository {
                         "fodselsnr in (:fnrs)";
     }
 
-    String getBrukertiltakForListOfFnrSQL() {
+    String hentBrukertiltakForListeAvFnrSQL() {
         return "SELECT " +
                 "TILTAKSKODE AS TILTAK, " +
                 "PERSONID as FNR " +
