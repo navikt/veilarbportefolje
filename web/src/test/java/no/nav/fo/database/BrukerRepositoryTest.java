@@ -605,8 +605,8 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteBrukersTiltak() throws Exception {
-        List<Map<String, Object>> brukertiltak1 = brukerRepository.getBrukertiltak("11111111111");
-        List<Map<String, Object>> brukertiltak2 = brukerRepository.getBrukertiltak("22222222222");
+        List<Map<String, Object>> brukertiltak1 = brukerRepository.hentBrukertiltak("11111111111");
+        List<Map<String, Object>> brukertiltak2 = brukerRepository.hentBrukertiltak("22222222222");
 
         assertThat(brukertiltak1.get(0)).containsKeys("tiltak", "tildato");
         assertThat(brukertiltak2.get(0)).containsKeys("tiltak", "tildato");

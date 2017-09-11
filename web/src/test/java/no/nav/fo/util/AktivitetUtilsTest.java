@@ -238,7 +238,7 @@ public class AktivitetUtilsTest {
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(tiltakData());
+        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(tiltakData());
 
         System.setProperty("arena.aktivitet.datofilter", "2017-01-15");
 
@@ -251,7 +251,7 @@ public class AktivitetUtilsTest {
     public void skalFiltrereBortTiltakSomHarTildatoForDatofilter() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(tiltakData());
+        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(tiltakData());
 
         System.setProperty("arena.aktivitet.datofilter", "2017-01-17");
 
@@ -263,7 +263,7 @@ public class AktivitetUtilsTest {
     public void skalIkkeFiltrereNarDatofilterErNull() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(tiltakData());
+        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(tiltakData());
 
         System.setProperty("arena.aktivitet.datofilter", null);
 
@@ -278,7 +278,7 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
         List<Map<String, Object>> data = tiltakData();
 
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(data);
+        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(data);
         System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
@@ -287,7 +287,7 @@ public class AktivitetUtilsTest {
 
         data.get(0).put("tildato", null);
         data.get(1).put("tildato", null);
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(data);
+        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(data);
 
         System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
 
@@ -300,7 +300,7 @@ public class AktivitetUtilsTest {
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Lists.emptyList());
+        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(Lists.emptyList());
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 

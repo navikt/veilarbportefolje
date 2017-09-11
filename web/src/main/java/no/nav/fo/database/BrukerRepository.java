@@ -416,7 +416,7 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
-    public List<Map<String, Object>> getBrukertiltak(String fnr) {
+    public List<Map<String, Object>> hentBrukertiltak(String fnr) {
         return db.queryForList(
                 "SELECT " +
                         "TILTAKSKODE AS TILTAK, " +

@@ -58,7 +58,7 @@ public class TiltakHandler {
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
-        if(this.isRunning()) {
+        if(this.kjorer()) {
             logger.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
             return;
         }
@@ -66,7 +66,7 @@ public class TiltakHandler {
         hentTiltakOgPopulerDatabase();
     }
 
-    private boolean isRunning() {
+    private boolean kjorer() {
         return this.isRunning;
     }
 
@@ -92,10 +92,10 @@ public class TiltakHandler {
         brukerRepository.slettAlleAktivitetstatus(tiltak);
         brukerRepository.slettAlleAktivitetstatus(gruppeaktivitet);
 
-        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::insertTiltakskoder);
+        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::lagreTiltakskoder);
 
         MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
-            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::insertBrukertiltak);
+            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::lagreBrukertiltak);
             return null;
         });
 
@@ -121,7 +121,7 @@ public class TiltakHandler {
         Map<String, Bruker> fnrTilBruker = new HashMap<>();
         brukere.forEach(bruker -> fnrTilBruker.put(bruker.getPersonident(), bruker));
 
-        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetTilFodselsnummereMap().entrySet().stream()
+        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.hentEnhetTilFodselsnummereMap().entrySet().stream()
             .flatMap(entrySet -> entrySet.getValue().stream()
                 .filter(fnr -> fnrTilBruker.get(fnr) != null)
                 .flatMap(fnr -> fnrTilBruker.get(fnr).getTiltaksaktivitetListe().stream()
@@ -130,7 +130,7 @@ public class TiltakHandler {
                 ))
             .distinct()
             .collect(toList());
-        tiltakrepository.insertEnhettiltak(tiltakForEnhet);
+        tiltakrepository.lagreEnhettiltak(tiltakForEnhet);
     }
 
     private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {

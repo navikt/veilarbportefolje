@@ -18,7 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
@@ -72,7 +71,7 @@ public class TiltakRepositoryTest {
             tiltaksaktivitet1
         ));
 
-        tiltakRepository.insertBrukertiltak(bruker);
+        tiltakRepository.lagreBrukertiltak(bruker);
 
         assertThat(jdbcTemplate.queryForMap("SELECT * FROM BRUKERTILTAK WHERE FODSELSNR = '11111111111'").keySet()).containsExactly("FODSELSNR", "TILTAKSKODE", "TILDATO");
     }
@@ -92,7 +91,7 @@ public class TiltakRepositoryTest {
             tiltaksaktivitet2
         ));
 
-        tiltakRepository.insertBrukertiltak(bruker);
+        tiltakRepository.lagreBrukertiltak(bruker);
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERTILTAK").size()).isEqualTo(2);
     }
@@ -106,8 +105,8 @@ public class TiltakRepositoryTest {
         tiltakstype2.setValue("B");
         tiltakstype2.setTermnavn("Tiltak2");
 
-        tiltakRepository.insertTiltakskoder(tiltakstype1);
-        tiltakRepository.insertTiltakskoder(tiltakstype2);
+        tiltakRepository.lagreTiltakskoder(tiltakstype1);
+        tiltakRepository.lagreTiltakskoder(tiltakstype2);
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM TILTAKKODEVERK").size()).isEqualTo(2);
     }
@@ -115,7 +114,7 @@ public class TiltakRepositoryTest {
     @Test
     public void skalInserteEnhettiltak() {
         insertKodeverk();
-        tiltakRepository.insertEnhettiltak(Arrays.asList(
+        tiltakRepository.lagreEnhettiltak(Arrays.asList(
             TiltakForEnhet.of("1234", "A"),
             TiltakForEnhet.of("5678", "B"),
             TiltakForEnhet.of("1234", "C")
@@ -128,7 +127,7 @@ public class TiltakRepositoryTest {
     public void skalHenteParMedEnhetOgFnr() {
         insertTestData();
 
-        Map<String, java.util.List<String>> enhetMedPersonIder = tiltakRepository.getEnhetTilFodselsnummereMap();
+        Map<String, java.util.List<String>> enhetMedPersonIder = tiltakRepository.hentEnhetTilFodselsnummereMap();
 
         assertThat(enhetMedPersonIder.get("0219")).containsExactly("10000000048", "10000000000");
         assertThat(enhetMedPersonIder.get("1102")).containsExactly("10000000020", "10000000008", "10000000063");

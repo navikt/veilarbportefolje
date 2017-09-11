@@ -16,7 +16,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -26,7 +25,6 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
-import static no.nav.fo.domene.aktivitet.AktivitetTyper.tiltak;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -205,7 +203,7 @@ public class AktivitetUtils {
         Timestamp arenaAktivitetFilterDato = parseDato(System.getProperty("arena.aktivitet.datofilter"));
         dokumenter.forEach(document -> {
             String fnr = (String) document.get("fnr").getValue();
-            List<String> tiltakListe = brukerRepository.getBrukertiltak(fnr).stream()
+            List<String> tiltakListe = brukerRepository.hentBrukertiltak(fnr).stream()
                 .filter(tiltak -> etterFilterDato((Timestamp) tiltak.get("tildato"), arenaAktivitetFilterDato))
                 .map(tiltak -> (String) tiltak.get("tiltak"))
                 .collect(toList());
