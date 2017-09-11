@@ -693,9 +693,9 @@ public class BrukerRepositoryTest {
 
         jdbcTemplate.execute("INSERT INTO TILTAKKODEVERK (KODE, VERDI) VALUES ('kode1', 'verdi1')");
         jdbcTemplate.execute("INSERT INTO TILTAKKODEVERK (KODE, VERDI) VALUES ('kode2', 'verdi2')");
-        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,PERSONID) VALUES ('kode1','11111111111')");
-        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,PERSONID) VALUES ('kode2','11111111111')");
-        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,PERSONID) VALUES ('kode2','22222222222')");
+        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,FODSELSNR) VALUES ('kode1','11111111111')");
+        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,FODSELSNR) VALUES ('kode2','11111111111')");
+        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,FODSELSNR) VALUES ('kode2','22222222222')");
 
         Map<Fnr, Set<Brukertiltak>> brukertiltak = brukerRepository.getBrukertiltak(asList(fnr1,fnr2));
 
