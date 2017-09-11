@@ -108,7 +108,7 @@ public class TiltakRepositoryTest {
     public void skalHenteParMedEnhetOgFnr() {
         insertTestData();
 
-        Map<String, java.util.List<String>> enhetMedPersonIder = tiltakRepository.getEnhetMedPersonIder();
+        Map<String, java.util.List<String>> enhetMedPersonIder = tiltakRepository.getEnhetTilFodselsnummereMap();
 
         assertThat(enhetMedPersonIder.get("0219")).containsExactly("10000000048", "10000000000");
         assertThat(enhetMedPersonIder.get("1102")).containsExactly("10000000020", "10000000008", "10000000063");

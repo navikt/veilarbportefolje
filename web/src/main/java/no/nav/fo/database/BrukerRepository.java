@@ -445,12 +445,12 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
-    public List<String> getBrukertiltak(String personId) {
+    public List<String> getBrukertiltak(String fnr) {
         return db.queryForList(
                 "SELECT " +
                         "TILTAKSKODE AS TILTAK " +
                         "FROM BRUKERTILTAK " +
-                        "WHERE FODSELSNR = ?", String.class, personId);
+                        "WHERE FODSELSNR = ?", String.class, fnr);
     }
 
     public Map<Fnr, Set<Brukertiltak>> getBrukertiltak(List<Fnr> fnrs) {

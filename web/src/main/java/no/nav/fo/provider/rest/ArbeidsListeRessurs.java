@@ -90,6 +90,7 @@ public class ArbeidsListeRessurs {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
             }
@@ -124,6 +125,7 @@ public class ArbeidsListeRessurs {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
             }
@@ -149,6 +151,7 @@ public class ArbeidsListeRessurs {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
             }
@@ -171,6 +174,7 @@ public class ArbeidsListeRessurs {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
             if (validateFnr.isInvalid()) {
                 throw new RestValideringException(validateFnr.getError());
             }

@@ -93,7 +93,7 @@ public class TiltakHandler {
 
         tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::insertTiltakskoder);
 
-        MetricsUtils.timed("tiltak.insert.alle", () -> {
+        MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
             tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::insertBrukertiltak);
         });
 
@@ -105,29 +105,35 @@ public class TiltakHandler {
             utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
         });
 
-
-        Map<String, Bruker> personIdTilBruker = new HashMap<>();
-        tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(bruker -> personIdTilBruker.put(bruker.getPersonident(), bruker));
-
-        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetMedPersonIder().entrySet().stream()
-                .flatMap(entrySet -> entrySet.getValue().stream()
-                        .filter(personId -> personIdTilBruker.get(personId) != null)
-                        .flatMap(personId -> personIdTilBruker.get(personId).getTiltaksaktivitetListe().stream()
-                                .map(Tiltaksaktivitet::getTiltakstype)
-                                .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
-                        ))
-                .distinct()
-                .collect(toList());
-        tiltakrepository.insertEnhettiltak(tiltakForEnhet);
+        MetricsUtils.timed("tiltak.insert.enhettiltak", () -> {
+            utledOgLagreEnhetTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
+            return null;
+        });
 
         logger.info("Ferdige med å populere database");
+    }
+
+    private void utledOgLagreEnhetTiltak(List<Bruker> brukere) {
+        Map<String, Bruker> fnrTilBruker = new HashMap<>();
+        brukere.forEach(bruker -> fnrTilBruker.put(bruker.getPersonident(), bruker));
+
+        List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.getEnhetTilFodselsnummereMap().entrySet().stream()
+            .flatMap(entrySet -> entrySet.getValue().stream()
+                .filter(fnr -> fnrTilBruker.get(fnr) != null)
+                .flatMap(fnr -> fnrTilBruker.get(fnr).getTiltaksaktivitetListe().stream()
+                    .map(Tiltaksaktivitet::getTiltakstype)
+                    .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
+                ))
+            .distinct()
+            .collect(toList());
+        tiltakrepository.insertEnhettiltak(tiltakForEnhet);
     }
 
     private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {
         io.vavr.collection.List.ofAll(brukere)
                 .sliding(1000,1000)
-                .forEach((brukereVavr) -> {
-                    List<Bruker> brukereJavaBatch = brukereVavr.toJavaList();
+                .forEach((brukereSubList) -> {
+                    List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
                     Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
@@ -146,8 +152,8 @@ public class TiltakHandler {
     private void utledOgLagreGruppeaktiviteter(List<Bruker> brukere) {
         io.vavr.collection.List.ofAll(brukere)
                 .sliding(1000,1000)
-                .forEach((brukereVavr) -> {
-                    List<Bruker> brukereJavaBatch = brukereVavr.toJavaList();
+                .forEach((brukereSubList) -> {
+                    List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
                     Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
