@@ -95,7 +95,6 @@ public class TiltakHandler {
 
         MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
             tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::lagreBrukertiltak);
-            return null;
         });
 
         MetricsUtils.timed("tiltak.insert.as.aktivitet", () -> {
@@ -108,7 +107,6 @@ public class TiltakHandler {
 
         MetricsUtils.timed("tiltak.insert.enhettiltak", () -> {
             utledOgLagreEnhetTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
-            return null;
         });
 
         logger.info("Ferdige med å populere database");
