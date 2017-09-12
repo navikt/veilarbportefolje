@@ -35,7 +35,7 @@ import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
 
 public class ArbeidslisteRepository {
-    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteRepository.class);
+    private static Logger logger = LoggerFactory.getLogger(ArbeidslisteRepository.class);
 
     @Inject
     private JdbcTemplate db;
@@ -99,7 +99,7 @@ public class ArbeidslisteRepository {
                             .execute();
                     return data.getAktoerId();
                 }
-        ).onFailure(e -> LOG.warn("Kunne ikke inserte arbeidsliste til db: {}", getCauseString(e)));
+        ).onFailure(e -> logger.warn("Kunne ikke inserte arbeidsliste til db: {}", getCauseString(e)));
     }
 
 
@@ -115,7 +115,7 @@ public class ArbeidslisteRepository {
                             .execute();
                     return data.getAktoerId();
                 }
-        ).onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste i db: {}", getCauseString(e)));
+        ).onFailure(e -> logger.warn("Kunne ikke oppdatere arbeidsliste i db: {}", getCauseString(e)));
     }
 
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
@@ -127,8 +127,8 @@ public class ArbeidslisteRepository {
                     return aktoerID;
                 }
         )
-                .onSuccess((aktoerid) -> LOG.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
-                .onFailure(e -> LOG.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
+                .onSuccess((aktoerid) -> logger.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
+                .onFailure(e -> logger.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
     }
 
     @SneakyThrows

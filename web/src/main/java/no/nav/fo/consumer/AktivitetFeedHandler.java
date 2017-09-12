@@ -25,7 +25,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
 
-    private static final Logger LOG = getLogger(AktivitetFeedHandler.class);
+    private static final Logger logger = getLogger(AktivitetFeedHandler.class);
 
     private BrukerRepository brukerRepository;
     private AktivitetService aktivitetService;
@@ -69,7 +69,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                     (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase()); }}
                     );
         }catch(Exception e) {
-            LOG.error("Kunne ikke lagre aktivitetdata fra feed. aktivitetid: {}", aktivitet.getAktivitetId(), e);
+            logger.error("Kunne ikke lagre aktivitetdata fra feed. aktivitetid: {}", aktivitet.getAktivitetId(), e);
         }
     }
 
@@ -95,7 +95,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                     (timer, hasFailed) -> { if (hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktoerid).toUpperCase()); }}
             );
         }catch(Exception e) {
-            LOG.error("Feil ved behandling av aktivitetdata for aktoerid: {}", aktoerid, e);
+            logger.error("Feil ved behandling av aktivitetdata for aktoerid: {}", aktoerid, e);
         }
     }
 }

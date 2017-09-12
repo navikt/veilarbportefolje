@@ -43,7 +43,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class BrukerRepository {
 
-    private static final Logger LOG = getLogger(BrukerRepository.class);
+    private static final Logger logger = getLogger(BrukerRepository.class);
     public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
     public static final String BRUKERDATA = "BRUKER_DATA";
     public static final String BRUKERSTATUS_AKTIVITETER = "BRUKERSTATUS_AKTIVITETER";
@@ -75,7 +75,7 @@ public class BrukerRepository {
         }
         return Try.of(
                 () -> db.query(retrieveOppfolgingstatusSql(), new String[]{personId.toString()}, this::mapToOppfolgingstatus)
-        ).onFailure(e -> LOG.warn("Feil ved uthenting av Arena statuskoder for personid {}", personId, e));
+        ).onFailure(e -> logger.warn("Feil ved uthenting av Arena statuskoder for personid {}", personId, e));
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
@@ -84,7 +84,7 @@ public class BrukerRepository {
                         .column("VEILEDERIDENT")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
+        ).onFailure(e -> logger.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
@@ -93,7 +93,7 @@ public class BrukerRepository {
                         .column("NAV_KONTOR")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke oppfølgingsenhet for bruker med fnr {}", fnr));
+        ).onFailure(e -> logger.warn("Fant ikke oppfølgingsenhet for bruker med fnr {}", fnr));
     }
 
     public Try<Integer> insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
@@ -103,7 +103,7 @@ public class BrukerRepository {
                                 .value("AKTOERID", aktoerId.toString())
                                 .value("PERSONID", personId.toString())
                                 .execute()
-                ).onFailure(e -> LOG.info("Kunne ikke inserte mapping Aktoerid {} -> personId {} i databasen: {}", aktoerId, personId, getCauseString(e)));
+                ).onFailure(e -> logger.info("Kunne ikke inserte mapping Aktoerid {} -> personId {} i databasen: {}", aktoerId, personId, getCauseString(e)));
     }
 
     public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
@@ -112,7 +112,7 @@ public class BrukerRepository {
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke personid for aktoerid {}: {}", aktoerId, getCauseString(e)));
+        ).onFailure(e -> logger.warn("Fant ikke personid for aktoerid {}: {}", aktoerId, getCauseString(e)));
     }
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
@@ -121,7 +121,7 @@ public class BrukerRepository {
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> LOG.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
+        ).onFailure(e -> logger.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
     }
 
     public Try<PersonId> deleteBrukerdata(PersonId personId) {
@@ -132,7 +132,7 @@ public class BrukerRepository {
                             .execute();
                     return personId;
                 }
-        ).onFailure((e) -> LOG.warn("Kunne ikke slette brukerdata for personid {}", personId.toString(), e));
+        ).onFailure((e) -> logger.warn("Kunne ikke slette brukerdata for personid {}", personId.toString(), e));
     }
 
 

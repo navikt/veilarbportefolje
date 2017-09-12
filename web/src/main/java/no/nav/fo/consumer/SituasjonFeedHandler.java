@@ -29,7 +29,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
-    private static final Logger LOG = getLogger(SituasjonFeedHandler.class);
+    private static final Logger logger = getLogger(SituasjonFeedHandler.class);
 
     public static final String SITUASJON_SIST_OPPDATERT = "situasjon_sist_oppdatert";
 
@@ -55,7 +55,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
-        LOG.debug(String.format("Feed-data mottatt: %s", data));
+        logger.debug(String.format("Feed-data mottatt: %s", data));
         data.forEach(this::behandleObjektFraFeed);
         brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
@@ -89,7 +89,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );
         }catch(Exception e) {
-            LOG.error("Feil ved behandling av objekt fra feed med aktorid {}, {}", bruker.getAktoerid(), e.getMessage());
+            logger.error("Feil ved behandling av objekt fra feed med aktorid {}, {}", bruker.getAktoerid(), e.getMessage());
         }
     }
 }

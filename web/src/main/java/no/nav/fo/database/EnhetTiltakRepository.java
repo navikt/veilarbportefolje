@@ -14,7 +14,7 @@ import java.util.Map;
 
 
 public class EnhetTiltakRepository {
-    private static Logger LOG = LoggerFactory.getLogger(EnhetTiltakRepository.class);
+    private static Logger logger = LoggerFactory.getLogger(EnhetTiltakRepository.class);
 
     @Inject
     private JdbcTemplate db;
@@ -23,7 +23,7 @@ public class EnhetTiltakRepository {
 
         return Try.of(
                 () -> db.query(retrieveSql(), new String[]{enhet}, EnhetTiltakRepository::rowMapper)
-        ).onFailure(e -> LOG.warn("Finner ikke tiltak for enhet med enhetid {}", enhet));
+        ).onFailure(e -> logger.warn("Finner ikke tiltak for enhet med enhetid {}", enhet));
     }
 
     @SneakyThrows

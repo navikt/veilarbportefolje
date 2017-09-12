@@ -45,7 +45,7 @@ import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeRessurs {
 
-    private static Logger LOG = LoggerFactory.getLogger(ArbeidsListeRessurs.class);
+    private static Logger logger = LoggerFactory.getLogger(ArbeidsListeRessurs.class);
 
     @Inject
     private ArbeidslisteService arbeidslisteService;
@@ -138,7 +138,7 @@ public class ArbeidsListeRessurs {
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
             arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
-                    .onFailure(e -> LOG.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
+                    .onFailure(e -> logger.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
             return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
@@ -161,7 +161,7 @@ public class ArbeidsListeRessurs {
 
             arbeidslisteService
                     .updateArbeidsliste(data(body, new Fnr(fnr)))
-                    .onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
+                    .onFailure(e -> logger.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
             return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
@@ -216,11 +216,11 @@ public class ArbeidsListeRessurs {
                             .deleteArbeidsliste(fnr)
                             .onSuccess((aktoerid) -> {
                                 okFnrs.add(fnr.toString());
-                                LOG.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
+                                logger.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
                             })
                             .onFailure((error) -> {
                                 feiledeFnrs.add(fnr.toString());
-                                LOG.warn("Kunne ikke slette arbeidsliste for fnr {}", fnr.toString(), error);
+                                logger.warn("Kunne ikke slette arbeidsliste for fnr {}", fnr.toString(), error);
                             })
                     );
 
