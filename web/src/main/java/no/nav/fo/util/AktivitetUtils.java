@@ -194,9 +194,6 @@ public class AktivitetUtils {
         document.addField("aktiviteter_utlopsdato_json", aktiviteterUtlopsdatoJSON);
     }
 
-    @Value("${arena.aktivitet.datofilter}")
-    private static String datoFilter;
-
     public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
         io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(1000,1000)
