@@ -30,6 +30,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AktivitetUtils {
 
     private static final Logger logger = getLogger(AktivitetUtils.class);
+    private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter, AktoerService aktoerService) {
         return aktoerAktiviteter
@@ -231,8 +232,6 @@ public class AktivitetUtils {
         Timestamp arenaAktivitetFilterDato = parseDato(System.getProperty("arena.aktivitet.datofilter"));
         return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
     }
-
-    private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     static Timestamp parseDato(String konfigurertDato) {
         try {
