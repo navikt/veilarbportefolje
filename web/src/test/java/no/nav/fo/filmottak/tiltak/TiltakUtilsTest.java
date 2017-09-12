@@ -26,7 +26,7 @@ public class TiltakUtilsTest {
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(1,1,2000));
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(1,1,2010));
 
-        AktivitetStatus aktivitetStatus = TiltakUtils.utledAktivitetstatusForTiltak(bruker, new PersonId("personid"));
+        AktivitetStatus aktivitetStatus = TiltakUtils.utledAktivitetstatusForTiltak(bruker, PersonId.of("personid"));
         assertThat(aktivitetStatus.getNesteUtlop()).isBefore(compareTime);
     }
 
@@ -38,7 +38,7 @@ public class TiltakUtilsTest {
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(1,1,2000));
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(1,1,2010));
 
-        AktivitetStatus aktivitetStatus = TiltakUtils.utledGruppeaktivitetstatus(bruker, new PersonId("personid"));
+        AktivitetStatus aktivitetStatus = TiltakUtils.utledGruppeaktivitetstatus(bruker, PersonId.of("personid"));
         assertThat(aktivitetStatus.getNesteUtlop()).isBefore(compareTime);
     }
 

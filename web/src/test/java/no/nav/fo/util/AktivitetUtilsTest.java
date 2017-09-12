@@ -2,9 +2,7 @@ package no.nav.fo.util;
 
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.AktivitetStatus;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktivitetData;
 import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
@@ -17,6 +15,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -24,6 +23,7 @@ import static java.util.Arrays.asList;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.AktivitetUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -156,8 +156,8 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalLeggeTilAktiviteterPaSolrDokument() {
-        PersonId personId = new PersonId("persondid");
-        AktoerId aktoerId = new AktoerId("aktoerid");
+        PersonId personId = PersonId.of("persondid");
+        AktoerId aktoerId = AktoerId.of("aktoerid");
         Timestamp nyesteUtlop = new Timestamp(0);
 
 
@@ -188,7 +188,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalIkkeLeggeTilAktiviteter() {
-        PersonId personId = new PersonId("persondid");
+        PersonId personId = PersonId.of("persondid");
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("person_id", personId.toString());
 
@@ -237,21 +237,23 @@ public class AktivitetUtilsTest {
     @Test
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(tiltakData());
-
-        System.setProperty("arena.aktivitet.datofilter", "2017-01-15");
+        Fnr fnr = Fnr.of("12345678910");
+        solrInputDocument.addField("fnr", fnr.toString());
+        System.setProperty("arena.aktivitet.datofilter", "2017-01-17");
+        List<Brukertiltak> brukertiltak = tiltakData("2017-01-18", "2017-01-18");
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(brukertiltak);
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
-        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
+        assertThat(solrInputDocument.keySet()).containsExactlyInAnyOrder("fnr", "tiltak");
+        assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactlyInAnyOrder("T1", "T2");
     }
 
     @Test
     public void skalFiltrereBortTiltakSomHarTildatoForDatofilter() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(tiltakData());
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
         System.setProperty("arena.aktivitet.datofilter", "2017-01-17");
 
@@ -263,7 +265,7 @@ public class AktivitetUtilsTest {
     public void skalIkkeFiltrereNarDatofilterErNull() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(tiltakData());
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
         System.setProperty("arena.aktivitet.datofilter", null);
 
@@ -271,57 +273,49 @@ public class AktivitetUtilsTest {
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
     }
-
     @Test
-    public void skalLeggeTilTiltakPaSolrDokumentNarTilDatoErNull() {
+    public void skalIkkeFiltrereNarTilDatoErNull() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        List<Map<String, Object>> data = tiltakData();
 
-        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(data);
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
         System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
         assertThat(solrInputDocument.getFieldValues("tiltak")).isNull();
 
-        data.get(0).put("tildato", null);
-        data.get(1).put("tildato", null);
-        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(data);
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData(null, null));
 
         System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
+
     }
 
     @Test
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.hentBrukertiltak(anyString())).thenReturn(Lists.emptyList());
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(Lists.emptyList());
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
         assertThat(solrInputDocument.keySet()).doesNotContain("tiltak");
     }
 
-    private List<Map<String, Object>> tiltakData() {
-        List<Map<String, Object>> tiltakRader = new ArrayList<>();
+    private List<Brukertiltak> tiltakData(String dato1, String dato2) {
+        List<Brukertiltak> tiltak = new ArrayList<>();
 
-        Map<String, Object> tiltakRad = new HashMap<>();
-        tiltakRad.put("tiltak", "T1");
-        tiltakRad.put("tildato", Timestamp.valueOf("2017-01-16 00:00:00"));
-        tiltakRader.add(tiltakRad);
+        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T1", parseDato(dato1)));
+        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T2", parseDato(dato2)));
 
-        tiltakRad = new HashMap<>();
-        tiltakRad.put("tiltak", "T2");
-        tiltakRad.put("tildato", Timestamp.valueOf("2017-01-18 00:00:00"));
-        tiltakRader.add(tiltakRad);
-
-        return tiltakRader;
+        return tiltak;
     }
 
-
+    private List<Brukertiltak> tiltakData() {
+        return tiltakData("2017-01-16", "2017-01-18");
+    }
 }

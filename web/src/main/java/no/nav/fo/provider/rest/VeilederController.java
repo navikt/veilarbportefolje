@@ -120,7 +120,7 @@ public class VeilederController {
             }
 
             return solrService
-                    .hentBrukereMedArbeidsliste(new VeilederId(veilederIdent), enhet)
+                    .hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet)
                     .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke finne noen brukere med arbeidsliste"));
         });
     }

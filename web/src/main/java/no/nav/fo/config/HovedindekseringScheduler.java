@@ -32,13 +32,13 @@ public class HovedindekseringScheduler {
         if(ismasternode) {
             timed("indeksering.total", () -> {
                 logger.info("Setter i gang oppdatering av ytelser i databasen");
-                kopierGR199FraArena.startOppdateringAvYtelser();
+                timed("indeksering.oppdatering.ytelser", () -> kopierGR199FraArena.startOppdateringAvYtelser());
                 logger.info("Ferdig med oppdatering av ytelser");
                 logger.info("Setter i gang oppdatering av tiltak i databasen");
-                tiltakHandler.startOppdateringAvTiltakIDatabasen();
+                timed("indeksering.oppdatering.tiltak", () -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
                 logger.info("Ferdig med oppdatering av tiltak");
                 logger.info("Setter i gang hovedindeksering");
-                solrService.hovedindeksering();
+                timed("indeksering.populerindeks", () -> solrService.hovedindeksering());
                 logger.info("Ferdig med hovedindeksering");
             });
         }

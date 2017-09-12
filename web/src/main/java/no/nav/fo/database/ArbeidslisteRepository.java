@@ -1,5 +1,7 @@
 package no.nav.fo.database;
 
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.domene.AktoerId;
@@ -11,16 +13,25 @@ import no.nav.fo.util.sql.where.WhereClause;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
 import static no.nav.fo.util.DbUtils.getCauseString;
+import static no.nav.fo.util.DbUtils.not;
+import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
 
 public class ArbeidslisteRepository {
@@ -32,6 +43,9 @@ public class ArbeidslisteRepository {
     @Inject
     private DataSource ds;
 
+    @Inject
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
     public static final String ARBEIDSLISTE = "ARBEIDSLISTE";
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
@@ -41,6 +55,30 @@ public class ArbeidslisteRepository {
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
         );
+    }
+
+    public Map<AktoerId, Optional<Arbeidsliste>> retrieveArbeidsliste(List<AktoerId> aktoerIds) {
+        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = new HashMap<>(aktoerIds.size());
+        String arbeidslisteSQL = "SELECT * FROM ARBEIDSLISTE WHERE AKTOERID IN(:aktoerids)";
+
+        batchProcess(1000, aktoerIds, (aktoerIdsBatch) -> {
+            Map<String, Object> params = new HashMap<>();
+            params.put("aktoerids", aktoerIdsBatch.stream().map(AktoerId::toString).collect(toList()));
+
+            Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMapBatch =
+                    namedParameterJdbcTemplate.queryForList(arbeidslisteSQL, params)
+                            .stream()
+                            .map((rs) -> Tuple.of(AktoerId.of((String) rs.get("AKTOERID")), arbeidslisteMapper(rs)))
+                            .collect(toMap(Tuple2::_1, (tuple) -> Optional.of(tuple._2())));
+
+            arbeidslisteMap.putAll(arbeidslisteMapBatch);
+        });
+
+        aktoerIds.stream()
+                .filter(not(arbeidslisteMap::containsKey))
+                .forEach(aktoerId -> arbeidslisteMap.put(aktoerId, empty()));
+
+        return arbeidslisteMap;
     }
 
     public Try<AktoerId> insertArbeidsliste(ArbeidslisteData data) {
@@ -96,10 +134,17 @@ public class ArbeidslisteRepository {
     @SneakyThrows
     private static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
         return new Arbeidsliste(
-                new VeilederId(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
+                VeilederId.of(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
                 toZonedDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
                 rs.getString("KOMMENTAR"),
                 toZonedDateTime(rs.getTimestamp("FRIST")));
     }
 
+    private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
+        return new Arbeidsliste(
+                VeilederId.of((String) rs.get("SIST_ENDRET_AV_VEILEDERIDENT")),
+                toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
+                (String) rs.get("KOMMENTAR"),
+                toZonedDateTime((Timestamp) rs.get("FRIST")));
+    }
 }

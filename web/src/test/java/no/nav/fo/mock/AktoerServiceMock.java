@@ -41,22 +41,23 @@ public class AktoerServiceMock implements AktoerService {
 
     @Override
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid) {
-        return Try.success(PERSON_ID).map(PersonId::new);
+        return Try.success(PERSON_ID).map(PersonId::of);
     }
 
+
     @Override
-    public Try<AktoerId> hentAktoeridFraPersonid(String personid) {
-        return Try.success(AKTOER_ID).map(AktoerId::new);
+    public Try<AktoerId> hentAktoeridFraPersonid(PersonId personid) {
+        return Try.success(AKTOER_ID).map(AktoerId::of);
     }
 
     @Override
     public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
         if (new Fnr(FNR_FAIL).equals(fnr)) {
-            return Try.success(AKTOER_ID_FAIL).map(AktoerId::new);
+            return Try.success(AKTOER_ID_FAIL).map(AktoerId::of);
         } else if (new Fnr(FNR_UNAUTHORIZED).equals(fnr)) {
-            return Try.success(AKTOER_ID_UNAUTHORIZED).map(AktoerId::new);
+            return Try.success(AKTOER_ID_UNAUTHORIZED).map(AktoerId::of);
         }
-        return Try.success(finnAktoerid(fnr)).map(AktoerId::new);
+        return Try.success(finnAktoerid(fnr)).map(AktoerId::of);
     }
 
     @Override
@@ -70,15 +71,25 @@ public class AktoerServiceMock implements AktoerService {
     }
 
     @Override
+    public Try<Fnr> hentFnrFraPersonid(PersonId personId) {
+        return null;
+    }
+
+    @Override
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
+        return null;
+    }
+
+    @Override
+    public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
         return null;
     }
 
     private static Try<Fnr> getTestFnr(AktoerId aktoerId) {
         Try<String> result = Try.success(FNR);
-        if (new AktoerId(AKTOER_ID_FAIL).equals(aktoerId)) {
+        if (AktoerId.of(AKTOER_ID_FAIL).equals(aktoerId)) {
             result = Try.failure(new RuntimeException());
-        } else if (new AktoerId(AKTOER_ID_UNAUTHORIZED).equals(aktoerId)) {
+        } else if (AktoerId.of(AKTOER_ID_UNAUTHORIZED).equals(aktoerId)) {
             result = Try.success(FNR_FAIL);
         }
         return result.map(Fnr::new);

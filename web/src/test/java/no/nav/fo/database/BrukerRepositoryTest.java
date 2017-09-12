@@ -30,11 +30,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.*;
+import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
+import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
-import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
-import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.*;
 
@@ -487,8 +487,8 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteVeilederForBruker() throws Exception {
-        AktoerId aktoerId = new AktoerId("101010");
-        VeilederId expectedVeilederId = new VeilederId("X11111");
+        AktoerId aktoerId = AktoerId.of("101010");
+        VeilederId expectedVeilederId = VeilederId.of("X11111");
 
         insert(jdbcTemplate, BRUKERDATA)
                 .value("PERSONID", "123456")
@@ -523,7 +523,7 @@ public class BrukerRepositoryTest {
     public void skalHentePersonIdFraDatabase() throws Exception {
         Fnr fnr = new Fnr("12345678900");
 
-        PersonId expectedPersonId = new PersonId("123456");
+        PersonId expectedPersonId = PersonId.of("123456");
         int execute = insert(jdbcTemplate, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", expectedPersonId.toString())
                 .value("FODSELSNR", fnr.toString())
@@ -546,8 +546,8 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalInserteAktoerIdToPersonMapping() throws Exception {
-        AktoerId aktoerId = new AktoerId("99999");
-        PersonId personId = new PersonId("99999999");
+        AktoerId aktoerId = AktoerId.of("99999");
+        PersonId personId = PersonId.of("99999999");
         Try<Integer> result = brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         assertTrue(result.isSuccess());
         assertTrue(result.get() == 1);
@@ -555,7 +555,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteOppfolgingstatus() throws Exception {
-        PersonId personId = new PersonId("123456");
+        PersonId personId = PersonId.of("123456");
 
         insert(jdbcTemplate, OPPFOLGINGSBRUKER)
                 .value("PERSON_ID", personId.toString())
@@ -597,30 +597,21 @@ public class BrukerRepositoryTest {
 
         assertFalse(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
 
-        brukerRepository.deleteBrukerdata(new PersonId("123456"));
+        brukerRepository.deleteBrukerdata(PersonId.of("123456"));
 
         assertTrue(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
 
     }
 
     @Test
-    public void skalHenteBrukersTiltak() throws Exception {
-        List<Map<String, Object>> brukertiltak1 = brukerRepository.hentBrukertiltak("11111111111");
-        List<Map<String, Object>> brukertiltak2 = brukerRepository.hentBrukertiltak("22222222222");
-
-        assertThat(brukertiltak1.get(0)).containsKeys("tiltak", "tildato");
-        assertThat(brukertiltak2.get(0)).containsKeys("tiltak", "tildato");
-    }
-
-    @Test
     public void skalOppdatereAktivitetstatusForBruker() {
         String aktivitetstype1 = aktivitetTyperList.get(0).toString();
         String aktivitetstype2 = aktivitetTyperList.get(1).toString();
-        PersonId personId1 = new PersonId("personid1");
-        AktoerId aktoerId1 = new AktoerId("aktoerid1");
+        PersonId personId1 = PersonId.of("personid1");
+        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
 
-        PersonId personId2 = new PersonId("personid2");
-        AktoerId aktoerId2 = new AktoerId("aktoerid2");
+        PersonId personId2 = PersonId.of("personid2");
+        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
 
 
         AktivitetStatus a1 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype1,true, new Timestamp(0));
@@ -647,7 +638,7 @@ public class BrukerRepositoryTest {
     @Test
     public void skalInserteOgSletteAktivitetstatus() {
         String aktivitetstype = "aktivitetstype";
-        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(new PersonId("personid"), new AktoerId("aktivitetid"),aktivitetstype,true,null);
+        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(PersonId.of("personid"), AktoerId.of("aktivitetid"),aktivitetstype,true,null);
         brukerRepository.insertAktivitetStatus(aktivitetStatus);
         assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isNotEmpty();
         brukerRepository.slettAlleAktivitetstatus(aktivitetstype);
@@ -666,15 +657,15 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalReturnereTomtMapDersomIngenBrukerHarAktivitetstatusIDB() {
-        assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(new PersonId("personid")))).isEqualTo(new HashMap<>());
+        assertThat(brukerRepository.getAktivitetstatusForBrukere(asList(PersonId.of("personid")))).isEqualTo(new HashMap<>());
     }
 
     @Test
     public void skalUpdateAktivteterSomAlleredeFinnes() {
         String aktivitetstype1 = aktivitetTyperList.get(0).toString();
         String aktivitetstype2 = aktivitetTyperList.get(1).toString();
-        PersonId personId = new PersonId("111111");
-        AktoerId aktoerId = new AktoerId("222222");
+        PersonId personId = PersonId.of("111111");
+        AktoerId aktoerId = AktoerId.of("222222");
 
         AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, true, new Timestamp(0));
         AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, false, new Timestamp(0));
@@ -687,5 +678,37 @@ public class BrukerRepositoryTest {
         Set<AktivitetStatus> statuser = brukerRepository.getAktivitetstatusForBrukere(singletonList(personId)).get(personId);
 
         assertThat(statuser).containsExactlyInAnyOrder(a2,a3);
+    }
+
+    @Test
+    public void skalHenteBrukertiltakForListeAvFnr() {
+        Fnr fnr1 = Fnr.of("11111111111");
+        Fnr fnr2 = Fnr.of("22222222222");
+
+        List<Brukertiltak> brukertiltak = brukerRepository.hentBrukertiltak(asList(fnr1, fnr2));
+
+        assertThat(brukertiltak.get(0).getTiltak().equals("T1")).isTrue();
+        assertThat(brukertiltak.get(1).getTiltak().equals("T2")).isTrue();
+        assertThat(brukertiltak.get(2).getTiltak().equals("T1")).isTrue();
+    }
+
+    @Test
+    public void skalHenteListeMedAktoerids() {
+        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
+        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
+
+        PersonId personId1 = PersonId.of("personid1");
+        PersonId personId2 = PersonId.of("personid2");
+        PersonId personId3 = PersonId.of("personid3");
+
+        brukerRepository.insertAktoeridToPersonidMapping(aktoerId1, personId1);
+        brukerRepository.insertAktoeridToPersonidMapping(aktoerId2, personId2);
+
+        Map<PersonId, Optional<AktoerId>> personIdToAktoerid = brukerRepository.hentAktoeridsForPersonids(asList(personId1, personId2, personId3));
+
+        assertThat(personIdToAktoerid.get(personId1).get()).isEqualTo(aktoerId1);
+        assertThat(personIdToAktoerid.get(personId2).get()).isEqualTo(aktoerId2);
+        assertThat(personIdToAktoerid.get(personId3).isPresent()).isFalse();
+
     }
 }

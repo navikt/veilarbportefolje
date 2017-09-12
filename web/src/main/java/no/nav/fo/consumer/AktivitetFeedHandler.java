@@ -78,7 +78,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             timed(
                     "feed.aktivitet.indekseraktivitet",
                     () -> {
-                        AktoerId aktoerId = new AktoerId(aktoerid);
+                        AktoerId aktoerId = AktoerId.of(aktoerid);
                         PersonId personId = aktoerService.hentPersonidFraAktoerid(aktoerId)
                                 .getOrElseThrow(() -> new FantIkkePersonIdException(aktoerId));
 

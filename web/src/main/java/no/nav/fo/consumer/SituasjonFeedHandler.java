@@ -67,7 +67,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
             MetricsUtils.timed(
                     "feed.situasjon.objekt",
                     () -> {
-                        AktoerId aktoerId = new AktoerId(bruker.getAktoerid());
+                        AktoerId aktoerId = AktoerId.of(bruker.getAktoerid());
                         PersonId personId = aktoerService.hentPersonidFraAktoerid(aktoerId)
                                 .getOrElseThrow(() -> new FantIkkePersonIdException(aktoerId));
 
@@ -76,7 +76,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                                 .setOppfolgingsbruker(bruker.getOppfolging());
 
                         if(skalArbeidslisteSlettes(oppfolgingstatus.getVeileder(), bruker.getVeileder(), bruker.getOppfolging())) {
-                            arbeidslisteService.deleteArbeidsliste(new AktoerId(bruker.getAktoerid()));
+                            arbeidslisteService.deleteArbeidsliste(AktoerId.of(bruker.getAktoerid()));
                         }
                         if (erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(),bruker.getOppfolging())) {
                             oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);

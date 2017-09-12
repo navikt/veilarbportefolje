@@ -28,7 +28,7 @@ public class TiltakUtils {
                 .findFirst()
                 .orElse(null);
 
-        return AktivitetStatus.of(personId, new AktoerId(null), tiltak, true, nesteUtlopsdato);
+        return AktivitetStatus.of(personId, AktoerId.of(null), tiltak, true, nesteUtlopsdato);
     }
 
     static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId) {
@@ -47,7 +47,7 @@ public class TiltakUtils {
                 .findFirst()
                 .orElse(null);
 
-        return AktivitetStatus.of(personId, new AktoerId(null), gruppeaktivitet, true, nesteUtlopsdato);
+        return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
     }
 
     static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {

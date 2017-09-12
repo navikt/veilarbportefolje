@@ -17,9 +17,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { ApplicationConfigTest.class})
@@ -32,19 +34,27 @@ public class ArbeidslisteRepositoryTest {
     private JdbcTemplate jdbcTemplate;
 
     private ArbeidslisteData data;
+    private ArbeidslisteData data2;
 
     @Before
     public void setUp() throws Exception {
         data = new ArbeidslisteData(new Fnr("01010101010"))
-                .setAktoerId(new AktoerId("22222222"))
-                .setVeilederId(new VeilederId("X11111"))
+                .setAktoerId(AktoerId.of("22222222"))
+                .setVeilederId(VeilederId.of("X11111"))
+                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
+                .setKommentar("Dette er en kommentar");
+
+        data2 = new ArbeidslisteData(new Fnr("01010101011"))
+                .setAktoerId(AktoerId.of("22222223"))
+                .setVeilederId(VeilederId.of("X11112"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar");
 
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
 
-        Try<AktoerId> result = repo.insertArbeidsliste(data);
-        assertTrue(result.isSuccess());
+        Try<AktoerId> result1 = repo.insertArbeidsliste(data);
+        Try<AktoerId> result2 = repo.insertArbeidsliste(data2);
+        assertTrue(result1.isSuccess());
     }
 
     @Test
@@ -56,7 +66,7 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalOppdatereEksisterendeArbeidsliste() throws Exception {
-        VeilederId expected = new VeilederId("TEST_ID");
+        VeilederId expected = VeilederId.of("TEST_ID");
         repo.updateArbeidsliste(data.setVeilederId(expected));
 
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
@@ -74,5 +84,16 @@ public class ArbeidslisteRepositoryTest {
     public void skalReturnereFailureVedFeil() throws Exception {
         Try<AktoerId> result = repo.insertArbeidsliste(data.setAktoerId(null));
         assertTrue(result.isFailure());
+    }
+
+    @Test
+    public void skalHenteArbeidslisteForListeAvAktoerid() {
+        AktoerId aktoerId1 = AktoerId.of("22222222");
+        AktoerId aktoerId2 = AktoerId.of("22222223");
+        AktoerId aktoerId3 = AktoerId.of("finnesikke");
+        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = repo.retrieveArbeidsliste(asList(aktoerId1,aktoerId2, aktoerId3));
+        assertTrue(arbeidslisteMap.get(aktoerId1).isPresent());
+        assertTrue(arbeidslisteMap.get(aktoerId2).isPresent());
+        assertFalse(arbeidslisteMap.get(aktoerId3).isPresent());
     }
 }

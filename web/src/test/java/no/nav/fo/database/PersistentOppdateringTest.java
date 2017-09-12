@@ -33,8 +33,8 @@ public class PersistentOppdateringTest {
 
     @Test
     public void lagreAktivitetStatuserTest() {
-        PersonId personId = new PersonId("111111");
-        AktoerId aktoerId = new AktoerId("222222");
+        PersonId personId = PersonId.of("111111");
+        AktoerId aktoerId = AktoerId.of("222222");
 
         AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1", true, new Timestamp(0));
         AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1", false, new Timestamp(0));

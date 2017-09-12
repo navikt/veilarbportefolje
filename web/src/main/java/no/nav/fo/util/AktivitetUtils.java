@@ -3,9 +3,7 @@ package no.nav.fo.util;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.AktivitetStatus;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
@@ -37,7 +35,7 @@ public class AktivitetUtils {
         return aktoerAktiviteter
                 .stream()
                 .map(aktoerAktivitet -> {
-                    AktoerId aktoerId = new AktoerId(aktoerAktivitet.getAktoerid());
+                    AktoerId aktoerId = AktoerId.of(aktoerAktivitet.getAktoerid());
                     Try<PersonId> personid = getPersonId(aktoerId, aktoerService)
                             .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e));
 
@@ -159,16 +157,16 @@ public class AktivitetUtils {
                 .forEach((dokumenterBatch) -> {
                     timed("indeksering.applyaktiviteter1000", () -> {
                         List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
-                                .map((dokument) -> new PersonId((String) dokument.get("person_id").getValue())).collect(toList());
+                                .map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
 
                         Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(personIds);
 
                         dokumenterBatch.forEach((dokument) -> {
-                            PersonId personId = new PersonId((String) dokument.get("person_id").getValue());
+                            PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
                             applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
                         });
                     },
-                            (timer, success) -> timer.addTagToReport("size", Objects.toString(dokumenter.size())));
+                            (timer, success) -> timer.addTagToReport("batch", dokumenter.size() > 1 ? "true" : "false"));
                 });
     }
 
@@ -200,23 +198,46 @@ public class AktivitetUtils {
     private static String datoFilter;
 
     public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
-        Timestamp arenaAktivitetFilterDato = parseDato(System.getProperty("arena.aktivitet.datofilter"));
-        dokumenter.forEach(document -> {
-            String fnr = (String) document.get("fnr").getValue();
-            List<String> tiltakListe = brukerRepository.hentBrukertiltak(fnr).stream()
-                .filter(tiltak -> etterFilterDato((Timestamp) tiltak.get("tildato"), arenaAktivitetFilterDato))
-                .map(tiltak -> (String) tiltak.get("tiltak"))
-                .collect(toList());
-            if(!tiltakListe.isEmpty()) {
-                document.addField("tiltak", tiltakListe);
-            }
+        io.vavr.collection.List.ofAll(dokumenter)
+                .sliding(1000,1000)
+                .forEach((dokumenterSubSet) -> {
+                    List<SolrInputDocument> dokumenterSubSetListe = dokumenterSubSet.toJavaList();
+                    List<Fnr> fnrs = dokumenterSubSetListe.stream()
+                            .map((dokument) -> Fnr.of((String) dokument.get("fnr").getValue()))
+                            .collect(toList());
+                    Map<Fnr, Set<Brukertiltak>> tiltak = filtrerBrukertiltak(brukerRepository.hentBrukertiltak(fnrs));
+                    dokumenterSubSetListe.forEach(document -> {
+                        Fnr fnr = Fnr.of((String) document.get("fnr").getValue());
+                        Optional<Set<Brukertiltak>> brukertiltak = Optional.ofNullable(tiltak.get(fnr));
+                        if(brukertiltak.isPresent()) {
+                            List<String> tiltakliste = brukertiltak.get().stream().map(Brukertiltak::getTiltak).collect(toList());
+                            document.addField("tiltak", tiltakliste);
+                        }
+                });
         });
         return null;
     }
 
+    private static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
+        return brukertiltak
+            .stream()
+            .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
+            .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
+                        (oldValue, newValue) -> {
+                            oldValue.addAll(newValue);
+                            return oldValue;
+                        }
+            ));
+    }
+
+    private static boolean etterFilterDato(Timestamp tilDato) {
+        Timestamp arenaAktivitetFilterDato = parseDato(System.getProperty("arena.aktivitet.datofilter"));
+        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
+    }
+
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
-    private static Timestamp parseDato(String konfigurertDato) {
+    static Timestamp parseDato(String konfigurertDato) {
         try {
             Date parse = new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
             return new Timestamp(parse.getTime());
@@ -224,10 +245,6 @@ public class AktivitetUtils {
             logger.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
             return null;
         }
-    }
-
-    private static boolean etterFilterDato(Timestamp tilDato, Timestamp arenaAktivitetFilterDato) {
-        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
     }
 
     static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {

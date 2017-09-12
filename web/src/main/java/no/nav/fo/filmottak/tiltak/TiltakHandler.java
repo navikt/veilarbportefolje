@@ -1,15 +1,15 @@
 package no.nav.fo.filmottak.tiltak;
 
 import io.vavr.control.Try;
-import no.nav.fo.filmottak.FilmottakFileUtils;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
+import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.util.MetricsUtils;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
-
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -101,12 +100,10 @@ public class TiltakHandler {
 
         MetricsUtils.timed("tiltak.insert.as.aktivitet", () -> {
             utledOgLagreAktivitetstatusForTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
-            return null;
         });
 
         MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
             utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
-            return null;
         });
 
         MetricsUtils.timed("tiltak.insert.enhettiltak", () -> {
@@ -171,6 +168,15 @@ public class TiltakHandler {
                     brukerRepository.insertAktivitetstatuser(aktivitetStatuses);
 
                 });
+    }
+
+
+    private void logSet(Set<String> strengSet, String navn) {
+        StringBuilder tiltakskoderStreng = new StringBuilder(String.format("\n\nUTSKRIFT %s (%d):", navn, strengSet.size()));
+        for (String tiltakskode : strengSet) {
+            tiltakskoderStreng.append(String.format("\n%s", tiltakskode));
+        }
+        logger.info(tiltakskoderStreng.toString());
     }
 
     private Try<FileObject> hentFil() {

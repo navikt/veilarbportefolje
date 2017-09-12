@@ -151,7 +151,7 @@ public class BrukerRepository {
 
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
-        return new VeilederId(rs.getString("VEILEDERIDENT"));
+        return VeilederId.of(rs.getString("VEILEDERIDENT"));
     }
 
     @SneakyThrows
@@ -168,12 +168,12 @@ public class BrukerRepository {
 
     @SneakyThrows
     private PersonId mapToPersonId(ResultSet rs) {
-        return new PersonId(rs.getString("PERSONID"));
+        return PersonId.of(rs.getString("PERSONID"));
     }
 
     @SneakyThrows
     private PersonId personIdMapper(ResultSet resultSet) {
-        return new PersonId(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
+        return PersonId.of(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
     }
 
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
@@ -276,6 +276,39 @@ public class BrukerRepository {
         return brukere;
     }
 
+    public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
+        Map<PersonId, Optional<AktoerId>> brukere = new HashMap<>(personIds.size());
+
+        batchProcess(1000, personIds, timed("retreive.aktoerid.batch",(personIdsBatch) -> {
+            Map<String, Object> params = new HashMap<>();
+            params.put("personids", personIdsBatch.stream().map(PersonId::toString).collect(toList()));
+
+            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = namedParameterJdbcTemplate.queryForList(
+                    hentAktoeridsForPersonidsSQL(),params)
+                    .stream()
+                    .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
+                    )
+                    .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
+
+            brukere.putAll(personIdToAktoeridMap);
+        }));
+
+        personIds.stream()
+                .filter(not(brukere::containsKey))
+                .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
+
+        return brukere;
+    }
+
+    private String hentAktoeridsForPersonidsSQL() {
+        return "SELECT " +
+                "AKTOERID, " +
+                "PERSONID " +
+                "FROM " +
+                "AKTOERID_TO_PERSONID " +
+                "WHERE PERSONID in (:personids)";
+    }
+
     public Timestamp getAktiviteterSistOppdatert() {
         return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
     }
@@ -373,8 +406,8 @@ public class BrukerRepository {
                 .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()
                 .map(row -> AktivitetStatus.of(
-                        new PersonId((String) row.get("PERSONID")),
-                        new AktoerId((String) row.get("AKTOERID")),
+                        PersonId.of((String) row.get("PERSONID")),
+                        AktoerId.of((String) row.get("AKTOERID")),
                         (String) row.get("AKTIVITETTYPE"),
                         parse0OR1((String) row.get("STATUS")),
                         (Timestamp) row.get("NESTE_UTLOPSDATO"))
@@ -395,10 +428,6 @@ public class BrukerRepository {
 
     }
 
-    private <T> Predicate<T> not(Predicate<T> predicate) {
-        return (T t) -> !predicate.test(t);
-    }
-
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
         Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
                 .stream()
@@ -416,13 +445,20 @@ public class BrukerRepository {
         brukerdata.toUpsertQuery(db).execute();
     }
 
-    public List<Map<String, Object>> hentBrukertiltak(String fnr) {
-        return db.queryForList(
-                "SELECT " +
-                        "TILTAKSKODE AS TILTAK, " +
-                        "TILDATO " +
-                        "FROM BRUKERTILTAK " +
-                        "WHERE FODSELSNR = ?", fnr);
+    public List<Brukertiltak> hentBrukertiltak(List<Fnr> fnrs) {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fnrs", fnrs.stream().map(Fnr::toString).collect(toList()));
+
+        return namedParameterJdbcTemplate
+                .queryForList(hentBrukertiltakForListeAvFnrSQL(), params)
+                .stream()
+                .map(row -> Brukertiltak.of(
+                    Fnr.of((String) row.get("FNR")),
+                    (String) row.get("TILTAK"),
+                    (Timestamp) row.get("TILDATO"))
+                )
+                .collect(toList());
     }
 
     public void slettYtelsesdata() {
@@ -565,6 +601,15 @@ public class BrukerRepository {
                         "oppfolgingsbruker " +
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
+    }
+
+    String hentBrukertiltakForListeAvFnrSQL() {
+        return "SELECT " +
+                "TILTAKSKODE AS TILTAK, " +
+                "FODSELSNR as FNR, " +
+                "TILDATO " +
+                "FROM BRUKERTILTAK " +
+                "WHERE FODSELSNR in(:fnrs)";
     }
 
     private String retrieveBrukerSQL() {

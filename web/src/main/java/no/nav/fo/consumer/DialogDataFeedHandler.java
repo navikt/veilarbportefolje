@@ -61,7 +61,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         try {
             timed("feed.dialog.objekt",
                     () -> {
-                        Try<PersonId> personId = aktoerService.hentPersonidFraAktoerid(new AktoerId(dialog.aktorId));
+                        Try<PersonId> personId = aktoerService.hentPersonidFraAktoerid(AktoerId.of(dialog.aktorId));
                         DialogBrukerOppdatering oppdatering = new DialogBrukerOppdatering(dialog, personId.toJavaOptional().map(PersonId::toString));
 
                         brukerRepository

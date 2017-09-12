@@ -1,9 +1,9 @@
 package no.nav.fo.service;
 
-import io.vavr.control.Try;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.PersonId;
 import org.apache.solr.client.solrj.SolrClient;
@@ -23,6 +23,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
@@ -57,12 +59,19 @@ public class SolrServiceTest {
     public void deltaindekseringSkalOppdatereTidsstempel() throws Exception {
         SolrInputDocument dummyDocument = new SolrInputDocument();
         dummyDocument.addField("person_id", "dummy");
-        dummyDocument.addField("fnr", "dummyFnr");
+        dummyDocument.addField("fnr", "11111111111");
         dummyDocument.addField("oppfolging", true);
         dummyDocument.addField("kvalifiseringsgruppekode", "dontcare");
         dummyDocument.addField("formidlingsgruppekode", "dontcare");
+        Map<PersonId, Optional<AktoerId>> personIdToAktoerid = new HashMap<>();
+        personIdToAktoerid.put(PersonId.of("dummy"), Optional.of(AktoerId.of(AKTOER_ID)));
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
-        when(aktoerService.hentAktoeridFraPersonid(anyString())).thenReturn(Try.success(AKTOER_ID).map(AktoerId::new));
+        when(aktoerService.hentAktoeridsForPersonids(any())).thenReturn(personIdToAktoerid);
+
+        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = new HashMap<>();
+        arbeidslisteMap.put(AktoerId.of(AKTOER_ID), Optional.empty());
+
+        when(arbeidslisteRepository.retrieveArbeidsliste(anyList())).thenReturn(arbeidslisteMap);
         System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();
@@ -122,7 +131,7 @@ public class SolrServiceTest {
         solrInputDocument.setField("formidlingsgruppekode","dummy");
         when(brukerRepository.retrieveBrukermedBrukerdata(any())).thenReturn(solrInputDocument);
 
-        service.indekserBrukerdata(new PersonId("dummy"));
+        service.indekserBrukerdata(PersonId.of("dummy"));
         verify(solrClientMaster, never()).add(any(Collection.class));
     }
 

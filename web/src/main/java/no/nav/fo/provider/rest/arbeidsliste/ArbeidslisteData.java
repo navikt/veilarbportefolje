@@ -23,7 +23,7 @@ public class ArbeidslisteData {
     public static ArbeidslisteData of(Fnr fnr, String kommentar, Timestamp frist) {
         return
                 new ArbeidslisteData(fnr)
-                        .setVeilederId(new VeilederId(SubjectHandler.getSubjectHandler().getUid()))
+                        .setVeilederId(VeilederId.of(SubjectHandler.getSubjectHandler().getUid()))
                         .setKommentar(kommentar)
                         .setFrist(frist);
     }
