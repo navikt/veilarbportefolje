@@ -93,7 +93,7 @@ public class BrukerRepository {
                         .column("NAV_KONTOR")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> logger.warn("Fant ikke oppfølgingsenhet for bruker med fnr {}", fnr));
+        ).onFailure(e -> logger.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
     public Try<Integer> insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
@@ -121,7 +121,7 @@ public class BrukerRepository {
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> logger.warn("Fant ikke personid for fnr {}: {}", fnr, getCauseString(e)));
+        ).onFailure(e -> logger.warn("Fant ikke personid for fnr: {}", getCauseString(e)));
     }
 
     public Try<PersonId> deleteBrukerdata(PersonId personId) {

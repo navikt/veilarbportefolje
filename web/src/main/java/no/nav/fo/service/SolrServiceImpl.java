@@ -205,7 +205,6 @@ public class SolrServiceImpl implements SolrService {
             QueryResponse response = solrClientSlave.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
             SolrUtils.checkSolrResponseCode(response.getStatus());
             SolrDocumentList results = response.getResults();
-            logger.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException | IOException e) {
             logger.error("Spørring mot indeks feilet: ", e.getMessage(), e);

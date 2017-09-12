@@ -53,7 +53,7 @@ public class TiltakRepository {
                         .value("tiltakskode", tiltak.getTiltakstype())
                         .execute();
                 } catch (DataIntegrityViolationException e) {
-                    String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", fnr.toString(), tiltak.getTiltakstype());
+                    String logMsg = String.format("Kunne ikke lagre brukertiltak med tiltakstype %s", tiltak.getTiltakstype());
                     logger.warn(logMsg);
                     MetricsFactory.createEvent("veilarbportefolje.insertBrukertiltak.feilet").report();
                 }

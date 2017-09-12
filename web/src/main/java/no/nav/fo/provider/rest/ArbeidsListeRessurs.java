@@ -220,7 +220,7 @@ public class ArbeidsListeRessurs {
                             })
                             .onFailure((error) -> {
                                 feiledeFnrs.add(fnr.toString());
-                                logger.warn("Kunne ikke slette arbeidsliste for fnr {}", fnr.toString(), error);
+                                logger.warn("Kunne ikke slette arbeidsliste", error);
                             })
                     );
 
