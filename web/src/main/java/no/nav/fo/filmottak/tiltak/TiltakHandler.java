@@ -169,15 +169,6 @@ public class TiltakHandler {
                 });
     }
 
-
-    private void logSet(Set<String> strengSet, String navn) {
-        StringBuilder tiltakskoderStreng = new StringBuilder(String.format("\n\nUTSKRIFT %s (%d):", navn, strengSet.size()));
-        for (String tiltakskode : strengSet) {
-            tiltakskoderStreng.append(String.format("\n%s", tiltakskode));
-        }
-        logger.info(tiltakskoderStreng.toString());
-    }
-
     private Try<FileObject> hentFil() {
         logger.info("Starter henting av tiltaksfil");
         try {
