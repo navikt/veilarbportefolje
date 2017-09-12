@@ -36,23 +36,6 @@ public class AktivitetUtilsTest {
     private BrukerRepository brukerRepository;
 
     @Test
-    public void aktivitetErAktiv() {
-        String ikkeFullfortStatus1 = "detteErIkkeEnFullfortAktivitet1";
-        String ikkeFullfortStatus2 = "detteErIkkeEnFullfortAktivitet2";
-        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus1)).isFalse();
-        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus2)).isFalse();
-
-        assertThat(erBrukersAktivitetAktiv(asList(ikkeFullfortStatus1, ikkeFullfortStatus2))).isTrue();
-    }
-
-    @Test
-    public void aktivitetErIkkeAktiv() {
-        String fullfortStatus = AktivitetData.fullførteStatuser.get(0).toString();
-
-        assertThat(erBrukersAktivitetAktiv(asList(fullfortStatus))).isFalse();
-    }
-
-    @Test
     public void aktivitetErIPeriode() {
         AktivitetDTO aktivitet = new AktivitetDTO()
                 .setTilDato(DateUtils.timestampFromISO8601("2017-06-08T01:00:00Z"));

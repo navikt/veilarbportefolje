@@ -111,14 +111,14 @@ class ValideringsRegler {
         return valid(kommentar);
     }
 
-    public static Validation<String, Fnr> validerFnr(String fnr) {
+    static Validation<String, Fnr> validerFnr(String fnr) {
         if (fnr != null && fnr.matches("\\d{11}")) {
             return valid(new Fnr(fnr));
         }
         return invalid(format("%s er ikke et gyldig fnr", fnr));
     }
 
-    public static Validation<List<Fnr>, List<Fnr>> validerFnrs(List<Fnr> fnrs) {
+    static Validation<List<Fnr>, List<Fnr>> validerFnrs(List<Fnr> fnrs) {
         List<Fnr> validerteFnrs = new ArrayList<>();
 
         fnrs.forEach((fnr) -> {

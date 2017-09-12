@@ -46,11 +46,11 @@ public class BrukerRepository {
     private static final Logger LOG = getLogger(BrukerRepository.class);
     public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
     public static final String BRUKERDATA = "BRUKER_DATA";
-    public static final String BRUKERSTATUS_AKTIVITETER = "BRUKERSTATUS_AKTIVITETER";
+    private static final String BRUKERSTATUS_AKTIVITETER = "BRUKERSTATUS_AKTIVITETER";
     private final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
     private final String METADATA = "METADATA";
-    public static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
-    public static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
+    static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
+    static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
     @Inject
     JdbcTemplate db;
@@ -140,11 +140,6 @@ public class BrukerRepository {
      * MAPPING-FUNKSJONER
      */
     @SneakyThrows
-    private Fnr fnrMapper(ResultSet rs) {
-        return new Fnr(rs.getString("FNR"));
-    }
-
-    @SneakyThrows
     private String mapToEnhet(ResultSet rs) {
         return rs.getString("NAV_KONTOR");
     }
@@ -180,7 +175,7 @@ public class BrukerRepository {
         prosesserBrukere(10000, filter, prosess);
     }
 
-    public void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
+    void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
         db.query(retrieveBrukereSQL(), rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
@@ -365,12 +360,12 @@ public class BrukerRepository {
         getAktivitetUpsertQuery(this.db, aktivitet).execute();
     }
 
-    public void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {
+    void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {
         aktiviteter.forEach(this::upsertAktivitet);
     }
 
 
-    public void upsertAktivitetStatus(AktivitetStatus a) {
+    void upsertAktivitetStatus(AktivitetStatus a) {
         getUpsertAktivitetStatuserForBrukerQuery(a.getAktivitetType(), this.db, a.isAktiv(),
                 a.getAktoerid().aktoerId, a.getPersonid().personId, a.getNesteUtlop())
                 .execute();
@@ -380,13 +375,13 @@ public class BrukerRepository {
         AktivitetStatus.batchInsert(db, statuser);
     }
 
-    public void insertAktivitetStatus(AktivitetStatus a) {
+    void insertAktivitetStatus(AktivitetStatus a) {
         getInsertAktivitetStatuserForBrukerQuery(a.getAktivitetType(), this.db, a.isAktiv(),
                 a.getAktoerid().aktoerId, a.getPersonid().personId, a.getNesteUtlop())
                 .execute();
     }
 
-    public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId, String>> finnesIdb) {
+    void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId, String>> finnesIdb) {
         Map<Boolean, List<AktivitetStatus>> eksisterendeStatuser = aktivitetStatuses
                 .stream()
                 .collect(groupingBy((data) -> finnesIdb.contains(Tuple.of(data.getPersonid(), data.getAktivitetType()))));
@@ -428,7 +423,7 @@ public class BrukerRepository {
 
     }
 
-    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
+    void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
         Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
                 .stream()
                 .collect(groupingBy((data) -> finnesIDb.contains(data.getPersonid())));
@@ -475,7 +470,7 @@ public class BrukerRepository {
                 .execute();
     }
 
-    static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, AktivitetDataFraFeed aktivitet) {
+    private static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, AktivitetDataFraFeed aktivitet) {
         return SqlUtils.upsert(db, "AKTIVITETER")
                 .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
                 .set("AKTOERID", aktivitet.getAktorId())
@@ -488,7 +483,7 @@ public class BrukerRepository {
                 .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
 
-    static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
+    private static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
         return SqlUtils.upsert(db, BRUKERSTATUS_AKTIVITETER)
                 .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
                 .set("STATUS", boolTo0OR1(status))
@@ -498,7 +493,7 @@ public class BrukerRepository {
                 .set("NESTE_UTLOPSDATO", nesteUtlopsdato);
     }
 
-    static InsertQuery getInsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
+    private static InsertQuery getInsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
         return SqlUtils.insert(db, BRUKERSTATUS_AKTIVITETER)
                 .value("STATUS", boolTo0OR1(status))
                 .value("PERSONID", personid)
@@ -562,7 +557,7 @@ public class BrukerRepository {
 
     }
 
-    String retrieveBrukerMedBrukerdataSQL() {
+    private String retrieveBrukerMedBrukerdataSQL() {
         return baseSelect +
                 "LEFT JOIN bruker_data " +
                 "ON " +
@@ -588,11 +583,11 @@ public class BrukerRepository {
         return "UPDATE METADATA SET SIST_INDEKSERT = ?";
     }
 
-    String getPersonidFromAktoeridSQL() {
+    private String getPersonidFromAktoeridSQL() {
         return "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?";
     }
 
-    String getPersonIdsFromFnrsSQL() {
+    private String getPersonIdsFromFnrsSQL() {
         return
                 "SELECT " +
                         "person_id, " +
@@ -603,7 +598,7 @@ public class BrukerRepository {
                         "fodselsnr in (:fnrs)";
     }
 
-    String hentBrukertiltakForListeAvFnrSQL() {
+    private String hentBrukertiltakForListeAvFnrSQL() {
         return "SELECT " +
                 "TILTAKSKODE AS TILTAK, " +
                 "FODSELSNR as FNR, " +
@@ -666,7 +661,7 @@ public class BrukerRepository {
         return (Boolean) bruker.get("oppfolging").getValue();
     }
 
-    public static Integer intValue(Object value) {
+    private static Integer intValue(Object value) {
         if (value instanceof BigDecimal) {
             return ((BigDecimal) value).intValue();
         } else if (value instanceof Integer) {

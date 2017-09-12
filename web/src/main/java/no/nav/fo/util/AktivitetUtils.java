@@ -12,7 +12,6 @@ import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -49,7 +48,7 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter, AktoerId aktoerId, PersonId personId) {
+    private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter, AktoerId aktoerId, PersonId personId) {
 
         Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId);
         Boolean erIAvtaltIAvtaltAktivitet = erBrukerIAktivAktivitet(aktiviteter, LocalDate.now());
@@ -72,14 +71,7 @@ public class AktivitetUtils {
         return konverterTilBrukerOppdatering(aktiviteter, aktoerid, personid);
     }
 
-    public static Boolean erBrukersAktivitetAktiv(List<String> aktivitetStatusListe) {
-        return aktivitetStatusListe
-                .stream()
-                .filter(status -> !AktivitetFullfortStatuser.contains(status))
-                .anyMatch(match -> true);
-    }
-
-    public static boolean erBrukerIAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
+    static boolean erBrukerIAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
@@ -88,7 +80,7 @@ public class AktivitetUtils {
 
     }
 
-    public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
+    static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
         if (aktivitet.getTilDato() == null) {
             return true; // Aktivitet er aktiv dersom tildato ikke er satt
         }
@@ -97,7 +89,7 @@ public class AktivitetUtils {
         return today.isBefore(tilDato.plusDays(1));
     }
 
-    public static AktivitetDTO finnNyesteUtlopteAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
+    static AktivitetDTO finnNyesteUtlopteAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
@@ -108,7 +100,7 @@ public class AktivitetUtils {
                 .orElse(null);
     }
 
-    public static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktoerId aktoerId, PersonId personId) {
+    static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktoerId aktoerId, PersonId personId) {
         Set<AktivitetStatus> aktiveAktiviteter = new HashSet<>();
 
         aktivitetTyperList
@@ -243,12 +235,12 @@ public class AktivitetUtils {
         }
     }
 
-    static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
+    private static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
         return aktoerService
                 .hentPersonidFraAktoerid(aktoerid);
     }
 
-    static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
+    private static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
         return !AktivitetFullfortStatuser.contains(aktivitetDTO.getStatus());
     }
 }
