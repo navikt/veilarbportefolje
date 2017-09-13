@@ -3,11 +3,14 @@ package no.nav.fo.domene;
 import lombok.Value;
 import lombok.experimental.Wither;
 
+import java.sql.Timestamp;
+
 @Value(staticConstructor = "of")
 @Wither
 public class Brukertiltak {
     private Fnr fnr;
     private String tiltak;
+    private Timestamp tildato;
 
     @Override
     public boolean equals(Object o) {
