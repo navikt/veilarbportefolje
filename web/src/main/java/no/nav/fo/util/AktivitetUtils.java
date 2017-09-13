@@ -1,7 +1,6 @@
 package no.nav.fo.util;
 
 import io.vavr.control.Try;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
@@ -25,10 +24,9 @@ import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Slf4j
 public class AktivitetUtils {
 
-    private static final Logger logger = getLogger(AktivitetUtils.class);
+    private static final Logger LOGGER = getLogger(AktivitetUtils.class);
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter, AktoerService aktoerService) {
@@ -37,7 +35,7 @@ public class AktivitetUtils {
                 .map(aktoerAktivitet -> {
                     AktoerId aktoerId = AktoerId.of(aktoerAktivitet.getAktoerid());
                     Try<PersonId> personid = getPersonId(aktoerId, aktoerService)
-                            .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e));
+                            .onFailure((e) -> LOGGER.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e));
 
                     return personid.isSuccess() && personid.get() != null ?
                             konverterTilBrukerOppdatering(aktoerAktivitet.getAktiviteter(), aktoerId, personid.get()) :
@@ -63,7 +61,7 @@ public class AktivitetUtils {
 
     public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(AktoerId aktoerid, AktoerService aktoerService, BrukerRepository brukerRepository) {
         PersonId personid = getPersonId(aktoerid, aktoerService)
-                .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerid, e))
+                .onFailure((e) -> LOGGER.warn("Kunne ikke hente personid for aktoerid {}", aktoerid, e))
                 .get();
 
         List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
@@ -230,7 +228,7 @@ public class AktivitetUtils {
             Date parse = new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
             return new Timestamp(parse.getTime());
         } catch (Exception e) {
-            logger.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
+            LOGGER.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
             return null;
         }
     }
