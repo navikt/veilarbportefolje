@@ -24,7 +24,6 @@ import static no.nav.fo.util.AktivitetUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,23 +32,6 @@ public class AktivitetUtilsTest {
 
     @Mock
     private BrukerRepository brukerRepository;
-
-    @Test
-    public void aktivitetErAktiv() {
-        String ikkeFullfortStatus1 = "detteErIkkeEnFullfortAktivitet1";
-        String ikkeFullfortStatus2 = "detteErIkkeEnFullfortAktivitet2";
-        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus1)).isFalse();
-        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus2)).isFalse();
-
-        assertThat(erBrukersAktivitetAktiv(asList(ikkeFullfortStatus1, ikkeFullfortStatus2))).isTrue();
-    }
-
-    @Test
-    public void aktivitetErIkkeAktiv() {
-        String fullfortStatus = AktivitetData.fullførteStatuser.get(0).toString();
-
-        assertThat(erBrukersAktivitetAktiv(asList(fullfortStatus))).isFalse();
-    }
 
     @Test
     public void aktivitetErIPeriode() {
@@ -236,34 +218,85 @@ public class AktivitetUtilsTest {
     @Test
     public void skalLeggeTilTiltakPaSolrDokument() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        Fnr fnr = Fnr.of("11111111111");
+        Fnr fnr = Fnr.of("12345678910");
         solrInputDocument.addField("fnr", fnr.toString());
-
-        Map<Fnr, Set<Brukertiltak>> tiltak = new HashMap<>();
-        Set<Brukertiltak> brukertiltakSet = new HashSet<>();
-
-        brukertiltakSet.add(Brukertiltak.of(fnr,"Tiltak1"));
-        brukertiltakSet.add(Brukertiltak.of(fnr,"Tiltak2"));
-        tiltak.put(fnr, brukertiltakSet);
-
-        when(brukerRepository.getBrukertiltak(anyList())).thenReturn(tiltak);
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-17");
+        List<Brukertiltak> brukertiltak = tiltakData("2017-01-18", "2017-01-18");
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(brukertiltak);
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
         assertThat(solrInputDocument.keySet()).containsExactlyInAnyOrder("fnr", "tiltak");
-        assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactlyInAnyOrder("Tiltak1", "Tiltak2");
+        assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactlyInAnyOrder("T1", "T2");
+    }
+
+    @Test
+    public void skalFiltrereBortTiltakSomHarTildatoForDatofilter() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("fnr", "12345678910");
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
+
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-17");
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(1);
+    }
+
+    public void skalIkkeFiltrereNarDatofilterErNull() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("fnr", "12345678910");
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
+
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, null);
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
+    }
+    @Test
+    public void skalIkkeFiltrereNarTilDatoErNull() {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField("fnr", "12345678910");
+
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-19");
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak")).isNull();
+
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData(null, null));
+
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-19");
+
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+
+        assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
+
     }
 
     @Test
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.getBrukertiltak(anyString())).thenReturn(Lists.emptyList());
+        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(Lists.emptyList());
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
-        assertThat(solrInputDocument.keySet()).containsExactly("fnr");
+        assertThat(solrInputDocument.keySet()).doesNotContain("tiltak");
     }
 
+    private List<Brukertiltak> tiltakData(String dato1, String dato2) {
+        List<Brukertiltak> tiltak = new ArrayList<>();
 
+        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T1", parseDato(dato1)));
+        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T2", parseDato(dato2)));
+
+        return tiltak;
+    }
+
+    private List<Brukertiltak> tiltakData() {
+        return tiltakData("2017-01-16", "2017-01-18");
+    }
 }

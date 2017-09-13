@@ -22,7 +22,7 @@ public class TiltakUtils {
         Timestamp nesteUtlopsdato = bruker
                 .getTiltaksaktivitetListe()
                 .stream()
-                .map(TiltakUtils::getUtlopsdatoForTiltak)
+                .map(TiltakUtils::hentUtlopsdatoForTiltak)
                 .filter(Objects::nonNull)
                 .sorted()
                 .findFirst()
@@ -42,7 +42,7 @@ public class TiltakUtils {
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
                 .map(Moeteplan::getSluttDato)
-                .map(TiltakUtils::toTimestamp)
+                .map(TiltakUtils::tilTimestamp)
                 .sorted()
                 .findFirst()
                 .orElse(null);
@@ -50,7 +50,7 @@ public class TiltakUtils {
         return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
     }
 
-    static Timestamp toTimestamp(XMLGregorianCalendar calendar) {
+    static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
         return Optional.of(calendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
                 .map(GregorianCalendar::getTime)
@@ -59,11 +59,11 @@ public class TiltakUtils {
                 .orElse(null);
     }
 
-    static Timestamp getUtlopsdatoForTiltak(Tiltaksaktivitet tiltaksaktivitet) {
+    static Timestamp hentUtlopsdatoForTiltak(Tiltaksaktivitet tiltaksaktivitet) {
         return Optional.of(tiltaksaktivitet)
                 .map(Tiltaksaktivitet::getDeltakelsePeriode)
                 .map(Periode::getTom)
-                .map(TiltakUtils::toTimestamp)
+                .map(TiltakUtils::tilTimestamp)
                 .orElse(null);
     }
 }

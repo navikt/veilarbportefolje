@@ -1,10 +1,12 @@
 package no.nav.fo.filmottak.tiltak;
 
 import com.google.common.base.Joiner;
+import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 import io.vavr.collection.List;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepositoryTest;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Periode;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
 import org.apache.commons.io.IOUtils;
@@ -62,19 +64,36 @@ public class TiltakRepositoryTest {
         when(bruker.getPersonident()).thenReturn("11111111111");
         Tiltaksaktivitet tiltaksaktivitet1 = new Tiltaksaktivitet();
         tiltaksaktivitet1.setTiltakstype("A");
-        Tiltaksaktivitet tiltaksaktivitet2 = new Tiltaksaktivitet();
-        tiltaksaktivitet2.setTiltakstype("B");
-        Tiltaksaktivitet tiltaksaktivitet3 = new Tiltaksaktivitet();
-        tiltaksaktivitet3.setTiltakstype("C");
+        Periode periode1 = new Periode();
+        periode1.setTom(XMLGregorianCalendarImpl.createDateTime(2000, 6, 4, 16, 16,16));
+        tiltaksaktivitet1.setDeltakelsePeriode(periode1);
         when(bruker.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(
-            tiltaksaktivitet1,
-            tiltaksaktivitet2,
-            tiltaksaktivitet3
+            tiltaksaktivitet1
         ));
 
-        tiltakRepository.insertBrukertiltak(bruker);
+        tiltakRepository.lagreBrukertiltak(bruker);
 
-        assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERTILTAK").size()).isEqualTo(3);
+        assertThat(jdbcTemplate.queryForMap("SELECT * FROM BRUKERTILTAK WHERE FODSELSNR = '11111111111'").keySet()).containsExactly("FODSELSNR", "TILTAKSKODE", "TILDATO");
+    }
+
+    @Test
+    public void skalInserteBrukertiltakNarPeriodeOgTildatoErNull() {
+        insertKodeverk();
+        Bruker bruker = mock(Bruker.class);
+        when(bruker.getPersonident()).thenReturn("11111111111");
+        Tiltaksaktivitet tiltaksaktivitet1 = new Tiltaksaktivitet();
+        tiltaksaktivitet1.setTiltakstype("A");
+        Tiltaksaktivitet tiltaksaktivitet2 = new Tiltaksaktivitet();
+        tiltaksaktivitet2.setTiltakstype("B");
+        tiltaksaktivitet2.setDeltakelsePeriode(new Periode());
+        when(bruker.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(
+            tiltaksaktivitet1,
+            tiltaksaktivitet2
+        ));
+
+        tiltakRepository.lagreBrukertiltak(bruker);
+
+        assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERTILTAK").size()).isEqualTo(2);
     }
 
     @Test
@@ -86,8 +105,8 @@ public class TiltakRepositoryTest {
         tiltakstype2.setValue("B");
         tiltakstype2.setTermnavn("Tiltak2");
 
-        tiltakRepository.insertTiltakskoder(tiltakstype1);
-        tiltakRepository.insertTiltakskoder(tiltakstype2);
+        tiltakRepository.lagreTiltakskoder(tiltakstype1);
+        tiltakRepository.lagreTiltakskoder(tiltakstype2);
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM TILTAKKODEVERK").size()).isEqualTo(2);
     }
@@ -95,7 +114,7 @@ public class TiltakRepositoryTest {
     @Test
     public void skalInserteEnhettiltak() {
         insertKodeverk();
-        tiltakRepository.insertEnhettiltak(Arrays.asList(
+        tiltakRepository.lagreEnhettiltak(Arrays.asList(
             TiltakForEnhet.of("1234", "A"),
             TiltakForEnhet.of("5678", "B"),
             TiltakForEnhet.of("1234", "C")
@@ -108,7 +127,7 @@ public class TiltakRepositoryTest {
     public void skalHenteParMedEnhetOgFnr() {
         insertTestData();
 
-        Map<String, java.util.List<String>> enhetMedPersonIder = tiltakRepository.getEnhetTilFodselsnummereMap();
+        Map<String, java.util.List<String>> enhetMedPersonIder = tiltakRepository.hentEnhetTilFodselsnummereMap();
 
         assertThat(enhetMedPersonIder.get("0219")).containsExactly("10000000048", "10000000000");
         assertThat(enhetMedPersonIder.get("1102")).containsExactly("10000000020", "10000000008", "10000000063");

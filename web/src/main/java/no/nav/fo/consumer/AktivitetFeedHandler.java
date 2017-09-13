@@ -61,7 +61,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
     }
 
-    void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
+    private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
         try{
             timed(
                     "feed.aktivitet.objekt",
@@ -73,7 +73,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         }
     }
 
-    void behandleAktivitetdata( String aktoerid) {
+    private void behandleAktivitetdata(String aktoerid) {
         try {
             timed(
                     "feed.aktivitet.indekseraktivitet",
