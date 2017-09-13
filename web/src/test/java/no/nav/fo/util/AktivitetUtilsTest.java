@@ -15,7 +15,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -25,7 +24,6 @@ import static no.nav.fo.util.AktivitetUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -222,7 +220,7 @@ public class AktivitetUtilsTest {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         Fnr fnr = Fnr.of("12345678910");
         solrInputDocument.addField("fnr", fnr.toString());
-        System.setProperty("arena.aktivitet.datofilter", "2017-01-17");
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-17");
         List<Brukertiltak> brukertiltak = tiltakData("2017-01-18", "2017-01-18");
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(brukertiltak);
 
@@ -238,7 +236,7 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
-        System.setProperty("arena.aktivitet.datofilter", "2017-01-17");
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-17");
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
@@ -250,7 +248,7 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
-        System.setProperty("arena.aktivitet.datofilter", null);
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, null);
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
@@ -262,7 +260,7 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
 
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
-        System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-19");
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 
@@ -270,7 +268,7 @@ public class AktivitetUtilsTest {
 
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData(null, null));
 
-        System.setProperty("arena.aktivitet.datofilter", "2017-01-19");
+        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-19");
 
         applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
 

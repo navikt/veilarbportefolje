@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class AktivitetUtils {
 
+    static final String DATOFILTER_PROPERTY = "arena.aktivitet.datofilter";
     private static final Logger LOGGER = getLogger(AktivitetUtils.class);
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
@@ -219,7 +220,7 @@ public class AktivitetUtils {
     }
 
     private static boolean etterFilterDato(Timestamp tilDato) {
-        Timestamp arenaAktivitetFilterDato = parseDato(System.getProperty("arena.aktivitet.datofilter"));
+        Timestamp arenaAktivitetFilterDato = parseDato(System.getProperty(DATOFILTER_PROPERTY));
         return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
     }
 
