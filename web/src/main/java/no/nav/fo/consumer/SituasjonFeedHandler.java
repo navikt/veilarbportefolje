@@ -1,5 +1,6 @@
 package no.nav.fo.consumer;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
@@ -25,6 +26,7 @@ import java.util.List;
 import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
 
+@Slf4j
 public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
     public static final String SITUASJON_SIST_OPPDATERT = "situasjon_sist_oppdatert";
