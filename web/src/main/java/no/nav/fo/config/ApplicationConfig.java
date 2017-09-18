@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.ServletUtil;
 import no.nav.fo.filmottak.FilmottakConfig;
@@ -9,8 +10,6 @@ import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientImpl;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -26,6 +25,7 @@ import java.io.IOException;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
 
+@Slf4j
 @EnableScheduling
 @EnableAspectJAutoProxy
 @Configuration
@@ -47,8 +47,6 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
 
 })
 public class ApplicationConfig implements ApiApplication {
-
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager() {
@@ -94,7 +92,7 @@ public class ApplicationConfig implements ApiApplication {
                 String requestURI = request.getRequestURI();
                 String relativPath = requestURI.substring(request.getContextPath().length() + request.getServletPath().length() + 1);
                 String apiPath = DEFAULT_API_PATH + relativPath;
-                logger.warn("bakoverkompatibilitet: {} -> {}", requestURI, apiPath);
+                log.warn("bakoverkompatibilitet: {} -> {}", requestURI, apiPath);
                 RequestDispatcher requestDispatcher = req.getRequestDispatcher(apiPath);
                 requestDispatcher.forward(req, res);
                 System.out.println("!");

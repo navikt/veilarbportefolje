@@ -1,9 +1,8 @@
 package no.nav.fo.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -14,15 +13,14 @@ import java.util.function.Predicate;
 
 import static no.nav.fo.util.DateUtils.toIsoUTC;
 
+@Slf4j
 public class DbUtils {
-
-    private static Logger logger = LoggerFactory.getLogger(DbUtils.class);
 
     public static SolrInputDocument mapResultSetTilDokument(ResultSet rs) {
         try {
             return mapTilDokument(rs);
         }catch(SQLException e) {
-            logger.error("Feil ved mapping til SolrIntputDocument", e);
+            log.error("Feil ved mapping til SolrIntputDocument", e);
             return null;
         }
     }
@@ -73,7 +71,7 @@ public class DbUtils {
     public static boolean parseJaNei(Object janei, String name) {
         boolean defaultValue  = false;
         if (janei == null) {
-            logger.debug(String.format("%s er ikke satt i databasen, defaulter til %b", name, defaultValue));
+            log.debug(String.format("%s er ikke satt i databasen, defaulter til %b", name, defaultValue));
             return defaultValue;
         }
 

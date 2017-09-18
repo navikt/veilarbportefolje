@@ -1,5 +1,6 @@
 package no.nav.fo.consumer;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
@@ -16,7 +17,6 @@ import no.nav.fo.util.MetricsUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import java.sql.Date;
@@ -25,11 +25,9 @@ import java.util.List;
 
 import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
-import static org.slf4j.LoggerFactory.getLogger;
 
+@Slf4j
 public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
-
-    private static final Logger LOG = getLogger(SituasjonFeedHandler.class);
 
     public static final String SITUASJON_SIST_OPPDATERT = "situasjon_sist_oppdatert";
 
@@ -55,7 +53,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
-        LOG.debug(String.format("Feed-data mottatt: %s", data));
+        log.debug(String.format("Feed-data mottatt: %s", data));
         data.forEach(this::behandleObjektFraFeed);
         brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
@@ -89,7 +87,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );
         }catch(Exception e) {
-            LOG.error("Feil ved behandling av objekt fra feed med aktorid {}, {}", bruker.getAktoerid(), e.getMessage());
+            log.error("Feil ved behandling av objekt fra feed med aktorid {}, {}", bruker.getAktoerid(), e.getMessage());
         }
     }
 }

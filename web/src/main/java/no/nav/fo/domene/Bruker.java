@@ -3,10 +3,9 @@ package no.nav.fo.domene;
 import io.vavr.control.Try;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.common.SolrDocument;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -19,6 +18,7 @@ import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DateUtils.toLocalDateTime;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
+@Slf4j
 @Data
 @Accessors(chain = true)
 public class Bruker {
@@ -48,8 +48,6 @@ public class Bruker {
     LocalDateTime nyesteUtlopteAktivitet;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter;
-
-    private static Logger log = LoggerFactory.getLogger(Bruker.class);
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {

@@ -1,12 +1,12 @@
 package no.nav.fo.filmottak.tiltak;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Periode;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
 import no.nav.metrics.MetricsFactory;
-import org.slf4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,11 +18,9 @@ import java.util.*;
 
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
-import static org.slf4j.LoggerFactory.getLogger;
 
+@Slf4j
 public class TiltakRepository {
-
-    private static final Logger logger = getLogger(TiltakRepository.class);
 
     @Inject
     private DataSource ds;
@@ -53,8 +51,8 @@ public class TiltakRepository {
                         .value("tildato", utledTildato(tiltak.getDeltakelsePeriode()))
                         .execute();
                 } catch (DataIntegrityViolationException e) {
-                    String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", fnr.toString(), tiltak.getTiltakstype());
-                    logger.warn(logMsg);
+                    String logMsg = String.format("Kunne ikke lagre brukertiltak med tiltakstype %s", tiltak.getTiltakstype());
+                    log.warn(logMsg);
                     MetricsFactory.createEvent("veilarbportefolje.lagreBrukertiltak.feilet").report();
                 }
             }
@@ -105,7 +103,7 @@ public class TiltakRepository {
                 lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
             }));
         } catch (SQLException e) {
-            logger.error("Kunne ikke koble til database for å lagre Tiltak for enhet", e);
+            log.error("Kunne ikke koble til database for å lagre Tiltak for enhet", e);
         }
     }
 
@@ -119,7 +117,7 @@ public class TiltakRepository {
             }
             ps.executeBatch();
         } catch (SQLException e) {
-            logger.warn("Kunne ikke lagre TiltakForEnhet i databasen");
+            log.warn("Kunne ikke lagre TiltakForEnhet i databasen");
             MetricsFactory.createEvent("veilarbportefolje.lagreEnhettiltak.feilet").report();
         }
     }

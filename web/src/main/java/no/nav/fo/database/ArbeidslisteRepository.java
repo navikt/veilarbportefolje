@@ -4,14 +4,13 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.FantIkkeAktoerIdException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.util.sql.where.WhereClause;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -34,8 +33,8 @@ import static no.nav.fo.util.DbUtils.not;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
 
+@Slf4j
 public class ArbeidslisteRepository {
-    private static Logger LOG = LoggerFactory.getLogger(ArbeidslisteRepository.class);
 
     @Inject
     private JdbcTemplate db;
@@ -99,7 +98,7 @@ public class ArbeidslisteRepository {
                             .execute();
                     return data.getAktoerId();
                 }
-        ).onFailure(e -> LOG.warn("Kunne ikke inserte arbeidsliste til db: {}", getCauseString(e)));
+        ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db: {}", getCauseString(e)));
     }
 
 
@@ -115,7 +114,7 @@ public class ArbeidslisteRepository {
                             .execute();
                     return data.getAktoerId();
                 }
-        ).onFailure(e -> LOG.warn("Kunne ikke oppdatere arbeidsliste i db: {}", getCauseString(e)));
+        ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db: {}", getCauseString(e)));
     }
 
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
@@ -127,8 +126,8 @@ public class ArbeidslisteRepository {
                     return aktoerID;
                 }
         )
-                .onSuccess((aktoerid) -> LOG.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
-                .onFailure(e -> LOG.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
+                .onSuccess((aktoerid) -> log.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
+                .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
     }
 
     @SneakyThrows

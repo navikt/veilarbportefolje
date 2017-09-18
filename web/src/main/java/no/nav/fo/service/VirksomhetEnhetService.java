@@ -1,18 +1,15 @@
 package no.nav.fo.service;
 
 import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeRequest;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeResponse;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
-import org.slf4j.Logger;
 
 import javax.inject.Inject;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
+@Slf4j
 public class VirksomhetEnhetService {
-
-    private static final Logger logger = getLogger(VirksomhetEnhetService.class);
 
     @Inject
     private Enhet virksomhetEnhet;
@@ -21,6 +18,6 @@ public class VirksomhetEnhetService {
         WSHentEnhetListeRequest request = new WSHentEnhetListeRequest();
         request.setRessursId(ident);
         return Try.of(() -> virksomhetEnhet.hentEnhetListe(request))
-                .onFailure(e -> logger.warn(String.format("Kunne ikke hente ansattopplysninger for %s", ident), e));
+                .onFailure(e -> log.warn(String.format("Kunne ikke hente ansattopplysninger for %s", ident), e));
     }
 }

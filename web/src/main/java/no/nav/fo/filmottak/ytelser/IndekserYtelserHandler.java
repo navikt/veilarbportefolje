@@ -3,6 +3,7 @@ package no.nav.fo.filmottak.ytelser;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.*;
@@ -10,8 +11,6 @@ import no.nav.fo.exception.FantIngenYtelseMappingException;
 import no.nav.fo.util.MetricsUtils;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;
@@ -26,9 +25,8 @@ import static no.nav.fo.domene.Utlopsdato.utlopsdato;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 
-
+@Slf4j
 public class IndekserYtelserHandler {
-    static Logger logger = LoggerFactory.getLogger(IndekserYtelserHandler.class);
     static final Map<YtelseMapping, BiConsumer<LoependeVedtak, BrukerinformasjonFraFil>> ytelsesSpesifikeFelter = new HashMap<>();
 
     static {
@@ -53,7 +51,7 @@ public class IndekserYtelserHandler {
     private BrukerRepository brukerRepository;
 
     public synchronized void indekser(LoependeYtelser ytelser) {
-        logger.info("Sletter ytelsesdata fra DB");
+        log.info("Sletter ytelsesdata fra DB");
         MetricsUtils.timed("GR199.slettytelser", () -> brukerRepository.slettYtelsesdata());
 
         batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtakListe) -> {
@@ -72,7 +70,7 @@ public class IndekserYtelserHandler {
 
             alleOppdateringer
                     .get(false)
-                    .forEach((e) -> logger.warn("Feil ved generering av brukeroppdatering: ", e.getCause()));
+                    .forEach((e) -> log.warn("Feil ved generering av brukeroppdatering: ", e.getCause()));
 
             List<BrukerOppdatering> dokumenter = alleOppdateringer
                     .get(true)
@@ -80,10 +78,10 @@ public class IndekserYtelserHandler {
                     .map(Try::get)
                     .collect(toList());
 
-            logger.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
+            log.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
             timed("GR199.lagreOppdateringer", () ->  persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter));
         });
-        logger.info("Lagring av ytelser ferdig!");
+        log.info("Lagring av ytelser ferdig!");
     }
 
     private Map<String, Optional<String>> brukererIDB(Collection<LoependeVedtak> vedtaks) {

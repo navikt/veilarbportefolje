@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
@@ -20,7 +21,6 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +45,9 @@ import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.DateUtils.toUtcString;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.slf4j.LoggerFactory.getLogger;
 
+@Slf4j
 public class SolrServiceImpl implements SolrService {
-
-    private static final Logger LOG = getLogger(SolrServiceImpl.class);
 
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
@@ -86,11 +84,11 @@ public class SolrServiceImpl implements SolrService {
 
 
         if (SolrUtils.isSlaveNode()) {
-            LOG.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            log.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
 
-        LOG.info("Starter hovedindeksering");
+        log.info("Starter hovedindeksering");
         LocalDateTime t0 = LocalDateTime.now();
 
         final int[] antallBrukere = {0};
@@ -115,17 +113,17 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void deltaindeksering() {
         if (SolrUtils.isSlaveNode()) {
-            LOG.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            log.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;
         }
 
-        LOG.info("Starter deltaindeksering");
+        log.info("Starter deltaindeksering");
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);
 
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveOppdaterteBrukere();
         if (dokumenter.isEmpty()) {
-            LOG.info("Ingen nye dokumenter i databasen");
+            log.info("Ingen nye dokumenter i databasen");
             return;
         }
 
@@ -210,10 +208,9 @@ public class SolrServiceImpl implements SolrService {
             QueryResponse response = solrClientSlave.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
             SolrUtils.checkSolrResponseCode(response.getStatus());
             SolrDocumentList results = response.getResults();
-            LOG.debug(results.toString());
             brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException | IOException e) {
-            LOG.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+            log.error("Spørring mot indeks feilet: ", e.getMessage(), e);
         }
         return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
     }
@@ -238,9 +235,9 @@ public class SolrServiceImpl implements SolrService {
         QueryResponse response = new QueryResponse();
         try {
             response = solrClientSlave.query(solrQuery);
-            LOG.debug(response.toString());
+            log.debug(response.toString());
         } catch (SolrServerException | IOException e) {
-            LOG.error("Spørring mot indeks feilet", e.getMessage(), e);
+            log.error("Spørring mot indeks feilet", e.getMessage(), e);
         }
 
         FacetField facetField = response.getFacetField(facetFieldString);
@@ -254,12 +251,12 @@ public class SolrServiceImpl implements SolrService {
         if (!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
             return;
         }
-        LOG.info("Legger bruker med personId {} til i indeksen ", personId);
+        log.info("Legger bruker med personId {} til i indeksen ", personId);
 
         leggDataTilSolrDocument(singletonList(brukerDokument));
         addDocumentsToIndex(singletonList(brukerDokument));
         commit();
-        LOG.info("Bruker med personId {} lagt til i indeksen", personId);
+        log.info("Bruker med personId {} lagt til i indeksen", personId);
     }
 
     @Override
@@ -272,7 +269,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public Try<UpdateResponse> commit() {
         return Try.of(() -> solrClientMaster.commit())
-                .onFailure(e -> LOG.error("Kunne ikke gjennomføre commit ved indeksering!", e));
+                .onFailure(e -> log.error("Kunne ikke gjennomføre commit ved indeksering!", e));
     }
 
     private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {
@@ -283,9 +280,9 @@ public class SolrServiceImpl implements SolrService {
                     .forEach(docs -> {
                         try {
                             solrClientMaster.add(docs.toJavaList());
-                            LOG.info(format("Legger til %d dokumenter i indeksen", docs.length()));
+                            log.info(format("Legger til %d dokumenter i indeksen", docs.length()));
                         } catch (SolrServerException | IOException e) {
-                            LOG.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
+                            log.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
                         }
                     });
             return dokumenter;
@@ -301,9 +298,9 @@ public class SolrServiceImpl implements SolrService {
             UpdateResponse response = solrClientMaster.deleteByQuery(query);
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException e) {
-            LOG.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
+            log.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
         } catch (SolrUpdateResponseCodeException e) {
-            LOG.error(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 
@@ -313,7 +310,7 @@ public class SolrServiceImpl implements SolrService {
         long minutes = duration.toMinutes();
         long seconds = duration.getSeconds();
         String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
-        LOG.info(logString);
+        log.info(logString);
     }
 
     @Override
@@ -360,7 +357,7 @@ public class SolrServiceImpl implements SolrService {
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter);
         } catch (SolrServerException | IOException e) {
-            LOG.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
+            log.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
         }
 
         return statusTall;
@@ -412,7 +409,7 @@ public class SolrServiceImpl implements SolrService {
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter)
                     .setMinArbeidsliste(antallIarbeidsliste);
         } catch (SolrServerException | IOException e) {
-            LOG.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
+            log.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
         }
 
         return statusTall;
@@ -427,6 +424,6 @@ public class SolrServiceImpl implements SolrService {
 
         return Try.of(() -> solrClientSlave.query(solrQuery))
                 .map(res -> res.getResults().stream().map(Bruker::of).collect(toList()))
-                .onFailure(e -> LOG.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
+                .onFailure(e -> log.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
     }
 }

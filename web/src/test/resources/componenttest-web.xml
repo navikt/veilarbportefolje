@@ -8,7 +8,7 @@
     <!--CONFIG FOR API-APP-->
     <context-param>
         <param-name>springContekstKlasse</param-name>
-        <param-value>no.nav.fo.config.LocalIntegrationConfig</param-value>
+        <param-value>no.nav.fo.config.ComponentTestConfig</param-value>
     </context-param>
 
     <security-constraint>

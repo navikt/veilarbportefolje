@@ -2,7 +2,7 @@ package no.nav.fo.provider.rest;
 
 import com.squareup.okhttp.Response;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
-import no.nav.fo.testutil.LocalIntegrationTest;
+import no.nav.fo.testutil.ComponentTest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -22,7 +22,7 @@ import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.*;
 
-public class ArbeidslisteRessursTest extends LocalIntegrationTest {
+public class ArbeidslisteRessursTest extends ComponentTest {
 
     private static final JdbcTemplate DB = new JdbcTemplate(ds);
 

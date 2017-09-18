@@ -2,9 +2,8 @@ package no.nav.fo.database;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.domene.EnhetTiltak;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -12,9 +11,8 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Slf4j
 public class EnhetTiltakRepository {
-    private static Logger LOG = LoggerFactory.getLogger(EnhetTiltakRepository.class);
 
     @Inject
     private JdbcTemplate db;
@@ -23,7 +21,7 @@ public class EnhetTiltakRepository {
 
         return Try.of(
                 () -> db.query(retrieveSql(), new String[]{enhet}, EnhetTiltakRepository::rowMapper)
-        ).onFailure(e -> LOG.warn("Finner ikke tiltak for enhet med enhetid {}", enhet));
+        ).onFailure(e -> log.warn("Finner ikke tiltak for enhet med enhetid {}", enhet));
     }
 
     @SneakyThrows
