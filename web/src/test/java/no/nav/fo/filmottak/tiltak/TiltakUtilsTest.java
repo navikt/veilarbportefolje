@@ -7,7 +7,7 @@ import no.nav.fo.util.DateUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
