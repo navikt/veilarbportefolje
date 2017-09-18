@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
@@ -16,8 +17,6 @@ import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -38,14 +37,13 @@ import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
 
+@Slf4j
 @Api(value = "arbeidsliste")
 @Path("/arbeidsliste/")
 @Component
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeRessurs {
-
-    private static Logger logger = LoggerFactory.getLogger(ArbeidsListeRessurs.class);
 
     @Inject
     private ArbeidslisteService arbeidslisteService;
@@ -138,7 +136,7 @@ public class ArbeidsListeRessurs {
             sjekkTilgangTilEnhet(new Fnr(fnr));
 
             arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
-                    .onFailure(e -> logger.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
+                    .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
             return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
@@ -161,7 +159,7 @@ public class ArbeidsListeRessurs {
 
             arbeidslisteService
                     .updateArbeidsliste(data(body, new Fnr(fnr)))
-                    .onFailure(e -> logger.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
+                    .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                     .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
             return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
@@ -216,11 +214,11 @@ public class ArbeidsListeRessurs {
                             .deleteArbeidsliste(fnr)
                             .onSuccess((aktoerid) -> {
                                 okFnrs.add(fnr.toString());
-                                logger.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
+                                log.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
                             })
                             .onFailure((error) -> {
                                 feiledeFnrs.add(fnr.toString());
-                                logger.warn("Kunne ikke slette arbeidsliste", error);
+                                log.warn("Kunne ikke slette arbeidsliste", error);
                             })
                     );
 

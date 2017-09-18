@@ -1,11 +1,10 @@
 package no.nav.fo.filmottak;
 
 import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -15,9 +14,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+@Slf4j
 public class FilmottakFileUtils {
-
-    private static Logger logger = LoggerFactory.getLogger(FilmottakFileUtils.class);
 
     public static Try<InputStream> lesYtelsesFil(File file) {
         return Try.of(() -> {
@@ -34,12 +32,12 @@ public class FilmottakFileUtils {
     }
 
     public static Try<TiltakOgAktiviteterForBrukere> unmarshallTiltakFil(FileObject fileObject) {
-        logger.info("Starter unmarshalling av tiltaksfil");
+        log.info("Starter unmarshalling av tiltaksfil");
         return Try.of(() -> {
             JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1");
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
             JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = (JAXBElement<TiltakOgAktiviteterForBrukere>) unmarshaller.unmarshal(fileObject.getContent().getInputStream());
-            logger.info("Unmarshalling av tiltaksfil ferdig!");
+            log.info("Unmarshalling av tiltaksfil ferdig!");
             return jaxbElement.getValue();
         });
     }

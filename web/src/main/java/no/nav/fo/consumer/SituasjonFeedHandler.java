@@ -16,7 +16,6 @@ import no.nav.fo.util.MetricsUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import java.sql.Date;
@@ -25,11 +24,8 @@ import java.util.List;
 
 import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
-import static org.slf4j.LoggerFactory.getLogger;
 
 public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
-
-    private static final Logger logger = getLogger(SituasjonFeedHandler.class);
 
     public static final String SITUASJON_SIST_OPPDATERT = "situasjon_sist_oppdatert";
 
@@ -55,7 +51,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
-        logger.debug(String.format("Feed-data mottatt: %s", data));
+        log.debug(String.format("Feed-data mottatt: %s", data));
         data.forEach(this::behandleObjektFraFeed);
         brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
@@ -89,7 +85,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );
         }catch(Exception e) {
-            logger.error("Feil ved behandling av objekt fra feed med aktorid {}, {}", bruker.getAktoerid(), e.getMessage());
+            log.error("Feil ved behandling av objekt fra feed med aktorid {}, {}", bruker.getAktoerid(), e.getMessage());
         }
     }
 }

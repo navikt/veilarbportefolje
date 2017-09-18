@@ -1,7 +1,6 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
-import io.vavr.control.Try;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.EnhetTiltak;
@@ -11,7 +10,6 @@ import no.nav.fo.util.TokenUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -23,15 +21,12 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Api(value = "Enhet")
 @Path("/enhet")
 @Component
 @Produces(APPLICATION_JSON)
 public class EnhetController {
-
-    private static final Logger logger = getLogger(EnhetController.class);
 
     private BrukertilgangService brukertilgangService;
     private SolrService solrService;

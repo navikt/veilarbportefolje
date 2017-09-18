@@ -1,9 +1,8 @@
 package no.nav.fo.provider.rest;
 
 import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.exception.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -12,8 +11,8 @@ import java.util.function.Supplier;
 
 import static javax.ws.rs.core.Response.Status.OK;
 
+@Slf4j
 class RestUtils {
-    private static Logger logger = LoggerFactory.getLogger(RestUtils.class);
     private static final Map<Class<? extends Throwable>, Response.Status> statusmap = new HashMap<>();
 
     static {
@@ -37,7 +36,7 @@ class RestUtils {
                 .toEither()
                 .fold(
                         (throwable) -> {
-                            logger.warn("Exception ved restkall", throwable);
+                            log.warn("Exception ved restkall", throwable);
                             return Response.status(statusmap.getOrDefault(throwable.getClass(), Response.Status.INTERNAL_SERVER_ERROR)).entity(throwable.getMessage());
                         },
                         (entity) -> Response.status(status).entity(entity)
