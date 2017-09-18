@@ -26,7 +26,6 @@ import static no.nav.fo.util.MetricsUtils.timed;
 @Slf4j
 public class AktivitetUtils {
 
-    static final String DATOFILTER_PROPERTY = "arena.aktivitet.datofilter";
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter, AktoerService aktoerService) {
@@ -185,7 +184,7 @@ public class AktivitetUtils {
         document.addField("aktiviteter_utlopsdato_json", aktiviteterUtlopsdatoJSON);
     }
 
-    public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
+    public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository, Timestamp datofilter) {
         io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(1000,1000)
                 .forEach((dokumenterSubSet) -> {
@@ -193,7 +192,7 @@ public class AktivitetUtils {
                     List<Fnr> fnrs = dokumenterSubSetListe.stream()
                             .map((dokument) -> Fnr.of((String) dokument.get("fnr").getValue()))
                             .collect(toList());
-                    Map<Fnr, Set<Brukertiltak>> tiltak = filtrerBrukertiltak(brukerRepository.hentBrukertiltak(fnrs));
+                    Map<Fnr, Set<Brukertiltak>> tiltak = filtrerBrukertiltak(brukerRepository.hentBrukertiltak(fnrs), datofilter);
                     dokumenterSubSetListe.forEach(document -> {
                         Fnr fnr = Fnr.of((String) document.get("fnr").getValue());
                         Optional<Set<Brukertiltak>> brukertiltak = Optional.ofNullable(tiltak.get(fnr));
@@ -206,10 +205,10 @@ public class AktivitetUtils {
         return null;
     }
 
-    private static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
+    private static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak, Timestamp datofilter) {
         return brukertiltak
             .stream()
-            .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
+            .filter(tiltak -> etterFilterDato(tiltak.getTildato(), datofilter))
             .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
                         (oldValue, newValue) -> {
                             oldValue.addAll(newValue);
@@ -218,12 +217,12 @@ public class AktivitetUtils {
             ));
     }
 
-    private static boolean etterFilterDato(Timestamp tilDato) {
-        Timestamp arenaAktivitetFilterDato = parseDato(System.getProperty(DATOFILTER_PROPERTY));
-        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
+
+    private static boolean etterFilterDato(Timestamp tilDato, Timestamp datofilter) {
+        return tilDato == null || datofilter == null || datofilter.before(tilDato);
     }
 
-    static Timestamp parseDato(String konfigurertDato) {
+    public static Timestamp parseDato(String konfigurertDato) {
         try {
             Date parse = new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
             return new Timestamp(parse.getTime());

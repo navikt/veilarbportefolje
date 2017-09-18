@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
@@ -220,11 +221,10 @@ public class AktivitetUtilsTest {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         Fnr fnr = Fnr.of("12345678910");
         solrInputDocument.addField("fnr", fnr.toString());
-        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-17");
         List<Brukertiltak> brukertiltak = tiltakData("2017-01-18", "2017-01-18");
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(brukertiltak);
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-17"));
 
         assertThat(solrInputDocument.keySet()).containsExactlyInAnyOrder("fnr", "tiltak");
         assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactlyInAnyOrder("T1", "T2");
@@ -236,9 +236,7 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
-        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-17");
-
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-17"));
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(1);
     }
@@ -248,9 +246,7 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
-        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, null);
-
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, null);
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
     }
@@ -260,20 +256,16 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
 
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
-        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-19");
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-19"));
 
         assertThat(solrInputDocument.getFieldValues("tiltak")).isNull();
 
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData(null, null));
 
-        System.setProperty(AktivitetUtils.DATOFILTER_PROPERTY, "2017-01-19");
-
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-19"));
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
-
     }
 
     @Test
@@ -282,7 +274,7 @@ public class AktivitetUtilsTest {
         solrInputDocument.addField("fnr", "12345678910");
         when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(Lists.emptyList());
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository);
+        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2000-01-01"));
 
         assertThat(solrInputDocument.keySet()).doesNotContain("tiltak");
     }
