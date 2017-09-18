@@ -3,6 +3,7 @@ package no.nav.fo.filmottak.tiltak;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Periode;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
 import no.nav.metrics.MetricsFactory;
 import org.slf4j.Logger;
@@ -12,9 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -43,7 +42,7 @@ public class TiltakRepository {
         db.execute("DELETE FROM tiltakkodeverk");
     }
 
-    void insertBrukertiltak(Bruker bruker) {
+    void lagreBrukertiltak(Bruker bruker) {
         bruker.getTiltaksaktivitetListe().forEach(
             tiltak -> {
                 Fnr fnr = new Fnr(bruker.getPersonident());
@@ -51,24 +50,33 @@ public class TiltakRepository {
                     SqlUtils.insert(db, "brukertiltak")
                         .value("fodselsnr", fnr.toString())
                         .value("tiltakskode", tiltak.getTiltakstype())
+                        .value("tildato", utledTildato(tiltak.getDeltakelsePeriode()))
                         .execute();
                 } catch (DataIntegrityViolationException e) {
                     String logMsg = String.format("Kunne ikke lagre brukertiltak for %s med tiltakstype %s", fnr.toString(), tiltak.getTiltakstype());
                     logger.warn(logMsg);
-                    MetricsFactory.createEvent("veilarbportefolje.insertBrukertiltak.feilet").report();
+                    MetricsFactory.createEvent("veilarbportefolje.lagreBrukertiltak.feilet").report();
                 }
             }
         );
     }
 
-    void insertTiltakskoder(Tiltakstyper tiltakskoder) {
+    private Timestamp utledTildato(Periode periode) {
+        return Optional.ofNullable(periode).map(deltagelsePeriode ->
+                Optional.ofNullable(deltagelsePeriode.getTom())
+                    .map(TiltakUtils::tilTimestamp)
+                    .orElse(null))
+                .orElse(null);
+    }
+
+    void lagreTiltakskoder(Tiltakstyper tiltakskoder) {
         SqlUtils.insert(db, "tiltakkodeverk")
             .value("kode", tiltakskoder.getValue())
             .value("verdi", tiltakskoder.getTermnavn())
             .execute();
     }
 
-    Map<String, List<String>> getEnhetTilFodselsnummereMap() {
+    Map<String, List<String>> hentEnhetTilFodselsnummereMap() {
         List<EnhetTilFnr> enhetTilFnrList = db.query(
             "SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL",
             new BeanPropertyRowMapper<>(EnhetTilFnr.class)
@@ -89,7 +97,7 @@ public class TiltakRepository {
         return enhetTilFnrMap;
     }
 
-    void insertEnhettiltak(List<TiltakForEnhet> tiltakListe) {
+    void lagreEnhettiltak(List<TiltakForEnhet> tiltakListe) {
         try (final Connection dsConnection =  ds.getConnection()){
             final PreparedStatement ps = dsConnection.prepareStatement("INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)");
 
@@ -112,7 +120,7 @@ public class TiltakRepository {
             ps.executeBatch();
         } catch (SQLException e) {
             logger.warn("Kunne ikke lagre TiltakForEnhet i databasen");
-            MetricsFactory.createEvent("veilarbportefolje.insertEnhettiltak.feilet").report();
+            MetricsFactory.createEvent("veilarbportefolje.lagreEnhettiltak.feilet").report();
         }
     }
 }

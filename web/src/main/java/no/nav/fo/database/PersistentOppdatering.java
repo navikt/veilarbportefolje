@@ -21,9 +21,11 @@ import static java.util.stream.Collectors.toMap;
 public class PersistentOppdatering {
 
     @Inject
+    private
     SolrService solrService;
 
     @Inject
+    private
     BrukerRepository brukerRepository;
 
     public Brukerdata hentDataOgLagre(BrukerOppdatering brukerOppdatering) {
@@ -103,14 +105,14 @@ public class PersistentOppdatering {
                 }));
     }
 
-    public void lagreIDB(Brukerdata brukerdata) {
+    private void lagreIDB(Brukerdata brukerdata) {
         brukerRepository.upsertBrukerdata(brukerdata);
         if (brukerdata.getAktiviteter() != null) {
             brukerdata.getAktiviteter().forEach(brukerRepository::upsertAktivitetStatus);
         }
     }
 
-    public void lagreISolr(Brukerdata brukerdata) {
+    private void lagreISolr(Brukerdata brukerdata) {
         solrService.indekserBrukerdata(PersonId.of(brukerdata.getPersonid()));
     }
 

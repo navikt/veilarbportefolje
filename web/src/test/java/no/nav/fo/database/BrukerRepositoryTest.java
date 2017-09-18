@@ -604,12 +604,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalHenteBrukersTiltak() throws Exception {
-        assertThat(brukerRepository.getBrukertiltak("11111111111")).containsExactly("T1");
-        assertThat(brukerRepository.getBrukertiltak("22222222222")).containsExactly("T2", "T1");
-    }
-
-    @Test
     public void skalOppdatereAktivitetstatusForBruker() {
         String aktivitetstype1 = aktivitetTyperList.get(0).toString();
         String aktivitetstype2 = aktivitetTyperList.get(1).toString();
@@ -687,21 +681,15 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalBrukertiltakForListeAvFnr() {
+    public void skalHenteBrukertiltakForListeAvFnr() {
         Fnr fnr1 = Fnr.of("11111111111");
         Fnr fnr2 = Fnr.of("22222222222");
 
-        jdbcTemplate.execute("INSERT INTO TILTAKKODEVERK (KODE, VERDI) VALUES ('kode1', 'verdi1')");
-        jdbcTemplate.execute("INSERT INTO TILTAKKODEVERK (KODE, VERDI) VALUES ('kode2', 'verdi2')");
-        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,FODSELSNR) VALUES ('kode1','11111111111')");
-        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,FODSELSNR) VALUES ('kode2','11111111111')");
-        jdbcTemplate.execute("INSERT INTO BRUKERTILTAK (TILTAKSKODE,FODSELSNR) VALUES ('kode2','22222222222')");
+        List<Brukertiltak> brukertiltak = brukerRepository.hentBrukertiltak(asList(fnr1, fnr2));
 
-        Map<Fnr, Set<Brukertiltak>> brukertiltak = brukerRepository.getBrukertiltak(asList(fnr1,fnr2));
-
-        assertThat(brukertiltak.get(fnr1).stream().anyMatch(b -> b.getTiltak().equals("kode1"))).isTrue();
-        assertThat(brukertiltak.get(fnr1).stream().anyMatch(b -> b.getTiltak().equals("kode2"))).isTrue();
-        assertThat(brukertiltak.get(fnr2).stream().anyMatch(b -> b.getTiltak().equals("kode2"))).isTrue();
+        assertThat(brukertiltak.get(0).getTiltak().equals("T1")).isTrue();
+        assertThat(brukertiltak.get(1).getTiltak().equals("T2")).isTrue();
+        assertThat(brukertiltak.get(2).getTiltak().equals("T1")).isTrue();
     }
 
     @Test

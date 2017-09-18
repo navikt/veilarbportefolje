@@ -37,7 +37,7 @@ public class AktivitetService {
         ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
     }
 
-    public void utledOgLagreAlleAktivitetstatuser() {
+    void utledOgLagreAlleAktivitetstatuser() {
         List<String> aktoerider = brukerRepository.getDistinctAktoerIdsFromAktivitet();
 
         BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
@@ -49,7 +49,7 @@ public class AktivitetService {
         log.info("Aktivitetstatuser for {} brukere utledet og lagret i databasen", aktoerider.size());
     }
 
-    public void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
+    void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
 
         timed(
                 "aktiviteter.utled.statuser",

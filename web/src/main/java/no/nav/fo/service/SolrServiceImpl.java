@@ -6,6 +6,7 @@ import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.BatchConsumer;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
@@ -53,11 +54,14 @@ public class SolrServiceImpl implements SolrService {
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
 
+    private static final String DATOFILTER_PROPERTY = "arena.aktivitet.datofilter";
+
     private SolrClient solrClientSlave;
     private SolrClient solrClientMaster;
     private BrukerRepository brukerRepository;
     private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
+    private Timestamp datofilterTiltak;
 
     @Inject
     public SolrServiceImpl(
@@ -73,6 +77,7 @@ public class SolrServiceImpl implements SolrService {
         this.brukerRepository = brukerRepository;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
+        this.datofilterTiltak = AktivitetUtils.parseDato(System.getProperty(DATOFILTER_PROPERTY));
     }
 
     @Transactional
@@ -175,7 +180,7 @@ public class SolrServiceImpl implements SolrService {
         BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
         timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, brukerRepository), tagsAppeder);
         timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
-        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository), tagsAppeder);
+        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository, this.datofilterTiltak), tagsAppeder);
     }
 
     static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
