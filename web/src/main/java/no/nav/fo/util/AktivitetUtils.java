@@ -218,7 +218,7 @@ public class AktivitetUtils {
     }
 
 
-    private static boolean etterFilterDato(Timestamp tilDato, Timestamp datofilter) {
+    public static boolean etterFilterDato(Timestamp tilDato, Timestamp datofilter) {
         return tilDato == null || datofilter == null || datofilter.before(tilDato);
     }
 

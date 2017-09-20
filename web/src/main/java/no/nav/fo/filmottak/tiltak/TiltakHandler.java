@@ -8,6 +8,8 @@ import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.SolrServiceImpl;
+import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.MetricsUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
@@ -17,6 +19,7 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -46,12 +49,16 @@ public class TiltakHandler {
 
     private boolean kjorer;
 
+    private Timestamp datofilter;
+
+
     @Inject
     public TiltakHandler(TiltakRepository tiltakRepository, BrukerRepository brukerRepository, AktoerService aktoerService) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.brukerRepository = brukerRepository;
         this.kjorer = false;
+        this.datofilter = AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
@@ -137,7 +144,7 @@ public class TiltakHandler {
                             .stream()
                             .map(bruker -> {
                                 Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
-                                return personId.map(p -> utledAktivitetstatusForTiltak(bruker, p)).orElse(null);
+                                return personId.map(p -> utledAktivitetstatusForTiltak(bruker, p, datofilter)).orElse(null);
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());
@@ -157,7 +164,7 @@ public class TiltakHandler {
                             .stream()
                             .map(bruker -> {
                                 Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
-                                return personId.map(p -> utledGruppeaktivitetstatus(bruker, p)).orElse(null);
+                                return personId.map(p -> utledGruppeaktivitetstatus(bruker, p, datofilter)).orElse(null);
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());

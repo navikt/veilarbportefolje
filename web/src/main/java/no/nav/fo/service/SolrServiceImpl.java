@@ -52,7 +52,7 @@ public class SolrServiceImpl implements SolrService {
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
 
-    private static final String DATOFILTER_PROPERTY = "arena.aktivitet.datofilter";
+    public static final String DATOFILTER_PROPERTY = "arena.aktivitet.datofilter";
 
     private SolrClient solrClientSlave;
     private SolrClient solrClientMaster;

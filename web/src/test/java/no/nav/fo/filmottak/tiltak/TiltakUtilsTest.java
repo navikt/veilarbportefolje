@@ -3,6 +3,7 @@ package no.nav.fo.filmottak.tiltak;
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.PersonId;
+import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.DateUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class TiltakUtilsTest {
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(1,1,2000));
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(1,1,2010));
 
-        AktivitetStatus aktivitetStatus = TiltakUtils.utledAktivitetstatusForTiltak(bruker, PersonId.of("personid"));
+        AktivitetStatus aktivitetStatus = TiltakUtils.utledAktivitetstatusForTiltak(bruker, PersonId.of("personid"), AktivitetUtils.parseDato("1999-01-01"));
         assertThat(aktivitetStatus.getNesteUtlop()).isBefore(compareTime);
     }
 
@@ -38,7 +39,7 @@ public class TiltakUtilsTest {
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(1,1,2000));
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(1,1,2010));
 
-        AktivitetStatus aktivitetStatus = TiltakUtils.utledGruppeaktivitetstatus(bruker, PersonId.of("personid"));
+        AktivitetStatus aktivitetStatus = TiltakUtils.utledGruppeaktivitetstatus(bruker, PersonId.of("personid"), AktivitetUtils.parseDato("1999-01-01"));
         assertThat(aktivitetStatus.getNesteUtlop()).isBefore(compareTime);
     }
 
