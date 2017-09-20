@@ -10,6 +10,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TiltakUtils {
 
@@ -17,16 +18,20 @@ public class TiltakUtils {
     final static String gruppeaktivitet = "gruppeaktivitet";
 
     static AktivitetStatus utledAktivitetstatusForTiltak(Bruker bruker, PersonId personId, Timestamp datofilterTiltak) {
-        if(bruker.getTiltaksaktivitetListe().isEmpty()) {
+        List<Tiltaksaktivitet> tiltaksAktiviteterEtterDatoFilter =
+            bruker.getTiltaksaktivitetListe()
+                .stream()
+                .filter(tiltaksaktivitet -> AktivitetUtils.etterFilterDato(hentUtlopsdatoForTiltak(tiltaksaktivitet),datofilterTiltak))
+                .collect(Collectors.toList());
+
+        if(tiltaksAktiviteterEtterDatoFilter.isEmpty()) {
             return null;
         }
 
-        Timestamp nesteUtlopsdato = bruker
-                .getTiltaksaktivitetListe()
+        Timestamp nesteUtlopsdato = tiltaksAktiviteterEtterDatoFilter
                 .stream()
                 .map(TiltakUtils::hentUtlopsdatoForTiltak)
                 .filter(Objects::nonNull)
-                .filter(timestamp -> AktivitetUtils.etterFilterDato(timestamp, datofilterTiltak))
                 .sorted()
                 .findFirst()
                 .orElse(null);
@@ -35,18 +40,24 @@ public class TiltakUtils {
     }
 
     static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId, Timestamp datofilter) {
-        if(bruker.getGruppeaktivitetListe().isEmpty()) {
-            return null;
-        }
-
-        Timestamp nesteUtlopsdato = bruker.getGruppeaktivitetListe()
+        List<Moeteplan> gruppeAktiviteterEtterDatoFilter =
+            bruker.getGruppeaktivitetListe()
                 .stream()
                 .map(Gruppeaktivitet::getMoeteplanListe)
                 .flatMap(Collection::stream)
+                .filter(moeteplan -> AktivitetUtils.etterFilterDato(tilTimestamp(moeteplan.getSluttDato()), datofilter))
+                .collect(Collectors.toList());
+
+
+        if(gruppeAktiviteterEtterDatoFilter.isEmpty()) {
+            return null;
+        }
+
+        Timestamp nesteUtlopsdato = gruppeAktiviteterEtterDatoFilter
+                .stream()
                 .filter(Objects::nonNull)
                 .map(Moeteplan::getSluttDato)
                 .map(TiltakUtils::tilTimestamp)
-                .filter(timestamp -> AktivitetUtils.etterFilterDato(timestamp, datofilter))
                 .sorted()
                 .findFirst()
                 .orElse(null);
