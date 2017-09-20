@@ -44,14 +44,14 @@ public class TiltakHandler {
     private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
 
-    private boolean isRunning;
+    private boolean kjorer;
 
     @Inject
     public TiltakHandler(TiltakRepository tiltakRepository, BrukerRepository brukerRepository, AktoerService aktoerService) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.brukerRepository = brukerRepository;
-        this.isRunning = false;
+        this.kjorer = false;
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
@@ -59,16 +59,16 @@ public class TiltakHandler {
             log.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
             return;
         }
-        this.isRunning = true;
+        this.kjorer = true;
         hentTiltakOgPopulerDatabase();
     }
 
     private boolean kjorer() {
-        return this.isRunning;
+        return this.kjorer;
     }
 
     private void hentTiltakOgPopulerDatabase() {
-        Consumer<Throwable> stopped = (t) -> this.isRunning = false;
+        Consumer<Throwable> stopped = (t) -> this.kjorer = false;
         log.info("Starter oppdatering av tiltak fra Arena..");
         timed("GR202.hentfil", this::hentFil)
                 .onFailure(log(log, "Kunne ikke hente tiltaksfil").andThen(stopped))
@@ -76,7 +76,7 @@ public class TiltakHandler {
                 .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen").andThen(stopped))
                 .andThen(timed("GR202.populatedb", this::populerDatabase))
                 .onFailure(log(log, "Kunne ikke populere database").andThen(stopped))
-                .andThen(() -> this.isRunning = false);
+                .andThen(() -> this.kjorer = false);
     }
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {
