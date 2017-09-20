@@ -636,16 +636,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalInserteOgSletteAktivitetstatus() {
-        String aktivitetstype = "aktivitetstype";
-        AktivitetStatus aktivitetStatus =  AktivitetStatus.of(PersonId.of("personid"), AktoerId.of("aktivitetid"),aktivitetstype,true,null);
-        brukerRepository.insertAktivitetStatus(aktivitetStatus);
-        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isNotEmpty();
-        brukerRepository.slettAlleAktivitetstatus(aktivitetstype);
-        assertThat(brukerRepository.db.queryForList("select * from brukerstatus_aktiviteter")).isEmpty();
-    }
-
-    @Test
     public void skalInserteBatchAvAktivitetstatuser() {
         List<AktivitetStatus> statuser = new ArrayList<>();
         statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"),"a1",true, new Timestamp(0)));

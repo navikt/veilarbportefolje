@@ -374,12 +374,6 @@ public class BrukerRepository {
         AktivitetStatus.batchInsert(db, statuser);
     }
 
-    void insertAktivitetStatus(AktivitetStatus a) {
-        getInsertAktivitetStatuserForBrukerQuery(a.getAktivitetType(), this.db, a.isAktiv(),
-                a.getAktoerid().aktoerId, a.getPersonid().personId, a.getNesteUtlop())
-                .execute();
-    }
-
     void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId, String>> finnesIdb) {
         Map<Boolean, List<AktivitetStatus>> eksisterendeStatuser = aktivitetStatuses
                 .stream()
