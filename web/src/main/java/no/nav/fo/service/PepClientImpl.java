@@ -5,6 +5,8 @@ import no.nav.fo.config.CacheConfig;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -62,23 +64,26 @@ public class PepClientImpl implements PepClient {
         try {
             Timer timer = MetricsFactory.createTimer("isSubjectMemberOfModiaOppfolging");
             timer.start();
-            callAllowed  = pep.isSubjectMemberOfModiaOppfolging(token, "veilarb");
+            callAllowed = pep.isSubjectMemberOfModiaOppfolging(token, "veilarb");
             timer.stop();
             timer.report();
         } catch (PepException e) {
             throw new InternalServerErrorException("Something went wrong when wrong in PEP", e);
         }
         if (callAllowed.getBiasedDecision().equals(Decision.Deny)) {
-            log.info("User "+ ident +" is not in group MODIA-OPPFOLGING");
+            log.info("User " + ident + " is not in group MODIA-OPPFOLGING");
         }
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
+    // NB! Etter refactorering er ikke parameteren `token` lenger i bruk,
+    // men lar den stå siden den er en del av cachenøkkelen.
     @Cacheable(CacheConfig.brukerTilgangCache)
     public boolean tilgangTilBruker(String token, String fnr) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.isServiceCallAllowedWithOidcToken(token, "veilarb", fnr);
+            callAllowed = pep.harInnloggetBrukerTilgangTilPerson(fnr, "veilarb",
+                    Action.ActionId.READ, ResourceType.VeilArbPerson);
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
