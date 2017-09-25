@@ -34,11 +34,6 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public BrukerRepository brukerRepository() {
-        return new BrukerRepository();
-    }
-
-    @Bean
     public AktivitetDAO aktivitetDAO() {
         return new AktivitetDAO();
     }
