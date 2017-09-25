@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
@@ -17,7 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.Date;
 
@@ -50,9 +50,10 @@ public class SolrServiceIntegrationTest {
         SolrClient solrClientSlave = mock(SolrClient.class);
         ArbeidslisteRepository arbeidslisteRepository = mock(ArbeidslisteRepository.class);
         AktoerService aktoerService = mock(AktoerService.class);
+        AktivitetDAO aktivitetDAO = mock(AktivitetDAO.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
+        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, aktivitetDAO);
 
 
         UpdateResponse response = new UpdateResponse();
@@ -68,16 +69,16 @@ public class SolrServiceIntegrationTest {
     }
 
     private void insertISERVuser() {
-        SqlUtils.insert(jdbcTemplate,"OPPFOLGINGSBRUKER")
-                .value("PERSON_ID", 1234)
-                .value("FODSELSNR", "11111111111")
-                .value("FORMIDLINGSGRUPPEKODE", "ISERV")
-                .value("KVALIFISERINGSGRUPPEKODE", "VARIG")
-                .value("TIDSSTEMPEL", new Date())
-                .execute();
+        SqlUtils.insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
+            .value("PERSON_ID", 1234)
+            .value("FODSELSNR", "11111111111")
+            .value("FORMIDLINGSGRUPPEKODE", "ISERV")
+            .value("KVALIFISERINGSGRUPPEKODE", "VARIG")
+            .value("TIDSSTEMPEL", new Date())
+            .execute();
 
         SqlUtils.insert(jdbcTemplate, "METADATA")
-                .value("SIST_INDEKSERT", new Date(0))
-                .execute();
+            .value("SIST_INDEKSERT", new Date(0))
+            .execute();
     }
 }

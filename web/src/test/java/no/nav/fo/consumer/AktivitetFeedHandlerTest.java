@@ -1,6 +1,7 @@
 package no.nav.fo.consumer;
 
 import io.vavr.control.Try;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Oppfolgingstatus;
@@ -31,6 +32,9 @@ public class AktivitetFeedHandlerTest {
 
     @Mock
     private BrukerRepository brukerRepository;
+
+    @Mock
+    private AktivitetDAO aktivitetDAO;
 
     @Mock
     private AktivitetService aktivitetService;
@@ -83,7 +87,7 @@ public class AktivitetFeedHandlerTest {
 
         aktivitetFeedHandler.call("dontcare", data);
 
-        verify(brukerRepository, times(3)).upsertAktivitet(any(AktivitetDataFraFeed.class));
+        verify(aktivitetDAO, times(3)).upsertAktivitet(any(AktivitetDataFraFeed.class));
     }
 
     @Test

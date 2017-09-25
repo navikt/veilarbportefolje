@@ -1,5 +1,6 @@
 package no.nav.fo.filmottak;
 
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.filmottak.tiltak.TiltakRepository;
@@ -54,8 +55,8 @@ public class FilmottakConfig {
 
 
     @Bean
-    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, BrukerRepository brukerRepository, AktoerService aktoerService) {
-        return new TiltakHandler(tiltakRepository, brukerRepository, aktoerService);
+    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService) {
+        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService);
     }
 
     @Bean

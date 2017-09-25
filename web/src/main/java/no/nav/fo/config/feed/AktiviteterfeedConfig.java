@@ -1,6 +1,7 @@
 package no.nav.fo.config.feed;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.consumer.AktivitetFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
@@ -35,10 +36,10 @@ public class AktiviteterfeedConfig {
     private int pageSize;
 
     @Bean
-    public FeedConsumer<AktivitetDataFraFeed> aktivitetDataFraFeedFeedConsumer(JdbcTemplate db, AktivitetFeedHandler callback, BrukerRepository brukerRepository) {
+    public FeedConsumer<AktivitetDataFraFeed> aktivitetDataFraFeedFeedConsumer(JdbcTemplate db, AktivitetFeedHandler callback, AktivitetDAO aktivitetDAO) {
         BaseConfig<AktivitetDataFraFeed> baseConfig = new BaseConfig<>(
                 AktivitetDataFraFeed.class,
-                Utils.apply(AktiviteterfeedConfig::sisteEndring, brukerRepository),
+                Utils.apply(AktiviteterfeedConfig::sisteEndring, aktivitetDAO),
                 host,
                 "aktiviteter"
         );
@@ -55,12 +56,13 @@ public class AktiviteterfeedConfig {
     public AktivitetFeedHandler aktivitetFeedHandler(BrukerRepository brukerRepository,
                                                      AktivitetService aktivitetService,
                                                      AktoerService aktoerService,
-                                                     SolrService solrService) {
-        return new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService);
+                                                     SolrService solrService,
+                                                     AktivitetDAO aktivitetDAO) {
+        return new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService, aktivitetDAO);
     }
 
-    private static String sisteEndring(BrukerRepository brukerRepository) {
-        Timestamp sisteEndring = brukerRepository.getAktiviteterSistOppdatert();
+    private static String sisteEndring(AktivitetDAO aktivitetDAO) {
+        Timestamp sisteEndring = aktivitetDAO.getAktiviteterSistOppdatert();
         return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
     }
 }
