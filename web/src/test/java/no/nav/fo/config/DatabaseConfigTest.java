@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.EnhetTiltakRepository;
@@ -40,4 +41,7 @@ public class DatabaseConfigTest {
 
     @Bean
     public TiltakRepository tiltakRepository() { return new TiltakRepository(); }
+
+    @Bean
+    public AktivitetDAO aktivitetDAO() { return new AktivitetDAO(); }
 }

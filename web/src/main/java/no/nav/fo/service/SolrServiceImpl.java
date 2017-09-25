@@ -3,6 +3,7 @@ package no.nav.fo.service;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
@@ -57,6 +58,7 @@ public class SolrServiceImpl implements SolrService {
     private SolrClient solrClientSlave;
     private SolrClient solrClientMaster;
     private BrukerRepository brukerRepository;
+    private AktivitetDAO aktivitetDAO;
     private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
     private Timestamp datofilterTiltak;
@@ -67,12 +69,14 @@ public class SolrServiceImpl implements SolrService {
             @Named("solrClientSlave") SolrClient solrClientSlave,
             BrukerRepository brukerRepository,
             ArbeidslisteRepository arbeidslisteRepository,
-            AktoerService aktoerService
+            AktoerService aktoerService,
+            AktivitetDAO aktivitetDAO
     ) {
 
         this.solrClientMaster = solrClientMaster;
         this.solrClientSlave = solrClientSlave;
         this.brukerRepository = brukerRepository;
+        this.aktivitetDAO = aktivitetDAO;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
         this.datofilterTiltak = AktivitetUtils.parseDato(System.getProperty(DATOFILTER_PROPERTY));
@@ -176,9 +180,9 @@ public class SolrServiceImpl implements SolrService {
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
         Boolean batch = dokumenter.size() > 1;
         BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
-        timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, brukerRepository), tagsAppeder);
+        timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, aktivitetDAO), tagsAppeder);
         timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
-        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, brukerRepository, this.datofilterTiltak), tagsAppeder);
+        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO, this.datofilterTiltak), tagsAppeder);
     }
 
     static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {

@@ -2,6 +2,7 @@ package no.nav.fo.util;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
@@ -58,12 +59,12 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(AktoerId aktoerid, AktoerService aktoerService, BrukerRepository brukerRepository) {
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(AktoerId aktoerid, AktoerService aktoerService, AktivitetDAO aktivitetDAO) {
         PersonId personid = getPersonId(aktoerid, aktoerService)
                 .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerid, e))
                 .get();
 
-        List<AktivitetDTO> aktiviteter = brukerRepository.getAktiviteterForAktoerid(aktoerid);
+        List<AktivitetDTO> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerid);
 
         return konverterTilBrukerOppdatering(aktiviteter, aktoerid, personid);
     }
@@ -136,12 +137,7 @@ public class AktivitetUtils {
         return aktiveAktiviteter;
     }
 
-    public static void applyAktivitetStatuser(SolrInputDocument dokument, BrukerRepository brukerRepository) {
-        applyAktivitetStatuser(singletonList(dokument), brukerRepository);
-    }
-
-
-    public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository) {
+    public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, AktivitetDAO aktivitetDAO) {
         io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(1000, 1000)
                 .forEach((dokumenterBatch) -> {
@@ -149,7 +145,7 @@ public class AktivitetUtils {
                         List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
                                 .map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
 
-                        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = brukerRepository.getAktivitetstatusForBrukere(personIds);
+                        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = aktivitetDAO.getAktivitetstatusForBrukere(personIds);
 
                         dokumenterBatch.forEach((dokument) -> {
                             PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
@@ -184,7 +180,7 @@ public class AktivitetUtils {
         document.addField("aktiviteter_utlopsdato_json", aktiviteterUtlopsdatoJSON);
     }
 
-    public static Object applyTiltak(List<SolrInputDocument> dokumenter, BrukerRepository brukerRepository, Timestamp datofilter) {
+    public static Object applyTiltak(List<SolrInputDocument> dokumenter, AktivitetDAO aktivitetDAO, Timestamp datofilter) {
         io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(1000,1000)
                 .forEach((dokumenterSubSet) -> {
@@ -192,7 +188,7 @@ public class AktivitetUtils {
                     List<Fnr> fnrs = dokumenterSubSetListe.stream()
                             .map((dokument) -> Fnr.of((String) dokument.get("fnr").getValue()))
                             .collect(toList());
-                    Map<Fnr, Set<Brukertiltak>> tiltak = filtrerBrukertiltak(brukerRepository.hentBrukertiltak(fnrs), datofilter);
+                    Map<Fnr, Set<Brukertiltak>> tiltak = filtrerBrukertiltak(aktivitetDAO.hentBrukertiltak(fnrs), datofilter);
                     dokumenterSubSetListe.forEach(document -> {
                         Fnr fnr = Fnr.of((String) document.get("fnr").getValue());
                         Optional<Set<Brukertiltak>> brukertiltak = Optional.ofNullable(tiltak.get(fnr));

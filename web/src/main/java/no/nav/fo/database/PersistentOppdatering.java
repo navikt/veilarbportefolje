@@ -2,12 +2,14 @@ package no.nav.fo.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.BrukerOppdatering;
 import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.MetricsUtils;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Aktivitet;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -21,12 +23,13 @@ import static java.util.stream.Collectors.toMap;
 public class PersistentOppdatering {
 
     @Inject
-    private
-    SolrService solrService;
+    private SolrService solrService;
 
     @Inject
-    private
-    BrukerRepository brukerRepository;
+    private BrukerRepository brukerRepository;
+
+    @Inject
+    private AktivitetDAO aktivitetDAO;
 
     public Brukerdata hentDataOgLagre(BrukerOppdatering brukerOppdatering) {
         Brukerdata brukerdata = hentBruker(brukerOppdatering.getPersonid());
@@ -93,7 +96,7 @@ public class PersistentOppdatering {
 
                     List<AktivitetStatus> aktivitetstatuserIDb = new ArrayList<>();
 
-                    brukerRepository.getAktivitetstatusForBrukere(personIds)
+                    aktivitetDAO.getAktivitetstatusForBrukere(personIds)
                             .forEach((key, value) -> aktivitetstatuserIDb.addAll(value));
 
                     List<Tuple2<PersonId, String>> finnesIDb = aktivitetstatuserIDb
@@ -101,14 +104,14 @@ public class PersistentOppdatering {
                             .map((status) -> Tuple.of(status.getPersonid(), status.getAktivitetType()))
                             .collect(toList());
 
-                    brukerRepository.insertOrUpdateAktivitetStatus(statuserBatchJavaList, finnesIDb);
+                    aktivitetDAO.insertOrUpdateAktivitetStatus(statuserBatchJavaList, finnesIDb);
                 }));
     }
 
     private void lagreIDB(Brukerdata brukerdata) {
         brukerRepository.upsertBrukerdata(brukerdata);
         if (brukerdata.getAktiviteter() != null) {
-            brukerdata.getAktiviteter().forEach(brukerRepository::upsertAktivitetStatus);
+            brukerdata.getAktiviteter().forEach(aktivitetDAO::upsertAktivitetStatus);
         }
     }
 

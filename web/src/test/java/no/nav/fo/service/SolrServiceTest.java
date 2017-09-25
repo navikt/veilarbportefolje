@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
@@ -40,6 +41,8 @@ public class SolrServiceTest {
     @Mock
     private BrukerRepository brukerRepository;
     @Mock
+    private AktivitetDAO aktivitetDAO;
+    @Mock
     private SolrClient solrClientSlave;
     @Mock
     private SolrClient solrClientMaster;
@@ -52,7 +55,7 @@ public class SolrServiceTest {
 
     @Before
     public void setup() {
-        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService);
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, aktivitetDAO);
     }
 
     @Test

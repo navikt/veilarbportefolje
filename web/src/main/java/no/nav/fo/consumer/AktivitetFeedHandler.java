@@ -2,6 +2,7 @@ package no.nav.fo.consumer;
 
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Oppfolgingstatus;
@@ -29,16 +30,19 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
     private AktivitetService aktivitetService;
     private AktoerService aktoerService;
     private SolrService solrService;
+    private AktivitetDAO aktivitetDAO;
 
     @Inject
     public AktivitetFeedHandler(BrukerRepository brukerRepository,
                                 AktivitetService aktivitetService,
                                 AktoerService aktoerService,
-                                SolrService solrService) {
+                                SolrService solrService,
+                                AktivitetDAO aktivitetDAO) {
         this.brukerRepository = brukerRepository;
         this.aktivitetService = aktivitetService;
         this.aktoerService = aktoerService;
         this.solrService = solrService;
+        this.aktivitetDAO = aktivitetDAO;
     }
 
     @Override
@@ -63,7 +67,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         try{
             timed(
                     "feed.aktivitet.objekt",
-                    () -> brukerRepository.upsertAktivitet(aktivitet),
+                    () -> aktivitetDAO.upsertAktivitet(aktivitet),
                     (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase()); }}
                     );
         }catch(Exception e) {
