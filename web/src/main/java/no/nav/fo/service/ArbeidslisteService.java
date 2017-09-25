@@ -12,6 +12,8 @@ import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
 
+import static no.nav.metrics.MetricsFactory.createEvent;
+
 public class ArbeidslisteService {
 
     @Inject
@@ -45,6 +47,8 @@ public class ArbeidslisteService {
     }
 
     public Try<AktoerId> createArbeidsliste(ArbeidslisteData data) {
+
+        createEvent("arbeidsliste.opprettet").report();
 
         Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
         if (aktoerId.isFailure()) {
