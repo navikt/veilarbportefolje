@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.*;
@@ -33,8 +34,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public BrukerRepository brukerRepository() {
-        return new BrukerRepository();
+    public AktivitetDAO aktivitetDAO() {
+        return new AktivitetDAO();
     }
 
     @Bean

@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
@@ -29,6 +30,9 @@ public class AktivitetService {
     private BrukerRepository brukerRepository;
 
     @Inject
+    private AktivitetDAO aktivitetDAO;
+
+    @Inject
     private PersistentOppdatering persistentOppdatering;
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
@@ -38,7 +42,7 @@ public class AktivitetService {
     }
 
     void utledOgLagreAlleAktivitetstatuser() {
-        List<String> aktoerider = brukerRepository.getDistinctAktoerIdsFromAktivitet();
+        List<String> aktoerider = aktivitetDAO.getDistinctAktoerIdsFromAktivitet();
 
         BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
 
@@ -54,7 +58,7 @@ public class AktivitetService {
         timed(
                 "aktiviteter.utled.statuser",
                 () -> {
-                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", () -> brukerRepository.getAktiviteterForListOfAktoerid(aktoerider));
+                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", () -> aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerider));
                     List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
                             timed("aktiviteter.konverter.til.brukeroppdatering", () -> AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
 
@@ -66,6 +70,6 @@ public class AktivitetService {
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(AktoerId aktoerid) {
-        persistentOppdatering.lagre(hentAktivitetBrukerOppdatering(aktoerid, aktoerService, brukerRepository));
+        persistentOppdatering.lagre(hentAktivitetBrukerOppdatering(aktoerid, aktoerService, aktivitetDAO));
     }
 }

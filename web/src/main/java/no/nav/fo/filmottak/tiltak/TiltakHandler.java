@@ -2,6 +2,7 @@ package no.nav.fo.filmottak.tiltak;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.Fnr;
@@ -44,7 +45,7 @@ public class TiltakHandler {
     private String filmottakPassord;
 
     private final TiltakRepository tiltakrepository;
-    private final BrukerRepository brukerRepository;
+    private final AktivitetDAO aktivitetDAO;
     private final AktoerService aktoerService;
 
     private boolean kjorer;
@@ -53,10 +54,10 @@ public class TiltakHandler {
 
 
     @Inject
-    public TiltakHandler(TiltakRepository tiltakRepository, BrukerRepository brukerRepository, AktoerService aktoerService) {
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
-        this.brukerRepository = brukerRepository;
+        this.aktivitetDAO = aktivitetDAO;
         this.kjorer = false;
         this.datofilter = AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
     }
@@ -93,8 +94,8 @@ public class TiltakHandler {
         tiltakrepository.slettBrukertiltak();
         tiltakrepository.slettEnhettiltak();
         tiltakrepository.slettTiltakskoder();
-        brukerRepository.slettAlleAktivitetstatus(tiltak);
-        brukerRepository.slettAlleAktivitetstatus(gruppeaktivitet);
+        aktivitetDAO.slettAlleAktivitetstatus(tiltak);
+        aktivitetDAO.slettAlleAktivitetstatus(gruppeaktivitet);
 
         tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::lagreTiltakskoder);
 
@@ -148,7 +149,7 @@ public class TiltakHandler {
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());
-                    brukerRepository.insertAktivitetstatuser(aktivitetStatuses);
+                    aktivitetDAO.insertAktivitetstatuser(aktivitetStatuses);
                 });
     }
 
@@ -168,7 +169,7 @@ public class TiltakHandler {
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());
-                    brukerRepository.insertAktivitetstatuser(aktivitetStatuses);
+                    aktivitetDAO.insertAktivitetstatuser(aktivitetStatuses);
 
                 });
     }

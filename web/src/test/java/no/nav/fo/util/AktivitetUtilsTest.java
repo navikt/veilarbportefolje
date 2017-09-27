@@ -1,5 +1,7 @@
 package no.nav.fo.util;
 
+import io.vavr.collection.Array;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
@@ -32,6 +34,9 @@ public class AktivitetUtilsTest {
 
     @Mock
     private BrukerRepository brukerRepository;
+
+    @Mock
+    private AktivitetDAO aktivitetDAO;
 
     @Test
     public void aktivitetErIPeriode() {
@@ -155,9 +160,9 @@ public class AktivitetUtilsTest {
         Map<PersonId, Set<AktivitetStatus>> returnMap = new HashMap<>();
         returnMap.put(personId, aktivitetStatuses);
 
-        when(brukerRepository.getAktivitetstatusForBrukere(any())).thenReturn(returnMap);
+        when(aktivitetDAO.getAktivitetstatusForBrukere(any())).thenReturn(returnMap);
 
-        applyAktivitetStatuser(solrInputDocument, brukerRepository);
+        applyAktivitetStatuser(Array.of(solrInputDocument).toJavaList(), aktivitetDAO);
 
 
         assertThat((ArrayList) solrInputDocument.get("aktiviteter").getValue()).contains("aktivitetstype1");
@@ -173,8 +178,8 @@ public class AktivitetUtilsTest {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("person_id", personId.toString());
 
-        when(brukerRepository.getAktivitetstatusForBrukere(any())).thenReturn(new HashMap<>());
-        applyAktivitetStatuser(solrInputDocument, brukerRepository);
+        when(aktivitetDAO.getAktivitetstatusForBrukere(any())).thenReturn(new HashMap<>());
+        applyAktivitetStatuser(Array.of(solrInputDocument).toJavaList(), aktivitetDAO);
         assertThat(solrInputDocument.get("aktiviteter")).isNull();
         assertThat(solrInputDocument.get("aktiviteter_utlopsdato_json")).isNull();
     }
@@ -221,9 +226,9 @@ public class AktivitetUtilsTest {
         Fnr fnr = Fnr.of("12345678910");
         solrInputDocument.addField("fnr", fnr.toString());
         List<Brukertiltak> brukertiltak = tiltakData("2017-01-18", "2017-01-18");
-        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(brukertiltak);
+        when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(brukertiltak);
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-17"));
+        applyTiltak(Arrays.asList(solrInputDocument), aktivitetDAO, AktivitetUtils.parseDato("2017-01-17"));
 
         assertThat(solrInputDocument.keySet()).containsExactlyInAnyOrder("fnr", "tiltak");
         assertThat(solrInputDocument.getFieldValues("tiltak")).containsExactlyInAnyOrder("T1", "T2");
@@ -233,9 +238,9 @@ public class AktivitetUtilsTest {
     public void skalFiltrereBortTiltakSomHarTildatoForDatofilter() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
+        when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-17"));
+        applyTiltak(Arrays.asList(solrInputDocument), aktivitetDAO, AktivitetUtils.parseDato("2017-01-17"));
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(1);
     }
@@ -243,9 +248,9 @@ public class AktivitetUtilsTest {
     public void skalIkkeFiltrereNarDatofilterErNull() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
+        when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, null);
+        applyTiltak(Arrays.asList(solrInputDocument), aktivitetDAO, null);
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
     }
@@ -254,15 +259,15 @@ public class AktivitetUtilsTest {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
 
-        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData());
+        when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(tiltakData());
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-19"));
+        applyTiltak(Arrays.asList(solrInputDocument), aktivitetDAO, AktivitetUtils.parseDato("2017-01-19"));
 
         assertThat(solrInputDocument.getFieldValues("tiltak")).isNull();
 
-        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(tiltakData(null, null));
+        when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(tiltakData(null, null));
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2017-01-19"));
+        applyTiltak(Arrays.asList(solrInputDocument), aktivitetDAO, AktivitetUtils.parseDato("2017-01-19"));
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
     }
@@ -271,9 +276,9 @@ public class AktivitetUtilsTest {
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
-        when(brukerRepository.hentBrukertiltak(anyList())).thenReturn(Lists.emptyList());
+        when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(Lists.emptyList());
 
-        applyTiltak(Arrays.asList(solrInputDocument), brukerRepository, AktivitetUtils.parseDato("2000-01-01"));
+        applyTiltak(Arrays.asList(solrInputDocument), aktivitetDAO, AktivitetUtils.parseDato("2000-01-01"));
 
         assertThat(solrInputDocument.keySet()).doesNotContain("tiltak");
     }

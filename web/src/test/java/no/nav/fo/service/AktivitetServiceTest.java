@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 import io.vavr.control.Try;
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
@@ -35,7 +36,7 @@ public class AktivitetServiceTest {
     private AktoerService aktoerService;
 
     @Mock
-    private BrukerRepository brukerRepository;
+    private AktivitetDAO aktivitetDAO;
 
     @Mock
     private PersistentOppdatering persistentOppdatering;
@@ -45,7 +46,7 @@ public class AktivitetServiceTest {
 
     @Before
     public void resetMock() {
-        reset(aktoerService, brukerRepository, persistentOppdatering);
+        reset(aktoerService, persistentOppdatering, aktivitetDAO);
     }
 
     private static final String AKTOERID_TEST = "AKTOERID_TEST";
@@ -66,9 +67,9 @@ public class AktivitetServiceTest {
 
         String ikkeFullfortStatus = "ikkeFullfortStatus";
 
-        when(brukerRepository.getDistinctAktoerIdsFromAktivitet()).thenReturn(aktoerids);
+        when(aktivitetDAO.getDistinctAktoerIdsFromAktivitet()).thenReturn(aktoerids);
 
-        when(brukerRepository.getAktiviteterForListOfAktoerid(anyList())).thenAnswer(invocationOnMock -> {
+        when(aktivitetDAO.getAktiviteterForListOfAktoerid(anyList())).thenAnswer(invocationOnMock -> {
             List<String> aktorer = (ArrayList<String>) invocationOnMock.getArguments()[0];
             return aktorer
                     .stream()
@@ -109,7 +110,7 @@ public class AktivitetServiceTest {
 
         ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
-        when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
+        when(aktivitetDAO.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
         aktivitetService.utledOgLagreAktivitetstatuser(singletonList(AKTOERID_TEST));
 
@@ -128,8 +129,8 @@ public class AktivitetServiceTest {
 
         ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
-        when(brukerRepository.getDistinctAktoerIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
-        when(brukerRepository.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
+        when(aktivitetDAO.getDistinctAktoerIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
+        when(aktivitetDAO.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
