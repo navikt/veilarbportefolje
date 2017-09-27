@@ -55,9 +55,6 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Ubeskyttet</web-resource-name>
-            <!-- TODO er dette riktig? -->
-            <url-pattern>/tjenester/login</url-pattern>
-            <url-pattern>/tjenester/solr/*</url-pattern>
             <url-pattern>/internal/*</url-pattern>
         </web-resource-collection>
     </security-constraint>
