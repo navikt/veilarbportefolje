@@ -9,7 +9,6 @@ import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.MetricsUtils;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Aktivitet;
 
 import javax.inject.Inject;
 import java.util.*;

@@ -5,7 +5,6 @@ import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.exception.RestTilgangException;
-import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -35,20 +34,17 @@ public class VeilederController {
     private BrukertilgangService brukertilgangService;
     private SolrService solrService;
     private PepClient pepClient;
-    private ArbeidslisteService arbeidslisteService;
 
     @Inject
     public VeilederController(
             BrukertilgangService brukertilgangService,
             SolrService solrService,
-            PepClient pepClient,
-            ArbeidslisteService arbeidslisteService
+            PepClient pepClient
     ) {
 
         this.brukertilgangService = brukertilgangService;
         this.solrService = solrService;
         this.pepClient = pepClient;
-        this.arbeidslisteService = arbeidslisteService;
     }
 
     @POST
