@@ -14,8 +14,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import javax.ws.rs.core.UriBuilder;
@@ -48,7 +46,6 @@ public abstract class ComponentTest {
     public void setUp() throws Exception {
         setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
         InternbrukerSubjectHandler.setVeilederIdent("testident");
-        System.clearProperty("portefolje.pilot.enhetliste");
     }
 
     @SneakyThrows
