@@ -21,7 +21,7 @@ public class EnhetTiltakRepository {
 
         return Try.of(
                 () -> db.query(retrieveSql(), new String[]{enhet}, EnhetTiltakRepository::rowMapper)
-        ).onFailure(e -> log.warn("Finner ikke tiltak for enhet med enhetid {}", enhet));
+        ).onFailure(e -> log.info("Finner ingen tiltaksaktiviteter i databasen for enhet med enhetid {}", enhet));
     }
 
     @SneakyThrows

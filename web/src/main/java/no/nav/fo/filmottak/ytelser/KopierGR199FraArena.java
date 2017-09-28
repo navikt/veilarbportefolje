@@ -44,8 +44,9 @@ public class KopierGR199FraArena {
     }
 
     public void startOppdateringAvYtelser() {
+        log.info("Forsøker å starte oppdatering av ytelser.");
         if(this.isRunning()) {
-            log.info("Kunne ikke starte ny oppdatering av ytelser fordi den allerede er midt i en oppdatering");
+            log.info("Kunne ikke starte ny oppdatering av ytelser fordi den allerede er midt i en oppdatering.");
             return;
         }
         this.isRunning = true;
@@ -62,14 +63,14 @@ public class KopierGR199FraArena {
         Consumer<Throwable> stopped = (t) -> this.isRunning = false;
 
         timed("GR199.hentfil", hentfil)
-                .onFailure(log(log, "Kunne ikke hente ut fil via nfs").andThen(stopped))
+                .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs").andThen(stopped))
                 .flatMap(timed("GR199.unmarshall", this::unmarshall))
-                .onFailure(log(log, "Unmarshalling feilet").andThen(stopped))
+                .onFailure(log(log, "Unmarshalling av ytelsesfil feilet").andThen(stopped))
                 .andThen(timed("GR199.indekser", indekserHandler::indekser))
-                .onFailure(log(log, "Indeksering feilet").andThen(stopped))
+                .onFailure(log(log, "Hovedindeksering feilet").andThen(stopped))
                 .andThen(() -> {
                     this.isRunning = false;
-                    log.info("Oppdatering av ytelser ferdig...");
+                    log.info("Oppdatering av ytelser fullført");
                 });
     }
 
