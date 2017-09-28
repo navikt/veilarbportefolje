@@ -63,6 +63,7 @@ public class TiltakHandler {
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
+        log.info("Forsøker å starte oppdatering av tiltaksaktiviteter.");
         if(this.kjorer()) {
             log.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
             return;

@@ -44,8 +44,9 @@ public class KopierGR199FraArena {
     }
 
     public void startOppdateringAvYtelser() {
+        log.info("Forsøker å starte oppdatering av ytelser.");
         if(this.isRunning()) {
-            log.info("Kunne ikke starte ny oppdatering av ytelser fordi den allerede er midt i en oppdatering");
+            log.info("Kunne ikke starte ny oppdatering av ytelser fordi den allerede er midt i en oppdatering.");
             return;
         }
         this.isRunning = true;
@@ -69,7 +70,7 @@ public class KopierGR199FraArena {
                 .onFailure(log(log, "Hovedindeksering feilet").andThen(stopped))
                 .andThen(() -> {
                     this.isRunning = false;
-                    log.info("Oppdatering av ytelser ferdig...");
+                    log.info("Oppdatering av ytelser fullført");
                 });
     }
 
