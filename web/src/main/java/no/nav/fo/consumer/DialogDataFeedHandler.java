@@ -84,7 +84,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                     }
             );
         } catch (Exception e) {
-            log.error("Feil ved behandlig av dialog fra feed med aktorid {}", dialog.aktorId);
+            log.error("Feil ved behandling av dialog fra feed for aktorid {}.", dialog.aktorId, e);
         }
     }
 

@@ -87,7 +87,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );
         }catch(Exception e) {
-            log.error("Feil ved behandling av objekt fra feed med aktorid {}, {}", bruker.getAktoerid(), e.getMessage());
+            log.error("Feil ved behandling av oppfølgingsdata (situasjon) fra feed for aktorid {}.", bruker.getAktoerid(), e);
         }
     }
 }

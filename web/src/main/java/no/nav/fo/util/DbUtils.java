@@ -20,7 +20,7 @@ public class DbUtils {
         try {
             return mapTilDokument(rs);
         }catch(SQLException e) {
-            log.error("Feil ved mapping til SolrIntputDocument", e);
+            log.error("Feil ved mapping fra resultset fra db til SolrIntputDocument", e);
             return null;
         }
     }

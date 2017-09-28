@@ -153,7 +153,7 @@ public class Bruker {
         }
 
         String aktivitetstype = Try.of(() -> aktivitetstypeSortering.split("_")[1])
-                .onFailure((t) -> log.error("Sorteringsfelt for aktiviteter må starte med AKTIVITETER_", t))
+                .onFailure((t) -> log.error("Sorteringsfelt for aktivitet må starte med AKTIVITETER_", t))
                 .getOrElseThrow(() -> new IllegalArgumentException());
 
         return Optional.ofNullable(aktiviteter.get(aktivitetstype.toLowerCase())).orElse(new Timestamp(0));

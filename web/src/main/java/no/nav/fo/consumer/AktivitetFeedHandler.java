@@ -71,7 +71,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                     (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase()); }}
                     );
         }catch(Exception e) {
-            log.error("Kunne ikke lagre aktivitetdata fra feed. aktivitetid: {}", aktivitet.getAktivitetId(), e);
+            log.error("Kunne ikke lagre aktivitetdata fra feed for aktivitetid {}.", aktivitet.getAktivitetId(), e);
         }
     }
 
@@ -97,7 +97,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                     (timer, hasFailed) -> { if (hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktoerid).toUpperCase()); }}
             );
         }catch(Exception e) {
-            log.error("Feil ved behandling av aktivitetdata for aktoerid: {}", aktoerid, e);
+            log.error("Feil ved behandling av aktivitetdata fra feed for aktoerid {}", aktoerid, e);
         }
     }
 }
