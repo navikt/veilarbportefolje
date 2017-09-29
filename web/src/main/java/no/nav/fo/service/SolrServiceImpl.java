@@ -208,13 +208,14 @@ public class SolrServiceImpl implements SolrService {
 
     private List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
         List<Bruker> brukere = new ArrayList<>();
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, filtervalg);
         try {
-            QueryResponse response = solrClientSlave.query(SolrUtils.buildSolrQuery(queryString, filtervalg));
+            QueryResponse response = solrClientSlave.query(solrQuery);
             SolrUtils.checkSolrResponseCode(response.getStatus());
             SolrDocumentList results = response.getResults();
             brukere = results.stream().map(Bruker::of).collect(toList());
         } catch (SolrServerException | IOException e) {
-            log.error("Spørring mot indeks feilet: ", e.getMessage(), e);
+            log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
         }
         return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
     }
@@ -241,7 +242,7 @@ public class SolrServiceImpl implements SolrService {
             response = solrClientSlave.query(solrQuery);
             log.debug(response.toString());
         } catch (SolrServerException | IOException e) {
-            log.error("Spørring mot indeks feilet", e.getMessage(), e);
+            log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
         }
 
         FacetField facetField = response.getFacetField(facetFieldString);
@@ -273,7 +274,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public Try<UpdateResponse> commit() {
         return Try.of(() -> solrClientMaster.commit())
-                .onFailure(e -> log.error("Kunne ikke gjennomføre commit ved indeksering!", e));
+                .onFailure(e -> log.error("Kunne ikke gjennomføre commit til solrindeksen.", e));
     }
 
     private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {
@@ -286,7 +287,7 @@ public class SolrServiceImpl implements SolrService {
                             solrClientMaster.add(docs.toJavaList());
                             log.info(format("Legger til %d dokumenter i indeksen", docs.length()));
                         } catch (SolrServerException | IOException e) {
-                            log.error("Kunne ikke legge til dokumenter.", e.getMessage(), e);
+                            log.error("Legge til solrdokumenter før commit feilet.", e);
                         }
                     });
             return dokumenter;
@@ -301,10 +302,8 @@ public class SolrServiceImpl implements SolrService {
         try {
             UpdateResponse response = solrClientMaster.deleteByQuery(query);
             SolrUtils.checkSolrResponseCode(response.getStatus());
-        } catch (SolrServerException | IOException e) {
-            log.error("Kunne ikke slette dokumenter.", e.getMessage(), e);
-        } catch (SolrUpdateResponseCodeException e) {
-            log.error(e.getMessage());
+        } catch (SolrServerException | IOException | SolrUpdateResponseCodeException e) {
+            log.error("Kunne ikke slette dokumenter fra solrindeks: {}", query, e);
         }
     }
 
@@ -361,7 +360,7 @@ public class SolrServiceImpl implements SolrService {
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter);
         } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for portefølje feilet ", e.getMessage(), e);
+            log.error("Henting av statustall for enhetsportefølje feilet: {}", solrQuery, e);
         }
 
         return statusTall;
@@ -413,7 +412,7 @@ public class SolrServiceImpl implements SolrService {
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter)
                     .setMinArbeidsliste(antallIarbeidsliste);
         } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for veileder feilet ", e.getMessage(), e);
+            log.error("Henting av statustall for veilederportefølje feilet: {}", solrQuery, e);
         }
 
         return statusTall;

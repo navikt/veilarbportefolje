@@ -103,7 +103,7 @@ public class TiltakRepository {
                 lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
             }));
         } catch (SQLException e) {
-            log.error("Kunne ikke koble til database for å lagre Tiltak for enhet", e);
+            log.error("Kunne ikke koble til database for å lagre tiltaksaktivitet for enhet", e);
         }
     }
 
@@ -117,7 +117,7 @@ public class TiltakRepository {
             }
             ps.executeBatch();
         } catch (SQLException e) {
-            log.warn("Kunne ikke lagre TiltakForEnhet i databasen");
+            log.error("Kunne ikke lagre tiltaksaktivitet i databasen");
             MetricsFactory.createEvent("veilarbportefolje.lagreEnhettiltak.feilet").report();
         }
     }
