@@ -11,14 +11,11 @@ import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.util.TokenUtils;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class TilgangsRegler {
     final static Pattern pattern = Pattern.compile("\\d{4}");
@@ -35,20 +32,6 @@ public class TilgangsRegler {
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         tilgangTilEnhet(brukertilgangService, enhet, veilederId);
     }
-
-    static boolean enhetErIPilot(String enhet) {
-        String enhetsliste = System.getProperty("portefolje.pilot.enhetliste", "");
-        enhetsliste = pattern.matcher(enhetsliste).find() ? enhetsliste : "";
-
-        if (isBlank(enhetsliste)) {
-            return true;
-        }
-
-        List<String> pilotenheter = Arrays.asList(enhetsliste.split(","));
-
-        return pilotenheter.isEmpty() || pilotenheter.contains(enhet);
-    }
-
 
     private static void tilgangTilEnhet(BrukertilgangService brukertilgangService, String enhet, String ident) {
         test("tilgang til enhet", Tuple.of(enhet, ident), brukertilgangService.harBrukerTilgang(ident, enhet));

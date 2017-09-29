@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
-import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,10 +64,6 @@ public class VeilederController {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
-            if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return new Portefolje().setBrukere(new ArrayList<>());
-            }
-
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
@@ -96,10 +90,6 @@ public class VeilederController {
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
-            if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return new StatusTall();
-            }
-
             return solrService.hentStatusTallForVeileder(enhet, veilederIdent);
         });
     }
@@ -110,10 +100,6 @@ public class VeilederController {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-
-            if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                throw new RestTilgangException("Enhet er ikke med i pilot");
-            }
 
             return solrService
                     .hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet)
