@@ -46,7 +46,6 @@ public abstract class ComponentTest {
     public void setUp() throws Exception {
         setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
         InternbrukerSubjectHandler.setVeilederIdent("testident");
-        System.clearProperty("portefolje.pilot.enhetliste");
     }
 
     @SneakyThrows

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,10 +62,6 @@ public class EnhetController {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
-            if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return new Portefolje().setBrukere(new ArrayList<>());
-            }
-
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
@@ -101,10 +96,6 @@ public class EnhetController {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
 
-            if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return new StatusTall();
-            }
-
             return solrService.hentStatusTallForPortefolje(enhet);
         });
     }
@@ -114,10 +105,6 @@ public class EnhetController {
     public Response hentTiltak(@PathParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
-
-            if (!TilgangsRegler.enhetErIPilot(enhet)) {
-                return new EnhetTiltak();
-            }
 
             return tiltakService.hentEnhettiltak(enhet)
                     .getOrElse(new EnhetTiltak());
