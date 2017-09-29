@@ -66,7 +66,7 @@ public class KopierGR199FraArena {
                 .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs").andThen(stopped))
                 .flatMap(timed("GR199.unmarshall", this::unmarshall))
                 .onFailure(log(log, "Unmarshalling av ytelsesfil feilet").andThen(stopped))
-                .andThen(timed("GR199.indekser", indekserHandler::indekser))
+                .andThen(timed("GR199.lagreYtelser", indekserHandler::lagreYtelser))
                 .onFailure(log(log, "Hovedindeksering feilet").andThen(stopped))
                 .andThen(() -> {
                     this.isRunning = false;

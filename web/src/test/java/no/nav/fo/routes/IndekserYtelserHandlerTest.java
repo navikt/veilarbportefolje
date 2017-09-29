@@ -76,7 +76,7 @@ public class IndekserYtelserHandlerTest {
                 lagVedtak("10108000399") //TESTFAMILIE
         ));
 
-        handler.indekser(ytelser);
+        handler.lagreYtelser(ytelser);
 
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
         assertThat(captor.getValue()).hasSize(1);
@@ -89,7 +89,7 @@ public class IndekserYtelserHandlerTest {
                 lagVedtak("10108000399", "AA", "AAP") //TESTFAMILIE
         ));
 
-        handler.indekser(ytelser);
+        handler.lagreYtelser(ytelser);
 
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
 
@@ -108,7 +108,7 @@ public class IndekserYtelserHandlerTest {
                 lagVedtak("10108000399", "AA", "AAP", new BigInteger("205"), BigInteger.TEN) //TESTFAMILIE
         ));
 
-        handler.indekser(ytelser);
+        handler.lagreYtelser(ytelser);
 
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
 
@@ -127,7 +127,7 @@ public class IndekserYtelserHandlerTest {
         vedtak.getAaptellere().setAntallDagerUnntak(BigInteger.ONE);
         LoependeYtelser ytelser = lagLoependeYtelser(asList(vedtak));
 
-        handler.indekser(ytelser);
+        handler.lagreYtelser(ytelser);
 
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
 
