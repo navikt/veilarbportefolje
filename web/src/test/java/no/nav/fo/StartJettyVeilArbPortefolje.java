@@ -2,13 +2,16 @@ package no.nav.fo;
 
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
+import no.nav.dialogarena.config.fasit.DbCredentials;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.config.DatabaseConfig;
+import no.nav.fo.config.LocalJndiContextConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.eclipse.jetty.plus.jndi.Resource;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.getProperty;
 import static no.nav.fo.config.LocalJndiContextConfig.*;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
@@ -23,13 +26,20 @@ public class StartJettyVeilArbPortefolje {
     public static void main(String[] args) throws Exception {
         SystemProperties.setFrom("veilarbportefolje.properties");
 
-        SingleConnectionDataSource dataSource;
-        if (Boolean.parseBoolean(getProperty("lokal.database"))) {
+        DriverManagerDataSource dataSource;
+        if (parseBoolean(getProperty("lokal.database"))) {
             dataSource = setupInMemoryDatabase();
+        } else if(getProperty("database.url") != null){
+            DbCredentials dbCredentials = new DbCredentials()
+                    .setUrl(getProperty("database.url"))
+                    .setUsername(getProperty("database.brukernavn", "sa"))
+                    .setPassword(getProperty("database.passord", ""));
+            dataSource = setupDataSourceWithCredentials(dbCredentials);
+            LocalJndiContextConfig.migrateDb(dataSource);
         } else {
-            dataSource = setupOracleDataSource(FasitUtils.getDbCredentials(APPLICATION_NAME));
+            dataSource = setupDataSourceWithCredentials(FasitUtils.getDbCredentials(APPLICATION_NAME));
         }
-
+        
         setServiceUserCredentials(FasitUtils.getServiceUser(SERVICE_USER_NAME, APPLICATION_NAME));
 
         // TODO slett når common-jetty registerer datasource fornuftig
@@ -47,4 +57,5 @@ public class StartJettyVeilArbPortefolje {
 
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
+    
 }
