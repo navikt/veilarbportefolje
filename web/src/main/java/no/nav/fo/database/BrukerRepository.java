@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -214,7 +215,6 @@ public class BrukerRepository {
                         .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
-                        .setIAvtaltAktivitet(parse0OR1((String) data.get("IAVTALTAKTIVITET")))
                         .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET")))
                 .collect(toList());
     }
@@ -368,8 +368,7 @@ public class BrukerRepository {
             "oppfolging, " +
             "venterpasvarfrabruker, " +
             "venterpasvarfranav, " +
-            "nyesteutlopteaktivitet, " +
-            "iavtaltaktivitet " +
+            "nyesteutlopteaktivitet " +
             "FROM " +
             "oppfolgingsbruker ";
 

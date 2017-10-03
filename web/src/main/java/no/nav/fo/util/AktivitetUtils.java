@@ -3,7 +3,6 @@ package no.nav.fo.util;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
@@ -18,7 +17,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
@@ -49,12 +47,10 @@ public class AktivitetUtils {
     private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter, AktoerId aktoerId, PersonId personId) {
 
         Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId);
-        Boolean erIAvtaltIAvtaltAktivitet = erBrukerIAktivAktivitet(aktiviteter, LocalDate.now());
         Optional<AktivitetDTO> nyesteUtlopteAktivitet = Optional.ofNullable(finnNyesteUtlopteAktivAktivitet(aktiviteter, LocalDate.now()));
 
         return new AktivitetBrukerOppdatering(personId.toString(), aktoerId.toString())
                 .setAktiviteter(aktiveAktiviteter)
-                .setIAvtaltAktivitet(erIAvtaltIAvtaltAktivitet)
                 .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet.map(AktivitetDTO::getTilDato).orElse(null));
     }
 
@@ -75,7 +71,6 @@ public class AktivitetUtils {
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                 .anyMatch(match -> true);
-
     }
 
     static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {

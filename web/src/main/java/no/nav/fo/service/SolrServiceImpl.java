@@ -324,8 +324,8 @@ public class SolrServiceImpl implements SolrService {
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
-        String iavtaltAktivitet = "iavtaltaktivitet:true";
-        String ikkeIAvtaltAktivitet = "-iavtaltaktivitet:true";
+        String iavtaltAktivitet = "aktiviteter:*";
+        String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
@@ -373,8 +373,8 @@ public class SolrServiceImpl implements SolrService {
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
-        String iavtaltAktivitet = "iavtaltaktivitet:true";
-        String ikkeIAvtaltAktivitet = "-iavtaltaktivitet:true";
+        String iavtaltAktivitet = "aktiviteter:*";
+        String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
         String minArbeidsliste = "arbeidsliste_aktiv:*";
 
