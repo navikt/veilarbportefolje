@@ -118,7 +118,7 @@ public class BrukerTest {
         Map<String, Timestamp> map = new HashMap<>();
         map.put("a1", t1 );
         Bruker bruker = new Bruker().setAktiviteter(map);
-        assertThat(bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0("aktiviteter_a1")).isEqualTo(t1);
+        assertThat(bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0("a1")).isEqualTo(t1);
     }
 
     @Test
