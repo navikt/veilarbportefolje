@@ -9,6 +9,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Filter;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -101,17 +102,25 @@ public class SolrUtils {
         put("I_AVTALT_AKTIVITET", Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
     }};
 
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField) {
+    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Filtervalg filtervalg) {
         if (sortFieldMap.containsKey(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
         }
-        if(Objects.nonNull(sortField) && sortField.contains("aktivitet_")) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0(sortField));
+        if(Objects.nonNull(sortField) && sortField.equals("valgte_aktiviteter")) {
+            List<String> aktivitetListe = new ArrayList<>();
+            filtervalg.aktiviteter.forEach((s, aktivitetFiltervalg) -> {
+                if (AktivitetFiltervalg.JA.equals(aktivitetFiltervalg)) {
+                    aktivitetListe.add(s);
+                }
+            });
+            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(aktivitetListe));
         }
 
         brukere.sort(brukerErNyComparator());
         return brukere;
     }
+
+
 
     static Comparator<Bruker> setComparatorSortOrder(Comparator<Bruker> comparator, String sortOrder) {
         return sortOrder.equals("descending") ? comparator.reversed() : comparator;

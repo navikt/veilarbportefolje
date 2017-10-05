@@ -31,10 +31,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 import static java.lang.String.format;
@@ -217,7 +214,7 @@ public class SolrServiceImpl implements SolrService {
         } catch (SolrServerException | IOException e) {
             log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
         }
-        return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
+        return SolrUtils.sortBrukere(brukere, sortOrder, sortField, filtervalg);
     }
 
     @Override

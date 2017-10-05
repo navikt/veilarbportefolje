@@ -147,16 +147,30 @@ public class Bruker {
                 .orElse(new Timestamp(0));
     }
 
+    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
     public Timestamp getNesteUtlopsdatoForAktivitetOrElseEpoch0(String aktivitetstypeSortering) {
         if(Objects.isNull(aktiviteter)) {
             return new Timestamp(0);
         }
 
-        String aktivitetstype = Try.of(() -> aktivitetstypeSortering.split("_")[1])
-                .onFailure((t) -> log.error("Sorteringsfelt for aktivitet må starte med AKTIVITETER_", t))
-                .getOrElseThrow(() -> new IllegalArgumentException());
+        return Optional.ofNullable(aktiviteter.get(aktivitetstypeSortering.toLowerCase())).orElse(new Timestamp(0));
 
-        return Optional.ofNullable(aktiviteter.get(aktivitetstype.toLowerCase())).orElse(new Timestamp(0));
+    }
 
+    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
+    public Timestamp getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(List<String> aktivitetsListe) {
+        if(Objects.isNull(aktivitetsListe) || aktivitetsListe.isEmpty()) {
+            return new Timestamp(0);
+        }
+        List<Timestamp> datoListe = new ArrayList<>();
+        for (String aktivitet : aktivitetsListe) {
+            datoListe.add(getNesteUtlopsdatoForAktivitetOrElseEpoch0(aktivitet));
+        }
+        return datoListe
+                .stream()
+                .filter(Objects::nonNull)
+                .sorted()
+                .findFirst()
+                .orElse(new Timestamp(0));
     }
 }
