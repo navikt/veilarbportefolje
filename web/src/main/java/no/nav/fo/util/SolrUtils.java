@@ -107,12 +107,13 @@ public class SolrUtils {
             return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
         }
         if(Objects.nonNull(sortField) && sortField.equals("valgte_aktiviteter")) {
-            List<String> aktivitetListe = new ArrayList<>();
-            filtervalg.aktiviteter.forEach((s, aktivitetFiltervalg) -> {
-                if (AktivitetFiltervalg.JA.equals(aktivitetFiltervalg)) {
-                    aktivitetListe.add(s);
-                }
-            });
+            List<String> aktivitetListe = filtervalg.aktiviteter
+                    .entrySet()
+                    .stream()
+                    .filter(map -> AktivitetFiltervalg.JA.equals(map.getValue()))
+                    .map(map -> map.getKey())
+                    .collect(Collectors.toList());
+
             return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(aktivitetListe));
         }
 

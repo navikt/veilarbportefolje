@@ -153,7 +153,7 @@ public class Bruker {
             return new Timestamp(0);
         }
 
-        return Optional.ofNullable(aktiviteter.get(aktivitetstypeSortering.toLowerCase())).orElse(new Timestamp(0));
+        return Optional.ofNullable(aktiviteter.get(aktivitetstypeSortering.toLowerCase())).orElse(null);
 
     }
 
@@ -162,12 +162,10 @@ public class Bruker {
         if(Objects.isNull(aktivitetsListe) || aktivitetsListe.isEmpty()) {
             return new Timestamp(0);
         }
-        List<Timestamp> datoListe = new ArrayList<>();
-        for (String aktivitet : aktivitetsListe) {
-            datoListe.add(getNesteUtlopsdatoForAktivitetOrElseEpoch0(aktivitet));
-        }
-        return datoListe
+
+        return aktivitetsListe
                 .stream()
+                .map(this::getNesteUtlopsdatoForAktivitetOrElseEpoch0)
                 .filter(Objects::nonNull)
                 .sorted()
                 .findFirst()
