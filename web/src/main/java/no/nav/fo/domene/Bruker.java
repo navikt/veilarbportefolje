@@ -149,7 +149,7 @@ public class Bruker {
                 .values()
                 .stream()
                 .filter(Objects::nonNull)
-                .filter(tid -> (timeStampMilliS <= tid.getTime()))
+                .filter(tid -> tid.getTime() >= timeStampMilliS)
                 .sorted()
                 .findFirst()
                 .orElse(new Timestamp(0));
