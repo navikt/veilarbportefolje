@@ -63,7 +63,7 @@ class PortefoljeSimulation extends Simulation {
     .feed(enhetsFeeder)
     .exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
     .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
-    .pause("50", "600", TimeUnit.MILLISECONDS)
+    .pause(500 milliseconds)
     .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/tjenester/tekster"))
     .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
     .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
@@ -73,22 +73,22 @@ class PortefoljeSimulation extends Simulation {
         .body(Helpers.toBody(RequestFilter()))
         .check(status.is(200))
     )
-    .pause("50", "600", TimeUnit.MILLISECONDS)
+    .pause(1 second)
     .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
     .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
-    .pause("3", "15", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("portefoljefilter alder", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
         .check(status.is(200))
     )
-    .pause("1", "10", TimeUnit.SECONDS)
+    .pause(1 second,3 seconds)
     .exec(
       Helpers.httpPostPaginering("portefoljefilter alder og kjoenn", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("25-29", "30-39"), kjonn = List("M"))))
         .check(status.is(200))
     )
-    .pause("1", "10", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("portefoljefilter kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
@@ -97,7 +97,7 @@ class PortefoljeSimulation extends Simulation {
         )))
         .check(status.is(200))
     )
-    .pause("1", "10", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("portefoljefilter alder, kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
@@ -107,7 +107,7 @@ class PortefoljeSimulation extends Simulation {
         )))
         .check(status.is(200))
     )
-    .pause("1", "10", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("portefoljefilter tiltak", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
@@ -124,7 +124,7 @@ class PortefoljeSimulation extends Simulation {
         ))))
         .check(status.is(200))
     )
-    .pause("1", "6", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
         .body(Helpers.toBody(List(RequestTildelingVeileder(
@@ -134,7 +134,7 @@ class PortefoljeSimulation extends Simulation {
         ))))
         .check(status.is(200))
     )
-    .pause("1", "6", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
         .body(Helpers.toBody(List(RequestTildelingVeileder(
@@ -144,10 +144,10 @@ class PortefoljeSimulation extends Simulation {
         ))))
         .check(status.is(200))
     )
-    .pause("1", "6", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
 
-    .pause("1", "6", TimeUnit.SECONDS)
+    .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("veileders portefolje", session => s"/veilarbportefolje/tjenester/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
         .body(Helpers.toBody(RequestFilter(brukerstatus = null)))
