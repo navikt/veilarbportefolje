@@ -1,5 +1,6 @@
 package no.nav.fo.util.sql;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -10,6 +11,7 @@ import java.util.Map;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
+@Slf4j
 public class UpsertQuery {
     private final String upsertTemplate = "MERGE INTO %s USING dual ON (%s) WHEN MATCHED THEN %s WHEN NOT MATCHED THEN %s";
     private final JdbcTemplate db;
@@ -45,8 +47,9 @@ public class UpsertQuery {
             );
         }
 
+        String upsertStatement = createUpsertStatement();
         return
-                db.execute(createUpsertStatement(), (PreparedStatementCallback<Boolean>) ps -> {
+                db.execute(upsertStatement, (PreparedStatementCallback<Boolean>) ps -> {
                     int index = 1;
 
                     index = this.where.applyTo(ps, index);
@@ -63,6 +66,7 @@ public class UpsertQuery {
                         ps.setObject(index++, entry.getValue());
                     }
 
+                    log.debug(String.format("[UpsertQuery] Sql: %s \n [UpsertQuery] Params: %s", upsertStatement, this.setParams));
                     return ps.execute();
                 });
     }
