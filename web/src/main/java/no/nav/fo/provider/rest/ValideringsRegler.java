@@ -36,14 +36,7 @@ class ValideringsRegler {
             "VENTER_PA_SVAR_FRA_BRUKER",
             "UTLOPTE_AKTIVITETER",
             "I_AVTALT_AKTIVITET",
-            "aktivitet_ijobb",
-            "aktivitet_sokeavtale",
-            "aktivitet_stilling",
-            "aktivitet_behandling",
-            "aktivitet_mote",
-            "aktivitet_egen",
-            "aktivitet_tiltak",
-            "aktivitet_gruppeaktivitet"); // TODO alle sortField i samme format
+            "valgte_aktiviteter"); // TODO alle sortField i samme format
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));

@@ -16,10 +16,12 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.util.SolrUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.filter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import java.sql.Timestamp;
 
 public class SolrUtilsTest {
 
@@ -275,8 +277,9 @@ public class SolrUtilsTest {
         brukere.add(bruker2);
         brukere.add(bruker3);
         brukere.add(bruker4);
+        Filtervalg filtervalg = new Filtervalg();
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn");
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn", filtervalg);
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
@@ -295,8 +298,9 @@ public class SolrUtilsTest {
         brukere.add(bruker2);
         brukere.add(bruker3);
         brukere.add(bruker4);
+        Filtervalg filtervalg = new Filtervalg();
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "etternavn");
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "etternavn", filtervalg);
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
@@ -315,8 +319,9 @@ public class SolrUtilsTest {
         brukere.add(bruker2);
         brukere.add(bruker3);
         brukere.add(bruker4);
+        Filtervalg filtervalg = new Filtervalg();
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "etternavn");
+        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "etternavn", filtervalg);
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
@@ -336,13 +341,60 @@ public class SolrUtilsTest {
         brukere.add(bruker2);
         brukere.add(bruker3);
         brukere.add(bruker4);
+        Filtervalg filtervalg = new Filtervalg();
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "utlopsdato");
+        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "utlopsdato", filtervalg);
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
         assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
         assertThat(brukereSortert.get(3)).isEqualTo(bruker2);
+    }
+
+    @Test
+    public void skalSorterePaaUtlopsdatoTilValgteAktiviteter() {
+        LocalDateTime ettMinuttFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
+        LocalDateTime toMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(2);
+        LocalDateTime treMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(3);
+        LocalDateTime fireMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(4);
+        Timestamp t1 = Timestamp.valueOf(ettMinuttFrem);
+        Timestamp t2 = Timestamp.valueOf(toMinutterFrem);
+        Timestamp t3 = Timestamp.valueOf(treMinutterFrem);
+        Timestamp t4 = Timestamp.valueOf(fireMinutterFrem);
+
+        Map<String, Timestamp> brukerAktiviteter1 = new HashMap<>();
+        Map<String, Timestamp> brukerAktiviteter2 = new HashMap<>();
+        Map<String, Timestamp> brukerAktiviteter3 = new HashMap<>();
+        Map<String, Timestamp> brukerAktiviteter4 = new HashMap<>();
+        brukerAktiviteter1.put("behandling", t4);
+        brukerAktiviteter1.put("ijobb", t4);
+        Bruker bruker1 = new Bruker().setAktiviteter(brukerAktiviteter1).setFnr("1");
+        brukerAktiviteter2.put("ijobb", t2);
+        brukerAktiviteter2.put("behandling", t3);
+        Bruker bruker2 = new Bruker().setAktiviteter(brukerAktiviteter2).setFnr("2");
+        brukerAktiviteter3.put("behandling", t3);
+        brukerAktiviteter3.put("ijobb", t4);
+        Bruker bruker3 = new Bruker().setAktiviteter(brukerAktiviteter3).setFnr("3");
+        brukerAktiviteter4.put("behandling", t3);
+        brukerAktiviteter4.put("ijobb", t1);
+        Bruker bruker4 = new Bruker().setAktiviteter(brukerAktiviteter4).setFnr("4");
+
+        List<Bruker> brukere = new ArrayList<>();
+        brukere.add(bruker1);
+        brukere.add(bruker2);
+        brukere.add(bruker3);
+        brukere.add(bruker4);
+        Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
+        aktiviteter.put("ijobb", AktivitetFiltervalg.JA);
+        aktiviteter.put("behandling", AktivitetFiltervalg.JA);
+        Filtervalg filtervalg = new Filtervalg().setAktiviteter(aktiviteter);
+
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "valgte_aktiviteter", filtervalg);
+
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker4);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
+        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
     }
 
     @Test
@@ -452,8 +504,9 @@ public class SolrUtilsTest {
         brukere.add(bruker4);
         brukere.add(bruker5);
         brukere.add(bruker6);
+        Filtervalg filtervalg = new Filtervalg();
 
-        List<Bruker> sortert = SolrUtils.sortBrukere(brukere, "ascending", "etternavn");
+        List<Bruker> sortert = SolrUtils.sortBrukere(brukere, "ascending", "etternavn", filtervalg);
 
         assertThat(sortert.get(0).getEtternavn()).isEqualTo("Abel");
         assertThat(sortert.get(3).getEtternavn()).isEqualTo("Øran");
