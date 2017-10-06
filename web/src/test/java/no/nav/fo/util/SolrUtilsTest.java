@@ -353,21 +353,30 @@ public class SolrUtilsTest {
 
     @Test
     public void skalSorterePaaUtlopsdatoTilValgteAktiviteter() {
+        LocalDateTime ettMinuttFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
+        LocalDateTime toMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(2);
+        LocalDateTime treMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(3);
+        LocalDateTime fireMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(4);
+        Timestamp t1 = Timestamp.valueOf(ettMinuttFrem);
+        Timestamp t2 = Timestamp.valueOf(toMinutterFrem);
+        Timestamp t3 = Timestamp.valueOf(treMinutterFrem);
+        Timestamp t4 = Timestamp.valueOf(fireMinutterFrem);
+
         Map<String, Timestamp> brukerAktiviteter1 = new HashMap<>();
         Map<String, Timestamp> brukerAktiviteter2 = new HashMap<>();
         Map<String, Timestamp> brukerAktiviteter3 = new HashMap<>();
         Map<String, Timestamp> brukerAktiviteter4 = new HashMap<>();
-        brukerAktiviteter1.put("behandling", new Timestamp(0));
-        brukerAktiviteter1.put("ijobb", new Timestamp(7));
+        brukerAktiviteter1.put("behandling", t4);
+        brukerAktiviteter1.put("ijobb", t4);
         Bruker bruker1 = new Bruker().setAktiviteter(brukerAktiviteter1).setFnr("1");
-        brukerAktiviteter2.put("ijobb", new Timestamp(8));
-        brukerAktiviteter2.put("behandling", new Timestamp(9));
+        brukerAktiviteter2.put("ijobb", t2);
+        brukerAktiviteter2.put("behandling", t3);
         Bruker bruker2 = new Bruker().setAktiviteter(brukerAktiviteter2).setFnr("2");
-        brukerAktiviteter3.put("behandling", new Timestamp(10));
-        brukerAktiviteter3.put("ijobb", new Timestamp(2));
+        brukerAktiviteter3.put("behandling", t3);
+        brukerAktiviteter3.put("ijobb", t4);
         Bruker bruker3 = new Bruker().setAktiviteter(brukerAktiviteter3).setFnr("3");
-        brukerAktiviteter4.put("behandling", new Timestamp(6));
-        brukerAktiviteter4.put("ijobb", new Timestamp(1));
+        brukerAktiviteter4.put("behandling", t3);
+        brukerAktiviteter4.put("ijobb", t1);
         Bruker bruker4 = new Bruker().setAktiviteter(brukerAktiviteter4).setFnr("4");
 
         List<Bruker> brukere = new ArrayList<>();
@@ -382,10 +391,10 @@ public class SolrUtilsTest {
 
         List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "valgte_aktiviteter", filtervalg);
 
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
+        assertThat(brukereSortert.get(0)).isEqualTo(bruker4);
+        assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
         assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker2);
+        assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
     }
 
     @Test

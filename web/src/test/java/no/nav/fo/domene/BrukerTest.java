@@ -88,8 +88,10 @@ public class BrukerTest {
 
     @Test
     public void skalReturnereNesteAktivitetUtlopsdato() {
-        Timestamp t1 = new Timestamp(1000000000);
-        Timestamp t2 = new Timestamp(2000000000);
+        LocalDateTime ettMinuttFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
+        Timestamp t1 = Timestamp.valueOf(ettMinuttFrem);
+        LocalDateTime toMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
+        Timestamp t2 = Timestamp.valueOf(toMinutterFrem);
         Map<String, Timestamp> map = new HashMap<>();
         map.put("a1", t1 );
         map.put("a2", t2 );
@@ -114,7 +116,8 @@ public class BrukerTest {
 
     @Test
     public void skalReturnereUtlopsdatoForAktivitet() {
-        Timestamp t1 = new Timestamp(1000000000);
+        LocalDateTime ettMinuttFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
+        Timestamp t1 = Timestamp.valueOf(ettMinuttFrem);
         Map<String, Timestamp> map = new HashMap<>();
         map.put("a1", t1 );
         Bruker bruker = new Bruker().setAktiviteter(map);
@@ -122,7 +125,7 @@ public class BrukerTest {
     }
 
     @Test
-    public void skalReturnereEpoch0OmUtlopsdatoForAktivitetIkkeFinnes() {
+    public void skalReturnereEpoch0OmIngenUtlopsdatoerFinnesEllerErFoerNaa() {
         Timestamp t1 = new Timestamp(1000000000);
         Map<String, Timestamp> map = new HashMap<>();
         map.put("a1", t1 );
