@@ -26,6 +26,7 @@ class PortefoljeSimulation extends Simulation {
   private val password = System.getProperty("USER_PASSWORD", "Teflon3970")
   private val oidcPassword = System.getProperty("OIDC_PASSWORD", "0987654321")
   private val enheter = System.getProperty("ENHETER", "1001").split(",")
+  private val rapporterSolrSamlet = System.getProperty("RAPPORTER_SOLR_SAMLET", "true").toBoolean;
 
   private val appnavn = "veilarbpersonflatefs"
   private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
@@ -54,6 +55,10 @@ class PortefoljeSimulation extends Simulation {
       .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
   }
 
+  private def rapporterMedNavn(navn: String): String = {
+    if (rapporterSolrSamlet) "portefolje-solrsporring" else navn
+  }
+
   private val loginScenario = scenario("Logger inn")
     .feed(brukernavn)
     .exec(login)
@@ -65,32 +70,32 @@ class PortefoljeSimulation extends Simulation {
     .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
     .pause(500 milliseconds)
     .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/tjenester/tekster"))
-    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
-    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
-    .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/statustall"))
+    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
+    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
+    .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/statustall"))
     .exec(
-      Helpers.httpPostPaginering("portefoljefilter nye brukere", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter()))
         .check(status.is(200))
     )
     .pause(1 second)
-    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
-    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
+    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
+    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering("portefoljefilter alder", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
         .check(status.is(200))
     )
     .pause(1 second,3 seconds)
     .exec(
-      Helpers.httpPostPaginering("portefoljefilter alder og kjoenn", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder og kjoenn"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("25-29", "30-39"), kjonn = List("M"))))
         .check(status.is(200))
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering("portefoljefilter kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter kjoenn og foedselsdag"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
           kjonn = List("M"),
           fodselsdagIMnd = List("1", "2")
@@ -99,7 +104,7 @@ class PortefoljeSimulation extends Simulation {
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering("portefoljefilter alder, kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder, kjoenn og foedselsdag"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
           alder = List("20-24", "30-39"),
           kjonn = List("M"),
@@ -109,7 +114,7 @@ class PortefoljeSimulation extends Simulation {
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering("portefoljefilter tiltak", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter tiltak"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
           aktiviteter = AktivitetRequestFilter(TILTAK = "JA")
         )))
@@ -145,11 +150,11 @@ class PortefoljeSimulation extends Simulation {
         .check(status.is(200))
     )
     .pause(1 second, 3 seconds)
-    .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
+    .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
 
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering("veileders portefolje", session => s"/veilarbportefolje/tjenester/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
+      Helpers.httpPostPaginering(rapporterMedNavn("veileders portefolje"), session => s"/veilarbportefolje/api/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
         .body(Helpers.toBody(RequestFilter(brukerstatus = null)))
         .check(status.is(200))
     )
@@ -159,6 +164,7 @@ class PortefoljeSimulation extends Simulation {
     // WARNING: Cookie rejected [amlbcookie="01", version:0, domain:test.local, path:/, expiry:null] Illegal 'domain' attribute "test.local". Domain of origin: "isso-t.adeo.no"
     loginScenario.inject(constantUsersPerSec(10) during (140 seconds)),
     portefoljeScenario.inject(nothingFor(140 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+     //   portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
   )
     .protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
