@@ -4,10 +4,13 @@ import io.vavr.control.Try;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.cglib.core.Local;
 import org.apache.solr.common.SolrDocument;
 import org.json.JSONObject;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -138,25 +141,47 @@ public class Bruker {
         if(Objects.isNull(aktiviteter)) {
             return new Timestamp(0);
         }
+
+        Instant instant = Instant.now();
+        long timeStampMilliS = instant.toEpochMilli();
+
         return aktiviteter
                 .values()
                 .stream()
                 .filter(Objects::nonNull)
+                .filter(tid -> tid.getTime() >= timeStampMilliS)
                 .sorted()
                 .findFirst()
                 .orElse(new Timestamp(0));
     }
 
+    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
     public Timestamp getNesteUtlopsdatoForAktivitetOrElseEpoch0(String aktivitetstypeSortering) {
         if(Objects.isNull(aktiviteter)) {
             return new Timestamp(0);
         }
 
-        String aktivitetstype = Try.of(() -> aktivitetstypeSortering.split("_")[1])
-                .onFailure((t) -> log.error("Sorteringsfelt for aktivitet må starte med AKTIVITETER_", t))
-                .getOrElseThrow(() -> new IllegalArgumentException());
+        Timestamp sluttDato = Optional.ofNullable(aktiviteter.get(aktivitetstypeSortering.toLowerCase())).orElse(null);
+        Instant instant = Instant.now();
+        long timeStampMilliS = instant.toEpochMilli();
+        if (null != sluttDato && (sluttDato.getTime() < timeStampMilliS)) {
+            return null;
+        }
+        return sluttDato;
+    }
 
-        return Optional.ofNullable(aktiviteter.get(aktivitetstype.toLowerCase())).orElse(new Timestamp(0));
+    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
+    public Timestamp getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(List<String> aktivitetsListe) {
+        if(Objects.isNull(aktivitetsListe) || aktivitetsListe.isEmpty()) {
+            return new Timestamp(0);
+        }
 
+        return aktivitetsListe
+                .stream()
+                .map(this::getNesteUtlopsdatoForAktivitetOrElseEpoch0)
+                .filter(Objects::nonNull)
+                .sorted()
+                .findFirst()
+                .orElse(new Timestamp(0));
     }
 }
