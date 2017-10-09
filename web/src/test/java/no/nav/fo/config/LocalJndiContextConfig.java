@@ -22,6 +22,12 @@ public class LocalJndiContextConfig {
         if(dbCredentials.getUrl().contains("hsqldb")) {
             setHsqlToOraSyntax(ds);
         }
+        if(!dbCredentials.getUrl().contains("oracle")) {
+            // Migrere databaser så lenge vi ikke går mot en database i et felles miljø.
+            // Antar inntil videre at dette kan oppnås ved å utelukke oracle-databaser.
+            LocalJndiContextConfig.migrateDb(ds);            
+        }
+        
         return ds;
     }
 
