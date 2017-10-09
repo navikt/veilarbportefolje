@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration scan="true" scanPeriod="2 seconds">>
 
     <appender class="ch.qos.logback.core.ConsoleAppender" name="CONSOLE">-
         <encoder>
@@ -9,6 +9,8 @@
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-    </root>
-    
+    </root>        
+        
+    <logger name="no.nav.metrics.handlers.SensuHandler" level="OFF" />
+
 </configuration>
