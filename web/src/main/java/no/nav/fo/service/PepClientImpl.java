@@ -5,8 +5,6 @@ import no.nav.fo.config.CacheConfig;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
-import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
-import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -82,8 +80,7 @@ public class PepClientImpl implements PepClient {
     public boolean tilgangTilBruker(String token, String fnr) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.harInnloggetBrukerTilgangTilPerson(fnr, "veilarb",
-                    Action.ActionId.READ, ResourceType.VeilArbPerson);
+            callAllowed = pep.harInnloggetBrukerTilgangTilPerson(fnr, "veilarb");
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }

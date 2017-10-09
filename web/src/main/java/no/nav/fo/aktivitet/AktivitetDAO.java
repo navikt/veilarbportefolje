@@ -20,9 +20,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 import static no.nav.fo.util.DbUtils.boolTo0OR1;
 import static no.nav.fo.util.DbUtils.parse0OR1;
 
@@ -105,7 +103,8 @@ public class AktivitetDAO {
     }
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
-        AktivitetStatus.batchInsert(db, statuser);
+        io.vavr.collection.List.ofAll(statuser).sliding(1000,1000)
+                .forEach((statuserBatch) -> AktivitetStatus.batchInsert(db, statuserBatch.toJavaList()));
     }
 
     public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId, String>> finnesIdb) {
@@ -115,8 +114,7 @@ public class AktivitetDAO {
 
         AktivitetStatus.batchUpdate(this.db, eksisterendeStatuser.getOrDefault(true, emptyList()));
 
-        eksisterendeStatuser.getOrDefault(false, emptyList())
-            .forEach(this::upsertAktivitetStatus);
+        insertAktivitetstatuser(eksisterendeStatuser.getOrDefault(false, emptyList()));
     }
 
     public Map<PersonId, Set<AktivitetStatus>> getAktivitetstatusForBrukere(Collection<PersonId> personIds) {

@@ -30,7 +30,6 @@ public class Brukerdata {
     private LocalDateTime venterPaSvarFraBruker;
     private LocalDateTime venterPaSvarFraNav;
     private Boolean oppfolging;
-    private Boolean iAvtaltAktivitet;
     private Timestamp nyesteUtlopteAktivitet;
     private Set<AktivitetStatus> aktiviteter;
 
@@ -73,7 +72,6 @@ public class Brukerdata {
                 .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .set("PERSONID", personid)
                 .set("OPPFOLGING", safeToJaNei(oppfolging))
-                .set("IAVTALTAKTIVITET", booleanTo0OR1(iAvtaltAktivitet))
                 .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet);
     }
 
@@ -95,7 +93,6 @@ public class Brukerdata {
                 .value("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
                 .value("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .value("OPPFOLGING", safeToJaNei(oppfolging))
-                .value("IAVTALTAKTIVITET", booleanTo0OR1(iAvtaltAktivitet))
                 .value("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet);
     }
 
@@ -118,7 +115,6 @@ public class Brukerdata {
                 .add("OPPFOLGING", (bruker) -> safeToJaNei(bruker.oppfolging), String.class)
                 .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
                 .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
-                .add("IAVTALTAKTIVITET", (bruker) -> booleanTo0OR1(bruker.iAvtaltAktivitet), String.class)
                 .add("NYESTEUTLOPTEAKTIVITET", (bruker) ->  bruker.nyesteUtlopteAktivitet, Timestamp.class)
                 .addWhereClause((bruker) -> WhereClause.equals("PERSONID",bruker.personid))
                 .execute(data);

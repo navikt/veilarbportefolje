@@ -74,7 +74,7 @@ public class BrukerRepositoryTest {
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
             "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
+            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -95,7 +95,7 @@ public class BrukerRepositoryTest {
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
             "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
+            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -280,7 +280,6 @@ public class BrukerRepositoryTest {
         SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
         assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isNull();
-        assertThat(bruker.get("iavtaltaktivitet").getValue()).isNull();
     }
 
     @Test
@@ -289,7 +288,6 @@ public class BrukerRepositoryTest {
 
         Brukerdata brukerdata = new Brukerdata()
             .setPersonid("123456")
-            .setIAvtaltAktivitet(true)
             .setNyesteUtlopteAktivitet(nyesteUtlopte);
 
         brukerRepository.upsertBrukerdata(brukerdata);
@@ -297,7 +295,6 @@ public class BrukerRepositoryTest {
 
         SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
-        assertThat(bruker.get("iavtaltaktivitet").getValue()).isEqualTo(true);
         assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isEqualTo("2017-01-01T12:00:00Z");
     }
 
@@ -306,7 +303,6 @@ public class BrukerRepositoryTest {
 
         Brukerdata brukerdata = new Brukerdata()
             .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
-            .setIAvtaltAktivitet(true)
             .setPersonid("personid")
             .setAapmaxtidUke(1)
             .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)

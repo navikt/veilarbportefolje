@@ -14,7 +14,6 @@ import java.util.Set;
 public class AktivitetBrukerOppdatering implements BrukerOppdatering {
     private final String personid;
     private final String aktoerid;
-    private Boolean iAvtaltAktivitet;
     private Timestamp nyesteUtlopteAktivitet;
     private Set<AktivitetStatus> aktiviteter;
 
@@ -28,7 +27,6 @@ public class AktivitetBrukerOppdatering implements BrukerOppdatering {
         return bruker
                 .setAktiviteter(aktiviteter)
                 .setAktoerid(aktoerid)
-                .setIAvtaltAktivitet(iAvtaltAktivitet)
                 .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet);
     }
 }

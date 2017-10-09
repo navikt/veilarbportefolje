@@ -9,6 +9,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Filter;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -101,17 +102,26 @@ public class SolrUtils {
         put("I_AVTALT_AKTIVITET", Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
     }};
 
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField) {
+    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Filtervalg filtervalg) {
         if (sortFieldMap.containsKey(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
         }
-        if(Objects.nonNull(sortField) && sortField.contains("aktivitet_")) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0(sortField));
+        if(Objects.nonNull(sortField) && sortField.equals("valgte_aktiviteter")) {
+            List<String> aktivitetListe = filtervalg.aktiviteter
+                    .entrySet()
+                    .stream()
+                    .filter(map -> AktivitetFiltervalg.JA.equals(map.getValue()))
+                    .map(map -> map.getKey())
+                    .collect(Collectors.toList());
+
+            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(aktivitetListe));
         }
 
         brukere.sort(brukerErNyComparator());
         return brukere;
     }
+
+
 
     static Comparator<Bruker> setComparatorSortOrder(Comparator<Bruker> comparator, String sortOrder) {
         return sortOrder.equals("descending") ? comparator.reversed() : comparator;
@@ -165,9 +175,9 @@ public class SolrUtils {
         } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER) {
             oversiktStatements.add("(venterpasvarfrabruker:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.I_AVTALT_AKTIVITET) {
-            oversiktStatements.add("(iavtaltaktivitet:true)");
+            oversiktStatements.add("(aktiviteter:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.IKKE_I_AVTALT_AKTIVITET) {
-            oversiktStatements.add("(-iavtaltaktivitet:true)");
+            oversiktStatements.add("(-aktiviteter:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.UTLOPTE_AKTIVITETER) {
             oversiktStatements.add("(nyesteutlopteaktivitet:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.MIN_ARBEIDSLISTE) {

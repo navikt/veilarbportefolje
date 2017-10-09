@@ -2,7 +2,6 @@ package no.nav.fo.service;
 
 import io.vavr.control.Try;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
@@ -101,31 +100,16 @@ public class AktivitetServiceTest {
         assertThat(capturedAktoerids).containsAll(aktoerids);
     }
 
-    @Test
-    public void brukerMedEnAvtaltAktivAktivitet() {
-        AktoerAktiviteter aktiviteter = new AktoerAktiviteter(AKTOERID_TEST);
-        aktiviteter.setAktiviteter(singletonList(new AktivitetDTO()
-                .setTilDato(Timestamp.valueOf(LocalDate.now().plusDays(10).atStartOfDay()))
-                .setAktivitetType(AktivitetTyper.mote.toString())));
-
-        ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
-
-        when(aktivitetDAO.getAktiviteterForListOfAktoerid(any())).thenReturn(singletonList(aktiviteter));
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
-        aktivitetService.utledOgLagreAktivitetstatuser(singletonList(AKTOERID_TEST));
-
-        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
-        List<AktivitetBrukerOppdatering> oppdatering =  captor.getValue();
-        assertThat(oppdatering.get(0).getIAvtaltAktivitet()).isEqualTo(true);
-
-    }
 
     @Test
     public void brukerMedEnAvtaltAktivAktivitetHovedindeksering() {
         AktoerAktiviteter aktiviteter = new AktoerAktiviteter(AKTOERID_TEST);
+        Timestamp tilDato = Timestamp.valueOf(LocalDate.now().plusDays(10).atStartOfDay());
+        String aktivitetType = AktivitetTyper.mote.toString();
+
         aktiviteter.setAktiviteter(singletonList(new AktivitetDTO()
-                .setTilDato(Timestamp.valueOf(LocalDate.now().plusDays(10).atStartOfDay()))
-                .setAktivitetType(AktivitetTyper.mote.toString())));
+                .setTilDato(tilDato)
+                .setAktivitetType(aktivitetType)));
 
         ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
@@ -137,6 +121,10 @@ public class AktivitetServiceTest {
 
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
         List<AktivitetBrukerOppdatering> oppdatering =  captor.getValue();
-        assertThat(oppdatering.get(0).getIAvtaltAktivitet()).isEqualTo(true);
+        Timestamp capturedDate = captor.getValue().get(0).getAktiviteter().stream()
+                .filter(a -> a.getAktivitetType().equals(aktivitetType))
+                .findFirst().get().getNesteUtlop();
+
+        assertThat(capturedDate).isEqualTo(tilDato);
     }
 }
