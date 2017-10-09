@@ -74,7 +74,7 @@ class PortefoljeSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
     .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/statustall"))
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter()))
         .check(status.is(200))
     )
