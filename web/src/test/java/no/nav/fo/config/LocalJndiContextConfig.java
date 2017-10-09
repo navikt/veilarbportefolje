@@ -25,7 +25,7 @@ public class LocalJndiContextConfig {
         if(!dbCredentials.getUrl().contains("oracle")) {
             // Migrere databaser så lenge vi ikke går mot en database i et felles miljø.
             // Antar inntil videre at dette kan oppnås ved å utelukke oracle-databaser.
-            LocalJndiContextConfig.migrateDb(ds);            
+            migrateDb(ds);
         }
         
         return ds;
@@ -45,7 +45,7 @@ public class LocalJndiContextConfig {
         return ds;
     }
 
-    public static void migrateDb(DriverManagerDataSource ds) {
+    private static void migrateDb(DriverManagerDataSource ds) {
         Flyway flyway = new Flyway();
         flyway.setLocations("testmigration");
         flyway.setDataSource(ds);
