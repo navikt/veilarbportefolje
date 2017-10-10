@@ -28,6 +28,10 @@
             <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>aktor-klient</artifactId>
+        </dependency>
 
         <!-- Virksomhetstjenester -->
         <dependency>
@@ -245,10 +249,6 @@
         <dependency>
             <groupId>no.nav.fo</groupId>
             <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

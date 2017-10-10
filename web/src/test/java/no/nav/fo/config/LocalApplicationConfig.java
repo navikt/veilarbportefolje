@@ -1,10 +1,9 @@
 package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
+import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
-import no.nav.fo.service.PepClient;
-import no.nav.fo.service.PepClientMock;
+import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,13 +29,13 @@ import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
         ServiceConfig.class,
         ExternalServiceConfig.class,
         SolrConfig.class,
-        AktoerEndpointConfig.class,
         FilmottakConfig.class,
         MetricsConfig.class,
-        AktoerEndpointConfig.class,
         AbacContext.class,
         CacheConfig.class,
-        RestConfig.class
+        RestConfig.class,
+        AktorConfig.class,
+        AktoerServiceImpl.class
 })
 public class LocalApplicationConfig implements ApiApplication{
 

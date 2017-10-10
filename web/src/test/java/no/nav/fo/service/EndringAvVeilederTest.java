@@ -4,7 +4,6 @@ import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.PersonId;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +17,6 @@ import java.sql.Timestamp;
 import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Mockito.reset;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -29,9 +27,6 @@ public class EndringAvVeilederTest {
     private JdbcTemplate jdbcTemplate;
 
     @Inject
-    AktoerV2 aktoerV2;
-
-    @Inject
     BrukerRepository brukerRepository;
 
     @Inject
@@ -39,7 +34,6 @@ public class EndringAvVeilederTest {
 
     @Before
     public void beforeTests() {
-        reset(aktoerV2);
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table bruker_data");
         jdbcTemplate.execute("truncate table AKTOERID_TO_PERSONID");

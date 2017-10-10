@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static net.sf.ehcache.store.MemoryStoreEvictionPolicy.LRU;
+import static no.nav.dialogarena.aktor.AktorConfig.AKTOR_ID_FROM_FNR_CACHE;
+import static no.nav.dialogarena.aktor.AktorConfig.FNR_FROM_AKTOR_ID_CACHE;
 import static no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext.ABAC_CACHE;
 
 
@@ -28,6 +30,8 @@ public class CacheConfig {
         net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
         config.addCache(TILGANG_TIL_ENHET_CACHE);
         config.addCache(ABAC_CACHE);
+        config.addCache(AKTOR_ID_FROM_FNR_CACHE);
+        config.addCache(FNR_FROM_AKTOR_ID_CACHE);
         return new EhCacheCacheManager(net.sf.ehcache.CacheManager.newInstance(config));
     }
 

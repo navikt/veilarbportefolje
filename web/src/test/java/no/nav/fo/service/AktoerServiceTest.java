@@ -2,13 +2,11 @@ package no.nav.fo.service;
 
 import io.vavr.collection.List;
 import io.vavr.control.Try;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
-import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentResponse;
-import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,12 +17,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
 
+import static java.util.Optional.ofNullable;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,7 +34,7 @@ public class AktoerServiceTest {
     private AktoerService aktoerService;
 
     @Inject
-    private AktoerV2 aktoerV2;
+    private AktorService aktorService;
 
     @Inject
     private JdbcTemplate db;
@@ -46,12 +45,8 @@ public class AktoerServiceTest {
 
     @Before
     public void setUp() throws Exception {
-
-        WSHentAktoerIdForIdentResponse aktoerIdResponse = new WSHentAktoerIdForIdentResponse().withAktoerId(AKTOERID_FRA_SOAP_TJENESTE);
-        when(aktoerV2.hentAktoerIdForIdent(any())).thenReturn(aktoerIdResponse);
-
-        WSHentIdentForAktoerIdResponse identResponse = new WSHentIdentForAktoerIdResponse().withIdent(FNR_FRA_SOAP_TJENESTE);
-        when(aktoerV2.hentIdentForAktoerId(any())).thenReturn(identResponse);
+        when(aktorService.getAktorId(anyString())).thenReturn(ofNullable(AKTOERID_FRA_SOAP_TJENESTE));
+        when(aktorService.getFnr(anyString())).thenReturn(ofNullable(FNR_FRA_SOAP_TJENESTE));
     }
 
     @After
@@ -74,7 +69,7 @@ public class AktoerServiceTest {
         assertTrue(updated > 0);
 
         Try<PersonId> result = aktoerService.hentPersonidFraAktoerid(aktoerId);
-        verify(aktoerV2, never()).hentIdentForAktoerId(any());
+        verify(aktorService, never()).getFnr(any());
         assertTrue(result.isSuccess());
         assertEquals(personId, result.get());
     }
