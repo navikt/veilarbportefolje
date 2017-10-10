@@ -41,7 +41,7 @@ public class TilgangsRegler {
         SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
         String token = TokenUtils.getTokenBody(subjectHandler.getSubject());
 
-        pep.tilgangTilBruker(token, fnr);
+        test("tilgangTilBruker", fnr, pep.tilgangTilBruker(token, fnr));
     }
 
     static void test(String navn, Object data, boolean matches) {
