@@ -38,7 +38,7 @@ import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
         CacheConfig.class,
         RestConfig.class
 })
-public class LocalApplicationConfig implements ApiApplication {
+public class LocalApplicationConfig implements ApiApplication{
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
