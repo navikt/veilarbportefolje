@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2017.08.30.16.52</version>
+        <version>1-SNAPSHOT</version>
     </parent>
 
     <name>veilarbportefolje</name>
@@ -33,7 +33,6 @@
 
 
         <!-- Tredjeparts -->
-        <ehcache.version>2.10.3</ehcache.version>
         <solr.version>6.4.2</solr.version>
         <vavr.version>0.9.0</vavr.version>
         <okhttp.version>2.7.5</okhttp.version>
@@ -105,12 +104,6 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
                 <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sf.ehcache</groupId>
-                <artifactId>ehcache</artifactId>
-                <version>${ehcache.version}</version>
             </dependency>
 
             <dependency>

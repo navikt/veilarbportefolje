@@ -13,7 +13,7 @@ public class BrukertilgangService {
     @Inject
     VirksomhetEnhetService virksomhetEnhetService;
 
-    @Cacheable(CacheConfig.tilgangTilEnhetCache)
+    @Cacheable(CacheConfig.TILGANG_TIL_ENHET)
     public boolean harBrukerTilgang(String ident, String enhet) {
         return virksomhetEnhetService
                 .hentEnheter(ident)

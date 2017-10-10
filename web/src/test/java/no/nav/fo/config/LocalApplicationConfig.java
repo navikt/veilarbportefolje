@@ -4,7 +4,9 @@ import no.nav.apiapp.ApiApplication;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientImpl;
 import no.nav.fo.service.PepClientMock;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,8 +58,8 @@ public class LocalApplicationConfig implements ApiApplication{
     }
 
     @Bean
-    public PepClient pepClient() {
-        return new PepClientMock();
+    public PepClient pepClient(Pep pep) {
+        return new PepClientImpl(pep);
     }
 
     @Override

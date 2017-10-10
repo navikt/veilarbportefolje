@@ -23,7 +23,6 @@ public class PepClientImpl implements PepClient {
         this.pep = pep;
     }
 
-    @Cacheable(CacheConfig.kode7Cache)
     public boolean isSubjectAuthorizedToSeeKode7(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -34,7 +33,6 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable(CacheConfig.kode6Cache)
     public boolean isSubjectAuthorizedToSeeKode6(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -45,7 +43,6 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable(CacheConfig.egenAnsattCache)
     public boolean isSubjectAuthorizedToSeeEgenAnsatt(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -56,7 +53,6 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable(CacheConfig.modiaOppfolgingCache)
     public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -74,10 +70,7 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    // NB! Etter refactorering er ikke parameteren `token` lenger i bruk,
-    // men lar den stå siden den er en del av cachenøkkelen.
-    @Cacheable(CacheConfig.brukerTilgangCache)
-    public boolean tilgangTilBruker(String token, String fnr) {
+    public boolean tilgangTilBruker(String fnr) {
         BiasedDecisionResponse callAllowed;
         try {
             callAllowed = pep.harInnloggetBrukerTilgangTilPerson(fnr, "veilarb");

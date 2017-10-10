@@ -76,10 +76,10 @@ public class PepClientTest {
         pepClient.isSubjectMemberOfModiaOppfolging("cacheOppsett2", "cacheOppsett2");
         verify(pep, times(2)).isSubjectMemberOfModiaOppfolging(anyString(), anyString());
 
-        pepClient.tilgangTilBruker("cacheOppsett", "cacheOppsett");
-        pepClient.tilgangTilBruker("cacheOppsett2", "cacheOppsett2");
-        pepClient.tilgangTilBruker("cacheOppsett", "cacheOppsett");
-        pepClient.tilgangTilBruker("cacheOppsett2", "cacheOppsett2");
+        pepClient.tilgangTilBruker("cacheOppsett");
+        pepClient.tilgangTilBruker("cacheOppsett2");
+        pepClient.tilgangTilBruker("cacheOppsett");
+        pepClient.tilgangTilBruker("cacheOppsett2");
         verify(pep, times(2)).harInnloggetBrukerTilgangTilPerson(anyString(), anyString());
     }
 }

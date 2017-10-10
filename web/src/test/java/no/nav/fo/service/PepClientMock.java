@@ -25,7 +25,7 @@ public class PepClientMock implements PepClient {
     }
 
     @Override
-    public boolean tilgangTilBruker(String token, String fnr) {
+    public boolean tilgangTilBruker(String fnr) {
         return true;
     }
 
