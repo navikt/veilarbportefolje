@@ -34,8 +34,7 @@ import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
         AbacContext.class,
         CacheConfig.class,
         RestConfig.class,
-        AktorConfig.class,
-        AktoerServiceImpl.class
+        AktorConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication{
 
