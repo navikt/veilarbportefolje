@@ -38,7 +38,7 @@ public class TilgangsRegler {
     }
 
     public static void tilgangTilBruker(PepClient pep, String fnr) {
-        pep.tilgangTilBruker(fnr);
+        test("tilgangTilBruker", fnr, pep.tilgangTilBruker(fnr));
     }
 
     static void test(String navn, Object data, boolean matches) {
