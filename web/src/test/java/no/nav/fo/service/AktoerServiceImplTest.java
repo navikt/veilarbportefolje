@@ -40,7 +40,9 @@ public class AktoerServiceImplTest {
 
     @Before
     public void setUp() {
+        reset(aktorService);
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
+        db.execute("truncate table AKTOERID_TO_PERSONID");
     }
 
     @Test
