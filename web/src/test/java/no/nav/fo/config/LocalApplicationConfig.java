@@ -4,9 +4,7 @@ import no.nav.apiapp.ApiApplication;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
-import no.nav.fo.service.PepClientImpl;
 import no.nav.fo.service.PepClientMock;
-import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +38,7 @@ import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
         CacheConfig.class,
         RestConfig.class
 })
-public class LocalApplicationConfig implements ApiApplication{
+public class LocalApplicationConfig implements ApiApplication {
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
@@ -58,8 +56,8 @@ public class LocalApplicationConfig implements ApiApplication{
     }
 
     @Bean
-    public PepClient pepClient(Pep pep) {
-        return new PepClientImpl(pep);
+    public PepClient pepClient() {
+        return new PepClientMock();
     }
 
     @Override
