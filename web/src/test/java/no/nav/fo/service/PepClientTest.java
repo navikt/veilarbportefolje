@@ -15,7 +15,7 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {CacheConfig.class, TestPepConfig.class})
@@ -48,38 +48,5 @@ public class PepClientTest {
         assertThat(pepClient.isSubjectAuthorizedToSeeEgenAnsatt("cacheSikkerhet")).isTrue();
         assertThat(pepClient.isSubjectAuthorizedToSeeKode6("cacheSikkerhet")).isFalse();
         assertThat(pepClient.isSubjectAuthorizedToSeeKode7("cacheSikkerhet")).isFalse();
-    }
-
-    @Test
-    public void cacheOppsett() throws Exception {
-        pepClient.isSubjectAuthorizedToSeeKode7("cacheOppsett");
-        pepClient.isSubjectAuthorizedToSeeKode7("cacheOppsett2");
-        pepClient.isSubjectAuthorizedToSeeKode7("cacheOppsett");
-        pepClient.isSubjectAuthorizedToSeeKode7("cacheOppsett2");
-        verify(pep, times(2)).isSubjectAuthorizedToSeeKode7(anyString(), anyString());
-
-        pepClient.isSubjectAuthorizedToSeeKode6("cacheOppsett");
-        pepClient.isSubjectAuthorizedToSeeKode6("cacheOppsett2");
-        pepClient.isSubjectAuthorizedToSeeKode6("cacheOppsett");
-        pepClient.isSubjectAuthorizedToSeeKode6("cacheOppsett2");
-        verify(pep, times(2)).isSubjectAuthorizedToSeeKode6(anyString(), anyString());
-
-        pepClient.isSubjectAuthorizedToSeeEgenAnsatt("cacheOppsett");
-        pepClient.isSubjectAuthorizedToSeeEgenAnsatt("cacheOppsett2");
-        pepClient.isSubjectAuthorizedToSeeEgenAnsatt("cacheOppsett");
-        pepClient.isSubjectAuthorizedToSeeEgenAnsatt("cacheOppsett2");
-        verify(pep, times(2)).isSubjectAuthorizedToSeeEgenAnsatt(anyString(), anyString());
-
-        pepClient.isSubjectMemberOfModiaOppfolging("cacheOppsett", "cacheOppsett");
-        pepClient.isSubjectMemberOfModiaOppfolging("cacheOppsett2", "cacheOppsett2");
-        pepClient.isSubjectMemberOfModiaOppfolging("cacheOppsett", "cacheOppsett");
-        pepClient.isSubjectMemberOfModiaOppfolging("cacheOppsett2", "cacheOppsett2");
-        verify(pep, times(2)).isSubjectMemberOfModiaOppfolging(anyString(), anyString());
-
-        pepClient.tilgangTilBruker("cacheOppsett", "cacheOppsett");
-        pepClient.tilgangTilBruker("cacheOppsett2", "cacheOppsett2");
-        pepClient.tilgangTilBruker("cacheOppsett", "cacheOppsett");
-        pepClient.tilgangTilBruker("cacheOppsett2", "cacheOppsett2");
-        verify(pep, times(2)).harInnloggetBrukerTilgangTilPerson(anyString(), anyString());
     }
 }

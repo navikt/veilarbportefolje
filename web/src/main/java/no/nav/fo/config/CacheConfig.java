@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 
 import net.sf.ehcache.config.CacheConfiguration;
+import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
@@ -13,32 +14,18 @@ import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static java.lang.Integer.parseInt;
-import static java.lang.System.getProperty;
 
 
 @Configuration
 @EnableCaching
 public class CacheConfig implements CachingConfigurer {
-    public static final String kode6Cache = "kode6Cache";
-    public static final String kode7Cache = "kode7Cache";
-    public static final String egenAnsattCache = "egenAnsattCache";
-    public static final String modiaOppfolgingCache = "modiaOppfolgingCache";
-    public static final String brukerTilgangCache = "brukerTilgangCache";
     public static final String tilgangTilEnhetCache = "tilgangTilEnhetCache";
-
-    private static String cacheTTLProperty = "veilarbportefolje.tilgangtilbrukercache.seconds";
-    private static int cacheTimeToLive = parseInt(getProperty(cacheTTLProperty, "3600"));
 
     @Bean
     public net.sf.ehcache.CacheManager ehCacheManager() {
         net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
-        config.addCache(createCache(kode6Cache, 4000));
-        config.addCache(createCache(kode7Cache, 4000));
-        config.addCache(createCache(egenAnsattCache, 4000));
-        config.addCache(createCache(modiaOppfolgingCache, 10000));
-        config.addCache(createCache(brukerTilgangCache, 10000));
         config.addCache(createCache(tilgangTilEnhetCache, 5000));
+        config.addCache(AbacContext.ABAC_CACHE);
 
         return net.sf.ehcache.CacheManager.newInstance(config);
     }
@@ -68,7 +55,7 @@ public class CacheConfig implements CachingConfigurer {
         CacheConfiguration config = new CacheConfiguration(name, maxEntries);
         config.setMemoryStoreEvictionPolicy("LRU");
         config.setTimeToIdleSeconds(3600);
-        config.setTimeToLiveSeconds(cacheTimeToLive);
+        config.setTimeToLiveSeconds(3600);
         return config;
     }
 }
