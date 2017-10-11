@@ -16,7 +16,7 @@ public class ListUtils {
                 .map(Collection::stream)
                 .reduce(Stream::concat)
                 .orElse(Stream.empty())
-                .collect(Collectors.toMap(distinctBy,(t->t), (p, q)->p))
+                .collect(Collectors.toMap(distinctBy, t->t, (p, q)->p))
                 .values()
         );
     }
