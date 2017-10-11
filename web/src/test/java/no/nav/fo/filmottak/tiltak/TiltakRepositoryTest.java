@@ -109,7 +109,7 @@ public class TiltakRepositoryTest {
         tiltakstype2.setTermnavn("Tiltak2");
 
         tiltakRepository.lagreTiltakskoder(Collections.singletonList(Tiltakkodeverk.of(tiltakstype1)));
-        tiltakRepository.lagreTiltakskoder(Collections.singletonList(Tiltakkodeverk.of(tiltakstype1)));
+        tiltakRepository.lagreTiltakskoder(Collections.singletonList(Tiltakkodeverk.of(tiltakstype2)));
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM TILTAKKODEVERK").size()).isEqualTo(2);
     }
