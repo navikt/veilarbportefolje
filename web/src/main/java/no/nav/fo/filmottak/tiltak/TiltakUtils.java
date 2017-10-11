@@ -7,7 +7,6 @@ import no.nav.fo.util.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,7 +52,13 @@ public class TiltakUtils {
             return null;
         }
 
-        Timestamp nesteUtlopsdato = gruppeAktiviteterEtterDatoFilter
+        Timestamp nesteUtlopsdato = finnNesteUtlopsdatoForMoteplan(gruppeAktiviteterEtterDatoFilter);
+
+        return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
+    }
+
+    public static Timestamp finnNesteUtlopsdatoForMoteplan(List<Moeteplan> moteplan) {
+        return moteplan
                 .stream()
                 .filter(Objects::nonNull)
                 .map(Moeteplan::getSluttDato)
@@ -61,16 +66,22 @@ public class TiltakUtils {
                 .sorted()
                 .findFirst()
                 .orElse(null);
-
-        return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
     }
 
-    static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
+    public static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
         return Optional.of(calendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
                 .map(GregorianCalendar::getTime)
                 .map(Date::getTime)
                 .map(Timestamp::new)
+                .orElse(null);
+    }
+
+    public static Timestamp utledTildato(Periode periode) {
+        return Optional.ofNullable(periode).map(deltagelsePeriode ->
+                Optional.ofNullable(deltagelsePeriode.getTom())
+                        .map(TiltakUtils::tilTimestamp)
+                        .orElse(null))
                 .orElse(null);
     }
 
