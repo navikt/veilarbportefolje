@@ -5,6 +5,8 @@ import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl
 import io.vavr.collection.List;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepositoryTest;
+import no.nav.fo.domene.Brukertiltak;
+import no.nav.fo.domene.Tiltakkodeverk;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Periode;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
@@ -21,6 +23,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +74,7 @@ public class TiltakRepositoryTest {
             tiltaksaktivitet1
         ));
 
-        tiltakRepository.lagreBrukertiltak(bruker);
+        tiltakRepository.lagreBrukertiltak(Brukertiltak.of(bruker));
 
         assertThat(jdbcTemplate.queryForMap("SELECT * FROM BRUKERTILTAK WHERE FODSELSNR = '11111111111'").keySet()).containsExactly("FODSELSNR", "TILTAKSKODE", "TILDATO");
     }
@@ -91,7 +94,7 @@ public class TiltakRepositoryTest {
             tiltaksaktivitet2
         ));
 
-        tiltakRepository.lagreBrukertiltak(bruker);
+        tiltakRepository.lagreBrukertiltak(Brukertiltak.of(bruker));
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERTILTAK").size()).isEqualTo(2);
     }
@@ -105,8 +108,8 @@ public class TiltakRepositoryTest {
         tiltakstype2.setValue("B");
         tiltakstype2.setTermnavn("Tiltak2");
 
-        tiltakRepository.lagreTiltakskoder(tiltakstype1);
-        tiltakRepository.lagreTiltakskoder(tiltakstype2);
+        tiltakRepository.lagreTiltakskoder(Collections.singletonList(Tiltakkodeverk.of(tiltakstype1)));
+        tiltakRepository.lagreTiltakskoder(Collections.singletonList(Tiltakkodeverk.of(tiltakstype1)));
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM TILTAKKODEVERK").size()).isEqualTo(2);
     }

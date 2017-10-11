@@ -1,19 +1,19 @@
 package no.nav.fo.filmottak.tiltak;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.Brukertiltak;
+import no.nav.fo.domene.Tiltakkodeverk;
 import no.nav.fo.util.sql.SqlUtils;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Periode;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltakstyper;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Aktivitetstyper;
 import no.nav.metrics.MetricsFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -40,38 +40,20 @@ public class TiltakRepository {
         db.execute("DELETE FROM tiltakkodeverk");
     }
 
-    void lagreBrukertiltak(Bruker bruker) {
-        bruker.getTiltaksaktivitetListe().forEach(
-            tiltak -> {
-                Fnr fnr = new Fnr(bruker.getPersonident());
-                try {
-                    SqlUtils.insert(db, "brukertiltak")
-                        .value("fodselsnr", fnr.toString())
-                        .value("tiltakskode", tiltak.getTiltakstype())
-                        .value("tildato", utledTildato(tiltak.getDeltakelsePeriode()))
-                        .execute();
-                } catch (DataIntegrityViolationException e) {
-                    String logMsg = String.format("Kunne ikke lagre brukertiltak med tiltakstype %s", tiltak.getTiltakstype());
-                    log.warn(logMsg);
-                    MetricsFactory.createEvent("veilarbportefolje.lagreBrukertiltak.feilet").report();
-                }
-            }
-        );
+    void lagreBrukertiltak(List<Brukertiltak> brukertiltak) {
+        io.vavr.collection.List.ofAll(brukertiltak).sliding(1000,1000)
+                .forEach(brukertiltakBatch -> Brukertiltak.batchInsert(db,brukertiltakBatch.toJavaList()));
     }
 
-    private Timestamp utledTildato(Periode periode) {
-        return Optional.ofNullable(periode).map(deltagelsePeriode ->
-                Optional.ofNullable(deltagelsePeriode.getTom())
-                    .map(TiltakUtils::tilTimestamp)
-                    .orElse(null))
-                .orElse(null);
+    void lagreTiltakskoder(List<Tiltakkodeverk> tiltakskoder) {
+        Tiltakkodeverk.batchInsert(db,tiltakskoder);
     }
 
-    void lagreTiltakskoder(Tiltakstyper tiltakskoder) {
+    void lagreAktivitetskoder(Aktivitetstyper aktivitetstyper) {
         SqlUtils.insert(db, "tiltakkodeverk")
-            .value("kode", tiltakskoder.getValue())
-            .value("verdi", tiltakskoder.getTermnavn())
-            .execute();
+                .value("kode", aktivitetstyper.getValue())
+                .value("verdi", aktivitetstyper.getTermnavn())
+                .execute();
     }
 
     Map<String, List<String>> hentEnhetTilFodselsnummereMap() {
