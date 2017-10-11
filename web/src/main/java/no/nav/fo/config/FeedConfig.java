@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Import;
 })
 public class FeedConfig {
 
-    public static String FEED_API_ROOT = "veilarbportefolje/tjenester";
+    public static String FEED_API_ROOT = "veilarbportefolje/api";
 
     @Bean
     public FeedController feedController(
