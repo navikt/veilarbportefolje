@@ -49,7 +49,7 @@ public class Brukertiltak {
     }
 
     public static Brukertiltak of(Gruppeaktivitet gruppeaktivitet, String fnr) {
-        return new Brukertiltak(Fnr.of(fnr),gruppeaktivitet.getAktivitetstype(), finnNesteUtlopsdatoForMoteplan(gruppeaktivitet.getMoeteplanListe()));
+        return new Brukertiltak(Fnr.of(fnr),gruppeaktivitet.getAktivitetstype(), finnNesteUtlopsdatoForMoteplan(gruppeaktivitet.getMoeteplanListe()).orElse(null));
     }
 
     public static Brukertiltak of(Utdanningsaktivitet utdanningsaktivitet, String fnr) {
