@@ -3,7 +3,7 @@ package no.nav.fo.filmottak.tiltak;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.util.AktivitetUtils;
+import no.nav.fo.domene.aktivitet.UtdanningaktivitetTyper;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -11,16 +11,19 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static no.nav.fo.util.AktivitetUtils.etterFilterDato;
+
 public class TiltakUtils {
 
     final static String tiltak = "tiltak";
     final static String gruppeaktivitet = "gruppeaktivitet";
+    final static String utdanningaktivitet = "utdanningaktivitet";
 
     static AktivitetStatus utledAktivitetstatusForTiltak(Bruker bruker, PersonId personId, Timestamp datofilterTiltak) {
         List<Tiltaksaktivitet> tiltaksAktiviteterEtterDatoFilter =
             bruker.getTiltaksaktivitetListe()
                 .stream()
-                .filter(tiltaksaktivitet -> AktivitetUtils.etterFilterDato(hentUtlopsdatoForTiltak(tiltaksaktivitet),datofilterTiltak))
+                .filter(tiltaksaktivitet -> etterFilterDato(hentUtlopsdatoForTiltak(tiltaksaktivitet),datofilterTiltak))
                 .collect(Collectors.toList());
 
         if(tiltaksAktiviteterEtterDatoFilter.isEmpty()) {
@@ -44,7 +47,7 @@ public class TiltakUtils {
                 .stream()
                 .map(Gruppeaktivitet::getMoeteplanListe)
                 .flatMap(Collection::stream)
-                .filter(moeteplan -> AktivitetUtils.etterFilterDato(tilTimestamp(moeteplan.getSluttDato()), datofilter))
+                .filter(moeteplan -> etterFilterDato(tilTimestamp(moeteplan.getSluttDato()), datofilter))
                 .collect(Collectors.toList());
 
 
@@ -55,6 +58,35 @@ public class TiltakUtils {
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoForMoteplan(gruppeAktiviteterEtterDatoFilter);
 
         return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
+    }
+
+    static AktivitetStatus utledUtdanningsaktivitetstatus(Bruker bruker, PersonId personId, Timestamp datofilter) {
+        List<Utdanningsaktivitet> utdanningsaktiviteterEtterDato = bruker.getUtdanningsaktivitetListe()
+                .stream()
+                .filter(aktivitet -> UtdanningaktivitetTyper.contains(aktivitet.getAktivitetstype()))
+                .filter(aktivitet -> etterFilterDato(tilTimestamp(aktivitet.getAktivitetPeriode().getTom()), datofilter))
+                .collect(Collectors.toList());
+
+        if(utdanningsaktiviteterEtterDato.isEmpty()) {
+            return null;
+        }
+
+        Timestamp nesteUtlopsdato = finnNesteUtlopsdatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato);
+
+        return AktivitetStatus.of(personId, AktoerId.of(null), utdanningaktivitet, true, nesteUtlopsdato );
+
+    }
+
+    private static Timestamp finnNesteUtlopsdatoUtdanningsaktiviteter(List<Utdanningsaktivitet> utdanningaktiviteter) {
+        return utdanningaktiviteter
+                .stream()
+                .filter(Objects::nonNull)
+                .map(Utdanningsaktivitet::getAktivitetPeriode)
+                .map(Periode::getTom)
+                .map(TiltakUtils::tilTimestamp)
+                .sorted()
+                .findFirst()
+                .orElse(null);
     }
 
     public static Timestamp finnNesteUtlopsdatoForMoteplan(List<Moeteplan> moteplan) {

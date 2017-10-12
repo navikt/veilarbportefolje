@@ -122,6 +122,10 @@ public class TiltakHandler {
             utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
         });
 
+        MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
+            utledOgLagreUtdanningsaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
+        });
+
         MetricsUtils.timed("tiltak.insert.enhettiltak", () -> {
             utledOgLagreEnhetTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
         });
@@ -180,6 +184,27 @@ public class TiltakHandler {
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());
+                    aktivitetDAO.insertAktivitetstatuser(aktivitetStatuses);
+
+                });
+    }
+
+    private void utledOgLagreUtdanningsaktiviteter(List<Bruker> brukere) {
+        io.vavr.collection.List.ofAll(brukere)
+                .sliding(1000,1000)
+                .forEach((brukereSubList) -> {
+                    List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
+                    List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
+                            .stream()
+                            .map(bruker -> {
+                                Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
+                                return personId.map(p -> TiltakUtils.utledUtdanningsaktivitetstatus(bruker, p, datofilter)).orElse(null);
+                            })
+                            .filter(Objects::nonNull)
+                            .collect(toList());
+
                     aktivitetDAO.insertAktivitetstatuser(aktivitetStatuses);
 
                 });
