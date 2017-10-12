@@ -23,7 +23,6 @@ import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.filmottak.tiltak.TiltakUtils.*;
-import static no.nav.fo.util.ListUtils.distinctByPropertyList;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.log;
 
@@ -98,11 +97,8 @@ public class TiltakHandler {
         aktivitetDAO.slettAlleAktivitetstatus(utdanningaktivitet);
 
 
-        List<Tiltakkodeverk> tiltakkoder = distinctByPropertyList(
-                Tiltakkodeverk::getKode,
-                tiltakOgAktiviteterForBrukere.getTiltakskodeListe().stream().map(Tiltakkodeverk::of).collect(toList()),
-                tiltakOgAktiviteterForBrukere.getAktivitetskodeListe().stream().map(Tiltakkodeverk::of).collect(toList())
-        );
+        List<Tiltakkodeverk> tiltakkoder =
+                tiltakOgAktiviteterForBrukere.getTiltakskodeListe().stream().map(Tiltakkodeverk::of).collect(toList());
 
         tiltakrepository.lagreTiltakskoder(tiltakkoder);
 
