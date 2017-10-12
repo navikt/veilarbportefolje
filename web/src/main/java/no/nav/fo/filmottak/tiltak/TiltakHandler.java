@@ -95,6 +95,7 @@ public class TiltakHandler {
         tiltakrepository.slettTiltakskoder();
         aktivitetDAO.slettAlleAktivitetstatus(tiltak);
         aktivitetDAO.slettAlleAktivitetstatus(gruppeaktivitet);
+        aktivitetDAO.slettAlleAktivitetstatus(utdanningaktivitet);
 
 
         List<Tiltakkodeverk> tiltakkoder = distinctByPropertyList(
