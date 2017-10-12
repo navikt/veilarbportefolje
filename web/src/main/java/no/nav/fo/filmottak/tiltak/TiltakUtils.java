@@ -55,7 +55,7 @@ public class TiltakUtils {
             return null;
         }
 
-        Timestamp nesteUtlopsdato = finnNesteUtlopsdatoForMoteplan(gruppeAktiviteterEtterDatoFilter);
+        Timestamp nesteUtlopsdato = finnNesteUtlopsdatoForMoteplan(gruppeAktiviteterEtterDatoFilter).orElse(null);
 
         return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
     }
@@ -71,13 +71,13 @@ public class TiltakUtils {
             return null;
         }
 
-        Timestamp nesteUtlopsdato = finnNesteUtlopsdatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato);
+        Timestamp nesteUtlopsdato = finnNesteUtlopsdatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato).orElse(null);
 
         return AktivitetStatus.of(personId, AktoerId.of(null), utdanningaktivitet, true, nesteUtlopsdato );
 
     }
 
-    private static Timestamp finnNesteUtlopsdatoUtdanningsaktiviteter(List<Utdanningsaktivitet> utdanningaktiviteter) {
+    private static Optional<Timestamp> finnNesteUtlopsdatoUtdanningsaktiviteter(List<Utdanningsaktivitet> utdanningaktiviteter) {
         return utdanningaktiviteter
                 .stream()
                 .filter(Objects::nonNull)
@@ -85,19 +85,17 @@ public class TiltakUtils {
                 .map(Periode::getTom)
                 .map(TiltakUtils::tilTimestamp)
                 .sorted()
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
-    public static Timestamp finnNesteUtlopsdatoForMoteplan(List<Moeteplan> moteplan) {
+    public static Optional<Timestamp> finnNesteUtlopsdatoForMoteplan(List<Moeteplan> moteplan) {
         return moteplan
                 .stream()
                 .filter(Objects::nonNull)
                 .map(Moeteplan::getSluttDato)
                 .map(TiltakUtils::tilTimestamp)
                 .sorted()
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     public static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
