@@ -24,12 +24,13 @@ class PortefoljeSimulation extends Simulation {
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
   private val password = System.getProperty("USER_PASSWORD", "Teflon3970")
-  private val oidcPassword = System.getProperty("OIDC_PASSWORD", "0987654321")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "YAqE_D30s6Dpwd6yKJVwNYDPnqx42KRz")
   private val enheter = System.getProperty("ENHETER", "1001").split(",")
   private val rapporterSolrSamlet = System.getProperty("RAPPORTER_SOLR_SAMLET", "true").toBoolean;
 
   private val appnavn = "veilarbpersonflatefs"
-  private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
+  private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
+
   private val enhetsFeeder = RecordSeqFeederBuilder(enheter.map(enhet => Map("enhet" -> enhet.trim))).circular
 
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
@@ -51,8 +52,8 @@ class PortefoljeSimulation extends Simulation {
     .extraInfoExtractor { extraInfo => List(Helpers.getInfo(extraInfo)) }
 
   private def login() = {
-    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
-      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
+    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
+      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
   }
 
   private def rapporterMedNavn(navn: String): String = {
@@ -66,8 +67,8 @@ class PortefoljeSimulation extends Simulation {
   private val portefoljeScenario = scenario("Portefolje: Enhet")
     .feed(brukernavn)
     .feed(enhetsFeeder)
-    .exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
-    .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
+    .exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
+    .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
     .pause(500 milliseconds)
     .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/tjenester/tekster"))
     .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
@@ -85,21 +86,6 @@ class PortefoljeSimulation extends Simulation {
     .exec(
       Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
-        .check(status.is(200))
-    )
-    .pause(1 second,3 seconds)
-    .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder og kjoenn"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
-        .body(Helpers.toBody(RequestFilter(alder = List("25-29", "30-39"), kjonn = List("M"))))
-        .check(status.is(200))
-    )
-    .pause(1 second, 3 seconds)
-    .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter kjoenn og foedselsdag"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
-        .body(Helpers.toBody(RequestFilter(
-          kjonn = List("M"),
-          fodselsdagIMnd = List("1", "2")
-        )))
         .check(status.is(200))
     )
     .pause(1 second, 3 seconds)
@@ -159,12 +145,13 @@ class PortefoljeSimulation extends Simulation {
         .check(status.is(200))
     )
 
+
   setUp(
     // LoginScenario kjøres for at innloggingsrutinen skal gå seg "varm" slik at denne feilen skal forsvinne:
     // WARNING: Cookie rejected [amlbcookie="01", version:0, domain:test.local, path:/, expiry:null] Illegal 'domain' attribute "test.local". Domain of origin: "isso-t.adeo.no"
     loginScenario.inject(constantUsersPerSec(10) during (140 seconds)),
     portefoljeScenario.inject(nothingFor(140 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
-     //   portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+    //portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
   )
     .protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
