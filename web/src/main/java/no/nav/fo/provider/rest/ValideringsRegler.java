@@ -25,18 +25,18 @@ class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
     private static List<String> sortFields = asList(
             "ikke_satt",
+            "valgteaktiviteter",
             "etternavn",
             "fodselsnummer",
             "utlopsdato",
-            "dagputlopUke",
-            "permutlopUke",
-            "aapmaxtidUke",
-            "arbeidsliste_frist",
-            "VENTER_PA_SVAR_FRA_NAV",
-            "VENTER_PA_SVAR_FRA_BRUKER",
-            "UTLOPTE_AKTIVITETER",
-            "I_AVTALT_AKTIVITET",
-            "valgte_aktiviteter"); // TODO alle sortField i samme format
+            "dagputlopuke",
+            "permutlopuke",
+            "aapmaxtiduke",
+            "arbeidslistefrist",
+            "venterpasvarfranav",
+            "venterpasvarfrabruker",
+            "utlopteaktiviteter",
+            "iavtaltaktivitet");
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
