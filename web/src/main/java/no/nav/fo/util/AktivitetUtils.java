@@ -101,29 +101,29 @@ public class AktivitetUtils {
                 .map(Objects::toString)
                 .forEach(aktivitetsype -> {
 
-                    List<AktivitetDTO> aktiviteterIPeriodeMedAktivtStatus = aktiviteter
+                    List<AktivitetDTO> aktiviteterMedAktivtStatus = aktiviteter
                             .stream()
                             .filter(aktivitet -> aktivitetsype.equals(aktivitet.getAktivitetType()))
-                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                             .filter(AktivitetUtils::harIkkeStatusFullfort)
                             .collect(toList());
 
-                    Timestamp datoForNesteUtlop = aktiviteterIPeriodeMedAktivtStatus
+                    Timestamp datoForNesteUtlop = aktiviteterMedAktivtStatus
                             .stream()
+                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                             .map(AktivitetDTO::getTilDato)
                             .filter(Objects::nonNull)
                             .sorted()
                             .findFirst()
                             .orElse(null);
 
-                    boolean aktivitetErIkkeFullfortEllerUtlopt = !aktiviteterIPeriodeMedAktivtStatus.isEmpty();
+                    boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
 
                     aktiveAktiviteter.add(
                             AktivitetStatus.of(
                                     personId,
                                     aktoerId,
                                     aktivitetsype,
-                                    aktivitetErIkkeFullfortEllerUtlopt,
+                                    aktivitetErIkkeFullfort,
                                     datoForNesteUtlop
                             )
                     );
