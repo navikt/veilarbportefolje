@@ -23,8 +23,8 @@ class PortefoljeSimulation extends Simulation {
   private val duration = Integer.getInteger("DURATION", 1).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  private val password = System.getProperty("USER_PASSWORD", "Teflon3970")
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "YAqE_D30s6Dpwd6yKJVwNYDPnqx42KRz")
+  private val password = System.getProperty("USER_PASSWORD", "!!CHANGE ME!!")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "!!CHANGE ME!!")
   private val enheter = System.getProperty("ENHETER", "1001").split(",")
   private val rapporterSolrSamlet = System.getProperty("RAPPORTER_SOLR_SAMLET", "true").toBoolean;
 
@@ -35,7 +35,7 @@ class PortefoljeSimulation extends Simulation {
 
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
   private val veilederForTildeling2 = System.getProperty("VEIL_2", "X905112")
-  private val brukerForTildeling = System.getProperty("BRUKER_TIL_VEILEDER", "27078236871")
+  private val brukerForTildeling = System.getProperty("BRUKER_TIL_VEILEDER", "!!CHANGE ME!!")
 
   val mapper = new ObjectMapper() with ScalaObjectMapper
 
