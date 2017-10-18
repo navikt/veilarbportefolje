@@ -162,9 +162,9 @@ public class Bruker {
         }
 
         Timestamp sluttDato = Optional.ofNullable(aktiviteter.get(aktivitetstypeSortering.toLowerCase())).orElse(null);
-        Instant instant = Instant.now();
-        long timeStampMilliS = instant.toEpochMilli();
-        if (null != sluttDato && (sluttDato.getTime() < timeStampMilliS)) {
+        LocalDateTime dagensDato = LocalDateTime.now().toLocalDate().atStartOfDay();
+        Timestamp dagensDatoTimestamp = Timestamp.valueOf(dagensDato);
+        if (null != sluttDato && (sluttDato.getTime() < dagensDatoTimestamp.getTime())) {
             return null;
         }
         return sluttDato;
