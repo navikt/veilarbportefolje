@@ -47,7 +47,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>RELEASE</version> <!-- TODO lås denne til samme versjon som mor-pommen før prodsetting -->
+                <version>2017.10.16.14.40</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
