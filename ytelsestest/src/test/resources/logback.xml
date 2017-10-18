@@ -10,11 +10,11 @@
         </encoder>
     </appender>
 
-    <logger name="io.gatling.http" level="TRACE" />
+    <logger name="io.gatling.http" level="WARN" />
     <logger name="no.nav.sbl.gatling" level="DEBUG" />
     <logger name="simulations" level="DEBUG" />
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="FILE" />
     </root>
 

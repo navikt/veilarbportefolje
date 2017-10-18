@@ -21,7 +21,7 @@
         <java.jdk.version>1.8</java.jdk.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <gatling-felles.version>1.2</gatling-felles.version>
+        <gatling-felles.version>1.4</gatling-felles.version>
 
         <gatling.version>2.2.4</gatling.version>
         <rs-api.version>2.0.1</rs-api.version>
@@ -34,7 +34,7 @@
         <assertj.version>3.6.1</assertj.version>
         <mockito.version>1.10.19</mockito.version>
         <commonsio.version>2.5</commonsio.version>
-        <oidcsecurity.version>2.0.15</oidcsecurity.version>
+        <oidcsecurity.version>2017.10.06.17.11</oidcsecurity.version>
         <jackson.version>2.9.0.pr2</jackson.version>
         <scala-maven-plugin.version>3.1.5</scala-maven-plugin.version>
     </properties>
