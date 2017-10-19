@@ -5,6 +5,7 @@ import io.vavr.control.Try;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.SolrService;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrInputDocument;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,12 +48,22 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
+    public void slettBrukere(List<PersonId> personId) {
+
+    }
+
+    @Override
     public void indekserBrukerdata(PersonId personId) {
 
     }
 
     @Override
     public void indekserBrukerdata(AktoerId aktoerId) {
+
+    }
+
+    @Override
+    public void indekserDokumenter(List<SolrInputDocument> personIds) {
 
     }
 

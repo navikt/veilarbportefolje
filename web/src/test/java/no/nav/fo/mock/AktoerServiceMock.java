@@ -85,6 +85,11 @@ public class AktoerServiceMock implements AktoerService {
         return null;
     }
 
+    @Override
+    public Map<AktoerId, Optional<PersonId>> hentPersonidsForAktoerids(List<AktoerId> aktoerIds) {
+        return null;
+    }
+
     private static Try<Fnr> getTestFnr(AktoerId aktoerId) {
         Try<String> result = Try.success(FNR);
         if (AktoerId.of(AKTOER_ID_FAIL).equals(aktoerId)) {

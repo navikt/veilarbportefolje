@@ -31,7 +31,10 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static java.lang.String.format;
@@ -149,6 +152,11 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
+    public void indekserDokumenter(List<SolrInputDocument> dokumenter) {
+        leggDataTilSolrDocument(dokumenter);
+        addDocumentsToIndex(dokumenter);
+    }
+
     @Override
     public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = byggQueryString(enhetId, veilederIdent);
@@ -225,6 +233,11 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:" + personid.toString());
+    }
+
+    @Override
+    public void slettBrukere(List<PersonId> personIds) {
+        personIds.forEach(this::slettBruker);
     }
 
     @Override
