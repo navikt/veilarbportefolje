@@ -10,6 +10,6 @@ public class FantIkkeFnrException extends RuntimeException {
     }
 
     public FantIkkeFnrException(AktoerId aktoerId) {
-        super(format("Fant ikke fnr for aktoerId: %S", aktoerId.toString()));
+        super(format("Fant ikke fnr for aktoerId: %S", aktoerId));
     }
 }

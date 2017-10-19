@@ -7,12 +7,11 @@ import static java.lang.String.format;
 
 public class FantIkkeOppfolgingsbrukerException extends RuntimeException {
     public FantIkkeOppfolgingsbrukerException(AktoerId aktoerid) {
-        super(format("Fant ikke oppfolginsbruker i arena for aktoerid", aktoerid.toString()));
+        super(format("Fant ikke oppfolginsbruker i arena for aktoerid %s", aktoerid));
     }
 
     public FantIkkeOppfolgingsbrukerException(PersonId personId) {
-        super(format("Fant ikke oppfolginsbruker med personid", personId.toString()));
+        super(format("Fant ikke oppfolginsbruker med personid: %s", personId.toString()));
     }
-
 
 }
