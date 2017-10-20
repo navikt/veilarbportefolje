@@ -9,6 +9,7 @@ import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.MetricsUtils;
+import org.apache.solr.common.SolrInputDocument;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -39,6 +40,13 @@ public class PersistentOppdatering {
 
     public void lagre(BrukerOppdatering brukerOppdatering) {
         lagreISolr(hentDataOgLagre(brukerOppdatering));
+    }
+
+    public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
+        lagreBrukeroppdateringerIDB(brukerOppdateringer);
+        List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
+        List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds);
+        solrService.indekserDokumenter(dokumenter);
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {

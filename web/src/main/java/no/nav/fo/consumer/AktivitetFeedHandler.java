@@ -1,6 +1,8 @@
 package no.nav.fo.consumer;
 
 
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
@@ -8,8 +10,6 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Oppfolgingstatus;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
-import no.nav.fo.exception.FantIkkeOppfolgingsbrukerException;
-import no.nav.fo.exception.FantIkkePersonIdException;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.AktoerService;
@@ -17,9 +17,14 @@ import no.nav.fo.service.SolrService;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.inject.Inject;
+import javax.ws.rs.InternalServerErrorException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 
@@ -54,50 +59,77 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
         avtalteAktiviteter.forEach(this::lagreAktivitetData);
 
-        avtalteAktiviteter
+        behandleAktivitetdata(avtalteAktiviteter
                 .stream().map(AktivitetDataFraFeed::getAktorId)
                 .distinct()
-                .collect(toList())
-                .forEach(this::behandleAktivitetdata);
+                .map(AktoerId::of)
+                .collect(toList()));
+
 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
-        try{
+        try {
             timed(
                     "feed.aktivitet.objekt",
                     () -> aktivitetDAO.upsertAktivitet(aktivitet),
-                    (timer, hasFailed) -> { if(hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase()); }}
-                    );
-        }catch(Exception e) {
+                    (timer, hasFailed) -> {
+                        if (hasFailed) {
+                            timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase());
+                        }
+                    }
+            );
+        } catch (Exception e) {
             log.error("Kunne ikke lagre aktivitetdata fra feed for aktivitetid {}.", aktivitet.getAktivitetId(), e);
         }
     }
 
-    private void behandleAktivitetdata(String aktoerid) {
+    private void behandleAktivitetdata(List<AktoerId> aktoerids) {
         try {
             timed(
                     "feed.aktivitet.indekseraktivitet",
                     () -> {
-                        AktoerId aktoerId = AktoerId.of(aktoerid);
-                        PersonId personId = aktoerService.hentPersonidFraAktoerid(aktoerId)
-                                .getOrElseThrow(() -> new FantIkkePersonIdException(aktoerId));
+                        Map<AktoerId, Optional<PersonId>> aktoeridToPersonid = aktoerService.hentPersonidsForAktoerids(aktoerids);
+                        List<PersonId> personIds = aktoeridToPersonid.values().stream()
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .collect(toList());
 
-                        Oppfolgingstatus oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personId)
-                                .getOrElseThrow(() -> new FantIkkeOppfolgingsbrukerException(personId));
+                        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds)
+                                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
 
-                        if (erBrukerUnderOppfolging(oppfolgingstatus)) {
-                            aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerId);
-                        } else {
-                            solrService.slettBruker(personId);
-                            solrService.commit();
-                        }
-                    },
-                    (timer, hasFailed) -> { if (hasFailed) { timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktoerid).toUpperCase()); }}
+                        Map<Tuple2<AktoerId, PersonId>, Boolean> aktoerErUndeOppfolging = getErUnderOppfolging(aktoerids, aktoeridToPersonid, oppfolgingstatus);
+
+                        List<PersonId> ikkeUnderOppfolging = new ArrayList<>();
+                        List<AktoerId> underOppfolging = new ArrayList<>();
+                        aktoerErUndeOppfolging.forEach((key, value) -> {
+                            if (value) {
+                                underOppfolging.add(key._1);
+                            } else {
+                                ikkeUnderOppfolging.add(key._2);
+                            }
+                        });
+
+                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(underOppfolging);
+
+                        solrService.slettBrukere(ikkeUnderOppfolging);
+                        solrService.commit();
+                    }, (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
+
             );
-        }catch(Exception e) {
-            log.error("Feil ved behandling av aktivitetdata fra feed for aktoerid {}", aktoerid, e);
+        } catch (Exception e) {
+            log.error("Feil ved behandling av aktivitetdata fra feed", e);
         }
     }
+
+    private Map<Tuple2<AktoerId, PersonId>, Boolean> getErUnderOppfolging(List<AktoerId> aktoerids, Map<AktoerId, Optional<PersonId>> aktoeridToPersonid,
+                                                                          Map<PersonId, Oppfolgingstatus> oppfolgingstatus) {
+        return aktoerids.stream()
+                .filter(a -> aktoeridToPersonid.get(a).isPresent())
+                .collect(toMap(
+                        a -> Tuple.of(a, aktoeridToPersonid.get(a).get()),
+                        a -> erBrukerUnderOppfolging(oppfolgingstatus.get(aktoeridToPersonid.get(a).get()))));
+    }
+
 }

@@ -65,6 +65,11 @@ public class AktivitetUtils {
         return konverterTilBrukerOppdatering(aktiviteter, aktoerid, personid);
     }
 
+    public static List<AktivitetBrukerOppdatering> hentAktivitetBrukerOppdateringer(List<AktoerId> aktoerIds, AktoerService aktoerService, AktivitetDAO aktivitetDAO) {
+        List<AktoerAktiviteter> aktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerIds.stream().map(AktoerId::toString).collect(toList()));
+        return konverterTilBrukerOppdatering(aktiviteter, aktoerService);
+    }
+
     static boolean erBrukerIAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
