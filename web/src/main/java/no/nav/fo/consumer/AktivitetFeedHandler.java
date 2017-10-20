@@ -97,13 +97,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                                 .collect(toList());
 
                         Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds)
-                                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere"));
+                                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
 
-                        Map<Tuple2<AktoerId,PersonId>, Boolean> aktoerErUndeOppfolging = aktoerids.stream()
-                                .filter(a -> aktoeridToPersonid.get(a).isPresent())
-                                .collect(toMap(
-                                        a -> Tuple.of(a, aktoeridToPersonid.get(a).get()),
-                                        a -> erBrukerUnderOppfolging(oppfolgingstatus.get(aktoeridToPersonid.get(a).get()))));
+                        Map<Tuple2<AktoerId, PersonId>, Boolean> aktoerErUndeOppfolging = getErUnderOppfolging(aktoerids, aktoeridToPersonid, oppfolgingstatus);
 
                         List<PersonId> ikkeUnderOppfolging = new ArrayList<>();
                         List<AktoerId> underOppfolging = new ArrayList<>();
@@ -119,11 +115,21 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
                         solrService.slettBrukere(ikkeUnderOppfolging);
                         solrService.commit();
-                    },(timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
+                    }, (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
 
             );
         } catch (Exception e) {
             log.error("Feil ved behandling av aktivitetdata fra feed", e);
         }
     }
+
+    private Map<Tuple2<AktoerId, PersonId>, Boolean> getErUnderOppfolging(List<AktoerId> aktoerids, Map<AktoerId, Optional<PersonId>> aktoeridToPersonid,
+                                                                          Map<PersonId, Oppfolgingstatus> oppfolgingstatus) {
+        return aktoerids.stream()
+                .filter(a -> aktoeridToPersonid.get(a).isPresent())
+                .collect(toMap(
+                        a -> Tuple.of(a, aktoeridToPersonid.get(a).get()),
+                        a -> erBrukerUnderOppfolging(oppfolgingstatus.get(aktoeridToPersonid.get(a).get()))));
+    }
+
 }
