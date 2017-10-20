@@ -33,7 +33,7 @@ public class AktiviteterfeedConfig {
     @Value("${aktiviteter.feed.consumer.pollingrate.cron}")
     private String polling;
 
-    @Value("${aktiviteter.feed.pagesize ?: 500}")
+    @Value("${aktiviteter.feed.pagesize: 500}")
     private int pageSize;
 
     @Bean
