@@ -20,7 +20,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
-import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
+import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
+import static no.nav.fo.feed.consumer.FeedConsumerConfig.PollingConfig;
 
 
 @Configuration
@@ -32,7 +33,7 @@ public class AktiviteterfeedConfig {
     @Value("${aktiviteter.feed.consumer.pollingrate.cron}")
     private String polling;
 
-    @Value("${dialogaktor.feed.pagesize ?: 500}")
+    @Value("${aktiviteter.feed.pagesize ?: 500}")
     private int pageSize;
 
     @Bean
