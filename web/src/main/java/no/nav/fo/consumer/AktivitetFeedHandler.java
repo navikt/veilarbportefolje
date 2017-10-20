@@ -119,7 +119,8 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
                         solrService.slettBrukere(ikkeUnderOppfolging);
                         solrService.commit();
-                    }
+                    },(timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
+
             );
         } catch (Exception e) {
             log.error("Feil ved behandling av aktivitetdata fra feed", e);
