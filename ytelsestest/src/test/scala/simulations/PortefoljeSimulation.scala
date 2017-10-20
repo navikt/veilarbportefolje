@@ -1,16 +1,6 @@
 package simulations
 
-import io.gatling.core.Predef._
-import io.gatling.http.Predef._
-import no.nav.sbl.gatling.login.OpenIdConnectLogin
-import org.slf4j.LoggerFactory
-import utils.{Helpers, RequestFilter, RequestTildelingVeileder}
 import java.util.concurrent.TimeUnit
-
-import io.gatling.core.feeder.RecordSeqFeederBuilder
-
-import scala.concurrent.duration._
-import scala.util.Random
 
 class PortefoljeSimulation extends Simulation {
     private val logger = LoggerFactory.getLogger(PortefoljeSimulation.this.getClass)
@@ -51,33 +41,33 @@ class PortefoljeSimulation extends Simulation {
         .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
         .exec(Helpers.httpGetSuccess("forrside portefolje", "/veilarbportefoljeflatefs"))
         .pause("50", "600", TimeUnit.MILLISECONDS)
-        .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/tjenester/tekster"))
-        .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
-        .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
-        .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/statustall"))
+        .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/api/tekster"))
+        .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
+        .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
+        .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/statustall"))
         .exec(
-            Helpers.httpPostPaginering("portefoljefilter default", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter default", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter()))
                 .check(status.is(200))
         )
         .pause("50", "600", TimeUnit.MILLISECONDS)
-        .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
-        .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
+        .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
+        .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
         .pause("3", "15", TimeUnit.SECONDS)
         .exec(
-            Helpers.httpPostPaginering("portefoljefilter alder", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter alder", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
                 .check(status.is(200))
         )
         .pause("1", "10", TimeUnit.SECONDS)
         .exec(
-            Helpers.httpPostPaginering("portefoljefilter alder og kjoenn", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter alder og kjoenn", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(alder = List("25-29", "30-39"), kjonn = List("M"))))
                 .check(status.is(200))
         )
         .pause("1", "10", TimeUnit.SECONDS)
         .exec(
-            Helpers.httpPostPaginering("portefoljefilter kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter kjoenn og foedselsdag", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(
                     kjonn = List("M"),
                     fodselsdagIMnd = List("1", "2")
@@ -86,7 +76,7 @@ class PortefoljeSimulation extends Simulation {
         )
         .pause("1", "10", TimeUnit.SECONDS)
         .exec(
-            Helpers.httpPostPaginering("portefoljefilter alder, kjoenn og foedselsdag", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefolje")
+            Helpers.httpPostPaginering("portefoljefilter alder, kjoenn og foedselsdag", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
                 .body(Helpers.toBody(RequestFilter(
                     alder = List("20-24", "30-39"),
                     kjonn = List("M"),
@@ -126,14 +116,14 @@ class PortefoljeSimulation extends Simulation {
         )
 
         .pause("1", "6", TimeUnit.SECONDS)
-        .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/tjenester/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
+        .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
         .pause("1", "6", TimeUnit.SECONDS)
         .exec(Helpers.httpGetSuccess("forrside personflate", "/veilarbpersonflatefs"))
         .pause("50", "300", TimeUnit.MILLISECONDS)
-        .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
-        .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/tjenester/veileder/enheter"))
-        .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/tjenester/veileder/me"))
-        .exec(Helpers.httpGetSuccess("person", "/veilarbperson/tjenester/person/" + brukerForTildeling))
+        .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/api/tekster?lang=nb"))
+        .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
+        .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
+        .exec(Helpers.httpGetSuccess("person", "/veilarbperson/api/person/" + brukerForTildeling))
         .pause("1", "6", TimeUnit.SECONDS)
         .exec(Helpers.httpGetSuccess("oppfoelginsstatus", "/veilarbsituasjon/api/person/" + brukerForTildeling + "/oppfoelgingsstatus"))
         .pause("50", "300", TimeUnit.MILLISECONDS)
