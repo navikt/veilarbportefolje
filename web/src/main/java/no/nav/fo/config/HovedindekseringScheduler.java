@@ -26,19 +26,25 @@ public class HovedindekseringScheduler {
 
 
     @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
-    public void prosessScheduler() {
+    public void prosessSchedulerHvisMaster() {
         if(ismasternode) {
-            timed("indeksering.total", () -> {
-                log.info("Setter i gang oppdatering av ytelser i databasen");
-                timed("indeksering.oppdatering.ytelser", () -> kopierGR199FraArena.startOppdateringAvYtelser());
-                log.info("Ferdig med oppdatering av ytelser");
-                log.info("Setter i gang oppdatering av tiltak i databasen");
-                timed("indeksering.oppdatering.tiltak", () -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
-                log.info("Ferdig med oppdatering av tiltak");
-                log.info("Setter i gang hovedindeksering");
-                timed("indeksering.populerindeks", () -> solrService.hovedindeksering());
-                log.info("Ferdig med hovedindeksering");
-            });
+            prosessScheduler();
         }
+    }
+
+    public void prosessScheduler() {
+        timed("indeksering.total", () -> {
+            log.info("Setter i gang oppdatering av ytelser i databasen");
+            timed("indeksering.oppdatering.ytelser", () -> kopierGR199FraArena.startOppdateringAvYtelser());
+            log.info("Ferdig med oppdatering av ytelser");
+
+            log.info("Setter i gang oppdatering av tiltak i databasen");
+            timed("indeksering.oppdatering.tiltak", () -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
+            log.info("Ferdig med oppdatering av tiltak");
+
+            log.info("Setter i gang hovedindeksering");
+            timed("indeksering.populerindeks", () -> solrService.hovedindeksering());
+            log.info("Ferdig med hovedindeksering");
+        });
     }
 }

@@ -4,6 +4,7 @@ import io.vavr.control.Either;
 import io.vavr.control.Try;
 import no.nav.fo.domene.*;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrInputDocument;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,9 +24,13 @@ public interface SolrService {
 
     void slettBruker(PersonId personId);
 
+    void slettBrukere(List<PersonId> personId);
+
     void indekserBrukerdata(PersonId personId);
 
     void indekserBrukerdata(AktoerId aktoerId);
+
+    void indekserDokumenter(List<SolrInputDocument> personIds);
 
     StatusTall hentStatusTallForPortefolje(String enhet);
 

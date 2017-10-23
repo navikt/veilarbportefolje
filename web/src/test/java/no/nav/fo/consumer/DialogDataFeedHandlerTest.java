@@ -48,7 +48,7 @@ public class DialogDataFeedHandlerTest {
         DialogDataFraFeed dialogdata = new DialogDataFraFeed().setAktorId("aktoerid");
 
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
-        when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(false)));
+        when(brukerRepository.retrieveOppfolgingstatus(any(PersonId.class))).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(false)));
 
         dialogDataFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(dialogdata));
         verify(solrService, times(1)).slettBruker(any(PersonId.class));
@@ -60,7 +60,7 @@ public class DialogDataFeedHandlerTest {
         DialogDataFraFeed dialogdata = new DialogDataFraFeed().setAktorId("aktoerid");
 
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
-        when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(true)));
+        when(brukerRepository.retrieveOppfolgingstatus(any(PersonId.class))).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(true)));
 
         dialogDataFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(dialogdata));
         verify(solrService, never()).slettBruker(any(PersonId.class));

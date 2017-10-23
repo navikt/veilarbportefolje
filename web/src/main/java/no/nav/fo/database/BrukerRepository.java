@@ -25,8 +25,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -57,12 +59,30 @@ public class BrukerRepository {
     }
 
     public Try<Oppfolgingstatus> retrieveOppfolgingstatus(PersonId personId) {
-        if (personId == null) {
-            return Try.failure(new NullPointerException());
-        }
-        return Try.of(
-                () -> db.query(retrieveOppfolgingstatusSql(), new String[]{personId.toString()}, this::mapToOppfolgingstatus)
-        ).onFailure(e -> log.warn("Feil ved uthenting av Arena statuskoder for personid {}", personId, e));
+        return retrieveOppfolgingstatus(singletonList(personId)).map( map -> map.get(personId));
+    }
+
+    public Try<Map<PersonId, Oppfolgingstatus>> retrieveOppfolgingstatus(List<PersonId> personIds) {
+        return Try.of(() -> {
+
+            Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = new HashMap<>();
+
+            io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
+                    .forEach(personIdsBatch -> {
+                        Map<String, Object> params = new HashMap<>(personIdsBatch.size());
+                        params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
+                        namedParameterJdbcTemplate.queryForList(retrieveOppfolgingstatusListSql(), params)
+                                .forEach(data -> personIdOppfolgingstatusMap.put(
+                                        PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
+                                        new Oppfolgingstatus()
+                                                .setFormidlingsgruppekode((String) data.get(FORMIDLINGSGRUPPEKODE))
+                                                .setServicegruppekode((String) data.get(KVALIFISERINGSGRUPPEKODE))
+                                                .setOppfolgingsbruker(parseJaNei(data.get("OPPFOLGING"), "OPPFOLGING"))
+                                                .setVeileder((String) data.get("veilederident"))
+                                ));
+                    });
+            return personIdOppfolgingstatusMap;
+        });
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
@@ -182,6 +202,19 @@ public class BrukerRepository {
         return brukere;
     }
 
+    public List<SolrInputDocument> retrieveBrukeremedBrukerdata(List<PersonId> personIds) {
+        List<SolrInputDocument> dokumenter = new ArrayList<>(personIds.size());
+        io.vavr.collection.List.ofAll(personIds).sliding(1000,1000)
+                .forEach(personIdsBatch -> {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
+                    namedParameterJdbcTemplate.query(retrieveBrukereMedBrukerdataSQL(), params, rs -> {
+                            dokumenter.add(mapResultSetTilDokument(rs));
+                    });
+                });
+        return dokumenter;
+    }
+
     public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
         String[] args = new String[]{personId};
         return db.query(retrieveBrukerMedBrukerdataSQL(), args, (rs) -> {
@@ -214,7 +247,6 @@ public class BrukerRepository {
                         .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
-                        .setIAvtaltAktivitet(parse0OR1((String) data.get("IAVTALTAKTIVITET")))
                         .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET")))
                 .collect(toList());
     }
@@ -258,15 +290,39 @@ public class BrukerRepository {
         return brukere;
     }
 
+    public Map<AktoerId,Optional<PersonId>> hentPersonidsFromAktoerids(List<AktoerId> aktoerIds) {
+        Map<AktoerId, Optional<PersonId>> brukere = new HashMap<>(aktoerIds.size());
+
+        batchProcess(1000, aktoerIds, timed("retreive.personids.batch", (aktoeridsBatch) -> {
+            Map<String, Object> params = new HashMap<>();
+            params.put("aktoerids", aktoeridsBatch.stream().map(AktoerId::toString).collect(toList()));
+
+            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = namedParameterJdbcTemplate.queryForList(
+                    hentPersonidsFromAktoeridsSQL(), params)
+                    .stream()
+                    .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
+                    )
+                    .collect(Collectors.toMap(Tuple2::_2, personData -> Optional.of(personData._1())));
+
+            brukere.putAll(aktoeridToPersonidsMap);
+        }));
+
+        aktoerIds.stream()
+                .filter(not(brukere::containsKey))
+                .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
+
+        return brukere;
+    }
+
     public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
         Map<PersonId, Optional<AktoerId>> brukere = new HashMap<>(personIds.size());
 
-        batchProcess(1000, personIds, timed("retreive.aktoerid.batch",(personIdsBatch) -> {
+        batchProcess(1000, personIds, timed("retreive.aktoerid.batch", (personIdsBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("personids", personIdsBatch.stream().map(PersonId::toString).collect(toList()));
 
             Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = namedParameterJdbcTemplate.queryForList(
-                    hentAktoeridsForPersonidsSQL(),params)
+                    hentAktoeridsForPersonidsSQL(), params)
                     .stream()
                     .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
                     )
@@ -289,6 +345,15 @@ public class BrukerRepository {
                 "FROM " +
                 "AKTOERID_TO_PERSONID " +
                 "WHERE PERSONID in (:personids)";
+    }
+
+    private String hentPersonidsFromAktoeridsSQL() {
+        return "SELECT " +
+                "AKTOERID, " +
+                "PERSONID " +
+                "FROM " +
+                "AKTOERID_TO_PERSONID " +
+                "WHERE AKTOERID in (:aktoerids)";
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
@@ -326,8 +391,9 @@ public class BrukerRepository {
                 .execute();
     }
 
-    private String retrieveOppfolgingstatusSql() {
+    private String retrieveOppfolgingstatusListSql() {
         return "SELECT " +
+                "person_id, " +
                 "formidlingsgruppekode, " +
                 "kvalifiseringsgruppekode, " +
                 "bruker_data.oppfolging, " +
@@ -338,7 +404,7 @@ public class BrukerRepository {
                 "ON " +
                 "bruker_data.personid = oppfolgingsbruker.person_id " +
                 "WHERE " +
-                "person_id = ? ";
+                "person_id in (:personids) ";
     }
 
     private static String baseSelect = "SELECT " +
@@ -368,8 +434,7 @@ public class BrukerRepository {
             "oppfolging, " +
             "venterpasvarfrabruker, " +
             "venterpasvarfranav, " +
-            "nyesteutlopteaktivitet, " +
-            "iavtaltaktivitet " +
+            "nyesteutlopteaktivitet " +
             "FROM " +
             "oppfolgingsbruker ";
 
@@ -388,6 +453,15 @@ public class BrukerRepository {
                 "bruker_data.personid = oppfolgingsbruker.person_id " +
                 "WHERE " +
                 "person_id = ?";
+    }
+
+    private String retrieveBrukereMedBrukerdataSQL() {
+        return baseSelect +
+                "LEFT JOIN bruker_data " +
+                "ON " +
+                "bruker_data.personid = oppfolgingsbruker.person_id " +
+                "WHERE " +
+                "person_id in (:personids)";
     }
 
     String retrieveOppdaterteBrukereSQL() {

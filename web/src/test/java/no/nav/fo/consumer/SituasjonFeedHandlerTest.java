@@ -60,7 +60,7 @@ public class SituasjonFeedHandlerTest {
                 .setOppfolging(false)
                 .setAktoerid(aktoerId.toString());
 
-        when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(arenaStatus);
+        when(brukerRepository.retrieveOppfolgingstatus(any(PersonId.class))).thenReturn(arenaStatus);
         when(aktoerService.hentFnrFraAktoerid(any())).thenReturn(Try.success(fnr));
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(personId));
 

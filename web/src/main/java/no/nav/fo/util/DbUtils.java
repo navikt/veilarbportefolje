@@ -59,7 +59,6 @@ public class DbUtils {
         document.addField("venterpasvarfrabruker", toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")));
         document.addField("venterpasvarfranav", toIsoUTC(rs.getTimestamp("venterpasvarfranav")));
         document.addField("nyesteutlopteaktivitet", toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")));
-        document.addField("iavtaltaktivitet", parse0OR1(rs.getString("iavtaltaktivitet")));
 
         return document;
     }

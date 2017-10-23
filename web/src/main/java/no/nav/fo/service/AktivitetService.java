@@ -3,7 +3,6 @@ package no.nav.fo.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
@@ -25,9 +24,6 @@ public class AktivitetService {
 
     @Inject
     private AktoerService aktoerService;
-
-    @Inject
-    private BrukerRepository brukerRepository;
 
     @Inject
     private AktivitetDAO aktivitetDAO;
@@ -71,5 +67,10 @@ public class AktivitetService {
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(AktoerId aktoerid) {
         persistentOppdatering.lagre(hentAktivitetBrukerOppdatering(aktoerid, aktoerService, aktivitetDAO));
+    }
+
+    public void utledOgIndekserAktivitetstatuserForAktoerid(List<AktoerId> aktoerIds) {
+        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds,aktoerService,aktivitetDAO);
+        persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);
     }
 }

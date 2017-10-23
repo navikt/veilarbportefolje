@@ -2,15 +2,11 @@ package no.nav.fo.service;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
-import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentRequest;
-import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentResponse;
-import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdRequest;
-import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentIdentForAktoerIdResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -26,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 public class AktoerServiceImpl implements AktoerService {
 
     @Inject
-    private AktoerV2 soapService;
+    private AktorService aktorService;
 
     @Inject
     private JdbcTemplate db;
@@ -57,8 +53,7 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Override
     public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
-        return Try.of(() -> soapService.hentAktoerIdForIdent(new WSHentAktoerIdForIdentRequest().withIdent(fnr.toString())))
-                .map(WSHentAktoerIdForIdentResponse::getAktoerId)
+        return Try.of(() -> aktorService.getAktorId(fnr.toString()).get())
                 .map(AktoerId::of);
     }
 
@@ -111,6 +106,21 @@ public class AktoerServiceImpl implements AktoerService {
         return personIdToAktoeridMap;
     }
 
+    @Override
+    public Map<AktoerId, Optional<PersonId>> hentPersonidsForAktoerids(List<AktoerId> aktoerIds) {
+        Map<AktoerId, Optional<PersonId>> aktoerIdToPersonidMap = new HashMap<>(aktoerIds.size());
+        Map<AktoerId, Optional<PersonId>> fromDb = brukerRepository.hentPersonidsFromAktoerids(aktoerIds);
+
+        fromDb.forEach((key, value) -> {
+            if(value.isPresent()) {
+                aktoerIdToPersonidMap.put(key, value);
+            } else {
+                aktoerIdToPersonidMap.put(key, (hentPersonIdViaSoap(key)).toJavaOptional());
+            }
+        });
+        return aktoerIdToPersonidMap;
+    }
+
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
         return hentFnrViaSoap(aktoerId)
                 .flatMap(brukerRepository::retrievePersonidFromFnr)
@@ -119,15 +129,8 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     private Try<Fnr> hentFnrViaSoap(AktoerId aktoerId) {
-        WSHentIdentForAktoerIdRequest soapRequest = new WSHentIdentForAktoerIdRequest().withAktoerId(aktoerId.toString());
-
-        return
-                Try.of(
-                        () -> soapService.hentIdentForAktoerId(soapRequest))
-                        .map(WSHentIdentForAktoerIdResponse::getIdent)
-                        .map(Fnr::new)
-                        .onFailure(e -> log.warn("SOAP-Kall mot baksystem (AktoerV2) feilet for aktoerId {} | {}", aktoerId, e.getMessage())
-                        );
+        return Try.of(() -> aktorService.getFnr(aktoerId.toString()).get())
+                .map(Fnr::of);
     }
 
     private static <T> Try<T> hentSingleFraDb(JdbcTemplate db, String sql, Function<Map<String, Object>, T> mapper, Object... args) {

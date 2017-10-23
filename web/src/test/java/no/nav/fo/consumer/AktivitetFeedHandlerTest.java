@@ -18,9 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -55,22 +53,33 @@ public class AktivitetFeedHandlerTest {
 
 
     @Test
-    public void utledOgIndekserAktivitetstatuserForAktoeridShouldBeCalledOnceForEachDistinctAktoerid() {
+    public void utledOgIndekserAktivitetstatuserForAktoeridShouldBeCalledWithEachDistinctAktoerid() {
 
         List<AktivitetDataFraFeed> data = new ArrayList<>();
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID2").setAvtalt(true));
 
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
-        when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(true)));
+        Map<AktoerId, Optional<PersonId>> idMap = new HashMap<>();
+        idMap.put(AktoerId.of("AktoerID1"), Optional.of(PersonId.of("123123")));
+        idMap.put(AktoerId.of("AktoerID2"), Optional.of(PersonId.of("123123")));
+
+        when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(idMap);
+        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenAnswer( (r) -> {
+            Map<PersonId, Oppfolgingstatus> statuser = new HashMap<>();
+            List<PersonId> personIds = r.getArgument(0);
+            personIds.forEach( (personid) -> {
+                statuser.put(personid,new Oppfolgingstatus().setOppfolgingsbruker(true));
+            });
+            return Try.success(statuser);
+        });
 
         aktivitetFeedHandler.call("dontcare", data);
 
-        ArgumentCaptor<AktoerId> aktoeridCaptor = ArgumentCaptor.forClass(AktoerId.class);
+        ArgumentCaptor<List<AktoerId>> aktoeridCaptor = ArgumentCaptor.forClass(List.class);
 
-        verify(aktivitetService, times(2)).utledOgIndekserAktivitetstatuserForAktoerid(aktoeridCaptor.capture());
-        List<AktoerId> capturedAktoerids = aktoeridCaptor.getAllValues();
+        verify(aktivitetService, times(1)).utledOgIndekserAktivitetstatuserForAktoerid(aktoeridCaptor.capture());
+        List<AktoerId> capturedAktoerids = aktoeridCaptor.getValue();
 
 
         assertThat(capturedAktoerids).contains(AktoerId.of("AktoerID1"));
@@ -92,14 +101,20 @@ public class AktivitetFeedHandlerTest {
 
     @Test
     public void skalIkkeIndeksereOmBrukerIkkeErUnderOppfolging() {
+        PersonId personId = PersonId.of("123123");
+        AktoerId aktoerId = AktoerId.of("AktoerID1");
+        Map<AktoerId, Optional<PersonId>> idMap = new HashMap<>();
+        idMap.put(aktoerId, Optional.of(personId));
 
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of("123123")));
-        when(brukerRepository.retrieveOppfolgingstatus(any())).thenReturn(Try.success(new Oppfolgingstatus().setOppfolgingsbruker(false)));
+        when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(idMap);
+        Map<PersonId, Oppfolgingstatus> oppfolgingsstatuser = new HashMap<>();
+        oppfolgingsstatuser.put(personId, new Oppfolgingstatus().setOppfolgingsbruker(false));
+        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(Try.success(oppfolgingsstatuser));
 
         aktivitetFeedHandler.call("dontcare", Collections.singletonList(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true)));
 
-        verify(aktivitetService, never()).utledOgIndekserAktivitetstatuserForAktoerid(any());
-        verify(solrService, times(1)).slettBruker(any(PersonId.class));
+        verify(aktivitetService, never()).utledOgIndekserAktivitetstatuserForAktoerid(any(AktoerId.class));
+        verify(solrService, times(1)).slettBrukere(any());
 
     }
 }

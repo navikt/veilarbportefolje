@@ -152,6 +152,11 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
+    public void indekserDokumenter(List<SolrInputDocument> dokumenter) {
+        leggDataTilSolrDocument(dokumenter);
+        addDocumentsToIndex(dokumenter);
+    }
+
     @Override
     public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = byggQueryString(enhetId, veilederIdent);
@@ -217,7 +222,7 @@ public class SolrServiceImpl implements SolrService {
         } catch (SolrServerException | IOException e) {
             log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
         }
-        return SolrUtils.sortBrukere(brukere, sortOrder, sortField);
+        return SolrUtils.sortBrukere(brukere, sortOrder, sortField, filtervalg);
     }
 
     @Override
@@ -228,6 +233,11 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:" + personid.toString());
+    }
+
+    @Override
+    public void slettBrukere(List<PersonId> personIds) {
+        personIds.forEach(this::slettBruker);
     }
 
     @Override
@@ -324,8 +334,8 @@ public class SolrServiceImpl implements SolrService {
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
-        String iavtaltAktivitet = "iavtaltaktivitet:true";
-        String ikkeIAvtaltAktivitet = "-iavtaltaktivitet:true";
+        String iavtaltAktivitet = "aktiviteter:*";
+        String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
@@ -373,8 +383,8 @@ public class SolrServiceImpl implements SolrService {
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
-        String iavtaltAktivitet = "iavtaltaktivitet:true";
-        String ikkeIAvtaltAktivitet = "-iavtaltaktivitet:true";
+        String iavtaltAktivitet = "aktiviteter:*";
+        String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
         String minArbeidsliste = "arbeidsliste_aktiv:*";
 

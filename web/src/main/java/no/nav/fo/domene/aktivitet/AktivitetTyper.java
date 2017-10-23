@@ -9,7 +9,8 @@ public enum AktivitetTyper {
     samtalereferat,
     mote,
     tiltak,
-    gruppeaktivitet;
+    gruppeaktivitet,
+    utdanningaktivitet;
 
     public static boolean contains(String value) {
         try {

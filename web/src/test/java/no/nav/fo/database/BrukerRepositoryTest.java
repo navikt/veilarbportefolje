@@ -20,10 +20,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.*;
 import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
@@ -74,7 +76,7 @@ public class BrukerRepositoryTest {
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
             "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
+            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -95,7 +97,7 @@ public class BrukerRepositoryTest {
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
             "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET", "IAVTALTAKTIVITET"};
+            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -280,7 +282,6 @@ public class BrukerRepositoryTest {
         SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
         assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isNull();
-        assertThat(bruker.get("iavtaltaktivitet").getValue()).isNull();
     }
 
     @Test
@@ -289,7 +290,6 @@ public class BrukerRepositoryTest {
 
         Brukerdata brukerdata = new Brukerdata()
             .setPersonid("123456")
-            .setIAvtaltAktivitet(true)
             .setNyesteUtlopteAktivitet(nyesteUtlopte);
 
         brukerRepository.upsertBrukerdata(brukerdata);
@@ -297,7 +297,6 @@ public class BrukerRepositoryTest {
 
         SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
-        assertThat(bruker.get("iavtaltaktivitet").getValue()).isEqualTo(true);
         assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isEqualTo("2017-01-01T12:00:00Z");
     }
 
@@ -306,7 +305,6 @@ public class BrukerRepositoryTest {
 
         Brukerdata brukerdata = new Brukerdata()
             .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
-            .setIAvtaltAktivitet(true)
             .setPersonid("personid")
             .setAapmaxtidUke(1)
             .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
@@ -463,5 +461,42 @@ public class BrukerRepositoryTest {
         assertThat(personIdToAktoerid.get(personId1).get()).isEqualTo(aktoerId1);
         assertThat(personIdToAktoerid.get(personId2).get()).isEqualTo(aktoerId2);
         assertThat(personIdToAktoerid.get(personId3).isPresent()).isFalse();
+    }
+
+    @Test
+    public void skalHenteListeMedPersonids() {
+        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
+        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
+        AktoerId aktoerId3 = AktoerId.of("aktoerid3");
+
+        PersonId personId1 = PersonId.of("personid1");
+        PersonId personId2 = PersonId.of("personid2");
+
+        brukerRepository.insertAktoeridToPersonidMapping(aktoerId1, personId1);
+        brukerRepository.insertAktoeridToPersonidMapping(aktoerId2, personId2);
+
+        Map<AktoerId, Optional<PersonId>> aktoeridsToPersonids = brukerRepository.hentPersonidsFromAktoerids(asList(aktoerId1, aktoerId2, aktoerId3));
+
+        assertThat(aktoeridsToPersonids.get(aktoerId1).get()).isEqualTo(personId1);
+        assertThat(aktoeridsToPersonids.get(aktoerId2).get()).isEqualTo(personId2);
+        assertThat(aktoeridsToPersonids.get(aktoerId3).isPresent()).isFalse();
+    }
+
+    @Test
+    public void skalHenteOppfolgignsstatusForLsite() {
+        List<PersonId> personIds = Stream.of("4120339", "4120327", "1033279", "4024027", "183651")
+                .map(PersonId::of).collect(toList());
+
+        Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = brukerRepository.retrieveOppfolgingstatus(personIds).get();
+        assertThat(personIdOppfolgingstatusMap.size()).isEqualTo(5);
+    }
+
+    @Test
+    public void skalHenteBrukereMedBrukerdata() {
+        List<PersonId> personIds = Stream.of("4120339", "4120327", "1033279", "4024027", "183651")
+                .map(PersonId::of).collect(toList());
+
+        List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds);
+        assertThat(dokumenter.size()).isEqualTo(5);
     }
 }

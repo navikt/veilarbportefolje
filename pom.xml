@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2017.08.30.16.52</version>
+        <version>1-SNAPSHOT</version>
     </parent>
 
     <name>veilarbportefolje</name>
@@ -28,12 +28,10 @@
         <!-- Egenlagde -->
         <modig-lang.version>1.1.0</modig-lang.version>
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
-        <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <common-integrasjonsutils.version>0.0.11</common-integrasjonsutils.version>
 
 
         <!-- Tredjeparts -->
-        <ehcache.version>2.10.3</ehcache.version>
         <solr.version>6.4.2</solr.version>
         <vavr.version>0.9.0</vavr.version>
         <okhttp.version>2.7.5</okhttp.version>
@@ -49,7 +47,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>RELEASE</version> <!-- TODO lås denne til samme versjon som mor-pommen før prodsetting -->
+                <version>2017.10.16.14.40</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -100,17 +98,6 @@
                 <groupId>no.nav.fo</groupId>
                 <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
                 <version>${enhet.tjenestespesifikasjon.versjon}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
-                <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sf.ehcache</groupId>
-                <artifactId>ehcache</artifactId>
-                <version>${ehcache.version}</version>
             </dependency>
 
             <dependency>

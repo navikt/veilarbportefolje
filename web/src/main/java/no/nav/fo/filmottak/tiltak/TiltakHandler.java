@@ -3,10 +3,7 @@ package no.nav.fo.filmottak.tiltak;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.AktivitetStatus;
-import no.nav.fo.domene.Fnr;
-import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.*;
 import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrServiceImpl;
@@ -26,6 +23,7 @@ import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.filmottak.tiltak.TiltakUtils.*;
+import static no.nav.fo.util.ListUtils.distinctByPropertyList;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.log;
 
@@ -97,11 +95,24 @@ public class TiltakHandler {
         tiltakrepository.slettTiltakskoder();
         aktivitetDAO.slettAlleAktivitetstatus(tiltak);
         aktivitetDAO.slettAlleAktivitetstatus(gruppeaktivitet);
+        aktivitetDAO.slettAlleAktivitetstatus(utdanningaktivitet);
 
-        tiltakOgAktiviteterForBrukere.getTiltakskodeListe().forEach(tiltakrepository::lagreTiltakskoder);
+
+        List<Tiltakkodeverk> tiltakkoder = distinctByPropertyList(
+                Tiltakkodeverk::getKode,
+                tiltakOgAktiviteterForBrukere.getTiltakskodeListe().stream().map(Tiltakkodeverk::of).collect(toList()),
+                tiltakOgAktiviteterForBrukere.getAktivitetskodeListe().stream().map(Tiltakkodeverk::of).collect(toList())
+        );
+
+        tiltakrepository.lagreTiltakskoder(tiltakkoder);
 
         MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
-            tiltakOgAktiviteterForBrukere.getBrukerListe().forEach(tiltakrepository::lagreBrukertiltak);
+            List<Brukertiltak> brukertiltak = tiltakOgAktiviteterForBrukere.getBrukerListe().stream()
+                    .map(Brukertiltak::of)
+                    .flatMap(Collection::stream)
+                    .collect(toList());
+
+            tiltakrepository.lagreBrukertiltak(brukertiltak);
         });
 
         MetricsUtils.timed("tiltak.insert.as.aktivitet", () -> {
@@ -110,6 +121,10 @@ public class TiltakHandler {
 
         MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
             utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
+        });
+
+        MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
+            utledOgLagreUtdanningsaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
         });
 
         MetricsUtils.timed("tiltak.insert.enhettiltak", () -> {
@@ -170,6 +185,27 @@ public class TiltakHandler {
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());
+                    aktivitetDAO.insertAktivitetstatuser(aktivitetStatuses);
+
+                });
+    }
+
+    private void utledOgLagreUtdanningsaktiviteter(List<Bruker> brukere) {
+        io.vavr.collection.List.ofAll(brukere)
+                .sliding(1000,1000)
+                .forEach((brukereSubList) -> {
+                    List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
+                    List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
+                            .stream()
+                            .map(bruker -> {
+                                Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
+                                return personId.map(p -> TiltakUtils.utledUtdanningsaktivitetstatus(bruker, p, datofilter)).orElse(null);
+                            })
+                            .filter(Objects::nonNull)
+                            .collect(toList());
+
                     aktivitetDAO.insertAktivitetstatuser(aktivitetStatuses);
 
                 });

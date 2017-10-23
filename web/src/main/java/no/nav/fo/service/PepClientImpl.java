@@ -1,16 +1,12 @@
 package no.nav.fo.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.config.CacheConfig;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
-import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
-import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import org.springframework.cache.annotation.Cacheable;
 
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
@@ -25,7 +21,6 @@ public class PepClientImpl implements PepClient {
         this.pep = pep;
     }
 
-    @Cacheable(CacheConfig.kode7Cache)
     public boolean isSubjectAuthorizedToSeeKode7(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -36,7 +31,6 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable(CacheConfig.kode6Cache)
     public boolean isSubjectAuthorizedToSeeKode6(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -47,7 +41,6 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable(CacheConfig.egenAnsattCache)
     public boolean isSubjectAuthorizedToSeeEgenAnsatt(String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -58,7 +51,6 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    @Cacheable(CacheConfig.modiaOppfolgingCache)
     public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
         BiasedDecisionResponse callAllowed;
         try {
@@ -76,14 +68,10 @@ public class PepClientImpl implements PepClient {
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
     }
 
-    // NB! Etter refactorering er ikke parameteren `token` lenger i bruk,
-    // men lar den stå siden den er en del av cachenøkkelen.
-    @Cacheable(CacheConfig.brukerTilgangCache)
-    public boolean tilgangTilBruker(String token, String fnr) {
+    public boolean tilgangTilBruker(String fnr) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.harInnloggetBrukerTilgangTilPerson(fnr, "veilarb",
-                    Action.ActionId.READ, ResourceType.VeilArbPerson);
+            callAllowed = pep.harInnloggetBrukerTilgangTilPerson(fnr, "veilarb");
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }

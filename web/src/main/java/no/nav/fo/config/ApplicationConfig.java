@@ -3,6 +3,7 @@ package no.nav.fo.config;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.ServletUtil;
+import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
@@ -36,15 +37,13 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         ServiceConfig.class,
         ExternalServiceConfig.class,
         SolrConfig.class,
-        AktoerEndpointConfig.class,
         FilmottakConfig.class,
         MetricsConfig.class,
-        AktoerEndpointConfig.class,
         CacheConfig.class,
         PingConfig.class,
         FeedConfig.class,
-        RestConfig.class
-
+        RestConfig.class,
+        AktorConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
 

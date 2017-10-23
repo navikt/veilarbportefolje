@@ -1,11 +1,10 @@
 package no.nav.fo.config;
 
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
@@ -20,12 +19,15 @@ import static org.mockito.Mockito.mock;
         DatabaseConfigTest.class
 })
 public class ApplicationConfigTest {
-    @Bean
-    public AktoerService aktoerService() { return new AktoerServiceImpl(); }
 
     @Bean
-    public AktoerV2 aktoerV2() {
-        return mock(AktoerV2.class);
+    public AktoerService aktoerService() {
+        return new AktoerServiceImpl();
+    }
+
+    @Bean
+    public AktorService aktorService() {
+        return mock(AktorService.class);
     }
 
     @Bean
@@ -44,7 +46,9 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public PersistentOppdatering persistentOppdatering() { return new PersistentOppdatering(); }
+    public PersistentOppdatering persistentOppdatering() {
+        return new PersistentOppdatering();
+    }
 
     @Bean
     public SolrService solrService() {
@@ -53,12 +57,16 @@ public class ApplicationConfigTest {
 
     @Bean
     public SolrClient solrClient() {
-        return mock(HttpSolrClient.class); }
+        return mock(HttpSolrClient.class);
+    }
 
     @Bean
-    public Pep pep() { return mock(Pep.class); }
+    public Pep pep() {
+        return mock(Pep.class);
+    }
 
     @Bean
-    public PepClientImpl pepClient() { return mock(PepClientImpl.class);
+    public PepClientImpl pepClient() {
+        return mock(PepClientImpl.class);
     }
 }

@@ -50,7 +50,7 @@ public class IndekserYtelserHandler {
     @Inject
     private BrukerRepository brukerRepository;
 
-    public synchronized void indekser(LoependeYtelser ytelser) {
+    public synchronized void lagreYtelser(LoependeYtelser ytelser) {
         log.info("Sletter ytelsesdata fra DB");
         MetricsUtils.timed("GR199.slettytelser", () -> brukerRepository.slettYtelsesdata());
 

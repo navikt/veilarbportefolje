@@ -3,7 +3,6 @@ package no.nav.fo.util;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
@@ -18,7 +17,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
@@ -49,12 +47,10 @@ public class AktivitetUtils {
     private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter, AktoerId aktoerId, PersonId personId) {
 
         Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId);
-        Boolean erIAvtaltIAvtaltAktivitet = erBrukerIAktivAktivitet(aktiviteter, LocalDate.now());
         Optional<AktivitetDTO> nyesteUtlopteAktivitet = Optional.ofNullable(finnNyesteUtlopteAktivAktivitet(aktiviteter, LocalDate.now()));
 
         return new AktivitetBrukerOppdatering(personId.toString(), aktoerId.toString())
                 .setAktiviteter(aktiveAktiviteter)
-                .setIAvtaltAktivitet(erIAvtaltIAvtaltAktivitet)
                 .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet.map(AktivitetDTO::getTilDato).orElse(null));
     }
 
@@ -69,13 +65,17 @@ public class AktivitetUtils {
         return konverterTilBrukerOppdatering(aktiviteter, aktoerid, personid);
     }
 
+    public static List<AktivitetBrukerOppdatering> hentAktivitetBrukerOppdateringer(List<AktoerId> aktoerIds, AktoerService aktoerService, AktivitetDAO aktivitetDAO) {
+        List<AktoerAktiviteter> aktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerIds.stream().map(AktoerId::toString).collect(toList()));
+        return konverterTilBrukerOppdatering(aktiviteter, aktoerService);
+    }
+
     static boolean erBrukerIAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                 .anyMatch(match -> true);
-
     }
 
     static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
@@ -106,29 +106,29 @@ public class AktivitetUtils {
                 .map(Objects::toString)
                 .forEach(aktivitetsype -> {
 
-                    List<AktivitetDTO> aktiviteterIPeriodeMedAktivtStatus = aktiviteter
+                    List<AktivitetDTO> aktiviteterMedAktivtStatus = aktiviteter
                             .stream()
                             .filter(aktivitet -> aktivitetsype.equals(aktivitet.getAktivitetType()))
-                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                             .filter(AktivitetUtils::harIkkeStatusFullfort)
                             .collect(toList());
 
-                    Timestamp datoForNesteUtlop = aktiviteterIPeriodeMedAktivtStatus
+                    Timestamp datoForNesteUtlop = aktiviteterMedAktivtStatus
                             .stream()
+                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                             .map(AktivitetDTO::getTilDato)
                             .filter(Objects::nonNull)
                             .sorted()
                             .findFirst()
                             .orElse(null);
 
-                    boolean aktivitetErIkkeFullfortEllerUtlopt = !aktiviteterIPeriodeMedAktivtStatus.isEmpty();
+                    boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
 
                     aktiveAktiviteter.add(
                             AktivitetStatus.of(
                                     personId,
                                     aktoerId,
                                     aktivitetsype,
-                                    aktivitetErIkkeFullfortEllerUtlopt,
+                                    aktivitetErIkkeFullfort,
                                     datoForNesteUtlop
                             )
                     );

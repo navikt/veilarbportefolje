@@ -3,12 +3,15 @@ package no.nav.fo.provider.rest;
 import com.squareup.okhttp.Response;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.testutil.ComponentTest;
+import no.nav.fo.util.DateUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +43,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void skalOppretteOgSletteListe() throws Exception {
         skalOppretteArbeidsliste();
-        String path = "/tjenester/arbeidsliste/delete";
+        String path = "/api/arbeidsliste/delete";
         assertFalse(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
 
         List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
@@ -56,7 +59,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
     @Test
     public void ugyldigFnrSkalGiBadRequest() {
-        String path = "/tjenester/arbeidsliste/delete";
+        String path = "/api/arbeidsliste/delete";
         JSONArray json = new JSONArray(Arrays.asList(FNR, "UGYLDIG_FNR"));
         Response response = post(path, json.toString());
 
@@ -66,7 +69,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void responseSkalInneholdeListeMedFnr() throws Exception {
         skalOppretteArbeidsliste();
-        String path = "/tjenester/arbeidsliste/delete";
+        String path = "/api/arbeidsliste/delete";
         List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
         arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
         arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
@@ -84,17 +87,20 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void skalOppretteArbeidsliste() throws Exception {
         insertSuccessfulBrukere();
-        String path = "/tjenester/arbeidsliste/";
+        long now = Instant.now().toEpochMilli();
+        long later = now + 100000000;
+        String time = DateUtils.toIsoUTC(new Timestamp(later).toLocalDateTime());
+        String path = "/api/arbeidsliste/";
 
         JSONObject bruker1 = new JSONObject()
                 .put("fnr", FNR)
                 .put("kommentar", "Dette er en kommentar")
-                .put("frist", "2017-10-10T00:00:00Z");
+                .put("frist", time);
 
         JSONObject bruker2 = new JSONObject()
                 .put("fnr", FNR_2)
                 .put("kommentar", "Dette er en kommentar2")
-                .put("frist", "2017-10-10T00:00:00Z");
+                .put("frist", time);
 
         JSONArray json = new JSONArray(Arrays.asList(bruker1, bruker2));
 
@@ -107,7 +113,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     public void skalIkkeHatilgang() throws Exception {
         insertSuccessfulBrukere();
         insertUnauthorizedBruker();
-        String path = "/tjenester/arbeidsliste/";
+        String path = "/api/arbeidsliste/";
 
         JSONObject bruker = new JSONObject()
                 .put("fnr", FNR_UNAUTHORIZED)
@@ -128,7 +134,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void skalReturnereUtcStreng() throws Exception {
         insertSuccessfulBrukere();
-        String path = "/tjenester/arbeidsliste/" + FNR;
+        String path = "/api/arbeidsliste/" + FNR;
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
         JSONObject json = new JSONObject()
@@ -148,7 +154,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void skalReturnereOppfolgendeVeilederFlagg() throws Exception {
         insertSuccessfulBrukere();
-        String path = "/tjenester/arbeidsliste/" + FNR;
+        String path = "/api/arbeidsliste/" + FNR;
 
         String expectedUtcString = "2017-10-10T00:00:00Z";
         JSONObject json = new JSONObject()
@@ -169,7 +175,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     public void skalReturnereTomArbeidslisteUthenting() throws Exception {
         int expected = 200;
         insertSuccessfulBrukere();
-        Response resp = get("/tjenester/arbeidsliste/" + FNR);
+        Response resp = get("/api/arbeidsliste/" + FNR);
         JSONObject json = new JSONObject(resp.body().string());
 
 
@@ -179,7 +185,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
     @Test
     public void skalReturnereTomArbeidslisteSelvOmVeilederOgEllerEnhetMangler() throws Exception {
-        int actual = get("/tjenester/arbeidsliste/" + FNR).code();
+        int actual = get("/api/arbeidsliste/" + FNR).code();
         int expected = 200;
         assertEquals(expected, actual);
     }
@@ -187,14 +193,14 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void skalIkkeGodtaUgyldigFnr() throws Exception {
         int expected = 400;
-        int actual = get("/tjenester/arbeidsliste/123").code();
+        int actual = get("/api/arbeidsliste/123").code();
         assertEquals(expected, actual);
     }
 
     @Test
     public void skalKunneOppretteSammeArbeidslisteToGanger() throws Exception {
         insertSuccessfulBrukere();
-        String path = "/tjenester/arbeidsliste/" + FNR;
+        String path = "/api/arbeidsliste/" + FNR;
         JSONObject json = new JSONObject()
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
@@ -208,7 +214,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void skalHaTilgangsKontroll() throws Exception {
         insertUnauthorizedBruker();
-        String path = "/tjenester/arbeidsliste/" + FNR_UNAUTHORIZED;
+        String path = "/api/arbeidsliste/" + FNR_UNAUTHORIZED;
         JSONObject json = new JSONObject()
                 .put("kommentar", "Dette er en kommentar")
                 .put("frist", "2017-10-10T00:00:00Z");
@@ -233,7 +239,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void datoFeltSkalVaereValgfritt() throws Exception {
         insertSuccessfulBrukere();
-        String path = "/tjenester/arbeidsliste/";
+        String path = "/api/arbeidsliste/";
 
         JSONObject utenDato = new JSONObject()
                 .put("fnr", FNR_2)
@@ -248,7 +254,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void datoSkalVaereFramITid() throws Exception {
         insertSuccessfulBrukere();
-        String path = "/tjenester/arbeidsliste/";
+        String path = "/api/arbeidsliste/";
 
         JSONObject utenDato = new JSONObject()
                 .put("fnr", FNR_2)
@@ -264,7 +270,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void datoSkalKunneSettesTilbakeITidVedRedigering() throws Exception {
         insertSuccessfulBrukere();
-        String path = "/tjenester/arbeidsliste/";
+        String path = "/api/arbeidsliste/";
 
         // opprett
         JSONObject utenDato = new JSONObject()
