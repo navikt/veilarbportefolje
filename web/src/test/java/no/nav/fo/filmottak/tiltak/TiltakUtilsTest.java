@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -62,6 +63,32 @@ public class TiltakUtilsTest {
 
         AktivitetStatus aktivitetStatus = TiltakUtils.utledUtdanningsaktivitetstatus(bruker, PersonId.of("personid"), AktivitetUtils.parseDato("1999-01-01"));
         assertThat(aktivitetStatus.getNesteUtlop()).isAfter(compareTime);
+    }
+
+    @Test
+    public void skalFinneNyesteUtlopteAktivitetForBruker() {
+        Bruker bruker = new Bruker();
+
+        Timestamp veryLongTimeago = Timestamp.from(Instant.now().minus(100, ChronoUnit.DAYS));
+        Timestamp longTimeAgo = Timestamp.from(Instant.now().minus(70, ChronoUnit.DAYS));
+        Timestamp someTimeAgo = Timestamp.from(Instant.now().minus(50, ChronoUnit.DAYS));
+        Timestamp comparingTime = Timestamp.from(Instant.now().minus(60, ChronoUnit.DAYS));
+        Timestamp future = Timestamp.from(Instant.now().plus(10, ChronoUnit.DAYS));
+
+        bruker.getUtdanningsaktivitetListe().add(getUtdanningsaktivitetWithTOM(veryLongTimeago));
+        bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(longTimeAgo));
+        bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(someTimeAgo));
+        bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(future));
+
+        Timestamp nyesteUtlopsdato = TiltakUtils.finnNysteUtlopsdatoForBruker(bruker).get();
+        assertThat(nyesteUtlopsdato).isAfter(comparingTime);
+        assertThat(future).isAfter(comparingTime);
+    }
+
+    @Test
+    public void skalIkkeTryneOmDetIkkeFinnesDatoer() {
+        Optional<Timestamp> nyesteUtlopsdato = TiltakUtils.finnNysteUtlopsdatoForBruker(new Bruker());
+        assertThat(nyesteUtlopsdato.isPresent()).isFalse();
     }
 
     private Utdanningsaktivitet getUtdanningsaktivitetWithTOM(Timestamp timestamp) {

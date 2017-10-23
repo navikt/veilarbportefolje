@@ -10,9 +10,12 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.etterFilterDato;
+import static no.nav.fo.util.DbUtils.not;
 
 public class TiltakUtils {
 
@@ -116,12 +119,11 @@ public class TiltakUtils {
                 .orElse(null);
     }
 
-    public static Timestamp utledTildato(Periode periode) {
-        return Optional.ofNullable(periode).map(deltagelsePeriode ->
-                Optional.ofNullable(deltagelsePeriode.getTom())
-                        .map(TiltakUtils::tilTimestamp)
-                        .orElse(null))
-                .orElse(null);
+    public static Optional<Timestamp> utledTildato(Periode periode) {
+
+        return Optional.ofNullable(periode)
+                .map(Periode::getTom)
+                .map(TiltakUtils::tilTimestamp);
     }
 
     static Timestamp hentUtlopsdatoForTiltak(Tiltaksaktivitet tiltaksaktivitet) {
@@ -130,5 +132,31 @@ public class TiltakUtils {
                 .map(Periode::getTom)
                 .map(TiltakUtils::tilTimestamp)
                 .orElse(null);
+    }
+
+    public static Optional<Timestamp> finnNysteUtlopsdatoForBruker(Bruker bruker) {
+        return Stream.of(
+                bruker.getTiltaksaktivitetListe().stream()
+                        .map(Tiltaksaktivitet::getDeltakelsePeriode)
+                        .map(TiltakUtils::utledTildato)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get),
+
+                bruker.getGruppeaktivitetListe().stream()
+                        .map(Gruppeaktivitet::getMoeteplanListe)
+                        .flatMap(Collection::stream)
+                        .map(Moeteplan::getSluttDato)
+                        .map(TiltakUtils::tilTimestamp),
+
+                bruker.getUtdanningsaktivitetListe().stream()
+                        .map(Utdanningsaktivitet::getAktivitetPeriode)
+                        .map(TiltakUtils::utledTildato)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+        ).flatMap(Function.identity())
+                .filter(Objects::nonNull)
+                .filter(not(TiltakUtils::fraOgMedDagensDato))
+                .sorted(Comparator.reverseOrder())
+                .findFirst();
     }
 }
