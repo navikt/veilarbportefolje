@@ -21,12 +21,12 @@
         <java.jdk.version>1.8</java.jdk.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <gatling-felles.version>1.4</gatling-felles.version>
-
-        <gatling.version>2.2.4</gatling.version>
+        <gatling-felles.version>1.5</gatling-felles.version>
+        <gatling.version>3.0.0-M12.FL</gatling.version>
+        <gatling.maven-plugin.version>3.0.0-M1</gatling.maven-plugin.version>
         <rs-api.version>2.0.1</rs-api.version>
-        <scala.version>2.11.8</scala.version>
-        <scala-maven-plugin.version>3.1.5</scala-maven-plugin.version>
+        <scala.version>2.12.3</scala.version>
+        <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
         <maven-compiler-plugin.version>3.1.5</maven-compiler-plugin.version>
         <slf4j.version>1.7.21</slf4j.version>
         <logback.version>1.1.7</logback.version>
@@ -36,7 +36,6 @@
         <commonsio.version>2.5</commonsio.version>
         <oidcsecurity.version>2017.10.06.17.11</oidcsecurity.version>
         <jackson.version>2.9.0.pr2</jackson.version>
-        <scala-maven-plugin.version>3.1.5</scala-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -48,7 +47,7 @@
         <dependency>
             <groupId>io.gatling</groupId>
             <artifactId>gatling-maven-plugin</artifactId>
-            <version>${gatling.version}</version>
+            <version>${gatling.maven-plugin.version}</version>
         </dependency>
         <dependency>
             <groupId>io.gatling.highcharts</groupId>
@@ -93,7 +92,7 @@
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-scala_2.11</artifactId>
+            <artifactId>jackson-module-scala_2.12</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
@@ -141,7 +140,7 @@
             <plugin>
                 <groupId>io.gatling</groupId>
                 <artifactId>gatling-maven-plugin</artifactId>
-                <version>${gatling.version}</version>
+
                 <executions>
                     <execution>
                         <phase>test</phase>

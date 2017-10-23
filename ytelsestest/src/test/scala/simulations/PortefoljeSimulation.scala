@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory
 import utils.{Helpers, RequestFilter, RequestTildelingVeileder, AktivitetRequestFilter}
 import java.util.concurrent.TimeUnit
 
-import io.gatling.core.feeder.RecordSeqFeederBuilder
-
 import scala.concurrent.duration._
 import scala.util.Random
 
@@ -31,7 +29,7 @@ class PortefoljeSimulation extends Simulation {
   private val appnavn = "veilarbpersonflatefs"
   private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
 
-  private val enhetsFeeder = RecordSeqFeederBuilder(enheter.map(enhet => Map("enhet" -> enhet.trim))).circular
+  private val enhetsFeeder = enheter.map(enhet => Map("enhet" -> enhet.trim)).circular
 
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
   private val veilederForTildeling2 = System.getProperty("VEIL_2", "X905112")
