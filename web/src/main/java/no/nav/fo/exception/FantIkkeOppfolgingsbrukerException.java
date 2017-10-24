@@ -11,7 +11,7 @@ public class FantIkkeOppfolgingsbrukerException extends RuntimeException {
     }
 
     public FantIkkeOppfolgingsbrukerException(PersonId personId) {
-        super(format("Fant ikke oppfolginsbruker med personid: %s", personId.toString()));
+        super(format("Fant ikke oppfolginsbruker med personid: %s", personId));
     }
 
 }
