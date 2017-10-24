@@ -76,28 +76,4 @@ public class ApplicationConfig implements ApiApplication {
     public HovedindekseringScheduler hovedindekseringScheduler() {
         return new HovedindekseringScheduler();
     }
-
-    @Override
-    public void startup(ServletContext servletContext) {
-        forwardTjenesterTilApi(servletContext);
-    }
-
-    // Bakoverkompatibilitet for klienter som går mot /tjenester
-    public static void forwardTjenesterTilApi(ServletContext servletContext) {
-        GenericServlet genericServlet = new GenericServlet() {
-            @Override
-            public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-                HttpServletRequest request = (HttpServletRequest) req;
-                String requestURI = request.getRequestURI();
-                String relativPath = requestURI.substring(request.getContextPath().length() + request.getServletPath().length() + 1);
-                String apiPath = DEFAULT_API_PATH + relativPath;
-                log.warn("bakoverkompatibilitet: {} -> {}", requestURI, apiPath);
-                RequestDispatcher requestDispatcher = req.getRequestDispatcher(apiPath);
-                requestDispatcher.forward(req, res);
-                System.out.println("!");
-            }
-        };
-        ServletUtil.leggTilServlet(servletContext, genericServlet, "/tjenester/*");
-    }
-
 }
