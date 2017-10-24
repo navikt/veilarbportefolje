@@ -7,7 +7,7 @@
 
     <!--CONFIG FOR API-APP-->
     <context-param>
-        <param-name>springContekstKlasse</param-name>
+        <param-name>springKontekstKlasse</param-name>
         <param-value>no.nav.fo.config.LocalApplicationConfig</param-value>
     </context-param>
 </web-app>
