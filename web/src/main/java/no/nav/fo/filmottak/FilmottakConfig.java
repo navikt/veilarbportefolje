@@ -55,8 +55,8 @@ public class FilmottakConfig {
 
 
     @Bean
-    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService) {
-        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService);
+    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
+        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository);
     }
 
     @Bean
