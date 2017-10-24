@@ -360,7 +360,7 @@ public class BrukerRepository {
         db.update("UPDATE METADATA SET aktiviteter_sist_oppdatert = ?", timestampFromISO8601(sistOppdatert));
     }
 
-    void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
+    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
         Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
                 .stream()
                 .collect(groupingBy((data) -> finnesIDb.contains(data.getPersonid())));

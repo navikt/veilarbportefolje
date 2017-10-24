@@ -45,7 +45,7 @@ public class Brukertiltak {
     }
 
     public static Brukertiltak of(Tiltaksaktivitet tiltaksaktivitet, String fnr) {
-        return new Brukertiltak(Fnr.of(fnr), tiltaksaktivitet.getTiltakstype(),utledTildato(tiltaksaktivitet.getDeltakelsePeriode()));
+        return new Brukertiltak(Fnr.of(fnr), tiltaksaktivitet.getTiltakstype(),utledTildato(tiltaksaktivitet.getDeltakelsePeriode()).orElse(null));
     }
 
     public static Brukertiltak of(Gruppeaktivitet gruppeaktivitet, String fnr) {
@@ -53,7 +53,7 @@ public class Brukertiltak {
     }
 
     public static Brukertiltak of(Utdanningsaktivitet utdanningsaktivitet, String fnr) {
-        return new Brukertiltak(Fnr.of(fnr),utdanningsaktivitet.getAktivitetstype(), utledTildato(utdanningsaktivitet.getAktivitetPeriode()));
+        return new Brukertiltak(Fnr.of(fnr),utdanningsaktivitet.getAktivitetstype(), utledTildato(utdanningsaktivitet.getAktivitetPeriode()).orElse(null));
     }
 
     public static List<Brukertiltak> of(Bruker bruker) {

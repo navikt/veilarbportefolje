@@ -3,6 +3,7 @@ package no.nav.fo.filmottak.tiltak;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
+import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.fo.service.AktoerService;
@@ -20,8 +21,11 @@ import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Stream.concat;
 import static no.nav.fo.filmottak.tiltak.TiltakUtils.*;
 import static no.nav.fo.util.ListUtils.distinctByPropertyList;
 import static no.nav.fo.util.MetricsUtils.timed;
@@ -44,6 +48,7 @@ public class TiltakHandler {
 
     private final TiltakRepository tiltakrepository;
     private final AktivitetDAO aktivitetDAO;
+    private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
 
     private boolean kjorer;
@@ -52,12 +57,13 @@ public class TiltakHandler {
 
 
     @Inject
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService) {
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.kjorer = false;
         this.datofilter = AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
+        this.brukerRepository = brukerRepository;
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
@@ -106,6 +112,10 @@ public class TiltakHandler {
 
         tiltakrepository.lagreTiltakskoder(tiltakkoder);
 
+        MetricsUtils.timed("tiltak.indert.nyesteutlopte", () -> {
+            utledOgLagreNyesteUtlopteAktivitet(tiltakOgAktiviteterForBrukere.getBrukerListe());
+        });
+
         MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
             List<Brukertiltak> brukertiltak = tiltakOgAktiviteterForBrukere.getBrukerListe().stream()
                     .map(Brukertiltak::of)
@@ -132,6 +142,81 @@ public class TiltakHandler {
         });
 
         log.info("Ferdige med å populere database");
+    }
+
+    private void utledOgLagreNyesteUtlopteAktivitet(List<Bruker> brukere) {
+        io.vavr.collection.List.ofAll(brukere).sliding(1000,1000)
+                .forEach(brukereBatch -> {
+
+                    List<Fnr> fnrs = brukereBatch.toJavaStream().map(Bruker::getPersonident).map(Fnr::of).collect(toList());
+                    Map<Fnr, Optional<PersonId>> personidsMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    List<PersonId> personIds = personidsMap.values().stream()
+                            .filter(Optional::isPresent)
+                            .map(Optional::get).collect(toList());
+
+                    List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(
+                            personIds.stream().map(PersonId::toString).collect(toList()));
+
+                    Map<PersonId, Optional<Brukerdata>> brukerdataMap = toBrukerdataOptionalMap(personIds, brukerdata);
+
+                    List<Brukerdata> brukerdataSomIkkeFinnesIDb = lagListeMedBrukereSomIkkeFinnesIDb(personIds,brukerdataMap);
+
+                    Map<PersonId, Optional<Timestamp>> utlopsdatoFraTiltaksfil = finnUtlopsdatoFraTiltaksfil(brukereBatch, personidsMap);
+
+                    List<Brukerdata> brukereMedOppdatertUtlopsdato = concat(brukerdata.stream(),brukerdataSomIkkeFinnesIDb.stream())
+                            .map(b -> oppdaterUtlopsdatoOmNodvendig(b, utlopsdatoFraTiltaksfil))
+                            .collect(toList());
+
+                    List<String> finnesIDb = brukerdata.stream().map(Brukerdata::getPersonid).collect(toList());
+
+                    brukerRepository.insertOrUpdateBrukerdata(brukereMedOppdatertUtlopsdato, finnesIDb);
+                });
+    }
+
+    private Map<PersonId, Optional<Brukerdata>> toBrukerdataOptionalMap(List<PersonId> personIds, List<Brukerdata> brukerdata) {
+        return personIds.stream()
+                .collect(toMap(
+                        Function.identity(),
+                        p -> getBrukerdataForPersonId(brukerdata, p)
+                ));
+    }
+
+    private Map<PersonId, Optional<Timestamp>> finnUtlopsdatoFraTiltaksfil(io.vavr.collection.List<Bruker> brukereBatch, Map<Fnr, Optional<PersonId>> personidsMap) {
+        return brukereBatch.toJavaStream()
+                .filter(bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).isPresent())
+                .collect(toMap(
+                        bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).get(),
+                        TiltakUtils::finnNysteUtlopsdatoForBruker
+                ));
+    }
+
+    private List<Brukerdata> lagListeMedBrukereSomIkkeFinnesIDb(List<PersonId> personIds, Map<PersonId, Optional<Brukerdata>> brukerdataMap) {
+        return personIds.stream()
+                .filter(personId -> !brukerdataMap.get(personId).isPresent())
+                .map(personId -> new Brukerdata().setPersonid(personId.toString()))
+                .collect(toList());
+    }
+
+    static Brukerdata oppdaterUtlopsdatoOmNodvendig(Brukerdata brukerdata, Map<PersonId, Optional<Timestamp>> utlopsdatoFraTiltaksfil) {
+        PersonId personId = PersonId.of(brukerdata.getPersonid());
+        Optional<Timestamp> kanskjeUtlopsdato = utlopsdatoFraTiltaksfil.get(personId);
+        Optional<Timestamp> kanskjeBrukerdataUtlopsdato = Optional.ofNullable(brukerdata.getNyesteUtlopteAktivitet());
+
+        if(Objects.isNull(kanskjeUtlopsdato) || !kanskjeUtlopsdato.isPresent()) {
+            return brukerdata;
+        }
+        if(!kanskjeBrukerdataUtlopsdato.isPresent()) {
+            return brukerdata.setNyesteUtlopteAktivitet(kanskjeUtlopsdato.get());
+        }
+        return brukerdata.setNyesteUtlopteAktivitet(nyeste(kanskjeUtlopsdato.get(), kanskjeBrukerdataUtlopsdato.get()));
+    }
+
+    private static Timestamp nyeste(Timestamp t1, Timestamp t2) {
+        return t1.before(t2) ? t2 : t1;
+    }
+
+    private Optional<Brukerdata> getBrukerdataForPersonId(List<Brukerdata> brukerdata, PersonId personId) {
+        return brukerdata.stream().filter(b -> b.getPersonid().equals(personId.toString())).findFirst();
     }
 
     private void utledOgLagreEnhetTiltak(List<Bruker> brukere) {
