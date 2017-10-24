@@ -185,7 +185,7 @@ public class TiltakHandler {
         return brukereBatch.toJavaStream()
                 .filter(bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).isPresent())
                 .collect(toMap(
-                        bruker -> PersonId.of(bruker.getPersonident()),
+                        bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).get(),
                         TiltakUtils::finnNysteUtlopsdatoForBruker
                 ));
     }
