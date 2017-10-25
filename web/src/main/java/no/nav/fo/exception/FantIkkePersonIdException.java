@@ -10,6 +10,6 @@ public class FantIkkePersonIdException extends RuntimeException {
     }
 
     public FantIkkePersonIdException(AktoerId aktoerId) {
-        super(format("Fant ikke personid for aktoerId: %S", aktoerId.toString()));
+        super(format("Fant ikke personid for aktoerId: %S", aktoerId));
     }
 }

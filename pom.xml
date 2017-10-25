@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1-SNAPSHOT</version>
+        <version>2017.10.19.22.22</version>
     </parent>
 
     <name>veilarbportefolje</name>
@@ -47,7 +47,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>RELEASE</version> <!-- TODO lås denne til samme versjon som mor-pommen før prodsetting -->
+                <version>2017.10.19.22.22</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

@@ -65,6 +65,11 @@ public class AktivitetUtils {
         return konverterTilBrukerOppdatering(aktiviteter, aktoerid, personid);
     }
 
+    public static List<AktivitetBrukerOppdatering> hentAktivitetBrukerOppdateringer(List<AktoerId> aktoerIds, AktoerService aktoerService, AktivitetDAO aktivitetDAO) {
+        List<AktoerAktiviteter> aktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerIds.stream().map(AktoerId::toString).collect(toList()));
+        return konverterTilBrukerOppdatering(aktiviteter, aktoerService);
+    }
+
     static boolean erBrukerIAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
         return aktiviteter
                 .stream()
@@ -101,29 +106,29 @@ public class AktivitetUtils {
                 .map(Objects::toString)
                 .forEach(aktivitetsype -> {
 
-                    List<AktivitetDTO> aktiviteterIPeriodeMedAktivtStatus = aktiviteter
+                    List<AktivitetDTO> aktiviteterMedAktivtStatus = aktiviteter
                             .stream()
                             .filter(aktivitet -> aktivitetsype.equals(aktivitet.getAktivitetType()))
-                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                             .filter(AktivitetUtils::harIkkeStatusFullfort)
                             .collect(toList());
 
-                    Timestamp datoForNesteUtlop = aktiviteterIPeriodeMedAktivtStatus
+                    Timestamp datoForNesteUtlop = aktiviteterMedAktivtStatus
                             .stream()
+                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
                             .map(AktivitetDTO::getTilDato)
                             .filter(Objects::nonNull)
                             .sorted()
                             .findFirst()
                             .orElse(null);
 
-                    boolean aktivitetErIkkeFullfortEllerUtlopt = !aktiviteterIPeriodeMedAktivtStatus.isEmpty();
+                    boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
 
                     aktiveAktiviteter.add(
                             AktivitetStatus.of(
                                     personId,
                                     aktoerId,
                                     aktivitetsype,
-                                    aktivitetErIkkeFullfortEllerUtlopt,
+                                    aktivitetErIkkeFullfort,
                                     datoForNesteUtlop
                             )
                     );

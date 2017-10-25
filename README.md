@@ -11,10 +11,10 @@ Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering 
 
 ## URL-er å utføre hoved- og deltaindeksering
 ```
-http://localhost:9595/veilarbportefolje/tjenester/solr/hovedindeksering
+http://localhost:9595/veilarbportefolje/api/solr/hovedindeksering
 ```
 ```
-http://localhost:9595/veilarbportefolje/tjenester/solr/deltaindeksering
+http://localhost:9595/veilarbportefolje/api/solr/deltaindeksering
 ```
 
 !! OBS OBS Om det er gjort endringer i schemaet til indeksen må man kanskje restarte indeksen !!

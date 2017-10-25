@@ -92,21 +92,21 @@ public class SolrUtils {
         put("etternavn", Bruker::getEtternavn);
         put("fodselsnummer", Bruker::getFnr);
         put("utlopsdato", Bruker::getUtlopsdato);
-        put("aapmaxtidUke", Bruker::getAapmaxtidUke);
-        put("dagputlopUke", Bruker::getDagputlopUke);
-        put("permutlopUke", Bruker::getPermutlopUke);
-        put("arbeidsliste_frist", Bruker::getArbeidslisteFrist);
-        put("VENTER_PA_SVAR_FRA_NAV", Bruker::getVenterPaSvarFraNAV);
-        put("VENTER_PA_SVAR_FRA_BRUKER", Bruker::getVenterPaSvarFraBruker);
-        put("UTLOPTE_AKTIVITETER", Bruker::getNyesteUtlopteAktivitet);
-        put("I_AVTALT_AKTIVITET", Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
+        put("aapmaxtiduke", Bruker::getAapmaxtidUke);
+        put("dagputlopuke", Bruker::getDagputlopUke);
+        put("permutlopuke", Bruker::getPermutlopUke);
+        put("arbeidslistefrist", Bruker::getArbeidslisteFrist);
+        put("venterpasvarfranav", Bruker::getVenterPaSvarFraNAV);
+        put("venterpasvarfrabruker", Bruker::getVenterPaSvarFraBruker);
+        put("utlopteaktiviteter", Bruker::getNyesteUtlopteAktivitet);
+        put("iavtaltaktivitet", Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
     }};
 
     public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Filtervalg filtervalg) {
         if (sortFieldMap.containsKey(sortField)) {
             return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
         }
-        if(Objects.nonNull(sortField) && sortField.equals("valgte_aktiviteter")) {
+        if(Objects.nonNull(sortField) && sortField.equals("valgteaktiviteter")) {
             List<String> aktivitetListe = filtervalg.aktiviteter
                     .entrySet()
                     .stream()

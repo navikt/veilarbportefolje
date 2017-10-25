@@ -37,7 +37,7 @@ public class SituasjonerfeedConfig {
     @Value("${situasjon.feed.consumer.pollingratewebhook.cron}")
     private String webhookPolling;
 
-    @Value("${situasjon.feed.pagesize ?: 500}")
+    @Value("${situasjon.feed.pagesize:500}")
     private int pageSize;
 
     @Bean

@@ -8,7 +8,6 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -105,6 +104,21 @@ public class AktoerServiceImpl implements AktoerService {
         );
 
         return personIdToAktoeridMap;
+    }
+
+    @Override
+    public Map<AktoerId, Optional<PersonId>> hentPersonidsForAktoerids(List<AktoerId> aktoerIds) {
+        Map<AktoerId, Optional<PersonId>> aktoerIdToPersonidMap = new HashMap<>(aktoerIds.size());
+        Map<AktoerId, Optional<PersonId>> fromDb = brukerRepository.hentPersonidsFromAktoerids(aktoerIds);
+
+        fromDb.forEach((key, value) -> {
+            if(value.isPresent()) {
+                aktoerIdToPersonidMap.put(key, value);
+            } else {
+                aktoerIdToPersonidMap.put(key, (hentPersonIdViaSoap(key)).toJavaOptional());
+            }
+        });
+        return aktoerIdToPersonidMap;
     }
 
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {

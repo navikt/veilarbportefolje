@@ -389,7 +389,7 @@ public class SolrUtilsTest {
         aktiviteter.put("behandling", AktivitetFiltervalg.JA);
         Filtervalg filtervalg = new Filtervalg().setAktiviteter(aktiviteter);
 
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "valgte_aktiviteter", filtervalg);
+        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "valgteaktiviteter", filtervalg);
 
         assertThat(brukereSortert.get(0)).isEqualTo(bruker4);
         assertThat(brukereSortert.get(1)).isEqualTo(bruker2);

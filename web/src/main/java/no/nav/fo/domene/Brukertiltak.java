@@ -41,7 +41,7 @@ public class Brukertiltak {
     }
 
     public static Brukertiltak of(Tiltaksaktivitet tiltaksaktivitet, String fnr) {
-        return new Brukertiltak(Fnr.of(fnr), tiltaksaktivitet.getTiltakstype(),utledTildato(tiltaksaktivitet.getDeltakelsePeriode()));
+        return new Brukertiltak(Fnr.of(fnr), tiltaksaktivitet.getTiltakstype(),utledTildato(tiltaksaktivitet.getDeltakelsePeriode()).orElse(null));
     }
 
     public static List<Brukertiltak> of(Bruker bruker) {
