@@ -1,16 +1,16 @@
 package no.nav.fo.domene;
 
 import io.vavr.control.Try;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.cglib.core.Local;
 import org.apache.solr.common.SolrDocument;
 import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -24,6 +24,8 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @Slf4j
 @Data
 @Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Bruker {
     String fnr;
     String fornavn;
