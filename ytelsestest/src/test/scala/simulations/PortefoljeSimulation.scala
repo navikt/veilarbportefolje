@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import no.nav.sbl.gatling.login.OpenIdConnectLogin
+import no.nav.sbl.gatling.login.LoginHelper
 import org.slf4j.LoggerFactory
 import utils.{Helpers, RequestFilter, RequestTildelingVeileder, AktivitetRequestFilter}
 import java.util.concurrent.TimeUnit
@@ -21,8 +21,7 @@ class PortefoljeSimulation extends Simulation {
   private val duration = Integer.getInteger("DURATION", 1).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  private val password = System.getProperty("USER_PASSWORD", "!!CHANGE ME!!")
-  private val oidcPassword = System.getProperty("OIDC_PASSWD", "!!CHANGE ME!!")
+  private val veilederPassword = System.getProperty("USER_PASSWORD", "!!CHANGE ME!!")
   private val oidcUser = System.getProperty("OIDC_USER", "veilarblogin-t3")
   private val enheter = System.getProperty("ENHETER", "1001").split(",")
   private val rapporterSolrSamlet = System.getProperty("RAPPORTER_SOLR_SAMLET", "true").toBoolean;
@@ -31,8 +30,6 @@ class PortefoljeSimulation extends Simulation {
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
   private val veilederForTildeling2 = System.getProperty("VEIL_2", "X905112")
   private val brukerForTildeling = System.getProperty("BRUKER_TIL_VEILEDER", "!!CHANGE ME!!")
-
-  private val openIdConnectLogin = new OpenIdConnectLogin(oidcUser, oidcPassword, loginUrl, baseUrl, appnavn)
 
   val mapper = new ObjectMapper() with ScalaObjectMapper
 
@@ -49,23 +46,19 @@ class PortefoljeSimulation extends Simulation {
     .extraInfoExtractor { extraInfo => List(Helpers.getInfo(extraInfo)) }
 
   private def login() = {
-    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
-      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
+    exec(session => session.set("veilederPassword", veilederPassword))
+      .exec(session => session.set("veilederUsername", session("username").as[String]))
+      .exec(LoginHelper.loginOidc(loginUrl, oidcUser, baseUrl))
   }
 
   private def rapporterMedNavn(navn: String): String = {
     if (rapporterSolrSamlet) "portefolje-solrsporring" else navn
   }
 
-  private val loginScenario = scenario("Logger inn")
-    .feed(brukernavn)
-    .exec(login)
-
   private val portefoljeScenario = scenario("Portefolje: Enhet")
     .feed(brukernavn)
     .feed(enhetsFeeder)
-    .exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
-    .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
+    .exec(login)
     .pause(500 milliseconds)
     .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/tjenester/tekster"))
     .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
@@ -142,13 +135,8 @@ class PortefoljeSimulation extends Simulation {
         .check(status.is(200))
     )
 
-
   setUp(
-    // LoginScenario kjøres for at innloggingsrutinen skal gå seg "varm" slik at denne feilen skal forsvinne:
-    // WARNING: Cookie rejected [amlbcookie="01", version:0, domain:test.local, path:/, expiry:null] Illegal 'domain' attribute "test.local". Domain of origin: "isso-t.adeo.no"
-    loginScenario.inject(constantUsersPerSec(10) during (140 seconds)),
-    portefoljeScenario.inject(nothingFor(140 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
-    //portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+    portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
   )
     .protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))

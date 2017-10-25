@@ -21,11 +21,14 @@
         <java.jdk.version>1.8</java.jdk.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <gatling-felles.version>1.5</gatling-felles.version>
-        <gatling.version>3.0.0-M12.FL</gatling.version>
-        <gatling.maven-plugin.version>3.0.0-M1</gatling.maven-plugin.version>
+        <gatling-felles.version>1.6</gatling-felles.version>
+        <gatling.version>2.2.4</gatling.version>
+        <!--gatling.version>3.0.0-M12.FL</gatling.version-->
+        <gatling.maven-plugin.version>2.2.4</gatling.maven-plugin.version>
+        <!--gatling.maven-plugin.version>3.0.0-M1</gatling.maven-plugin.version-->
         <rs-api.version>2.0.1</rs-api.version>
-        <scala.version>2.12.3</scala.version>
+        <scala.version>2.11.8</scala.version>
+        <!--scala.version>2.12.3</scala.version-->
         <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
         <maven-compiler-plugin.version>3.1.5</maven-compiler-plugin.version>
         <slf4j.version>1.7.21</slf4j.version>
@@ -92,7 +95,8 @@
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-scala_2.12</artifactId>
+            <artifactId>jackson-module-scala_2.11</artifactId>
+            <!--artifactId>jackson-module-scala_2.11</artifactId-->
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
