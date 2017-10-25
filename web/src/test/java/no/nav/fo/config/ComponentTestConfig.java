@@ -14,11 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import javax.servlet.ServletContext;
-
 import static io.vavr.control.Try.success;
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
-import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -85,11 +82,6 @@ public class ComponentTestConfig implements ApiApplication {
     @Override
     public Sone getSone() {
         return FSS;
-    }
-
-    @Override
-    public void startup(ServletContext servletContext) {
-        forwardTjenesterTilApi(servletContext);
     }
 
 }
