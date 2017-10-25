@@ -97,6 +97,7 @@ public class SolrServiceImpl implements SolrService {
 
         final int[] antallBrukere = {0};
         deleteAllDocuments();
+        commit();
 
         BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
             antallBrukere[0] += dokumenter.size();
