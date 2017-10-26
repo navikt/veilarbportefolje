@@ -26,7 +26,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.consumer.SituasjonFeedHandler.SITUASJON_SIST_OPPDATERT;
+import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.*;
 import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
@@ -421,9 +421,11 @@ public class BrukerRepositoryTest {
     public void skalOppdatereMetadata() throws Exception {
         Date date = new Date();
 
-        brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, date);
+        brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, date);
 
-        Date upDated = (Date) brukerRepository.db.queryForList("SELECT situasjon_sist_oppdatert from METADATA").get(0).get("situasjon_sist_oppdatert");
+        Date upDated = (Date) brukerRepository.db.queryForList("SELECT oppfolging_sist_oppdatert from METADATA")
+                .get(0)
+                .get("oppfolging_sist_oppdatert");
         assertEquals(date, upDated);
     }
 

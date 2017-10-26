@@ -20,7 +20,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SituasjonFeedHandlerTest {
+public class OppfolgingFeedHandlerTest {
 
     @Mock
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
@@ -38,7 +38,7 @@ public class SituasjonFeedHandlerTest {
     private SolrService solrService;
 
     @InjectMocks
-    private SituasjonFeedHandler situasjonFeedHandler;
+    private OppfolgingFeedHandler oppfolgingFeedHandler;
 
     @Before
     public void resetMocks() {
@@ -64,11 +64,11 @@ public class SituasjonFeedHandlerTest {
         when(aktoerService.hentFnrFraAktoerid(any())).thenReturn(Try.success(fnr));
         when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(personId));
 
-        situasjonFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(bruker));
+        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(bruker));
 
         verify(arbeidslisteService, times(1)).deleteArbeidsliste(aktoerId);
         verify(solrService, times(1)).slettBruker(personId);
-        verify(oppdaterBrukerdataFletter, never()).oppdaterSituasjonForBruker(any(), any());
+        verify(oppdaterBrukerdataFletter, never()).oppdaterOppfolgingForBruker(any(), any());
     }
 
 

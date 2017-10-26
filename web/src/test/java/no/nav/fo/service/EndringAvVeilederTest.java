@@ -53,7 +53,7 @@ public class EndringAvVeilederTest {
                 .setVeileder("X111111")
                 .setEndretTimestamp(Timestamp.valueOf("2017-01-14 13:33:16.000000"));
 
-        oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, PersonId.of(PERSON_ID));
+        oppdaterBrukerdataFletter.oppdaterOppfolgingForBruker(bruker, PersonId.of(PERSON_ID));
 
         String veileder = (String) brukerRepository.retrieveBruker(AKTOER_ID).get(0).get("VEILEDERIDENT");
         String personid = (String) brukerRepository.retrievePersonid(AKTOER_ID).get(0).get("PERSONID");

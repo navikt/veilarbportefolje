@@ -11,7 +11,7 @@ public class UnderOppfolgingRegler {
     static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     static final String IKKE_ARBEIDSSOKER = "IARBS";
 
-    // Logikken som utleder om en bruker er under oppfolging kjøres også i VeilArbSituasjon.
+    // Logikken som utleder om en bruker er under oppfolging kjøres også i VeilArbOppfolging.
     // Endringer i logikken må implementeres begge steder
     public static boolean erUnderOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
         return erArbeidssoker(formidlingsgruppeKode) || erIArbeidOgHarInnsatsbehov(formidlingsgruppeKode, servicegruppeKode);
