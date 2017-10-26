@@ -27,9 +27,9 @@ import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
 
 @Slf4j
-public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
+public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
-    public static final String SITUASJON_SIST_OPPDATERT = "situasjon_sist_oppdatert";
+    public static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
 
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
     private ArbeidslisteService arbeidslisteService;
@@ -38,11 +38,11 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
     private SolrService solrService;
 
     @Inject
-    public SituasjonFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
-                                ArbeidslisteService arbeidslisteService,
-                                BrukerRepository brukerRepository,
-                                AktoerService aktoerService,
-                                SolrService solrService) {
+    public OppfolgingFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
+                                 ArbeidslisteService arbeidslisteService,
+                                 BrukerRepository brukerRepository,
+                                 AktoerService aktoerService,
+                                 SolrService solrService) {
         this.oppdaterBrukerdataFletter = oppdaterBrukerdataFletter;
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
@@ -55,7 +55,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
         log.debug(String.format("Feed-data mottatt: %s", data));
         data.forEach(this::behandleObjektFraFeed);
-        brukerRepository.updateMetadata(SITUASJON_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
+        brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
         event.report();
     }
@@ -63,7 +63,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
     private void behandleObjektFraFeed(BrukerOppdatertInformasjon bruker) {
         try {
             MetricsUtils.timed(
-                    "feed.situasjon.objekt",
+                    "feed.oppfolging.objekt",
                     () -> {
                         AktoerId aktoerId = AktoerId.of(bruker.getAktoerid());
                         PersonId personId = aktoerService.hentPersonidFraAktoerid(aktoerId)
@@ -77,7 +77,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                             arbeidslisteService.deleteArbeidsliste(AktoerId.of(bruker.getAktoerid()));
                         }
                         if (erBrukerUnderOppfolging(oppfolgingstatus.getFormidlingsgruppekode(), oppfolgingstatus.getServicegruppekode(),bruker.getOppfolging())) {
-                            oppdaterBrukerdataFletter.oppdaterSituasjonForBruker(bruker, personId);
+                            oppdaterBrukerdataFletter.oppdaterOppfolgingForBruker(bruker, personId);
                         } else {
                             brukerRepository.deleteBrukerdata(personId);
                             solrService.slettBruker(personId);
@@ -87,7 +87,7 @@ public class SituasjonFeedHandler implements FeedCallback<BrukerOppdatertInforma
                     (timer, hasFailed) -> { if(hasFailed) {timer.addTagToReport("aktorhash", DigestUtils.md5Hex(bruker.getAktoerid()).toUpperCase());}}
             );
         }catch(Exception e) {
-            log.error("Feil ved behandling av oppfølgingsdata (situasjon) fra feed for aktorid {}.", bruker.getAktoerid(), e);
+            log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for aktorid {}.", bruker.getAktoerid(), e);
         }
     }
 }

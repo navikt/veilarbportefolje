@@ -34,10 +34,11 @@
         <applicationProperties alias="portefolje.pilot.properties"/>
         <applicationProperties alias="dialogaktorfeed.properties"/>
         <applicationProperties alias="aktiviteterfeed.properties"/>
-        <applicationProperties alias="situasjonfeed.properties"/>
+        <!--TODO distribusjonslogg or something ??????? -->
+        <applicationProperties alias="oppfolgingfeed.properties"/>
 
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
-        <rest alias="veilArbSituasjonAPI" mapToProperty="veilarbsituasjon.api" />
+        <rest alias="veilArbOppfolgingAPI" mapToProperty="veilarboppfolging.api" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
         <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
 

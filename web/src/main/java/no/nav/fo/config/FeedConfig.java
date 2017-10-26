@@ -2,7 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.config.feed.AktiviteterfeedConfig;
 import no.nav.fo.config.feed.DialogaktorfeedConfig;
-import no.nav.fo.config.feed.SituasjonerfeedConfig;
+import no.nav.fo.config.feed.OppfolgingerfeedConfig;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({
         DialogaktorfeedConfig.class,
-        SituasjonerfeedConfig.class,
+        OppfolgingerfeedConfig.class,
         AktiviteterfeedConfig.class
 })
 public class FeedConfig {

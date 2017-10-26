@@ -107,7 +107,7 @@ class PortefoljeSimulation extends Simulation {
         .check(status.is(200))
     )
     .exec(
-      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
+      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
         .body(Helpers.toBody(List(RequestTildelingVeileder(
           brukerFnr = brukerForTildeling,
           fraVeilederId = null,
@@ -117,7 +117,7 @@ class PortefoljeSimulation extends Simulation {
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
+      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
         .body(Helpers.toBody(List(RequestTildelingVeileder(
           brukerFnr = brukerForTildeling,
           fraVeilederId = veilederForTildeling1,
@@ -127,7 +127,7 @@ class PortefoljeSimulation extends Simulation {
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarbsituasjon/api/tilordneveileder/")
+      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
         .body(Helpers.toBody(List(RequestTildelingVeileder(
           brukerFnr = brukerForTildeling,
           fraVeilederId = veilederForTildeling2,

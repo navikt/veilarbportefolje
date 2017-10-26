@@ -13,7 +13,7 @@ public class OppdaterBrukerdataFletter {
     @Inject
     private PersistentOppdatering persistentOppdatering;
 
-    public void oppdaterSituasjonForBruker(BrukerOppdatertInformasjon bruker, PersonId personId) {
+    public void oppdaterOppfolgingForBruker(BrukerOppdatertInformasjon bruker, PersonId personId) {
 
         BrukerinformasjonFraFeed brukerinformasjonFraFeed = new BrukerinformasjonFraFeed().setPersonid(personId.toString());
         persistentOppdatering.lagre(bruker.applyTo(brukerinformasjonFraFeed));
