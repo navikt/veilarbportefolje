@@ -134,6 +134,14 @@ public class TiltakUtils {
                 .orElse(null);
     }
 
+    static Timestamp finnNyesteTOMForMoteplanliste(List<Moeteplan> moteplanliste) {
+        return moteplanliste.stream()
+                .map(Moeteplan::getSluttDato)
+                .map(TiltakUtils::tilTimestamp)
+                .sorted(Comparator.reverseOrder())
+                .findFirst().orElse(null);
+    }
+
     public static Optional<Timestamp> finnNysteUtlopsdatoForBruker(Bruker bruker) {
         return Stream.of(
                 bruker.getTiltaksaktivitetListe().stream()
@@ -144,9 +152,7 @@ public class TiltakUtils {
 
                 bruker.getGruppeaktivitetListe().stream()
                         .map(Gruppeaktivitet::getMoeteplanListe)
-                        .flatMap(Collection::stream)
-                        .map(Moeteplan::getSluttDato)
-                        .map(TiltakUtils::tilTimestamp),
+                        .map(TiltakUtils::finnNyesteTOMForMoteplanliste),
 
                 bruker.getUtdanningsaktivitetListe().stream()
                         .map(Utdanningsaktivitet::getAktivitetPeriode)

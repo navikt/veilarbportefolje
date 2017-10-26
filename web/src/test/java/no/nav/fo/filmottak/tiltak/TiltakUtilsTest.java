@@ -86,6 +86,16 @@ public class TiltakUtilsTest {
     }
 
     @Test
+    public void skalBareTaHensynTilNyesteMoteplan() {
+        Bruker bruker = new Bruker();
+        Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
+        Timestamp future = Timestamp.from(Instant.now().plus(10, ChronoUnit.DAYS));
+
+        bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTwoTOM(past,future));
+        assertThat(TiltakUtils.finnNysteUtlopsdatoForBruker(bruker).isPresent()).isFalse();
+    }
+
+    @Test
     public void skalIkkeTryneOmDetIkkeFinnesDatoer() {
         Optional<Timestamp> nyesteUtlopsdato = TiltakUtils.finnNysteUtlopsdatoForBruker(new Bruker());
         assertThat(nyesteUtlopsdato.isPresent()).isFalse();
@@ -110,6 +120,21 @@ public class TiltakUtilsTest {
         Moeteplan moeteplan = new Moeteplan();
         moeteplan.setSluttDato(calendarOf(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth()));
         gruppeaktivitet.getMoeteplanListe().add(moeteplan);
+
+        return gruppeaktivitet;
+    }
+
+    private Gruppeaktivitet getGruppeaktivitetWithTwoTOM(Timestamp t1, Timestamp t2) {
+        LocalDate localDate1 = t1.toLocalDateTime().toLocalDate();
+        LocalDate localDate2 = t2.toLocalDateTime().toLocalDate();
+
+        Gruppeaktivitet gruppeaktivitet =  new Gruppeaktivitet();
+        Moeteplan moeteplan1 = new Moeteplan();
+        moeteplan1.setSluttDato(calendarOf(localDate1.getYear(), localDate1.getMonthValue(), localDate1.getDayOfMonth()));
+        Moeteplan moeteplan2 = new Moeteplan();
+        moeteplan2.setSluttDato(calendarOf(localDate2.getYear(), localDate2.getMonthValue(), localDate2.getDayOfMonth()));
+        gruppeaktivitet.getMoeteplanListe().add(moeteplan1);
+        gruppeaktivitet.getMoeteplanListe().add(moeteplan2);
 
         return gruppeaktivitet;
     }
