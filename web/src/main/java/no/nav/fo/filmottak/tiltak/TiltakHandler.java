@@ -52,9 +52,6 @@ public class TiltakHandler {
 
     private boolean kjorer;
 
-    public static final Timestamp datofilter = AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
-
-
     @Inject
     public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
         this.aktoerService = aktoerService;
@@ -62,6 +59,10 @@ public class TiltakHandler {
         this.aktivitetDAO = aktivitetDAO;
         this.kjorer = false;
         this.brukerRepository = brukerRepository;
+    }
+
+    public static Timestamp getDatoFilter() {
+        return AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
     }
 
     public void startOppdateringAvTiltakIDatabasen() {

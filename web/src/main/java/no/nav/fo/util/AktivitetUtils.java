@@ -216,7 +216,7 @@ public class AktivitetUtils {
 
 
     public static boolean etterFilterDato(Timestamp tilDato) {
-        Timestamp datofilter = TiltakHandler.datofilter;
+        Timestamp datofilter = TiltakHandler.getDatoFilter();
         return tilDato == null || datofilter == null || datofilter.before(tilDato);
     }
 
