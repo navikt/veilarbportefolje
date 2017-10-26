@@ -14,7 +14,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class BrukertiltakTest {
 
     @Test
-    public void skalReturnerListeMedBrukertiltak() {
+    public void skalBarereturnereTiltaksaktiviteter() {
         Bruker bruker = new Bruker();
         bruker.setPersonident("00000000000");
         List<Tiltaksaktivitet> tiltaksaktiviteter = bruker.getTiltaksaktivitetListe();
@@ -35,6 +35,6 @@ public class BrukertiltakTest {
         gruppeaktiviteter.add(gruppeaktivitet);
 
         List<Brukertiltak> brukertiltak = Brukertiltak.of(bruker);
-        assertThat(brukertiltak.size()).isEqualTo(3);
+        assertThat(brukertiltak.size()).isEqualTo(1);
     }
 }
