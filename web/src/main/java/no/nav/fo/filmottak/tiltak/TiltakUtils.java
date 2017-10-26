@@ -4,6 +4,7 @@ import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.aktivitet.UtdanningaktivitetTyper;
+import no.nav.fo.util.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -23,11 +24,11 @@ public class TiltakUtils {
     final static String gruppeaktivitet = "gruppeaktivitet";
     final static String utdanningaktivitet = "utdanningaktivitet";
 
-    static AktivitetStatus utledAktivitetstatusForTiltak(Bruker bruker, PersonId personId, Timestamp datofilterTiltak) {
+    static AktivitetStatus utledAktivitetstatusForTiltak(Bruker bruker, PersonId personId) {
         List<Tiltaksaktivitet> tiltaksAktiviteterEtterDatoFilter =
             bruker.getTiltaksaktivitetListe()
                 .stream()
-                .filter(tiltaksaktivitet -> etterFilterDato(hentUtlopsdatoForTiltak(tiltaksaktivitet),datofilterTiltak))
+                .filter(tiltaksaktivitet -> etterFilterDato(hentUtlopsdatoForTiltak(tiltaksaktivitet)))
                 .collect(toList());
 
         if(tiltaksAktiviteterEtterDatoFilter.isEmpty()) {
@@ -44,13 +45,13 @@ public class TiltakUtils {
         return AktivitetStatus.of(personId, AktoerId.of(null), tiltak, true, nesteUtlopsdato);
     }
 
-    static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId, Timestamp datofilter) {
+    static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId) {
         List<Moeteplan> gruppeAktiviteterEtterDatoFilter =
             bruker.getGruppeaktivitetListe()
                 .stream()
                 .map(Gruppeaktivitet::getMoeteplanListe)
                 .flatMap(Collection::stream)
-                .filter(moeteplan -> etterFilterDato(tilTimestamp(moeteplan.getSluttDato()), datofilter))
+                .filter(moeteplan -> etterFilterDato(tilTimestamp(moeteplan.getSluttDato())))
                 .collect(toList());
 
 
@@ -63,11 +64,11 @@ public class TiltakUtils {
         return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
     }
 
-    static AktivitetStatus utledUtdanningsaktivitetstatus(Bruker bruker, PersonId personId, Timestamp datofilter) {
+    static AktivitetStatus utledUtdanningsaktivitetstatus(Bruker bruker, PersonId personId) {
         List<Utdanningsaktivitet> utdanningsaktiviteterEtterDato = bruker.getUtdanningsaktivitetListe()
                 .stream()
                 .filter(aktivitet -> UtdanningaktivitetTyper.contains(aktivitet.getAktivitetstype()))
-                .filter(aktivitet -> etterFilterDato(tilTimestamp(aktivitet.getAktivitetPeriode().getTom()), datofilter))
+                .filter(aktivitet -> etterFilterDato(tilTimestamp(aktivitet.getAktivitetPeriode().getTom())))
                 .collect(toList());
 
         if(utdanningsaktiviteterEtterDato.isEmpty()) {
@@ -161,6 +162,7 @@ public class TiltakUtils {
                         .map(Optional::get)
         ).flatMap(Function.identity())
                 .filter(Objects::nonNull)
+                .filter(AktivitetUtils::etterFilterDato)
                 .filter(not(TiltakUtils::fraOgMedDagensDato))
                 .sorted(Comparator.reverseOrder())
                 .findFirst();

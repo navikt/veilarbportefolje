@@ -52,7 +52,7 @@ public class TiltakHandler {
 
     private boolean kjorer;
 
-    private Timestamp datofilter;
+    public static final Timestamp datofilter = AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
 
 
     @Inject
@@ -61,7 +61,6 @@ public class TiltakHandler {
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.kjorer = false;
-        this.datofilter = AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
         this.brukerRepository = brukerRepository;
     }
 
@@ -242,7 +241,7 @@ public class TiltakHandler {
                             .stream()
                             .map(bruker -> {
                                 Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
-                                return personId.map(p -> utledAktivitetstatusForTiltak(bruker, p, datofilter)).orElse(null);
+                                return personId.map(p -> utledAktivitetstatusForTiltak(bruker, p)).orElse(null);
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());
@@ -262,7 +261,7 @@ public class TiltakHandler {
                             .stream()
                             .map(bruker -> {
                                 Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
-                                return personId.map(p -> utledGruppeaktivitetstatus(bruker, p, datofilter)).orElse(null);
+                                return personId.map(p -> utledGruppeaktivitetstatus(bruker, p)).orElse(null);
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());
@@ -282,7 +281,7 @@ public class TiltakHandler {
                             .stream()
                             .map(bruker -> {
                                 Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
-                                return personId.map(p -> TiltakUtils.utledUtdanningsaktivitetstatus(bruker, p, datofilter)).orElse(null);
+                                return personId.map(p -> TiltakUtils.utledUtdanningsaktivitetstatus(bruker, p)).orElse(null);
                             })
                             .filter(Objects::nonNull)
                             .collect(toList());

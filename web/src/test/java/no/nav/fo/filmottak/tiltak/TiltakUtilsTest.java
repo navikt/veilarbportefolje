@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import static no.nav.fo.service.SolrServiceImpl.DATOFILTER_PROPERTY;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -25,6 +26,7 @@ public class TiltakUtilsTest {
 
     @Test
     public void skalFinneNesteUtlopsdatoForTiltak() {
+        System.setProperty(DATOFILTER_PROPERTY, "1999-01-01");
         Bruker bruker = new Bruker();
         Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
         Timestamp compareTime = Timestamp.from(Instant.now());
@@ -33,12 +35,13 @@ public class TiltakUtilsTest {
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(past));
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(future));
 
-        AktivitetStatus aktivitetStatus = TiltakUtils.utledAktivitetstatusForTiltak(bruker, PersonId.of("personid"), AktivitetUtils.parseDato("1999-01-01"));
+        AktivitetStatus aktivitetStatus = TiltakUtils.utledAktivitetstatusForTiltak(bruker, PersonId.of("personid"));
         assertThat(aktivitetStatus.getNesteUtlop()).isAfter(compareTime);
     }
 
     @Test
     public void skalFinneNesteUtlopsdatoForGruppeaktivitet() {
+        System.setProperty(DATOFILTER_PROPERTY, "1999-01-01");
         Bruker bruker = new Bruker();
         Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
         Timestamp compareTime = Timestamp.from(Instant.now());
@@ -47,12 +50,14 @@ public class TiltakUtilsTest {
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(past));
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(future));
 
-        AktivitetStatus aktivitetStatus = TiltakUtils.utledGruppeaktivitetstatus(bruker, PersonId.of("personid"), AktivitetUtils.parseDato("1999-01-01"));
+        AktivitetStatus aktivitetStatus = TiltakUtils.utledGruppeaktivitetstatus(bruker, PersonId.of("personid"));
         assertThat(aktivitetStatus.getNesteUtlop()).isAfter(compareTime);
     }
 
     @Test
     public void skalFinneNesteUtlopsdatoForUtdanningsaktivitet() {
+        System.setProperty(DATOFILTER_PROPERTY, "1999-01-01");
+
         Bruker bruker = new Bruker();
         Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
         Timestamp compareTime = Timestamp.from(Instant.now());
@@ -61,7 +66,7 @@ public class TiltakUtilsTest {
         bruker.getUtdanningsaktivitetListe().add(getUtdanningsaktivitetWithTOM(past));
         bruker.getUtdanningsaktivitetListe().add(getUtdanningsaktivitetWithTOM(future));
 
-        AktivitetStatus aktivitetStatus = TiltakUtils.utledUtdanningsaktivitetstatus(bruker, PersonId.of("personid"), AktivitetUtils.parseDato("1999-01-01"));
+        AktivitetStatus aktivitetStatus = TiltakUtils.utledUtdanningsaktivitetstatus(bruker, PersonId.of("personid"));
         assertThat(aktivitetStatus.getNesteUtlop()).isAfter(compareTime);
     }
 
@@ -99,6 +104,16 @@ public class TiltakUtilsTest {
     public void skalIkkeTryneOmDetIkkeFinnesDatoer() {
         Optional<Timestamp> nyesteUtlopsdato = TiltakUtils.finnNysteUtlopsdatoForBruker(new Bruker());
         assertThat(nyesteUtlopsdato.isPresent()).isFalse();
+    }
+
+    @Test
+    public void skalIkkeTaHensynTilDatoerForDatoFilter() {
+        System.setProperty(DATOFILTER_PROPERTY, "2000-01-01");
+
+        Bruker bruker = new Bruker();
+        Timestamp beforeFilter = AktivitetUtils.parseDato("1999-01-01");
+        bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(beforeFilter));
+        assertThat(TiltakUtils.finnNysteUtlopsdatoForBruker(bruker).isPresent()).isFalse();
     }
 
     private Utdanningsaktivitet getUtdanningsaktivitetWithTOM(Timestamp timestamp) {
