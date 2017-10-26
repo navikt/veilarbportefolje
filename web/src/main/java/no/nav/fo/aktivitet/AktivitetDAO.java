@@ -196,6 +196,12 @@ public class AktivitetDAO {
             .value("NESTE_UTLOPSDATO", nesteUtlopsdato);
     }
 
+    public void slettutlopsdatoForAktivitet() {
+        SqlUtils.update(db, "bruker_data")
+                .set("NYESTEUTLOPTEAKTIVITET", null)
+                .execute();
+    }
+
     private String hentBrukertiltakForListeAvFnrSQL() {
         return "SELECT " +
             "TILTAKSKODE AS TILTAK, " +

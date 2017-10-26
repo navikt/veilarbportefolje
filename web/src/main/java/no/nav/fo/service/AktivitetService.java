@@ -32,6 +32,7 @@ public class AktivitetService {
     private PersistentOppdatering persistentOppdatering;
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
+        aktivitetDAO.slettutlopsdatoForAktivitet();
         run(
                 () -> timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
         ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
