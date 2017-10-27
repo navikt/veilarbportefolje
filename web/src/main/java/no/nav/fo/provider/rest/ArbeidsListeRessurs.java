@@ -84,111 +84,104 @@ public class ArbeidsListeRessurs {
 
     @GET
     @Path("{fnr}/")
-    public Response getArbeidsListe(@PathParam("fnr") String fnr) {
-        return createResponse(() -> {
-            TilgangsRegler.tilgangTilOppfolging(pepClient);
-            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-            if (validateFnr.isInvalid()) {
-                throw new RestValideringException(validateFnr.getError());
-            }
+    public Arbeidsliste getArbeidsListe(@PathParam("fnr") String fnr) {
+        TilgangsRegler.tilgangTilOppfolging(pepClient);
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+        if (validateFnr.isInvalid()) {
+            throw new RestValideringException(validateFnr.getError());
+        }
 
-            String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
+        String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
 
-            Fnr newFnr = new Fnr(fnr);
-            Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(newFnr);
+        Fnr newFnr = new Fnr(fnr);
+        Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(newFnr);
 
-            boolean erOppfolgendeVeileder = aktoerId.flatMap(brukerRepository::retrieveVeileder)
-                    .map(Object::toString)
-                    .map(v -> Objects.equals(innloggetVeileder, v))
-                    .getOrElse(false);
+        boolean erOppfolgendeVeileder = aktoerId.flatMap(brukerRepository::retrieveVeileder)
+                .map(Object::toString)
+                .map(v -> Objects.equals(innloggetVeileder, v))
+                .getOrElse(false);
 
-            boolean harVeilederTilgang = arbeidslisteService.hentEnhet(newFnr)
-                    .map(enhet -> brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet))
-                    .getOrElse(false);
+        boolean harVeilederTilgang = arbeidslisteService.hentEnhet(newFnr)
+                .map(enhet -> brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet))
+                .getOrElse(false);
 
-            Arbeidsliste arbeidsliste = aktoerId
-                    .flatMap(arbeidslisteService::getArbeidsliste)
-                    .getOrElse(this::emptyArbeidsliste)
-                    .setIsOppfolgendeVeileder(erOppfolgendeVeileder)
-                    .setHarVeilederTilgang(harVeilederTilgang);
+        Arbeidsliste arbeidsliste = aktoerId
+                .flatMap(arbeidslisteService::getArbeidsliste)
+                .getOrElse(this::emptyArbeidsliste)
+                .setIsOppfolgendeVeileder(erOppfolgendeVeileder)
+                .setHarVeilederTilgang(harVeilederTilgang);
 
-            return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
-        });
+        return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
     @POST
     @Path("{fnr}/")
     public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
-        return createResponse(() -> {
-            TilgangsRegler.tilgangTilOppfolging(pepClient);
-            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-            if (validateFnr.isInvalid()) {
-                throw new RestValideringException(validateFnr.getError());
-            }
+        TilgangsRegler.tilgangTilOppfolging(pepClient);
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+        if (validateFnr.isInvalid()) {
+            throw new RestValideringException(validateFnr.getError());
+        }
 
-            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
-            if (validateVeileder.isInvalid()) {
-                throw new RestTilgangException(validateVeileder.getError());
-            }
+        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+        if (validateVeileder.isInvalid()) {
+            throw new RestTilgangException(validateVeileder.getError());
+        }
 
-            sjekkTilgangTilEnhet(new Fnr(fnr));
+        sjekkTilgangTilEnhet(new Fnr(fnr));
 
-            arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
-                    .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
-                    .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+        arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
+                .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
+                .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
-        }, CREATED);
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
+        return Response.status(CREATED).entity(arbeidsliste).build();
     }
 
     @PUT
     @Path("{fnr}/")
-    public Response oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
-        return createResponse(() -> {
-            TilgangsRegler.tilgangTilOppfolging(pepClient);
-            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-            if (validateFnr.isInvalid()) {
-                throw new RestValideringException(validateFnr.getError());
-            }
+    public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
+        TilgangsRegler.tilgangTilOppfolging(pepClient);
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+        if (validateFnr.isInvalid()) {
+            throw new RestValideringException(validateFnr.getError());
+        }
 
-            sjekkTilgangTilEnhet(new Fnr(fnr));
-            validerArbeidsliste(body, true);
+        sjekkTilgangTilEnhet(new Fnr(fnr));
+        validerArbeidsliste(body, true);
 
-            arbeidslisteService
-                    .updateArbeidsliste(data(body, new Fnr(fnr)))
-                    .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
-                    .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+        arbeidslisteService
+                .updateArbeidsliste(data(body, new Fnr(fnr)))
+                .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
+                .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-            return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
-        });
+        return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
     }
 
     @DELETE
     @Path("{fnr}/")
-    public Response deleteArbeidsliste(@PathParam("fnr") String fnr) {
-        return createResponse(() -> {
-            TilgangsRegler.tilgangTilOppfolging(pepClient);
-            Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-            TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-            if (validateFnr.isInvalid()) {
-                throw new RestValideringException(validateFnr.getError());
-            }
+    public Arbeidsliste deleteArbeidsliste(@PathParam("fnr") String fnr) {
+        TilgangsRegler.tilgangTilOppfolging(pepClient);
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+        if (validateFnr.isInvalid()) {
+            throw new RestValideringException(validateFnr.getError());
+        }
 
-            Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
-            if (validateVeileder.isInvalid()) {
-                throw new RestTilgangException(validateVeileder.getError());
-            }
+        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+        if (validateVeileder.isInvalid()) {
+            throw new RestTilgangException(validateVeileder.getError());
+        }
 
-            sjekkTilgangTilEnhet(new Fnr(fnr));
+        sjekkTilgangTilEnhet(new Fnr(fnr));
 
-            return arbeidslisteService
-                    .deleteArbeidsliste(new Fnr(fnr))
-                    .map((a) -> new Arbeidsliste(null,null,null,null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
-                    .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
-        });
+        return arbeidslisteService
+                .deleteArbeidsliste(new Fnr(fnr))
+                .map((a) -> new Arbeidsliste(null,null,null,null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
+                .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
     }
 
     @POST
