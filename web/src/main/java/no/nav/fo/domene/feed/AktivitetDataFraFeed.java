@@ -21,6 +21,7 @@ public class AktivitetDataFraFeed implements Comparable<AktivitetDataFraFeed> {
     String aktivitetType;
     String status;
     boolean avtalt;
+    boolean historisk;
 
     @Override
     public int compareTo(AktivitetDataFraFeed o) {

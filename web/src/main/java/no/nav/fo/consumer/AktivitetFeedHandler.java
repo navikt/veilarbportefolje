@@ -73,7 +73,13 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         try {
             timed(
                     "feed.aktivitet.objekt",
-                    () -> aktivitetDAO.upsertAktivitet(aktivitet),
+                    () -> {
+                        if(aktivitet.isHistorisk()) {
+                            aktivitetDAO.deleteById(aktivitet.getAktivitetId());
+                        } else {
+                            aktivitetDAO.upsertAktivitet(aktivitet);
+                        }
+                    },
                     (timer, hasFailed) -> {
                         if (hasFailed) {
                             timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase());
