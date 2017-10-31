@@ -82,6 +82,12 @@ public class AktivitetDAO {
             }
         });
 
+        aktoerids.forEach( aktoerid -> {
+            if(!aktoerTilAktiviteterMap.containsKey(aktoerid)) {
+                aktoerTilAktiviteterMap.put(aktoerid, new ArrayList<>());
+            }
+        });
+
         aktoerTilAktiviteterMap.forEach((key, value) -> aktoerAktiviteter.add(new AktoerAktiviteter(key).setAktiviteter(value)));
 
         return aktoerAktiviteter;
