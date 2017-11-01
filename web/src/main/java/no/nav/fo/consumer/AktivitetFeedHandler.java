@@ -96,6 +96,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             timed(
                     "feed.aktivitet.indekseraktivitet",
                     () -> {
+                        if(aktoerids.isEmpty()) {
+                            return;
+                        }
                         Map<AktoerId, Optional<PersonId>> aktoeridToPersonid = aktoerService.hentPersonidsForAktoerids(aktoerids);
                         List<PersonId> personIds = aktoeridToPersonid.values().stream()
                                 .filter(Optional::isPresent)

@@ -165,4 +165,11 @@ public class AktivitetFeedHandlerTest {
                     .collect(toList()).size()).isEqualTo(aktivitetTyperFraAktivitetsplanList.size());
         });
     }
+
+    @Test
+    public void skalReturnereMedEnGangOmListenErTom() {
+        aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService, aktivitetDAO);
+        aktivitetFeedHandler.behandleAktivitetdata(Collections.emptyList());
+        verify(aktoerService, never()).hentPersonidsForAktoerids(any());
+    }
 }
