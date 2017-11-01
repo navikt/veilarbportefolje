@@ -336,6 +336,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>no.nav.dialogarena</groupId>
+            <artifactId>smoketest</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>test-config</artifactId>
             <scope>test</scope>

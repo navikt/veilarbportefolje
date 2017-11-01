@@ -40,8 +40,8 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public BrukerRepository brukerRepository() {
-        return new BrukerRepository();
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
     }
 
     @Bean

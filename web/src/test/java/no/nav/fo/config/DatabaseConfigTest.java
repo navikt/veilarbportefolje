@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import javax.sql.DataSource;
+
 public class DatabaseConfigTest {
 
     @Bean
@@ -37,7 +39,9 @@ public class DatabaseConfigTest {
     }
 
     @Bean
-    public BrukerRepository brukerRepository() { return new BrukerRepository(); }
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
+    }
 
     @Bean
     public TiltakRepository tiltakRepository() { return new TiltakRepository(); }

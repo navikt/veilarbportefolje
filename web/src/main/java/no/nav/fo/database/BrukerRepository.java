@@ -45,14 +45,16 @@ public class BrukerRepository {
     static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
-    @Inject
     JdbcTemplate db;
-
-    @Inject
     private DataSource ds;
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Inject
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    public BrukerRepository(JdbcTemplate db, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.db = db;
+        this.ds = ds;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
 
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
