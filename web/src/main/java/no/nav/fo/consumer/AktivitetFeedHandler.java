@@ -91,7 +91,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         }
     }
 
-    private void behandleAktivitetdata(List<AktoerId> aktoerids) {
+    void behandleAktivitetdata(List<AktoerId> aktoerids) {
         try {
             timed(
                     "feed.aktivitet.indekseraktivitet",

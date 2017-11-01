@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import javax.sql.DataSource;
+
 public class DatabaseConfigTest {
 
     @Bean
@@ -43,5 +45,7 @@ public class DatabaseConfigTest {
     public TiltakRepository tiltakRepository() { return new TiltakRepository(); }
 
     @Bean
-    public AktivitetDAO aktivitetDAO() { return new AktivitetDAO(); }
+    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
+        return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
+    }
 }

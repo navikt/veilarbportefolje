@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static java.util.Arrays.asList;
+import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.service.SolrServiceImpl.DATOFILTER_PROPERTY;
 import static no.nav.fo.util.AktivitetUtils.*;
@@ -188,7 +189,7 @@ public class AktivitetUtilsTest {
     @Test
     public void skalReturnereSetMedAlleAktivitetstyper() {
         Set<AktivitetStatus> statuser = lagAktivitetSet(Collections.emptyList(), LocalDate.now(), AktoerId.of("aktoerid"), PersonId.of("personid"));
-        assertThat(statuser.size()).isEqualTo(aktivitetTyperList.size());
+        assertThat(statuser.size()).isEqualTo(aktivitetTyperFraAktivitetsplanList.size());
         statuser.forEach((status) -> {
             assertThat(status.isAktiv()).isFalse();
             assertThat(status.getNesteUtlop()).isNull();
@@ -197,7 +198,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalSortereNyesteUtlopsdatoForst() {
-        String aktivitetstype = aktivitetTyperList.get(0).toString();
+        String aktivitetstype = aktivitetTyperFraAktivitetsplanList.get(0).toString();
         String IKKE_FULLFORT_STATUS = "IKKE_FULLFORT_STATUS";
         Timestamp t1 = new Timestamp(100000000);
         Timestamp t2 = new Timestamp(200000000);

@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.*;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +25,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public AktivitetService aktivitetService() {
-        return new AktivitetService();
+    public AktivitetService aktivitetService(AktoerService aktoerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering) {
+        return new AktivitetService(aktoerService, aktivitetDAO, persistentOppdatering);
     }
 
     @Bean
