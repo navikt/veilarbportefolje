@@ -136,7 +136,7 @@ class PortefoljeSimulation extends Simulation {
     )
 
   setUp(
-    portefoljeScenario.inject(rampUsers(60) over (120 seconds), rampUsers(60) over (60 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+    portefoljeScenario.inject(rampUsers(600) over (600 seconds), rampUsers(1800) over (600 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
   )
     .protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
