@@ -22,14 +22,16 @@ import static no.nav.fo.util.MetricsUtils.timed;
 @Slf4j
 public class AktivitetService {
 
-    @Inject
     private AktoerService aktoerService;
-
-    @Inject
     private AktivitetDAO aktivitetDAO;
+    private PersistentOppdatering persistentOppdatering;
 
     @Inject
-    private PersistentOppdatering persistentOppdatering;
+    public AktivitetService(AktoerService aktoerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering) {
+        this.aktivitetDAO = aktivitetDAO;
+        this.aktoerService = aktoerService;
+        this.persistentOppdatering = persistentOppdatering;
+    }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
         aktivitetDAO.slettutlopsdatoForAktivitet();

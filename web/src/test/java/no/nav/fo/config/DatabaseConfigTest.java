@@ -47,5 +47,7 @@ public class DatabaseConfigTest {
     public TiltakRepository tiltakRepository() { return new TiltakRepository(); }
 
     @Bean
-    public AktivitetDAO aktivitetDAO() { return new AktivitetDAO(); }
+    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
+        return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
+    }
 }

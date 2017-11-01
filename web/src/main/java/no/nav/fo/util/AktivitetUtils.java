@@ -20,7 +20,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
+import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
@@ -102,7 +102,7 @@ public class AktivitetUtils {
     static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktoerId aktoerId, PersonId personId) {
         Set<AktivitetStatus> aktiveAktiviteter = new HashSet<>();
 
-        aktivitetTyperList
+        aktivitetTyperFraAktivitetsplanList
                 .stream()
                 .map(Objects::toString)
                 .forEach(aktivitetsype -> {

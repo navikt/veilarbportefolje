@@ -16,7 +16,6 @@ import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.util.*;
@@ -33,14 +32,15 @@ public class AktivitetDAO {
     private static final String AKTIVITETER = "AKTIVITETER";
     private static final String AKTIVITETID = "AKTIVITETID";
 
-    @Inject
     private JdbcTemplate db;
-
-    @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Inject
     private DataSource ds;
+
+    public AktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
+        this.db = db;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.ds = ds;
+    }
 
 
     public void slettAlleAktivitetstatus(String aktivitettype) {
@@ -79,6 +79,12 @@ public class AktivitetDAO {
                 List<AktivitetDTO> liste = new ArrayList<>();
                 liste.add(mapToAktivitetDTO(aktivitet));
                 aktoerTilAktiviteterMap.put(aktoerid, liste);
+            }
+        });
+
+        aktoerids.forEach( aktoerid -> {
+            if(!aktoerTilAktiviteterMap.containsKey(aktoerid)) {
+                aktoerTilAktiviteterMap.put(aktoerid, new ArrayList<>());
             }
         });
 
