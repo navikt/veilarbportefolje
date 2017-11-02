@@ -91,4 +91,9 @@ public class SolrServiceMock implements SolrService {
     public String byggQueryString(String enhetId, Optional<String> veilederIdent) {
         return null;
     }
+
+    @Override
+    public void populerIndeksForPersonids(List<PersonId> personIds) {
+
+    }
 }

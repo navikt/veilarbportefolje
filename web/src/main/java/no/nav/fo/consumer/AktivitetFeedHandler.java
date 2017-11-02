@@ -1,7 +1,6 @@
 package no.nav.fo.consumer;
 
 
-import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
@@ -24,9 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static no.nav.fo.feed.FeedUtils.getErUnderOppfolging;
 import static no.nav.fo.util.MetricsUtils.timed;
-import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 
 @Slf4j
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
@@ -131,14 +129,4 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             log.error("Feil ved behandling av aktivitetdata fra feed", e);
         }
     }
-
-    private Map<Tuple2<AktoerId, PersonId>, Boolean> getErUnderOppfolging(List<AktoerId> aktoerids, Map<AktoerId, Optional<PersonId>> aktoeridToPersonid,
-                                                                          Map<PersonId, Oppfolgingstatus> oppfolgingstatus) {
-        return aktoerids.stream()
-                .filter(a -> aktoeridToPersonid.get(a).isPresent())
-                .collect(toMap(
-                        a -> Tuple.of(a, aktoeridToPersonid.get(a).get()),
-                        a -> erBrukerUnderOppfolging(oppfolgingstatus.get(aktoeridToPersonid.get(a).get()))));
-    }
-
 }

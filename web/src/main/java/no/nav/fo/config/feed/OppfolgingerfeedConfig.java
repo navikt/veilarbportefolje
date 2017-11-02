@@ -4,6 +4,7 @@ import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.OppfolgingFeedHandler;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
@@ -64,8 +65,9 @@ public class OppfolgingerfeedConfig {
                                                        ArbeidslisteService arbeidslisteService,
                                                        BrukerRepository brukerRepository,
                                                        AktoerService aktoerService,
-                                                       SolrService solrService) {
-        return new OppfolgingFeedHandler(oppdaterBrukerdataFletter, arbeidslisteService, brukerRepository, aktoerService, solrService);
+                                                       SolrService solrService,
+                                                       OppfolgingFeedRepository oppfolgingFeedRepository) {
+        return new OppfolgingFeedHandler(oppdaterBrukerdataFletter, arbeidslisteService, brukerRepository, aktoerService, solrService, oppfolgingFeedRepository);
     }
 
     private static String sisteEndring(JdbcTemplate db) {

@@ -130,6 +130,15 @@ public class ArbeidslisteRepository {
                 .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
     }
 
+    public void deleteArbeidslisteForAktoerids(List<AktoerId> aktoerIds) {
+        io.vavr.collection.List.ofAll(aktoerIds).sliding(1000,1000)
+                .forEach(aktoerIdsBatch -> {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("aktoerids", aktoerIdsBatch.toJavaStream().map(AktoerId::toString).collect(toList()));
+                    namedParameterJdbcTemplate.update(deleteArbeidslisteSql(), params);
+                });
+    }
+
     @SneakyThrows
     private static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
         return new Arbeidsliste(
@@ -145,5 +154,9 @@ public class ArbeidslisteRepository {
                 toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
                 (String) rs.get("KOMMENTAR"),
                 toZonedDateTime((Timestamp) rs.get("FRIST")));
+    }
+
+    private String deleteArbeidslisteSql() {
+        return "delete from arbeidsliste where aktoerid in (:aktoerids)";
     }
 }

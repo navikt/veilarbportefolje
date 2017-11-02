@@ -2,7 +2,11 @@ package no.nav.fo.consumer;
 
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.*;
+import no.nav.fo.database.OppfolgingFeedRepository;
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.domene.Oppfolgingstatus;
+import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.OppdaterBrukerdataFletter;
@@ -10,12 +14,14 @@ import no.nav.fo.service.SolrService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Collections;
+import java.util.*;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -24,6 +30,9 @@ public class OppfolgingFeedHandlerTest {
 
     @Mock
     private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
+
+    @Mock
+    private OppfolgingFeedRepository oppfolgingFeedRepository;
 
     @Mock
     private ArbeidslisteService arbeidslisteService;
@@ -47,29 +56,41 @@ public class OppfolgingFeedHandlerTest {
 
     @Test
     public void skalSletteBrukerOgArbeidslisteNaarDenIkkeErUnderOppfolging() {
-        Fnr fnr = new Fnr("00000000000");
         AktoerId aktoerId = AktoerId.of("DUMMY");
         PersonId personId = PersonId.of("1111111");
 
+        ArgumentCaptor<List<PersonId>> captorUnderOppfolging = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<PersonId>> captorIkkeUnderOppfolging = ArgumentCaptor.forClass(List.class);
 
-        Try<Oppfolgingstatus> arenaStatus = Try.success(new Oppfolgingstatus()
+
+        Oppfolgingstatus arenaStatus = new Oppfolgingstatus()
                 .setFormidlingsgruppekode("DUMMY")
-                .setServicegruppekode("DUMMY"));
+                .setServicegruppekode("DUMMY");
 
         BrukerOppdatertInformasjon bruker = new BrukerOppdatertInformasjon()
                 .setOppfolging(false)
                 .setAktoerid(aktoerId.toString());
 
-        when(brukerRepository.retrieveOppfolgingstatus(any(PersonId.class))).thenReturn(arenaStatus);
-        when(aktoerService.hentFnrFraAktoerid(any())).thenReturn(Try.success(fnr));
-        when(aktoerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(personId));
+        Map<PersonId, Oppfolgingstatus> oppfolgingsstatus = new HashMap<>();
+        oppfolgingsstatus.put(personId, arenaStatus);
+        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(Try.success(oppfolgingsstatus));
+
+        Map<AktoerId, Optional<PersonId>> identMap = new HashMap<>();
+        identMap.put(aktoerId, Optional.of(personId));
+        when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(identMap);
 
         oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(bruker));
 
-        verify(arbeidslisteService, times(1)).deleteArbeidsliste(aktoerId);
-        verify(solrService, times(1)).slettBruker(personId);
-        verify(oppdaterBrukerdataFletter, never()).oppdaterOppfolgingForBruker(any(), any());
+        verify(solrService, times(1)).populerIndeksForPersonids(captorUnderOppfolging.capture());
+        verify(brukerRepository, times(1)).deleteBrukerdataForPersonIds(captorIkkeUnderOppfolging.capture());
+        verify(solrService, times(1)).slettBrukere(captorIkkeUnderOppfolging.capture());
+        verify(solrService, times(1)).commit();
+
+        assertLengthOfSublists(captorUnderOppfolging.getAllValues(), 0);
+        assertLengthOfSublists(captorIkkeUnderOppfolging.getAllValues(), 1);
     }
 
-
+    private void assertLengthOfSublists(List<List<PersonId>> lists, int size) {
+        lists.forEach(l -> assertThat(l.size()).isEqualTo(size));
+    }
 }

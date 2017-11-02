@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -95,5 +96,24 @@ public class ArbeidslisteRepositoryTest {
         assertTrue(arbeidslisteMap.get(aktoerId1).isPresent());
         assertTrue(arbeidslisteMap.get(aktoerId2).isPresent());
         assertFalse(arbeidslisteMap.get(aktoerId3).isPresent());
+    }
+
+    @Test
+    public void skalSletteArbeidslisteForAktoerids() {
+        AktoerId aktoerId1 = AktoerId.of("22222222");
+        AktoerId aktoerId2 = AktoerId.of("22222223");
+        Map<AktoerId, Optional<Arbeidsliste>> arbeidsliste = repo.retrieveArbeidsliste(asList(aktoerId1,aktoerId2));
+        assertTrue(arbeidsliste.get(aktoerId1).isPresent());
+        assertTrue(arbeidsliste.get(aktoerId2).isPresent());
+
+        repo.deleteArbeidslisteForAktoerids(asList(aktoerId1,aktoerId2));
+        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteDeleted = repo.retrieveArbeidsliste(asList(aktoerId1,aktoerId2));
+        assertFalse(arbeidslisteDeleted.get(aktoerId1).isPresent());
+        assertFalse(arbeidslisteDeleted.get(aktoerId2).isPresent());
+    }
+
+    @Test
+    public void skalIkkeTryneOmListeErTom() {
+        repo.deleteArbeidslisteForAktoerids(Collections.emptyList());
     }
 }

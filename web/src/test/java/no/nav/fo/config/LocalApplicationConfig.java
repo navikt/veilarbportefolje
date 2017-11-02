@@ -34,7 +34,8 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         AbacContext.class,
         CacheConfig.class,
         RestConfig.class,
-        AktorConfig.class
+        AktorConfig.class,
+        FeedConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication{
 

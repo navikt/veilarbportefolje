@@ -4,6 +4,7 @@ import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.EnhetTiltakRepository;
+import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
@@ -43,6 +44,9 @@ public class DatabaseConfig {
     public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
     }
+
+    @Bean
+    public OppfolgingFeedRepository OppfolgingFeedRepository(JdbcTemplate db){ return new OppfolgingFeedRepository(db); }
 
     @Bean
     public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
