@@ -5,6 +5,7 @@ import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.EnhetTiltakRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
+import no.nav.fo.feed.DialogFeedRepository;
 import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -46,6 +47,9 @@ public class DatabaseConfigTest {
 
     @Bean
     public OppfolgingFeedRepository OppfolgingFeedRepository(JdbcTemplate db){ return new OppfolgingFeedRepository(db); }
+
+    @Bean
+    public DialogFeedRepository dialogFeedRepository(JdbcTemplate db) { return new DialogFeedRepository(db); }
 
     @Bean
     public TiltakRepository tiltakRepository() { return new TiltakRepository(); }
