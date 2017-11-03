@@ -20,6 +20,10 @@ object Helpers {
             .check(status.is(200))
     }
 
+    def httpGetSuccessWithResonse(navn: String, uri: Expression[String], forventet_i_respons: String): HttpRequestBuilder = {
+      httpGetSuccess(navn, uri).check(regex(forventet_i_respons).exists)
+    }
+
     def httpPostPaginering(navn: String, uri: Expression[String], fra: String = "20", sortDirection: String = "ikke_satt", sortField: String = "ikke_satt"): HttpRequestBuilder = {
         http(navn)
             .post(uri)
@@ -51,4 +55,13 @@ object Helpers {
       session
     })
   }
+
+  def printSavedVariableToConsole(tekst: String) = {
+    exec(session => {
+      println(session(tekst).as[String])
+      session
+    })
+  }
+
+
 }

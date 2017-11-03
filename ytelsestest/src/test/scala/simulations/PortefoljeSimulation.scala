@@ -25,6 +25,7 @@ class PortefoljeSimulation extends Simulation {
   private val oidcUser = System.getProperty("OIDC_USER", "veilarblogin-t3")
   private val enheter = System.getProperty("ENHETER", "1001").split(",")
   private val rapporterSolrSamlet = System.getProperty("RAPPORTER_SOLR_SAMLET", "true").toBoolean;
+  private val rampUp = System.getProperty("RAMP_UP", "false").toBoolean;
   private val appnavn = "veilarbpersonflatefs"
   private val enhetsFeeder = enheter.map(enhet => Map("enhet" -> enhet.trim)).circular
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
@@ -51,6 +52,12 @@ class PortefoljeSimulation extends Simulation {
       .exec(LoginHelper.loginOidc(loginUrl, oidcUser, baseUrl))
   }
 
+  private def veilederInfo() = {
+    exec(Helpers.httpGetSuccessWithResonse("enheter", "/veilarbveileder/api/veileder/enheter", "enhetliste"))
+      .exec(Helpers.httpGetSuccessWithResonse("veileder", "/veilarbveileder/api/veileder/me", "fornavn"))
+
+  }
+
   private def rapporterMedNavn(navn: String): String = {
     if (rapporterSolrSamlet) "portefolje-solrsporring" else navn
   }
@@ -60,23 +67,25 @@ class PortefoljeSimulation extends Simulation {
     .feed(enhetsFeeder)
     .exec(login)
     .pause(500 milliseconds)
-    .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/tjenester/tekster"))
-    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
-    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
-    .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/statustall"))
+    .exec(Helpers.httpGetSuccessWithResonse("tekster portefolje", "/veilarbportefoljeflatefs/api/tekster", "filtrering"))
+    .exec(veilederInfo)
+    .exec(Helpers.httpGetSuccessWithResonse("statustall", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/statustall", "nyeBrukere"))
     .exec(
       Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter()))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
+       // .check(bodyString.saveAs("resp"))
     )
+    //.exec(Helpers.printSavedVariableToConsole("resp"))
     .pause(1 second)
-    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
-    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
+    .exec(veilederInfo)
     .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
@@ -87,6 +96,7 @@ class PortefoljeSimulation extends Simulation {
           fodselsdagIMnd = List("1", "2")
         )))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
@@ -95,6 +105,7 @@ class PortefoljeSimulation extends Simulation {
           aktiviteter = AktivitetRequestFilter(TILTAK = "JA")
         )))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
     )
     .exec(
       Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
@@ -104,6 +115,7 @@ class PortefoljeSimulation extends Simulation {
           tilVeilederId = veilederForTildeling1
         ))))
         .check(status.is(200))
+        .check(regex("resultat").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
@@ -114,7 +126,10 @@ class PortefoljeSimulation extends Simulation {
           tilVeilederId = veilederForTildeling2
         ))))
         .check(status.is(200))
+        .check(regex("resultat").exists)
+        //.check(bodyString.saveAs("resp"))
     )
+
     .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
@@ -122,21 +137,29 @@ class PortefoljeSimulation extends Simulation {
           brukerFnr = brukerForTildeling,
           fraVeilederId = veilederForTildeling2,
           tilVeilederId = veilederForTildeling1
+        ), RequestTildelingVeileder(
+          brukerFnr = brukerForTildeling,
+          fraVeilederId = veilederForTildeling2,
+          tilVeilederId = veilederForTildeling1
         ))))
         .check(status.is(200))
+        .check(regex("resultat").exists)
     )
     .pause(1 second, 3 seconds)
-    .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
+    .exec(Helpers.httpGetSuccessWithResonse("veilederoversikt", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefoljestorrelser", "facetResults"))
 
     .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering(rapporterMedNavn("veileders portefolje"), session => s"/veilarbportefolje/api/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
         .body(Helpers.toBody(RequestFilter(brukerstatus = null)))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
     )
 
+
   setUp(
-    portefoljeScenario.inject(rampUsers(600) over (600 seconds), rampUsers(1800) over (600 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+    if (rampUp) portefoljeScenario.inject(rampUsers(600) over (600 seconds), rampUsers(1800) over (600 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+    else portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
   )
     .protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
