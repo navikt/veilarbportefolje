@@ -218,7 +218,7 @@ public class BrukerRepository {
         io.vavr.collection.List.ofAll(personIds).sliding(1000,1000)
                 .forEach(personIdsBatch -> {
                     Map<String, Object> params = new HashMap<>();
-                    params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
+                    params.put("personids", personIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
                     namedParameterJdbcTemplate.query(retrieveBrukereMedBrukerdataSQL(), params, rs -> {
                             dokumenter.add(mapResultSetTilDokument(rs));
                     });
