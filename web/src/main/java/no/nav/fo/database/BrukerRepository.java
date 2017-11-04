@@ -73,7 +73,8 @@ public class BrukerRepository {
                     .forEach(personIdsBatch -> {
                         Map<String, Object> params = new HashMap<>(personIdsBatch.size());
                         params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
-                        namedParameterJdbcTemplate.queryForList(retrieveOppfolgingstatusListSql(), params)
+                        String sql = retrieveOppfolgingstatusListSql();
+                        timed(sql,()->namedParameterJdbcTemplate.queryForList(sql, params))
                                 .forEach(data -> personIdOppfolgingstatusMap.put(
                                         PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
                                         new Oppfolgingstatus()
@@ -149,7 +150,8 @@ public class BrukerRepository {
                 .forEach(aktoerIdsBatch -> {
                     Map<String, Object> params = new HashMap<>();
                     params.put("personids", aktoerIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
-                    namedParameterJdbcTemplate.update(deleteBrukerdataSql(), params);
+                    String sql = deleteBrukerdataSql();
+                    timed(sql,() -> namedParameterJdbcTemplate.update(sql, params));
                 });
     }
 
@@ -195,21 +197,23 @@ public class BrukerRepository {
 
     void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
-        db.query(retrieveBrukereSQL(), rs -> {
+        String sql = retrieveBrukereSQL();
+        timed(sql, ()-> db.query(sql, rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
                 prosess.accept(brukerDokument);
             }
-        });
+        }));
     }
 
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
         List<SolrInputDocument> brukere = new ArrayList<>();
         db.setFetchSize(10000);
-        db.query(retrieveOppdaterteBrukereSQL(), rs -> {
+        String sql = retrieveOppdaterteBrukereSQL();
+        timed(sql, ()->db.query(sql, rs -> {
             brukere.add(mapResultSetTilDokument(rs));
-        });
+        }));
         return brukere;
     }
 
@@ -219,27 +223,30 @@ public class BrukerRepository {
                 .forEach(personIdsBatch -> {
                     Map<String, Object> params = new HashMap<>();
                     params.put("personids", personIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
-                    namedParameterJdbcTemplate.query(retrieveBrukereMedBrukerdataSQL(), params, rs -> {
+                    String sql = retrieveBrukereMedBrukerdataSQL();
+                    timed(sql,()->namedParameterJdbcTemplate.query(sql, params, rs -> {
                             dokumenter.add(mapResultSetTilDokument(rs));
-                    });
+                    }));
                 });
         return dokumenter;
     }
 
     public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
         String[] args = new String[]{personId};
-        return db.query(retrieveBrukerMedBrukerdataSQL(), args, (rs) -> {
+        String sql = retrieveBrukerMedBrukerdataSQL();
+        return timed(sql,()->db.query(sql, args, (rs) -> {
             if (rs.isBeforeFirst()) {
                 rs.next();
             }
             return mapResultSetTilDokument(rs);
-        });
+        }));
     }
 
     public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
         Map<String, Object> params = new HashMap<>();
         params.put("fnrs", personIds);
-        return namedParameterJdbcTemplate.queryForList(retrieveBrukerdataSQL(), params)
+        String sql = retrieveBrukerdataSQL();
+        return timed(sql,()-> namedParameterJdbcTemplate.queryForList(sql, params))
                 .stream()
                 .map(data -> new Brukerdata()
                         .setAktoerid((String) data.get("AKTOERID"))
@@ -263,15 +270,18 @@ public class BrukerRepository {
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
-        return db.update(updateTidsstempelSQL(), tidsstempel);
+        String sql = updateTidsstempelSQL();
+        return timed(sql,()-> db.update(sql, tidsstempel));
     }
 
     public java.util.List<Map<String, Object>> retrieveBruker(String aktoerId) {
-        return db.queryForList(retrieveBrukerSQL(), aktoerId);
+        String sql = retrieveBrukerSQL();
+        return timed(sql, ()-> db.queryForList(sql, aktoerId));
     }
 
     public java.util.List<Map<String, Object>> retrievePersonid(String aktoerId) {
-        return db.queryForList(getPersonidFromAktoeridSQL(), aktoerId);
+        String sql = getPersonidFromAktoeridSQL();
+        return timed(sql, ()-> db.queryForList(sql, aktoerId));
     }
 
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
@@ -280,10 +290,10 @@ public class BrukerRepository {
         batchProcess(1000, fnrs, timed("GR199.brukersjekk.batch", (fnrBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("fnrs", fnrBatch);
-
-            Map<String, Optional<String>> fnrPersonIdMap = namedParameterJdbcTemplate.queryForList(
-                    getPersonIdsFromFnrsSQL(),
-                    params)
+            String sql = getPersonIdsFromFnrsSQL();
+            Map<String, Optional<String>> fnrPersonIdMap = timed(sql, ()-> namedParameterJdbcTemplate.queryForList(
+                    sql,
+                    params))
                     .stream()
                     .map((rs) -> Tuple.of(
                             (String) rs.get("FODSELSNR"),
@@ -307,9 +317,9 @@ public class BrukerRepository {
         batchProcess(1000, aktoerIds, timed("retreive.personids.batch", (aktoeridsBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("aktoerids", aktoeridsBatch.stream().map(AktoerId::toString).collect(toList()));
-
-            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = namedParameterJdbcTemplate.queryForList(
-                    hentPersonidsFromAktoeridsSQL(), params)
+            String sql = hentPersonidsFromAktoeridsSQL();
+            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = timed(sql,()->namedParameterJdbcTemplate.queryForList(
+                    sql, params))
                     .stream()
                     .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
                     )
@@ -331,9 +341,9 @@ public class BrukerRepository {
         batchProcess(1000, personIds, timed("retreive.aktoerid.batch", (personIdsBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("personids", personIdsBatch.stream().map(PersonId::toString).collect(toList()));
-
-            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = namedParameterJdbcTemplate.queryForList(
-                    hentAktoeridsForPersonidsSQL(), params)
+            String sql = hentAktoeridsForPersonidsSQL();
+            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = timed(sql,()-> namedParameterJdbcTemplate.queryForList(
+                    sql, params))
                     .stream()
                     .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
                     )
@@ -368,7 +378,8 @@ public class BrukerRepository {
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
-        db.update("UPDATE METADATA SET aktiviteter_sist_oppdatert = ?", timestampFromISO8601(sistOppdatert));
+        String sql = "UPDATE METADATA SET aktiviteter_sist_oppdatert = ?";
+        timed(sql,()-> db.update(sql, timestampFromISO8601(sistOppdatert)));
     }
 
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {

@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
+import static no.nav.fo.util.MetricsUtils.timed;
 
 public class UpdateQuery {
     private final JdbcTemplate db;
@@ -48,7 +49,7 @@ public class UpdateQuery {
 
         String sql = sqlBuilder.toString();
 
-        return db.update(sql, createSqlArgumentArray());
+        return timed(sql,()-> db.update(sql, createSqlArgumentArray()));
     }
 
     private Object[] createSqlArgumentArray() {
