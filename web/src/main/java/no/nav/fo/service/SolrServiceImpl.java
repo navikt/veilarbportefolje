@@ -167,7 +167,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = byggQueryString(enhetId, veilederIdent);
-        return timed("solr:" + queryString, () -> hentBrukere(queryString, sortOrder, sortField, filtervalg));
+        return timed("solr.hentbrukere", () -> hentBrukere(queryString, sortOrder, sortField, filtervalg));
     }
 
     @Override
@@ -358,7 +358,7 @@ public class SolrServiceImpl implements SolrService {
         StatusTall statusTall = new StatusTall();
         QueryResponse response;
 
-        response = timed(solrQuery.toQueryString(), () -> Try.of(() -> solrClientSlave.query(solrQuery))
+        response = timed("solr.statustall.enhet", () -> Try.of(() -> solrClientSlave.query(solrQuery))
                 .getOrElseThrow(t -> Lombok.sneakyThrow(t)));
 
         long antallTotalt = response.getResults().getNumFound();

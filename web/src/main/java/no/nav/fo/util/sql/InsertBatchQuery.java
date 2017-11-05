@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static java.util.Collections.nCopies;
+import static no.nav.fo.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 public class InsertBatchQuery<T> {
@@ -42,7 +43,7 @@ public class InsertBatchQuery<T> {
             return null;
         }
         String sql = createSqlStatement();
-        return timed(sql, () -> db.batchUpdate(sql, new BatchPreparedStatementSetter() {
+        return timed(dbTimerNavn(sql), () -> db.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 T t = data.get(i);

@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.Collections.nCopies;
+import static no.nav.fo.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 public class InsertQuery {
@@ -27,7 +28,7 @@ public class InsertQuery {
 
     public int execute() {
         String sql = createSqlStatement();
-        return timed(sql,() -> db.update(sql, insertParams.values().toArray()));
+        return timed(dbTimerNavn(sql),() -> db.update(sql, insertParams.values().toArray()));
     }
 
     private String createSqlStatement() {

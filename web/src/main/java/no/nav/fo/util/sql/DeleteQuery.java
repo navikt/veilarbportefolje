@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import static no.nav.fo.util.DbUtils.dbTimerNavn;
 import static no.nav.sbl.dialogarena.common.abac.pep.Utils.timed;
 
 public class DeleteQuery {
@@ -38,7 +39,7 @@ public class DeleteQuery {
         String sql = createDeleteStatement();
         try (Connection conn = ds.getConnection()) {
 
-            PreparedStatement ps = timed(sql,() ->conn.prepareStatement(sql));
+            PreparedStatement ps = timed(dbTimerNavn(sql),() ->conn.prepareStatement(sql));
             where.applyTo(ps, 1);
 
             result = ps.executeUpdate();

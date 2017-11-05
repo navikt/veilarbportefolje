@@ -28,8 +28,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
-import static no.nav.fo.util.DbUtils.getCauseString;
-import static no.nav.fo.util.DbUtils.not;
+import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
@@ -137,7 +136,7 @@ public class ArbeidslisteRepository {
                     Map<String, Object> params = new HashMap<>();
                     params.put("aktoerids", aktoerIdsBatch.toJavaStream().map(AktoerId::toString).collect(toList()));
                     String sql = deleteArbeidslisteSql();
-                    timed(sql,()-> namedParameterJdbcTemplate.update(sql, params));
+                    timed(dbTimerNavn(sql),()-> namedParameterJdbcTemplate.update(sql, params));
                 });
     }
 

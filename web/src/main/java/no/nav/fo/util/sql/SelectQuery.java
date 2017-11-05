@@ -1,6 +1,7 @@
 package no.nav.fo.util.sql;
 
 import lombok.SneakyThrows;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 
 import javax.sql.DataSource;
@@ -47,7 +48,7 @@ public class SelectQuery<T> {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             where.applyTo(ps, 1);
-            ResultSet resultSet = timed(sql, ps::executeQuery);
+            ResultSet resultSet = timed(DbUtils.dbTimerNavn(sql), ps::executeQuery);
             if(!resultSet.next()) {
                 return null;
             }

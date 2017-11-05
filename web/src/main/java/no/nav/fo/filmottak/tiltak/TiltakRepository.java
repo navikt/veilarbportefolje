@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
+import static no.nav.fo.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 
@@ -58,7 +59,7 @@ public class TiltakRepository {
 
     Map<String, List<String>> hentEnhetTilFodselsnummereMap() {
         String sql = "SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL";
-        List<EnhetTilFnr> enhetTilFnrList = timed(sql, ()-> db.query(
+        List<EnhetTilFnr> enhetTilFnrList = timed(dbTimerNavn(sql), ()-> db.query(
             sql,
             new BeanPropertyRowMapper<>(EnhetTilFnr.class)
         ));
@@ -83,7 +84,7 @@ public class TiltakRepository {
         try (final Connection dsConnection =  ds.getConnection()){
             final PreparedStatement ps = dsConnection.prepareStatement(sql);
 
-            batchProcess(1, tiltakListe, timed(sql, tiltakForEnhetBatch -> {
+            batchProcess(1, tiltakListe, timed(dbTimerNavn(sql), tiltakForEnhetBatch -> {
                 lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
             }));
         } catch (SQLException e) {
