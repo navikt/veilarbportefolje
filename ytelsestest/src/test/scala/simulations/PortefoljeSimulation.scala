@@ -31,8 +31,11 @@ class PortefoljeSimulation extends Simulation {
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
   private val veilederForTildeling2 = System.getProperty("VEIL_2", "X905112")
   private val brukereForTildeling = System.getProperty("BRUKERE_TIL_VEILEDER", "!!CHANGE ME!!")
+  private val portefoljeVersion2 = System.getProperty("PORTEFOLJE_V2", "false").toBoolean
 
   val mapper = new ObjectMapper() with ScalaObjectMapper
+
+  private val portefoljeApiUrl = if (portefoljeVersion2) "api/v2" else "api"
 
   private val httpProtocol = http
     .baseURL(baseUrl)
@@ -73,9 +76,9 @@ class PortefoljeSimulation extends Simulation {
     .pause(500 milliseconds)
     .exec(Helpers.httpGetSuccessWithResonse("tekster portefolje", "/veilarbportefoljeflatefs/api/tekster", "filtrering"))
     .exec(veilederInfo)
-    .exec(Helpers.httpGetSuccessWithResonse("statustall", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/statustall", "nyeBrukere"))
+    .exec(Helpers.httpGetSuccessWithResonse("statustall", session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/statustall", "nyeBrukere"))
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter()))
         .check(status.is(200))
         .check(regex("antallTotalt").exists)
@@ -86,14 +89,14 @@ class PortefoljeSimulation extends Simulation {
     .exec(veilederInfo)
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
         .check(status.is(200))
         .check(regex("antallTotalt").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder, kjoenn og foedselsdag"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder, kjoenn og foedselsdag"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
           alder = List("20-24", "30-39"),
           kjonn = List("M"),
@@ -104,7 +107,7 @@ class PortefoljeSimulation extends Simulation {
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter tiltak"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter tiltak"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
           aktiviteter = AktivitetRequestFilter(TILTAK = "JA")
         )))
@@ -132,11 +135,11 @@ class PortefoljeSimulation extends Simulation {
         .check(regex("resultat").exists)
     )
     .pause(1 second, 3 seconds)
-    .exec(Helpers.httpGetSuccessWithResonse("veilederoversikt", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefoljestorrelser", "facetResults"))
+    .exec(Helpers.httpGetSuccessWithResonse("veilederoversikt", session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefoljestorrelser", "facetResults"))
 
     .pause(1 second, 3 seconds)
     .exec(
-       Helpers.httpPostPaginering(rapporterMedNavn("veileders portefolje"), session => s"/veilarbportefolje/api/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
+       Helpers.httpPostPaginering(rapporterMedNavn("veileders portefolje"), session => s"/veilarbportefolje/${portefoljeApiUrl}/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
          .body(Helpers.toBody(RequestFilter(brukerstatus = null)))
          .check(status.is(200))
          .check(regex("antallTotalt").exists)
