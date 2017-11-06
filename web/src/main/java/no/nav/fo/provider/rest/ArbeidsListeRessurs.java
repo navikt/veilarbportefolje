@@ -5,11 +5,11 @@ import io.vavr.collection.List;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestBadGateWayException;
-import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
@@ -127,7 +127,7 @@ public class ArbeidsListeRessurs {
 
         Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
         if (validateVeileder.isInvalid()) {
-            throw new RestTilgangException(validateVeileder.getError());
+            throw new IngenTilgang(validateVeileder.getError());
         }
 
         sjekkTilgangTilEnhet(new Fnr(fnr));
@@ -173,7 +173,7 @@ public class ArbeidsListeRessurs {
 
         Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
         if (validateVeileder.isInvalid()) {
-            throw new RestTilgangException(validateVeileder.getError());
+            throw new IngenTilgang(validateVeileder.getError());
         }
 
         sjekkTilgangTilEnhet(new Fnr(fnr));
