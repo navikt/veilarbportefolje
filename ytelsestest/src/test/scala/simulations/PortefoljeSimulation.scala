@@ -30,8 +30,7 @@ class PortefoljeSimulation extends Simulation {
   private val enhetsFeeder = enheter.map(enhet => Map("enhet" -> enhet.trim)).circular
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
   private val veilederForTildeling2 = System.getProperty("VEIL_2", "X905112")
-  private val brukerForTildeling = System.getProperty("BRUKER_TIL_VEILEDER", "!!CHANGE ME!!")
-  private val brukereForTildeling = System.getProperty("BRUKERE_TIL_VEILEDER", "***REMOVED***,***REMOVED***,***REMOVED***")
+  private val brukereForTildeling = System.getProperty("BRUKERE_TIL_VEILEDER", "!!CHANGE ME!!")
 
   val mapper = new ObjectMapper() with ScalaObjectMapper
 
@@ -113,12 +112,6 @@ class PortefoljeSimulation extends Simulation {
         .check(regex("antallTotalt").exists)
     )
     .exec(
-//      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
-//        .body(Helpers.toBody(List(RequestTildelingVeileder(
-//          brukerFnr = brukerForTildeling,
-//          fraVeilederId = null,
-//          tilVeilederId = veilederForTildeling1
-//        ))))
         Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
           .body(Helpers.toBody(veilederTildelinger(fra = null, til = veilederForTildeling1)))
           .check(status.is(200))
