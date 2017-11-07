@@ -11,7 +11,6 @@ import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
-import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -21,6 +20,7 @@ import java.util.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
+import static no.nav.fo.util.DateUtils.getSolrMax;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
@@ -157,7 +157,7 @@ public class AktivitetUtils {
                 });
     }
 
-    private static void applyAktivitetstatusToDocument(SolrInputDocument document, Set<AktivitetStatus> aktivitetStatuser) {
+    public static void applyAktivitetstatusToDocument(SolrInputDocument document, Set<AktivitetStatus> aktivitetStatuser) {
         if (aktivitetStatuser == null) {
             return;
         }
@@ -170,15 +170,18 @@ public class AktivitetUtils {
         Map<String, String> aktivitTilUtlopsdato = aktivitetStatuser
                 .stream()
                 .filter(AktivitetStatus::isAktiv)
-                .filter(aktivitetStatus -> Objects.nonNull(aktivitetStatus.getNesteUtlop()))
                 .collect(toMap(AktivitetStatus::getAktivitetType,
-                        aktivitetStatus -> DateUtils.iso8601FromTimestamp(aktivitetStatus.getNesteUtlop()),
+                        aktivitetStatus -> DateUtils.toIsoUTC(Optional.ofNullable(aktivitetStatus.getNesteUtlop())
+                                .orElse(getSolrMax())),
                         (v1, v2) -> v2));
 
-        String aktiviteterUtlopsdatoJSON = new JSONObject(aktivitTilUtlopsdato).toString();
+        aktivitTilUtlopsdato.forEach((key, value) -> document.addField(addPrefixForAktivitetUtlopsdato(key), value));
 
         document.addField("aktiviteter", aktiveAktiviteter);
-        document.addField("aktiviteter_utlopsdato_json", aktiviteterUtlopsdatoJSON);
+    }
+
+    public static String addPrefixForAktivitetUtlopsdato(String aktivitet) {
+        return Optional.ofNullable(aktivitet).map( s -> "aktivitet_"+s+"_utlopsdato").orElse(null);
     }
 
     public static Object applyTiltak(List<SolrInputDocument> dokumenter, AktivitetDAO aktivitetDAO) {

@@ -17,8 +17,7 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.util.DateUtils.timestampFromISO8601;
-import static no.nav.fo.util.DateUtils.toLocalDateTime;
+import static no.nav.fo.util.DateUtils.*;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Slf4j
@@ -52,7 +51,7 @@ public class Bruker {
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
     List<String> brukertiltak;
-    Map<String, Timestamp> aktiviteter;
+    Map<String, Timestamp> aktiviteter = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
@@ -82,18 +81,25 @@ public class Bruker {
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
                 .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
                 .setBrukertiltak(getBrukertiltak(document))
-                .setAktiviteter(lagAktiviteterMap( (List) document.get("aktiviteter"), (String) document.get("aktiviteter_utlopsdato_json")))
+                .addAktivitetUtlopsdato("tiltak", dateToTimestamp((Date) document.get("aktivitet_tiltak_utlopsdato")))
+                .addAktivitetUtlopsdato("behandling", dateToTimestamp((Date) document.get("aktivitet_behandling_utlopsdato")))
+                .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp((Date) document.get("aktivitet_sokeavtale_utlopsdato")))
+                .addAktivitetUtlopsdato("stilling", dateToTimestamp((Date) document.get("aktivitet_stilling_utlopsdato")))
+                .addAktivitetUtlopsdato("ijobb", dateToTimestamp((Date) document.get("aktivitet_ijobb_utlopsdato")))
+                .addAktivitetUtlopsdato("samtalereferat", dateToTimestamp((Date) document.get("aktivitet_samtalereferat_utlopsdato")))
+                .addAktivitetUtlopsdato("egen", dateToTimestamp((Date) document.get("aktivitet_egen_utlopsdato")))
+                .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp((Date) document.get("aktivitet_gruppeaktivitet_utlopsdato")))
+                .addAktivitetUtlopsdato("mote", dateToTimestamp((Date) document.get("aktivitet_mote_utlopsdato")))
+                .addAktivitetUtlopsdato("utdanningsaktivitet", dateToTimestamp((Date) document.get("aktivitet_utdanningaktivitet_utlopsdato")))
                 ;
     }
 
-    private static Map<String, Timestamp> lagAktiviteterMap(List<String> aktiviteter, String aktiviteterUtlopsdatoJSON) {
-        if(Objects.isNull(aktiviteter)) {
-            return null;
+    private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
+        if(Objects.isNull(utlopsdato) || isSolrMax(utlopsdato)) {
+            return this;
         }
-        JSONObject jsonObject = Objects.nonNull(aktiviteterUtlopsdatoJSON) ? new JSONObject(aktiviteterUtlopsdatoJSON): null;
-        Map<String, Timestamp> map = new HashMap<>();
-        aktiviteter.forEach( aktivitet -> map.put(aktivitet,toTimestampOrNull(jsonObject,aktivitet)));
-        return map;
+        aktiviteter.put(type, utlopsdato);
+        return this;
     }
 
     private static Timestamp toTimestampOrNull(JSONObject jsonObject, String key) {

@@ -169,9 +169,6 @@ public class AktivitetUtilsTest {
 
         assertThat((ArrayList) solrInputDocument.get("aktiviteter").getValue()).contains("aktivitetstype1");
         assertThat((ArrayList) solrInputDocument.get("aktiviteter").getValue()).doesNotContain("aktivitetstype2");
-        assertThat((String) solrInputDocument.get("aktiviteter_utlopsdato_json").getValue()).contains("aktivitetstype1");
-        assertThat((String) solrInputDocument.get("aktiviteter_utlopsdato_json").getValue()).doesNotContain("aktivitetstype2");
-        assertThat((String) solrInputDocument.get("aktiviteter_utlopsdato_json").getValue()).contains(DateUtils.iso8601FromTimestamp(nyesteUtlop));
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -16,12 +17,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.util.SolrUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.filter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import java.sql.Timestamp;
 
 public class SolrUtilsTest {
 
@@ -102,7 +101,7 @@ public class SolrUtilsTest {
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
-        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString,"","", filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
 
@@ -116,7 +115,7 @@ public class SolrUtilsTest {
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
-        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString,"","", filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(nyeBrukereFilter);
     }
@@ -427,23 +426,23 @@ public class SolrUtilsTest {
         Filtervalg filtervalg = new Filtervalg();
         SolrQuery solrQuery;
         filtervalg.kjonn = singletonList(Kjonn.M);
-        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
 
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:M)");
 
         filtervalg.kjonn = singletonList(Kjonn.K);
-        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:K)");
 
         filtervalg = new Filtervalg();
-        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
         assertThat(solrQuery.getFilterQueries()).containsOnly("");
     }
 
     @Test
     public void skalIkkeLeggePaaFilterQueryHvisIngenFiltervalgErSatt() {
         Filtervalg filtervalg = new Filtervalg();
-        SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104", filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104","","", filtervalg);
         filtervalg.harAktiveFilter();
         assertThat(query.getFilterQueries()).containsOnly("enhet_id:0104");
     }
@@ -454,7 +453,7 @@ public class SolrUtilsTest {
         filter.ytelse = YtelseFilter.DAGPENGER_MED_PERMITTERING;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
+        assertThat(SolrUtils.buildSolrQuery("","","", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
     }
 
     @Test
@@ -463,7 +462,7 @@ public class SolrUtilsTest {
         filter.ytelse = YtelseFilter.DAGPENGER;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
+        assertThat(SolrUtils.buildSolrQuery("","","", filter).getFilterQueries()).contains(
                 "(ytelse:ORDINARE_DAGPENGER OR ytelse:DAGPENGER_MED_PERMITTERING OR ytelse:DAGPENGER_OVRIGE)"
         );
     }
@@ -520,7 +519,7 @@ public class SolrUtilsTest {
 
         Filtervalg filtervalg = new Filtervalg().setTiltakstyper(tiltakstyper);
 
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
         assertThat(solrQuery.getFilterQueries()).contains("(tiltak:tiltak1 OR tiltak:tiltak2)");
     }
 
@@ -528,7 +527,7 @@ public class SolrUtilsTest {
     public void skalLeggeTilTiltakJa() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.JA);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         assertThat(solrQuery.getFilterQueries()).contains("(tiltak:*)");
     }
@@ -537,7 +536,7 @@ public class SolrUtilsTest {
     public void skalLeggeTilTiltakNei() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NEI);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         assertThat(solrQuery.getFilterQueries()).contains("(*:* AND -tiltak:*)");
     }
@@ -546,7 +545,7 @@ public class SolrUtilsTest {
     public void skalIkkeLeggeTilTiltakJaEllerNei() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NA);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         asList(solrQuery.getFilterQueries()).forEach( (filter) -> assertThat(filter).doesNotContain("tiltak"));
     }
@@ -557,9 +556,11 @@ public class SolrUtilsTest {
         aktivitetFiltervalg.put("aktivitet1", AktivitetFiltervalg.JA);
         aktivitetFiltervalg.put("aktivitet2", AktivitetFiltervalg.NEI);
 
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         assertThat(solrQuery.getFilterQueries()).contains("(aktiviteter:aktivitet1) AND (*:* AND -aktiviteter:aktivitet2)");
     }
+
+
 
 }
