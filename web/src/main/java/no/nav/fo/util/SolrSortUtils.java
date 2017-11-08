@@ -2,12 +2,10 @@ package no.nav.fo.util;
 
 import no.nav.fo.domene.AktivitetFiltervalg;
 import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.aktivitet.AktivitetData;
 import org.apache.solr.client.solrj.SolrQuery;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.fo.provider.rest.ValideringsRegler.sortFields;
@@ -24,6 +22,9 @@ public class SolrSortUtils {
         if("valgteaktiviteter".equals(sortField)) {
             return addAktiviteterSort(solrQuery, order, filtervalg.getAktiviteter());
         }
+        if("iavtaltaktivitet".equals(sortField)) {
+            return addAktiviteterSort(solrQuery, order, mapMedAlleAktivitetstatuserSattTilJA());
+        }
         if("fodselsnummer".equals(sortField)) {
             return solrQuery.addSort("fodselsdato", order);
         }
@@ -31,6 +32,12 @@ public class SolrSortUtils {
             return solrQuery.addSort(sortField, order);
         }
         return solrQuery;
+    }
+
+    static Map<String, AktivitetFiltervalg> mapMedAlleAktivitetstatuserSattTilJA() {
+        Map<String, AktivitetFiltervalg> map = new HashMap<>();
+        AktivitetData.aktivitetTyperList.forEach(type -> map.put(type.name(), AktivitetFiltervalg.JA));
+        return map;
     }
 
     static SolrQuery addAktiviteterSort(SolrQuery solrQuery, SolrQuery.ORDER sortOrder, Map<String, AktivitetFiltervalg> aktiviteter) {

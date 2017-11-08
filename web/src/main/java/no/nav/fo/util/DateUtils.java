@@ -74,19 +74,15 @@ public class DateUtils {
         return Optional.ofNullable(date).map(Date::toInstant).map(Timestamp::from).orElse(null);
     }
 
-    public static Long toUnixTime(Timestamp timestamp) {
-        return Optional.ofNullable(timestamp).map(Timestamp::toInstant).map(Instant::toEpochMilli).orElse(null);
-    }
-
-    public static Long toUnixTime(ZonedDateTime zonedDateTime) {
-        return Optional.ofNullable(zonedDateTime).map(ZonedDateTime::toInstant).map(Instant::toEpochMilli).orElse(null);
-    }
-
     public static boolean isSolrMax(Timestamp utlopsdato) {
         return timestampFromISO8601(SOLR_MAX).equals(utlopsdato);
     }
 
     public static Timestamp getSolrMax() {
         return timestampFromISO8601(SOLR_MAX);
+    }
+
+    public static String getSolrMaxAsIsoUtc() {
+        return toIsoUTC(getSolrMax());
     }
 }
