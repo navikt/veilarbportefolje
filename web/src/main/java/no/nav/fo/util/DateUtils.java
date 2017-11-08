@@ -78,6 +78,10 @@ public class DateUtils {
         return timestampFromISO8601(SOLR_MAX).equals(utlopsdato);
     }
 
+    public static boolean isSolrMax(Date date) {
+        return isSolrMax(Optional.ofNullable(date).map(Date::toInstant).map(Instant::toEpochMilli).map(Timestamp::new).orElse(null));
+    }
+
     public static Timestamp getSolrMax() {
         return timestampFromISO8601(SOLR_MAX);
     }

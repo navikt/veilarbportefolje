@@ -11,6 +11,7 @@ import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.BatchConsumer;
+import no.nav.fo.util.DateUtils;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -43,6 +44,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
+import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
 import static no.nav.fo.util.DateUtils.toUtcString;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
@@ -218,7 +220,7 @@ public class SolrServiceImpl implements SolrService {
                 dokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.get().getSistEndretAv().toString());
                 dokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.get().getEndringstidspunkt()));
                 dokument.setField("arbeidsliste_kommentar", arbeidsliste.get().getKommentar());
-                dokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.get().getFrist()));
+                dokument.setField("arbeidsliste_frist", arbeidsliste.map(Arbeidsliste::getFrist).map(DateUtils::toUtcString).orElse(getSolrMaxAsIsoUtc()));
                 dokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.get().getIsOppfolgendeVeileder());
             }
         });

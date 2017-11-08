@@ -34,7 +34,9 @@ public class SolrSortUtils {
         if("etternavn".equals(sortField)) {
             solrQuery.addSort("etternavn", order);
             return solrQuery.addSort("fornavn", order);
-
+        }
+        if("arbeidslistefrist".equals(sortField)) {
+            return solrQuery.addSort("arbeidsliste_frist", order);
         }
         if(sortFields.contains(sortField)) {
             return solrQuery.addSort(sortField, order);
