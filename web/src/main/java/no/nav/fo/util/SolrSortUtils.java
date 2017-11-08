@@ -26,7 +26,7 @@ public class SolrSortUtils {
             return addAktiviteterSort(solrQuery, order, mapMedAlleAktivitetstatuserSattTilJA());
         }
         if("fodselsnummer".equals(sortField)) {
-            return solrQuery.addSort("fodselsdato", order);
+            return solrQuery.addSort("fnr", order);
         }
         if("utlopteaktiviteter".equals(sortField)) {
             return solrQuery.addSort("nyesteutlopteaktivitet", order);
