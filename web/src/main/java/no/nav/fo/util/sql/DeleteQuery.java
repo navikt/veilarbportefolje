@@ -1,11 +1,15 @@
 package no.nav.fo.util.sql;
 
+import lombok.SneakyThrows;
 import no.nav.fo.util.sql.where.WhereClause;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import static no.nav.fo.util.DbUtils.dbTimerNavn;
+import static no.nav.sbl.dialogarena.common.abac.pep.Utils.timed;
 
 public class DeleteQuery {
     private final DataSource ds;
@@ -22,6 +26,7 @@ public class DeleteQuery {
         return this;
     }
 
+    @SneakyThrows
     public int execute() {
         if (tableName == null || this.where == null) {
             throw new SqlUtilsException(
@@ -31,9 +36,10 @@ public class DeleteQuery {
         }
 
         int result;
+        String sql = createDeleteStatement();
         try (Connection conn = ds.getConnection()) {
 
-            PreparedStatement ps = conn.prepareStatement(createDeleteStatement());
+            PreparedStatement ps = timed(dbTimerNavn(sql),() ->conn.prepareStatement(sql));
             where.applyTo(ps, 1);
 
             result = ps.executeUpdate();

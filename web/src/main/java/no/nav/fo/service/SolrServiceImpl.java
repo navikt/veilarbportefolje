@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import lombok.Lombok;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
@@ -166,7 +167,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         String queryString = byggQueryString(enhetId, veilederIdent);
-        return hentBrukere(queryString, sortOrder, sortField, filtervalg);
+        return timed("solr.hentbrukere", () -> hentBrukere(queryString, sortOrder, sortField, filtervalg));
     }
 
     @Override
@@ -356,28 +357,27 @@ public class SolrServiceImpl implements SolrService {
 
         StatusTall statusTall = new StatusTall();
         QueryResponse response;
-        try {
-            response = solrClientSlave.query(solrQuery);
-            long antallTotalt = response.getResults().getNumFound();
-            long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
-            long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
-            long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
-            long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
-            long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
-            long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
-            long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
-            statusTall
-                    .setTotalt(antallTotalt)
-                    .setInaktiveBrukere(antallInaktiveBrukere)
-                    .setNyeBrukere(antallNyeBrukere)
-                    .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
-                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
-                    .setIavtaltAktivitet(antalliavtaltAktivitet)
-                    .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
-                    .setUtlopteAktiviteter(antallUtlopteAktiviteter);
-        } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for enhetsportefølje feilet: {}", solrQuery, e);
-        }
+
+        response = timed("solr.statustall.enhet", () -> Try.of(() -> solrClientSlave.query(solrQuery))
+                .getOrElseThrow(t -> Lombok.sneakyThrow(t)));
+
+        long antallTotalt = response.getResults().getNumFound();
+        long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
+        long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
+        long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
+        long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
+        long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
+        long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
+        long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
+        statusTall
+                .setTotalt(antallTotalt)
+                .setInaktiveBrukere(antallInaktiveBrukere)
+                .setNyeBrukere(antallNyeBrukere)
+                .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
+                .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
+                .setIavtaltAktivitet(antalliavtaltAktivitet)
+                .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
+                .setUtlopteAktiviteter(antallUtlopteAktiviteter);
 
         return statusTall;
     }

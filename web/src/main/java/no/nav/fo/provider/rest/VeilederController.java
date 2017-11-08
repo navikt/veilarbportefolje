@@ -2,7 +2,10 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.domene.*;
+import no.nav.fo.domene.Bruker;
+import no.nav.fo.domene.Filtervalg;
+import no.nav.fo.domene.Portefolje;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
@@ -87,6 +90,8 @@ public class VeilederController {
     @Path("/{veilederident}/statustall")
     public Response hentStatusTall(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
         return createResponse(() -> {
+            Event event = MetricsFactory.createEvent("minoversiktportefolje.statustall.lastet");
+            event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
@@ -98,6 +103,8 @@ public class VeilederController {
     @Path("/{veilederident}/arbeidsliste")
     public Response hentArbeidsliste(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
         return createResponse(() -> {
+            Event event = MetricsFactory.createEvent("minoversiktportefolje.arbeidsliste.lastet");
+            event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 

@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
+import static no.nav.fo.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 
@@ -57,10 +58,11 @@ public class TiltakRepository {
     }
 
     Map<String, List<String>> hentEnhetTilFodselsnummereMap() {
-        List<EnhetTilFnr> enhetTilFnrList = db.query(
-            "SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL",
+        String sql = "SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL";
+        List<EnhetTilFnr> enhetTilFnrList = timed(dbTimerNavn(sql), ()-> db.query(
+            sql,
             new BeanPropertyRowMapper<>(EnhetTilFnr.class)
-        );
+        ));
         return mapEnhetTilFnrs(enhetTilFnrList);
     }
 
@@ -78,10 +80,11 @@ public class TiltakRepository {
     }
 
     void lagreEnhettiltak(List<TiltakForEnhet> tiltakListe) {
+        String sql = "INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)";
         try (final Connection dsConnection =  ds.getConnection()){
-            final PreparedStatement ps = dsConnection.prepareStatement("INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)");
+            final PreparedStatement ps = dsConnection.prepareStatement(sql);
 
-            batchProcess(1, tiltakListe, timed("GR202.insertEnhetTiltak", tiltakForEnhetBatch -> {
+            batchProcess(1, tiltakListe, timed(dbTimerNavn(sql), tiltakForEnhetBatch -> {
                 lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
             }));
         } catch (SQLException e) {

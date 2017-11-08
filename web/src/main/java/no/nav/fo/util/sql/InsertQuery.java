@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.Collections.nCopies;
+import static no.nav.fo.util.DbUtils.dbTimerNavn;
+import static no.nav.fo.util.MetricsUtils.timed;
 
 public class InsertQuery {
     private final JdbcTemplate db;
@@ -25,7 +27,8 @@ public class InsertQuery {
     }
 
     public int execute() {
-        return db.update(createSqlStatement(), insertParams.values().toArray());
+        String sql = createSqlStatement();
+        return timed(dbTimerNavn(sql),() -> db.update(sql, insertParams.values().toArray()));
     }
 
     private String createSqlStatement() {

@@ -1,5 +1,6 @@
 package no.nav.fo.util.sql;
 
+import lombok.Lombok;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,6 +11,7 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
+import static no.nav.sbl.dialogarena.common.abac.pep.Utils.timed;
 
 @Slf4j
 public class UpsertQuery {
@@ -24,7 +26,6 @@ public class UpsertQuery {
         this.tableName = tableName;
         this.setParams = new LinkedHashMap<>();
     }
-
     public UpsertQuery set(String param, Object value) {
         if (this.setParams.containsKey(param)) {
             throw new IllegalArgumentException(format("Param[%s] was already set.", param));
@@ -67,7 +68,13 @@ public class UpsertQuery {
                     }
 
                     log.debug(String.format("[UpsertQuery] Sql: %s \n [UpsertQuery] Params: %s", upsertStatement, this.setParams));
-                    return ps.execute();
+                    Boolean result;
+                    try {
+                        result = timed(upsertStatement, ps::execute);
+                    } catch (Exception e) {
+                        throw Lombok.sneakyThrow(e);
+                    }
+                    return result;
                 });
     }
 

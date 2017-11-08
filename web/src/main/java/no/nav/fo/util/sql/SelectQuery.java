@@ -1,5 +1,7 @@
 package no.nav.fo.util.sql;
 
+import lombok.SneakyThrows;
+import no.nav.fo.util.DbUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 
 import javax.sql.DataSource;
@@ -11,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static no.nav.sbl.dialogarena.common.abac.pep.Utils.timed;
 
 public class SelectQuery<T> {
     private DataSource ds;
@@ -36,14 +40,15 @@ public class SelectQuery<T> {
         return this;
     }
 
+    @SneakyThrows
     public T execute() {
         validate();
-
+        String sql = createSelectStatement();
         try (Connection conn = ds.getConnection();
-             PreparedStatement ps = conn.prepareStatement(createSelectStatement())) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             where.applyTo(ps, 1);
-            ResultSet resultSet = ps.executeQuery();
+            ResultSet resultSet = timed(DbUtils.dbTimerNavn(sql), ps::executeQuery);
             if(!resultSet.next()) {
                 return null;
             }
