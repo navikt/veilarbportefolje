@@ -28,6 +28,9 @@ public class SolrSortUtils {
         if("fodselsnummer".equals(sortField)) {
             return solrQuery.addSort("fodselsdato", order);
         }
+        if("utlopteaktiviteter".equals(sortField)) {
+            return solrQuery.addSort("nyesteutlopteaktivitet", order);
+        }
         if(sortFields.contains(sortField)) {
             return solrQuery.addSort(sortField, order);
         }

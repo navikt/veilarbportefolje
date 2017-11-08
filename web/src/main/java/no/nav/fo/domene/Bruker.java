@@ -1,13 +1,11 @@
 package no.nav.fo.domene;
 
-import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.common.SolrDocument;
-import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -100,11 +98,6 @@ public class Bruker {
         }
         aktiviteter.put(type, utlopsdato);
         return this;
-    }
-
-    private static Timestamp toTimestampOrNull(JSONObject jsonObject, String key) {
-        Try<Timestamp> timestampTry = Try.of(() -> timestampFromISO8601((String) jsonObject.get(key)));
-        return timestampTry.getOrNull();
     }
 
     private static String getDiskresjonskode(SolrDocument document) {
