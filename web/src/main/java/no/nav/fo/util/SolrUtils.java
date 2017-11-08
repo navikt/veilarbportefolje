@@ -9,12 +9,12 @@ import org.apache.solr.client.solrj.response.FacetField;
 import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
-import java.util.logging.Filter;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.SolrSortUtils.addSort;
 
 public class SolrUtils {
     static String TILTAK = "TILTAK";
@@ -44,11 +44,12 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String queryString, Filtervalg filtervalg) {
+
+    public static SolrQuery buildSolrQuery(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery(queryString);
+        addSort(solrQuery, sortOrder, sortField, filtervalg);
         leggTilFiltervalg(solrQuery, filtervalg);
-        solrQuery.addSort("person_id", SolrQuery.ORDER.asc);
         return solrQuery;
     }
 
