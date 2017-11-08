@@ -31,6 +31,11 @@ public class SolrSortUtils {
         if("utlopteaktiviteter".equals(sortField)) {
             return solrQuery.addSort("nyesteutlopteaktivitet", order);
         }
+        if("etternavn".equals(sortField)) {
+            solrQuery.addSort("etternavn", order);
+            return solrQuery.addSort("fornavn", order);
+
+        }
         if(sortFields.contains(sortField)) {
             return solrQuery.addSort(sortField, order);
         }

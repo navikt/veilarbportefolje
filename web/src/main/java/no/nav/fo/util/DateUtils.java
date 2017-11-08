@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class DateUtils {
 
-    private static String SOLR_MAX = "3017-10-07T00:00:00Z";
+    private static final String SOLR_MAX = "3017-10-07T00:00:00Z";
 
     public static Timestamp timestampFromISO8601(String date) {
         Instant instant =  ZonedDateTime.parse(date).toInstant();
