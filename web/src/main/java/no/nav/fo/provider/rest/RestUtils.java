@@ -2,6 +2,7 @@ package no.nav.fo.provider.rest;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.fo.exception.*;
 
 import javax.ws.rs.core.Response;
@@ -16,7 +17,7 @@ class RestUtils {
     private static final Map<Class<? extends Throwable>, Response.Status> statusmap = new HashMap<>();
 
     static {
-        statusmap.put(RestTilgangException.class, Response.Status.FORBIDDEN);
+        statusmap.put(IngenTilgang.class, Response.Status.FORBIDDEN);
         statusmap.put(RestValideringException.class, Response.Status.BAD_REQUEST);
         statusmap.put(RestBadGateWayException.class, Response.Status.BAD_GATEWAY);
         statusmap.put(RestNotFoundException.class, Response.Status.NOT_FOUND);
