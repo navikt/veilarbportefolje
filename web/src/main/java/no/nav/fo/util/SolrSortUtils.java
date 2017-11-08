@@ -75,7 +75,7 @@ public class SolrSortUtils {
     }
 
     public static SolrQuery addPaging(SolrQuery solrQuery, Integer fra, Integer antall) {
-        if(Objects.nonNull(fra) & Objects.nonNull(antall)) {
+        if(Objects.nonNull(fra) && Objects.nonNull(antall)) {
             solrQuery.setStart(fra);
             solrQuery.setRows(antall);
         }
