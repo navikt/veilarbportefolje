@@ -2,10 +2,10 @@ package no.nav.fo.provider.rest;
 
 import io.vavr.Tuple;
 import io.vavr.control.Validation;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
-import no.nav.fo.exception.RestTilgangException;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
@@ -43,7 +43,7 @@ public class TilgangsRegler {
 
     static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new RestTilgangException(format("sjekk av %s feilet, %s", navn, data));
+            throw new IngenTilgang(format("sjekk av %s feilet, %s", navn, data));
         }
     }
 
