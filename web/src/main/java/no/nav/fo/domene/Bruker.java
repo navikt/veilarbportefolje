@@ -93,7 +93,7 @@ public class Bruker {
     }
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
-        if(Objects.isNull(utlopsdato) || isSolrMax(utlopsdato)) {
+        if(Objects.isNull(utlopsdato) || isRandomFutureDate(utlopsdato)) {
             return this;
         }
         aktiviteter.put(type, utlopsdato);

@@ -11,7 +11,7 @@ import org.apache.solr.common.SolrDocument;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import static no.nav.fo.util.DateUtils.isSolrMax;
+import static no.nav.fo.util.DateUtils.isRandomFutureDate;
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
 
 
@@ -43,7 +43,7 @@ public class Arbeidsliste {
     }
 
     private static Date dateIfNotSolrMax(Date date) {
-        return isSolrMax(date) ? null : date;
+        return isRandomFutureDate(date) ? null : date;
     }
 
     @JsonCreator

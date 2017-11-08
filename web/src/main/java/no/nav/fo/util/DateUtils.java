@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class DateUtils {
 
-    private static final String SOLR_MAX = "3017-10-07T00:00:00Z";
+    private static final String RANDOM_FUTURE_DATE = "3017-10-07T00:00:00Z";
 
     public static Timestamp timestampFromISO8601(String date) {
         Instant instant =  ZonedDateTime.parse(date).toInstant();
@@ -74,19 +74,19 @@ public class DateUtils {
         return Optional.ofNullable(date).map(Date::toInstant).map(Timestamp::from).orElse(null);
     }
 
-    public static boolean isSolrMax(Timestamp utlopsdato) {
-        return timestampFromISO8601(SOLR_MAX).equals(utlopsdato);
+    public static boolean isRandomFutureDate(Timestamp utlopsdato) {
+        return timestampFromISO8601(RANDOM_FUTURE_DATE).equals(utlopsdato);
     }
 
-    public static boolean isSolrMax(Date date) {
-        return isSolrMax(Optional.ofNullable(date).map(Date::toInstant).map(Instant::toEpochMilli).map(Timestamp::new).orElse(null));
+    public static boolean isRandomFutureDate(Date date) {
+        return isRandomFutureDate(Optional.ofNullable(date).map(Date::toInstant).map(Instant::toEpochMilli).map(Timestamp::new).orElse(null));
     }
 
-    public static Timestamp getSolrMax() {
-        return timestampFromISO8601(SOLR_MAX);
+    public static Timestamp getRandomFutureDate() {
+        return timestampFromISO8601(RANDOM_FUTURE_DATE);
     }
 
     public static String getSolrMaxAsIsoUtc() {
-        return toIsoUTC(getSolrMax());
+        return toIsoUTC(getRandomFutureDate());
     }
 }
