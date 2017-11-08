@@ -55,31 +55,6 @@ public class BrukerTest {
     }
 
     @Test
-    public void skalLeggeTilAlleAktiviteter() {
-        SolrDocument solrDocument = createSolrDocument(null);
-        solrDocument.addField("aktiviteter", "aktivitet1");
-        solrDocument.addField("aktiviteter", "aktivitet2");
-        Bruker bruker = Bruker.of(solrDocument);
-        Map<String, Timestamp> map = bruker.getAktiviteter();
-        assertThat(map).containsOnlyKeys("aktivitet1", "aktivitet2");
-        assertThat(map.get("aktivitet1")).isNull();
-        assertThat(map.get("aktivitet2")).isNull();
-    }
-
-    @Test
-    public void skalLeggeTilDatoPaAktiviteter() {
-        SolrDocument solrDocument = createSolrDocument(null);
-        solrDocument.addField("aktiviteter", "aktivitet1");
-        solrDocument.addField("aktiviteter", "aktivitet2");
-        solrDocument.addField("aktiviteter_utlopsdato_json", "{\"aktivitet1\":\"1970-01-01T01:01:01Z\"}");
-        Bruker bruker = Bruker.of(solrDocument);
-        Map<String, Timestamp> map = bruker.getAktiviteter();
-        assertThat(map).containsOnlyKeys("aktivitet1", "aktivitet2");
-        assertThat(map.get("aktivitet1")).isNotNull();
-        assertThat(map.get("aktivitet2")).isNull();
-    }
-
-    @Test
     public void skalIkkeTryneOmAktiviteterErNull() {
         SolrDocument solrDocument = createSolrDocument(null);
         Bruker bruker = Bruker.of(solrDocument);
@@ -122,15 +97,6 @@ public class BrukerTest {
         map.put("a1", t1 );
         Bruker bruker = new Bruker().setAktiviteter(map);
         assertThat(bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0("a1")).isEqualTo(t1);
-    }
-
-    @Test
-    public void skalReturnereEpoch0OmIngenUtlopsdatoerFinnesEllerErFoerNaa() {
-        Timestamp t1 = new Timestamp(1000000000);
-        Map<String, Timestamp> map = new HashMap<>();
-        map.put("a1", t1 );
-        Bruker bruker = new Bruker();
-        assertThat(bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0("aktiviteter_finnesikke")).isEqualTo(new Timestamp(0));
     }
 
     private SolrDocument createSolrDocument(String kode) {

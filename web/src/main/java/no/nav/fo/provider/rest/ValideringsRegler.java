@@ -21,9 +21,9 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 
-class ValideringsRegler {
+public class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
-    private static List<String> sortFields = asList(
+    public static List<String> sortFields = asList(
             "ikke_satt",
             "valgteaktiviteter",
             "etternavn",

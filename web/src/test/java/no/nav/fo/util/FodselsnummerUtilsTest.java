@@ -37,14 +37,14 @@ public class FodselsnummerUtilsTest {
         String dnummer2 = "50108000398"; //TESTFAMILIE
         String dnummer3 = "50108000399"; //TESTFAMILIE
 
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer)).isEqualTo(10);
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer)).isEqualTo(10);
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer2)).isEqualTo(10);
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer3)).isEqualTo(10);
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer4)).isEqualTo(10);
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer1)).isEqualTo(10);
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer2)).isEqualTo(10);
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer3)).isEqualTo(10);
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer)).isEqualTo("10");
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer)).isEqualTo("10");
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer2)).isEqualTo("10");
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer3)).isEqualTo("10");
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer4)).isEqualTo("10");
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer1)).isEqualTo("10");
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer2)).isEqualTo("10");
+        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer3)).isEqualTo("10");
     }
 
     @Test

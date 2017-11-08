@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PortefoljeUtilsTest {
@@ -32,7 +33,7 @@ public class PortefoljeUtilsTest {
     public void portefoljeSkalHaRiktigInnhold() {
         int fra = 1;
         List<Bruker> subListe = PortefoljeUtils.getSublist(brukere, fra, 3);
-        Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, subListe,"0106", fra );
+        Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere.size(), subListe,"0106", fra );
 
         assertThat(portefolje.getBrukere().size()).isEqualTo(subListe.size());
         assertThat(portefolje.getAntallReturnert()).isEqualTo(subListe.size());

@@ -45,7 +45,7 @@ public class EnhetControllerTest {
 
         enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
-        verify(solrService, times(1)).hentBrukere(any(), any(), any(), any(), any());
+        verify(solrService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
 }

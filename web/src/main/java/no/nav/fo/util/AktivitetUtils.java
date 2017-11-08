@@ -4,14 +4,10 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.domene.*;
-import no.nav.fo.domene.aktivitet.AktivitetBrukerOppdatering;
-import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
-import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
+import no.nav.fo.domene.aktivitet.*;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
-import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -21,6 +17,7 @@ import java.util.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
+import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
@@ -157,7 +154,7 @@ public class AktivitetUtils {
                 });
     }
 
-    private static void applyAktivitetstatusToDocument(SolrInputDocument document, Set<AktivitetStatus> aktivitetStatuser) {
+    public static void applyAktivitetstatusToDocument(SolrInputDocument document, Set<AktivitetStatus> aktivitetStatuser) {
         if (aktivitetStatuser == null) {
             return;
         }
@@ -167,18 +164,35 @@ public class AktivitetUtils {
                 .map(AktivitetStatus::getAktivitetType)
                 .collect(toList());
 
-        Map<String, String> aktivitTilUtlopsdato = aktivitetStatuser
+        Map<String, String> eksisterendeAktiviteterTilUtlopsdato = aktivitetStatuser
                 .stream()
-                .filter(AktivitetStatus::isAktiv)
-                .filter(aktivitetStatus -> Objects.nonNull(aktivitetStatus.getNesteUtlop()))
-                .collect(toMap(AktivitetStatus::getAktivitetType,
-                        aktivitetStatus -> DateUtils.iso8601FromTimestamp(aktivitetStatus.getNesteUtlop()),
-                        (v1, v2) -> v2));
+                .collect(toMap(status -> status.getAktivitetType().toLowerCase(),
+                        AktivitetUtils::statusToIsoUtcString,
+        (v1, v2) -> v2));
 
-        String aktiviteterUtlopsdatoJSON = new JSONObject(aktivitTilUtlopsdato).toString();
+        Map<String, String> alleAktiviteterTilUtlopsdato = leggTilSolrMaxOmAktivitetIkkeEksisterer(eksisterendeAktiviteterTilUtlopsdato);
+
+        alleAktiviteterTilUtlopsdato.forEach((key, value) -> document.addField(addPrefixForAktivitetUtlopsdato(key), value));
 
         document.addField("aktiviteter", aktiveAktiviteter);
-        document.addField("aktiviteter_utlopsdato_json", aktiviteterUtlopsdatoJSON);
+    }
+
+
+    private static Map<String, String> leggTilSolrMaxOmAktivitetIkkeEksisterer(Map<String, String> aktiviteter) {
+        AktivitetData.aktivitetTyperList.stream().map(Enum::name).forEach(aktivitet -> {
+            if(!aktiviteter.containsKey(aktivitet)) {
+                aktiviteter.put(aktivitet, getSolrMaxAsIsoUtc());
+            }
+        });
+        return aktiviteter;
+    }
+
+    private static String statusToIsoUtcString(AktivitetStatus status) {
+        return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getSolrMaxAsIsoUtc());
+    }
+
+    public static String addPrefixForAktivitetUtlopsdato(String aktivitet) {
+        return Optional.ofNullable(aktivitet).map( s -> "aktivitet_"+s+"_utlopsdato").orElse(null);
     }
 
     public static Object applyTiltak(List<SolrInputDocument> dokumenter, AktivitetDAO aktivitetDAO) {
