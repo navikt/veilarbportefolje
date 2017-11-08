@@ -167,7 +167,7 @@ public class AktivitetUtils {
         Map<String, String> eksisterendeAktiviteterTilUtlopsdato = aktivitetStatuser
                 .stream()
                 .collect(toMap(status -> status.getAktivitetType().toLowerCase(),
-                        AktivitetUtils::statusToisoUtcString,
+                        AktivitetUtils::statusToIsoUtcString,
         (v1, v2) -> v2));
 
         Map<String, String> alleAktiviteterTilUtlopsdato = leggTilSolrMaxOmAktivitetIkkeEksisterer(eksisterendeAktiviteterTilUtlopsdato);
@@ -187,7 +187,7 @@ public class AktivitetUtils {
         return aktiviteter;
     }
 
-    private static String statusToisoUtcString(AktivitetStatus status) {
+    private static String statusToIsoUtcString(AktivitetStatus status) {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getSolrMaxAsIsoUtc());
     }
 
