@@ -8,9 +8,9 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.FantIngenYtelseMappingException;
+import no.nav.fo.loependeytelser.LoependeVedtak;
+import no.nav.fo.loependeytelser.LoependeYtelser;
 import no.nav.fo.util.MetricsUtils;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;

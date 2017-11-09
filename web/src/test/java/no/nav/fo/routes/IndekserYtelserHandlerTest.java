@@ -5,7 +5,7 @@ import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerinformasjonFraFil;
 import no.nav.fo.domene.YtelseMapping;
 import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
-import no.nav.melding.virksomhet.loependeytelser.v1.*;
+import no.nav.fo.loependeytelser.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

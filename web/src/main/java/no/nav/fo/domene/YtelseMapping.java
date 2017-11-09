@@ -1,6 +1,6 @@
 package no.nav.fo.domene;
 
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.fo.loependeytelser.LoependeVedtak;
 
 import java.util.Optional;
 import java.util.function.Predicate;
