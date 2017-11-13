@@ -139,6 +139,22 @@ public class IndekserYtelserHandlerTest {
         assertThat(oppdateringer.get(0).getAapmaxtidUkeFasett()).isNull();
     }
 
+    @Test
+    public void lagreYtelserMedNullVerdiPaaAAPForAaTesteTransisjonsXSD() {
+        LoependeVedtak vedtak = lagVedtakMedNullverdiAAP("10108000397");
+        LoependeYtelser ytelser = lagLoependeYtelser(asList(vedtak));
+
+        handler.lagreYtelser(ytelser);
+
+        verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
+
+        List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
+        assertThat(oppdateringer).hasSize(1);
+
+        assertThat(captor.getValue()).hasSize(1);
+        assertThat(oppdateringer.get(0).getPersonid()).isNotNull();
+    }
+
     private LoependeYtelser lagLoependeYtelser(List<LoependeVedtak> vedtak) {
         LoependeYtelser ytelser = new LoependeYtelser();
 
@@ -157,6 +173,27 @@ public class IndekserYtelserHandlerTest {
 
     private LoependeVedtak lagVedtak(String fnr, String sakstype, String rettighetstype) {
         return lagVedtak(fnr, sakstype, rettighetstype, BigInteger.ONE, BigInteger.ONE);
+    }
+
+    private LoependeVedtak lagVedtakMedNullverdiAAP(String fnr) {
+        LoependeVedtak vedtak = new LoependeVedtak();
+        AAPtellere aapTellere = new AAPtellere();
+
+        vedtak.setPersonident(fnr);
+
+        aapTellere.setAntallUkerIgjen(BigInteger.ONE);
+        aapTellere.setAntallDagerIgjen(BigInteger.ONE);
+        aapTellere.setAntallDagerUnntak(null);
+        aapTellere.setAntallDagerIgjenUnntak(null);
+
+        vedtak.setAaptellere(aapTellere);
+
+        vedtak.setSakstypeKode("AA");
+        vedtak.setRettighetstypeKode("AAP");
+
+        settVedtaksperiode(vedtak);
+
+        return vedtak;
     }
 
     private LoependeVedtak lagVedtak(String fnr, String sakstype, String rettighetstype, BigInteger uker, BigInteger dager) {
@@ -178,20 +215,24 @@ public class IndekserYtelserHandlerTest {
             aaptellere.setAntallDagerIgjen(dager);
             vedtak.setAaptellere(aaptellere);
 
-            try {
-                Periode periode = new Periode();
-                LocalDate now = LocalDate.now().plusDays(10);
-                GregorianCalendar gcal = GregorianCalendar.from(now.atStartOfDay(ZoneId.systemDefault()));
-                XMLGregorianCalendar xcal = null;
-                xcal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
-
-                periode.setTom(xcal);
-                vedtak.setVedtaksperiode(periode);
-            } catch (DatatypeConfigurationException e) {
-                throw new RuntimeException(e);
-            }
+            settVedtaksperiode(vedtak);
         }
 
         return vedtak;
+    }
+
+    private void settVedtaksperiode(LoependeVedtak vedtak) {
+        try {
+            Periode periode = new Periode();
+            LocalDate now = LocalDate.now().plusDays(10);
+            GregorianCalendar gcal = GregorianCalendar.from(now.atStartOfDay(ZoneId.systemDefault()));
+            XMLGregorianCalendar xcal = null;
+            xcal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
+
+            periode.setTom(xcal);
+            vedtak.setVedtaksperiode(periode);
+        } catch (DatatypeConfigurationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
