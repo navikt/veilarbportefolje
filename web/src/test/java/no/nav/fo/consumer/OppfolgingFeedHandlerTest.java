@@ -28,9 +28,6 @@ import static org.mockito.Mockito.*;
 public class OppfolgingFeedHandlerTest {
 
     @Mock
-    private OppfolgingFeedRepository oppfolgingFeedRepository;
-
-    @Mock
     private ArbeidslisteService arbeidslisteService;
 
     @Mock
