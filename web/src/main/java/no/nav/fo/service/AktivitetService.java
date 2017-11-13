@@ -68,10 +68,6 @@ public class AktivitetService {
 
     }
 
-    public void utledOgIndekserAktivitetstatuserForAktoerid(AktoerId aktoerid) {
-        persistentOppdatering.lagre(hentAktivitetBrukerOppdatering(aktoerid, aktoerService, aktivitetDAO));
-    }
-
     public void utledOgIndekserAktivitetstatuserForAktoerid(List<AktoerId> aktoerIds) {
         List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds,aktoerService,aktivitetDAO);
         persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);

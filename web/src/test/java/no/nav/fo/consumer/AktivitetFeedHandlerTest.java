@@ -120,25 +120,7 @@ public class AktivitetFeedHandlerTest {
 
         verify(aktivitetDAOMock, times(3)).upsertAktivitet(any(AktivitetDataFraFeed.class));
     }
-
-    @Test
-    public void skalIkkeIndeksereOmBrukerIkkeErUnderOppfolging() {
-        PersonId personId = PersonId.of("123123");
-        AktoerId aktoerId = AktoerId.of("AktoerID1");
-        Map<AktoerId, Optional<PersonId>> idMap = new HashMap<>();
-        idMap.put(aktoerId, Optional.of(personId));
-
-        when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(idMap);
-        Map<PersonId, Oppfolgingstatus> oppfolgingsstatuser = new HashMap<>();
-        oppfolgingsstatuser.put(personId, new Oppfolgingstatus().setOppfolgingsbruker(false));
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(Try.success(oppfolgingsstatuser));
-
-        aktivitetFeedHandler.call("dontcare", Collections.singletonList(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true)));
-
-        verify(aktivitetServiceMock, never()).utledOgIndekserAktivitetstatuserForAktoerid(any(AktoerId.class));
-        verify(solrService, times(1)).slettBrukere(any());
-    }
-
+    
     @Test
     public void skalOppdatereStatusForBrukerUtenAktiviteter() {
         aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService, aktivitetDAO);
