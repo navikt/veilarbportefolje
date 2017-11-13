@@ -52,7 +52,7 @@ public class AktivitetService {
         log.info("Aktivitetstatuser for {} brukere utledet og lagret i databasen", aktoerider.size());
     }
 
-    void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
+    private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
 
         timed(
                 "aktiviteter.utled.statuser",
