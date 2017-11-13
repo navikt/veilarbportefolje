@@ -9,7 +9,6 @@ import no.nav.fo.domene.Oppfolgingstatus;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.SolrService;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +26,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OppfolgingFeedHandlerTest {
-
-    @Mock
-    private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
 
     @Mock
     private OppfolgingFeedRepository oppfolgingFeedRepository;
@@ -51,7 +47,7 @@ public class OppfolgingFeedHandlerTest {
 
     @Before
     public void resetMocks() {
-        reset(oppdaterBrukerdataFletter,arbeidslisteService,brukerRepository,aktoerService,solrService);
+        reset(arbeidslisteService,brukerRepository,aktoerService,solrService);
     }
 
     @Test

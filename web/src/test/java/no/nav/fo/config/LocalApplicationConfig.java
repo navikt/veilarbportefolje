@@ -3,7 +3,6 @@ package no.nav.fo.config;
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientMock;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
@@ -42,11 +41,6 @@ public class LocalApplicationConfig implements ApiApplication{
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean
-    public OppdaterBrukerdataFletter tilordneVeilederFletter() {
-        return new OppdaterBrukerdataFletter();
     }
 
     @Bean

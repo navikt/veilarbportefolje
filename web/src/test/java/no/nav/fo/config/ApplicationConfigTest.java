@@ -45,11 +45,6 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() {
-        return new OppdaterBrukerdataFletter();
-    }
-
-    @Bean
     public PersistentOppdatering persistentOppdatering() {
         return new PersistentOppdatering();
     }

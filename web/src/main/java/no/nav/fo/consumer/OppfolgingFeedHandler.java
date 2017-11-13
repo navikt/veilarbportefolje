@@ -12,7 +12,6 @@ import no.nav.fo.feed.FeedUtils;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.SolrService;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -33,7 +32,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     public static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
 
-    private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private AktoerService aktoerService;
@@ -41,13 +39,11 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private OppfolgingFeedRepository oppfolgingFeedRepository;
 
     @Inject
-    public OppfolgingFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
-                                 ArbeidslisteService arbeidslisteService,
+    public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
                                  AktoerService aktoerService,
                                  SolrService solrService,
                                  OppfolgingFeedRepository oppfolgingFeedRepository) {
-        this.oppdaterBrukerdataFletter = oppdaterBrukerdataFletter;
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
         this.aktoerService = aktoerService;

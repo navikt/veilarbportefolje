@@ -120,7 +120,7 @@ public class AktivitetFeedHandlerTest {
 
         verify(aktivitetDAOMock, times(3)).upsertAktivitet(any(AktivitetDataFraFeed.class));
     }
-    
+
     @Test
     public void skalOppdatereStatusForBrukerUtenAktiviteter() {
         aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService, aktivitetDAO);

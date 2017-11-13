@@ -58,11 +58,6 @@ public class ComponentTestConfig implements ApiApplication {
     }
 
     @Bean
-    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() {
-        return new OppdaterBrukerdataFletter();
-    }
-
-    @Bean
     public SolrService solrService() {
         return new SolrServiceMock();
     }
