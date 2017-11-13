@@ -121,13 +121,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalReturnerePersonidFraDB() {
-        List<Map<String, Object>> mapping = brukerRepository.retrievePersonid("11111111");
-        String personid = (String) mapping.get(0).get("PERSONID");
-        Assertions.assertThat(personid).isEqualTo("222222");
-    }
-
-    @Test
     public void skalOppdatereOmBrukerFinnes() {
         Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
             LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, true);
@@ -395,29 +388,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalHenteOppfolgingstatus() throws Exception {
-        PersonId personId = PersonId.of("123456");
-
-        insert(jdbcTemplate, OPPFOLGINGSBRUKER)
-            .value("PERSON_ID", personId.toString())
-            .value("FODSELSNR", "123123")
-            .value(KVALIFISERINGSGRUPPEKODE, "TESTKODE")
-            .value(FORMIDLINGSGRUPPEKODE, "TESTKODE")
-            .execute();
-        insert(jdbcTemplate, BRUKERDATA)
-            .value("PERSONID", personId.toString())
-            .value("OPPFOLGING", "J")
-            .value("VEILEDERIDENT", "TESTIDENT")
-            .execute();
-
-        Oppfolgingstatus status = brukerRepository.retrieveOppfolgingstatus(personId).get();
-        assertEquals(status.getFormidlingsgruppekode(), "TESTKODE");
-        assertEquals(status.getServicegruppekode(), "TESTKODE");
-        assertEquals(status.getVeileder(), "TESTIDENT");
-        assertTrue(status.isOppfolgingsbruker());
-    }
-
-    @Test
     public void skalOppdatereMetadata() throws Exception {
         Date date = new Date();
 
@@ -427,23 +397,6 @@ public class BrukerRepositoryTest {
                 .get(0)
                 .get("oppfolging_sist_oppdatert");
         assertEquals(date, upDated);
-    }
-
-    @Test
-    public void skalSletteBrukerdata() throws Exception {
-        Brukerdata brukerdata = new Brukerdata()
-            .setPersonid("123456")
-            .setAktoerid("AKTOERID")
-            .setVeileder("VEIELDER");
-
-        brukerRepository.upsertBrukerdata(brukerdata);
-
-        assertFalse(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
-
-        brukerRepository.deleteBrukerdata(PersonId.of("123456"));
-
-        assertTrue(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
-
     }
 
     @Test
