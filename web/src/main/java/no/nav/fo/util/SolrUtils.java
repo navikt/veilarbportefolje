@@ -64,59 +64,6 @@ public class SolrUtils {
         }
     }
 
-    private static <S extends Comparable<S>> List<Bruker> sorterBrukerePaaFelt(List<Bruker> brukere, String sortOrder, Function<Bruker, S> sortField) {
-        boolean ascending = "ascending".equals(sortOrder);
-
-        Comparator<S> allowNullComparator = (o1, o2) -> {
-            if (o1 == null && o2 == null) return 0;
-            if (o1 == null) return -1;
-            if (o2 == null) return 1;
-
-            if (o1 instanceof String && o2 instanceof String) {
-                return collator.compare(o1, o2);
-            }
-            return o1.compareTo(o2);
-        };
-
-        Comparator<Bruker> fieldComparator = Comparator.comparing(sortField, allowNullComparator);
-        if (!ascending) {
-            fieldComparator = fieldComparator.reversed();
-        }
-
-        Comparator<Bruker> comparator = brukerErNyComparator().thenComparing(fieldComparator);
-
-        brukere.sort(comparator);
-        return brukere;
-    }
-
-    static Comparator<Bruker> setComparatorSortOrder(Comparator<Bruker> comparator, String sortOrder) {
-        return sortOrder.equals("descending") ? comparator.reversed() : comparator;
-    }
-
-    public static Comparator<Bruker> brukerErNyComparator() {
-        return (brukerA, brukerB) -> {
-
-            boolean brukerAErNy = brukerA.getVeilederId() == null;
-            boolean brukerBErNy = brukerB.getVeilederId() == null;
-
-            if (brukerAErNy && !brukerBErNy) {
-                return -1;
-            } else if (!brukerAErNy && brukerBErNy) {
-                return 1;
-            } else {
-                return 0;
-            }
-        };
-    }
-
-    private static <S, T> Comparator<S> norskComparator(final Function<S, T> keyExtractor) {
-        return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
-    }
-
-    static Comparator<Bruker> brukerNavnComparator() {
-        return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
-    }
-
     public static <T> String orStatement(List<T> filter, Function<T, String> mapper) {
         if (filter == null || filter.isEmpty()) {
             return "";
