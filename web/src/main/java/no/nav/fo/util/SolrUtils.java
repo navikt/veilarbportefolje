@@ -89,41 +89,6 @@ public class SolrUtils {
         return brukere;
     }
 
-    private static Map<String, Function<Bruker, Comparable>> sortFieldMap = new HashMap<String, Function<Bruker, Comparable>>() {{
-        put("etternavn", Bruker::getEtternavn);
-        put("fodselsnummer", Bruker::getFnr);
-        put("utlopsdato", Bruker::getUtlopsdato);
-        put("aapmaxtiduke", Bruker::getAapmaxtidUke);
-        put("dagputlopuke", Bruker::getDagputlopUke);
-        put("permutlopuke", Bruker::getPermutlopUke);
-        put("arbeidslistefrist", Bruker::getArbeidslisteFrist);
-        put("venterpasvarfranav", Bruker::getVenterPaSvarFraNAV);
-        put("venterpasvarfrabruker", Bruker::getVenterPaSvarFraBruker);
-        put("utlopteaktiviteter", Bruker::getNyesteUtlopteAktivitet);
-        put("iavtaltaktivitet", Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
-    }};
-
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Filtervalg filtervalg) {
-        if (sortFieldMap.containsKey(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
-        }
-        if(Objects.nonNull(sortField) && sortField.equals("valgteaktiviteter")) {
-            List<String> aktivitetListe = filtervalg.aktiviteter
-                    .entrySet()
-                    .stream()
-                    .filter(map -> AktivitetFiltervalg.JA.equals(map.getValue()))
-                    .map(map -> map.getKey())
-                    .collect(Collectors.toList());
-
-            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(aktivitetListe));
-        }
-
-        brukere.sort(brukerErNyComparator());
-        return brukere;
-    }
-
-
-
     static Comparator<Bruker> setComparatorSortOrder(Comparator<Bruker> comparator, String sortOrder) {
         return sortOrder.equals("descending") ? comparator.reversed() : comparator;
     }
