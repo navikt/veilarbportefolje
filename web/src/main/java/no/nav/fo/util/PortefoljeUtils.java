@@ -20,10 +20,6 @@ public class PortefoljeUtils {
                 .setFraIndex(fra);
     }
 
-    public static List<Bruker> getSublist(List<Bruker> brukere, int fra, int antall) {
-        return brukere.stream().skip(fra).limit(antall).collect(toList());
-    }
-
     public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String token, PepClient pepClient) {
         return brukere.stream()
                 .map( bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, token, pepClient))
