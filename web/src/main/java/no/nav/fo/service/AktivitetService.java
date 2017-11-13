@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static io.vavr.control.Try.run;
-import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.MetricsUtils.timed;
 

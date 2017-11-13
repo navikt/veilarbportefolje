@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.common.SolrDocument;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.Collections.emptyList;

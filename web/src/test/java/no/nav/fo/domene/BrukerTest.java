@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import static no.nav.fo.util.DateUtils.toLocalDateTime;

@@ -2,7 +2,9 @@ package no.nav.fo.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.fo.util.sql.*;
+import no.nav.fo.util.sql.SqlUtils;
+import no.nav.fo.util.sql.UpdateBatchQuery;
+import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 

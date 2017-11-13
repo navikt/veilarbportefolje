@@ -9,7 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static no.nav.fo.util.UnderOppfolgingRegler.ARBEIDSOKERKODER;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.reset;
 
 @RunWith(MockitoJUnitRunner.class)

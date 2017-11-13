@@ -2,7 +2,6 @@ package no.nav.fo.consumer;
 
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.Oppfolgingstatus;
