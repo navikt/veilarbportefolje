@@ -72,7 +72,7 @@ public class DiagramControllerTest {
     public void setUp() throws Exception {
         controller = new DiagramController(brukertilgangService, solr);
         when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(BRUKERE);
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(BRUKERE.size(),BRUKERE));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class DiagramControllerTest {
         List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(brukere);
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
@@ -123,7 +123,7 @@ public class DiagramControllerTest {
         List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(brukere);
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
 

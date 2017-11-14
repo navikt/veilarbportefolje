@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @Accessors(chain = true)
 public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInformasjon> {
 
-    public static final String FEED_NAME = "situasjon";
+    public static final String FEED_NAME = "oppfolging";
 
     private String aktoerid;
     private String veileder;

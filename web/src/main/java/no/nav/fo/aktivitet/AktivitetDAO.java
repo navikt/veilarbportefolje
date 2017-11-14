@@ -2,6 +2,7 @@ package no.nav.fo.aktivitet;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktivitetTyper;
@@ -15,7 +16,7 @@ import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.inject.Inject;
+import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -24,15 +25,22 @@ import static java.util.stream.Collectors.*;
 import static no.nav.fo.util.DbUtils.boolTo0OR1;
 import static no.nav.fo.util.DbUtils.parse0OR1;
 
+@Slf4j
 public class AktivitetDAO {
 
     private static final String BRUKERSTATUS_AKTIVITETER = "BRUKERSTATUS_AKTIVITETER";
+    private static final String AKTIVITETER = "AKTIVITETER";
+    private static final String AKTIVITETID = "AKTIVITETID";
 
-    @Inject
     private JdbcTemplate db;
-
-    @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private DataSource ds;
+
+    public AktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
+        this.db = db;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.ds = ds;
+    }
 
 
     public void slettAlleAktivitetstatus(String aktivitettype) {
@@ -74,6 +82,12 @@ public class AktivitetDAO {
             }
         });
 
+        aktoerids.forEach( aktoerid -> {
+            if(!aktoerTilAktiviteterMap.containsKey(aktoerid)) {
+                aktoerTilAktiviteterMap.put(aktoerid, new ArrayList<>());
+            }
+        });
+
         aktoerTilAktiviteterMap.forEach((key, value) -> aktoerAktiviteter.add(new AktoerAktiviteter(key).setAktiviteter(value)));
 
         return aktoerAktiviteter;
@@ -89,6 +103,13 @@ public class AktivitetDAO {
 
     public void upsertAktivitet(AktivitetDataFraFeed aktivitet) {
         getAktivitetUpsertQuery(this.db, aktivitet).execute();
+    }
+
+    public void deleteById(String aktivitetid) {
+        log.info("Sletter alle aktiviteter med id {}", aktivitetid);
+        SqlUtils.delete(ds, AKTIVITETER)
+                .where(WhereClause.equals(AKTIVITETID, aktivitetid))
+                .execute();
     }
 
     void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {
@@ -194,6 +215,12 @@ public class AktivitetDAO {
             .value("AKTIVITETTYPE", aktivitetstype)
             .value("AKTOERID", aktoerid)
             .value("NESTE_UTLOPSDATO", nesteUtlopsdato);
+    }
+
+    public void slettutlopsdatoForAktivitet() {
+        SqlUtils.update(db, "bruker_data")
+                .set("NYESTEUTLOPTEAKTIVITET", null)
+                .execute();
     }
 
     private String hentBrukertiltakForListeAvFnrSQL() {

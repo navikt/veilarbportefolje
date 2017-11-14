@@ -1,12 +1,8 @@
 package no.nav.fo.domene;
 
 import no.nav.fo.exception.YtelseManglerTOMDatoException;
-import no.nav.melding.virksomhet.loependeytelser.v1.AAPtellere;
-import no.nav.melding.virksomhet.loependeytelser.v1.Dagpengetellere;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 
-import java.math.BigInteger;
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
 public class Utlopsdato {

@@ -3,7 +3,8 @@ package no.nav.fo.config;
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
-import no.nav.fo.service.*;
+import no.nav.fo.service.PepClient;
+import no.nav.fo.service.PepClientMock;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,11 +15,9 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
-import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
 
 @EnableAspectJAutoProxy
 @EnableScheduling
@@ -34,18 +33,14 @@ import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
         AbacContext.class,
         CacheConfig.class,
         RestConfig.class,
-        AktorConfig.class
+        AktorConfig.class,
+        FeedConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication{
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean
-    public OppdaterBrukerdataFletter tilordneVeilederFletter() {
-        return new OppdaterBrukerdataFletter();
     }
 
     @Bean
@@ -67,11 +62,4 @@ public class LocalApplicationConfig implements ApiApplication{
     public HovedindekseringScheduler hovedindekseringScheduler() {
         return new HovedindekseringScheduler();
     }
-
-
-    @Override
-    public void startup(ServletContext servletContext) {
-        forwardTjenesterTilApi(servletContext);
-    }
-
 }

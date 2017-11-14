@@ -1,0 +1,1 @@
+ALTER TABLE METADATA ALTER COLUMN situasjon_sist_oppdatert RENAME TO oppfolging_sist_oppdatert;

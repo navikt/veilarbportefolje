@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import lombok.Lombok;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
@@ -10,6 +11,7 @@ import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.BatchConsumer;
+import no.nav.fo.util.DateUtils;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -31,7 +33,6 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,8 +44,10 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
+import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
 import static no.nav.fo.util.DateUtils.toUtcString;
 import static no.nav.fo.util.MetricsUtils.timed;
+import static no.nav.fo.util.SolrSortUtils.addPaging;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
@@ -97,6 +100,7 @@ public class SolrServiceImpl implements SolrService {
 
         final int[] antallBrukere = {0};
         deleteAllDocuments();
+        commit();
 
         BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
             antallBrukere[0] += dokumenter.size();
@@ -152,16 +156,27 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
+    public void populerIndeksForPersonids(List<PersonId> personIds) {
+        List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds);
+        indekserDokumenter(dokumenter);
+    }
+
     public void indekserDokumenter(List<SolrInputDocument> dokumenter) {
         leggDataTilSolrDocument(dokumenter);
         addDocumentsToIndex(dokumenter);
     }
 
     @Override
-    public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
+    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         String queryString = byggQueryString(enhetId, veilederIdent);
-        return hentBrukere(queryString, sortOrder, sortField, filtervalg);
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg, fra, antall);
     }
+
+    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
+        String queryString = byggQueryString(enhetId, veilederIdent);
+        return hentBrukere(queryString, sortOrder, sortField, filtervalg, null, null);
+    }
+
 
     @Override
     public Either<Throwable, List<Bruker>> query(String query) {
@@ -187,7 +202,7 @@ public class SolrServiceImpl implements SolrService {
         BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
         timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, aktivitetDAO), tagsAppeder);
         timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
-        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO, this.datofilterTiltak), tagsAppeder);
+        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO), tagsAppeder);
     }
 
     static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
@@ -205,24 +220,21 @@ public class SolrServiceImpl implements SolrService {
                 dokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.get().getSistEndretAv().toString());
                 dokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.get().getEndringstidspunkt()));
                 dokument.setField("arbeidsliste_kommentar", arbeidsliste.get().getKommentar());
-                dokument.setField("arbeidsliste_frist", toUtcString(arbeidsliste.get().getFrist()));
+                dokument.setField("arbeidsliste_frist", arbeidsliste.map(Arbeidsliste::getFrist).map(DateUtils::toUtcString).orElse(getSolrMaxAsIsoUtc()));
                 dokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.get().getIsOppfolgendeVeileder());
             }
         });
     }
 
-    private List<Bruker> hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
-        List<Bruker> brukere = new ArrayList<>();
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, filtervalg);
-        try {
-            QueryResponse response = solrClientSlave.query(solrQuery);
-            SolrUtils.checkSolrResponseCode(response.getStatus());
-            SolrDocumentList results = response.getResults();
-            brukere = results.stream().map(Bruker::of).collect(toList());
-        } catch (SolrServerException | IOException e) {
-            log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
-        }
-        return SolrUtils.sortBrukere(brukere, sortOrder, sortField, filtervalg);
+    private BrukereMedAntall hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sortOrder, sortField, filtervalg);
+        addPaging(solrQuery, fra, antall);
+        QueryResponse response = timed("solr.hentbrukere",() -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
+        SolrUtils.checkSolrResponseCode(response.getStatus());
+        SolrDocumentList results = response.getResults();
+        List<Bruker> brukere = results.stream().map(Bruker::of).collect(toList());
+        int antallBrukere = Long.valueOf(response.getResults().getNumFound()).intValue();
+        return new BrukereMedAntall(antallBrukere, brukere);
     }
 
     @Override
@@ -350,28 +362,27 @@ public class SolrServiceImpl implements SolrService {
 
         StatusTall statusTall = new StatusTall();
         QueryResponse response;
-        try {
-            response = solrClientSlave.query(solrQuery);
-            long antallTotalt = response.getResults().getNumFound();
-            long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
-            long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
-            long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
-            long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
-            long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
-            long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
-            long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
-            statusTall
-                    .setTotalt(antallTotalt)
-                    .setInaktiveBrukere(antallInaktiveBrukere)
-                    .setNyeBrukere(antallNyeBrukere)
-                    .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
-                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
-                    .setIavtaltAktivitet(antalliavtaltAktivitet)
-                    .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
-                    .setUtlopteAktiviteter(antallUtlopteAktiviteter);
-        } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for enhetsportefølje feilet: {}", solrQuery, e);
-        }
+
+        response = timed("solr.statustall.enhet", () -> Try.of(() -> solrClientSlave.query(solrQuery))
+                .getOrElseThrow(t -> Lombok.sneakyThrow(t)));
+
+        long antallTotalt = response.getResults().getNumFound();
+        long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
+        long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
+        long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
+        long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
+        long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
+        long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
+        long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
+        statusTall
+                .setTotalt(antallTotalt)
+                .setInaktiveBrukere(antallInaktiveBrukere)
+                .setNyeBrukere(antallNyeBrukere)
+                .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
+                .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
+                .setIavtaltAktivitet(antalliavtaltAktivitet)
+                .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
+                .setUtlopteAktiviteter(antallUtlopteAktiviteter);
 
         return statusTall;
     }

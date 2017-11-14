@@ -8,20 +8,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.util.SolrUtils.*;
+import static no.nav.fo.util.SolrUtils.TILTAK;
+import static no.nav.fo.util.SolrUtils.orStatement;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.filter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import java.sql.Timestamp;
 
 public class SolrUtilsTest {
 
@@ -102,7 +103,7 @@ public class SolrUtilsTest {
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
-        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString,"","", filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
 
@@ -116,285 +117,9 @@ public class SolrUtilsTest {
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
-        SolrQuery query = SolrUtils.buildSolrQuery(queryString, filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString,"","", filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
         assertThat(query.getFilterQueries()).contains(nyeBrukereFilter);
-    }
-
-    @Test
-    public void skalSammenligneEtternavnRiktig() {
-        Bruker bruker1 = new Bruker().setEtternavn("Andersen");
-        Bruker bruker2 = new Bruker().setEtternavn("Anderson");
-        Bruker bruker3 = new Bruker().setEtternavn("Davidsen");
-
-        Comparator<Bruker> comparator = brukerNavnComparator();
-        int compared1 = comparator.compare(bruker1, bruker2);
-        int compared2 = comparator.compare(bruker2, bruker1);
-        int compared3 = comparator.compare(bruker1, bruker3);
-        int compared4 = comparator.compare(bruker3, bruker2);
-
-        assertThat(compared1).isLessThan(0);
-        assertThat(compared2).isGreaterThan(0);
-        assertThat(compared3).isLessThan(0);
-        assertThat(compared4).isGreaterThan(0);
-    }
-
-    @Test
-    public void skalSammenligneFornavnRiktigNarEtternavnErLike() {
-        Bruker bruker1 = new Bruker().setEtternavn("Andersen").setFornavn("Anders");
-        Bruker bruker2 = new Bruker().setEtternavn("Andersen").setFornavn("Anders");
-        Bruker bruker3 = new Bruker().setEtternavn("Andersen").setFornavn("Petter");
-        Bruker bruker4 = new Bruker().setEtternavn("Andersen").setFornavn("Jakob");
-
-        Comparator<Bruker> comparator = brukerNavnComparator();
-        int compared1 = comparator.compare(bruker1, bruker3);
-        int compared2 = comparator.compare(bruker3, bruker4);
-        int compared3 = comparator.compare(bruker1, bruker2);
-
-        assertThat(compared1).isLessThan(0);
-        assertThat(compared2).isGreaterThan(0);
-        assertThat(compared3).isEqualTo(0);
-    }
-
-    @Test
-    public void skalSammenligneNorskeBokstaverRiktig() {
-        Bruker bruker1 = new Bruker().setEtternavn("Ære").setFornavn("Åge");
-        Bruker bruker2 = new Bruker().setEtternavn("Øvrebø").setFornavn("Ærling");
-        Bruker bruker3 = new Bruker().setEtternavn("Åre").setFornavn("Øystein");
-        Bruker bruker4 = new Bruker().setEtternavn("Åre").setFornavn("Øystein");
-        Bruker bruker5 = new Bruker().setEtternavn("Zigzag").setFornavn("Øystein");
-        Bruker bruker6 = new Bruker().setEtternavn("Øvrebø").setFornavn("Åge");
-
-
-        Comparator<Bruker> comparator = brukerNavnComparator();
-        int compared1 = comparator.compare(bruker1, bruker2);
-        int compared2 = comparator.compare(bruker2, bruker3);
-        int compared3 = comparator.compare(bruker3, bruker1);
-        int compared4 = comparator.compare(bruker3, bruker4);
-        int compared5 = comparator.compare(bruker5, bruker1);
-        int compared6 = comparator.compare(bruker2, bruker6);
-        int compared7 = comparator.compare(bruker6, bruker2);
-
-        assertThat(compared1).isLessThan(0);
-        assertThat(compared2).isLessThan(0);
-        assertThat(compared3).isGreaterThan(0);
-        assertThat(compared4).isEqualTo(0);
-        assertThat(compared5).isLessThan(0);
-        assertThat(compared6).isLessThan(0);
-        assertThat(compared7).isGreaterThan(0);
-    }
-
-    @Test
-    public void skalSammenligneDobbelARiktig() {
-        Bruker bruker1 = new Bruker().setEtternavn("Aakesen");
-        Bruker bruker2 = new Bruker().setEtternavn("Aresen");
-        Bruker bruker3 = new Bruker().setEtternavn("Ågesen");
-
-        Comparator<Bruker> comparator = brukerNavnComparator();
-        int compared1 = comparator.compare(bruker1, bruker2);
-        int compared2 = comparator.compare(bruker1, bruker3);
-
-        assertThat(compared1).isGreaterThan(0);
-        assertThat(compared2).isGreaterThan(0);
-    }
-
-    @Test
-    public void skalSetteRiktigSortOrderNarDenErAscending() {
-        Bruker bruker1 = new Bruker().setEtternavn("Andersen").setFornavn("Anders");
-        Bruker bruker2 = new Bruker().setEtternavn("Pettersen").setFornavn("Anders");
-        Bruker bruker3 = new Bruker().setEtternavn("Davidsen").setFornavn("Petter");
-        Bruker bruker4 = new Bruker().setEtternavn("Andersen").setFornavn("Jakob");
-        Bruker bruker5 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
-        Bruker bruker6 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
-
-        Comparator<Bruker> comparator = setComparatorSortOrder(brukerNavnComparator(), "ascending");
-        int compared1 = comparator.compare(bruker1, bruker2);
-        int compared2 = comparator.compare(bruker2, bruker3);
-        int compared3 = comparator.compare(bruker1, bruker4);
-        int compared4 = comparator.compare(bruker1, bruker5);
-        int compared5 = comparator.compare(bruker6, bruker5);
-
-        assertThat(compared1).isLessThan(0);
-        assertThat(compared2).isGreaterThan(0);
-        assertThat(compared3).isLessThan(0);
-        assertThat(compared4).isGreaterThan(0);
-        assertThat(compared5).isEqualTo(0);
-    }
-
-    @Test
-    public void skalSetteRiktigSortOrderNarDenErDescending() {
-        Bruker bruker1 = new Bruker().setEtternavn("Andersen").setFornavn("Anders");
-        Bruker bruker2 = new Bruker().setEtternavn("Pettersen").setFornavn("Anders");
-        Bruker bruker3 = new Bruker().setEtternavn("Davidsen").setFornavn("Petter");
-        Bruker bruker4 = new Bruker().setEtternavn("Andersen").setFornavn("Jakob");
-        Bruker bruker5 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
-        Bruker bruker6 = new Bruker().setEtternavn("Andersen").setFornavn("Abel");
-
-        Comparator<Bruker> comparator = setComparatorSortOrder(brukerNavnComparator(), "descending");
-        int compared1 = comparator.compare(bruker1, bruker2);
-        int compared2 = comparator.compare(bruker2, bruker3);
-        int compared3 = comparator.compare(bruker1, bruker4);
-        int compared4 = comparator.compare(bruker1, bruker5);
-        int compared5 = comparator.compare(bruker6, bruker5);
-
-        assertThat(compared1).isGreaterThan(0);
-        assertThat(compared2).isLessThan(0);
-        assertThat(compared3).isGreaterThan(0);
-        assertThat(compared4).isLessThan(0);
-        assertThat(compared5).isEqualTo(0);
-    }
-
-    @Test
-    public void skalSammenligneNyeOgGamleBrukereRiktig() {
-        // Definisjonen av nye brukere: veilederId == null
-
-        Bruker bruker1 = new Bruker().setVeilederId("x");
-        Bruker bruker2 = new Bruker().setVeilederId("y");
-        Bruker bruker3 = new Bruker().setVeilederId(null);
-        Bruker bruker4 = new Bruker().setVeilederId(null);
-
-        Comparator<Bruker> comparator = brukerErNyComparator();
-
-        int compared1 = comparator.compare(bruker1, bruker3);
-        int compared2 = comparator.compare(bruker4, bruker2);
-        int compared3 = comparator.compare(bruker1, bruker2);
-        int compared4 = comparator.compare(bruker3, bruker4);
-
-        assertThat(compared1).isGreaterThan(0);
-        assertThat(compared2).isLessThan(0);
-        assertThat(compared3).isEqualTo(0);
-        assertThat(compared4).isEqualTo(0);
-    }
-
-    @Test
-    public void skalKunSortereNyeBrukereOverst() {
-        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abelson");
-        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
-        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
-        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Abel");
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-        Filtervalg filtervalg = new Filtervalg();
-
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ikke_satt", "etternavn", filtervalg);
-
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(2)).isEqualTo(bruker1);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker4);
-    }
-
-    @Test
-    public void skalSorterePaaNyeBrukereOgNavnAscending() {
-        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abel");
-        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
-        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
-        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Bro");
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-        Filtervalg filtervalg = new Filtervalg();
-
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "etternavn", filtervalg);
-
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
-        assertThat(brukereSortert.get(2)).isEqualTo(bruker1);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker4);
-    }
-
-    @Test
-    public void skalSorterePaaNyeBrukereOgNavnDescending() {
-        Bruker bruker1 = new Bruker().setVeilederId("x").setEtternavn("Abel");
-        Bruker bruker2 = new Bruker().setVeilederId(null).setEtternavn("Nilsen");
-        Bruker bruker3 = new Bruker().setVeilederId(null).setEtternavn("Johnsen");
-        Bruker bruker4 = new Bruker().setVeilederId("y").setEtternavn("Bro");
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-        Filtervalg filtervalg = new Filtervalg();
-
-        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "etternavn", filtervalg);
-
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker2);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(2)).isEqualTo(bruker4);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
-    }
-
-    @Test
-    public void skalSorterePaaUtlopsdato() {
-        Bruker bruker1 = new Bruker().setUtlopsdato(LocalDateTime.now());
-        Bruker bruker2 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 1, 1, 1, 1));
-        Bruker bruker3 = new Bruker().setUtlopsdato(LocalDateTime.of(2015, 2, 1, 1, 1));
-        Bruker bruker4 = new Bruker().setUtlopsdato(LocalDateTime.of(2016, 12, 1, 1, 1));
-
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-        Filtervalg filtervalg = new Filtervalg();
-
-        List<Bruker> brukereSortert = sortBrukere(brukere, "descending", "utlopsdato", filtervalg);
-
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker1);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker4);
-        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker2);
-    }
-
-    @Test
-    public void skalSorterePaaUtlopsdatoTilValgteAktiviteter() {
-        LocalDateTime ettMinuttFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
-        LocalDateTime toMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(2);
-        LocalDateTime treMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(3);
-        LocalDateTime fireMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(4);
-        Timestamp t1 = Timestamp.valueOf(ettMinuttFrem);
-        Timestamp t2 = Timestamp.valueOf(toMinutterFrem);
-        Timestamp t3 = Timestamp.valueOf(treMinutterFrem);
-        Timestamp t4 = Timestamp.valueOf(fireMinutterFrem);
-
-        Map<String, Timestamp> brukerAktiviteter1 = new HashMap<>();
-        Map<String, Timestamp> brukerAktiviteter2 = new HashMap<>();
-        Map<String, Timestamp> brukerAktiviteter3 = new HashMap<>();
-        Map<String, Timestamp> brukerAktiviteter4 = new HashMap<>();
-        brukerAktiviteter1.put("behandling", t4);
-        brukerAktiviteter1.put("ijobb", t4);
-        Bruker bruker1 = new Bruker().setAktiviteter(brukerAktiviteter1).setFnr("1");
-        brukerAktiviteter2.put("ijobb", t2);
-        brukerAktiviteter2.put("behandling", t3);
-        Bruker bruker2 = new Bruker().setAktiviteter(brukerAktiviteter2).setFnr("2");
-        brukerAktiviteter3.put("behandling", t3);
-        brukerAktiviteter3.put("ijobb", t4);
-        Bruker bruker3 = new Bruker().setAktiviteter(brukerAktiviteter3).setFnr("3");
-        brukerAktiviteter4.put("behandling", t3);
-        brukerAktiviteter4.put("ijobb", t1);
-        Bruker bruker4 = new Bruker().setAktiviteter(brukerAktiviteter4).setFnr("4");
-
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-        Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
-        aktiviteter.put("ijobb", AktivitetFiltervalg.JA);
-        aktiviteter.put("behandling", AktivitetFiltervalg.JA);
-        Filtervalg filtervalg = new Filtervalg().setAktiviteter(aktiviteter);
-
-        List<Bruker> brukereSortert = sortBrukere(brukere, "ascending", "valgteaktiviteter", filtervalg);
-
-        assertThat(brukereSortert.get(0)).isEqualTo(bruker4);
-        assertThat(brukereSortert.get(1)).isEqualTo(bruker2);
-        assertThat(brukereSortert.get(2)).isEqualTo(bruker3);
-        assertThat(brukereSortert.get(3)).isEqualTo(bruker1);
     }
 
     @Test
@@ -427,23 +152,23 @@ public class SolrUtilsTest {
         Filtervalg filtervalg = new Filtervalg();
         SolrQuery solrQuery;
         filtervalg.kjonn = singletonList(Kjonn.M);
-        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
 
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:M)");
 
         filtervalg.kjonn = singletonList(Kjonn.K);
-        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:K)");
 
         filtervalg = new Filtervalg();
-        solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
         assertThat(solrQuery.getFilterQueries()).containsOnly("");
     }
 
     @Test
     public void skalIkkeLeggePaaFilterQueryHvisIngenFiltervalgErSatt() {
         Filtervalg filtervalg = new Filtervalg();
-        SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104", filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery("enhet_id:0104","","", filtervalg);
         filtervalg.harAktiveFilter();
         assertThat(query.getFilterQueries()).containsOnly("enhet_id:0104");
     }
@@ -454,7 +179,7 @@ public class SolrUtilsTest {
         filter.ytelse = YtelseFilter.DAGPENGER_MED_PERMITTERING;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
+        assertThat(SolrUtils.buildSolrQuery("","","", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
     }
 
     @Test
@@ -463,7 +188,7 @@ public class SolrUtilsTest {
         filter.ytelse = YtelseFilter.DAGPENGER;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("", filter).getFilterQueries()).contains(
+        assertThat(SolrUtils.buildSolrQuery("","","", filter).getFilterQueries()).contains(
                 "(ytelse:ORDINARE_DAGPENGER OR ytelse:DAGPENGER_MED_PERMITTERING OR ytelse:DAGPENGER_OVRIGE)"
         );
     }
@@ -490,37 +215,12 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalSortereMedNorskComparator() throws Exception {
-        Bruker bruker1 = new Bruker().setEtternavn("Aabelson");
-        Bruker bruker2 = new Bruker().setEtternavn("Nilsen");
-        Bruker bruker3 = new Bruker().setEtternavn("Johnsen");
-        Bruker bruker4 = new Bruker().setEtternavn("Abel");
-        Bruker bruker5 = new Bruker().setEtternavn("Øran");
-        Bruker bruker6 = new Bruker().setEtternavn("Åran");
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(bruker1);
-        brukere.add(bruker2);
-        brukere.add(bruker3);
-        brukere.add(bruker4);
-        brukere.add(bruker5);
-        brukere.add(bruker6);
-        Filtervalg filtervalg = new Filtervalg();
-
-        List<Bruker> sortert = SolrUtils.sortBrukere(brukere, "ascending", "etternavn", filtervalg);
-
-        assertThat(sortert.get(0).getEtternavn()).isEqualTo("Abel");
-        assertThat(sortert.get(3).getEtternavn()).isEqualTo("Øran");
-        assertThat(sortert.get(4).getEtternavn()).isEqualTo("Aabelson");
-        assertThat(sortert.get(5).getEtternavn()).isEqualTo("Åran");
-    }
-
-    @Test
     public void skalLeggeTilTiltaksfiler() {
         List<String> tiltakstyper = asList("tiltak1", "tiltak2");
 
         Filtervalg filtervalg = new Filtervalg().setTiltakstyper(tiltakstyper);
 
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", filtervalg);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", filtervalg);
         assertThat(solrQuery.getFilterQueries()).contains("(tiltak:tiltak1 OR tiltak:tiltak2)");
     }
 
@@ -528,7 +228,7 @@ public class SolrUtilsTest {
     public void skalLeggeTilTiltakJa() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.JA);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         assertThat(solrQuery.getFilterQueries()).contains("(tiltak:*)");
     }
@@ -537,7 +237,7 @@ public class SolrUtilsTest {
     public void skalLeggeTilTiltakNei() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NEI);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         assertThat(solrQuery.getFilterQueries()).contains("(*:* AND -tiltak:*)");
     }
@@ -546,7 +246,7 @@ public class SolrUtilsTest {
     public void skalIkkeLeggeTilTiltakJaEllerNei() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NA);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         asList(solrQuery.getFilterQueries()).forEach( (filter) -> assertThat(filter).doesNotContain("tiltak"));
     }
@@ -557,9 +257,11 @@ public class SolrUtilsTest {
         aktivitetFiltervalg.put("aktivitet1", AktivitetFiltervalg.JA);
         aktivitetFiltervalg.put("aktivitet2", AktivitetFiltervalg.NEI);
 
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("","","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
 
         assertThat(solrQuery.getFilterQueries()).contains("(aktiviteter:aktivitet1) AND (*:* AND -aktiviteter:aktivitet2)");
     }
+
+
 
 }

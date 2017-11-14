@@ -10,6 +10,10 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import javax.sql.DataSource;
 
 import static org.mockito.Mockito.mock;
 
@@ -36,13 +40,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public AktivitetDAO aktivitetDAO() {
-        return new AktivitetDAO();
-    }
-
-    @Bean
-    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() {
-        return new OppdaterBrukerdataFletter();
+    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
+        return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
     }
 
     @Bean

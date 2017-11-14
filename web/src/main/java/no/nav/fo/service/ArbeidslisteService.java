@@ -11,6 +11,7 @@ import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
+import java.util.List;
 
 import static no.nav.metrics.MetricsFactory.createEvent;
 
@@ -91,6 +92,10 @@ public class ArbeidslisteService {
     public Try<String> hentEnhet(Fnr fnr) {
         return brukerRepository
                 .retrieveEnhet(fnr);
+    }
+
+    public void deleteArbeidslisteForAktoerids(List<AktoerId> aktoerIds) {
+        arbeidslisteRepository.deleteArbeidslisteForAktoerids(aktoerIds);
     }
 
     private Try<AktoerId> hentAktoerId(Fnr fnr) {

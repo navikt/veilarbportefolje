@@ -10,18 +10,14 @@ import static java.util.stream.Collectors.toList;
 
 public class PortefoljeUtils {
 
-    public static Portefolje buildPortefolje(List<Bruker> brukere, List<Bruker> brukereSublist, String enhet, int fra) {
+    public static Portefolje buildPortefolje(int antall, List<Bruker> brukereSublist, String enhet, int fra) {
 
         return new Portefolje()
                 .setEnhet(enhet)
                 .setBrukere(brukereSublist)
-                .setAntallTotalt(brukere.size())
+                .setAntallTotalt(antall)
                 .setAntallReturnert(brukereSublist.size())
                 .setFraIndex(fra);
-    }
-
-    public static List<Bruker> getSublist(List<Bruker> brukere, int fra, int antall) {
-        return brukere.stream().skip(fra).limit(antall).collect(toList());
     }
 
     public static List<Bruker> sensurerBrukere(List<Bruker> brukere, String token, PepClient pepClient) {

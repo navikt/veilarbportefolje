@@ -28,8 +28,8 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
-import static no.nav.fo.util.DbUtils.getCauseString;
-import static no.nav.fo.util.DbUtils.not;
+import static no.nav.fo.util.DbUtils.*;
+import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
 
@@ -65,7 +65,7 @@ public class ArbeidslisteRepository {
             params.put("aktoerids", aktoerIdsBatch.stream().map(AktoerId::toString).collect(toList()));
 
             Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMapBatch =
-                    namedParameterJdbcTemplate.queryForList(arbeidslisteSQL, params)
+                    timed(arbeidslisteSQL,() ->namedParameterJdbcTemplate.queryForList(arbeidslisteSQL, params))
                             .stream()
                             .map((rs) -> Tuple.of(AktoerId.of((String) rs.get("AKTOERID")), arbeidslisteMapper(rs)))
                             .collect(toMap(Tuple2::_1, (tuple) -> Optional.of(tuple._2())));
@@ -130,6 +130,16 @@ public class ArbeidslisteRepository {
                 .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
     }
 
+    public void deleteArbeidslisteForAktoerids(List<AktoerId> aktoerIds) {
+        io.vavr.collection.List.ofAll(aktoerIds).sliding(1000,1000)
+                .forEach(aktoerIdsBatch -> {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("aktoerids", aktoerIdsBatch.toJavaStream().map(AktoerId::toString).collect(toList()));
+                    String sql = deleteArbeidslisteSql();
+                    timed(dbTimerNavn(sql),()-> namedParameterJdbcTemplate.update(sql, params));
+                });
+    }
+
     @SneakyThrows
     private static Arbeidsliste arbeidslisteMapper(ResultSet rs) {
         return new Arbeidsliste(
@@ -145,5 +155,9 @@ public class ArbeidslisteRepository {
                 toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
                 (String) rs.get("KOMMENTAR"),
                 toZonedDateTime((Timestamp) rs.get("FRIST")));
+    }
+
+    private String deleteArbeidslisteSql() {
+        return "delete from arbeidsliste where aktoerid in (:aktoerids)";
     }
 }

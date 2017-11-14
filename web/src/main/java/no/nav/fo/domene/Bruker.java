@@ -1,29 +1,26 @@
 package no.nav.fo.domene;
 
-import io.vavr.control.Try;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.cglib.core.Local;
 import org.apache.solr.common.SolrDocument;
-import org.json.JSONObject;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.util.DateUtils.timestampFromISO8601;
-import static no.nav.fo.util.DateUtils.toLocalDateTime;
+import static no.nav.fo.util.DateUtils.*;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Slf4j
 @Data
 @Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Bruker {
     String fnr;
     String fornavn;
@@ -50,7 +47,7 @@ public class Bruker {
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
     List<String> brukertiltak;
-    Map<String, Timestamp> aktiviteter;
+    Map<String, Timestamp> aktiviteter = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
@@ -80,23 +77,25 @@ public class Bruker {
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
                 .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
                 .setBrukertiltak(getBrukertiltak(document))
-                .setAktiviteter(lagAktiviteterMap( (List) document.get("aktiviteter"), (String) document.get("aktiviteter_utlopsdato_json")))
+                .addAktivitetUtlopsdato("tiltak", dateToTimestamp((Date) document.get("aktivitet_tiltak_utlopsdato")))
+                .addAktivitetUtlopsdato("behandling", dateToTimestamp((Date) document.get("aktivitet_behandling_utlopsdato")))
+                .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp((Date) document.get("aktivitet_sokeavtale_utlopsdato")))
+                .addAktivitetUtlopsdato("stilling", dateToTimestamp((Date) document.get("aktivitet_stilling_utlopsdato")))
+                .addAktivitetUtlopsdato("ijobb", dateToTimestamp((Date) document.get("aktivitet_ijobb_utlopsdato")))
+                .addAktivitetUtlopsdato("samtalereferat", dateToTimestamp((Date) document.get("aktivitet_samtalereferat_utlopsdato")))
+                .addAktivitetUtlopsdato("egen", dateToTimestamp((Date) document.get("aktivitet_egen_utlopsdato")))
+                .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp((Date) document.get("aktivitet_gruppeaktivitet_utlopsdato")))
+                .addAktivitetUtlopsdato("mote", dateToTimestamp((Date) document.get("aktivitet_mote_utlopsdato")))
+                .addAktivitetUtlopsdato("utdanningsaktivitet", dateToTimestamp((Date) document.get("aktivitet_utdanningaktivitet_utlopsdato")))
                 ;
     }
 
-    private static Map<String, Timestamp> lagAktiviteterMap(List<String> aktiviteter, String aktiviteterUtlopsdatoJSON) {
-        if(Objects.isNull(aktiviteter)) {
-            return null;
+    private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
+        if(Objects.isNull(utlopsdato) || isRandomFutureDate(utlopsdato)) {
+            return this;
         }
-        JSONObject jsonObject = Objects.nonNull(aktiviteterUtlopsdatoJSON) ? new JSONObject(aktiviteterUtlopsdatoJSON): null;
-        Map<String, Timestamp> map = new HashMap<>();
-        aktiviteter.forEach( aktivitet -> map.put(aktivitet,toTimestampOrNull(jsonObject,aktivitet)));
-        return map;
-    }
-
-    private static Timestamp toTimestampOrNull(JSONObject jsonObject, String key) {
-        Try<Timestamp> timestampTry = Try.of(() -> timestampFromISO8601((String) jsonObject.get(key)));
-        return timestampTry.getOrNull();
+        aktiviteter.put(type, utlopsdato);
+        return this;
     }
 
     private static String getDiskresjonskode(SolrDocument document) {
@@ -130,58 +129,5 @@ public class Bruker {
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
 
-    }
-
-    public ZonedDateTime getArbeidslisteFrist() {
-        return arbeidsliste.getFrist();
-    }
-
-    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
-    public Timestamp getNesteAktivitetUtlopsdatoOrElseEpoch0() {
-        if(Objects.isNull(aktiviteter)) {
-            return new Timestamp(0);
-        }
-
-        Instant instant = Instant.now();
-        long timeStampMilliS = instant.toEpochMilli();
-
-        return aktiviteter
-                .values()
-                .stream()
-                .filter(Objects::nonNull)
-                .filter(tid -> tid.getTime() >= timeStampMilliS)
-                .sorted()
-                .findFirst()
-                .orElse(new Timestamp(0));
-    }
-
-    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
-    public Timestamp getNesteUtlopsdatoForAktivitetOrElseEpoch0(String aktivitetstypeSortering) {
-        if(Objects.isNull(aktiviteter)) {
-            return new Timestamp(0);
-        }
-
-        Timestamp sluttDato = Optional.ofNullable(aktiviteter.get(aktivitetstypeSortering.toLowerCase())).orElse(null);
-        LocalDateTime dagensDato = LocalDateTime.now().toLocalDate().atStartOfDay();
-        Timestamp dagensDatoTimestamp = Timestamp.valueOf(dagensDato);
-        if (null != sluttDato && (sluttDato.getTime() < dagensDatoTimestamp.getTime())) {
-            return null;
-        }
-        return sluttDato;
-    }
-
-    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
-    public Timestamp getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(List<String> aktivitetsListe) {
-        if(Objects.isNull(aktivitetsListe) || aktivitetsListe.isEmpty()) {
-            return new Timestamp(0);
-        }
-
-        return aktivitetsListe
-                .stream()
-                .map(this::getNesteUtlopsdatoForAktivitetOrElseEpoch0)
-                .filter(Objects::nonNull)
-                .sorted()
-                .findFirst()
-                .orElse(new Timestamp(0));
     }
 }

@@ -3,8 +3,10 @@ package no.nav.fo.provider.rest;
 import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
-import no.nav.fo.domene.EnhetTiltak;
-import no.nav.fo.service.*;
+import no.nav.fo.service.BrukertilgangService;
+import no.nav.fo.service.PepClient;
+import no.nav.fo.service.SolrService;
+import no.nav.fo.service.TiltakService;
 import no.nav.fo.util.PortefoljeUtils;
 import no.nav.fo.util.TokenUtils;
 import no.nav.metrics.Event;
@@ -66,11 +68,10 @@ public class EnhetController {
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
-            List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg);
-            List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
+            BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), token, pepClient);
 
-            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(), sensurerteBrukereSublist, enhet, fra);
 
             Event event = MetricsFactory.createEvent("enhetsportefolje.lastet");
             event.addFieldToReport("identhash", identHash);

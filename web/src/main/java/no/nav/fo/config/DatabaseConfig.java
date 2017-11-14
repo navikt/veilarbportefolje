@@ -4,6 +4,8 @@ import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.EnhetTiltakRepository;
+import no.nav.fo.database.OppfolgingFeedRepository;
+import no.nav.fo.feed.DialogFeedRepository;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
@@ -40,13 +42,19 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public BrukerRepository brukerRepository() {
-        return new BrukerRepository();
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
     }
 
     @Bean
-    public AktivitetDAO aktivitetDAO() {
-        return new AktivitetDAO();
+    public OppfolgingFeedRepository OppfolgingFeedRepository(JdbcTemplate db){ return new OppfolgingFeedRepository(db); }
+
+    @Bean
+    public DialogFeedRepository dialogFeedRepository(JdbcTemplate db) { return new DialogFeedRepository(db); }
+
+    @Bean
+    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
+        return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
     }
 
     @Bean

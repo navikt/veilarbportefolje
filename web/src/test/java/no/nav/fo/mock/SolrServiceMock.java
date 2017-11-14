@@ -28,8 +28,13 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
-    public List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
-        return emptyList();
+    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
+        return new BrukereMedAntall(0, emptyList());
+    }
+
+    @Override
+    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
+        return new BrukereMedAntall(0, emptyList());
     }
 
     @Override
@@ -90,5 +95,10 @@ public class SolrServiceMock implements SolrService {
     @Override
     public String byggQueryString(String enhetId, Optional<String> veilederIdent) {
         return null;
+    }
+
+    @Override
+    public void populerIndeksForPersonids(List<PersonId> personIds) {
+
     }
 }

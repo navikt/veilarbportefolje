@@ -54,9 +54,9 @@ public class DiagramController {
             Function<Bruker, FasettMapping> mapper = brukerMapping(filtervalg.ytelse);
             List<FasettMapping> alleFacetter = fasetter(filtervalg.ytelse);
 
-            List<Bruker> brukere = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+            BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
 
-            Map<FasettMapping, Long> facetterteBrukere = brukere
+            Map<FasettMapping, Long> facetterteBrukere = brukereMedAntall.getBrukere()
                     .stream()
                     .filter((bruker) -> mapper.apply(bruker) != null)
                     .collect(groupingBy(mapper, counting()));

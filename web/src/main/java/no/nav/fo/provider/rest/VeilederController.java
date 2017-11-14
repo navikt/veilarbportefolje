@@ -69,11 +69,10 @@ public class VeilederController {
 
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
 
-            List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg);
-            List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
+            BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), token, pepClient);
 
-            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(), sensurerteBrukereSublist, enhet, fra);
 
             Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
             event.addFieldToReport("identhash", identHash);
@@ -87,6 +86,8 @@ public class VeilederController {
     @Path("/{veilederident}/statustall")
     public Response hentStatusTall(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
         return createResponse(() -> {
+            Event event = MetricsFactory.createEvent("minoversiktportefolje.statustall.lastet");
+            event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 
@@ -98,6 +99,8 @@ public class VeilederController {
     @Path("/{veilederident}/arbeidsliste")
     public Response hentArbeidsliste(@PathParam("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
         return createResponse(() -> {
+            Event event = MetricsFactory.createEvent("minoversiktportefolje.arbeidsliste.lastet");
+            event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
 

@@ -3,8 +3,8 @@ package no.nav.fo.config.feed;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.DialogDataFeedHandler;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
+import no.nav.fo.feed.DialogFeedRepository;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.AktoerService;
@@ -57,10 +57,10 @@ public class DialogaktorfeedConfig {
     }
 
     @Bean
-    public DialogDataFeedHandler dialogDataFeedHandler(PersistentOppdatering persistentOppdatering,
-                                                       AktoerService aktoerService,
+    public DialogDataFeedHandler dialogDataFeedHandler(AktoerService aktoerService,
                                                        BrukerRepository brukerRepository,
-                                                       SolrService solrService) {
-        return new DialogDataFeedHandler(persistentOppdatering, aktoerService, brukerRepository, solrService);
+                                                       SolrService solrService,
+                                                       DialogFeedRepository dialogFeedRepository) {
+        return new DialogDataFeedHandler(aktoerService, brukerRepository, solrService, dialogFeedRepository);
     }
 }

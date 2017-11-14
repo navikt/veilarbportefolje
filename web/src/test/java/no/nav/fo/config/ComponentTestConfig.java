@@ -13,12 +13,13 @@ import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.servlet.ServletContext;
+import javax.sql.DataSource;
 
 import static io.vavr.control.Try.success;
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
-import static no.nav.fo.config.ApplicationConfig.forwardTjenesterTilApi;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -52,13 +53,8 @@ public class ComponentTestConfig implements ApiApplication {
     }
 
     @Bean
-    public BrukerRepository brukerRepository() {
-        return new BrukerRepository();
-    }
-
-    @Bean
-    public OppdaterBrukerdataFletter oppdaterBrukerdataFletter() {
-        return new OppdaterBrukerdataFletter();
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
     }
 
     @Bean
@@ -85,11 +81,6 @@ public class ComponentTestConfig implements ApiApplication {
     @Override
     public Sone getSone() {
         return FSS;
-    }
-
-    @Override
-    public void startup(ServletContext servletContext) {
-        forwardTjenesterTilApi(servletContext);
     }
 
 }

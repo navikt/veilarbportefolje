@@ -25,7 +25,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -45,21 +44,19 @@ public class BrukerRepository {
     static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
-    @Inject
     JdbcTemplate db;
-
-    @Inject
     private DataSource ds;
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Inject
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    public BrukerRepository(JdbcTemplate db, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.db = db;
+        this.ds = ds;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
 
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
-    }
-
-    public Try<Oppfolgingstatus> retrieveOppfolgingstatus(PersonId personId) {
-        return retrieveOppfolgingstatus(singletonList(personId)).map( map -> map.get(personId));
     }
 
     public Try<Map<PersonId, Oppfolgingstatus>> retrieveOppfolgingstatus(List<PersonId> personIds) {
@@ -71,7 +68,8 @@ public class BrukerRepository {
                     .forEach(personIdsBatch -> {
                         Map<String, Object> params = new HashMap<>(personIdsBatch.size());
                         params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
-                        namedParameterJdbcTemplate.queryForList(retrieveOppfolgingstatusListSql(), params)
+                        String sql = retrieveOppfolgingstatusListSql();
+                        timed(dbTimerNavn(sql),()->namedParameterJdbcTemplate.queryForList(sql, params))
                                 .forEach(data -> personIdOppfolgingstatusMap.put(
                                         PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
                                         new Oppfolgingstatus()
@@ -131,15 +129,14 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke personid for fnr: {}", getCauseString(e)));
     }
 
-    public Try<PersonId> deleteBrukerdata(PersonId personId) {
-        return Try.of(
-                () -> {
-                    delete(db.getDataSource(), BRUKERDATA)
-                            .where(WhereClause.equals("PERSONID", personId.toString()))
-                            .execute();
-                    return personId;
-                }
-        ).onFailure((e) -> log.warn("Kunne ikke slette brukerdata for personid {}", personId.toString(), e));
+    public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
+        io.vavr.collection.List.ofAll(personIds).sliding(1000,1000)
+                .forEach(aktoerIdsBatch -> {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("personids", aktoerIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
+                    String sql = deleteBrukerdataSql();
+                    timed(dbTimerNavn(sql),() -> namedParameterJdbcTemplate.update(sql, params));
+                });
     }
 
 
@@ -154,18 +151,6 @@ public class BrukerRepository {
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
         return VeilederId.of(rs.getString("VEILEDERIDENT"));
-    }
-
-    @SneakyThrows
-    private Oppfolgingstatus mapToOppfolgingstatus(ResultSet rs) {
-        if (rs.isBeforeFirst()) {
-            rs.next();
-        }
-        return new Oppfolgingstatus()
-                .setFormidlingsgruppekode(rs.getString(FORMIDLINGSGRUPPEKODE))
-                .setServicegruppekode(rs.getString(KVALIFISERINGSGRUPPEKODE))
-                .setVeileder(rs.getString("veilederident"))
-                .setOppfolgingsbruker(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
     }
 
     @SneakyThrows
@@ -184,21 +169,23 @@ public class BrukerRepository {
 
     void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
-        db.query(retrieveBrukereSQL(), rs -> {
+        String sql = retrieveBrukereSQL();
+        timed(dbTimerNavn(sql), ()-> db.query(sql, rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
                 prosess.accept(brukerDokument);
             }
-        });
+        }));
     }
 
 
     public List<SolrInputDocument> retrieveOppdaterteBrukere() {
         List<SolrInputDocument> brukere = new ArrayList<>();
         db.setFetchSize(10000);
-        db.query(retrieveOppdaterteBrukereSQL(), rs -> {
+        String sql = retrieveOppdaterteBrukereSQL();
+        timed(dbTimerNavn(sql), ()->db.query(sql, rs -> {
             brukere.add(mapResultSetTilDokument(rs));
-        });
+        }));
         return brukere;
     }
 
@@ -207,28 +194,31 @@ public class BrukerRepository {
         io.vavr.collection.List.ofAll(personIds).sliding(1000,1000)
                 .forEach(personIdsBatch -> {
                     Map<String, Object> params = new HashMap<>();
-                    params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
-                    namedParameterJdbcTemplate.query(retrieveBrukereMedBrukerdataSQL(), params, rs -> {
+                    params.put("personids", personIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
+                    String sql = retrieveBrukereMedBrukerdataSQL();
+                    timed(dbTimerNavn(sql),()->namedParameterJdbcTemplate.query(sql, params, rs -> {
                             dokumenter.add(mapResultSetTilDokument(rs));
-                    });
+                    }));
                 });
         return dokumenter;
     }
 
     public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
         String[] args = new String[]{personId};
-        return db.query(retrieveBrukerMedBrukerdataSQL(), args, (rs) -> {
+        String sql = retrieveBrukerMedBrukerdataSQL();
+        return timed(dbTimerNavn(sql),()->db.query(sql, args, (rs) -> {
             if (rs.isBeforeFirst()) {
                 rs.next();
             }
             return mapResultSetTilDokument(rs);
-        });
+        }));
     }
 
     public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
         Map<String, Object> params = new HashMap<>();
         params.put("fnrs", personIds);
-        return namedParameterJdbcTemplate.queryForList(retrieveBrukerdataSQL(), params)
+        String sql = retrieveBrukerdataSQL();
+        return timed(dbTimerNavn(sql),()-> namedParameterJdbcTemplate.queryForList(sql, params))
                 .stream()
                 .map(data -> new Brukerdata()
                         .setAktoerid((String) data.get("AKTOERID"))
@@ -252,15 +242,8 @@ public class BrukerRepository {
     }
 
     public int updateTidsstempel(Timestamp tidsstempel) {
-        return db.update(updateTidsstempelSQL(), tidsstempel);
-    }
-
-    public java.util.List<Map<String, Object>> retrieveBruker(String aktoerId) {
-        return db.queryForList(retrieveBrukerSQL(), aktoerId);
-    }
-
-    public java.util.List<Map<String, Object>> retrievePersonid(String aktoerId) {
-        return db.queryForList(getPersonidFromAktoeridSQL(), aktoerId);
+        String sql = updateTidsstempelSQL();
+        return timed(dbTimerNavn(sql),()-> db.update(sql, tidsstempel));
     }
 
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
@@ -269,10 +252,10 @@ public class BrukerRepository {
         batchProcess(1000, fnrs, timed("GR199.brukersjekk.batch", (fnrBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("fnrs", fnrBatch);
-
-            Map<String, Optional<String>> fnrPersonIdMap = namedParameterJdbcTemplate.queryForList(
-                    getPersonIdsFromFnrsSQL(),
-                    params)
+            String sql = getPersonIdsFromFnrsSQL();
+            Map<String, Optional<String>> fnrPersonIdMap = timed(dbTimerNavn(sql), ()-> namedParameterJdbcTemplate.queryForList(
+                    sql,
+                    params))
                     .stream()
                     .map((rs) -> Tuple.of(
                             (String) rs.get("FODSELSNR"),
@@ -296,9 +279,9 @@ public class BrukerRepository {
         batchProcess(1000, aktoerIds, timed("retreive.personids.batch", (aktoeridsBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("aktoerids", aktoeridsBatch.stream().map(AktoerId::toString).collect(toList()));
-
-            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = namedParameterJdbcTemplate.queryForList(
-                    hentPersonidsFromAktoeridsSQL(), params)
+            String sql = hentPersonidsFromAktoeridsSQL();
+            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = timed(dbTimerNavn(sql),()->namedParameterJdbcTemplate.queryForList(
+                    sql, params))
                     .stream()
                     .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
                     )
@@ -320,9 +303,9 @@ public class BrukerRepository {
         batchProcess(1000, personIds, timed("retreive.aktoerid.batch", (personIdsBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("personids", personIdsBatch.stream().map(PersonId::toString).collect(toList()));
-
-            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = namedParameterJdbcTemplate.queryForList(
-                    hentAktoeridsForPersonidsSQL(), params)
+            String sql = hentAktoeridsForPersonidsSQL();
+            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = timed(dbTimerNavn(sql),()-> namedParameterJdbcTemplate.queryForList(
+                    sql, params))
                     .stream()
                     .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
                     )
@@ -357,10 +340,11 @@ public class BrukerRepository {
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
-        db.update("UPDATE METADATA SET aktiviteter_sist_oppdatert = ?", timestampFromISO8601(sistOppdatert));
+        String sql = "UPDATE METADATA SET aktiviteter_sist_oppdatert = ?";
+        timed(dbTimerNavn(sql),()-> db.update(sql, timestampFromISO8601(sistOppdatert)));
     }
 
-    void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
+    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
         Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
                 .stream()
                 .collect(groupingBy((data) -> finnesIDb.contains(data.getPersonid())));
@@ -481,10 +465,6 @@ public class BrukerRepository {
         return "UPDATE METADATA SET SIST_INDEKSERT = ?";
     }
 
-    private String getPersonidFromAktoeridSQL() {
-        return "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?";
-    }
-
     private String getPersonIdsFromFnrsSQL() {
         return
                 "SELECT " +
@@ -496,13 +476,14 @@ public class BrukerRepository {
                         "fodselsnr in (:fnrs)";
     }
 
-    private String retrieveBrukerSQL() {
-        return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
-    }
-
     private String retrieveBrukerdataSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
+
+    private String deleteBrukerdataSql() {
+        return "DELETE FROM BRUKER_DATA where PERSONID in (:personids)";
+    }
+
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         return oppfolgingsFlaggSatt(bruker) || erOppfolgingsBrukerIarena(bruker);
