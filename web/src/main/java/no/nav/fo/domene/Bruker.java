@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.common.SolrDocument;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
@@ -131,58 +129,5 @@ public class Bruker {
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
 
-    }
-
-    public ZonedDateTime getArbeidslisteFrist() {
-        return arbeidsliste.getFrist();
-    }
-
-    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
-    public Timestamp getNesteAktivitetUtlopsdatoOrElseEpoch0() {
-        if(Objects.isNull(aktiviteter)) {
-            return new Timestamp(0);
-        }
-
-        Instant instant = Instant.now();
-        long timeStampMilliS = instant.toEpochMilli();
-
-        return aktiviteter
-                .values()
-                .stream()
-                .filter(Objects::nonNull)
-                .filter(tid -> tid.getTime() >= timeStampMilliS)
-                .sorted()
-                .findFirst()
-                .orElse(new Timestamp(0));
-    }
-
-    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
-    public Timestamp getNesteUtlopsdatoForAktivitetOrElseEpoch0(String aktivitetstypeSortering) {
-        if(Objects.isNull(aktiviteter)) {
-            return new Timestamp(0);
-        }
-
-        Timestamp sluttDato = Optional.ofNullable(aktiviteter.get(aktivitetstypeSortering.toLowerCase())).orElse(null);
-        LocalDateTime dagensDato = LocalDateTime.now().toLocalDate().atStartOfDay();
-        Timestamp dagensDatoTimestamp = Timestamp.valueOf(dagensDato);
-        if (null != sluttDato && (sluttDato.getTime() < dagensDatoTimestamp.getTime())) {
-            return null;
-        }
-        return sluttDato;
-    }
-
-    //Denne er ment for sortering på utlopsdato, derfor returneres epoch0 om bruker ikke har aktiviteter med utlopsdato
-    public Timestamp getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(List<String> aktivitetsListe) {
-        if(Objects.isNull(aktivitetsListe) || aktivitetsListe.isEmpty()) {
-            return new Timestamp(0);
-        }
-
-        return aktivitetsListe
-                .stream()
-                .map(this::getNesteUtlopsdatoForAktivitetOrElseEpoch0)
-                .filter(Objects::nonNull)
-                .sorted()
-                .findFirst()
-                .orElse(new Timestamp(0));
     }
 }

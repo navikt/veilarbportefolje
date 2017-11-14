@@ -6,7 +6,6 @@ import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrInputDocument;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,13 +26,15 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
-import static no.nav.fo.database.BrukerRepository.*;
+import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
+import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
@@ -118,13 +119,6 @@ public class BrukerRepositoryTest {
         Object sist_indeksert = jdbcTemplate.queryForList(brukerRepository.retrieveSistIndeksertSQL()).get(0).get("sist_indeksert");
 
         assertThat(sist_indeksert).isEqualTo(nyttTidsstempel);
-    }
-
-    @Test
-    public void skalReturnerePersonidFraDB() {
-        List<Map<String, Object>> mapping = brukerRepository.retrievePersonid("11111111");
-        String personid = (String) mapping.get(0).get("PERSONID");
-        Assertions.assertThat(personid).isEqualTo("222222");
     }
 
     @Test
@@ -395,29 +389,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalHenteOppfolgingstatus() throws Exception {
-        PersonId personId = PersonId.of("123456");
-
-        insert(jdbcTemplate, OPPFOLGINGSBRUKER)
-            .value("PERSON_ID", personId.toString())
-            .value("FODSELSNR", "123123")
-            .value(KVALIFISERINGSGRUPPEKODE, "TESTKODE")
-            .value(FORMIDLINGSGRUPPEKODE, "TESTKODE")
-            .execute();
-        insert(jdbcTemplate, BRUKERDATA)
-            .value("PERSONID", personId.toString())
-            .value("OPPFOLGING", "J")
-            .value("VEILEDERIDENT", "TESTIDENT")
-            .execute();
-
-        Oppfolgingstatus status = brukerRepository.retrieveOppfolgingstatus(personId).get();
-        assertEquals(status.getFormidlingsgruppekode(), "TESTKODE");
-        assertEquals(status.getServicegruppekode(), "TESTKODE");
-        assertEquals(status.getVeileder(), "TESTIDENT");
-        assertTrue(status.isOppfolgingsbruker());
-    }
-
-    @Test
     public void skalOppdatereMetadata() throws Exception {
         Date date = new Date();
 
@@ -427,23 +398,6 @@ public class BrukerRepositoryTest {
                 .get(0)
                 .get("oppfolging_sist_oppdatert");
         assertEquals(date, upDated);
-    }
-
-    @Test
-    public void skalSletteBrukerdata() throws Exception {
-        Brukerdata brukerdata = new Brukerdata()
-            .setPersonid("123456")
-            .setAktoerid("AKTOERID")
-            .setVeileder("VEIELDER");
-
-        brukerRepository.upsertBrukerdata(brukerdata);
-
-        assertFalse(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
-
-        brukerRepository.deleteBrukerdata(PersonId.of("123456"));
-
-        assertTrue(brukerRepository.retrieveBrukerdata(singletonList("123456")).isEmpty());
-
     }
 
     @Test

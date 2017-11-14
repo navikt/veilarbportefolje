@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static io.vavr.control.Try.run;
-import static no.nav.fo.util.AktivitetUtils.hentAktivitetBrukerOppdatering;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.util.MetricsUtils.timed;
 
@@ -52,7 +51,7 @@ public class AktivitetService {
         log.info("Aktivitetstatuser for {} brukere utledet og lagret i databasen", aktoerider.size());
     }
 
-    void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
+    private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
 
         timed(
                 "aktiviteter.utled.statuser",
@@ -66,10 +65,6 @@ public class AktivitetService {
                 (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
         );
 
-    }
-
-    public void utledOgIndekserAktivitetstatuserForAktoerid(AktoerId aktoerid) {
-        persistentOppdatering.lagre(hentAktivitetBrukerOppdatering(aktoerid, aktoerService, aktivitetDAO));
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(List<AktoerId> aktoerIds) {

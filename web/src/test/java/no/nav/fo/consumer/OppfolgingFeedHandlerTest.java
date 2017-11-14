@@ -2,14 +2,12 @@ package no.nav.fo.consumer;
 
 import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.Oppfolgingstatus;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.SolrService;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,12 +27,6 @@ import static org.mockito.Mockito.*;
 public class OppfolgingFeedHandlerTest {
 
     @Mock
-    private OppdaterBrukerdataFletter oppdaterBrukerdataFletter;
-
-    @Mock
-    private OppfolgingFeedRepository oppfolgingFeedRepository;
-
-    @Mock
     private ArbeidslisteService arbeidslisteService;
 
     @Mock
@@ -51,7 +43,7 @@ public class OppfolgingFeedHandlerTest {
 
     @Before
     public void resetMocks() {
-        reset(oppdaterBrukerdataFletter,arbeidslisteService,brukerRepository,aktoerService,solrService);
+        reset(arbeidslisteService,brukerRepository,aktoerService,solrService);
     }
 
     @Test

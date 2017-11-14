@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import static no.nav.fo.util.DateUtils.toLocalDateTime;
@@ -59,44 +58,6 @@ public class BrukerTest {
         SolrDocument solrDocument = createSolrDocument(null);
         Bruker bruker = Bruker.of(solrDocument);
         Map<String, Timestamp> map = bruker.getAktiviteter();
-    }
-
-    @Test
-    public void skalReturnereNesteAktivitetUtlopsdato() {
-        LocalDateTime ettMinuttFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
-        Timestamp t1 = Timestamp.valueOf(ettMinuttFrem);
-        LocalDateTime toMinutterFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
-        Timestamp t2 = Timestamp.valueOf(toMinutterFrem);
-        Map<String, Timestamp> map = new HashMap<>();
-        map.put("a1", t1 );
-        map.put("a2", t2 );
-
-        Bruker bruker =  new Bruker().setAktiviteter(map);
-        assertThat(bruker.getNesteAktivitetUtlopsdatoOrElseEpoch0()).isEqualTo(t1);
-    }
-
-    @Test
-    public void skalReturnereEpoch0OmIngenUtlopsdatoerForAktivteter() {
-        Map<String, Timestamp> map = new HashMap<>();
-        map.put("a1", null);
-        Bruker bruker = new Bruker().setAktiviteter(map);
-        assertThat(bruker.getNesteAktivitetUtlopsdatoOrElseEpoch0()).isEqualTo(new Timestamp(0));
-    }
-
-    @Test
-    public void skalReturnereEpoch0OmAktivteterIkkeErDefiner() {
-        Bruker bruker = new Bruker();
-        assertThat(bruker.getNesteAktivitetUtlopsdatoOrElseEpoch0()).isEqualTo(new Timestamp(0));
-    }
-
-    @Test
-    public void skalReturnereUtlopsdatoForAktivitet() {
-        LocalDateTime ettMinuttFrem = LocalDateTime.from(LocalDateTime.now()).plusMinutes(1);
-        Timestamp t1 = Timestamp.valueOf(ettMinuttFrem);
-        Map<String, Timestamp> map = new HashMap<>();
-        map.put("a1", t1 );
-        Bruker bruker = new Bruker().setAktiviteter(map);
-        assertThat(bruker.getNesteUtlopsdatoForAktivitetOrElseEpoch0("a1")).isEqualTo(t1);
     }
 
     private SolrDocument createSolrDocument(String kode) {

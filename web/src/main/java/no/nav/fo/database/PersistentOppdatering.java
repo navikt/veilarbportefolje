@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -30,17 +29,6 @@ public class PersistentOppdatering {
 
     @Inject
     private AktivitetDAO aktivitetDAO;
-
-    public Brukerdata hentDataOgLagre(BrukerOppdatering brukerOppdatering) {
-        Brukerdata brukerdata = hentBruker(brukerOppdatering.getPersonid());
-        brukerOppdatering.applyTo(brukerdata);
-        lagreIDB(brukerdata);
-        return brukerdata;
-    }
-
-    public void lagre(BrukerOppdatering brukerOppdatering) {
-        lagreISolr(hentDataOgLagre(brukerOppdatering));
-    }
 
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
@@ -113,24 +101,5 @@ public class PersistentOppdatering {
 
                     aktivitetDAO.insertOrUpdateAktivitetStatus(statuserBatchJavaList, finnesIDb);
                 }));
-    }
-
-    private void lagreIDB(Brukerdata brukerdata) {
-        brukerRepository.upsertBrukerdata(brukerdata);
-        if (brukerdata.getAktiviteter() != null) {
-            brukerdata.getAktiviteter().forEach(aktivitetDAO::upsertAktivitetStatus);
-        }
-    }
-
-    private void lagreISolr(Brukerdata brukerdata) {
-        solrService.indekserBrukerdata(PersonId.of(brukerdata.getPersonid()));
-    }
-
-    private Brukerdata hentBruker(String personid) {
-        List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(singletonList(personid));
-        if (brukerdata.isEmpty()) {
-            return new Brukerdata().setPersonid(personid);
-        }
-        return brukerdata.get(0);
     }
 }
