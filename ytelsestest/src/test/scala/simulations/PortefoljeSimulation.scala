@@ -4,7 +4,7 @@ import scala.concurrent.duration._
 
 class PortefoljeSimulation extends Simulation {
   private val logger = LoggerFactory.getLogger(PortefoljeSimulation.this.getClass)
-  private val brukernavn = csv(System.getProperty("BRUKERE", "fordelBrukerPaEnheter_FO3.csv")).circular
+  private val brukernavn = csv(System.getProperty("BRUKERE", "brukere_t3.csv")).circular
 
   private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC", 1).toInt
   private val duration = Integer.getInteger("DURATION", 1).toInt
@@ -16,6 +16,7 @@ class PortefoljeSimulation extends Simulation {
   private val rapporterSolrSamlet = System.getProperty("RAPPORTER_SOLR_SAMLET", "true").toBoolean;
   private val rampUp = System.getProperty("RAMP_UP", "false").toBoolean;
   private val appnavn = "veilarbpersonflatefs"
+  private val enhetsFeeder = enheter.map(enhet => Map("enhet" -> enhet.trim)).circular
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
   private val veilederForTildeling2 = System.getProperty("VEIL_2", "X905112")
   private val brukereForTildeling = System.getProperty("BRUKERE_TIL_VEILEDER", "!!CHANGE ME!!")
@@ -59,6 +60,7 @@ class PortefoljeSimulation extends Simulation {
 
   private val portefoljeScenario = scenario("Portefolje: Enhet")
     .feed(brukernavn)
+    .feed(enhetsFeeder)
     .exec(login)
     .pause(500 milliseconds)
     .exec(Helpers.httpGetSuccessWithResonse("tekster portefolje", "/veilarbportefoljeflatefs/api/tekster", "filtrering"))
