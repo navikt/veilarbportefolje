@@ -69,7 +69,6 @@ class PortefoljeSimulation extends Simulation {
 
   private val portefoljeScenario = scenario("Portefolje: Enhet")
     .feed(brukernavn)
-    .feed(enhetsFeeder)
     .exec(login)
     .pause(500 milliseconds)
     .exec(Helpers.httpGetSuccessWithResonse("tekster portefolje", "/veilarbportefoljeflatefs/api/tekster", "filtrering"))
