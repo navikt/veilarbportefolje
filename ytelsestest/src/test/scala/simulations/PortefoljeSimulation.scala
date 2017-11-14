@@ -1,6 +1,17 @@
 package simulations
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import no.nav.sbl.gatling.login.LoginHelper
+import org.slf4j.LoggerFactory
+import utils.{Helpers, RequestFilter, RequestTildelingVeileder, AktivitetRequestFilter}
+import java.util.concurrent.TimeUnit
+
 import scala.concurrent.duration._
+import scala.util.Random
 
 class PortefoljeSimulation extends Simulation {
   private val logger = LoggerFactory.getLogger(PortefoljeSimulation.this.getClass)
