@@ -2,10 +2,7 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.domene.Bruker;
-import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.domene.Portefolje;
-import no.nav.fo.domene.VeilederId;
+import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
@@ -72,11 +69,10 @@ public class VeilederController {
 
             String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
 
-            List<Bruker> brukere = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg);
-            List<Bruker> brukereSublist = PortefoljeUtils.getSublist(brukere, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereSublist, token, pepClient);
+            BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), token, pepClient);
 
-            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukere, sensurerteBrukereSublist, enhet, fra);
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(), sensurerteBrukereSublist, enhet, fra);
 
             Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
             event.addFieldToReport("identhash", identHash);

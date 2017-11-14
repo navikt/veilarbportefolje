@@ -1,9 +1,9 @@
 package no.nav.fo.util;
 
-import static java.util.Arrays.asList;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.Arrays.asList;
 
 public class UnderOppfolgingRegler {
 

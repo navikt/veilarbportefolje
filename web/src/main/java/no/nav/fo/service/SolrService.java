@@ -16,7 +16,8 @@ public interface SolrService {
 
     Try<UpdateResponse> commit();
 
-    List<Bruker> hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg);
+    BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall);
+    BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg);
 
     Either<Throwable, List<Bruker>> query(String query);
 

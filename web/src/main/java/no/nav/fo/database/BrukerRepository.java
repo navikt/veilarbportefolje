@@ -25,7 +25,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -58,10 +57,6 @@ public class BrukerRepository {
 
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
-    }
-
-    public Try<Oppfolgingstatus> retrieveOppfolgingstatus(PersonId personId) {
-        return retrieveOppfolgingstatus(singletonList(personId)).map( map -> map.get(personId));
     }
 
     public Try<Map<PersonId, Oppfolgingstatus>> retrieveOppfolgingstatus(List<PersonId> personIds) {
@@ -134,17 +129,6 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke personid for fnr: {}", getCauseString(e)));
     }
 
-    public Try<PersonId> deleteBrukerdata(PersonId personId) {
-        return Try.of(
-                () -> {
-                    delete(db.getDataSource(), BRUKERDATA)
-                            .where(WhereClause.equals("PERSONID", personId.toString()))
-                            .execute();
-                    return personId;
-                }
-        ).onFailure((e) -> log.warn("Kunne ikke slette brukerdata for personid {}", personId.toString(), e));
-    }
-
     public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
         io.vavr.collection.List.ofAll(personIds).sliding(1000,1000)
                 .forEach(aktoerIdsBatch -> {
@@ -167,18 +151,6 @@ public class BrukerRepository {
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
         return VeilederId.of(rs.getString("VEILEDERIDENT"));
-    }
-
-    @SneakyThrows
-    private Oppfolgingstatus mapToOppfolgingstatus(ResultSet rs) {
-        if (rs.isBeforeFirst()) {
-            rs.next();
-        }
-        return new Oppfolgingstatus()
-                .setFormidlingsgruppekode(rs.getString(FORMIDLINGSGRUPPEKODE))
-                .setServicegruppekode(rs.getString(KVALIFISERINGSGRUPPEKODE))
-                .setVeileder(rs.getString("veilederident"))
-                .setOppfolgingsbruker(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
     }
 
     @SneakyThrows
@@ -272,16 +244,6 @@ public class BrukerRepository {
     public int updateTidsstempel(Timestamp tidsstempel) {
         String sql = updateTidsstempelSQL();
         return timed(dbTimerNavn(sql),()-> db.update(sql, tidsstempel));
-    }
-
-    public java.util.List<Map<String, Object>> retrieveBruker(String aktoerId) {
-        String sql = retrieveBrukerSQL();
-        return timed(dbTimerNavn(sql), ()-> db.queryForList(sql, aktoerId));
-    }
-
-    public java.util.List<Map<String, Object>> retrievePersonid(String aktoerId) {
-        String sql = getPersonidFromAktoeridSQL();
-        return timed(dbTimerNavn(sql), ()-> db.queryForList(sql, aktoerId));
     }
 
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
@@ -503,10 +465,6 @@ public class BrukerRepository {
         return "UPDATE METADATA SET SIST_INDEKSERT = ?";
     }
 
-    private String getPersonidFromAktoeridSQL() {
-        return "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?";
-    }
-
     private String getPersonIdsFromFnrsSQL() {
         return
                 "SELECT " +
@@ -516,10 +474,6 @@ public class BrukerRepository {
                         "oppfolgingsbruker " +
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
-    }
-
-    private String retrieveBrukerSQL() {
-        return "SELECT * FROM BRUKER_DATA WHERE AKTOERID=?";
     }
 
     private String retrieveBrukerdataSQL() {

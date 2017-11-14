@@ -7,14 +7,16 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
-import java.util.logging.Filter;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.SolrSortUtils.addSort;
 
 public class SolrUtils {
     static String TILTAK = "TILTAK";
@@ -44,11 +46,12 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String queryString, Filtervalg filtervalg) {
+
+    public static SolrQuery buildSolrQuery(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery(queryString);
+        addSort(solrQuery, sortOrder, sortField, filtervalg);
         leggTilFiltervalg(solrQuery, filtervalg);
-        solrQuery.addSort("person_id", SolrQuery.ORDER.asc);
         return solrQuery;
     }
 
@@ -61,94 +64,6 @@ public class SolrUtils {
         if (statusCode != 0) {
             throw new SolrUpdateResponseCodeException(format("Solr returnerte med statuskode %s", statusCode));
         }
-    }
-
-    private static <S extends Comparable<S>> List<Bruker> sorterBrukerePaaFelt(List<Bruker> brukere, String sortOrder, Function<Bruker, S> sortField) {
-        boolean ascending = "ascending".equals(sortOrder);
-
-        Comparator<S> allowNullComparator = (o1, o2) -> {
-            if (o1 == null && o2 == null) return 0;
-            if (o1 == null) return -1;
-            if (o2 == null) return 1;
-
-            if (o1 instanceof String && o2 instanceof String) {
-                return collator.compare(o1, o2);
-            }
-            return o1.compareTo(o2);
-        };
-
-        Comparator<Bruker> fieldComparator = Comparator.comparing(sortField, allowNullComparator);
-        if (!ascending) {
-            fieldComparator = fieldComparator.reversed();
-        }
-
-        Comparator<Bruker> comparator = brukerErNyComparator().thenComparing(fieldComparator);
-
-        brukere.sort(comparator);
-        return brukere;
-    }
-
-    private static Map<String, Function<Bruker, Comparable>> sortFieldMap = new HashMap<String, Function<Bruker, Comparable>>() {{
-        put("etternavn", Bruker::getEtternavn);
-        put("fodselsnummer", Bruker::getFnr);
-        put("utlopsdato", Bruker::getUtlopsdato);
-        put("aapmaxtiduke", Bruker::getAapmaxtidUke);
-        put("dagputlopuke", Bruker::getDagputlopUke);
-        put("permutlopuke", Bruker::getPermutlopUke);
-        put("arbeidslistefrist", Bruker::getArbeidslisteFrist);
-        put("venterpasvarfranav", Bruker::getVenterPaSvarFraNAV);
-        put("venterpasvarfrabruker", Bruker::getVenterPaSvarFraBruker);
-        put("utlopteaktiviteter", Bruker::getNyesteUtlopteAktivitet);
-        put("iavtaltaktivitet", Bruker::getNesteAktivitetUtlopsdatoOrElseEpoch0);
-    }};
-
-    public static List<Bruker> sortBrukere(List<Bruker> brukere, String sortOrder, String sortField, Filtervalg filtervalg) {
-        if (sortFieldMap.containsKey(sortField)) {
-            return sorterBrukerePaaFelt(brukere, sortOrder, sortFieldMap.get(sortField));
-        }
-        if(Objects.nonNull(sortField) && sortField.equals("valgteaktiviteter")) {
-            List<String> aktivitetListe = filtervalg.aktiviteter
-                    .entrySet()
-                    .stream()
-                    .filter(map -> AktivitetFiltervalg.JA.equals(map.getValue()))
-                    .map(map -> map.getKey())
-                    .collect(Collectors.toList());
-
-            return sorterBrukerePaaFelt(brukere, sortOrder, bruker -> bruker.getNesteUtlopsdatoAvAktiviteterOrElseEpoch0(aktivitetListe));
-        }
-
-        brukere.sort(brukerErNyComparator());
-        return brukere;
-    }
-
-
-
-    static Comparator<Bruker> setComparatorSortOrder(Comparator<Bruker> comparator, String sortOrder) {
-        return sortOrder.equals("descending") ? comparator.reversed() : comparator;
-    }
-
-    public static Comparator<Bruker> brukerErNyComparator() {
-        return (brukerA, brukerB) -> {
-
-            boolean brukerAErNy = brukerA.getVeilederId() == null;
-            boolean brukerBErNy = brukerB.getVeilederId() == null;
-
-            if (brukerAErNy && !brukerBErNy) {
-                return -1;
-            } else if (!brukerAErNy && brukerBErNy) {
-                return 1;
-            } else {
-                return 0;
-            }
-        };
-    }
-
-    private static <S, T> Comparator<S> norskComparator(final Function<S, T> keyExtractor) {
-        return (S s1, S s2) -> collator.compare(keyExtractor.apply(s1), keyExtractor.apply(s2));
-    }
-
-    static Comparator<Bruker> brukerNavnComparator() {
-        return norskComparator(Bruker::getEtternavn).thenComparing(norskComparator(Bruker::getFornavn));
     }
 
     public static <T> String orStatement(List<T> filter, Function<T, String> mapper) {

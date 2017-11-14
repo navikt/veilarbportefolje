@@ -7,6 +7,7 @@ import java.time.ZoneId;
 
 import static no.nav.fo.util.DateUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class DateUtilsTest {
 
@@ -26,6 +27,10 @@ public class DateUtilsTest {
         String utcString = toIsoUTC(timestamp);
 
         assertThat(utcString).isEqualTo("2010-01-01T11:00:00Z");
+    }
 
+    @Test
+    public void shouldBeEqualToEpoch0() {
+        assertTrue(isEpoch0(new Timestamp(0)));
     }
 }

@@ -10,7 +10,6 @@ import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
-import no.nav.fo.service.OppdaterBrukerdataFletter;
 import no.nav.fo.service.SolrService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -61,13 +60,12 @@ public class OppfolgingerfeedConfig {
     }
 
     @Bean
-    public OppfolgingFeedHandler oppfolgingFeedHandler(OppdaterBrukerdataFletter oppdaterBrukerdataFletter,
-                                                       ArbeidslisteService arbeidslisteService,
+    public OppfolgingFeedHandler oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                                        BrukerRepository brukerRepository,
                                                        AktoerService aktoerService,
                                                        SolrService solrService,
                                                        OppfolgingFeedRepository oppfolgingFeedRepository) {
-        return new OppfolgingFeedHandler(oppdaterBrukerdataFletter, arbeidslisteService, brukerRepository, aktoerService, solrService, oppfolgingFeedRepository);
+        return new OppfolgingFeedHandler(arbeidslisteService, brukerRepository, aktoerService, solrService, oppfolgingFeedRepository);
     }
 
     private static String sisteEndring(JdbcTemplate db) {

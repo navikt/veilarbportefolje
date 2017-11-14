@@ -2,7 +2,9 @@ package no.nav.fo.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.fo.util.sql.*;
+import no.nav.fo.util.sql.SqlUtils;
+import no.nav.fo.util.sql.UpdateBatchQuery;
+import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -33,26 +35,6 @@ public class Brukerdata {
     private Timestamp nyesteUtlopteAktivitet;
     private Set<AktivitetStatus> aktiviteter;
 
-    public UpdateQuery toUpdateQuery(JdbcTemplate db) {
-        return SqlUtils.update(db, "bruker_data")
-                .set("VEILEDERIDENT", veileder)
-                .set("TILDELT_TIDSPUNKT", tildeltTidspunkt)
-                .set("AKTOERID", aktoerid)
-                .set("YTELSE", safeToString(ytelse))
-                .set("UTLOPSDATO", toTimestamp(utlopsdato))
-                .set("UTLOPSDATOFASETT", safeToString(utlopsFasett))
-                .set("DAGPUTLOPUKE", safeToString(dagputlopUke))
-                .set("DAGPUTLOPUKEFASETT", safeToString(dagputlopUkeFasett))
-                .set("PERMUTLOPUKE", safeToString(permutlopUke))
-                .set("PERMUTLOPUKEFASETT", safeToString(permutlopUkeFasett))
-                .set("AAPMAXTIDUKE", safeToString(aapmaxtidUke))
-                .set("AAPMAXTIDUKEFASETT", safeToString(aapmaxtidUkeFasett))
-                .set("OPPFOLGING", safeToJaNei(oppfolging))
-                .set("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
-                .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
-                .whereEquals("PERSONID", personid);
-    }
-
     public UpsertQuery toUpsertQuery(JdbcTemplate db) {
         return SqlUtils.upsert(db, "bruker_data")
                 .where(WhereClause.equals("PERSONID", personid))
@@ -73,27 +55,6 @@ public class Brukerdata {
                 .set("PERSONID", personid)
                 .set("OPPFOLGING", safeToJaNei(oppfolging))
                 .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet);
-    }
-
-    public InsertQuery toInsertQuery(JdbcTemplate db) {
-        return SqlUtils.insert(db, "bruker_data")
-                .value("VEILEDERIDENT", veileder)
-                .value("TILDELT_TIDSPUNKT", tildeltTidspunkt)
-                .value("AKTOERID", aktoerid)
-                .value("YTELSE", safeToString(ytelse))
-                .value("UTLOPSDATO", toTimestamp(utlopsdato))
-                .value("UTLOPSDATOFASETT", safeToString(utlopsFasett))
-                .value("DAGPUTLOPUKE", safeToString(dagputlopUke))
-                .value("DAGPUTLOPUKEFASETT", safeToString(dagputlopUkeFasett))
-                .value("PERMUTLOPUKE", safeToString(permutlopUke))
-                .value("PERMUTLOPUKEFASETT", safeToString(permutlopUkeFasett))
-                .value("AAPMAXTIDUKE", safeToString(aapmaxtidUke))
-                .value("AAPMAXTIDUKEFASETT", safeToString(aapmaxtidUkeFasett))
-                .value("PERSONID", personid)
-                .value("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
-                .value("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
-                .value("OPPFOLGING", safeToJaNei(oppfolging))
-                .value("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet);
     }
 
     public static int[] batchUpdate(JdbcTemplate db, List<Brukerdata> data) {
@@ -125,13 +86,6 @@ public class Brukerdata {
             return "N";
         }
         return oppfolging ? "J" : "N";
-    }
-
-    private static String booleanTo0OR1(Boolean bool) {
-        if(bool == null) {
-            return null;
-        }
-        return bool ? "1" : "0";
     }
 
     private static Object safeToString(Object o) {

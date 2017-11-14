@@ -1,13 +1,13 @@
 package no.nav.fo.util;
 
-import static java.util.Arrays.asList;
-import static no.nav.fo.util.UnderOppfolgingRegler.erUnderOppfolging;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import static java.util.Arrays.asList;
+import static no.nav.fo.util.UnderOppfolgingRegler.erUnderOppfolging;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UnderOppfolgingReglerTest {
 

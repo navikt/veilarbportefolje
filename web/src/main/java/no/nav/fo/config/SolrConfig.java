@@ -3,7 +3,6 @@ package no.nav.fo.config;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.SolrServiceImpl;
