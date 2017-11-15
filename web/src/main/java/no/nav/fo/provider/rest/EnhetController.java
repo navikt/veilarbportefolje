@@ -86,6 +86,7 @@ public class EnhetController {
     public Response hentPortefoljestorrelser(@PathParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
             return solrService.hentPortefoljestorrelser(enhet);
         });
@@ -96,6 +97,7 @@ public class EnhetController {
     public Response hentStatusTall(@PathParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
             return solrService.hentStatusTallForPortefolje(enhet);
         });
@@ -106,6 +108,7 @@ public class EnhetController {
     public Response hentTiltak(@PathParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
             return tiltakService.hentEnhettiltak(enhet)
                     .getOrElse(new EnhetTiltak());
