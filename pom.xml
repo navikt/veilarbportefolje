@@ -37,6 +37,7 @@
         <sonar.exclusions>
             **/mock/*,
             **/config/**,
+            **/*.sql
         </sonar.exclusions>
     </properties>
 
