@@ -21,7 +21,11 @@ public class TotalHovedindekseringServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        hovedindekseringScheduler.prosessScheduler();
+        if(AuthorizationUtils.isBasicAuthAuthorized(req)) {
+            hovedindekseringScheduler.prosessScheduler();
+        } else {
+            AuthorizationUtils.writeUnauthorized(resp);
+        }
     }
 
 }

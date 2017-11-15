@@ -21,7 +21,11 @@ public class PopulerIndekseringServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        solrService.hovedindeksering();
+        if(AuthorizationUtils.isBasicAuthAuthorized(req)) {
+            solrService.hovedindeksering();
+        } else {
+            AuthorizationUtils.writeUnauthorized(resp);
+        }
     }
 
 }
