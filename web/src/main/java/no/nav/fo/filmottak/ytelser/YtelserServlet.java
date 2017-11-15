@@ -40,7 +40,7 @@ public class YtelserServlet extends HttpServlet {
                 resp.getWriter().write("fant ikke masternoden");
                 resp.setStatus(500);
             } else {
-                URL masterUrl = new URL(format("http://%s:8443/veilarbportefolje/internal/reindekserytelser", masternode));
+                URL masterUrl = new URL(format("http://%s:8443/veilarbportefolje/internal/oppdaterytelser", masternode));
                 InputStreamReader reader = new InputStreamReader(masterUrl.openStream());
                 String masterResp = CharStreams.toString(reader);
                 resp.getWriter().write("master sa: " + masterResp);
