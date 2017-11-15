@@ -102,7 +102,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://nav.no/melding/virksomhet/loependeYtelser/v1", name = "loependeYtelser")
     public JAXBElement<LoependeYtelser> createLoependeYtelser(LoependeYtelser value) {
-        return new JAXBElement<LoependeYtelser>(_LoependeYtelser_QNAME, LoependeYtelser.class, null, value);
+        return new JAXBElement<>(_LoependeYtelser_QNAME, LoependeYtelser.class, null, value);
     }
 
 }

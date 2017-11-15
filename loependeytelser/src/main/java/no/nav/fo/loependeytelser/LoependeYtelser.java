@@ -75,7 +75,7 @@ public class LoependeYtelser {
      */
     public List<LoependeVedtak> getLoependeVedtakListe() {
         if (loependeVedtakListe == null) {
-            loependeVedtakListe = new ArrayList<LoependeVedtak>();
+            loependeVedtakListe = new ArrayList<>();
         }
         return this.loependeVedtakListe;
     }
@@ -104,7 +104,7 @@ public class LoependeYtelser {
      */
     public List<Sakstyper> getSakstypeListe() {
         if (sakstypeListe == null) {
-            sakstypeListe = new ArrayList<Sakstyper>();
+            sakstypeListe = new ArrayList<>();
         }
         return this.sakstypeListe;
     }
@@ -133,7 +133,7 @@ public class LoependeYtelser {
      */
     public List<Rettighetstyper> getRettighetstypeListe() {
         if (rettighetstypeListe == null) {
-            rettighetstypeListe = new ArrayList<Rettighetstyper>();
+            rettighetstypeListe = new ArrayList<>();
         }
         return this.rettighetstypeListe;
     }
