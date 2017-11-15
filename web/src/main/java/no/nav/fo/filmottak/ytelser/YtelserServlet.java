@@ -1,6 +1,7 @@
 package no.nav.fo.filmottak.ytelser;
 
 import com.google.common.io.CharStreams;
+import no.nav.fo.internal.AuthorizationUtils;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -30,19 +31,23 @@ public class YtelserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (this.ismasternode) {
-            runAsync(() -> kopierGR199FraArena.startOppdateringAvYtelser());
-            resp.getWriter().write("reindeksering startet");
-            resp.setStatus(200);
-        } else if (this.masternode.isEmpty()) {
-            resp.getWriter().write("fant ikke masternoden");
-            resp.setStatus(500);
+        if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
+            if (this.ismasternode) {
+                runAsync(() -> kopierGR199FraArena.startOppdateringAvYtelser());
+                resp.getWriter().write("reindeksering startet");
+                resp.setStatus(200);
+            } else if (this.masternode.isEmpty()) {
+                resp.getWriter().write("fant ikke masternoden");
+                resp.setStatus(500);
+            } else {
+                URL masterUrl = new URL(format("http://%s:8443/veilarbportefolje/internal/reindekserytelser", masternode));
+                InputStreamReader reader = new InputStreamReader(masterUrl.openStream());
+                String masterResp = CharStreams.toString(reader);
+                resp.getWriter().write("master sa: " + masterResp);
+                resp.setStatus(200);
+            }
         } else {
-            URL masterUrl = new URL(format("http://%s:8443/veilarbportefolje/internal/reindekserytelser", masternode));
-            InputStreamReader reader = new InputStreamReader(masterUrl.openStream());
-            String masterResp = CharStreams.toString(reader);
-            resp.getWriter().write("master sa: " + masterResp);
-            resp.setStatus(200);
+            AuthorizationUtils.writeUnauthorized(resp);
         }
     }
 }
