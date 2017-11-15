@@ -13,9 +13,12 @@ import static java.lang.System.getProperty;
 @Slf4j
 public class AuthorizationUtils {
 
+    public static final String SYSTEMUSER_USERNAME = "no.nav.modig.security.systemuser.username";
+    public static final String SYSTEMUSER_PASSWORD = "no.nav.modig.security.systemuser.password";
+
     public static final String AUTHENTICATE = "WWW-Authenticate";
     public static final String BASIC_REALM = "BASIC realm=\"srvveilarbportefolje\"";
-    private static final String AUTHORIZATION = "Authorization";
+    public static final String AUTHORIZATION = "Authorization";
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
     public static boolean isBasicAuthAuthorized(HttpServletRequest request) {
@@ -35,8 +38,8 @@ public class AuthorizationUtils {
 
         String username = basicAuthDecoded.split(":")[0].toLowerCase();
         String password = basicAuthDecoded.split(":")[1];
-        String srvUsername = getProperty("no.nav.modig.security.systemuser.username").toLowerCase();
-        String srvPassword = getProperty("no.nav.modig.security.systemuser.password");
+        String srvUsername = getProperty(SYSTEMUSER_USERNAME).toLowerCase();
+        String srvPassword = getProperty(SYSTEMUSER_PASSWORD);
 
         return username.equals(srvUsername) && password.equals(srvPassword);
     }
