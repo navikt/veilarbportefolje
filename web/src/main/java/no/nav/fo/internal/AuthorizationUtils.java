@@ -1,11 +1,11 @@
 package no.nav.fo.internal;
 
 import lombok.extern.slf4j.Slf4j;
-import sun.misc.BASE64Decoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Objects;
 
 import static java.lang.System.getProperty;
@@ -19,7 +19,7 @@ public class AuthorizationUtils {
     public static final String AUTHENTICATE = "WWW-Authenticate";
     public static final String BASIC_REALM = "BASIC realm=\"srvveilarbportefolje\"";
     public static final String AUTHORIZATION = "Authorization";
-    private static final BASE64Decoder decoder = new BASE64Decoder();
+    private static final Base64.Decoder decoder = Base64.getDecoder();
 
     public static boolean isBasicAuthAuthorized(HttpServletRequest request) {
         String auth = request.getHeader(AUTHORIZATION);
@@ -29,12 +29,7 @@ public class AuthorizationUtils {
 
         String basicAuth = auth.substring(6);
         String basicAuthDecoded;
-        try {
-            basicAuthDecoded = new String(decoder.decodeBuffer(basicAuth));
-        } catch (IOException e) {
-            log.error("Kunne ikke decode basic auth");
-            return false;
-        }
+        basicAuthDecoded = new String(decoder.decode(basicAuth));
 
         String username = basicAuthDecoded.split(":")[0].toLowerCase();
         String password = basicAuthDecoded.split(":")[1];

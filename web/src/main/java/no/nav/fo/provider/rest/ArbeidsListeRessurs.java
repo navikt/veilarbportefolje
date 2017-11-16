@@ -198,7 +198,8 @@ public class ArbeidsListeRessurs {
                     .collect(Collectors.toList());
 
             Validation<java.util.List<Fnr>, java.util.List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
-            if (validerFnrs.isInvalid()) {
+            Validation<String, java.util.List<Fnr>> veilederForBrukere = TilgangsRegler.erVeilederForBrukere(arbeidslisteService, fnrs);
+            if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
                 throw new RestValideringException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
             }
 
