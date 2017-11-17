@@ -1,10 +1,7 @@
 package no.nav.fo.config;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.ArbeidslisteRepository;
-import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.EnhetTiltakRepository;
-import no.nav.fo.database.OppfolgingFeedRepository;
+import no.nav.fo.database.*;
 import no.nav.fo.feed.DialogFeedRepository;
 import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +40,11 @@ public class DatabaseConfigTest {
     @Bean
     public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
+    }
+
+    @Bean
+    public PersonRepository personRepository(DataSource ds) {
+        return new PersonRepository(ds);
     }
 
     @Bean

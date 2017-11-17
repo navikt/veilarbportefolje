@@ -1,10 +1,7 @@
 package no.nav.fo.config;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.ArbeidslisteRepository;
-import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.database.EnhetTiltakRepository;
-import no.nav.fo.database.OppfolgingFeedRepository;
+import no.nav.fo.database.*;
 import no.nav.fo.feed.DialogFeedRepository;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
@@ -44,6 +41,11 @@ public class DatabaseConfig {
     @Bean
     public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
+    }
+
+    @Bean
+    public PersonRepository personRepository(DataSource ds) {
+        return new PersonRepository(ds);
     }
 
     @Bean
