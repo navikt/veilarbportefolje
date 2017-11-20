@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
 @Accessors(chain = true)
@@ -22,6 +23,9 @@ public class Personinfo {
     private boolean egenAnsatt;
 
     public Personinfo withSikkerhetstiltak(String sikkerhetstiltak) {
+        if(Objects.isNull(sikkerhetstiltak)) {
+            return this;
+        }
         if(!kodeTilBeskrivelse.containsKey(sikkerhetstiltak)) {
             log.warn("Finner ikke beskrivelse for sikkerhetstiltak {}", sikkerhetstiltak);
             return this;
