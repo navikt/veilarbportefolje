@@ -44,6 +44,16 @@ public class YtelseFasettMappingTest {
     }
 
     @Test
+    public void skalKlassifisereAAPUnntakMedDagerIgjen() throws Exception {
+        LoependeVedtak vedtak = lagVedtak("AA", "AAP");
+        AAPtellere teller = new AAPtellere();
+        teller.setAntallDagerIgjenUnntak(BigInteger.ONE);
+        vedtak.setAaptellere(teller);
+
+        assertThat(YtelseMapping.of(vedtak)).isEqualTo(Optional.of(AAP_UNNTAK));
+    }
+
+    @Test
     public void skalKlassifisereTiltaksPenger() throws Exception {
         assertThat(YtelseMapping.of(lagVedtak("INDIV", "BASI"))).isEqualTo(Optional.of(TILTAKSPENGER));
     }

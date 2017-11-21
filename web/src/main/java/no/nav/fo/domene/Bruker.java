@@ -42,6 +42,8 @@ public class Bruker {
     DagpengerUkeFasettMapping permutlopUkeFasett;
     Integer aapmaxtidUke;
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
+    Integer aapAntallDagerIgjenUnntak;
+    AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
@@ -72,6 +74,8 @@ public class Bruker {
                 .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("permutlopukefasett")))
                 .setAapmaxtidUke((Integer) document.get("aapmaxtiduke"))
                 .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of((String) document.get("aapmaxtidukefasett")))
+                .setAapAntallDagerIgjenUnntak((Integer) document.get("aapantalldagerigjenunntak"))
+                .setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.of((String) document.get("aapunntakdagerigjenfasett")))
                 .setArbeidsliste(Arbeidsliste.of(document))
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
@@ -128,6 +132,5 @@ public class Bruker {
 
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
-
     }
 }

@@ -53,6 +53,13 @@ public class DiagramControllerTest {
             new Bruker().setFnr("17").setUtlopsdatoFasett(MND12).setDagputlopUkeFasett(UKE50_52).setAapmaxtidUkeFasett(UKE192_203),
             new Bruker().setFnr("18").setUtlopsdatoFasett(MND12).setDagputlopUkeFasett(UKE50_52).setAapmaxtidUkeFasett(UKE204_215)
     );
+
+    private static final List<Bruker> BRUKERE_AAP_UNNTAK = asList(
+            new Bruker().setFnr("1").setUtlopsdatoFasett(MND1).setDagputlopUkeFasett(UKE_UNDER2).setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.UKE132_143),
+            new Bruker().setFnr("2").setUtlopsdatoFasett(MND2).setDagputlopUkeFasett(UKE2_5).setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.UKE204_215),
+            new Bruker().setFnr("3").setUtlopsdatoFasett(MND3).setDagputlopUkeFasett(UKE6_9).setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.UKE204_215)
+    );
+
     @Mock
     private SolrService solr;
 
@@ -135,4 +142,19 @@ public class DiagramControllerTest {
         assertThat(gruppering.get(UKE36_47)).isEqualTo(2L);
     }
 
+    @Test
+    public void skalGrupperePaAAPUnntakUtlopsdato() throws Exception {
+        List<Bruker> brukere = new ArrayList<>(BRUKERE_AAP_UNNTAK);
+
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(), brukere));
+
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_UNNTAK));
+
+        Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
+        Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
+
+        assertThat(gruppering).hasSize(18);
+        assertThat(storsteGruppe).contains(2L);
+        assertThat(gruppering.get(AAPUnntakDagerIgjenFasettMapping.UKE204_215)).isEqualTo(2L);
+    }
 }

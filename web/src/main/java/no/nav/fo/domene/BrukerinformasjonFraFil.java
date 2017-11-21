@@ -1,6 +1,5 @@
 package no.nav.fo.domene;
 
-
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -19,6 +18,8 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
     DagpengerUkeFasettMapping permutlopUkeFasett;
     Integer aapmaxtidUke;
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
+    Integer aapAntallDagerIgjenUnntak;
+    AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett;
 
     public BrukerinformasjonFraFil(String personid) {
         this.personid = personid;
@@ -40,6 +41,8 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
                 .setPermutlopUke(permutlopUke)
                 .setPermutlopUkeFasett(permutlopUkeFasett)
                 .setAapmaxtidUke(aapmaxtidUke)
-                .setAapmaxtidUkeFasett(aapmaxtidUkeFasett);
+                .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
+                .setAapUnntakDagerIgjen(aapAntallDagerIgjenUnntak)
+                .setAapunntakDagerIgjenFasett(aapUnntakDagerIgjenFasett);
     }
 }

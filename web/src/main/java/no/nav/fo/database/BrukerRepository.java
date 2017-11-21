@@ -69,7 +69,7 @@ public class BrukerRepository {
                         Map<String, Object> params = new HashMap<>(personIdsBatch.size());
                         params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
                         String sql = retrieveOppfolgingstatusListSql();
-                        timed(dbTimerNavn(sql),()->namedParameterJdbcTemplate.queryForList(sql, params))
+                        timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(sql, params))
                                 .forEach(data -> personIdOppfolgingstatusMap.put(
                                         PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
                                         new Oppfolgingstatus()
@@ -130,12 +130,12 @@ public class BrukerRepository {
     }
 
     public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
-        io.vavr.collection.List.ofAll(personIds).sliding(1000,1000)
+        io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
                 .forEach(aktoerIdsBatch -> {
                     Map<String, Object> params = new HashMap<>();
                     params.put("personids", aktoerIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
                     String sql = deleteBrukerdataSql();
-                    timed(dbTimerNavn(sql),() -> namedParameterJdbcTemplate.update(sql, params));
+                    timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.update(sql, params));
                 });
     }
 
@@ -170,7 +170,7 @@ public class BrukerRepository {
     void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
         String sql = retrieveBrukereSQL();
-        timed(dbTimerNavn(sql), ()-> db.query(sql, rs -> {
+        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
                 prosess.accept(brukerDokument);
@@ -183,7 +183,7 @@ public class BrukerRepository {
         List<SolrInputDocument> brukere = new ArrayList<>();
         db.setFetchSize(10000);
         String sql = retrieveOppdaterteBrukereSQL();
-        timed(dbTimerNavn(sql), ()->db.query(sql, rs -> {
+        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
             brukere.add(mapResultSetTilDokument(rs));
         }));
         return brukere;
@@ -191,13 +191,13 @@ public class BrukerRepository {
 
     public List<SolrInputDocument> retrieveBrukeremedBrukerdata(List<PersonId> personIds) {
         List<SolrInputDocument> dokumenter = new ArrayList<>(personIds.size());
-        io.vavr.collection.List.ofAll(personIds).sliding(1000,1000)
+        io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
                 .forEach(personIdsBatch -> {
                     Map<String, Object> params = new HashMap<>();
                     params.put("personids", personIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
                     String sql = retrieveBrukereMedBrukerdataSQL();
-                    timed(dbTimerNavn(sql),()->namedParameterJdbcTemplate.query(sql, params, rs -> {
-                            dokumenter.add(mapResultSetTilDokument(rs));
+                    timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.query(sql, params, rs -> {
+                        dokumenter.add(mapResultSetTilDokument(rs));
                     }));
                 });
         return dokumenter;
@@ -206,7 +206,7 @@ public class BrukerRepository {
     public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
         String[] args = new String[]{personId};
         String sql = retrieveBrukerMedBrukerdataSQL();
-        return timed(dbTimerNavn(sql),()->db.query(sql, args, (rs) -> {
+        return timed(dbTimerNavn(sql), () -> db.query(sql, args, (rs) -> {
             if (rs.isBeforeFirst()) {
                 rs.next();
             }
@@ -218,7 +218,7 @@ public class BrukerRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("fnrs", personIds);
         String sql = retrieveBrukerdataSQL();
-        return timed(dbTimerNavn(sql),()-> namedParameterJdbcTemplate.queryForList(sql, params))
+        return timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(sql, params))
                 .stream()
                 .map(data -> new Brukerdata()
                         .setAktoerid((String) data.get("AKTOERID"))
@@ -234,6 +234,8 @@ public class BrukerRepository {
                         .setPermutlopUkeFasett(dagpengerUkeFasettMappingOrNull((String) data.get("PERMUTLOPUKEFASETT")))
                         .setAapmaxtidUke(intValue(data.get("AAPMAXTIDUKE")))
                         .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
+                        .setAapUnntakDagerIgjen(intValue(data.get("AAPUNNTAKDAGERIGJEN")))
+                        .setAapunntakDagerIgjenFasett(aapUnntakDagerIgjenFasettMappingOrNull((String) data.get("AAPUNNTAKDAGERIGJENFASETT")))
                         .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
@@ -243,7 +245,7 @@ public class BrukerRepository {
 
     public int updateTidsstempel(Timestamp tidsstempel) {
         String sql = updateTidsstempelSQL();
-        return timed(dbTimerNavn(sql),()-> db.update(sql, tidsstempel));
+        return timed(dbTimerNavn(sql), () -> db.update(sql, tidsstempel));
     }
 
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
@@ -253,7 +255,7 @@ public class BrukerRepository {
             Map<String, Object> params = new HashMap<>();
             params.put("fnrs", fnrBatch);
             String sql = getPersonIdsFromFnrsSQL();
-            Map<String, Optional<String>> fnrPersonIdMap = timed(dbTimerNavn(sql), ()-> namedParameterJdbcTemplate.queryForList(
+            Map<String, Optional<String>> fnrPersonIdMap = timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(
                     sql,
                     params))
                     .stream()
@@ -273,14 +275,14 @@ public class BrukerRepository {
         return brukere;
     }
 
-    public Map<AktoerId,Optional<PersonId>> hentPersonidsFromAktoerids(List<AktoerId> aktoerIds) {
+    public Map<AktoerId, Optional<PersonId>> hentPersonidsFromAktoerids(List<AktoerId> aktoerIds) {
         Map<AktoerId, Optional<PersonId>> brukere = new HashMap<>(aktoerIds.size());
 
         batchProcess(1000, aktoerIds, timed("retreive.personids.batch", (aktoeridsBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("aktoerids", aktoeridsBatch.stream().map(AktoerId::toString).collect(toList()));
             String sql = hentPersonidsFromAktoeridsSQL();
-            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = timed(dbTimerNavn(sql),()->namedParameterJdbcTemplate.queryForList(
+            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(
                     sql, params))
                     .stream()
                     .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
@@ -304,7 +306,7 @@ public class BrukerRepository {
             Map<String, Object> params = new HashMap<>();
             params.put("personids", personIdsBatch.stream().map(PersonId::toString).collect(toList()));
             String sql = hentAktoeridsForPersonidsSQL();
-            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = timed(dbTimerNavn(sql),()-> namedParameterJdbcTemplate.queryForList(
+            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(
                     sql, params))
                     .stream()
                     .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
@@ -341,14 +343,13 @@ public class BrukerRepository {
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
         String sql = "UPDATE METADATA SET aktiviteter_sist_oppdatert = ?";
-        timed(dbTimerNavn(sql),()-> db.update(sql, timestampFromISO8601(sistOppdatert)));
+        timed(dbTimerNavn(sql), () -> db.update(sql, timestampFromISO8601(sistOppdatert)));
     }
 
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
         Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
                 .stream()
                 .collect(groupingBy((data) -> finnesIDb.contains(data.getPersonid())));
-
 
         Brukerdata.batchUpdate(db, eksisterendeBrukere.getOrDefault(true, emptyList()));
 
@@ -372,6 +373,8 @@ public class BrukerRepository {
                 .set("permutlopukefasett", null)
                 .set("aapmaxtiduke", null)
                 .set("aapmaxtidukefasett", null)
+                .set("aapunntakdagerigjen", null)
+                .set("aapunntakdagerigjenfasett", null)
                 .execute();
     }
 
@@ -415,6 +418,7 @@ public class BrukerRepository {
             "dagputlopuke, dagputlopukefasett, " +
             "permutlopuke, permutlopukefasett, " +
             "aapmaxtiduke, aapmaxtidukefasett, " +
+            "aapunntakdagerigjen, aapunntakdagerigjenfasett, " +
             "oppfolging, " +
             "venterpasvarfrabruker, " +
             "venterpasvarfranav, " +
@@ -525,6 +529,10 @@ public class BrukerRepository {
 
     private AAPMaxtidUkeFasettMapping aapMaxtidUkeFasettMappingOrNull(String string) {
         return string != null ? AAPMaxtidUkeFasettMapping.valueOf(string) : null;
+    }
+
+    private AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasettMappingOrNull(String string) {
+        return string != null ? AAPUnntakDagerIgjenFasettMapping.valueOf(string) : null;
     }
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
