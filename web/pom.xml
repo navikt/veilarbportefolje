@@ -263,6 +263,10 @@
             <artifactId>metrics</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>util</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.fo</groupId>
             <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>

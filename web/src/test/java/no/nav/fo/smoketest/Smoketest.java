@@ -5,6 +5,7 @@ import no.nav.brukerdialog.security.domain.OidcCredential;
 import no.nav.brukerdialog.security.oidc.TokenUtils;
 import no.nav.brukerdialog.security.oidc.UserTokenProvider;
 import no.nav.dialogarena.config.DevelopmentSecurity;
+import no.nav.sbl.util.PropertyUtils;
 import org.junit.jupiter.api.BeforeAll;
 
 import javax.ws.rs.core.Cookie;
@@ -12,6 +13,7 @@ import java.util.Objects;
 
 import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.DevelopmentSecurity.setupIntegrationTestSecurity;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 public class Smoketest {
     public static String INNLOGGET_VEILEDER;
@@ -23,7 +25,7 @@ public class Smoketest {
 
     @BeforeAll
     public static void setupSecirity() {
-        MILJO = getProperty("miljo");
+        MILJO = getRequiredProperty("miljo");
         setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig("veilarbportefolje"));
 
         UserTokenProvider userTokenProvider = new UserTokenProvider();
