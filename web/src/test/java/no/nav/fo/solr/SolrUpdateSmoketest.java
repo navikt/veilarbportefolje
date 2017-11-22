@@ -110,13 +110,16 @@ public class SolrUpdateSmoketest {
 
     @Test
     @SneakyThrows
-    public void skalSorterePaaUtlopsdato() {
+    public void skalSorterePaaFnr() {
         Timestamp fodselsdato1 = timestampMinusYears(20);
         Timestamp fodselsdato2 = timestampMinusYears(40);
         Timestamp fodselsdato3 = timestampMinusYears(60);
-        SolrInputDocument solrInputDocument1 = getBaseDocument("1111", fodselsdato1);
-        SolrInputDocument solrInputDocument2 = getBaseDocument("2222", fodselsdato2);
-        SolrInputDocument solrInputDocument3 = getBaseDocument("3333", fodselsdato3);
+        String fnr1 = "01032000000";
+        String fnr2 = "01022000000";
+        String fnr3 = "01012000000";
+        SolrInputDocument solrInputDocument1 = getBaseDocument("1111", fodselsdato1, fnr1);
+        SolrInputDocument solrInputDocument2 = getBaseDocument("2222", fodselsdato2, fnr2);
+        SolrInputDocument solrInputDocument3 = getBaseDocument("3333", fodselsdato3, fnr3);
         solrClient.add(solrInputDocument1);
         solrClient.add(solrInputDocument2);
         solrClient.add(solrInputDocument3);
@@ -135,8 +138,8 @@ public class SolrUpdateSmoketest {
     public void skalSorterePaAktiviteter() {
         Timestamp fodselsdato1 = timestampMinusYears(20);
         Timestamp fodselsdato2 = timestampMinusYears(40);
-        SolrInputDocument solrInputDocument1 = getBaseDocument("1111", fodselsdato1);
-        SolrInputDocument solrInputDocument2 = getBaseDocument("2222", fodselsdato2);
+        SolrInputDocument solrInputDocument1 = getBaseDocument("1111", fodselsdato1, "11111111111");
+        SolrInputDocument solrInputDocument2 = getBaseDocument("2222", fodselsdato2, "11111111111");
         applyAktivitetstatusToDocument(solrInputDocument1, getAktivitetStatusesWithOffset(0));
         applyAktivitetstatusToDocument(solrInputDocument2, getAktivitetStatusesWithOffset(10));
         solrClient.add(solrInputDocument1);
@@ -180,10 +183,10 @@ public class SolrUpdateSmoketest {
         return  new Timestamp(LocalDateTime.now().minusYears(years).toInstant(ZoneOffset.UTC).toEpochMilli());
     }
 
-    private static SolrInputDocument getBaseDocument(String personid, Timestamp fodselsdato) {
+    private static SolrInputDocument getBaseDocument(String personid, Timestamp fodselsdato, String fnr) {
         SolrInputDocument document = new SolrInputDocument();
         document.setField("person_id", personid);
-        document.setField("fnr", "10109012345");
+        document.setField("fnr", fnr);
         document.setField("etternavn", "etternavn");
         document.setField("fornavn", "fornavn");
         document.setField("formidlingsgruppekode", "formidlingsgruppekode");

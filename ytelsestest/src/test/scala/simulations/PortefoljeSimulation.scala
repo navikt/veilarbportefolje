@@ -5,12 +5,10 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import no.nav.sbl.gatling.login.OpenIdConnectLogin
+import no.nav.sbl.gatling.login.LoginHelper
 import org.slf4j.LoggerFactory
 import utils.{Helpers, RequestFilter, RequestTildelingVeileder, AktivitetRequestFilter}
 import java.util.concurrent.TimeUnit
-
-import io.gatling.core.feeder.RecordSeqFeederBuilder
 
 import scala.concurrent.duration._
 import scala.util.Random
@@ -23,21 +21,19 @@ class PortefoljeSimulation extends Simulation {
   private val duration = Integer.getInteger("DURATION", 1).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  private val password = System.getProperty("USER_PASSWORD", "!!CHANGE ME!!")
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "!!CHANGE ME!!")
-  private val enheter = System.getProperty("ENHETER", "1001").split(",")
+  private val veilederPassword = System.getProperty("USER_PASSWORD", "!!CHANGE ME!!")
+  private val oidcUser = System.getProperty("OIDC_USER", "veilarblogin-t3")
   private val rapporterSolrSamlet = System.getProperty("RAPPORTER_SOLR_SAMLET", "true").toBoolean;
-
+  private val rampUp = System.getProperty("RAMP_UP", "false").toBoolean;
   private val appnavn = "veilarbpersonflatefs"
-  private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
-
-  private val enhetsFeeder = RecordSeqFeederBuilder(enheter.map(enhet => Map("enhet" -> enhet.trim))).circular
-
   private val veilederForTildeling1 = System.getProperty("VEIL_1", "X905111")
   private val veilederForTildeling2 = System.getProperty("VEIL_2", "X905112")
-  private val brukerForTildeling = System.getProperty("BRUKER_TIL_VEILEDER", "!!CHANGE ME!!")
+  private val brukereForTildeling = System.getProperty("BRUKERE_TIL_VEILEDER", "!!CHANGE ME!!")
+  private val portefoljeVersion2 = System.getProperty("PORTEFOLJE_V2", "false").toBoolean
 
   val mapper = new ObjectMapper() with ScalaObjectMapper
+
+  private val portefoljeApiUrl = if (portefoljeVersion2) "api/v2" else "api"
 
   private val httpProtocol = http
     .baseURL(baseUrl)
@@ -52,107 +48,105 @@ class PortefoljeSimulation extends Simulation {
     .extraInfoExtractor { extraInfo => List(Helpers.getInfo(extraInfo)) }
 
   private def login() = {
-    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
-      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
+    exec(session => session.set("veilederPassword", veilederPassword))
+      .exec(session => session.set("veilederUsername", session("username").as[String]))
+      .exec(LoginHelper.loginOidc(loginUrl, oidcUser, baseUrl))
+  }
+
+  private def veilederInfo() = {
+    exec(Helpers.httpGetSuccessWithResonse("enheter", "/veilarbveileder/api/veileder/enheter", "enhetliste"))
+      .exec(Helpers.httpGetSuccessWithResonse("veileder", "/veilarbveileder/api/veileder/me", "fornavn"))
+
   }
 
   private def rapporterMedNavn(navn: String): String = {
     if (rapporterSolrSamlet) "portefolje-solrsporring" else navn
   }
 
-  private val loginScenario = scenario("Logger inn")
-    .feed(brukernavn)
-    .exec(login)
+  private def veilederTildelinger(fra: String, til: String): Array[RequestTildelingVeileder] = {
+    brukereForTildeling.split(",").map(fnr => RequestTildelingVeileder(fnr, fra, til))
+  }
 
   private val portefoljeScenario = scenario("Portefolje: Enhet")
     .feed(brukernavn)
-    .feed(enhetsFeeder)
-    .exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
-    .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password)).withMaxAge(Int.MaxValue)))
+    .exec(login)
     .pause(500 milliseconds)
-    .exec(Helpers.httpGetSuccess("tekster portefolje", "/veilarbportefoljeflatefs/tjenester/tekster"))
-    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
-    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
-    .exec(Helpers.httpGetSuccess("statustall", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/statustall"))
+    .exec(Helpers.httpGetSuccessWithResonse("tekster portefolje", "/veilarbportefoljeflatefs/api/tekster", "filtrering"))
+    .exec(veilederInfo)
+    .exec(Helpers.httpGetSuccessWithResonse("statustall", session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/statustall", "nyeBrukere"))
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter nye brukere"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter()))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
+      // .check(bodyString.saveAs("resp"))
     )
+    //.exec(Helpers.printSavedVariableToConsole("resp"))
     .pause(1 second)
-    .exec(Helpers.httpGetSuccess("enheter", "/veilarbveileder/api/veileder/enheter"))
-    .exec(Helpers.httpGetSuccess("veileder", "/veilarbveileder/api/veileder/me"))
+    .exec(veilederInfo)
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(alder = List("20-24", "30-39"))))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder, kjoenn og foedselsdag"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter alder, kjoenn og foedselsdag"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
           alder = List("20-24", "30-39"),
           kjonn = List("M"),
           fodselsdagIMnd = List("1", "2")
         )))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter tiltak"), session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefolje")
+      Helpers.httpPostPaginering(rapporterMedNavn("portefoljefilter tiltak"), session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefolje")
         .body(Helpers.toBody(RequestFilter(
           aktiviteter = AktivitetRequestFilter(TILTAK = "JA")
         )))
         .check(status.is(200))
+        .check(regex("antallTotalt").exists)
     )
     .exec(
-      Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
-        .body(Helpers.toBody(List(RequestTildelingVeileder(
-          brukerFnr = brukerForTildeling,
-          fraVeilederId = null,
-          tilVeilederId = veilederForTildeling1
-        ))))
-        .check(status.is(200))
+        Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
+          .body(Helpers.toBody(veilederTildelinger(fra = null, til = veilederForTildeling1)))
+          .check(status.is(200))
+          .check(regex("resultat").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
-        .body(Helpers.toBody(List(RequestTildelingVeileder(
-          brukerFnr = brukerForTildeling,
-          fraVeilederId = veilederForTildeling1,
-          tilVeilederId = veilederForTildeling2
-        ))))
+        .body(Helpers.toBody(veilederTildelinger(fra = veilederForTildeling1, til = veilederForTildeling2)))
         .check(status.is(200))
+        .check(regex("resultat").exists)
     )
     .pause(1 second, 3 seconds)
     .exec(
       Helpers.httpPostPaginering("tildele veileder", session => s"/veilarboppfolging/api/tilordneveileder/")
-        .body(Helpers.toBody(List(RequestTildelingVeileder(
-          brukerFnr = brukerForTildeling,
-          fraVeilederId = veilederForTildeling2,
-          tilVeilederId = veilederForTildeling1
-        ))))
+        .body(Helpers.toBody(veilederTildelinger(fra = veilederForTildeling2, til = veilederForTildeling1)))
         .check(status.is(200))
+        .check(regex("resultat").exists)
     )
     .pause(1 second, 3 seconds)
-    .exec(Helpers.httpGetSuccess("veilederoversikt", session => s"/veilarbportefolje/api/enhet/${session("enhet").as[String]}/portefoljestorrelser"))
+    .exec(Helpers.httpGetSuccessWithResonse("veilederoversikt", session => s"/veilarbportefolje/${portefoljeApiUrl}/enhet/${session("enhet").as[String]}/portefoljestorrelser", "facetResults"))
 
     .pause(1 second, 3 seconds)
     .exec(
-      Helpers.httpPostPaginering(rapporterMedNavn("veileders portefolje"), session => s"/veilarbportefolje/api/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
-        .body(Helpers.toBody(RequestFilter(brukerstatus = null)))
-        .check(status.is(200))
+       Helpers.httpPostPaginering(rapporterMedNavn("veileders portefolje"), session => s"/veilarbportefolje/${portefoljeApiUrl}/veileder/${session("username").as[String]}/portefolje?enhet=${session("enhet").as[String]}", "0")
+         .body(Helpers.toBody(RequestFilter(brukerstatus = null)))
+         .check(status.is(200))
+         .check(regex("antallTotalt").exists)
     )
 
 
-  setUp(
-    // LoginScenario kjøres for at innloggingsrutinen skal gå seg "varm" slik at denne feilen skal forsvinne:
-    // WARNING: Cookie rejected [amlbcookie="01", version:0, domain:test.local, path:/, expiry:null] Illegal 'domain' attribute "test.local". Domain of origin: "isso-t.adeo.no"
-    loginScenario.inject(constantUsersPerSec(10) during (140 seconds)),
-    portefoljeScenario.inject(nothingFor(140 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
-    //portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
-  )
-    .protocols(httpProtocol)
-    .assertions(global.successfulRequests.percent.gte(99))
+    setUp (
+      if (rampUp) portefoljeScenario.inject(rampUsers(600) over (600 seconds), rampUsers(1800) over (600 seconds), constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+      else portefoljeScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes)
+    )
+      .protocols(httpProtocol)
+      .assertions(global.successfulRequests.percent.gte(99))
 }

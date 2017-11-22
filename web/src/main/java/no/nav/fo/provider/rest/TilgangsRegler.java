@@ -11,6 +11,8 @@ import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.util.TokenUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static io.vavr.control.Validation.invalid;
@@ -45,6 +47,18 @@ public class TilgangsRegler {
         if (!matches) {
             throw new IngenTilgang(format("sjekk av %s feilet, %s", navn, data));
         }
+    }
+
+    static Validation<String, List<Fnr>> erVeilederForBrukere(ArbeidslisteService arbeidslisteService, List<Fnr> fnrs) {
+        List<Fnr> validerteFnrs = new ArrayList<>(fnrs.size());
+        fnrs.forEach(fnr -> {
+            if(erVeilederForBruker(arbeidslisteService, fnr.toString()).isValid()) {
+                validerteFnrs.add(fnr);
+            }
+        });
+
+        return validerteFnrs.size() == fnrs.size() ? valid(validerteFnrs) : invalid(format("Veileder har ikke tilgang til alle brukerene i listen: %s", fnrs));
+
     }
 
     static Validation<String, Fnr> erVeilederForBruker(ArbeidslisteService arbeidslisteService, String fnr) {
