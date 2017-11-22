@@ -90,6 +90,7 @@ public class VeilederController {
             event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
             return solrService.hentStatusTallForVeileder(enhet, veilederIdent);
         });
@@ -103,6 +104,7 @@ public class VeilederController {
             event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
 
             return solrService
                     .hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet)

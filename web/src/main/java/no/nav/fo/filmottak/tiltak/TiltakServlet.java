@@ -1,6 +1,7 @@
 package no.nav.fo.filmottak.tiltak;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.internal.AuthorizationUtils;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -25,9 +26,13 @@ public class TiltakServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if(this.ismasternode) {
-            log.info("Setter i gang oppdatering av tiltak");
-            resp.getWriter().write("Setter i gang oppdatering av tiltak");
-            tiltakHandler.startOppdateringAvTiltakIDatabasen();
+            if(AuthorizationUtils.isBasicAuthAuthorized(req)) {
+                log.info("Setter i gang oppdatering av tiltak");
+                resp.getWriter().write("Setter i gang oppdatering av tiltak");
+                tiltakHandler.startOppdateringAvTiltakIDatabasen();
+            } else {
+                AuthorizationUtils.writeUnauthorized(resp);
+            }
         }
     }
 }
