@@ -124,7 +124,7 @@ public class IndekserYtelserHandlerTest {
     @Test
     public void leggerIkkeTilAAPMaxTilVedAAPUnntak() {
         LoependeVedtak vedtak = lagVedtak("10108000397", "AA", "AAP"); //TESTFAMILIE
-        vedtak.getAaptellere().setAntallDagerUnntak(BigInteger.ONE);
+        vedtak.getAaptellere().setAntallDagerIgjenUnntak(BigInteger.ONE);
         LoependeYtelser ytelser = lagLoependeYtelser(asList(vedtak));
 
         handler.lagreYtelser(ytelser);
@@ -134,6 +134,7 @@ public class IndekserYtelserHandlerTest {
         List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
         assertThat(oppdateringer).hasSize(1);
 
+        assertThat(oppdateringer.get(0).getAapAntallDagerIgjenUnntak().intValue()).isEqualTo(1);
         assertThat(oppdateringer.get(0).getPersonid()).isNotNull();
         assertThat(oppdateringer.get(0).getAapmaxtidUke()).isNull();
         assertThat(oppdateringer.get(0).getAapmaxtidUkeFasett()).isNull();
