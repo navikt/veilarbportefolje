@@ -128,7 +128,7 @@ public class IndekserYtelserHandler {
     private static void settAapUnntakDagerIgjen(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {
         int antallDagerIgjen = vedtak.getAaptellere().getAntallDagerIgjenUnntak().intValue();
         brukerinfo.setAapAntallDagerIgjenUnntak(antallDagerIgjen);
-        AAPUnntakDagerIgjenFasettMapping.finnUkemapping(antallDagerIgjen).ifPresent(brukerinfo::setAapUnntakDagerIgjenFasett);
+        AAPUnntakDagerIgjenFasettMapping.finnUkeMapping(antallDagerIgjen).ifPresent(brukerinfo::setAapUnntakDagerIgjenFasett);
     }
 
     private static void settDagpUke(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {

@@ -1,5 +1,7 @@
 package no.nav.fo.domene;
 
+import no.nav.fo.exception.UgyldigAntallDagerIgjenException;
+
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -10,18 +12,28 @@ public enum AAPUnntakDagerIgjenFasettMapping implements FasettMapping {
     UKE144_155(144, 155), UKE156_167(156, 167), UKE168_179(168, 179), UKE180_191(180, 191),
     UKE192_203(192, 203), UKE204_215(204, 215);
 
-
     private final int start;
     private final int stop;
 
     AAPUnntakDagerIgjenFasettMapping(int start, int stop) {
-        this.start = start;
-        this.stop = stop;
+        // Konverterer til uker fordi vi får antall dager fra tjenesten
+        this.start = konverterFraUkeNummerTilDag(start);
+        this.stop = konverterFraUkeNummerTilDag(stop + 1) - 1;
     }
 
-    public static Optional<AAPUnntakDagerIgjenFasettMapping> finnUkemapping(int uker) {
+    public static Optional<AAPUnntakDagerIgjenFasettMapping> finnUkeMapping(int dager) {
+        int MAX_ANTALL_DAGER = 1511;
+
+        if (dager > MAX_ANTALL_DAGER) {
+            throw new UgyldigAntallDagerIgjenException(dager);
+        } else if (dager < 0) {
+            dager = 0;
+        }
+
+        int finalDager = dager;
+
         return Stream.of(values())
-                .filter((mapping) -> mapping.start <= uker && uker <= mapping.stop)
+                .filter((mapping) -> mapping.start <= finalDager && finalDager <= mapping.stop)
                 .findAny();
     }
 
@@ -30,5 +42,9 @@ public enum AAPUnntakDagerIgjenFasettMapping implements FasettMapping {
             return null;
         }
         return valueOf(s);
+    }
+
+    private static int konverterFraUkeNummerTilDag(int ukeTil) {
+        return Math.max(ukeTil * 7, 0);
     }
 }
