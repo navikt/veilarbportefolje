@@ -31,17 +31,20 @@ public class IndekserYtelserHandler {
 
     static {
         ytelsesSpesifikeFelter.put(YtelseMapping.TILTAKSPENGER, IndekserYtelserHandler::settUtlopsdatoOgMndFasett);
-        ytelsesSpesifikeFelter.put(YtelseMapping.AAP_UNNTAK, IndekserYtelserHandler::settUtlopsdatoOgMndFasett);
         ytelsesSpesifikeFelter.put(YtelseMapping.DAGPENGER_OVRIGE, IndekserYtelserHandler::settDagpUke);
         ytelsesSpesifikeFelter.put(YtelseMapping.ORDINARE_DAGPENGER, IndekserYtelserHandler::settDagpUke);
-        ytelsesSpesifikeFelter.put(YtelseMapping.AAP_MAXTID, (vedtak, brukerinfo) -> {
-            settUtlopsdatoOgMndFasett(vedtak, brukerinfo);
-            settAapMaxtidUke(vedtak, brukerinfo);
-        });
-        ytelsesSpesifikeFelter.put(YtelseMapping.DAGPENGER_MED_PERMITTERING, (vedtak, brukerinfo) -> {
-            settPermittertDagpUke(vedtak, brukerinfo);
-            settDagpUke(vedtak, brukerinfo);
-        });
+        ytelsesSpesifikeFelter.put(YtelseMapping.AAP_MAXTID, exec(
+                IndekserYtelserHandler::settUtlopsdatoOgMndFasett,
+                IndekserYtelserHandler::settAapMaxtidUke
+        ));
+        ytelsesSpesifikeFelter.put(YtelseMapping.AAP_UNNTAK, exec(
+                IndekserYtelserHandler::settUtlopsdatoOgMndFasett,
+                IndekserYtelserHandler::settAapUnntakDagerIgjen
+        ));
+        ytelsesSpesifikeFelter.put(YtelseMapping.DAGPENGER_MED_PERMITTERING, exec(
+                IndekserYtelserHandler::settPermittertDagpUke,
+                IndekserYtelserHandler::settDagpUke
+        ));
     }
 
     @Inject
@@ -79,7 +82,7 @@ public class IndekserYtelserHandler {
                     .collect(toList());
 
             log.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
-            timed("GR199.lagreOppdateringer", () ->  persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter));
+            timed("GR199.lagreOppdateringer", () -> persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter));
         });
         log.info("Lagring av ytelser ferdig!");
     }
@@ -122,6 +125,12 @@ public class IndekserYtelserHandler {
         AAPMaxtidUkeFasettMapping.finnUkemapping(antallUkerIgjen).ifPresent(brukerinfo::setAapmaxtidUkeFasett);
     }
 
+    private static void settAapUnntakDagerIgjen(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {
+        int antallDagerIgjen = vedtak.getAaptellere().getAntallDagerIgjenUnntak().intValue();
+        brukerinfo.setAapAntallDagerIgjenUnntak(antallDagerIgjen);
+        AAPUnntakDagerIgjenFasettMapping.finnUkemapping(antallDagerIgjen).ifPresent(brukerinfo::setAapUnntakDagerIgjenFasett);
+    }
+
     private static void settDagpUke(LoependeVedtak vedtak, BrukerinformasjonFraFil brukerinfo) {
         int antallUkerIgjen = vedtak.getDagpengetellere().getAntallUkerIgjen().intValue();
         brukerinfo.setDagputlopUke(antallUkerIgjen);
@@ -132,5 +141,14 @@ public class IndekserYtelserHandler {
         int antallUkerIgjen = vedtak.getDagpengetellere().getAntallUkerIgjenUnderPermittering().intValue();
         brukerinfo.setPermutlopUke(antallUkerIgjen);
         DagpengerUkeFasettMapping.finnUkemapping(antallUkerIgjen).ifPresent(brukerinfo::setPermutlopUkeFasett);
+    }
+
+    @SafeVarargs
+    private static <S, T> BiConsumer<S, T> exec(BiConsumer<S, T>... consumers) {
+        return (s, t) -> {
+            for (BiConsumer<S, T> consumer : consumers) {
+                consumer.accept(s, t);
+            }
+        };
     }
 }
