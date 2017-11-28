@@ -11,6 +11,8 @@ import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.eclipse.jetty.plus.jndi.Resource;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.MetaInfConfiguration;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -23,6 +25,7 @@ import java.net.*;
 
 import static com.squareup.okhttp.MediaType.parse;
 import static java.lang.System.setProperty;
+import static java.util.Arrays.stream;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
@@ -121,12 +124,21 @@ public abstract class ComponentTest {
         setupProperties();
         setupDataSource();
 
-        return Jetty.usingWar()
+        Jetty jetty = Jetty.usingWar()
                 .at(contextPath)
                 .port(jettyPort)
                 .overrideWebXml(new File("src/test/resources/componenttest-web.xml"))
                 .disableAnnotationScanning()
                 .buildJetty();
+
+        // MetaInfConfiguration førte til "java.util.zip.ZipException: error in opening zip file"
+        WebAppContext context = jetty.context;
+        String[] configurations = stream(context.getConfigurationClasses())
+                .filter(className -> !MetaInfConfiguration.class.getName().equals(className))
+                .toArray(String[]::new);
+        context.setConfigurationClasses(configurations);
+
+        return jetty;
     }
 
     @SneakyThrows
