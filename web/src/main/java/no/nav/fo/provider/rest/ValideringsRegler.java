@@ -32,6 +32,7 @@ public class ValideringsRegler {
             "dagputlopuke",
             "permutlopuke",
             "aapmaxtiduke",
+            "aapantalldagerigjenunntak",
             "arbeidslistefrist",
             "venterpasvarfranav",
             "venterpasvarfrabruker",

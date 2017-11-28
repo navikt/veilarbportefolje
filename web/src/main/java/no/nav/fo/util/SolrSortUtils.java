@@ -38,6 +38,9 @@ public class SolrSortUtils {
         if("arbeidslistefrist".equals(sortField)) {
             return solrQuery.addSort("arbeidsliste_frist", order);
         }
+        if("aapantalldagerigjenunntak".equals(sortField)) {
+            return solrQuery.addSort("aapunntakdagerigjen", order);
+        }
         if(sortFields.contains(sortField)) {
             return solrQuery.addSort(sortField, order);
         }
