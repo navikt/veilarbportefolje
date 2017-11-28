@@ -134,7 +134,7 @@ public class IndekserYtelserHandlerTest {
         List<BrukerinformasjonFraFil> oppdateringer = captor.getValue();
         assertThat(oppdateringer).hasSize(1);
 
-        assertThat(oppdateringer.get(0).getAapAntallDagerIgjenUnntak().intValue()).isEqualTo(1);
+        assertThat(oppdateringer.get(0).getAapUnntakDagerIgjen().intValue()).isEqualTo(1);
         assertThat(oppdateringer.get(0).getPersonid()).isNotNull();
         assertThat(oppdateringer.get(0).getAapmaxtidUke()).isNull();
         assertThat(oppdateringer.get(0).getAapmaxtidUkeFasett()).isNull();

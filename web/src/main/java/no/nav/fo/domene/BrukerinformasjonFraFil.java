@@ -18,7 +18,7 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
     DagpengerUkeFasettMapping permutlopUkeFasett;
     Integer aapmaxtidUke;
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
-    Integer aapAntallDagerIgjenUnntak;
+    Integer aapUnntakDagerIgjen;
     AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett;
 
     public BrukerinformasjonFraFil(String personid) {
@@ -42,7 +42,7 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
                 .setPermutlopUkeFasett(permutlopUkeFasett)
                 .setAapmaxtidUke(aapmaxtidUke)
                 .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
-                .setAapUnntakDagerIgjen(aapAntallDagerIgjenUnntak)
+                .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
                 .setAapunntakDagerIgjenFasett(aapUnntakDagerIgjenFasett);
     }
 }

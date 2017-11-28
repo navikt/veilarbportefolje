@@ -42,7 +42,7 @@ public class Bruker {
     DagpengerUkeFasettMapping permutlopUkeFasett;
     Integer aapmaxtidUke;
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
-    Integer aapAntallDagerIgjenUnntak;
+    Integer aapUnntakDagerIgjen;
     AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
@@ -74,7 +74,7 @@ public class Bruker {
                 .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("permutlopukefasett")))
                 .setAapmaxtidUke((Integer) document.get("aapmaxtiduke"))
                 .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of((String) document.get("aapmaxtidukefasett")))
-                .setAapAntallDagerIgjenUnntak((Integer) document.get("aapantalldagerigjenunntak"))
+                .setAapUnntakDagerIgjen((Integer) document.get("aapunntakdagerigjen"))
                 .setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.of((String) document.get("aapunntakdagerigjenfasett")))
                 .setArbeidsliste(Arbeidsliste.of(document))
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
