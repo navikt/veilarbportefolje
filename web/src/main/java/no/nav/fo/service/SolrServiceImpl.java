@@ -2,7 +2,7 @@ package no.nav.fo.service;
 
 import io.vavr.control.Either;
 import io.vavr.control.Try;
-import lombok.Lombok;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.ArbeidslisteRepository;
@@ -363,8 +363,7 @@ public class SolrServiceImpl implements SolrService {
         StatusTall statusTall = new StatusTall();
         QueryResponse response;
 
-        response = timed("solr.statustall.enhet", () -> Try.of(() -> solrClientSlave.query(solrQuery))
-                .getOrElseThrow(t -> Lombok.sneakyThrow(t)));
+        response = timed("solr.statustall.enhet", () -> getResponse(solrQuery));
 
         long antallTotalt = response.getResults().getNumFound();
         long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
@@ -385,6 +384,11 @@ public class SolrServiceImpl implements SolrService {
                 .setUtlopteAktiviteter(antallUtlopteAktiviteter);
 
         return statusTall;
+    }
+
+    @SneakyThrows
+    private QueryResponse getResponse(SolrQuery solrQuery) {
+        return solrClientSlave.query(solrQuery);
     }
 
     @Override
