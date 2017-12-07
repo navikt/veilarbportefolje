@@ -35,15 +35,10 @@
 
         <!-- Virksomhetstjenester -->
         <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>loependeytelser</artifactId>
-            <version>${project.version}</version>
+        <groupId>no.nav.meldinger.virksomhet</groupId>
+        <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
+        <classifier>jaxb</classifier>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>no.nav.meldinger.virksomhet</groupId>-->
-        <!--<artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>-->
-        <!--<classifier>jaxb</classifier>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>no.nav.meldinger.virksomhet</groupId>

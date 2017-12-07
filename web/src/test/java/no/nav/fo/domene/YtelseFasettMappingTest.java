@@ -1,7 +1,7 @@
 package no.nav.fo.domene;
 
-import no.nav.fo.loependeytelser.AAPtellere;
-import no.nav.fo.loependeytelser.LoependeVedtak;
+import no.nav.melding.virksomhet.loependeytelser.v1.AAPtellere;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -35,16 +35,6 @@ public class YtelseFasettMappingTest {
 
     @Test
     public void skalKlassifisereAAPUnntak() throws Exception {
-        LoependeVedtak vedtak = lagVedtak("AA", "AAP");
-        AAPtellere teller = new AAPtellere();
-        teller.setAntallDagerUnntak(BigInteger.ONE);
-        vedtak.setAaptellere(teller);
-
-        assertThat(YtelseMapping.of(vedtak)).isEqualTo(Optional.of(AAP_UNNTAK));
-    }
-
-    @Test
-    public void skalKlassifisereAAPUnntakMedDagerIgjen() throws Exception {
         LoependeVedtak vedtak = lagVedtak("AA", "AAP");
         AAPtellere teller = new AAPtellere();
         teller.setAntallDagerIgjenUnntak(BigInteger.ONE);

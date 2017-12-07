@@ -5,7 +5,7 @@ import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.domene.BrukerinformasjonFraFil;
 import no.nav.fo.domene.YtelseMapping;
 import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
-import no.nav.fo.loependeytelser.*;
+import no.nav.melding.virksomhet.loependeytelser.v1.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -184,7 +184,6 @@ public class IndekserYtelserHandlerTest {
 
         aapTellere.setAntallUkerIgjen(BigInteger.ONE);
         aapTellere.setAntallDagerIgjen(BigInteger.ONE);
-        aapTellere.setAntallDagerUnntak(null);
         aapTellere.setAntallDagerIgjenUnntak(null);
 
         vedtak.setAaptellere(aapTellere);
