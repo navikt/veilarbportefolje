@@ -3,8 +3,8 @@ package no.nav.fo.filmottak.ytelser;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.filmottak.FilmottakFileUtils;
+import no.nav.fo.loependeytelser.LoependeYtelser;
 import no.nav.fo.service.AktivitetService;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.metrics.aspects.Timed;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -64,7 +64,7 @@ public class KopierGR199FraArena {
 
         timed("GR199.hentfil", hentfil)
                 .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs").andThen(stopped))
-                .flatMap(timed("GR199.unmarshall", this::unmarshall))
+                .flatMap(timed("GR199.unmarshall", KopierGR199FraArena::unmarshall))
                 .onFailure(log(log, "Unmarshalling av ytelsesfil feilet").andThen(stopped))
                 .andThen(timed("GR199.lagreYtelser", indekserHandler::lagreYtelser))
                 .onFailure(log(log, "Hovedindeksering feilet").andThen(stopped))
@@ -78,9 +78,9 @@ public class KopierGR199FraArena {
         return this.isRunning;
     }
 
-    private Try<LoependeYtelser> unmarshall(final InputStream stream) {
+    static Try<LoependeYtelser> unmarshall(final InputStream stream) {
         return Try.of(() -> {
-            JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.loependeytelser.v1");
+            JAXBContext jaxb = JAXBContext.newInstance("no.nav.fo.loependeytelser");
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
             LoependeYtelser loependeYtelser = ((JAXBElement<LoependeYtelser>) unmarshaller.unmarshal(stream)).getValue();
             return loependeYtelser;

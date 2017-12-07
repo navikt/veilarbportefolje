@@ -1,7 +1,7 @@
 package no.nav.fo.domene;
 
 import no.nav.fo.exception.YtelseManglerTOMDatoException;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.fo.loependeytelser.LoependeVedtak;
 
 import java.time.LocalDateTime;
 

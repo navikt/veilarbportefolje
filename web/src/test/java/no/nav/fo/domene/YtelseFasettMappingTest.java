@@ -1,7 +1,7 @@
 package no.nav.fo.domene;
 
-import no.nav.melding.virksomhet.loependeytelser.v1.AAPtellere;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
+import no.nav.fo.loependeytelser.AAPtellere;
+import no.nav.fo.loependeytelser.LoependeVedtak;
 import org.junit.Test;
 
 import java.math.BigInteger;
