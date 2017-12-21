@@ -1,6 +1,7 @@
 package no.nav.fo.domene;
 
-import no.nav.fo.loependeytelser.LoependeVedtak;
+
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -21,8 +22,7 @@ public enum YtelseMapping {
     AAP_MAXTID(
             (vedtak) -> "AA".equals(vedtak.getSakstypeKode())
                     && "AAP".equals(vedtak.getRettighetstypeKode())
-                    && (vedtak.getAaptellere() != null
-                    && vedtak.getAaptellere().getAntallDagerUnntak() == null)
+                    && vedtak.getAaptellere() != null
                     && vedtak.getAaptellere().getAntallDagerIgjenUnntak() == null
     ),
     AAP_UNNTAK(
@@ -30,8 +30,7 @@ public enum YtelseMapping {
                     "AA".equals(vedtak.getSakstypeKode())
                     && "AAP".equals(vedtak.getRettighetstypeKode())
                     && vedtak.getAaptellere() != null
-                    && (vedtak.getAaptellere().getAntallDagerUnntak() != null
-                    || vedtak.getAaptellere().getAntallDagerIgjenUnntak() != null)
+                    && (vedtak.getAaptellere().getAntallDagerIgjenUnntak() != null)
     ),
     TILTAKSPENGER(
             (vedtak) -> "INDIV".equals(vedtak.getSakstypeKode()) && "BASI".equals(vedtak.getRettighetstypeKode())
