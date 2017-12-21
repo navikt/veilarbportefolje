@@ -55,6 +55,8 @@ public class DbUtils {
         document.addField("permutlopukefasett", rs.getString("permutlopukefasett"));
         document.addField("aapmaxtiduke", parseInt(rs.getString("aapmaxtiduke")));
         document.addField("aapmaxtidukefasett", rs.getString("aapmaxtidukefasett"));
+        document.addField("aapunntakdagerigjen", parseInt(rs.getString("aapunntakdagerigjen")));
+        document.addField("aapunntakdagerigjenfasett", rs.getString("aapunntakdagerigjenfasett"));
         document.addField("oppfolging", parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
         document.addField("venterpasvarfrabruker", toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")));
         document.addField("venterpasvarfranav", toIsoUTC(rs.getTimestamp("venterpasvarfranav")));

@@ -2,6 +2,7 @@ package no.nav.fo.util.sql;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,10 +16,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static no.nav.fo.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.util.MetricsUtils.timed;
 
+@Slf4j
 public class UpdateBatchQuery<T> {
     private final JdbcTemplate db;
     private final String tableName;
@@ -33,7 +36,7 @@ public class UpdateBatchQuery<T> {
 
     public UpdateBatchQuery<T> add(String param, Function<T, Object> paramValue, Class type) {
         if (this.setParams.containsKey(param)) {
-            throw new IllegalArgumentException(String.format("Param[%s] was already set.", param));
+            throw new IllegalArgumentException(format("Param[%s] was already set.", param));
         }
         this.setParams.put(param, Tuple.of(type, paramValue));
         return this;
@@ -54,13 +57,17 @@ public class UpdateBatchQuery<T> {
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 T t = data.get(i);
 
-                int j = 1;
-                for (Tuple2<Class, Function<T, Object>> param : setParams.values()) {
-                    setParam(ps, j++, param._1(), param._2.apply(t));
+                int sqlParamIndex = 1;
+
+                for (Map.Entry<String, Tuple2<Class, Function<T, Object>>> paramEntry : setParams.entrySet()) {
+                    String paramname = paramEntry.getKey();
+                    Tuple2<Class, Function<T, Object>> param = paramEntry.getValue();
+
+                    setParam(ps, sqlParamIndex++, paramname, param._1(), param._2.apply(t));
                 }
 
                 if(Objects.nonNull(whereClause)) {
-                    whereClause.apply(t).applyTo(ps, j);
+                    whereClause.apply(t).applyTo(ps, sqlParamIndex);
                 }
 
             }
@@ -72,7 +79,8 @@ public class UpdateBatchQuery<T> {
         }));
     }
 
-    static void setParam(PreparedStatement ps, int i, Class type, Object value) throws SQLException {
+    static void setParam(PreparedStatement ps, int i, String paramname, Class type, Object value) throws SQLException {
+    try {
         if (String.class == type) {
             ps.setString(i, (String) value);
         } else if (Timestamp.class == type) {
@@ -85,6 +93,10 @@ public class UpdateBatchQuery<T> {
             }
         } else if (Boolean.class == type) {
             ps.setBoolean(i, (Boolean) value);
+        }
+    } catch (Exception e) {
+        log.error(format("Feil ved binding av %s", paramname), e);
+        throw e;
         }
     }
 
