@@ -9,12 +9,16 @@ Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering 
 1. Gå til rotmappe
 2. `mvn clean install`
 
-## URL-er å utføre hoved- og deltaindeksering
+## URL-er å utføre full hovedindeksering, populering av indeks, oppdatering av ytelser og tiltak
 ```
-http://localhost:9595/veilarbportefolje/api/solr/hovedindeksering
-```
-```
-http://localhost:9595/veilarbportefolje/api/solr/deltaindeksering
+http://<host>/veilarbportefolje/internal/totalhovedindeksering
+
+http://<host>/veilarbportefolje/internal/populerindeks
+
+http://<host>/veilarbportefolje/internal/oppdaterytelser
+
+http://<host>/veilarbportefolje/internal/oppdatertiltak
+
 ```
 
 !! OBS OBS Om det er gjort endringer i schemaet til indeksen må man kanskje restarte indeksen !!
