@@ -80,7 +80,7 @@ public class KopierGR199FraArena {
 
     static Try<LoependeYtelser> unmarshall(final InputStream stream) {
         return Try.of(() -> {
-            JAXBContext jaxb = JAXBContext.newInstance("no.nav.fo.loependeytelser");
+            JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.loependeytelser.v1");
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
             LoependeYtelser loependeYtelser = ((JAXBElement<LoependeYtelser>) unmarshaller.unmarshal(stream)).getValue();
             return loependeYtelser;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<loependeYtelser:loependeYtelser xmlns:loependeYtelser="http://nav.no/melding/virksomhet/loependeYtelser/v1">
+    <loependeVedtakListe>
+        <personident>12345678910</personident>
+        <sakstypeKode>AA</sakstypeKode>
+        <vedtakId>123456</vedtakId>
+        <rettighetstypeKode>AAP</rettighetstypeKode>
+        <vedtaksperiode>
+            <fom>2017-05-01</fom>
+            <tom>2018-01-31</tom>
+        </vedtaksperiode>
+        <aaptellere>
+            <antallUkerIgjen>118</antallUkerIgjen>
+            <antallDagerIgjen>0</antallDagerIgjen>
+        </aaptellere>
+    </loependeVedtakListe>
+    <sakstypeListe></sakstypeListe>
+    <rettighetstypeListe></rettighetstypeListe>
+</loependeYtelser:loependeYtelser>
