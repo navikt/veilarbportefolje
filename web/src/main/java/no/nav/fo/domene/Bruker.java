@@ -44,6 +44,7 @@ public class Bruker {
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
     Integer aapUnntakDagerIgjen;
     AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett;
+    Integer aapUnntakUkerIgjen;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
@@ -76,6 +77,7 @@ public class Bruker {
                 .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of((String) document.get("aapmaxtidukefasett")))
                 .setAapUnntakDagerIgjen((Integer) document.get("aapunntakdagerigjen"))
                 .setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.of((String) document.get("aapunntakdagerigjenfasett")))
+                .setAapUnntakUkerIgjen(konverterDagerTilUker(document))
                 .setArbeidsliste(Arbeidsliste.of(document))
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
@@ -92,6 +94,14 @@ public class Bruker {
                 .addAktivitetUtlopsdato("mote", dateToTimestamp((Date) document.get("aktivitet_mote_utlopsdato")))
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp((Date) document.get("aktivitet_utdanningaktivitet_utlopsdato")))
                 ;
+    }
+
+    private static int konverterDagerTilUker(SolrDocument document) {
+        Integer dagerigjen = (Integer) document.get("aapunntakdagerigjen");
+        if (dagerigjen != null) {
+            return dagerigjen / 7;
+        }
+        return 0;
     }
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
