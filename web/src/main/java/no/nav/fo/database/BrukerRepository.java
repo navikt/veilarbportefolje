@@ -235,7 +235,7 @@ public class BrukerRepository {
                         .setAapmaxtidUke(intValue(data.get("AAPMAXTIDUKE")))
                         .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
                         .setAapUnntakDagerIgjen(intValue(data.get("AAPUNNTAKDAGERIGJEN")))
-                        .setAapunntakDagerIgjenFasett(aapUnntakDagerIgjenFasettMappingOrNull((String) data.get("AAPUNNTAKDAGERIGJENFASETT")))
+                        .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasettMappingOrNull((String) data.get("AAPUNNTAKUKERIGJENFASETT")))
                         .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
@@ -374,7 +374,7 @@ public class BrukerRepository {
                 .set("aapmaxtiduke", null)
                 .set("aapmaxtidukefasett", null)
                 .set("aapunntakdagerigjen", null)
-                .set("aapunntakdagerigjenfasett", null)
+                .set("aapunntakukerigjenfasett", null)
                 .execute();
     }
 
@@ -418,7 +418,7 @@ public class BrukerRepository {
             "dagputlopuke, dagputlopukefasett, " +
             "permutlopuke, permutlopukefasett, " +
             "aapmaxtiduke, aapmaxtidukefasett, " +
-            "aapunntakdagerigjen, aapunntakdagerigjenfasett, " +
+            "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
             "oppfolging, " +
             "venterpasvarfrabruker, " +
             "venterpasvarfranav, " +
@@ -531,8 +531,8 @@ public class BrukerRepository {
         return string != null ? AAPMaxtidUkeFasettMapping.valueOf(string) : null;
     }
 
-    private AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasettMappingOrNull(String string) {
-        return string != null ? AAPUnntakDagerIgjenFasettMapping.valueOf(string) : null;
+    private AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasettMappingOrNull(String string) {
+        return string != null ? AAPUnntakUkerIgjenFasettMapping.valueOf(string) : null;
     }
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {

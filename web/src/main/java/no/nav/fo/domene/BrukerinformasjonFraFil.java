@@ -19,7 +19,7 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
     Integer aapmaxtidUke;
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
     Integer aapUnntakDagerIgjen;
-    AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett;
+    AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasett;
 
     public BrukerinformasjonFraFil(String personid) {
         this.personid = personid;
@@ -43,6 +43,6 @@ public class BrukerinformasjonFraFil implements BrukerOppdatering {
                 .setAapmaxtidUke(aapmaxtidUke)
                 .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
                 .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
-                .setAapunntakDagerIgjenFasett(aapUnntakDagerIgjenFasett);
+                .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasett);
     }
 }

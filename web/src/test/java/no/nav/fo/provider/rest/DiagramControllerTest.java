@@ -55,9 +55,9 @@ public class DiagramControllerTest {
     );
 
     private static final List<Bruker> BRUKERE_AAP_UNNTAK = asList(
-            new Bruker().setFnr("1").setUtlopsdatoFasett(MND1).setDagputlopUkeFasett(UKE_UNDER2).setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.UKE132_143),
-            new Bruker().setFnr("2").setUtlopsdatoFasett(MND2).setDagputlopUkeFasett(UKE2_5).setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.UKE204_215),
-            new Bruker().setFnr("3").setUtlopsdatoFasett(MND3).setDagputlopUkeFasett(UKE6_9).setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.UKE204_215)
+            new Bruker().setFnr("1").setUtlopsdatoFasett(MND1).setDagputlopUkeFasett(UKE_UNDER2).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE132_143),
+            new Bruker().setFnr("2").setUtlopsdatoFasett(MND2).setDagputlopUkeFasett(UKE2_5).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE204_215),
+            new Bruker().setFnr("3").setUtlopsdatoFasett(MND3).setDagputlopUkeFasett(UKE6_9).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE204_215)
     );
 
     @Mock
@@ -155,6 +155,6 @@ public class DiagramControllerTest {
 
         assertThat(gruppering).hasSize(18);
         assertThat(storsteGruppe).contains(2L);
-        assertThat(gruppering.get(AAPUnntakDagerIgjenFasettMapping.UKE204_215)).isEqualTo(2L);
+        assertThat(gruppering.get(AAPUnntakUkerIgjenFasettMapping.UKE204_215)).isEqualTo(2L);
     }
 }

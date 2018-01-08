@@ -71,7 +71,7 @@ public class DiagramController {
         if (ytelse == YtelseFilter.AAP_MAXTID) {
             return Bruker::getAapmaxtidUkeFasett;
         } else if (ytelse == YtelseFilter.AAP_UNNTAK) {
-            return Bruker::getAapUnntakDagerIgjenFasett;
+            return Bruker::getAapUnntakUkerIgjenFasett;
         } else if (ytelse == YtelseFilter.DAGPENGER_MED_PERMITTERING) {
             return Bruker::getPermutlopUkeFasett;
         } else if (ytelse == YtelseFilter.DAGPENGER || ytelse == YtelseFilter.DAGPENGER_OVRIGE || ytelse == YtelseFilter.ORDINARE_DAGPENGER) {
@@ -84,7 +84,7 @@ public class DiagramController {
         if (ytelse == YtelseFilter.AAP_MAXTID) {
             return asList(AAPMaxtidUkeFasettMapping.values());
         } else if (ytelse == YtelseFilter.AAP_UNNTAK ){
-            return asList(AAPUnntakDagerIgjenFasettMapping.values());
+            return asList(AAPUnntakUkerIgjenFasettMapping.values());
         } else if (ytelse == YtelseFilter.DAGPENGER || ytelse == YtelseFilter.DAGPENGER_OVRIGE || ytelse == YtelseFilter.ORDINARE_DAGPENGER || ytelse == YtelseFilter.DAGPENGER_MED_PERMITTERING) {
             return asList(DagpengerUkeFasettMapping.values());
         }

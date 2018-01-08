@@ -30,7 +30,7 @@ public class Brukerdata {
     private Integer aapmaxtidUke;
     private AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
     private Integer aapUnntakDagerIgjen;
-    private AAPUnntakDagerIgjenFasettMapping aapunntakDagerIgjenFasett;
+    private AAPUnntakUkerIgjenFasettMapping aapunntakUkerIgjenFasett;
     private LocalDateTime venterPaSvarFraBruker;
     private LocalDateTime venterPaSvarFraNav;
     private Boolean oppfolging;
@@ -53,7 +53,7 @@ public class Brukerdata {
                 .set("AAPMAXTIDUKE", safeToString(aapmaxtidUke))
                 .set("AAPMAXTIDUKEFASETT", safeToString(aapmaxtidUkeFasett))
                 .set("AAPUNNTAKDAGERIGJEN", safeToString(aapUnntakDagerIgjen))
-                .set("AAPUNNTAKDAGERIGJENFASETT", safeToString(aapunntakDagerIgjenFasett))
+                .set("AAPUNNTAKUKERIGJENFASETT", safeToString(aapunntakUkerIgjenFasett))
                 .set("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
                 .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .set("PERSONID", personid)
@@ -78,7 +78,7 @@ public class Brukerdata {
                 .add("AAPMAXTIDUKE", (bruker) -> bruker.aapmaxtidUke, Integer.class)
                 .add("AAPMAXTIDUKEFASETT", (bruker) -> safeToString(bruker.aapmaxtidUkeFasett), String.class)
                 .add("AAPUNNTAKDAGERIGJEN", (bruker) -> bruker.aapUnntakDagerIgjen, Integer.class)
-                .add("AAPUNNTAKDAGERIGJENFASETT", (bruker) -> safeToString(bruker.aapunntakDagerIgjenFasett), String.class)
+                .add("AAPUNNTAKUKERIGJENFASETT", (bruker) -> safeToString(bruker.aapunntakUkerIgjenFasett), String.class)
                 .add("OPPFOLGING", (bruker) -> safeToJaNei(bruker.oppfolging), String.class)
                 .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
                 .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
