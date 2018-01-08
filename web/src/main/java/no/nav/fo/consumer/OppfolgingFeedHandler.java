@@ -70,14 +70,14 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
                         Map<AktoerId, Optional<PersonId>> identMap = aktoerService.hentPersonidsForAktoerids(distinctAktoerIds);
 
-                        insertOppfolgingsinformasjonForBrukere(brukere, identMap);
-
                         List<PersonId> personIds = FeedUtils.getPresentPersonids(identMap);
 
                         Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds)
                                 .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
 
-                        slettArbeidslisteForBrukere(brukere,identMap,oppfolgingstatus);
+                        insertOppfolgingsinformasjonForBrukere(brukere, identMap);
+
+                        slettArbeidslisteForBrukere(brukere, identMap, oppfolgingstatus);
 
                         Map<Tuple2<AktoerId, PersonId>, Boolean> aktoerErUndeOppfolging = getErUnderOppfolging(distinctAktoerIds, identMap, oppfolgingstatus);
 
