@@ -9,6 +9,7 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Oppfolgingstatus;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.feed.FeedUtils;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.service.AktivitetService;
 import no.nav.fo.service.AktoerService;
@@ -16,13 +17,12 @@ import no.nav.fo.service.SolrService;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.inject.Inject;
-import javax.ws.rs.InternalServerErrorException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.feed.FeedUtils.finnBrukere;
 import static no.nav.fo.feed.FeedUtils.getErUnderOppfolging;
 import static no.nav.fo.util.MetricsUtils.timed;
 
@@ -72,7 +72,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             timed(
                     "feed.aktivitet.objekt",
                     () -> {
-                        if(aktivitet.isHistorisk()) {
+                        if (aktivitet.isHistorisk()) {
                             aktivitetDAO.deleteById(aktivitet.getAktivitetId());
                         } else {
                             aktivitetDAO.upsertAktivitet(aktivitet);
@@ -94,33 +94,20 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             timed(
                     "feed.aktivitet.indekseraktivitet",
                     () -> {
-                        if(aktoerids.isEmpty()) {
+                        if (aktoerids.isEmpty()) {
                             return;
                         }
                         Map<AktoerId, Optional<PersonId>> aktoeridToPersonid = aktoerService.hentPersonidsForAktoerids(aktoerids);
-                        List<PersonId> personIds = aktoeridToPersonid.values().stream()
-                                .filter(Optional::isPresent)
-                                .map(Optional::get)
-                                .collect(toList());
+                        List<PersonId> personIds = FeedUtils.getPresentPersonids(aktoeridToPersonid);
 
-                        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds)
-                                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
+                        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds);
 
-                        Map<Tuple2<AktoerId, PersonId>, Boolean> aktoerErUndeOppfolging = getErUnderOppfolging(aktoerids, aktoeridToPersonid, oppfolgingstatus);
+                        Map<Boolean, List<Tuple2<AktoerId, PersonId>>> aktoerErUndeOppfolging = getErUnderOppfolging(aktoerids, aktoeridToPersonid, oppfolgingstatus);
+                        List<AktoerId> aktoerIdUnderOppfolging = finnBrukere(aktoerErUndeOppfolging, Boolean.TRUE, Tuple2::_1);
+                        List<PersonId> personIdIkkeUnderOppfolging = finnBrukere(aktoerErUndeOppfolging, Boolean.FALSE, Tuple2::_2);
 
-                        List<PersonId> ikkeUnderOppfolging = new ArrayList<>();
-                        List<AktoerId> underOppfolging = new ArrayList<>();
-                        aktoerErUndeOppfolging.forEach((key, value) -> {
-                            if (value) {
-                                underOppfolging.add(key._1);
-                            } else {
-                                ikkeUnderOppfolging.add(key._2);
-                            }
-                        });
-
-                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(underOppfolging);
-
-                        solrService.slettBrukere(ikkeUnderOppfolging);
+                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerIdUnderOppfolging);
+                        solrService.slettBrukere(personIdIkkeUnderOppfolging);
                         solrService.commit();
                     }, (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
 

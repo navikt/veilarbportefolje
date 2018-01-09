@@ -17,14 +17,12 @@ import no.nav.metrics.MetricsFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.ws.rs.InternalServerErrorException;
 import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.fo.feed.FeedUtils.getErUnderOppfolging;
-import static no.nav.fo.feed.FeedUtils.getPresentPersonids;
+import static no.nav.fo.feed.FeedUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
@@ -65,26 +63,16 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
                         List<PersonId> personIds = getPresentPersonids(identMap);
 
-                        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds)
-                                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
+                        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds);
 
-                        Map<Tuple2<AktoerId, PersonId>, Boolean> aktoerErUndeOppfolging = getErUnderOppfolging(distinctAktoerids, identMap, oppfolgingstatus);
+                        Map<Boolean, List<Tuple2<AktoerId, PersonId>>> aktoerErUndeOppfolging = getErUnderOppfolging(distinctAktoerids, identMap, oppfolgingstatus);
+                        List<PersonId> personIdUnderOppfolging = finnBrukere(aktoerErUndeOppfolging, Boolean.TRUE, Tuple2::_2);
+                        List<PersonId> personIdIkkeUnderOppfolging = finnBrukere(aktoerErUndeOppfolging, Boolean.FALSE, Tuple2::_2);
 
-                        List<PersonId> ikkeUnderOppfolging = new ArrayList<>();
-                        List<PersonId> underOppfolging = new ArrayList<>();
-                        aktoerErUndeOppfolging.forEach((key, value) -> {
-                            if (value) {
-                                underOppfolging.add(key._2);
-                            } else {
-                                ikkeUnderOppfolging.add(key._2);
-                            }
-                        });
-
-                        solrService.populerIndeksForPersonids(underOppfolging);
-                        brukerRepository.deleteBrukerdataForPersonIds(ikkeUnderOppfolging);
-                        solrService.slettBrukere(ikkeUnderOppfolging);
+                        solrService.populerIndeksForPersonids(personIdUnderOppfolging);
+                        brukerRepository.deleteBrukerdataForPersonIds(personIdIkkeUnderOppfolging);
+                        solrService.slettBrukere(personIdIkkeUnderOppfolging);
                         solrService.commit();
-
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(dialoger.size()))
             );

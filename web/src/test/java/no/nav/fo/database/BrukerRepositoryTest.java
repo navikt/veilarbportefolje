@@ -452,7 +452,7 @@ public class BrukerRepositoryTest {
         List<PersonId> personIds = Stream.of("4120339", "4120327", "1033279", "4024027", "183651")
                 .map(PersonId::of).collect(toList());
 
-        Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = brukerRepository.retrieveOppfolgingstatus(personIds).get();
+        Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = brukerRepository.retrieveOppfolgingstatus(personIds);
         assertThat(personIdOppfolgingstatusMap.size()).isEqualTo(5);
     }
 

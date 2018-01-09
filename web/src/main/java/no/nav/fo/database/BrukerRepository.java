@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
+import javax.ws.rs.InternalServerErrorException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -59,9 +60,13 @@ public class BrukerRepository {
         update(db, METADATA).set(name, date).execute();
     }
 
-    public Try<Map<PersonId, Oppfolgingstatus>> retrieveOppfolgingstatus(List<PersonId> personIds) {
-        return Try.of(() -> {
+    public Map<PersonId, Oppfolgingstatus> retrieveOppfolgingstatus(List<PersonId> personIds) {
+        return tryRetrieveOppfolgingstatus(personIds)
+                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
+    }
 
+    public Try<Map<PersonId, Oppfolgingstatus>> tryRetrieveOppfolgingstatus(List<PersonId> personIds) {
+        return Try.of(() -> {
             Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = new HashMap<>();
 
             io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
@@ -79,6 +84,7 @@ public class BrukerRepository {
                                                 .setVeileder((String) data.get("veilederident"))
                                 ));
                     });
+
             return personIdOppfolgingstatusMap;
         });
     }
