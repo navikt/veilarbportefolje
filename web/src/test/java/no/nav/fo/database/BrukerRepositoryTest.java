@@ -77,7 +77,7 @@ public class BrukerRepositoryTest {
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
             "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKDAGERIGJENFASETT",
+            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
             "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
@@ -99,7 +99,7 @@ public class BrukerRepositoryTest {
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
             "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKDAGERIGJENFASETT",
+            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
             "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
@@ -127,10 +127,10 @@ public class BrukerRepositoryTest {
     public void skalOppdatereOmBrukerFinnes() {
         Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, 2,
-                AAPUnntakDagerIgjenFasettMapping.UKE_UNDER12, true);
+                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, true);
         Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, 2,
-                AAPUnntakDagerIgjenFasettMapping.UKE_UNDER12, true);
+                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
@@ -159,7 +159,7 @@ public class BrukerRepositoryTest {
             2,
             UKE_UNDER12,
             1,
-            AAPUnntakDagerIgjenFasettMapping.UKE_UNDER12,
+            AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12,
             true
         );
 
@@ -221,7 +221,7 @@ public class BrukerRepositoryTest {
         Integer aapmaxtidUke,
         AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett,
         Integer aapUnntakDagerIgjen,
-        AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett,
+        AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasett,
         boolean oppfolging
     ) {
         return new Brukerdata()
@@ -238,7 +238,7 @@ public class BrukerRepositoryTest {
             .setAapmaxtidUke(aapmaxtidUke)
             .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
             .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
-            .setAapunntakDagerIgjenFasett(aapUnntakDagerIgjenFasett)
+            .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasett)
             .setYtelse(ytelse)
             .setOppfolging(oppfolging);
     }
@@ -257,7 +257,7 @@ public class BrukerRepositoryTest {
         assertThat(b1.getAapmaxtidUke()).isEqualTo(b2.getAapmaxtidUke());
         assertThat(b1.getAapmaxtidUkeFasett()).isEqualTo(b2.getAapmaxtidUkeFasett());
         assertThat(b1.getAapUnntakDagerIgjen()).isEqualTo(b2.getAapUnntakDagerIgjen());
-        assertThat(b1.getAapunntakDagerIgjenFasett()).isEqualTo(b2.getAapunntakDagerIgjenFasett());
+        assertThat(b1.getAapunntakUkerIgjenFasett()).isEqualTo(b2.getAapunntakUkerIgjenFasett());
         assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
     }
 

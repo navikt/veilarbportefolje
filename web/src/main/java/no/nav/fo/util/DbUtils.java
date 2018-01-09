@@ -20,7 +20,7 @@ public class DbUtils {
         try {
             return mapTilDokument(rs);
         }catch(SQLException e) {
-            log.error("Feil ved mapping fra resultset fra db til SolrIntputDocument", e);
+            log.error("Feil ved mapping fra resultset fra db til SolrInputDocument", e);
             return null;
         }
     }
@@ -55,14 +55,19 @@ public class DbUtils {
         document.addField("permutlopukefasett", rs.getString("permutlopukefasett"));
         document.addField("aapmaxtiduke", parseInt(rs.getString("aapmaxtiduke")));
         document.addField("aapmaxtidukefasett", rs.getString("aapmaxtidukefasett"));
-        document.addField("aapunntakdagerigjen", parseInt(rs.getString("aapunntakdagerigjen")));
-        document.addField("aapunntakdagerigjenfasett", rs.getString("aapunntakdagerigjenfasett"));
+        document.addField("aapunntakukerigjen", konverterDagerTilUker(rs.getString("aapunntakdagerigjen")));
+        document.addField("aapunntakukerigjenfasett", rs.getString("aapunntakukerigjenfasett"));
         document.addField("oppfolging", parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
         document.addField("venterpasvarfrabruker", toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")));
         document.addField("venterpasvarfranav", toIsoUTC(rs.getTimestamp("venterpasvarfranav")));
         document.addField("nyesteutlopteaktivitet", toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")));
 
         return document;
+    }
+
+    private static Integer konverterDagerTilUker(String antallDagerFraDB) {
+        Integer antallDager = parseInt(antallDagerFraDB);
+        return antallDager == null ? 0 : antallDager / 7;
     }
 
     static String kapitaliser(String s) {

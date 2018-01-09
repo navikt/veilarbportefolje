@@ -5,7 +5,7 @@ import no.nav.fo.exception.UgyldigAntallDagerIgjenException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public enum AAPUnntakDagerIgjenFasettMapping implements FasettMapping {
+public enum AAPUnntakUkerIgjenFasettMapping implements FasettMapping {
     UKE_UNDER12(0, 11), UKE12_23(12, 23), UKE24_35(24, 35), UKE36_47(36, 47),
     UKE48_59(48, 59), UKE60_71(60, 71), UKE72_83(72, 83), UKE84_95(84, 95),
     UKE96_107(96, 107), UKE108_119(108, 119), UKE120_131(120, 131), UKE132_143(132, 143),
@@ -15,13 +15,13 @@ public enum AAPUnntakDagerIgjenFasettMapping implements FasettMapping {
     private final int start;
     private final int stop;
 
-    AAPUnntakDagerIgjenFasettMapping(int start, int stop) {
+    AAPUnntakUkerIgjenFasettMapping(int start, int stop) {
         // Konverterer til uker fordi vi får antall dager fra tjenesten
         this.start = konverterFraUkeNummerTilDag(start);
         this.stop = konverterFraUkeNummerTilDag(stop + 1) - 1;
     }
 
-    public static Optional<AAPUnntakDagerIgjenFasettMapping> finnUkeMapping(int dager) {
+    public static Optional<AAPUnntakUkerIgjenFasettMapping> finnUkeMapping(int dager) {
         int MAX_ANTALL_DAGER = 1511;
 
         if (dager > MAX_ANTALL_DAGER) {
@@ -37,7 +37,7 @@ public enum AAPUnntakDagerIgjenFasettMapping implements FasettMapping {
                 .findAny();
     }
 
-    public static AAPUnntakDagerIgjenFasettMapping of(String s) {
+    public static AAPUnntakUkerIgjenFasettMapping of(String s) {
         if (s == null) {
             return null;
         }

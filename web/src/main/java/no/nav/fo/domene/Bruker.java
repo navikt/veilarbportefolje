@@ -42,8 +42,8 @@ public class Bruker {
     DagpengerUkeFasettMapping permutlopUkeFasett;
     Integer aapmaxtidUke;
     AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
-    Integer aapUnntakDagerIgjen;
-    AAPUnntakDagerIgjenFasettMapping aapUnntakDagerIgjenFasett;
+    AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasett;
+    Integer aapUnntakUkerIgjen;
     Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
@@ -74,8 +74,8 @@ public class Bruker {
                 .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of((String) document.get("permutlopukefasett")))
                 .setAapmaxtidUke((Integer) document.get("aapmaxtiduke"))
                 .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of((String) document.get("aapmaxtidukefasett")))
-                .setAapUnntakDagerIgjen((Integer) document.get("aapunntakdagerigjen"))
-                .setAapUnntakDagerIgjenFasett(AAPUnntakDagerIgjenFasettMapping.of((String) document.get("aapunntakdagerigjenfasett")))
+                .setAapUnntakUkerIgjen((Integer) document.get("aapunntakukerigjen"))
+                .setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.of((String) document.get("aapunntakukerigjenfasett")))
                 .setArbeidsliste(Arbeidsliste.of(document))
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
