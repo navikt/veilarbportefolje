@@ -55,6 +55,7 @@
         <exposedRest name="no.nav.fo.portefolje.oppdatertiltak" path="/veilarbportefolje/internal/oppdatertiltak"/>
         <exposedRest name="no.nav.fo.portefolje.oppdaterytelser" path="/veilarbportefolje/internal/oppdaterytelser"/>
         <exposedRest name="no.nav.fo.portefolje.totalhovedindeksering" path="/veilarbportefolje/internal/totalhovedindeksering"/>
+        <exposedRest name="veilArbPortefoljeAPI" path="/veilarbportefolje/api"/>
     </exposed-services>
   
     <serverOptions>
