@@ -91,12 +91,16 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(brukere.size()))
             );
-        }catch(Exception e) {
+        } catch (Exception e) {
             log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.", e);
         }
     }
 
-    private Map<PersonId, Oppfolgingstatus> oppdaterMedOppfolgingsFlagg(Map<AktoerId, Optional<PersonId>> identMap, Map<PersonId, Oppfolgingstatus> oppfolgingstatus, List<BrukerOppdatertInformasjon> brukere) {
+    private Map<PersonId, Oppfolgingstatus> oppdaterMedOppfolgingsFlagg(
+            Map<AktoerId, Optional<PersonId>> identMap,
+            Map<PersonId, Oppfolgingstatus> oppfolgingstatus,
+            List<BrukerOppdatertInformasjon> brukere
+    ) {
         Map<PersonId, BrukerOppdatertInformasjon> brukerMap = brukere
                 .stream()
                 .map((bruker) -> Tuple.of(identMap.get(AktoerId.of(bruker.getAktoerid())), bruker))
