@@ -1,7 +1,7 @@
 package no.nav.fo.consumer;
 
-import io.vavr.control.Try;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.domene.Oppfolgingstatus;
@@ -38,12 +38,15 @@ public class OppfolgingFeedHandlerTest {
     @Mock
     private SolrService solrService;
 
+    @Mock
+    private OppfolgingFeedRepository oppfolgingFeedRepository;
+
     @InjectMocks
     private OppfolgingFeedHandler oppfolgingFeedHandler;
 
     @Before
     public void resetMocks() {
-        reset(arbeidslisteService,brukerRepository,aktoerService,solrService);
+        reset(arbeidslisteService, brukerRepository, aktoerService, solrService);
     }
 
     @Test
@@ -65,7 +68,7 @@ public class OppfolgingFeedHandlerTest {
 
         Map<PersonId, Oppfolgingstatus> oppfolgingsstatus = new HashMap<>();
         oppfolgingsstatus.put(personId, arenaStatus);
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(Try.success(oppfolgingsstatus));
+        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(oppfolgingsstatus);
 
         Map<AktoerId, Optional<PersonId>> identMap = new HashMap<>();
         identMap.put(aktoerId, Optional.of(personId));
@@ -74,6 +77,7 @@ public class OppfolgingFeedHandlerTest {
         oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(bruker));
 
         verify(solrService, times(1)).populerIndeksForPersonids(captorUnderOppfolging.capture());
+        verify(oppfolgingFeedRepository, times(1)).insertVeilederOgOppfolginsinfo(any(), any());
         verify(brukerRepository, times(1)).deleteBrukerdataForPersonIds(captorIkkeUnderOppfolging.capture());
         verify(solrService, times(1)).slettBrukere(captorIkkeUnderOppfolging.capture());
         verify(solrService, times(1)).commit();

@@ -66,9 +66,9 @@ public class DialogDataFeedHandlerTest {
         identMap.put(aktoerId, Optional.of(personId));
         when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(identMap);
 
-        Map<PersonId, Oppfolgingstatus> oppfolgingstatu = new HashMap<>();
-        oppfolgingstatu.put(personId, new Oppfolgingstatus().setOppfolgingsbruker(true));
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(Try.success(oppfolgingstatu));
+        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = new HashMap<>();
+        oppfolgingstatus.put(personId, new Oppfolgingstatus().setOppfolgingsbruker(true));
+        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(oppfolgingstatus);
 
         dialogDataFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(dialogdata));
 
@@ -100,9 +100,9 @@ public class DialogDataFeedHandlerTest {
         identMap.put(aktoerId, Optional.of(personId));
         when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(identMap);
 
-        Map<PersonId, Oppfolgingstatus> oppfolgingstatu = new HashMap<>();
-        oppfolgingstatu.put(personId, new Oppfolgingstatus().setOppfolgingsbruker(false));
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(Try.success(oppfolgingstatu));
+        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = new HashMap<>();
+        oppfolgingstatus.put(personId, new Oppfolgingstatus().setOppfolgingsbruker(false));
+        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(oppfolgingstatus);
 
         dialogDataFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(dialogdata));
 

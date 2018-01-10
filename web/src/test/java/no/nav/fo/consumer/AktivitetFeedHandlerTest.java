@@ -87,13 +87,13 @@ public class AktivitetFeedHandlerTest {
         idMap.put(AktoerId.of("AktoerID2"), Optional.of(PersonId.of("123123")));
 
         when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(idMap);
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenAnswer( (r) -> {
+        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenAnswer((r) -> {
             Map<PersonId, Oppfolgingstatus> statuser = new HashMap<>();
             List<PersonId> personIds = r.getArgument(0);
             personIds.forEach( (personid) -> {
                 statuser.put(personid,new Oppfolgingstatus().setOppfolgingsbruker(true));
             });
-            return Try.success(statuser);
+            return statuser;
         });
 
         aktivitetFeedHandler.call("dontcare", data);
@@ -135,7 +135,7 @@ public class AktivitetFeedHandlerTest {
         when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenAnswer(invokation -> {
             Map<PersonId, Oppfolgingstatus> oppfolgingstatus = new HashMap<>();
             ((List) invokation.getArgument(0)).forEach(arg -> oppfolgingstatus.put((PersonId) arg, new Oppfolgingstatus().setOppfolgingsbruker(true)));
-            return Try.success(oppfolgingstatus);
+            return oppfolgingstatus;
         });
         when(aktoerService.hentPersonidFraAktoerid(any(AktoerId.class))).thenAnswer(invocation -> Try.success(PersonId.of(invocation.getArgument(0).toString())));
 
