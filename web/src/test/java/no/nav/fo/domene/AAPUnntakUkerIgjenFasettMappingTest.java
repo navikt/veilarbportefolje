@@ -38,56 +38,13 @@ class AAPUnntakUkerIgjenFasettMappingTest {
         assertEquals(UKE60_71, finnUkeMapping(503).get());
 
         assertEquals(UKE72_83, finnUkeMapping(504).get());
-        assertEquals(UKE72_83, finnUkeMapping(550).get());
-        assertEquals(UKE72_83, finnUkeMapping(587).get());
-
-        assertEquals(UKE84_95, finnUkeMapping(588).get());
-        assertEquals(UKE84_95, finnUkeMapping(600).get());
-        assertEquals(UKE84_95, finnUkeMapping(671).get());
-
-        assertEquals(UKE96_107, finnUkeMapping(672).get());
-        assertEquals(UKE96_107, finnUkeMapping(699).get());
-        assertEquals(UKE96_107, finnUkeMapping(755).get());
-
-        assertEquals(UKE108_119, finnUkeMapping(756).get());
-        assertEquals(UKE108_119, finnUkeMapping(800).get());
-        assertEquals(UKE108_119, finnUkeMapping(839).get());
-
-        assertEquals(UKE120_131, finnUkeMapping(840).get());
-        assertEquals(UKE120_131, finnUkeMapping(900).get());
-        assertEquals(UKE120_131, finnUkeMapping(923).get());
-
-        assertEquals(UKE132_143, finnUkeMapping(924).get());
-        assertEquals(UKE132_143, finnUkeMapping(999).get());
-        assertEquals(UKE132_143, finnUkeMapping(1007).get());
-
-        assertEquals(UKE144_155, finnUkeMapping(1008).get());
-        assertEquals(UKE144_155, finnUkeMapping(1050).get());
-        assertEquals(UKE144_155, finnUkeMapping(1091).get());
-
-        assertEquals(UKE156_167, finnUkeMapping(1092).get());
-        assertEquals(UKE156_167, finnUkeMapping(1100).get());
-        assertEquals(UKE156_167, finnUkeMapping(1175).get());
-
-        assertEquals(UKE168_179, finnUkeMapping(1176).get());
-        assertEquals(UKE168_179, finnUkeMapping(1200).get());
-        assertEquals(UKE168_179, finnUkeMapping(1259).get());
-
-        assertEquals(UKE180_191, finnUkeMapping(1260).get());
-        assertEquals(UKE180_191, finnUkeMapping(1300).get());
-        assertEquals(UKE180_191, finnUkeMapping(1343).get());
-
-        assertEquals(UKE192_203, finnUkeMapping(1344).get());
-        assertEquals(UKE192_203, finnUkeMapping(1399).get());
-        assertEquals(UKE192_203, finnUkeMapping(1427).get());
-
-        assertEquals(UKE204_215, finnUkeMapping(1428).get());
-        assertEquals(UKE204_215, finnUkeMapping(1499).get());
-        assertEquals(UKE204_215, finnUkeMapping(1511).get());
+        assertEquals(UKE72_83, finnUkeMapping(522).get());
+        assertEquals(UKE72_83, finnUkeMapping(523).get());
     }
 
     @Test
     void skalKasteUgyldigAntallDagerIgjenException() {
+        assertThrows(UgyldigAntallDagerIgjenException.class, () -> finnUkeMapping(524));
         assertThrows(UgyldigAntallDagerIgjenException.class, () -> finnUkeMapping(1512));
         assertThrows(UgyldigAntallDagerIgjenException.class, () -> finnUkeMapping(1666));
     }
