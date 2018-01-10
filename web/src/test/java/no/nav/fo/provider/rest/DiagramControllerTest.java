@@ -55,9 +55,9 @@ public class DiagramControllerTest {
     );
 
     private static final List<Bruker> BRUKERE_AAP_UNNTAK = asList(
-            new Bruker().setFnr("1").setUtlopsdatoFasett(MND1).setDagputlopUkeFasett(UKE_UNDER2).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE132_143),
-            new Bruker().setFnr("2").setUtlopsdatoFasett(MND2).setDagputlopUkeFasett(UKE2_5).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE204_215),
-            new Bruker().setFnr("3").setUtlopsdatoFasett(MND3).setDagputlopUkeFasett(UKE6_9).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE204_215)
+            new Bruker().setFnr("1").setUtlopsdatoFasett(MND1).setDagputlopUkeFasett(UKE_UNDER2).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE24_35),
+            new Bruker().setFnr("2").setUtlopsdatoFasett(MND2).setDagputlopUkeFasett(UKE2_5).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE36_47),
+            new Bruker().setFnr("3").setUtlopsdatoFasett(MND3).setDagputlopUkeFasett(UKE6_9).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE36_47)
     );
 
     @Mock
@@ -153,8 +153,8 @@ public class DiagramControllerTest {
         Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
         Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
 
-        assertThat(gruppering).hasSize(18);
+        assertThat(gruppering).hasSize(7);
         assertThat(storsteGruppe).contains(2L);
-        assertThat(gruppering.get(AAPUnntakUkerIgjenFasettMapping.UKE204_215)).isEqualTo(2L);
+        assertThat(gruppering.get(AAPUnntakUkerIgjenFasettMapping.UKE36_47)).isEqualTo(2L);
     }
 }

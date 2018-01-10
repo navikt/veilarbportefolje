@@ -23,14 +23,18 @@ public enum YtelseMapping {
             (vedtak) -> "AA".equals(vedtak.getSakstypeKode())
                     && "AAP".equals(vedtak.getRettighetstypeKode())
                     && vedtak.getAaptellere() != null
-                    && vedtak.getAaptellere().getAntallDagerIgjenUnntak() == null
+                    && (vedtak.getAaptellere().getAntallDagerIgjenUnntak() == null
+                    || vedtak.getAaptellere().getAntallDagerIgjenUnntak().intValue() == 523)
     ),
+    // I perioden fra  unntak er innvilget og til meldekort er beregnet og teller har startet nedtelling vil ikke brukere
+    // dukke opp i filtrering under "AAP Unntak". Dette kan være en periode på opptil 14 dager.
     AAP_UNNTAK(
             (vedtak) ->
                     "AA".equals(vedtak.getSakstypeKode())
                     && "AAP".equals(vedtak.getRettighetstypeKode())
                     && vedtak.getAaptellere() != null
-                    && (vedtak.getAaptellere().getAntallDagerIgjenUnntak() != null)
+                    && (vedtak.getAaptellere().getAntallDagerIgjenUnntak() != null
+                    && vedtak.getAaptellere().getAntallDagerIgjenUnntak().intValue() < 523)
     ),
     TILTAKSPENGER(
             (vedtak) -> "INDIV".equals(vedtak.getSakstypeKode()) && "BASI".equals(vedtak.getRettighetstypeKode())
