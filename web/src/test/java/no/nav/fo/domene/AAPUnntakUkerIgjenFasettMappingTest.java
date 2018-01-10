@@ -39,12 +39,11 @@ class AAPUnntakUkerIgjenFasettMappingTest {
 
         assertEquals(UKE72_83, finnUkeMapping(504).get());
         assertEquals(UKE72_83, finnUkeMapping(522).get());
-        assertEquals(UKE72_83, finnUkeMapping(523).get());
     }
 
     @Test
     void skalKasteUgyldigAntallDagerIgjenException() {
-        assertThrows(UgyldigAntallDagerIgjenException.class, () -> finnUkeMapping(524));
+        assertThrows(UgyldigAntallDagerIgjenException.class, () -> finnUkeMapping(523));
         assertThrows(UgyldigAntallDagerIgjenException.class, () -> finnUkeMapping(1512));
         assertThrows(UgyldigAntallDagerIgjenException.class, () -> finnUkeMapping(1666));
     }

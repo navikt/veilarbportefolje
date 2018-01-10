@@ -19,7 +19,7 @@ public enum AAPUnntakUkerIgjenFasettMapping implements FasettMapping {
     }
 
     public static Optional<AAPUnntakUkerIgjenFasettMapping> finnUkeMapping(int dager) {
-        int MAX_ANTALL_DAGER = 523;
+        int MAX_ANTALL_DAGER = 522;
 
         if (dager > MAX_ANTALL_DAGER) {
             throw new UgyldigAntallDagerIgjenException(dager);
