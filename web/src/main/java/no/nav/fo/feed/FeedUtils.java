@@ -9,9 +9,11 @@ import no.nav.fo.domene.PersonId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.OppfolgingUtils.erBrukerUnderOppfolging;
 
 public class FeedUtils {
@@ -23,12 +25,21 @@ public class FeedUtils {
                 .collect(toList());
     }
 
-    public static Map<Tuple2<AktoerId, PersonId>, Boolean> getErUnderOppfolging(List<AktoerId> aktoerids, Map<AktoerId, Optional<PersonId>> aktoeridToPersonid,
-                                                                          Map<PersonId, Oppfolgingstatus> oppfolgingstatus) {
+    public static Map<Boolean, List<Tuple2<AktoerId, PersonId>>> getErUnderOppfolging(List<AktoerId> aktoerids, Map<AktoerId, Optional<PersonId>> aktoeridToPersonid,
+                                                                                      Map<PersonId, Oppfolgingstatus> oppfolgingstatus) {
         return aktoerids.stream()
-                .filter(a -> aktoeridToPersonid.get(a).isPresent())
-                .collect(toMap(
-                        a -> Tuple.of(a, aktoeridToPersonid.get(a).get()),
-                        a -> erBrukerUnderOppfolging(oppfolgingstatus.get(aktoeridToPersonid.get(a).get()))));
+                .filter((aktoerId) -> aktoeridToPersonid.get(aktoerId).isPresent())
+                .map((aktoerId) -> Tuple.of(aktoerId, aktoeridToPersonid.get(aktoerId).get()))
+                .collect(groupingBy(
+                        identTuple -> erBrukerUnderOppfolging(oppfolgingstatus.get(aktoeridToPersonid.get(identTuple._1()).get()))
+                ));
+    }
+
+    public static <T> List<T> finnBrukere(Map<Boolean, List<Tuple2<AktoerId, PersonId>>> brukere, Boolean underOppfolging, Function<Tuple2<AktoerId, PersonId>, T> extract) {
+        return brukere
+                .getOrDefault(underOppfolging, emptyList())
+                .stream()
+                .map(extract)
+                .collect(toList());
     }
 }

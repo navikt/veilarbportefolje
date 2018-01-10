@@ -1,5 +1,6 @@
 package no.nav.fo.consumer;
 
+import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
@@ -17,12 +18,12 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 
 import javax.inject.Inject;
-import javax.ws.rs.InternalServerErrorException;
 import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static no.nav.fo.feed.FeedUtils.finnBrukere;
 import static no.nav.fo.feed.FeedUtils.getErUnderOppfolging;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
@@ -66,44 +67,64 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             timed(
                     "feed.oppfolging.objekt",
                     () -> {
-                        List<AktoerId> distinctAktoerIds = brukere.stream().map(BrukerOppdatertInformasjon::getAktoerid).map(AktoerId::of).distinct().collect(Collectors.toList());
-
-                        Map<AktoerId, Optional<PersonId>> identMap = aktoerService.hentPersonidsForAktoerids(distinctAktoerIds);
-
-                        insertOppfolgingsinformasjonForBrukere(brukere, identMap);
+                        List<AktoerId> unikeAktoerIds = finnUnikeAktoerIds(brukere);
+                        Map<AktoerId, Optional<PersonId>> identMap = aktoerService.hentPersonidsForAktoerids(unikeAktoerIds);
 
                         List<PersonId> personIds = FeedUtils.getPresentPersonids(identMap);
 
-                        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds)
-                                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
+                        Map<PersonId, Oppfolgingstatus> oppfolgingstatus = brukerRepository.retrieveOppfolgingstatus(personIds);
 
-                        slettArbeidslisteForBrukere(brukere,identMap,oppfolgingstatus);
+                        insertOppfolgingsinformasjonForBrukere(brukere, identMap);
 
-                        Map<Tuple2<AktoerId, PersonId>, Boolean> aktoerErUndeOppfolging = getErUnderOppfolging(distinctAktoerIds, identMap, oppfolgingstatus);
+                        slettArbeidslisteForBrukere(brukere, identMap, oppfolgingstatus);
 
+                        Map<PersonId, Oppfolgingstatus> oppfolgingstatusMedOppdatertInfo = oppdaterMedOppfolgingsFlagg(identMap, oppfolgingstatus, brukere);
 
-                        List<PersonId> ikkeUnderOppfolging = new ArrayList<>();
-                        List<PersonId> underOppfolging = new ArrayList<>();
-                        aktoerErUndeOppfolging.forEach((key, value) -> {
-                            if (value) {
-                                underOppfolging.add(key._2);
-                            } else {
-                                ikkeUnderOppfolging.add(key._2);
-                            }
-                        });
+                        Map<Boolean, List<Tuple2<AktoerId, PersonId>>> aktoerErUndeOppfolging = getErUnderOppfolging(unikeAktoerIds, identMap, oppfolgingstatusMedOppdatertInfo);
+                        List<PersonId> personIdUnderOppfolging = finnBrukere(aktoerErUndeOppfolging, Boolean.TRUE, Tuple2::_2);
+                        List<PersonId> personIdIkkeUnderOppfolging = finnBrukere(aktoerErUndeOppfolging, Boolean.FALSE, Tuple2::_2);
 
-
-                        solrService.populerIndeksForPersonids(underOppfolging);
-                        brukerRepository.deleteBrukerdataForPersonIds(ikkeUnderOppfolging);
-                        solrService.slettBrukere(ikkeUnderOppfolging);
+                        solrService.populerIndeksForPersonids(personIdUnderOppfolging);
+                        brukerRepository.deleteBrukerdataForPersonIds(personIdIkkeUnderOppfolging);
+                        solrService.slettBrukere(personIdIkkeUnderOppfolging);
                         solrService.commit();
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(brukere.size()))
             );
-        }catch(Exception e) {
+        } catch (Exception e) {
             log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.", e);
         }
     }
+
+    private Map<PersonId, Oppfolgingstatus> oppdaterMedOppfolgingsFlagg(
+            Map<AktoerId, Optional<PersonId>> identMap,
+            Map<PersonId, Oppfolgingstatus> oppfolgingstatus,
+            List<BrukerOppdatertInformasjon> brukere
+    ) {
+        Map<PersonId, BrukerOppdatertInformasjon> brukerMap = brukere
+                .stream()
+                .map((bruker) -> Tuple.of(identMap.get(AktoerId.of(bruker.getAktoerid())), bruker))
+                .filter((tuple) -> tuple._1.isPresent())
+                .map((tuple) -> Tuple.of(tuple._1.get(), tuple._2))
+                .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
+
+        return oppfolgingstatus
+                .entrySet()
+                .stream()
+                .map((entry) -> {
+                    BrukerOppdatertInformasjon brukerOppdatertInformasjon = brukerMap.get(entry.getKey());
+                    Oppfolgingstatus oppfolgingsstatus = entry.getValue();
+                    Oppfolgingstatus nyOppfolgingsstatus = new Oppfolgingstatus()
+                            .setFormidlingsgruppekode(oppfolgingsstatus.getFormidlingsgruppekode())
+                            .setServicegruppekode(oppfolgingsstatus.getServicegruppekode())
+                            .setVeileder(oppfolgingsstatus.getVeileder())
+                            .setOppfolgingsbruker(brukerOppdatertInformasjon.getOppfolging());
+
+                    return Tuple.of(entry.getKey(), nyOppfolgingsstatus);
+                })
+                .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
+    }
+
 
     private void slettArbeidslisteForBrukere(List<BrukerOppdatertInformasjon> brukere,
                                              Map<AktoerId, Optional<PersonId>> identMap,
@@ -113,6 +134,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             BrukerOppdatertInformasjon bruker = brukere.stream().filter(b -> b.getAktoerid().equals(aktoerId.toString())).findFirst().orElse(new BrukerOppdatertInformasjon());
             PersonId personId = identMap.get(aktoerId).orElse(null);
             Oppfolgingstatus oppfolgingstatus = Optional.ofNullable(oppfolginsstauser.get(personId)).orElse(new Oppfolgingstatus());
+
             if(skalArbeidslisteSlettes(oppfolgingstatus.getVeileder(), bruker.getVeileder(), bruker.getOppfolging())){
                 slettArbeidslisteForAktoerids.add(aktoerId);
             }
@@ -135,5 +157,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         } catch(Exception e) {
             log.error("Kunne ikke oppdatere oppfolgingsinformasjon for aktorid {}", bruker.getAktoerid(), e);
         }
+    }
+
+    private static List<AktoerId> finnUnikeAktoerIds(List<BrukerOppdatertInformasjon> brukere) {
+        return brukere.stream()
+                .map(BrukerOppdatertInformasjon::getAktoerid)
+                .map(AktoerId::of)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }
