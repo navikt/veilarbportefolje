@@ -34,6 +34,7 @@ public class Brukerdata {
     private LocalDateTime venterPaSvarFraBruker;
     private LocalDateTime venterPaSvarFraNav;
     private Boolean oppfolging;
+    private Boolean nyForVeileder;
     private Timestamp nyesteUtlopteAktivitet;
     private Set<AktivitetStatus> aktiviteter;
 
@@ -58,6 +59,7 @@ public class Brukerdata {
                 .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .set("PERSONID", personid)
                 .set("OPPFOLGING", safeToJaNei(oppfolging))
+                .set("NY_FOR_VEILEDER", safeToJaNei(nyForVeileder))
                 .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet);
     }
 
@@ -80,6 +82,7 @@ public class Brukerdata {
                 .add("AAPUNNTAKDAGERIGJEN", (bruker) -> bruker.aapUnntakDagerIgjen, Integer.class)
                 .add("AAPUNNTAKUKERIGJENFASETT", (bruker) -> safeToString(bruker.aapunntakUkerIgjenFasett), String.class)
                 .add("OPPFOLGING", (bruker) -> safeToJaNei(bruker.oppfolging), String.class)
+                .add("NY_FOR_VEILEDER", (bruker) -> safeToJaNei(bruker.nyForVeileder), String.class)
                 .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
                 .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .add("NYESTEUTLOPTEAKTIVITET", (bruker) ->  bruker.nyesteUtlopteAktivitet, Timestamp.class)

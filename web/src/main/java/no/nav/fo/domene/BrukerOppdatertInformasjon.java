@@ -14,6 +14,7 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
     private String aktoerid;
     private String veileder;
     private Boolean oppfolging;
+    private Boolean nyForVeileder;
     private Timestamp endretTimestamp;
 
 
@@ -22,7 +23,8 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
                 .setAktoerid(aktoerid)
                 .setVeileder(veileder)
                 .setOppfolging(oppfolging)
-                .setOppdatert(endretTimestamp);
+                .setOppdatert(endretTimestamp)
+                .setNyForVeileder(nyForVeileder);
     }
 
     @Override

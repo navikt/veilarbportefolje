@@ -76,7 +76,7 @@ public class BrukerRepositoryTest {
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
-            "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+            "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
             "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
             "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
@@ -98,7 +98,7 @@ public class BrukerRepositoryTest {
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-            "YTELSE", "UTLOPSDATO", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+            "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
             "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
             "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
 
@@ -127,10 +127,10 @@ public class BrukerRepositoryTest {
     public void skalOppdatereOmBrukerFinnes() {
         Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, 2,
-                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, true);
+                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, true,true);
         Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, 2,
-                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, true);
+                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, false,true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
@@ -160,6 +160,7 @@ public class BrukerRepositoryTest {
             UKE_UNDER12,
             1,
             AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12,
+            false,
             true
         );
 
@@ -222,6 +223,7 @@ public class BrukerRepositoryTest {
         AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett,
         Integer aapUnntakDagerIgjen,
         AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasett,
+        Boolean nyForVeileder,
         boolean oppfolging
     ) {
         return new Brukerdata()
@@ -240,7 +242,8 @@ public class BrukerRepositoryTest {
             .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
             .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasett)
             .setYtelse(ytelse)
-            .setOppfolging(oppfolging);
+            .setOppfolging(oppfolging)
+            .setNyForVeileder(nyForVeileder);
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
@@ -324,7 +327,7 @@ public class BrukerRepositoryTest {
 
         Brukerdata brukerdataFromDB = brukerRepository.retrieveBrukerdata(singletonList("personid")).get(0);
 
-        assertThat(brukerdata).isEqualTo(brukerdataFromDB);
+        assertThat(brukerdata.setNyForVeileder(false)).isEqualTo(brukerdataFromDB);
     }
 
     @Test

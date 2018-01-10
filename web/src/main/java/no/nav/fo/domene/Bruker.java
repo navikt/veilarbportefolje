@@ -29,6 +29,7 @@ public class Bruker {
     List<String> sikkerhetstiltak;
     String diskresjonskode;
     boolean egenAnsatt;
+    boolean nyForVeileder;
     boolean erDoed;
     int fodselsdagIMnd;
     LocalDateTime fodselsdato;
@@ -55,6 +56,7 @@ public class Bruker {
     public static Bruker of(SolrDocument document) {
         return new Bruker()
                 .setFnr((String) document.get("fnr"))
+                .setNyForVeileder(document.get("ny_for_veileder") == null ? false : (Boolean) document.get("ny_for_veileder"))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilederId((String) document.get("veileder_id"))

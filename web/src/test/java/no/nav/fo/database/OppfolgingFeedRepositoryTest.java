@@ -74,13 +74,14 @@ public class OppfolgingFeedRepositoryTest {
         BrukerOppdatertInformasjon bruker = new BrukerOppdatertInformasjon()
                 .setAktoerid(aktoerId.toString())
                 .setOppfolging(true)
+                .setNyForVeileder(false)
                 .setVeileder(veilederid)
                 .setEndretTimestamp(tildeltTidspunkt);
 
         oppfolgingFeedRepository.insertVeilederOgOppfolginsinfo(bruker, personId);
 
         Brukerdata oppdatertBrukerdata = brukerRepository.retrieveBrukerdata(Collections.singletonList(personId.toString())).get(0);
-        assertThat(oppdatertBrukerdata).isEqualTo(brukerdata.setVeileder(veilederid).setOppfolging(true));
+        assertThat(oppdatertBrukerdata).isEqualTo(brukerdata.setVeileder(veilederid).setOppfolging(true).setNyForVeileder(false));
 
     }
 

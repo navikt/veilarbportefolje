@@ -78,6 +78,6 @@ public class DialogFeedRepositoryTest {
         dialogFeedRepository.upsertDialogdata(dialogDataFraFeed, personId);
 
         Brukerdata brukerdataUpdated = brukerRepository.retrieveBrukerdata(Collections.singletonList(personId.toString())).get(0);
-        assertThat(brukerdataUpdated).isEqualTo(brukerdata.setVenterPaSvarFraNav(eldsteVentende2.toLocalDateTime()));
+        assertThat(brukerdataUpdated).isEqualTo(brukerdata.setVenterPaSvarFraNav(eldsteVentende2.toLocalDateTime()).setNyForVeileder(false));
     }
 }

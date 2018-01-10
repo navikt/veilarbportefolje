@@ -14,10 +14,12 @@ public class BrukerinformasjonFraFeed implements BrukerOppdatering {
     private String personid;
     private String aktoerid;
     private Boolean oppfolging;
+    private Boolean nyForVeileder;
 
     public Brukerdata applyTo(Brukerdata brukerdata) {
         return brukerdata
                 .setOppfolging(oppfolging)
+                .setNyForVeileder(nyForVeileder)
                 .setAktoerid(aktoerid)
                 .setPersonid(personid)
                 .setVeileder(veileder)

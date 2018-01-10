@@ -245,7 +245,8 @@ public class BrukerRepository {
                         .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
-                        .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET")))
+                        .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET"))
+                        .setNyForVeileder((parseJaNei(data.get("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))))
                 .collect(toList());
     }
 
@@ -420,6 +421,7 @@ public class BrukerRepository {
             "veilederident, " +
             "ytelse, " +
             "utlopsdato, " +
+            "ny_for_veileder, " +
             "utlopsdatofasett, " +
             "dagputlopuke, dagputlopukefasett, " +
             "permutlopuke, permutlopukefasett, " +

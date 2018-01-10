@@ -97,6 +97,8 @@ public class SolrUtils {
             oversiktStatements.add("(nyesteutlopteaktivitet:*)");
         } else if (filtervalg.brukerstatus == Brukerstatus.MIN_ARBEIDSLISTE) {
             oversiktStatements.add("(arbeidsliste_aktiv:*)");
+        } else if (filtervalg.brukerstatus == Brukerstatus.NY_FOR_VEILEDER) {
+            oversiktStatements.add(("(ny_for_veileder:true)"));
         }
 
 

@@ -194,6 +194,7 @@ public class SolrUpdateSmoketest {
         document.setField("rettighetsgruppekode", "rettighetsgruppekode");
         document.setField("egen_ansatt", false);
         document.setField("er_doed", false);
+        document.setField("ny_for_veileder", false);
         document.setField("fodselsdag_i_mnd", 10);
         document.setField("fodselsdato", toIsoUTC(fodselsdato));
         document.setField("kjonn", "M");

@@ -349,6 +349,7 @@ public class SolrServiceImpl implements SolrService {
         String iavtaltAktivitet = "aktiviteter:*";
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
+        String nyForVeileder = "ny_for_veileder:true";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFacetQuery(nyeBrukere);
@@ -358,6 +359,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFacetQuery(iavtaltAktivitet);
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
+        solrQuery.addFacetQuery(nyForVeileder);
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -373,6 +375,7 @@ public class SolrServiceImpl implements SolrService {
         long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
         long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
         long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
+        long antallNyeBrukerForVeileder = response.getFacetQuery().get(nyForVeileder);
         statusTall
                 .setTotalt(antallTotalt)
                 .setInaktiveBrukere(antallInaktiveBrukere)
@@ -381,7 +384,8 @@ public class SolrServiceImpl implements SolrService {
                 .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
                 .setIavtaltAktivitet(antalliavtaltAktivitet)
                 .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
-                .setUtlopteAktiviteter(antallUtlopteAktiviteter);
+                .setUtlopteAktiviteter(antallUtlopteAktiviteter)
+                .setNyeBrukereForVeileder(antallNyeBrukerForVeileder);
 
         return statusTall;
     }
@@ -395,6 +399,7 @@ public class SolrServiceImpl implements SolrService {
     public StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent) {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
+        String nyForVeileder = "ny_for_veileder:true";
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
@@ -405,6 +410,7 @@ public class SolrServiceImpl implements SolrService {
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
+        solrQuery.addFacetQuery(nyForVeileder);
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
@@ -427,6 +433,7 @@ public class SolrServiceImpl implements SolrService {
             long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
             long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
             long antallIarbeidsliste = response.getFacetQuery().get(minArbeidsliste);
+            long antallNyeBrukerForVeileder = response.getFacetQuery().get(nyForVeileder);
             statusTall
                     .setTotalt(antallTotalt)
                     .setInaktiveBrukere(antallInaktiveBrukere)
@@ -435,7 +442,8 @@ public class SolrServiceImpl implements SolrService {
                     .setIavtaltAktivitet(antalliavtaltAktivitet)
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter)
-                    .setMinArbeidsliste(antallIarbeidsliste);
+                    .setMinArbeidsliste(antallIarbeidsliste)
+                    .setNyeBrukereForVeileder(antallNyeBrukerForVeileder);
         } catch (SolrServerException | IOException e) {
             log.error("Henting av statustall for veilederportefølje feilet: {}", solrQuery, e);
         }

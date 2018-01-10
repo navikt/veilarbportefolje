@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 public class StatusTall {
     private long totalt;
     private long nyeBrukere;
+    private long nyeBrukereForVeileder;
     private long inaktiveBrukere;
     private long venterPaSvarFraNAV;
     private long venterPaSvarFraBruker;
