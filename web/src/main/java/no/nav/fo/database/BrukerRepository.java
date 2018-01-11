@@ -246,7 +246,7 @@ public class BrukerRepository {
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
                         .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET"))
-                        .setNyForVeileder((parseJaNei(data.get("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))))
+                        .setNyForVeileder(parseJaNei(data.get("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER")))
                 .collect(toList());
     }
 
