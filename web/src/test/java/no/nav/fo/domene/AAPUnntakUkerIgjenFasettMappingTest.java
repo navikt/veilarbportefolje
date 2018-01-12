@@ -39,6 +39,7 @@ class AAPUnntakUkerIgjenFasettMappingTest {
         assertEquals(UKE96_107, finnUkeMapping(5*96).get());
         assertEquals(UKE96_107, finnUkeMapping(5*104).get());
         assertEquals(UKE96_107, finnUkeMapping(522).get());
+        assertEquals(UKE96_107, finnUkeMapping(510).get());
     }
 
     @Test

@@ -14,9 +14,8 @@ public enum AAPUnntakUkerIgjenFasettMapping implements FasettMapping {
     private final int stop;
 
     AAPUnntakUkerIgjenFasettMapping(int start, int stop) {
-        // Konverterer til uker fordi vi får antall dager fra tjenesten
-        this.start = konverterFraUkeNummerTilDag(start);
-        this.stop = konverterFraUkeNummerTilDag(stop + 1) - 1;
+        this.start = start;
+        this.stop = stop;
     }
 
     public static Optional<AAPUnntakUkerIgjenFasettMapping> finnUkeMapping(int dager) {
@@ -28,10 +27,10 @@ public enum AAPUnntakUkerIgjenFasettMapping implements FasettMapping {
             dager = 0;
         }
 
-        int finalDager = dager;
+        int uker = dager / 5;
 
         return Stream.of(values())
-                .filter((mapping) -> mapping.start <= finalDager && finalDager <= mapping.stop)
+                .filter((mapping) -> mapping.start <= uker && uker <= mapping.stop)
                 .findAny();
     }
 
@@ -40,9 +39,5 @@ public enum AAPUnntakUkerIgjenFasettMapping implements FasettMapping {
             return null;
         }
         return valueOf(s);
-    }
-
-    private static int konverterFraUkeNummerTilDag(int ukeTil) {
-        return Math.max(ukeTil * 5, 0);
     }
 }
