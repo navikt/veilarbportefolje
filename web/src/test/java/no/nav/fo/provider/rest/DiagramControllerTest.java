@@ -153,7 +153,7 @@ public class DiagramControllerTest {
         Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
         Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
 
-        assertThat(gruppering).hasSize(7);
+        assertThat(gruppering).hasSize(9);
         assertThat(storsteGruppe).contains(2L);
         assertThat(gruppering.get(AAPUnntakUkerIgjenFasettMapping.UKE36_47)).isEqualTo(2L);
     }
