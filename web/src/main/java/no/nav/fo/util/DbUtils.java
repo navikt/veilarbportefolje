@@ -68,7 +68,7 @@ public class DbUtils {
 
     private static Integer konverterDagerTilUker(String antallDagerFraDB) {
         Integer antallDager = parseInt(antallDagerFraDB);
-        return antallDager == null ? 0 : antallDager / 7;
+        return antallDager == null ? 0 : (antallDager / 5);
     }
 
     static String kapitaliser(String s) {
