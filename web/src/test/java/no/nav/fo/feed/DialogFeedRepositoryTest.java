@@ -65,11 +65,10 @@ public class DialogFeedRepositoryTest {
                 .setVeileder("Z000000")
                 .setAktoerid(aktoerId.toString())
                 .setVenterPaSvarFraNav(eldsteVentende1.toLocalDateTime())
+                .setNyForVeileder(false)
                 .setOppfolging(true);
 
         brukerRepository.insertOrUpdateBrukerdata(Collections.singletonList(brukerdata), Collections.emptyList());
-
-        Timestamp date = new Timestamp(Instant.now().toEpochMilli());
 
         DialogDataFraFeed dialogDataFraFeed = new DialogDataFraFeed()
                 .setAktorId(aktoerId.toString())
@@ -78,6 +77,6 @@ public class DialogFeedRepositoryTest {
         dialogFeedRepository.upsertDialogdata(dialogDataFraFeed, personId);
 
         Brukerdata brukerdataUpdated = brukerRepository.retrieveBrukerdata(Collections.singletonList(personId.toString())).get(0);
-        assertThat(brukerdataUpdated).isEqualTo(brukerdata.setVenterPaSvarFraNav(eldsteVentende2.toLocalDateTime()).setNyForVeileder(false));
+        assertThat(brukerdataUpdated).isEqualTo(brukerdata.setVenterPaSvarFraNav(eldsteVentende2.toLocalDateTime()));
     }
 }

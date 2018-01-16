@@ -321,13 +321,14 @@ public class BrukerRepositoryTest {
             .setVeileder("Veileder")
             .setVenterPaSvarFraBruker(LocalDateTime.now())
             .setVenterPaSvarFraNav(LocalDateTime.now())
-            .setYtelse(YtelseMapping.AAP_MAXTID);
+            .setYtelse(YtelseMapping.AAP_MAXTID)
+            .setNyForVeileder(false);
 
         brukerRepository.upsertBrukerdata(brukerdata);
 
         Brukerdata brukerdataFromDB = brukerRepository.retrieveBrukerdata(singletonList("personid")).get(0);
 
-        assertThat(brukerdata.setNyForVeileder(false)).isEqualTo(brukerdataFromDB);
+        assertThat(brukerdata).isEqualTo(brukerdataFromDB);
     }
 
     @Test
