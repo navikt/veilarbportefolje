@@ -18,7 +18,7 @@ public class SolrSortUtils {
     static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, String sortOrder, String sortField, Filtervalg filtervalg) {
 
         if(minoversikt){
-            solrQuery.addSort("ny_for_veileder", SolrQuery.ORDER.asc);
+            solrQuery.addSort("ny_for_veileder", SolrQuery.ORDER.desc);
         } else {
             solrQuery.addSort(NY_FOR_ENEHET, SolrQuery.ORDER.asc);
         }
