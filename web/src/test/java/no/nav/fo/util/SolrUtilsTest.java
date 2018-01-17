@@ -126,7 +126,7 @@ public class SolrUtilsTest {
     public void skalBygeSorterPaVeileder() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
         SolrQuery query = SolrUtils.buildSolrQuery("", true,"","", filtervalg);
-        assertThat(query.getSortField()).contains("ny_for_veileder asc");
+        assertThat(query.getSortField()).contains("ny_for_veileder desc");
     }
 
     @Test
