@@ -47,10 +47,10 @@ public class SolrUtils {
     }
 
 
-    public static SolrQuery buildSolrQuery(String queryString, String sortOrder, String sortField, Filtervalg filtervalg) {
+    public static SolrQuery buildSolrQuery(String queryString, boolean sorterNyeForVeileder, String sortOrder, String sortField, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery(queryString);
-        addSort(solrQuery, sortOrder, sortField, filtervalg);
+        addSort(solrQuery, sorterNyeForVeileder, sortOrder, sortField, filtervalg);
         leggTilFiltervalg(solrQuery, filtervalg);
         return solrQuery;
     }

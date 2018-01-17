@@ -16,6 +16,7 @@ import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -48,7 +49,7 @@ import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
 import static no.nav.fo.util.DateUtils.toUtcString;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.*;
 
 @Slf4j
 public class SolrServiceImpl implements SolrService {
@@ -169,12 +170,19 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         String queryString = byggQueryString(enhetId, veilederIdent);
-        return hentBrukere(queryString, sortOrder, sortField, filtervalg, fra, antall);
+        boolean sorterNyeForVeileder = veilederIdent.map(StringUtils::isNotBlank).orElse(false);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sorterNyeForVeileder, sortOrder, sortField, filtervalg);
+        addPaging(solrQuery, fra, antall);
+        QueryResponse response = timed("solr.hentbrukere",() -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
+        SolrUtils.checkSolrResponseCode(response.getStatus());
+        SolrDocumentList results = response.getResults();
+        List<Bruker> brukere = results.stream().map(Bruker::of).collect(toList());
+        int antallBrukere = Long.valueOf(response.getResults().getNumFound()).intValue();
+        return new BrukereMedAntall(antallBrukere, brukere);
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
-        String queryString = byggQueryString(enhetId, veilederIdent);
-        return hentBrukere(queryString, sortOrder, sortField, filtervalg, null, null);
+        return hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, null, null);
     }
 
 
@@ -224,17 +232,6 @@ public class SolrServiceImpl implements SolrService {
                 dokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.get().getIsOppfolgendeVeileder());
             }
         });
-    }
-
-    private BrukereMedAntall hentBrukere(String queryString, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sortOrder, sortField, filtervalg);
-        addPaging(solrQuery, fra, antall);
-        QueryResponse response = timed("solr.hentbrukere",() -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
-        SolrUtils.checkSolrResponseCode(response.getStatus());
-        SolrDocumentList results = response.getResults();
-        List<Bruker> brukere = results.stream().map(Bruker::of).collect(toList());
-        int antallBrukere = Long.valueOf(response.getResults().getNumFound()).intValue();
-        return new BrukereMedAntall(antallBrukere, brukere);
     }
 
     @Override
