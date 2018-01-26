@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -25,7 +26,8 @@ public class AktivitetUtils {
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
-    public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter, AktoerService aktoerService) {
+    public static List<AktivitetBrukerOppdatering> konverterTilBrukerOppdatering(List<AktoerAktiviteter> aktoerAktiviteter,
+                                                                                 AktoerService aktoerService) {
         return aktoerAktiviteter
                 .stream()
                 .map(aktoerAktivitet -> {
@@ -42,26 +44,35 @@ public class AktivitetUtils {
     }
 
 
-    private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter, AktoerId aktoerId, PersonId personId) {
+    private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter,
+                                                                            AktoerId aktoerId,
+                                                                            PersonId personId) {
 
         Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId);
         Optional<AktivitetDTO> nyesteUtlopteAktivitet = Optional.ofNullable(finnNyesteUtlopteAktivAktivitet(aktiviteter, LocalDate.now()));
 
+        List<AktivitetDTO> aktiveAktivitetDTOList = aktiviteter
+                .stream()
+                .filter(AktivitetUtils::harIkkeStatusFullfort)
+                .filter(aktivitet -> Objects.nonNull(aktivitet.getFraDato()))
+                .collect(toList());
+
+        Set<AktivitetDTO> startDatoAktiviteter = finnNesteAktivitetStarter(aktiveAktivitetDTOList);
+        Iterator<AktivitetDTO> iterator = startDatoAktiviteter.iterator();
+
+        Optional<AktivitetDTO> aktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
+        Optional<AktivitetDTO> nesteAktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
+        Optional<AktivitetDTO> forrigeAktivtetStart = finnForrigeAktivitetStart(aktiveAktivitetDTOList);
+
+
         return new AktivitetBrukerOppdatering(personId.toString(), aktoerId.toString())
                 .setAktiviteter(aktiveAktiviteter)
-                .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet.map(AktivitetDTO::getTilDato).orElse(null));
+                .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet.map(AktivitetDTO::getTilDato).orElse(null))
+                .setAktivitetStart(aktivitetStart.map(AktivitetDTO::getFraDato).orElse(null))
+                .setNesteAktivitetStart(nesteAktivitetStart.map(AktivitetDTO::getFraDato).orElse(null))
+                .setForrigeAktivitetStart(forrigeAktivtetStart.map(AktivitetDTO::getFraDato).orElse(null));
     }
 
-
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdatering(AktoerId aktoerid, AktoerService aktoerService, AktivitetDAO aktivitetDAO) {
-        PersonId personid = getPersonId(aktoerid, aktoerService)
-                .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerid, e))
-                .get();
-
-        List<AktivitetDTO> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerid);
-
-        return konverterTilBrukerOppdatering(aktiviteter, aktoerid, personid);
-    }
 
     public static List<AktivitetBrukerOppdatering> hentAktivitetBrukerOppdateringer(List<AktoerId> aktoerIds, AktoerService aktoerService, AktivitetDAO aktivitetDAO) {
         List<AktoerAktiviteter> aktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerIds.stream().map(AktoerId::toString).collect(toList()));
@@ -94,6 +105,22 @@ public class AktivitetUtils {
                 .sorted(Comparator.comparing(AktivitetDTO::getTilDato))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private static Set<AktivitetDTO> finnNesteAktivitetStarter(List<AktivitetDTO> aktiviteter) {
+        return aktiviteter
+                .stream()
+                .filter(aktivitet -> !aktivitet.getFraDato().toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
+                .sorted(Comparator.comparing(AktivitetDTO::getFraDato))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private static Optional<AktivitetDTO> finnForrigeAktivitetStart(List<AktivitetDTO> aktiveAktivitetDTOList) {
+        return aktiveAktivitetDTOList
+                .stream()
+                .filter(aktivitet -> aktivitet.getFraDato().toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
+                .sorted(Comparator.comparing(AktivitetDTO::getFraDato).reversed())
+                .findFirst();
     }
 
     static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktoerId aktoerId, PersonId personId) {

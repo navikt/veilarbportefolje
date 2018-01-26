@@ -9,64 +9,162 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
 public class TiltakHandlerTest {
+    private Timestamp TODAY = Timestamp.from(Instant.now());
+    private Timestamp TOMORROW = Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS));
+    private Timestamp DAY_BEFORE_YESTERDAY = Timestamp.from(Instant.now().minus(2, ChronoUnit.DAYS));
 
+    private Timestamp FAR_IN_THE_FUTURE = Timestamp.from(Instant.now().plus(200, ChronoUnit.DAYS));
+    private Timestamp LONGTIMEAGO = Timestamp.from(Instant.now().minus(20, ChronoUnit.DAYS));
+    private Timestamp SOMETIMEAGO = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
 
     @Test
     public void skalOppdatereUtlopsdato() {
-       Timestamp longTimeAgo = Timestamp.from(Instant.now().minus(20, ChronoUnit.DAYS));
-       Timestamp someTimeAgo = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
+        Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
+        utlopsdatoMap.put(PersonId.of("personid"), TiltakOppdateringer
+                .builder()
+                .nyesteUtlopteAktivitet(SOMETIMEAGO)
+                .build()
+        );
 
-        Map<PersonId, Optional<Timestamp>> utlopsdatoMap = new HashMap<>();
-        utlopsdatoMap.put(PersonId.of("personid"), Optional.of(someTimeAgo));
 
-        Brukerdata brukerdata = new Brukerdata().setPersonid("personid").setNyesteUtlopteAktivitet(longTimeAgo);
+        Brukerdata brukerdata = new Brukerdata().setPersonid("personid").setNyesteUtlopteAktivitet(LONGTIMEAGO);
 
-        Brukerdata afterUpdate = TiltakHandler.oppdaterUtlopsdatoOmNodvendig(brukerdata, utlopsdatoMap);
-        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(someTimeAgo);
+        Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
+        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(SOMETIMEAGO);
     }
 
     @Test
     public void skalIkkeOppdatereUtlopsdato() {
-        Timestamp longTimeAgo = Timestamp.from(Instant.now().minus(30, ChronoUnit.DAYS));
-        Timestamp someTimeAgo = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
+        Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
+        utlopsdatoMap.put(PersonId.of("personid"), TiltakOppdateringer
+                .builder()
+                .nyesteUtlopteAktivitet(LONGTIMEAGO)
+                .build()
+        );
+        Brukerdata brukerdata = new Brukerdata().setPersonid("personid").setNyesteUtlopteAktivitet(SOMETIMEAGO);
 
-        Map<PersonId, Optional<Timestamp>> utlopsdatoMap = new HashMap<>();
-        utlopsdatoMap.put(PersonId.of("personid"), Optional.of(longTimeAgo));
-
-        Brukerdata brukerdata = new Brukerdata().setPersonid("personid").setNyesteUtlopteAktivitet(someTimeAgo);
-
-        Brukerdata afterUpdate = TiltakHandler.oppdaterUtlopsdatoOmNodvendig(brukerdata, utlopsdatoMap);
-        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(someTimeAgo);
+        Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
+        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(SOMETIMEAGO);
     }
 
     @Test
-    public void skalOppdatereUtlopsdatoNaarNullFraBrukerdata() {
-        Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
+    public void skalOppdatereDatoerNaarNullFraBrukerdata() {
 
-        Map<PersonId, Optional<Timestamp>> utlopsdatoMap = new HashMap<>();
-        utlopsdatoMap.put(PersonId.of("personid"), Optional.of(past));
+        Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
+        utlopsdatoMap.put(PersonId.of("personid"), TiltakOppdateringer
+                .builder()
+                .nyesteUtlopteAktivitet(SOMETIMEAGO)
+                .aktivitetStart(LONGTIMEAGO)
+                .nesteAktivitetStart(SOMETIMEAGO)
+                .forrigeAktivitetStart(SOMETIMEAGO)
+                .build()
+        );
+
 
         Brukerdata brukerdata = new Brukerdata().setPersonid("personid");
 
-        Brukerdata afterUpdate = TiltakHandler.oppdaterUtlopsdatoOmNodvendig(brukerdata, utlopsdatoMap);
-        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(past);
+        Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
+        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(SOMETIMEAGO);
+        assertThat(afterUpdate.getAktivitetStart()).isEqualTo(LONGTIMEAGO);
+        assertThat(afterUpdate.getNesteAktivitetStart()).isEqualTo(SOMETIMEAGO);
+        assertThat(afterUpdate.getForrigeAktivitetStart()).isEqualTo(SOMETIMEAGO);
     }
 
     @Test
-    public void skalOppdatereUtlopsdatoNaarNullFraTiltak() {
-        Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
+    public void skalIkkeOppdatereAktivitetDatoerNaarNullFraTiltak() {
+        Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
+        utlopsdatoMap.put(PersonId.of("personid"), TiltakOppdateringer
+                .builder()
+                .build()
+        );
 
-        Map<PersonId, Optional<Timestamp>> utlopsdatoMap = new HashMap<>();
+        Brukerdata brukerdata = new Brukerdata()
+                .setPersonid("personid")
+                .setNyesteUtlopteAktivitet(SOMETIMEAGO)
+                .setAktivitetStart(LONGTIMEAGO)
+                .setNesteAktivitetStart(SOMETIMEAGO)
+                .setForrigeAktivitetStart(SOMETIMEAGO);
 
-        Brukerdata brukerdata = new Brukerdata().setPersonid("personid").setNyesteUtlopteAktivitet(past);
+        Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
+        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(SOMETIMEAGO);
+        assertThat(afterUpdate.getAktivitetStart()).isEqualTo(LONGTIMEAGO);
+        assertThat(afterUpdate.getNesteAktivitetStart()).isEqualTo(SOMETIMEAGO);
+        assertThat(afterUpdate.getForrigeAktivitetStart()).isEqualTo(SOMETIMEAGO);
+    }
 
-        Brukerdata afterUpdate = TiltakHandler.oppdaterUtlopsdatoOmNodvendig(brukerdata, utlopsdatoMap);
-        assertThat(afterUpdate.getNyesteUtlopteAktivitet()).isEqualTo(past);
+    @Test
+    public void skalOppdatereAktivitetStart() {
+        Timestamp today = Timestamp.from(Instant.now());
+        Timestamp yesterday = Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS));
+        Timestamp tomorrow = Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS));
+
+        Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
+        utlopsdatoMap.put(
+                PersonId.of("personid"),
+                TiltakOppdateringer.builder()
+                        .aktivitetStart(today)
+                        .nesteAktivitetStart(tomorrow)
+                        .forrigeAktivitetStart(yesterday)
+                        .build()
+        );
+
+
+        Brukerdata brukerdata = new Brukerdata()
+                .setPersonid("personid")
+                .setAktivitetStart(tomorrow)
+                .setNesteAktivitetStart(tomorrow)
+                .setForrigeAktivitetStart(DAY_BEFORE_YESTERDAY);
+
+        Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
+        assertThat(afterUpdate.getAktivitetStart()).isEqualTo(today);
+        assertThat(afterUpdate.getNesteAktivitetStart()).isEqualTo(tomorrow);
+        assertThat(afterUpdate.getForrigeAktivitetStart()).isEqualTo(yesterday);
+    }
+
+    @Test
+    public void skalOppdatereNesteAktivitetStartUtFraNyesteAvDeGamleAktivitetStart() {
+        Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
+        utlopsdatoMap.put(
+                PersonId.of("personid"),
+                TiltakOppdateringer.builder()
+                        .aktivitetStart(TODAY)
+                        .nesteAktivitetStart(FAR_IN_THE_FUTURE)
+                        .build()
+        );
+
+        Brukerdata brukerdata = new Brukerdata()
+                .setPersonid("personid")
+                .setAktivitetStart(TOMORROW)
+                .setNesteAktivitetStart(FAR_IN_THE_FUTURE);
+
+        Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
+        assertThat(afterUpdate.getAktivitetStart()).isEqualTo(TODAY);
+        assertThat(afterUpdate.getNesteAktivitetStart()).isEqualTo(TOMORROW);
+    }
+
+    @Test
+    public void skalIkkeFaaSammeStartOgNesteStart() {
+        Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
+        utlopsdatoMap.put(
+                PersonId.of("personid"),
+                TiltakOppdateringer.builder()
+                        .aktivitetStart(TODAY)
+                        .nesteAktivitetStart(TODAY)
+                        .build()
+        );
+
+        Brukerdata brukerdata = new Brukerdata()
+                .setPersonid("personid")
+                .setAktivitetStart(TOMORROW)
+                .setNesteAktivitetStart(TOMORROW);
+
+        Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
+        assertThat(afterUpdate.getAktivitetStart()).isEqualTo(TODAY);
+        assertThat(afterUpdate.getNesteAktivitetStart()).isEqualTo(TOMORROW);
     }
 }

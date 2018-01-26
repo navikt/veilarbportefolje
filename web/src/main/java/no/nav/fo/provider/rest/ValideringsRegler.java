@@ -37,6 +37,9 @@ public class ValideringsRegler {
             "venterpasvarfranav",
             "venterpasvarfrabruker",
             "utlopteaktiviteter",
+            "aktivitet_start",
+            "neste_aktivitet_start",
+            "forrige_aktivitet_start",
             "iavtaltaktivitet");
 
     static void sjekkEnhet(String enhet) {

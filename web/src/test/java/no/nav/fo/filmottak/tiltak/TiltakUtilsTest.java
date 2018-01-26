@@ -85,7 +85,8 @@ public class TiltakUtilsTest {
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(someTimeAgo));
         bruker.getTiltaksaktivitetListe().add(tiltaksaktivitetWithTiltakTOM(future));
 
-        Timestamp nyesteUtlopsdato = TiltakUtils.finnNysteUtlopsdatoForBruker(bruker).get();
+        //TODO: More tests
+        Timestamp nyesteUtlopsdato = TiltakUtils.finnOppdateringForBruker(bruker).getNyesteUtlopteAktivitet();
         assertThat(nyesteUtlopsdato).isAfter(comparingTime);
         assertThat(future).isAfter(comparingTime);
     }
@@ -97,13 +98,13 @@ public class TiltakUtilsTest {
         Timestamp future = Timestamp.from(Instant.now().plus(10, ChronoUnit.DAYS));
 
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTwoTOM(past,future));
-        assertThat(TiltakUtils.finnNysteUtlopsdatoForBruker(bruker).isPresent()).isFalse();
+        assertThat(TiltakUtils.finnOppdateringForBruker(bruker).getNyesteUtlopteAktivitet() == null).isTrue();
     }
 
     @Test
     public void skalIkkeTryneOmDetIkkeFinnesDatoer() {
-        Optional<Timestamp> nyesteUtlopsdato = TiltakUtils.finnNysteUtlopsdatoForBruker(new Bruker());
-        assertThat(nyesteUtlopsdato.isPresent()).isFalse();
+        Timestamp nyesteUtlopsdato = TiltakUtils.finnOppdateringForBruker(new Bruker()).getNyesteUtlopteAktivitet();
+        assertThat(nyesteUtlopsdato == null).isTrue();
     }
 
     @Test
@@ -113,7 +114,7 @@ public class TiltakUtilsTest {
         Bruker bruker = new Bruker();
         Timestamp beforeFilter = AktivitetUtils.parseDato("1999-01-01");
         bruker.getGruppeaktivitetListe().add(getGruppeaktivitetWithTOM(beforeFilter));
-        assertThat(TiltakUtils.finnNysteUtlopsdatoForBruker(bruker).isPresent()).isFalse();
+        assertThat(TiltakUtils.finnOppdateringForBruker(bruker).getNyesteUtlopteAktivitet() == null).isTrue();
     }
 
     private Utdanningsaktivitet getUtdanningsaktivitetWithTOM(Timestamp timestamp) {

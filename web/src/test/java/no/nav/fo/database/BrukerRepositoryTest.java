@@ -78,7 +78,8 @@ public class BrukerRepositoryTest {
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
             "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
             "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
+            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
+            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -100,7 +101,9 @@ public class BrukerRepositoryTest {
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
             "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
             "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET"};
+            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
+            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START"};
+
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -287,22 +290,29 @@ public class BrukerRepositoryTest {
         SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
 
         assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isNull();
+        assertThat(bruker.get("aktivitet_start").getValue()).isNull();
+        assertThat(bruker.get("neste_aktivitet_start").getValue()).isNull();
+        assertThat(bruker.get("forrige_aktivitet_start").getValue()).isNull();
     }
 
     @Test
     public void skalHenteUtAktivitetInfo() {
-        Timestamp nyesteUtlopte = timestampFromISO8601("2017-01-01T13:00:00+01:00");
 
         Brukerdata brukerdata = new Brukerdata()
             .setPersonid("123456")
-            .setNyesteUtlopteAktivitet(nyesteUtlopte);
+            .setNyesteUtlopteAktivitet(timestampFromISO8601("2017-01-01T13:00:00+01:00"))
+            .setAktivitetStart(timestampFromISO8601("2017-01-01T14:00:00+01:00"))
+            .setNesteAktivitetStart(timestampFromISO8601("2017-01-01T15:00:00+01:00"))
+            .setForrigeAktivitetStart(timestampFromISO8601("2017-01-01T16:00:00+01:00"));
 
         brukerRepository.upsertBrukerdata(brukerdata);
         jdbcTemplate.update("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) VALUES (123456, '1234567890')");
 
         SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
-
         assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isEqualTo("2017-01-01T12:00:00Z");
+        assertThat(bruker.get("aktivitet_start").getValue()).isEqualTo("2017-01-01T13:00:00Z");
+        assertThat(bruker.get("neste_aktivitet_start").getValue()).isEqualTo("2017-01-01T14:00:00Z");
+        assertThat(bruker.get("forrige_aktivitet_start").getValue()).isEqualTo("2017-01-01T15:00:00Z");
     }
 
     @Test
@@ -322,7 +332,10 @@ public class BrukerRepositoryTest {
             .setVenterPaSvarFraBruker(LocalDateTime.now())
             .setVenterPaSvarFraNav(LocalDateTime.now())
             .setYtelse(YtelseMapping.AAP_MAXTID)
-            .setNyForVeileder(false);
+            .setNyForVeileder(false)
+            .setAktivitetStart(new Timestamp(1))
+            .setNesteAktivitetStart(new Timestamp(2))
+            .setForrigeAktivitetStart(new Timestamp(3));
 
         brukerRepository.upsertBrukerdata(brukerdata);
 

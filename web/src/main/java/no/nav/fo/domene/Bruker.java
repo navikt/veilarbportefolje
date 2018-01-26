@@ -49,6 +49,9 @@ public class Bruker {
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
+    LocalDateTime aktivitetStart;
+    LocalDateTime nesteAktivitetStart;
+    LocalDateTime forrigeAktivitetStart;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
 
@@ -82,6 +85,9 @@ public class Bruker {
                 .setVenterPaSvarFraNAV(toLocalDateTime((Date) document.get("venterpasvarfranav")))
                 .setVenterPaSvarFraBruker(toLocalDateTime((Date) document.get("venterpasvarfrabruker")))
                 .setNyesteUtlopteAktivitet(toLocalDateTime((Date) document.get("nyesteutlopteaktivitet")))
+                .setAktivitetStart(toLocalDateTime((Date) document.get("aktivitet_start")))
+                .setNesteAktivitetStart(toLocalDateTime((Date) document.get("neste_aktivitet_start")))
+                .setForrigeAktivitetStart(toLocalDateTime((Date) document.get("forrige_aktivitet_start")))
                 .setBrukertiltak(getBrukertiltak(document))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp((Date) document.get("aktivitet_tiltak_utlopsdato")))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp((Date) document.get("aktivitet_behandling_utlopsdato")))

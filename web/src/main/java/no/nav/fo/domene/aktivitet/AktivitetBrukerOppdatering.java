@@ -15,6 +15,9 @@ public class AktivitetBrukerOppdatering implements BrukerOppdatering {
     private final String personid;
     private final String aktoerid;
     private Timestamp nyesteUtlopteAktivitet;
+    private Timestamp aktivitetStart;
+    private Timestamp nesteAktivitetStart;
+    private Timestamp forrigeAktivitetStart;
     private Set<AktivitetStatus> aktiviteter;
 
     @Override
@@ -27,6 +30,9 @@ public class AktivitetBrukerOppdatering implements BrukerOppdatering {
         return bruker
                 .setAktiviteter(aktiviteter)
                 .setAktoerid(aktoerid)
-                .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet);
+                .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet)
+                .setAktivitetStart(aktivitetStart)
+                .setNesteAktivitetStart(nesteAktivitetStart)
+                .setForrigeAktivitetStart(forrigeAktivitetStart);
     }
 }

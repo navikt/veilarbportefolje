@@ -1,13 +1,16 @@
 package no.nav.fo.util;
 
 import io.vavr.collection.Array;
+import io.vavr.control.Try;
+import lombok.val;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.ApplicationConfigTest;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktivitetData;
 import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
+import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
+import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
@@ -35,10 +38,51 @@ import static org.mockito.Mockito.when;
 public class AktivitetUtilsTest {
 
     @Mock
-    private BrukerRepository brukerRepository;
+    private AktivitetDAO aktivitetDAO;
 
     @Mock
-    private AktivitetDAO aktivitetDAO;
+    private AktoerService aktorService;
+
+    @Test
+    public void konverterTilBrukerOppdatering_skal_hente_rett_brukerOppdateringer() throws Exception {
+
+        val TODAY = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+        val TOMORROW = Timestamp.valueOf(LocalDate.now().plusDays(1).atStartOfDay());
+        val DAY_AFTER_TOMORROW = Timestamp.valueOf(LocalDate.now().plusDays(2).atStartOfDay());
+
+        val YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(1).atStartOfDay());
+        val DAY_BEFORE_YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(2).atStartOfDay());
+
+
+        val aktivitetDTO1 = new AktivitetDTO()
+                .setTilDato(TOMORROW)
+                .setFraDato(TODAY);
+
+        val aktivitetDTO2 = new AktivitetDTO()
+                .setTilDato(YESTERDAY)
+                .setFraDato(DAY_BEFORE_YESTERDAY);
+
+        val aktivitetDTO3 = new AktivitetDTO()
+                .setTilDato(TOMORROW)
+                .setFraDato(YESTERDAY);
+
+        val aktivitetDTO4 = new AktivitetDTO()
+                .setTilDato(DAY_AFTER_TOMORROW)
+                .setFraDato(DAY_AFTER_TOMORROW);
+
+        val aktiviteter = Arrays.asList(aktivitetDTO1, aktivitetDTO2, aktivitetDTO3, aktivitetDTO4);
+        val aktorAktiviteter = Collections.singletonList(
+                new AktoerAktiviteter("123").setAktiviteter(aktiviteter)
+        );
+
+        when(aktorService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(() -> PersonId.of("123")));
+        val brukerOppdateringer = konverterTilBrukerOppdatering(aktorAktiviteter, aktorService).get(0);
+
+        assertThat(brukerOppdateringer.getNyesteUtlopteAktivitet()).isEqualTo(YESTERDAY);
+        assertThat(brukerOppdateringer.getAktivitetStart()).isEqualTo(TODAY);
+        assertThat(brukerOppdateringer.getNesteAktivitetStart()).isEqualTo(DAY_AFTER_TOMORROW);
+        assertThat(brukerOppdateringer.getForrigeAktivitetStart()).isEqualTo(YESTERDAY);
+    }
 
     @Test
     public void aktivitetErIPeriode() {

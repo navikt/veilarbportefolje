@@ -220,6 +220,9 @@ public class AktivitetDAO {
     public void slettutlopsdatoForAktivitet() {
         SqlUtils.update(db, "bruker_data")
                 .set("NYESTEUTLOPTEAKTIVITET", null)
+                .set("AKTIVITET_START", null)
+                .set("NESTE_AKTIVITET_START", null)
+                .set("FORRIGE_AKTIVITET_START", null)
                 .execute();
     }
 

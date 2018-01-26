@@ -246,7 +246,10 @@ public class BrukerRepository {
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
                         .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET"))
-                        .setNyForVeileder(parseJaNei(data.get("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER")))
+                        .setNyForVeileder(parseJaNei(data.get("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
+                        .setAktivitetStart((Timestamp) data.get("AKTIVITET_START"))
+                        .setNesteAktivitetStart((Timestamp) data.get("NESTE_AKTIVITET_START"))
+                        .setForrigeAktivitetStart((Timestamp) data.get("FORRIGE_AKTIVITET_START")))
                 .collect(toList());
     }
 
@@ -430,7 +433,10 @@ public class BrukerRepository {
             "oppfolging, " +
             "venterpasvarfrabruker, " +
             "venterpasvarfranav, " +
-            "nyesteutlopteaktivitet " +
+            "nyesteutlopteaktivitet, " +
+            "aktivitet_start, " +
+            "neste_aktivitet_start, " +
+            "forrige_aktivitet_start " +
             "FROM " +
             "oppfolgingsbruker ";
 

@@ -34,7 +34,6 @@
         <applicationProperties alias="portefolje.pilot.properties"/>
         <applicationProperties alias="dialogaktorfeed.properties"/>
         <applicationProperties alias="aktiviteterfeed.properties"/>
-        <!--TODO distribusjonslogg or something ??????? -->
         <applicationProperties alias="oppfolgingfeed.properties"/>
 
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />

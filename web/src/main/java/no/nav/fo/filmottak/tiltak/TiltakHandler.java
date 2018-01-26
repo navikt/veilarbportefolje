@@ -22,6 +22,9 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -67,7 +70,7 @@ public class TiltakHandler {
 
     public void startOppdateringAvTiltakIDatabasen() {
         log.info("Forsøker å starte oppdatering av tiltaksaktiviteter.");
-        if(this.kjorer()) {
+        if (this.kjorer()) {
             log.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
             return;
         }
@@ -109,7 +112,7 @@ public class TiltakHandler {
         tiltakrepository.lagreTiltakskoder(tiltakkoder);
 
         MetricsUtils.timed("tiltak.indert.nyesteutlopte", () -> {
-            utledOgLagreNyesteUtlopteAktivitet(tiltakOgAktiviteterForBrukere.getBrukerListe());
+            utledOgLagreBrukerData(tiltakOgAktiviteterForBrukere.getBrukerListe());
         });
 
         MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
@@ -140,8 +143,8 @@ public class TiltakHandler {
         log.info("Ferdige med å populere database");
     }
 
-    private void utledOgLagreNyesteUtlopteAktivitet(List<Bruker> brukere) {
-        io.vavr.collection.List.ofAll(brukere).sliding(1000,1000)
+    private void utledOgLagreBrukerData(List<Bruker> brukere) {
+        io.vavr.collection.List.ofAll(brukere).sliding(1000, 1000)
                 .forEach(brukereBatch -> {
 
                     List<Fnr> fnrs = brukereBatch.toJavaStream().map(Bruker::getPersonident).map(Fnr::of).collect(toList());
@@ -155,12 +158,13 @@ public class TiltakHandler {
 
                     Map<PersonId, Optional<Brukerdata>> brukerdataMap = toBrukerdataOptionalMap(personIds, brukerdata);
 
-                    List<Brukerdata> brukerdataSomIkkeFinnesIDb = lagListeMedBrukereSomIkkeFinnesIDb(personIds,brukerdataMap);
+                    List<Brukerdata> brukerdataSomIkkeFinnesIDb = lagListeMedBrukereSomIkkeFinnesIDb(personIds, brukerdataMap);
 
-                    Map<PersonId, Optional<Timestamp>> utlopsdatoFraTiltaksfil = finnUtlopsdatoFraTiltaksfil(brukereBatch, personidsMap);
+                    Map<PersonId, TiltakOppdateringer> tiltakOppdateringerFraTiltaksfil =
+                            finnTiltaksOppdateringerFraTiltaksfil(brukereBatch, personidsMap);
 
-                    List<Brukerdata> brukereMedOppdatertUtlopsdato = concat(brukerdata.stream(),brukerdataSomIkkeFinnesIDb.stream())
-                            .map(b -> oppdaterUtlopsdatoOmNodvendig(b, utlopsdatoFraTiltaksfil))
+                    List<Brukerdata> brukereMedOppdatertUtlopsdato = concat(brukerdata.stream(), brukerdataSomIkkeFinnesIDb.stream())
+                            .map(b -> oppdaterBrukerDataOmNodvendig(b, tiltakOppdateringerFraTiltaksfil))
                             .collect(toList());
 
                     List<String> finnesIDb = brukerdata.stream().map(Brukerdata::getPersonid).collect(toList());
@@ -177,12 +181,13 @@ public class TiltakHandler {
                 ));
     }
 
-    private Map<PersonId, Optional<Timestamp>> finnUtlopsdatoFraTiltaksfil(io.vavr.collection.List<Bruker> brukereBatch, Map<Fnr, Optional<PersonId>> personidsMap) {
+    private Map<PersonId, TiltakOppdateringer> finnTiltaksOppdateringerFraTiltaksfil(io.vavr.collection.List<Bruker> brukereBatch,
+                                                                                     Map<Fnr, Optional<PersonId>> personidsMap) {
         return brukereBatch.toJavaStream()
                 .filter(bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).isPresent())
                 .collect(toMap(
                         bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).get(),
-                        TiltakUtils::finnNysteUtlopsdatoForBruker
+                        TiltakUtils::finnOppdateringForBruker
                 ));
     }
 
@@ -193,19 +198,52 @@ public class TiltakHandler {
                 .collect(toList());
     }
 
-    static Brukerdata oppdaterUtlopsdatoOmNodvendig(Brukerdata brukerdata, Map<PersonId, Optional<Timestamp>> utlopsdatoFraTiltaksfil) {
+    static Brukerdata oppdaterBrukerDataOmNodvendig(Brukerdata brukerdata,
+                                                    Map<PersonId, TiltakOppdateringer> tiltakOppdateringerFraTiltaksfil) {
         PersonId personId = PersonId.of(brukerdata.getPersonid());
-        Optional<Timestamp> kanskjeUtlopsdato = utlopsdatoFraTiltaksfil.get(personId);
-        Optional<Timestamp> kanskjeBrukerdataUtlopsdato = Optional.ofNullable(brukerdata.getNyesteUtlopteAktivitet());
+        TiltakOppdateringer oppdateringer = tiltakOppdateringerFraTiltaksfil.get(personId);
 
-        if(Objects.isNull(kanskjeUtlopsdato) || !kanskjeUtlopsdato.isPresent()) {
-            return brukerdata;
-        }
-        if(!kanskjeBrukerdataUtlopsdato.isPresent()) {
-            return brukerdata.setNyesteUtlopteAktivitet(kanskjeUtlopsdato.get());
-        }
-        return brukerdata.setNyesteUtlopteAktivitet(nyeste(kanskjeUtlopsdato.get(), kanskjeBrukerdataUtlopsdato.get()));
+        Set<Timestamp> startDatoer = Stream.of(
+                Optional.ofNullable(oppdateringer.getAktivitetStart()),
+                Optional.ofNullable(oppdateringer.getNesteAktivitetStart()),
+                Optional.ofNullable(brukerdata.getAktivitetStart()),
+                Optional.ofNullable(brukerdata.getNesteAktivitetStart())
+        )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Iterator<Timestamp> iterator = startDatoer.iterator();
+        Timestamp aktivitetStart = Try.of(iterator::next).getOrElse(() -> null);
+        Timestamp nesteAktivitetStart = Try.of(iterator::next).getOrElse(() -> null);
+
+
+        brukerdata.setAktivitetStart(aktivitetStart);
+        brukerdata.setNesteAktivitetStart(nesteAktivitetStart);
+
+        Optional.ofNullable(oppdateringer.getForrigeAktivitetStart())
+                .ifPresent(kanskjeNyDato ->
+                        oppdaterMedNyesteDatofelt(
+                                brukerdata::getForrigeAktivitetStart,
+                                brukerdata::setForrigeAktivitetStart,
+                                kanskjeNyDato));
+        Optional.ofNullable(oppdateringer.getNyesteUtlopteAktivitet())
+                .ifPresent(kanskjeNyDato ->
+                        oppdaterMedNyesteDatofelt(brukerdata::getNyesteUtlopteAktivitet,
+                                brukerdata::setNyesteUtlopteAktivitet,
+                                kanskjeNyDato));
+        return brukerdata;
     }
+
+    private static void oppdaterMedNyesteDatofelt(Supplier<Timestamp> getDato, Consumer<Timestamp> setDate, Timestamp kanskjeNydato) {
+        if (getDato.get() == null) {
+            setDate.accept(kanskjeNydato);
+        } else {
+            setDate.accept(nyeste(getDato.get(), kanskjeNydato));
+        }
+    }
+
 
     private static Timestamp nyeste(Timestamp t1, Timestamp t2) {
         return t1.before(t2) ? t2 : t1;
@@ -220,20 +258,20 @@ public class TiltakHandler {
         brukere.forEach(bruker -> fnrTilBruker.put(bruker.getPersonident(), bruker));
 
         List<TiltakForEnhet> tiltakForEnhet = tiltakrepository.hentEnhetTilFodselsnummereMap().entrySet().stream()
-            .flatMap(entrySet -> entrySet.getValue().stream()
-                .filter(fnr -> fnrTilBruker.get(fnr) != null)
-                .flatMap(fnr -> fnrTilBruker.get(fnr).getTiltaksaktivitetListe().stream()
-                    .map(Tiltaksaktivitet::getTiltakstype)
-                    .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
-                ))
-            .distinct()
-            .collect(toList());
+                .flatMap(entrySet -> entrySet.getValue().stream()
+                        .filter(fnr -> fnrTilBruker.get(fnr) != null)
+                        .flatMap(fnr -> fnrTilBruker.get(fnr).getTiltaksaktivitetListe().stream()
+                                .map(Tiltaksaktivitet::getTiltakstype)
+                                .map(tiltak -> TiltakForEnhet.of(entrySet.getKey(), tiltak))
+                        ))
+                .distinct()
+                .collect(toList());
         tiltakrepository.lagreEnhettiltak(tiltakForEnhet);
     }
 
     private void utledOgLagreAktivitetstatusForTiltak(List<Bruker> brukere) {
         io.vavr.collection.List.ofAll(brukere)
-                .sliding(1000,1000)
+                .sliding(1000, 1000)
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
@@ -253,7 +291,7 @@ public class TiltakHandler {
 
     private void utledOgLagreGruppeaktiviteter(List<Bruker> brukere) {
         io.vavr.collection.List.ofAll(brukere)
-                .sliding(1000,1000)
+                .sliding(1000, 1000)
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
@@ -273,7 +311,7 @@ public class TiltakHandler {
 
     private void utledOgLagreUtdanningsaktiviteter(List<Bruker> brukere) {
         io.vavr.collection.List.ofAll(brukere)
-                .sliding(1000,1000)
+                .sliding(1000, 1000)
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());

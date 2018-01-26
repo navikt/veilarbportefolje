@@ -67,6 +67,9 @@ public class OppfolgingFeedRepositoryTest {
                 .setAktoerid(aktoerId.toString())
                 .setTildeltTidspunkt(tildeltTidspunkt)
                 .setNyesteUtlopteAktivitet(new Timestamp(0))
+                .setAktivitetStart(new Timestamp(1))
+                .setNesteAktivitetStart(new Timestamp(2))
+                .setForrigeAktivitetStart(new Timestamp(3))
                 .setOppfolging(false);
 
         brukerRepository.insertOrUpdateBrukerdata(Collections.singletonList(brukerdata), Collections.emptyList());

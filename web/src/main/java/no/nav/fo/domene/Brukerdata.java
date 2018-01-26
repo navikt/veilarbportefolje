@@ -36,6 +36,9 @@ public class Brukerdata {
     private Boolean oppfolging;
     private Boolean nyForVeileder;
     private Timestamp nyesteUtlopteAktivitet;
+    private Timestamp aktivitetStart;
+    private Timestamp nesteAktivitetStart;
+    private Timestamp forrigeAktivitetStart;
     private Set<AktivitetStatus> aktiviteter;
 
     public UpsertQuery toUpsertQuery(JdbcTemplate db) {
@@ -60,7 +63,10 @@ public class Brukerdata {
                 .set("PERSONID", personid)
                 .set("OPPFOLGING", safeToJaNei(oppfolging))
                 .set("NY_FOR_VEILEDER", safeToJaNei(nyForVeileder))
-                .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet);
+                .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet)
+                .set("AKTIVITET_START", aktivitetStart)
+                .set("NESTE_AKTIVITET_START", nesteAktivitetStart)
+                .set("FORRIGE_AKTIVITET_START", forrigeAktivitetStart);
     }
 
     public static int[] batchUpdate(JdbcTemplate db, List<Brukerdata> data) {
@@ -86,6 +92,9 @@ public class Brukerdata {
                 .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
                 .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .add("NYESTEUTLOPTEAKTIVITET", (bruker) ->  bruker.nyesteUtlopteAktivitet, Timestamp.class)
+                .add("AKTIVITET_START", (bruker) ->  bruker.aktivitetStart, Timestamp.class)
+                .add("NESTE_AKTIVITET_START", (bruker) ->  bruker.nesteAktivitetStart, Timestamp.class)
+                .add("FORRIGE_AKTIVITET_START", (bruker) ->  bruker.forrigeAktivitetStart, Timestamp.class)
                 .addWhereClause((bruker) -> WhereClause.equals("PERSONID",bruker.personid))
                 .execute(data);
     }

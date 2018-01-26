@@ -1,17 +1,21 @@
 package no.nav.fo.filmottak.tiltak;
 
+import io.vavr.control.Try;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.UtdanningaktivitetTyper;
 import no.nav.fo.util.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -26,12 +30,12 @@ public class TiltakUtils {
 
     static AktivitetStatus utledAktivitetstatusForTiltak(Bruker bruker, PersonId personId) {
         List<Tiltaksaktivitet> tiltaksAktiviteterEtterDatoFilter =
-            bruker.getTiltaksaktivitetListe()
-                .stream()
-                .filter(tiltaksaktivitet -> etterFilterDato(hentUtlopsdatoForTiltak(tiltaksaktivitet)))
-                .collect(toList());
+                bruker.getTiltaksaktivitetListe()
+                        .stream()
+                        .filter(tiltaksaktivitet -> etterFilterDato(hentUtlopsdatoForTiltak(tiltaksaktivitet)))
+                        .collect(toList());
 
-        if(tiltaksAktiviteterEtterDatoFilter.isEmpty()) {
+        if (tiltaksAktiviteterEtterDatoFilter.isEmpty()) {
             return null;
         }
 
@@ -47,15 +51,15 @@ public class TiltakUtils {
 
     static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId) {
         List<Moeteplan> gruppeAktiviteterEtterDatoFilter =
-            bruker.getGruppeaktivitetListe()
-                .stream()
-                .map(Gruppeaktivitet::getMoeteplanListe)
-                .flatMap(Collection::stream)
-                .filter(moeteplan -> etterFilterDato(tilTimestamp(moeteplan.getSluttDato())))
-                .collect(toList());
+                bruker.getGruppeaktivitetListe()
+                        .stream()
+                        .map(Gruppeaktivitet::getMoeteplanListe)
+                        .flatMap(Collection::stream)
+                        .filter(moeteplan -> etterFilterDato(tilTimestamp(moeteplan.getSluttDato())))
+                        .collect(toList());
 
 
-        if(gruppeAktiviteterEtterDatoFilter.isEmpty()) {
+        if (gruppeAktiviteterEtterDatoFilter.isEmpty()) {
             return null;
         }
 
@@ -71,13 +75,13 @@ public class TiltakUtils {
                 .filter(aktivitet -> etterFilterDato(tilTimestamp(aktivitet.getAktivitetPeriode().getTom())))
                 .collect(toList());
 
-        if(utdanningsaktiviteterEtterDato.isEmpty()) {
+        if (utdanningsaktiviteterEtterDato.isEmpty()) {
             return null;
         }
 
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato).orElse(null);
 
-        return AktivitetStatus.of(personId, AktoerId.of(null), utdanningaktivitet, true, nesteUtlopsdato );
+        return AktivitetStatus.of(personId, AktoerId.of(null), utdanningaktivitet, true, nesteUtlopsdato);
 
     }
 
@@ -112,7 +116,7 @@ public class TiltakUtils {
     }
 
     public static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
-        return Optional.of(calendar)
+        return Optional.ofNullable(calendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
                 .map(GregorianCalendar::getTime)
                 .map(Date::getTime)
@@ -121,11 +125,17 @@ public class TiltakUtils {
     }
 
     public static Optional<Timestamp> utledTildato(Periode periode) {
-
         return Optional.ofNullable(periode)
                 .map(Periode::getTom)
                 .map(TiltakUtils::tilTimestamp);
     }
+
+    public static Optional<Timestamp> utledFradato(Periode periode) {
+        return Optional.ofNullable(periode)
+                .map(Periode::getFom)
+                .map(TiltakUtils::tilTimestamp);
+    }
+
 
     static Timestamp hentUtlopsdatoForTiltak(Tiltaksaktivitet tiltaksaktivitet) {
         return Optional.of(tiltaksaktivitet)
@@ -139,32 +149,91 @@ public class TiltakUtils {
         return moteplanliste.stream()
                 .map(Moeteplan::getSluttDato)
                 .map(TiltakUtils::tilTimestamp)
+                .filter(Objects::nonNull)
                 .sorted(Comparator.reverseOrder())
                 .findFirst().orElse(null);
     }
 
-    public static Optional<Timestamp> finnNysteUtlopsdatoForBruker(Bruker bruker) {
-        return Stream.of(
+    static Timestamp finnEldsteFOMForMoteplanliste(List<Moeteplan> moteplanliste) {
+        return moteplanliste.stream()
+                .map(Moeteplan::getStartDato)
+                .map(TiltakUtils::tilTimestamp)
+                .filter(Objects::nonNull)
+                .sorted(Comparator.naturalOrder())
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static TiltakOppdateringer finnOppdateringForBruker(Bruker bruker) {
+        List<TiltakDatoer> tiltakDatoer = Stream.of(
                 bruker.getTiltaksaktivitetListe().stream()
-                        .map(Tiltaksaktivitet::getDeltakelsePeriode)
-                        .map(TiltakUtils::utledTildato)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get),
+                        .map(TiltakUtils::mapTiltakOppdateringer),
 
                 bruker.getGruppeaktivitetListe().stream()
-                        .map(Gruppeaktivitet::getMoeteplanListe)
-                        .map(TiltakUtils::finnNyesteTOMForMoteplanliste),
+                        .map(TiltakUtils::mapTiltakOppdateringer),
 
                 bruker.getUtdanningsaktivitetListe().stream()
-                        .map(Utdanningsaktivitet::getAktivitetPeriode)
-                        .map(TiltakUtils::utledTildato)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-        ).flatMap(Function.identity())
+                        .map(TiltakUtils::mapTiltakOppdateringer)
+        )
+                .flatMap(Function.identity())
+                .filter(oppdatering -> AktivitetUtils.etterFilterDato(oppdatering.getSluttDato().orElse(null)))
+                .collect(toList());
+
+        Timestamp nyesteUtlopsdato = tiltakDatoer
+                .stream()
+                .map(tiltak -> tiltak.getSluttDato().orElse(null))
                 .filter(Objects::nonNull)
-                .filter(AktivitetUtils::etterFilterDato)
                 .filter(not(TiltakUtils::fraOgMedDagensDato))
                 .sorted(Comparator.reverseOrder())
-                .findFirst();
+                .findFirst()
+                .orElse(null);
+
+
+        Set<Timestamp> startDatoerEtterDagensDato = tiltakDatoer
+                .stream()
+                .map(tiltak -> tiltak.getStartDato().orElse(null))
+                .filter(Objects::nonNull)
+                .filter(dato -> !dato.toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Iterator<Timestamp> iterator = startDatoerEtterDagensDato.iterator();
+
+
+        Timestamp aktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
+        Timestamp nesteAktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
+
+        Timestamp forrigeAktivtetStart = tiltakDatoer
+                .stream()
+                .map(tiltak -> tiltak.getStartDato().orElse(null))
+                .filter(Objects::nonNull)
+                .filter(dato -> dato.toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
+                .sorted(Comparator.reverseOrder())
+                .findFirst()
+                .orElse(null);
+
+        return TiltakOppdateringer
+                .builder()
+                .aktivitetStart(aktivitetStart)
+                .nesteAktivitetStart(nesteAktivitetStart)
+                .forrigeAktivitetStart(forrigeAktivtetStart)
+                .nyesteUtlopteAktivitet(nyesteUtlopsdato)
+                .build();
+    }
+
+    private static TiltakDatoer mapTiltakOppdateringer(Tiltaksaktivitet tiltak) {
+        Periode deltakelsePeriode = tiltak.getDeltakelsePeriode();
+        return TiltakDatoer.of(utledFradato(deltakelsePeriode), utledTildato(deltakelsePeriode));
+    }
+
+    private static TiltakDatoer mapTiltakOppdateringer(Utdanningsaktivitet tiltak) {
+        Periode deltakelsePeriode = tiltak.getAktivitetPeriode();
+        return TiltakDatoer.of(utledFradato(deltakelsePeriode), utledTildato(deltakelsePeriode));
+    }
+
+    private static TiltakDatoer mapTiltakOppdateringer(Gruppeaktivitet tiltak) {
+        Optional<Timestamp> nyesteTOMDato = Optional.ofNullable(finnNyesteTOMForMoteplanliste(tiltak.getMoeteplanListe()));
+        Optional<Timestamp> eldsteFOMDato = Optional.ofNullable(finnEldsteFOMForMoteplanliste(tiltak.getMoeteplanListe()));
+        return TiltakDatoer.of(eldsteFOMDato, nyesteTOMDato);
     }
 }
