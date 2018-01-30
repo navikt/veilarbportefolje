@@ -33,7 +33,7 @@ public class AktivitetService {
     }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
-        aktivitetDAO.slettutlopsdatoForAktivitet();
+        aktivitetDAO.slettAktivitetDatoer();
         run(
                 () -> timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
         ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));

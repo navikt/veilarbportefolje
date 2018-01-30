@@ -57,12 +57,13 @@ public class AktivitetUtils {
                 .filter(aktivitet -> Objects.nonNull(aktivitet.getFraDato()))
                 .collect(toList());
 
-        Set<AktivitetDTO> startDatoAktiviteter = finnNesteAktivitetStarter(aktiveAktivitetDTOList);
-        Iterator<AktivitetDTO> iterator = startDatoAktiviteter.iterator();
+        Set<AktivitetDTO> startDatoAktiviteter = finnStartDatoerEtterDagensDato(aktiveAktivitetDTOList);
 
+        Iterator<AktivitetDTO> iterator = startDatoAktiviteter.iterator();
         Optional<AktivitetDTO> aktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
         Optional<AktivitetDTO> nesteAktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
-        Optional<AktivitetDTO> forrigeAktivtetStart = finnForrigeAktivitetStart(aktiveAktivitetDTOList);
+
+        Optional<AktivitetDTO> forrigeAktivtetStart = finnForrigeAktivitetStartDatoer(aktiveAktivitetDTOList);
 
 
         return new AktivitetBrukerOppdatering(personId.toString(), aktoerId.toString())
@@ -107,7 +108,7 @@ public class AktivitetUtils {
                 .orElse(null);
     }
 
-    private static Set<AktivitetDTO> finnNesteAktivitetStarter(List<AktivitetDTO> aktiviteter) {
+    private static Set<AktivitetDTO> finnStartDatoerEtterDagensDato(List<AktivitetDTO> aktiviteter) {
         return aktiviteter
                 .stream()
                 .filter(aktivitet -> !aktivitet.getFraDato().toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
@@ -115,7 +116,7 @@ public class AktivitetUtils {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private static Optional<AktivitetDTO> finnForrigeAktivitetStart(List<AktivitetDTO> aktiveAktivitetDTOList) {
+    private static Optional<AktivitetDTO> finnForrigeAktivitetStartDatoer(List<AktivitetDTO> aktiveAktivitetDTOList) {
         return aktiveAktivitetDTOList
                 .stream()
                 .filter(aktivitet -> aktivitet.getFraDato().toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))

@@ -4,13 +4,11 @@ import io.vavr.control.Try;
 import no.nav.fo.domene.AktivitetStatus;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
-import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.UtdanningaktivitetTyper;
 import no.nav.fo.util.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
@@ -165,7 +163,28 @@ public class TiltakUtils {
     }
 
     public static TiltakOppdateringer finnOppdateringForBruker(Bruker bruker) {
-        List<TiltakDatoer> tiltakDatoer = Stream.of(
+        List<TiltakDatoer> tiltakDatoer = getTiltaksDatoer(bruker);
+
+        Set<Timestamp> startDatoerEtterDagensDato = finnStartDatoerEtterDagensDato(tiltakDatoer);
+        Iterator<Timestamp> iterator = startDatoerEtterDagensDato.iterator();
+
+        Timestamp aktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
+        Timestamp nesteAktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
+        Timestamp forrigeAktivtetStart = finnForrigeAktivtetStartDato(tiltakDatoer);
+
+        Timestamp nyesteUtlopsdato = finnNyesteUtlopsdato(tiltakDatoer);
+
+        return TiltakOppdateringer
+                .builder()
+                .aktivitetStart(aktivitetStart)
+                .nesteAktivitetStart(nesteAktivitetStart)
+                .forrigeAktivitetStart(forrigeAktivtetStart)
+                .nyesteUtlopteAktivitet(nyesteUtlopsdato)
+                .build();
+    }
+
+    private static List<TiltakDatoer> getTiltaksDatoer(Bruker bruker) {
+        return Stream.of(
                 bruker.getTiltaksaktivitetListe().stream()
                         .map(TiltakUtils::mapTiltakOppdateringer),
 
@@ -178,47 +197,38 @@ public class TiltakUtils {
                 .flatMap(Function.identity())
                 .filter(oppdatering -> AktivitetUtils.etterFilterDato(oppdatering.getSluttDato().orElse(null)))
                 .collect(toList());
+    }
 
-        Timestamp nyesteUtlopsdato = tiltakDatoer
+    private static Timestamp finnForrigeAktivtetStartDato(List<TiltakDatoer> tiltakDatoer) {
+        return tiltakDatoer
                 .stream()
-                .map(tiltak -> tiltak.getSluttDato().orElse(null))
+                .map(tiltak -> tiltak.getStartDato().orElse(null))
                 .filter(Objects::nonNull)
                 .filter(not(TiltakUtils::fraOgMedDagensDato))
                 .sorted(Comparator.reverseOrder())
                 .findFirst()
                 .orElse(null);
+    }
 
-
-        Set<Timestamp> startDatoerEtterDagensDato = tiltakDatoer
+    private static LinkedHashSet<Timestamp> finnStartDatoerEtterDagensDato(List<TiltakDatoer> tiltakDatoer) {
+        return tiltakDatoer
                 .stream()
                 .map(tiltak -> tiltak.getStartDato().orElse(null))
                 .filter(Objects::nonNull)
-                .filter(dato -> !dato.toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
+                .filter(TiltakUtils::fraOgMedDagensDato)
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
 
-        Iterator<Timestamp> iterator = startDatoerEtterDagensDato.iterator();
-
-
-        Timestamp aktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
-        Timestamp nesteAktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
-
-        Timestamp forrigeAktivtetStart = tiltakDatoer
-                .stream()
-                .map(tiltak -> tiltak.getStartDato().orElse(null))
-                .filter(Objects::nonNull)
-                .filter(dato -> dato.toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
-                .sorted(Comparator.reverseOrder())
-                .findFirst()
-                .orElse(null);
-
-        return TiltakOppdateringer
-                .builder()
-                .aktivitetStart(aktivitetStart)
-                .nesteAktivitetStart(nesteAktivitetStart)
-                .forrigeAktivitetStart(forrigeAktivtetStart)
-                .nyesteUtlopteAktivitet(nyesteUtlopsdato)
-                .build();
+    private static Timestamp finnNyesteUtlopsdato(List<TiltakDatoer> tiltakDatoer) {
+        return tiltakDatoer
+                    .stream()
+                    .map(tiltak -> tiltak.getSluttDato().orElse(null))
+                    .filter(Objects::nonNull)
+                    .filter(not(TiltakUtils::fraOgMedDagensDato))
+                    .sorted(Comparator.reverseOrder())
+                    .findFirst()
+                    .orElse(null);
     }
 
     private static TiltakDatoer mapTiltakOppdateringer(Tiltaksaktivitet tiltak) {

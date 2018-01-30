@@ -217,7 +217,7 @@ public class AktivitetDAO {
             .value("NESTE_UTLOPSDATO", nesteUtlopsdato);
     }
 
-    public void slettutlopsdatoForAktivitet() {
+    public void slettAktivitetDatoer() {
         SqlUtils.update(db, "bruker_data")
                 .set("NYESTEUTLOPTEAKTIVITET", null)
                 .set("AKTIVITET_START", null)
