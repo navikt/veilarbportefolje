@@ -102,7 +102,7 @@ public class AktivitetUtils {
                 .filter(AktivitetUtils::harIkkeStatusFullfort)
                 .filter(aktivitet -> Objects.nonNull(aktivitet.getTilDato()))
                 .filter(aktivitet -> aktivitet.getTilDato().toLocalDateTime().toLocalDate().isBefore(today))
-                .sorted(Comparator.comparing(AktivitetDTO::getTilDato))
+                .sorted(Comparator.comparing(AktivitetDTO::getTilDato).reversed())
                 .findFirst()
                 .orElse(null);
     }

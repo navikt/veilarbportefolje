@@ -155,11 +155,11 @@ public class AktivitetUtilsTest {
         assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus)).isFalse();
         LocalDate today = LocalDate.parse("2017-07-01");
 
-        AktivitetDTO denEldsteAktiviteten = new AktivitetDTO()
+        AktivitetDTO denNyesteAktiviteten = new AktivitetDTO()
                 .setTilDato(DateUtils.timestampFromISO8601("2017-06-02T01:00:00+02:00"))
                 .setStatus(ikkeFullfortStatus);
 
-        AktivitetDTO denNyesteAktiviteten = new AktivitetDTO()
+        AktivitetDTO denEldsteAktiviteten = new AktivitetDTO()
                 .setTilDato(DateUtils.timestampFromISO8601("2017-06-01T01:00:00+02:00"))
                 .setStatus(ikkeFullfortStatus);
 
@@ -173,11 +173,11 @@ public class AktivitetUtilsTest {
         assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus)).isFalse();
         LocalDate today = LocalDate.parse("2017-05-01");
 
-        AktivitetDTO denEldsteAktiviteten = new AktivitetDTO()
+        AktivitetDTO denNyesteAktiviteten = new AktivitetDTO()
                 .setTilDato(DateUtils.timestampFromISO8601("2017-06-02T01:00:00+02:00"))
                 .setStatus(ikkeFullfortStatus);
 
-        AktivitetDTO denNyesteAktiviteten = new AktivitetDTO()
+        AktivitetDTO denEldsteAktiviteten = new AktivitetDTO()
                 .setTilDato(DateUtils.timestampFromISO8601("2017-06-01T01:00:00+02:00"))
                 .setStatus(ikkeFullfortStatus);
 
