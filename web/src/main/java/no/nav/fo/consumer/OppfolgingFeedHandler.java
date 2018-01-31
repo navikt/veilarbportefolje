@@ -149,7 +149,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     private void insertOppfolgingsinformasjon(BrukerOppdatertInformasjon bruker, PersonId personId) {
         if(Objects.isNull(personId)) {
-            log.error("Kunne ikke oppdatere oppfolginsinformasjon for aktorid {} når person id er null", bruker.getAktoerid());
+            log.info("Kunne ikke oppdatere oppfolginsinformasjon for aktorid {} når person id er null", bruker.getAktoerid());
             return;
         }
         try {
