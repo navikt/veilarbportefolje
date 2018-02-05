@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -125,7 +126,16 @@ public class AktivitetDAO {
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
         io.vavr.collection.List.ofAll(statuser).sliding(1000,1000)
-                .forEach((statuserBatch) -> AktivitetStatus.batchInsert(db, statuserBatch.toJavaList()));
+                .forEach((statuserBatch) -> {
+                    try {
+                        AktivitetStatus.batchInsert(db, statuserBatch.toJavaList());
+                    } catch (SQLIntegrityConstraintViolationException e) {
+                        // Dette oppstår når flere noder prøver å skrive samme data til databasen. Siden alle nodene poller
+                        // samtidig er dette en kjent situasjon som oppstår.
+                        // TODO: Håndtere dette bedre så ikke nodene prøver å skrive til databasen samtidig
+                        log.warn("Status var allerede oppdatert i databasen. Dette kan være en race-condition mellom noder", e);
+                    }
+                });
     }
 
     public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId, String>> finnesIdb) {

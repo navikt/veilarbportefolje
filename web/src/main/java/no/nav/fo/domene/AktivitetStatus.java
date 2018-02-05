@@ -8,6 +8,7 @@ import no.nav.fo.util.sql.UpdateBatchQuery;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +49,7 @@ public class AktivitetStatus {
                 .execute(data);
     }
 
-    public static int[] batchInsert(JdbcTemplate db, List<AktivitetStatus> data) {
+    public static int[] batchInsert(JdbcTemplate db, List<AktivitetStatus> data) throws SQLIntegrityConstraintViolationException {
         InsertBatchQuery<AktivitetStatus> insertQuery = new InsertBatchQuery<>(db, "BRUKERSTATUS_AKTIVITETER");
 
         return insertQuery
