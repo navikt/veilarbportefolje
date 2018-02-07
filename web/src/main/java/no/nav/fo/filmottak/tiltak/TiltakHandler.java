@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -203,7 +204,7 @@ public class TiltakHandler {
         PersonId personId = PersonId.of(brukerdata.getPersonid());
         TiltakOppdateringer oppdateringer = tiltakOppdateringerFraTiltaksfil.get(personId);
 
-        Set<Timestamp> startDatoer = Stream.of(
+        Set<LocalDate> startDatoer = Stream.of(
                 Optional.ofNullable(oppdateringer.getAktivitetStart()),
                 Optional.ofNullable(oppdateringer.getNesteAktivitetStart()),
                 Optional.ofNullable(brukerdata.getAktivitetStart()),
@@ -211,12 +212,19 @@ public class TiltakHandler {
         )
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .map(timestamp -> timestamp.toLocalDateTime().toLocalDate())
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Iterator<Timestamp> iterator = startDatoer.iterator();
-        Timestamp aktivitetStart = Try.of(iterator::next).getOrElse(() -> null);
-        Timestamp nesteAktivitetStart = Try.of(iterator::next).getOrElse(() -> null);
+        Iterator<LocalDate> iterator = startDatoer.iterator();
+        Timestamp aktivitetStart = Try
+                .of(iterator::next)
+                .map(time -> Timestamp.valueOf(time.atStartOfDay()))
+                .getOrElse(() -> null);
+        Timestamp nesteAktivitetStart = Try
+                .of(iterator::next)
+                .map(time -> Timestamp.valueOf(time.atStartOfDay()))
+                .getOrElse(() -> null);
 
 
         brukerdata.setAktivitetStart(aktivitetStart);

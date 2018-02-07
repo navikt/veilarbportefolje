@@ -110,7 +110,11 @@ public class TiltakUtils {
     }
 
     private static boolean fraOgMedDagensDato(Timestamp timestamp) {
-        return LocalDate.now().isBefore(timestamp.toLocalDateTime().toLocalDate().plusDays(1));
+        return fraOgMedDagensDato(timestamp.toLocalDateTime().toLocalDate());
+    }
+
+    private static boolean fraOgMedDagensDato(LocalDate localDate) {
+        return LocalDate.now().isBefore(localDate.plusDays(1));
     }
 
     public static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
@@ -165,12 +169,22 @@ public class TiltakUtils {
     public static TiltakOppdateringer finnOppdateringForBruker(Bruker bruker) {
         List<TiltakDatoer> tiltakDatoer = getTiltaksDatoer(bruker);
 
-        Set<Timestamp> startDatoerEtterDagensDato = finnStartDatoerEtterDagensDato(tiltakDatoer);
-        Iterator<Timestamp> iterator = startDatoerEtterDagensDato.iterator();
+        Set<LocalDate> startDatoerEtterDagensDato = finnStartDatoerEtterDagensDato(tiltakDatoer);
+        Iterator<LocalDate> iterator = startDatoerEtterDagensDato.iterator();
 
-        Timestamp aktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
-        Timestamp nesteAktivitetStart = Try.of(iterator::next).getOrElse((Timestamp) null);
-        Timestamp forrigeAktivtetStart = finnForrigeAktivtetStartDato(tiltakDatoer);
+        Timestamp aktivitetStart = Try
+                .of(iterator::next)
+                .map(time -> Timestamp.valueOf(time.atStartOfDay()))
+                .getOrElse((Timestamp) null);
+
+        Timestamp nesteAktivitetStart = Try
+                .of(iterator::next)
+                .map(time -> Timestamp.valueOf(time.atStartOfDay()))
+                .getOrElse((Timestamp) null);
+
+        Timestamp forrigeAktivtetStart = finnForrigeAktivtetStartDato(tiltakDatoer)
+                .map(time -> Timestamp.valueOf(time.atStartOfDay()))
+                .orElse(null);
 
         Timestamp nyesteUtlopsdato = finnNyesteUtlopsdato(tiltakDatoer);
 
@@ -199,22 +213,23 @@ public class TiltakUtils {
                 .collect(toList());
     }
 
-    private static Timestamp finnForrigeAktivtetStartDato(List<TiltakDatoer> tiltakDatoer) {
+    private static Optional<LocalDate> finnForrigeAktivtetStartDato(List<TiltakDatoer> tiltakDatoer) {
         return tiltakDatoer
                 .stream()
                 .map(tiltak -> tiltak.getStartDato().orElse(null))
                 .filter(Objects::nonNull)
+                .map(timestamp -> timestamp.toLocalDateTime().toLocalDate())
                 .filter(not(TiltakUtils::fraOgMedDagensDato))
                 .sorted(Comparator.reverseOrder())
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
-    private static LinkedHashSet<Timestamp> finnStartDatoerEtterDagensDato(List<TiltakDatoer> tiltakDatoer) {
+    private static LinkedHashSet<LocalDate> finnStartDatoerEtterDagensDato(List<TiltakDatoer> tiltakDatoer) {
         return tiltakDatoer
                 .stream()
                 .map(tiltak -> tiltak.getStartDato().orElse(null))
                 .filter(Objects::nonNull)
+                .map(timestamp -> timestamp.toLocalDateTime().toLocalDate())
                 .filter(TiltakUtils::fraOgMedDagensDato)
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toCollection(LinkedHashSet::new));

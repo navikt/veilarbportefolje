@@ -70,7 +70,12 @@ public class AktivitetUtilsTest {
                 .setTilDato(DAY_AFTER_TOMORROW)
                 .setFraDato(DAY_AFTER_TOMORROW);
 
-        val aktiviteter = Arrays.asList(aktivitetDTO1, aktivitetDTO2, aktivitetDTO3, aktivitetDTO4);
+        val aktivitetDTO5 = new AktivitetDTO()
+                .setTilDato(DAY_AFTER_TOMORROW)
+                .setFraDato(Timestamp.valueOf(LocalDate.now().atStartOfDay().plusHours(1)));
+
+
+        val aktiviteter = Arrays.asList(aktivitetDTO1, aktivitetDTO2, aktivitetDTO3, aktivitetDTO4, aktivitetDTO5);
         val aktorAktiviteter = Collections.singletonList(
                 new AktoerAktiviteter("123").setAktiviteter(aktiviteter)
         );

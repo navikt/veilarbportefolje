@@ -5,8 +5,7 @@ import no.nav.fo.domene.PersonId;
 import org.junit.Test;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,12 +13,14 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
 public class TiltakHandlerTest {
-    private Timestamp TODAY = Timestamp.from(Instant.now());
-    private Timestamp TOMORROW = Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS));
-    private Timestamp DAY_BEFORE_YESTERDAY = Timestamp.from(Instant.now().minus(2, ChronoUnit.DAYS));
 
-    private Timestamp LONGTIMEAGO = Timestamp.from(Instant.now().minus(20, ChronoUnit.DAYS));
-    private Timestamp SOMETIMEAGO = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
+    private Timestamp TODAY = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+    private Timestamp TOMORROW = Timestamp.valueOf(LocalDate.now().plusDays(1).atStartOfDay());
+    private Timestamp YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(1).atStartOfDay());
+    private Timestamp DAY_BEFORE_YESTERDAY = Timestamp.valueOf(LocalDate.now().minusDays(2).atStartOfDay());
+
+    private Timestamp LONGTIMEAGO = Timestamp.valueOf(LocalDate.now().minusDays(20).atStartOfDay());
+    private Timestamp SOMETIMEAGO = Timestamp.valueOf(LocalDate.now().minusDays(10).atStartOfDay());
 
     @Test
     public void skalOppdatereUtlopsdato() {
@@ -91,31 +92,27 @@ public class TiltakHandlerTest {
 
     @Test
     public void skalOppdatereAktivitetStart() {
-        Timestamp today = Timestamp.from(Instant.now());
-        Timestamp yesterday = Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS));
-        Timestamp tomorrow = Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS));
-
         Map<PersonId, TiltakOppdateringer> utlopsdatoMap = new HashMap<>();
         utlopsdatoMap.put(
                 PersonId.of("personid"),
                 TiltakOppdateringer.builder()
-                        .aktivitetStart(today)
-                        .nesteAktivitetStart(tomorrow)
-                        .forrigeAktivitetStart(yesterday)
+                        .aktivitetStart(TODAY)
+                        .nesteAktivitetStart(TOMORROW)
+                        .forrigeAktivitetStart(YESTERDAY)
                         .build()
         );
 
 
         Brukerdata brukerdata = new Brukerdata()
                 .setPersonid("personid")
-                .setAktivitetStart(tomorrow)
-                .setNesteAktivitetStart(tomorrow)
+                .setAktivitetStart(TOMORROW)
+                .setNesteAktivitetStart(TOMORROW)
                 .setForrigeAktivitetStart(DAY_BEFORE_YESTERDAY);
 
         Brukerdata afterUpdate = TiltakHandler.oppdaterBrukerDataOmNodvendig(brukerdata, utlopsdatoMap);
-        assertThat(afterUpdate.getAktivitetStart()).isEqualTo(today);
-        assertThat(afterUpdate.getNesteAktivitetStart()).isEqualTo(tomorrow);
-        assertThat(afterUpdate.getForrigeAktivitetStart()).isEqualTo(yesterday);
+        assertThat(afterUpdate.getAktivitetStart()).isEqualTo(TODAY);
+        assertThat(afterUpdate.getNesteAktivitetStart()).isEqualTo(TOMORROW);
+        assertThat(afterUpdate.getForrigeAktivitetStart()).isEqualTo(YESTERDAY);
     }
 
     @Test

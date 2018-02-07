@@ -57,21 +57,21 @@ public class AktivitetUtils {
                 .filter(aktivitet -> Objects.nonNull(aktivitet.getFraDato()))
                 .collect(toList());
 
-        Set<AktivitetDTO> startDatoAktiviteter = finnStartDatoerEtterDagensDato(aktiveAktivitetDTOList);
+        Set<LocalDate> startDatoAktiviteter = finnStartDatoerEtterDagensDato(aktiveAktivitetDTOList);
 
-        Iterator<AktivitetDTO> iterator = startDatoAktiviteter.iterator();
-        Optional<AktivitetDTO> aktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
-        Optional<AktivitetDTO> nesteAktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
+        Iterator<LocalDate> iterator = startDatoAktiviteter.iterator();
+        Optional<LocalDate> aktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
+        Optional<LocalDate> nesteAktivitetStart = Try.of(() -> Optional.of(iterator.next())).getOrElse(Optional::empty);
 
-        Optional<AktivitetDTO> forrigeAktivtetStart = finnForrigeAktivitetStartDatoer(aktiveAktivitetDTOList);
+        Optional<LocalDate> forrigeAktivtetStart = finnForrigeAktivitetStartDatoer(aktiveAktivitetDTOList);
 
 
         return new AktivitetBrukerOppdatering(personId.toString(), aktoerId.toString())
                 .setAktiviteter(aktiveAktiviteter)
                 .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet.map(AktivitetDTO::getTilDato).orElse(null))
-                .setAktivitetStart(aktivitetStart.map(AktivitetDTO::getFraDato).orElse(null))
-                .setNesteAktivitetStart(nesteAktivitetStart.map(AktivitetDTO::getFraDato).orElse(null))
-                .setForrigeAktivitetStart(forrigeAktivtetStart.map(AktivitetDTO::getFraDato).orElse(null));
+                .setAktivitetStart(aktivitetStart.map(date -> Timestamp.valueOf(date.atStartOfDay())).orElse(null))
+                .setNesteAktivitetStart(nesteAktivitetStart.map(date -> Timestamp.valueOf(date.atStartOfDay())).orElse(null))
+                .setForrigeAktivitetStart(forrigeAktivtetStart.map(date -> Timestamp.valueOf(date.atStartOfDay())).orElse(null));
     }
 
 
@@ -108,19 +108,21 @@ public class AktivitetUtils {
                 .orElse(null);
     }
 
-    private static Set<AktivitetDTO> finnStartDatoerEtterDagensDato(List<AktivitetDTO> aktiviteter) {
+    private static Set<LocalDate> finnStartDatoerEtterDagensDato(List<AktivitetDTO> aktiviteter) {
         return aktiviteter
                 .stream()
-                .filter(aktivitet -> !aktivitet.getFraDato().toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
-                .sorted(Comparator.comparing(AktivitetDTO::getFraDato))
+                .map(aktivitet -> aktivitet.getFraDato().toLocalDateTime().toLocalDate())
+                .filter(data -> !data.isBefore(LocalDate.now()))
+                .sorted()
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private static Optional<AktivitetDTO> finnForrigeAktivitetStartDatoer(List<AktivitetDTO> aktiveAktivitetDTOList) {
+    private static Optional<LocalDate> finnForrigeAktivitetStartDatoer(List<AktivitetDTO> aktiveAktivitetDTOList) {
         return aktiveAktivitetDTOList
                 .stream()
-                .filter(aktivitet -> aktivitet.getFraDato().toLocalDateTime().toLocalDate().isBefore(LocalDate.now()))
-                .sorted(Comparator.comparing(AktivitetDTO::getFraDato).reversed())
+                .map(aktivitet -> aktivitet.getFraDato().toLocalDateTime().toLocalDate())
+                .filter(data -> data.isBefore(LocalDate.now()))
+                .sorted(Comparator.reverseOrder())
                 .findFirst();
     }
 
