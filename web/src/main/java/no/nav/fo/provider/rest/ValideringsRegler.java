@@ -40,7 +40,8 @@ public class ValideringsRegler {
             "aktivitet_start",
             "neste_aktivitet_start",
             "forrige_aktivitet_start",
-            "iavtaltaktivitet");
+            "iavtaltaktivitet",
+            "veileder_id");
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
