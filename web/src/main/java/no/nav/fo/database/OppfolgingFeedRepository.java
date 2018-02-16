@@ -27,6 +27,7 @@ public class OppfolgingFeedRepository {
                 .set("TILDELT_TIDSPUNKT", bruker.getEndretTimestamp())
                 .set("OPPFOLGING", safeToJaNei(bruker.getOppfolging()))
                 .set("NY_FOR_VEILEDER", safeToJaNei(bruker.getNyForVeileder()))
+                .set("NY_FOR_ENHET", safeToJaNei(bruker.getVeileder() == null || bruker.getVeileder().isEmpty()))
                 .set("AKTOERID", bruker.getAktoerid())
                 .where(WhereClause.equals("PERSONID", personId.toString()))
                 .execute();

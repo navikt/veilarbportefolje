@@ -49,7 +49,7 @@ import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
 import static no.nav.fo.util.DateUtils.toUtcString;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 public class SolrServiceImpl implements SolrService {
@@ -340,6 +340,7 @@ public class SolrServiceImpl implements SolrService {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
         String nyeBrukere = "-veileder_id:*";
+//        String nyeBrukere = "ny_for_enhet:true"; //TODO use me
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";

@@ -14,6 +14,7 @@ import static no.nav.fo.util.AktivitetUtils.addPrefixForAktivitetUtlopsdato;
 public class SolrSortUtils {
 
     private static final String NY_FOR_ENEHET = "exists(veileder_id)";
+//    private static final String NY_FOR_ENEHET = "ny_for_enhet"; //TODO use me
 
     static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, String sortOrder, String sortField, Filtervalg filtervalg) {
 

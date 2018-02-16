@@ -114,6 +114,7 @@ public class SolrUtilsTest {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.brukerstatus = Brukerstatus.NYE_BRUKERE;
         String nyeBrukereFilter = "-veileder_id:*";
+//        String nyeBrukereFilter = "ny_for_enhet desc"; todo use me
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
