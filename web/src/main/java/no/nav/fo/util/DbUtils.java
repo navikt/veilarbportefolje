@@ -59,7 +59,7 @@ public class DbUtils {
         document.addField("aapunntakukerigjenfasett", rs.getString("aapunntakukerigjenfasett"));
         document.addField("oppfolging", parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
         document.addField("ny_for_veileder", parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"));
-        document.addField("ny_for_enhet", parseJaNei(rs.getString("NY_FOR_ENHET"), "NY_FOR_ENHET"));
+        document.addField("ny_for_enhet", isNyForEnhet(rs));
         document.addField("venterpasvarfrabruker", toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")));
         document.addField("venterpasvarfranav", toIsoUTC(rs.getTimestamp("venterpasvarfranav")));
         document.addField("nyesteutlopteaktivitet", toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")));
@@ -68,6 +68,11 @@ public class DbUtils {
         document.addField("forrige_aktivitet_start", toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")));
 
         return document;
+    }
+
+    private static boolean isNyForEnhet(ResultSet rs) throws SQLException {
+        String veilder = rs.getString("veilederident");
+        return veilder == null || veilder.isEmpty();
     }
 
     private static Integer konverterDagerTilUker(String antallDagerFraDB) {

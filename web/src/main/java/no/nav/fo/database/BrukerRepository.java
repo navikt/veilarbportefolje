@@ -422,7 +422,6 @@ public class BrukerRepository {
             "doed_fra_dato, " +
             "tidsstempel, " +
             "veilederident, " +
-            "ny_for_enhet, " +
             "ytelse, " +
             "utlopsdato, " +
             "ny_for_veileder, " +

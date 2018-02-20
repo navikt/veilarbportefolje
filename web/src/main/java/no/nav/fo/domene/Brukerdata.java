@@ -35,7 +35,6 @@ public class Brukerdata {
     private LocalDateTime venterPaSvarFraNav;
     private Boolean oppfolging;
     private Boolean nyForVeileder;
-    private Boolean nyForEnhet;
     private Timestamp nyesteUtlopteAktivitet;
     private Timestamp aktivitetStart;
     private Timestamp nesteAktivitetStart;
@@ -64,7 +63,6 @@ public class Brukerdata {
                 .set("PERSONID", personid)
                 .set("OPPFOLGING", safeToJaNei(oppfolging))
                 .set("NY_FOR_VEILEDER", safeToJaNei(nyForVeileder))
-                .set("NY_FOR_ENHET", safeToJaNei(nyForEnhet))
                 .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet)
                 .set("AKTIVITET_START", aktivitetStart)
                 .set("NESTE_AKTIVITET_START", nesteAktivitetStart)
@@ -91,7 +89,6 @@ public class Brukerdata {
                 .add("AAPUNNTAKUKERIGJENFASETT", (bruker) -> safeToString(bruker.aapunntakUkerIgjenFasett), String.class)
                 .add("OPPFOLGING", (bruker) -> safeToJaNei(bruker.oppfolging), String.class)
                 .add("NY_FOR_VEILEDER", (bruker) -> safeToJaNei(bruker.nyForVeileder), String.class)
-                .add("NY_FOR_ENHET", (bruker) -> safeToJaNei(bruker.nyForEnhet), String.class)
                 .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
                 .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .add("NYESTEUTLOPTEAKTIVITET", (bruker) ->  bruker.nyesteUtlopteAktivitet, Timestamp.class)
