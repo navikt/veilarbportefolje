@@ -60,7 +60,7 @@ public class Bruker {
     public static Bruker of(SolrDocument document) {
         return new Bruker()
                 .setFnr((String) document.get("fnr"))
-                .setNyForEnhet((Boolean) document.get("ny_for_enhet"))
+                .setNyForEnhet(isNyForEnhet(document))
                 .setNyForVeileder(isNyForVeileder(document))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
@@ -102,6 +102,12 @@ public class Bruker {
                 .addAktivitetUtlopsdato("mote", dateToTimestamp((Date) document.get("aktivitet_mote_utlopsdato")))
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp((Date) document.get("aktivitet_utdanningaktivitet_utlopsdato")))
                 ;
+    }
+
+    private static boolean isNyForEnhet(SolrDocument document) {
+        return Optional.
+                ofNullable((Boolean) document.get("ny_for_enhet"))
+                .orElse(false);
     }
 
     private static boolean isNyForVeileder(SolrDocument document) {
