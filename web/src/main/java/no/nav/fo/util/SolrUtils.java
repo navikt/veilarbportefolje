@@ -82,8 +82,7 @@ public class SolrUtils {
         final List<String> filtrerBrukereStatements = new ArrayList<>();
 
         if (filtervalg.brukerstatus == Brukerstatus.NYE_BRUKERE) {
-            oversiktStatements.add("-veileder_id:*");
-//            oversiktStatements.add("(ny_for_enhet:true)"); //TODO use me
+            oversiktStatements.add("(ny_for_enhet:true)");
         } else if (filtervalg.brukerstatus == Brukerstatus.INAKTIVE_BRUKERE) {
             oversiktStatements.add("(formidlingsgruppekode:ISERV)");
         } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_NAV) {

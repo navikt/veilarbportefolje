@@ -339,8 +339,7 @@ public class SolrServiceImpl implements SolrService {
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
-        String nyeBrukere = "-veileder_id:*";
-//        String nyeBrukere = "ny_for_enhet:true"; //TODO use me
+        String nyeBrukere = "ny_for_enhet:true";
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
