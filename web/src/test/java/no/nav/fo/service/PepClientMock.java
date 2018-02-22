@@ -30,6 +30,11 @@ public class PepClientMock implements PepClient {
     }
 
     @Override
+    public boolean tilgangTilEnhet(String ident, String enhet) {
+        return true;
+    }
+
+    @Override
     public void ping() throws PepException {
 
     }

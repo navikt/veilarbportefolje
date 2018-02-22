@@ -2,7 +2,7 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.fo.domene.*;
-import no.nav.fo.service.BrukertilgangService;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import org.springframework.stereotype.Component;
 
@@ -29,12 +29,12 @@ import static no.nav.fo.provider.rest.RestUtils.createResponse;
 @Produces(APPLICATION_JSON)
 public class DiagramController {
 
-    private BrukertilgangService brukertilgangService;
+    private PepClient pepClient;
     private SolrService solrService;
 
     @Inject
-    public DiagramController(BrukertilgangService brukertilgangService, SolrService solrService) {
-        this.brukertilgangService = brukertilgangService;
+    public DiagramController(PepClient pepClient, SolrService solrService) {
+        this.pepClient = pepClient;
         this.solrService = solrService;
     }
 
@@ -49,7 +49,7 @@ public class DiagramController {
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkFiltervalg(filtervalg);
             ValideringsRegler.harYtelsesFilter(filtervalg);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             Function<Bruker, FasettMapping> mapper = brukerMapping(filtervalg.ytelse);
             List<FasettMapping> alleFacetter = fasetter(filtervalg.ytelse);

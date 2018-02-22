@@ -36,10 +36,7 @@ public class SjekkBrukertilgangTest {
     private Enhet virksomhetEnhet;
 
     @Inject
-    private VirksomhetEnhetService virksomhetEnhetService;
-
-    @Inject
-    private BrukertilgangService brukertilgangService;
+    private PepClient pepClient;
 
     @Before
     public void before() throws Exception {
@@ -50,13 +47,13 @@ public class SjekkBrukertilgangTest {
 
     @Test
     public void brukerSkalIkkeHaTilgangTilEnhet() throws Exception {
-        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgang("X123456", "5555");
+        boolean brukerHarTilgang = pepClient.tilgangTilEnhet("X123456", "5555");
         assertThat(brukerHarTilgang, is(false));
     }
 
     @Test
     public void brukerSkalHaTilgangTilEnhet() throws Exception {
-        boolean brukerHarTilgang = brukertilgangService.harBrukerTilgang("X123456", "1111");
+        boolean brukerHarTilgang = pepClient.tilgangTilEnhet("X123456", "1111");
         assertThat(brukerHarTilgang, is(true));
     }
 

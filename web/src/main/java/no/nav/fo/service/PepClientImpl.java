@@ -7,6 +7,7 @@ import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
@@ -76,6 +77,19 @@ public class PepClientImpl implements PepClient {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
         return callAllowed.getBiasedDecision().equals(Decision.Permit);
+    }
+
+    public boolean tilgangTilEnhet(String ident, String enhet) {
+        throw new NotImplementedException("Not yet implemented");
+//
+//        BiasedDecisionResponse callAllowed;
+//        try {
+//            callAllowed = pep.tilgangTilEnhet(ident, enhet);
+//        }
+//        catch (PepException e) {
+//            throw new InternalServerErrorException("Something went wrong in PEP", e);
+//        }
+//        return Decision.Permit.equals(callAllowed.getBiasedDecision());
     }
 
     @Override

@@ -7,7 +7,6 @@ import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.service.ArbeidslisteService;
-import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.util.TokenUtils;
 
@@ -30,13 +29,13 @@ public class TilgangsRegler {
         test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, token));
     }
 
-    static void tilgangTilEnhet(BrukertilgangService brukertilgangService, String enhet) {
+    static void tilgangTilEnhet(PepClient pep, String enhet) {
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
-        tilgangTilEnhet(brukertilgangService, enhet, veilederId);
+        tilgangTilEnhet(pep, enhet, veilederId);
     }
 
-    private static void tilgangTilEnhet(BrukertilgangService brukertilgangService, String enhet, String ident) {
-        test("tilgang til enhet", Tuple.of(enhet, ident), brukertilgangService.harBrukerTilgang(ident, enhet));
+    private static void tilgangTilEnhet(PepClient pep, String enhet, String ident) {
+        test("tilgang til enhet", Tuple.of(enhet, ident), pep.tilgangTilEnhet(ident, enhet));
     }
 
     public static void tilgangTilBruker(PepClient pep, String fnr) {

@@ -8,5 +8,6 @@ public interface PepClient {
     boolean isSubjectAuthorizedToSeeEgenAnsatt(String token);
     boolean isSubjectMemberOfModiaOppfolging(String ident, String token);
     boolean tilgangTilBruker(String fnr);
+    boolean tilgangTilEnhet(String ident, String enhet);
     void ping() throws PepException;
 }

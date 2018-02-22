@@ -2,17 +2,15 @@ package no.nav.fo.config;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.service.*;
+import no.nav.fo.service.AktivitetService;
+import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.ArbeidslisteService;
+import no.nav.fo.service.TiltakService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ServiceConfig {
-
-    @Bean
-    public BrukertilgangService sjekkBrukertilgang() {
-        return new BrukertilgangService();
-    }
 
     @Bean
     public PersistentOppdatering persistentOppdatering() {

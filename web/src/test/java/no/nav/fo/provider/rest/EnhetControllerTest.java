@@ -3,7 +3,6 @@ package no.nav.fo.provider.rest;
 
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.fo.domene.Filtervalg;
-import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import org.junit.Before;
@@ -19,9 +18,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EnhetControllerTest {
-
-    @Mock
-    private BrukertilgangService brukertilgangService;
 
     @Mock
     private SolrService solrService;
@@ -40,7 +36,7 @@ public class EnhetControllerTest {
 
     @Test
     public void skalHentPortefoljeFraIndeksDersomTilgang() throws Exception {
-        when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
+        when(pepClient.tilgangTilEnhet(any(), any())).thenReturn(true);
         when(pepClient.isSubjectMemberOfModiaOppfolging(any(), any())).thenReturn(true);
 
         enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
