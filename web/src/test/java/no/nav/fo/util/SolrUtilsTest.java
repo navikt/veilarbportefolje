@@ -113,7 +113,7 @@ public class SolrUtilsTest {
     public void skalByggSolrQueryMedNyeBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.brukerstatus = Brukerstatus.NYE_BRUKERE;
-        String nyeBrukereFilter = "ny_for_enhet desc";
+        String nyeBrukereFilter = "(ny_for_enhet:true)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
