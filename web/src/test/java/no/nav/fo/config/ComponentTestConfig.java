@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 
 import static io.vavr.control.Try.success;
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -77,6 +78,11 @@ public class ComponentTestConfig implements ApiApplication {
         return new EnhetMock();
     }
 
+
+    @Override
+    public String getApplicationName() {
+        return APPLICATION_NAME;
+    }
 
     @Override
     public Sone getSone() {

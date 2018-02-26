@@ -18,6 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 
 @EnableAspectJAutoProxy
 @EnableScheduling
@@ -51,6 +52,11 @@ public class LocalApplicationConfig implements ApiApplication{
     @Bean
     public PepClient pepClient() {
         return new PepClientMock();
+    }
+
+    @Override
+    public String getApplicationName() {
+        return APPLICATION_NAME;
     }
 
     @Override
