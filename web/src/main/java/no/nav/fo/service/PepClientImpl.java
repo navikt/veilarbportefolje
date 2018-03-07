@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
-import no.nav.sbl.dialogarena.common.abac.pep.RequestData;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -12,10 +11,7 @@ import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
 
-import static no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType.Enhet;
-import static no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action.ActionId.READ;
 import static no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision.Permit;
-import static no.nav.sbl.dialogarena.common.abac.pep.utils.SecurityUtils.getSamlToken;
 
 @Slf4j
 public class PepClientImpl implements PepClient {
@@ -87,20 +83,11 @@ public class PepClientImpl implements PepClient {
     public boolean tilgangTilEnhet(String ident, String enhet) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.harTilgang(lagRequest(ident, enhet));
+            callAllowed = pep.harTilgangTilEnhet(enhet, "srvveilarbportefolje");
         } catch (PepException e) {
             throw new InternalServerErrorException("Something went wrong in PEP", e);
         }
         return Permit.equals(callAllowed.getBiasedDecision());
-    }
-
-    private RequestData lagRequest(String ident, String enhet) throws PepException {
-        return pep.nyRequest()
-                .withFnr(ident)
-                .withEnhet(enhet)
-                .withAction(READ)
-                .withResourceType(Enhet)
-                .withSamlToken(getSamlToken().orElse(null));
     }
 
     @Override

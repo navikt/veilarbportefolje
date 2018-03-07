@@ -1,8 +1,6 @@
 package no.nav.fo.service;
 
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
-import no.nav.sbl.dialogarena.common.abac.pep.RequestData;
-import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Request;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -72,15 +70,11 @@ public class SjekkBrukertilgangTest {
 
     private void gitt_at_pep_sier(Decision decision) throws PepException {
         BiasedDecisionResponse response = new BiasedDecisionResponse(decision, null);
-        when(pep.nyRequest()).thenReturn(new RequestData());
-        when(pep.harTilgang(any(Request.class))).thenReturn(response);
-        when(pep.harTilgang(any(RequestData.class))).thenReturn(response);
+        when(pep.harTilgangTilEnhet(any(), any())).thenReturn(response);
     }
 
     private void gitt_at_pep_kaster_feil() throws PepException {
-        when(pep.harTilgang(any(Request.class))).thenThrow(new PepException("Noe gikk veldig feil"));
-        when(pep.harTilgang(any(RequestData.class))).thenThrow(new PepException("Noe gikk veldig feil"));
-        when(pep.nyRequest()).thenThrow(new PepException("Noe gikk veldig feil"));
+        when(pep.harTilgangTilEnhet(any(), any())).thenThrow(new PepException("Noe gikk veldig feil"));
 
     }
 }
