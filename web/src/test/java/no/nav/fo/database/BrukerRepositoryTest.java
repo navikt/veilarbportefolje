@@ -28,7 +28,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
 import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
 import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
-import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.util.sql.SqlUtils.insert;
@@ -74,12 +73,12 @@ public class BrukerRepositoryTest {
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
-            "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-            "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
-            "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START"};
+                "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
+                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
+                "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+                "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
+                "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
+                "AKTIVITET_START", "NESTE_AKTIVITET_START", "FORRIGE_AKTIVITET_START"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -97,12 +96,12 @@ public class BrukerRepositoryTest {
     public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
-            "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-            "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-            "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START"};
+                "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
+                "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
+                "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+                "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
+                "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
+                "AKTIVITET_START", "NESTE_AKTIVITET_START", "FORRIGE_AKTIVITET_START"};
 
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
@@ -129,11 +128,11 @@ public class BrukerRepositoryTest {
     @Test
     public void skalOppdatereOmBrukerFinnes() {
         Brukerdata brukerdata1 = brukerdata("aktoerid", "personid", "veielderid", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, 2,
-                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, true,true);
+                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, AAPMaxtidUkeFasettMapping.UKE_UNDER2, 2,
+                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER2, true, true);
         Brukerdata brukerdata2 = brukerdata("aktoerid", "personid", "veielderid2", Timestamp.from(Instant.now()), YtelseMapping.DAGPENGER_MED_PERMITTERING,
-                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, UKE_UNDER12, 2,
-                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12, false,true);
+                LocalDateTime.now(), ManedFasettMapping.MND1, 0, UKE_UNDER2, 0, UKE_UNDER2, 0, AAPMaxtidUkeFasettMapping.UKE_UNDER2, 2,
+                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER2, false, true);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList("personid"));
@@ -148,23 +147,23 @@ public class BrukerRepositoryTest {
     @Test
     public void skalInserteOmBrukerIkkeFinnes() {
         Brukerdata brukerdata = brukerdata(
-            "aktoerid",
-            "personid",
-            "veielderid",
-            Timestamp.from(Instant.now()),
-            YtelseMapping.DAGPENGER_MED_PERMITTERING,
-            LocalDateTime.now(),
-            ManedFasettMapping.MND1,
-            3,
-            DagpengerUkeFasettMapping.UKE2_5,
-            3,
-            DagpengerUkeFasettMapping.UKE2_5,
-            2,
-            UKE_UNDER12,
-            1,
-            AAPUnntakUkerIgjenFasettMapping.UKE_UNDER12,
-            false,
-            true
+                "aktoerid",
+                "personid",
+                "veielderid",
+                Timestamp.from(Instant.now()),
+                YtelseMapping.DAGPENGER_MED_PERMITTERING,
+                LocalDateTime.now(),
+                ManedFasettMapping.MND1,
+                3,
+                DagpengerUkeFasettMapping.UKE2_5,
+                3,
+                DagpengerUkeFasettMapping.UKE2_5,
+                2,
+                AAPMaxtidUkeFasettMapping.UKE_UNDER2,
+                1,
+                AAPUnntakUkerIgjenFasettMapping.UKE_UNDER2,
+                false,
+                true
         );
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
@@ -211,42 +210,42 @@ public class BrukerRepositoryTest {
     }
 
     private Brukerdata brukerdata(
-        String aktoerid,
-        String personId,
-        String veileder,
-        Timestamp tildeltTidspunkt,
-        YtelseMapping ytelse,
-        LocalDateTime utlopsdato,
-        ManedFasettMapping utlopsdatoFasett,
-        Integer dagpUtlopUke,
-        DagpengerUkeFasettMapping dagpUtlopUkeFasett,
-        Integer permutlopUke,
-        DagpengerUkeFasettMapping permutlopUkeFasett,
-        Integer aapmaxtidUke,
-        AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett,
-        Integer aapUnntakDagerIgjen,
-        AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasett,
-        Boolean nyForVeileder,
-        boolean oppfolging
+            String aktoerid,
+            String personId,
+            String veileder,
+            Timestamp tildeltTidspunkt,
+            YtelseMapping ytelse,
+            LocalDateTime utlopsdato,
+            ManedFasettMapping utlopsdatoFasett,
+            Integer dagpUtlopUke,
+            DagpengerUkeFasettMapping dagpUtlopUkeFasett,
+            Integer permutlopUke,
+            DagpengerUkeFasettMapping permutlopUkeFasett,
+            Integer aapmaxtidUke,
+            AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett,
+            Integer aapUnntakDagerIgjen,
+            AAPUnntakUkerIgjenFasettMapping aapUnntakUkerIgjenFasett,
+            Boolean nyForVeileder,
+            boolean oppfolging
     ) {
         return new Brukerdata()
-            .setAktoerid(aktoerid)
-            .setPersonid(personId)
-            .setVeileder(veileder)
-            .setTildeltTidspunkt(tildeltTidspunkt)
-            .setUtlopsdato(utlopsdato)
-            .setUtlopsFasett(utlopsdatoFasett)
-            .setDagputlopUke(dagpUtlopUke)
-            .setDagputlopUkeFasett(dagpUtlopUkeFasett)
-            .setPermutlopUke(permutlopUke)
-            .setPermutlopUkeFasett(permutlopUkeFasett)
-            .setAapmaxtidUke(aapmaxtidUke)
-            .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
-            .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
-            .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasett)
-            .setYtelse(ytelse)
-            .setOppfolging(oppfolging)
-            .setNyForVeileder(nyForVeileder);
+                .setAktoerid(aktoerid)
+                .setPersonid(personId)
+                .setVeileder(veileder)
+                .setTildeltTidspunkt(tildeltTidspunkt)
+                .setUtlopsdato(utlopsdato)
+                .setUtlopsFasett(utlopsdatoFasett)
+                .setDagputlopUke(dagpUtlopUke)
+                .setDagputlopUkeFasett(dagpUtlopUkeFasett)
+                .setPermutlopUke(permutlopUke)
+                .setPermutlopUkeFasett(permutlopUkeFasett)
+                .setAapmaxtidUke(aapmaxtidUke)
+                .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
+                .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
+                .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasett)
+                .setYtelse(ytelse)
+                .setOppfolging(oppfolging)
+                .setNyForVeileder(nyForVeileder);
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
@@ -299,11 +298,11 @@ public class BrukerRepositoryTest {
     public void skalHenteUtAktivitetInfo() {
 
         Brukerdata brukerdata = new Brukerdata()
-            .setPersonid("123456")
-            .setNyesteUtlopteAktivitet(timestampFromISO8601("2017-01-01T13:00:00+01:00"))
-            .setAktivitetStart(timestampFromISO8601("2017-01-01T14:00:00+01:00"))
-            .setNesteAktivitetStart(timestampFromISO8601("2017-01-01T15:00:00+01:00"))
-            .setForrigeAktivitetStart(timestampFromISO8601("2017-01-01T16:00:00+01:00"));
+                .setPersonid("123456")
+                .setNyesteUtlopteAktivitet(timestampFromISO8601("2017-01-01T13:00:00+01:00"))
+                .setAktivitetStart(timestampFromISO8601("2017-01-01T14:00:00+01:00"))
+                .setNesteAktivitetStart(timestampFromISO8601("2017-01-01T15:00:00+01:00"))
+                .setForrigeAktivitetStart(timestampFromISO8601("2017-01-01T16:00:00+01:00"));
 
         brukerRepository.upsertBrukerdata(brukerdata);
         jdbcTemplate.update("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) VALUES (123456, '1234567890')");
@@ -319,23 +318,23 @@ public class BrukerRepositoryTest {
     public void retrieveBrukerdataSkalInneholdeAlleFelter() {
 
         Brukerdata brukerdata = new Brukerdata()
-            .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
-            .setPersonid("personid")
-            .setAapmaxtidUke(1)
-            .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
-            .setAktoerid("aktoerid")
-            .setOppfolging(true)
-            .setTildeltTidspunkt(Timestamp.from(Instant.now()))
-            .setUtlopsdato(LocalDateTime.now())
-            .setUtlopsFasett(ManedFasettMapping.MND1)
-            .setVeileder("Veileder")
-            .setVenterPaSvarFraBruker(LocalDateTime.now())
-            .setVenterPaSvarFraNav(LocalDateTime.now())
-            .setYtelse(YtelseMapping.AAP_MAXTID)
-            .setNyForVeileder(false)
-            .setAktivitetStart(new Timestamp(1))
-            .setNesteAktivitetStart(new Timestamp(2))
-            .setForrigeAktivitetStart(new Timestamp(3));
+                .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
+                .setPersonid("personid")
+                .setAapmaxtidUke(1)
+                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER2)
+                .setAktoerid("aktoerid")
+                .setOppfolging(true)
+                .setTildeltTidspunkt(Timestamp.from(Instant.now()))
+                .setUtlopsdato(LocalDateTime.now())
+                .setUtlopsFasett(ManedFasettMapping.MND1)
+                .setVeileder("Veileder")
+                .setVenterPaSvarFraBruker(LocalDateTime.now())
+                .setVenterPaSvarFraNav(LocalDateTime.now())
+                .setYtelse(YtelseMapping.AAP_MAXTID)
+                .setNyForVeileder(false)
+                .setAktivitetStart(new Timestamp(1))
+                .setNesteAktivitetStart(new Timestamp(2))
+                .setForrigeAktivitetStart(new Timestamp(3));
 
         brukerRepository.upsertBrukerdata(brukerdata);
 
@@ -350,10 +349,10 @@ public class BrukerRepositoryTest {
         VeilederId expectedVeilederId = VeilederId.of("X11111");
 
         insert(jdbcTemplate, BRUKERDATA)
-            .value("PERSONID", "123456")
-            .value("AKTOERID", aktoerId.toString())
-            .value("VEILEDERIDENT", expectedVeilederId.toString())
-            .execute();
+                .value("PERSONID", "123456")
+                .value("AKTOERID", aktoerId.toString())
+                .value("VEILEDERIDENT", expectedVeilederId.toString())
+                .execute();
 
         Try<VeilederId> result = brukerRepository.retrieveVeileder(aktoerId);
         assertTrue(result.isSuccess());
@@ -368,10 +367,10 @@ public class BrukerRepositoryTest {
         String expectedEnhet = "123";
 
         insert(jdbcTemplate, OPPFOLGINGSBRUKER)
-            .value("PERSON_ID", "123456")
-            .value("FODSELSNR", fnr.toString())
-            .value("NAV_KONTOR", expectedEnhet)
-            .execute();
+                .value("PERSON_ID", "123456")
+                .value("FODSELSNR", fnr.toString())
+                .value("NAV_KONTOR", expectedEnhet)
+                .execute();
 
         Try<String> result = brukerRepository.retrieveEnhet(fnr);
         assertTrue(result.isSuccess());
@@ -384,10 +383,10 @@ public class BrukerRepositoryTest {
 
         PersonId expectedPersonId = PersonId.of("123456");
         int execute = insert(jdbcTemplate, OPPFOLGINGSBRUKER)
-            .value("PERSON_ID", expectedPersonId.toString())
-            .value("FODSELSNR", fnr.toString())
-            .value("NAV_KONTOR", "123")
-            .execute();
+                .value("PERSON_ID", expectedPersonId.toString())
+                .value("FODSELSNR", fnr.toString())
+                .value("NAV_KONTOR", "123")
+                .execute();
 
         assertTrue(execute > 0);
 

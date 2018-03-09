@@ -6,9 +6,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public enum AAPUnntakUkerIgjenFasettMapping implements FasettMapping {
-    UKE_UNDER12(0, 11), UKE12_23(12, 23), UKE24_35(24, 35), UKE36_47(36, 47),
-    UKE48_59(48, 59), UKE60_71(60, 71), UKE72_83(72, 83), UKE84_95(84, 95),
-    UKE96_107(96, 107);
+    UKE_UNDER2(0, 1), UKE2_6(2, 6), UKE7_11(7, 11), UKE12_16(12, 16),
+    UKE17_21(17, 21), UKE22_26(22, 26), UKE27_31(27, 31), UKE32_36(32, 36),
+    UKE37_41(37, 41), UKE42_46(42, 46), UKE47_51(47, 51), UKE52_56(52, 56),
+    UKE57_61(57, 61), UKE62_66(62, 66), UKE67_71(67, 71), UKE72_76(72, 76),
+    UKE77_81(77, 81), UKE82_86(82, 86), UKE87_91(87, 91), UKE92_96(92, 96),
+    UKE97_101(97, 101), UKE102_104(102, 104);
 
     private final int start;
     private final int stop;
