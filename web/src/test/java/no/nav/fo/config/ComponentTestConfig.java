@@ -79,6 +79,11 @@ public class ComponentTestConfig implements ApiApplication {
 
 
     @Override
+    public String getApplicationName() {
+        return "veilarbportefolje";
+    }
+
+    @Override
     public Sone getSone() {
         return FSS;
     }

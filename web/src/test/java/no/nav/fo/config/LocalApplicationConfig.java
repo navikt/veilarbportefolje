@@ -36,7 +36,7 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         AktorConfig.class,
         FeedConfig.class
 })
-public class LocalApplicationConfig implements ApiApplication{
+public class LocalApplicationConfig implements ApiApplication {
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
@@ -51,6 +51,11 @@ public class LocalApplicationConfig implements ApiApplication{
     @Bean
     public PepClient pepClient() {
         return new PepClientMock();
+    }
+
+    @Override
+    public String getApplicationName() {
+        return "veilarbportefolje";
     }
 
     @Override

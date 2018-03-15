@@ -51,6 +51,11 @@ public class ApplicationConfig implements ApiApplication {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
+    @Override
+    public String getApplicationName() {
+        return "veilarbportefolje";
+    }
+
     @Bean
     public PepClient pepClient(Pep pep) {
         return new PepClientImpl(pep);
