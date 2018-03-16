@@ -40,6 +40,7 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         AktorConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
+    public static final String APPLICATION_NAME = "veilarbportefolje";
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager() {
@@ -53,7 +54,7 @@ public class ApplicationConfig implements ApiApplication {
 
     @Override
     public String getApplicationName() {
-        return "veilarbportefolje";
+        return APPLICATION_NAME;
     }
 
     @Bean

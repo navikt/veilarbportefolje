@@ -38,6 +38,9 @@ public class OppfolgingerfeedConfig {
     @Value("${oppfolging.feed.pagesize:500}")
     private int pageSize;
 
+    @Value("${oppfolging.feed.pollingintervalseconds: 10}")
+    private int pollingIntervalInSeconds;
+
     @Inject
     private DataSource dataSource;
 
@@ -57,7 +60,7 @@ public class OppfolgingerfeedConfig {
 
         SimpleWebhookPollingConfig webhookPollingConfig = new SimpleWebhookPollingConfig(10, FEED_API_ROOT);
 
-        FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(10), webhookPollingConfig)
+        FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds), webhookPollingConfig)
                 .callback(callback)
                 .pageSize(pageSize)
                 .lockProvider(lockProvider(dataSource), 5)

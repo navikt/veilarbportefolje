@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 
 import static io.vavr.control.Try.success;
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.fo.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -80,7 +81,7 @@ public class ComponentTestConfig implements ApiApplication {
 
     @Override
     public String getApplicationName() {
-        return "veilarbportefolje";
+        return APPLICATION_NAME;
     }
 
     @Override

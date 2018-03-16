@@ -35,6 +35,9 @@ public class DialogaktorfeedConfig {
     @Value("${dialogaktor.feed.pagesize:500}")
     private int pageSize;
 
+    @Value("${dialogaktor.feed.pollingintervalseconds: 10}")
+    private int pollingIntervalInSeconds;
+
     @Inject
     private DataSource dataSource;
 
@@ -52,7 +55,7 @@ public class DialogaktorfeedConfig {
                 "dialogaktor"
         );
 
-        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(10))
+        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds))
                 .callback(callback)
                 .pageSize(pageSize)
                 .lockProvider(lockProvider(dataSource), 5)

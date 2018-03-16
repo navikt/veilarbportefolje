@@ -36,6 +36,9 @@ public class AktiviteterfeedConfig {
     @Value("${aktiviteter.feed.pagesize: 500}")
     private int pageSize;
 
+    @Value("${aktiviteter.feed.pollingintervalseconds: 10}")
+    private int pollingIntervalInSeconds;
+
     @Inject
     private DataSource dataSource;
 
@@ -53,7 +56,7 @@ public class AktiviteterfeedConfig {
                 "aktiviteter"
         );
 
-        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(10))
+        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(pollingIntervalInSeconds))
                 .callback(callback)
                 .pageSize(pageSize)
                 .lockProvider(lockProvider(dataSource), 5)
