@@ -18,8 +18,6 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static no.nav.fo.database.ArbeidslisteRepository.ARBEIDSLISTE;
-import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
-import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static no.nav.fo.util.sql.SqlUtils.insert;
@@ -35,8 +33,8 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        DB.execute("truncate table " + BRUKERDATA);
-        DB.execute("truncate table " + OPPFOLGINGSBRUKER);
+        DB.execute("truncate table " + "BRUKER_DATA");
+        DB.execute("truncate table " + "OPPFOLGINGSBRUKER");
         DB.execute("truncate table " + ARBEIDSLISTE);
     }
 
@@ -288,7 +286,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     }
 
     private static void insertSuccessfulBrukere() {
-        int result = insert(DB, BRUKERDATA)
+        int result = insert(DB, "BRUKER_DATA")
                 .value("PERSONID", PERSON_ID)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", AKTOER_ID)
@@ -296,7 +294,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
         assertTrue(result > 0);
 
-        int result2 = insert(DB, OPPFOLGINGSBRUKER)
+        int result2 = insert(DB, "OPPFOLGINGSBRUKER")
                 .value("PERSON_ID", PERSON_ID)
                 .value("FODSELSNR", FNR)
                 .value("NAV_KONTOR", NAV_SANDE_ID)
@@ -312,7 +310,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
         assertTrue(result2 > 0);
 
-        int result3 = insert(DB, BRUKERDATA)
+        int result3 = insert(DB, "BRUKER_DATA")
                 .value("PERSONID", PERSON_ID_2)
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", AKTOER_ID_2)
@@ -320,7 +318,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
         assertTrue(result3 > 0);
 
-        int result4 = insert(DB, OPPFOLGINGSBRUKER)
+        int result4 = insert(DB, "OPPFOLGINGSBRUKER")
                 .value("PERSON_ID", PERSON_ID_2)
                 .value("FODSELSNR", FNR_2)
                 .value("NAV_KONTOR", NAV_SANDE_ID)
@@ -340,7 +338,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     }
 
     private static void insertUnauthorizedBruker() {
-        int result = insert(DB, OPPFOLGINGSBRUKER)
+        int result = insert(DB, "OPPFOLGINGSBRUKER")
                 .value("PERSON_ID", PERSON_ID_UNAUTHORIZED)
                 .value("FODSELSNR", FNR_UNAUTHORIZED)
                 .value("NAV_KONTOR", "XOXOXO")
@@ -348,7 +346,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
         assertTrue(result > 0);
 
-        int result2 = insert(DB, BRUKERDATA)
+        int result2 = insert(DB, "BRUKER_DATA")
                 .value("PERSONID", PERSON_ID_UNAUTHORIZED)
                 .value("VEILEDERIDENT", "X22222")
                 .value("AKTOERID", AKTOER_ID_UNAUTHORIZED)

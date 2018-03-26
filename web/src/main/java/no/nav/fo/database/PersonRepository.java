@@ -12,8 +12,6 @@ import java.sql.ResultSet;
 import java.util.Objects;
 import java.util.Optional;
 
-import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
-
 public class PersonRepository {
     private static final String SIKKERHETSTILTAK_TYPE_KODE = "SIKKERHETSTILTAK_TYPE_KODE";
     private static final String SPERRET_ANSATT = "SPERRET_ANSATT";
@@ -27,7 +25,7 @@ public class PersonRepository {
     }
 
     public Optional<Personinfo> hentPersoninfoForFnr(Fnr fnr) {
-        return Optional.ofNullable(SqlUtils.select(ds,OPPFOLGINGSBRUKER, PersonRepository::mapper)
+        return Optional.ofNullable(SqlUtils.select(ds,"OPPFOLGINGSBRUKER", PersonRepository::mapper)
                 .column(SIKKERHETSTILTAK_TYPE_KODE)
                 .column(SPERRET_ANSATT)
                 .where(WhereClause.equals(FODSELSNR, fnr.toString()))

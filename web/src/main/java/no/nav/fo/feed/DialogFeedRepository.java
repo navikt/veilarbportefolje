@@ -10,8 +10,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Objects;
 
-import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
-
 public class DialogFeedRepository {
     private JdbcTemplate db;
 
@@ -20,7 +18,7 @@ public class DialogFeedRepository {
     }
 
     public void upsertDialogdata(DialogDataFraFeed dialog, PersonId personId) {
-        SqlUtils.upsert(db, BRUKERDATA)
+        SqlUtils.upsert(db, "BRUKER_DATA")
                 .set("VENTERPASVARFRABRUKER", toTimestamp(dialog.getTidspunktEldsteVentende()))
                 .set("VENTERPASVARFRANAV", toTimestamp(dialog.getTidspunktEldsteUbehandlede()))
                 .set("AKTOERID", dialog.getAktorId())

@@ -79,7 +79,7 @@ public class SolrServiceTest {
 
         service.deltaindeksering();
 
-        verify(brukerRepository, atLeastOnce()).updateTidsstempel(any(Timestamp.class));
+        verify(brukerRepository, atLeastOnce()).updateIndeksertTidsstempel(any(Timestamp.class));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class SolrServiceTest {
 
         service.deltaindeksering();
 
-        verify(brukerRepository, never()).updateTidsstempel(any(Timestamp.class));
+        verify(brukerRepository, never()).updateIndeksertTidsstempel(any(Timestamp.class));
     }
 
     @Test

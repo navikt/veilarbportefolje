@@ -18,7 +18,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
@@ -80,7 +79,7 @@ public class AktoerServiceTest {
         PersonId personId = PersonId.of("222");
 
         int updated =
-                insert(db, OPPFOLGINGSBRUKER)
+                insert(db, "OPPFOLGINGSBRUKER")
                         .value("PERSON_ID", personId.toString())
                         .value("FODSELSNR", FNR_FRA_SOAP_TJENESTE)
                         .execute();
