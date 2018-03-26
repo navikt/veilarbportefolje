@@ -39,7 +39,7 @@ import static no.nav.fo.util.sql.SqlUtils.*;
 @Slf4j
 public class BrukerRepository {
 
-    @Value("${oppfolging.ny.struktur.for.indeksering:false}")
+    @Value("${ny.struktur.for.indeksering:false}")
     boolean nyStrukturForIndeksering;
 
     JdbcTemplate db;
