@@ -381,23 +381,45 @@ public class BrukerRepositoryTest {
         Fnr fnr = new Fnr("12345678900");
 
         PersonId expectedPersonId = PersonId.of("123456");
-        int execute = insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
-            .value("PERSON_ID", expectedPersonId.toString())
-            .value("FODSELSNR", fnr.toString())
-            .value("NAV_KONTOR", "123")
-            .execute();
-
-        assertTrue(execute > 0);
+        insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
 
         Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
         assertTrue(result.isSuccess());
         assertEquals(expectedPersonId, result.get());
     }
 
+    private int insertOppfolgingsbrukerForPersonIdToFnrMapping(Fnr fnr, PersonId personId) {
+        return insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
+            .value("PERSON_ID", personId.toString())
+            .value("FODSELSNR", fnr.toString())
+            .value("NAV_KONTOR", "123")
+            .execute();
+    }
+
     @Test
     public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
         Fnr fnr = new Fnr("99999999999");
         Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+
+        assertTrue(result.get() == null);
+    }
+
+    @Test
+    public void skalHenteFnrForPersonIdFraDatabase() throws Exception {
+        PersonId personId = PersonId.of("123456");
+
+        Fnr expectedFnr = new Fnr("12345678900");
+
+        insertOppfolgingsbrukerForPersonIdToFnrMapping(expectedFnr, personId);
+
+        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(personId);
+        assertTrue(result.isSuccess());
+        assertEquals(expectedFnr, result.get());
+    }
+
+    @Test
+    public void skalIkkeFeileOmIngenFnrForPersonIdFinnes() throws Exception {
+        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(PersonId.of("123456"));
 
         assertTrue(result.get() == null);
     }

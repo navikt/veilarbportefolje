@@ -202,11 +202,14 @@ public class BrukerRepository {
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
+        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";
         return Try.of(
-                () -> select(ds, "OPPFOLGINGSBRUKER", this::mapToEnhet)
-                        .column("NAV_KONTOR")
-                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
-                        .execute()
+                () -> {
+                    return select(ds, tableName, this::mapToEnhet)
+                            .column("NAV_KONTOR")
+                            .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                            .execute();
+                }
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
@@ -222,7 +225,7 @@ public class BrukerRepository {
 
     public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
         return Try.of(
-                () -> select(db.getDataSource(), AKTOERID_TO_PERSONID, this::mapToPersonId)
+                () -> select(db.getDataSource(), AKTOERID_TO_PERSONID, this::mapToPersonIdFromAktoerIdToPersonId)
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
@@ -230,12 +233,23 @@ public class BrukerRepository {
     }
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
+        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";
         return Try.of(() ->
-                select(db.getDataSource(), "OPPFOLGINGSBRUKER", this::personIdMapper)
+                select(db.getDataSource(), tableName, this::mapPersonIdFromOppfolgingsbruker)
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
         ).onFailure(e -> log.warn("Fant ikke personid for fnr: {}", getCauseString(e)));
+    }
+
+    public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
+        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";        
+        return Try.of(() ->
+                select(db.getDataSource(), tableName, this::mapFnrFromOppfolgingsbruker)
+                        .column("FODSELSNR")
+                        .where(WhereClause.equals("PERSON_ID", personId.toString()))
+                        .execute()
+        ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
     }
 
     public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
@@ -263,15 +277,20 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private PersonId mapToPersonId(ResultSet rs) {
+    private PersonId mapToPersonIdFromAktoerIdToPersonId(ResultSet rs) {
         return PersonId.of(rs.getString("PERSONID"));
     }
 
     @SneakyThrows
-    private PersonId personIdMapper(ResultSet resultSet) {
+    private PersonId mapPersonIdFromOppfolgingsbruker(ResultSet resultSet) {
         return PersonId.of(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
     }
 
+    @SneakyThrows
+    private Fnr mapFnrFromOppfolgingsbruker(ResultSet resultSet) {
+        return Fnr.of(resultSet.getString("FODSELSNR"));
+    }
+    
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
     }
@@ -534,12 +553,14 @@ public class BrukerRepository {
     }
 
     private String getPersonIdsFromFnrsSQL() {
+        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";
         return
                 "SELECT " +
                         "person_id, " +
                         "fodselsnr " +
                         "FROM " +
-                        "oppfolgingsbruker " +
+                        tableName + 
+                        " " +
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
     }
