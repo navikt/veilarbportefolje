@@ -53,9 +53,7 @@ public class AktoerServiceImpl implements AktoerService {
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
 
     
-    @Scheduled(
-            fixedDelayString = "${veilarbportefolje.schedule.oppdaterMapping.millis:300000}", 
-            initialDelayString = "${veilarbportefolje.schedule.oppdaterMapping.delay:60000}")
+    @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterMapping.cron:0 0/5 * * * *}")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
         mapAktorIdWithLock();
     }
