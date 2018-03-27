@@ -95,7 +95,7 @@ public class SolrUtils {
         if (filtervalg.getFerdigFilterListe() != null) {
             ferdigFilterStatements = filtervalg.getFerdigFilterListe()
                     .stream()
-                    .map((ferdigfilter -> ferdigfilterStatus.get(ferdigfilter)))
+                    .map(ferdigfilter -> ferdigfilterStatus.get(ferdigfilter))
                     .collect(toList());
         }
 
