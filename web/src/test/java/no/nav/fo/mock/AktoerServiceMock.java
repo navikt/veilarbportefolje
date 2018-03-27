@@ -28,7 +28,7 @@ public class AktoerServiceMock implements AktoerService {
     public static final String AKTOER_ID_FAIL = "9999999999990";
     public static final String AKTOER_ID_UNAUTHORIZED = "9999999999900";
 
-    public Map<String, Testbruker> testbrukere;
+    private Map<String, Testbruker> testbrukere;
 
     public AktoerServiceMock() {
         testbrukere = new HashMap<>();
@@ -44,12 +44,6 @@ public class AktoerServiceMock implements AktoerService {
         return Try.success(PERSON_ID).map(PersonId::of);
     }
 
-
-    @Override
-    public Try<AktoerId> hentAktoeridFraPersonid(PersonId personid) {
-        return Try.success(AKTOER_ID).map(AktoerId::of);
-    }
-
     @Override
     public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
         if (new Fnr(FNR_FAIL).equals(fnr)) {
@@ -58,21 +52,6 @@ public class AktoerServiceMock implements AktoerService {
             return Try.success(AKTOER_ID_UNAUTHORIZED).map(AktoerId::of);
         }
         return Try.success(finnAktoerid(fnr)).map(AktoerId::of);
-    }
-
-    @Override
-    public Try<PersonId> hentPersonidFromFnr(Fnr fnr) {
-        return null;
-    }
-
-    @Override
-    public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerid) {
-        return getTestFnr(aktoerid);
-    }
-
-    @Override
-    public Try<Fnr> hentFnrFraPersonid(PersonId personId) {
-        return null;
     }
 
     @Override
@@ -88,16 +67,6 @@ public class AktoerServiceMock implements AktoerService {
     @Override
     public Map<AktoerId, Optional<PersonId>> hentPersonidsForAktoerids(List<AktoerId> aktoerIds) {
         return null;
-    }
-
-    private static Try<Fnr> getTestFnr(AktoerId aktoerId) {
-        Try<String> result = Try.success(FNR);
-        if (AktoerId.of(AKTOER_ID_FAIL).equals(aktoerId)) {
-            result = Try.failure(new RuntimeException());
-        } else if (AktoerId.of(AKTOER_ID_UNAUTHORIZED).equals(aktoerId)) {
-            result = Try.success(FNR_FAIL);
-        }
-        return result.map(Fnr::new);
     }
 
     private String finnAktoerid(Fnr fnr) {

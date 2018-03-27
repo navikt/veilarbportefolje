@@ -39,14 +39,13 @@ public class AktoerServiceImpl implements AktoerService {
         return personid;
     }
 
-    @Override
-    public Try<AktoerId> hentAktoeridFraPersonid(PersonId personId) {
+    Try<AktoerId> hentAktoeridFraPersonid(PersonId personId) {
         return hentSingleFraDb(
                 db,
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ?",
                 (data) -> AktoerId.of((String) data.get("aktoerid")),
                 personId.toString()
-        ).orElse(() -> hentFnrFraPersonid(personId)
+        ).orElse(() -> brukerRepository.retrieveFnrFromPersonid(personId)
                 .flatMap(this::hentAktoeridFraFnr))
                 .onSuccess(aktoerId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId));
     }
@@ -55,31 +54,6 @@ public class AktoerServiceImpl implements AktoerService {
     public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
         return Try.of(() -> aktorService.getAktorId(fnr.toString()).get())
                 .map(AktoerId::of);
-    }
-
-    @Override
-    public Try<PersonId> hentPersonidFromFnr(Fnr fnr) {
-        return hentSingleFraDb(
-                db,
-                "SELECT PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR = ?",
-                (data) -> String.valueOf(((Number) data.get("person_id")).intValue()),
-                fnr.toString()
-        ).map(PersonId::of);
-    }
-
-    @Override
-    public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
-        return hentFnrViaSoap(aktoerId);
-    }
-
-    @Override
-    public Try<Fnr> hentFnrFraPersonid(PersonId personId) {
-        return hentSingleFraDb(
-                db,
-                "SELECT FODSELSNR FROM OPPFOLGINGSBRUKER WHERE PERSON_ID = ?",
-                (data) -> Fnr.of((String) data.get("fodselsnr")),
-                personId.toString()
-        );
     }
 
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {

@@ -26,8 +26,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
-import static no.nav.fo.database.BrukerRepository.BRUKERDATA;
-import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
@@ -44,7 +42,7 @@ public class BrukerRepositoryTest {
     private JdbcTemplate jdbcTemplate;
 
     @Inject
-    private BrukerRepository brukerRepository;
+    BrukerRepository brukerRepository;
 
     public void insertoppfolgingsbrukerTestData() {
         try {
@@ -56,7 +54,7 @@ public class BrukerRepositoryTest {
     }
 
     @Before
-    public void deleteData() {
+    public void deleteData() {        
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
@@ -119,7 +117,7 @@ public class BrukerRepositoryTest {
     @Test
     public void skalOppdatereSistIndeksertMedNyttTidsstempel() {
         Timestamp nyttTidsstempel = new Timestamp(System.currentTimeMillis());
-        jdbcTemplate.update(brukerRepository.updateTidsstempelSQL(), nyttTidsstempel);
+        jdbcTemplate.update(brukerRepository.updateSistIndeksertSQL(), nyttTidsstempel);
 
         Object sist_indeksert = jdbcTemplate.queryForList(brukerRepository.retrieveSistIndeksertSQL()).get(0).get("sist_indeksert");
 
@@ -349,7 +347,7 @@ public class BrukerRepositoryTest {
         AktoerId aktoerId = AktoerId.of("101010");
         VeilederId expectedVeilederId = VeilederId.of("X11111");
 
-        insert(jdbcTemplate, BRUKERDATA)
+        insert(jdbcTemplate, "BRUKER_DATA")
             .value("PERSONID", "123456")
             .value("AKTOERID", aktoerId.toString())
             .value("VEILEDERIDENT", expectedVeilederId.toString())
@@ -367,7 +365,7 @@ public class BrukerRepositoryTest {
         Fnr fnr = new Fnr("12345678900");
         String expectedEnhet = "123";
 
-        insert(jdbcTemplate, OPPFOLGINGSBRUKER)
+        insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
             .value("PERSON_ID", "123456")
             .value("FODSELSNR", fnr.toString())
             .value("NAV_KONTOR", expectedEnhet)
@@ -383,23 +381,45 @@ public class BrukerRepositoryTest {
         Fnr fnr = new Fnr("12345678900");
 
         PersonId expectedPersonId = PersonId.of("123456");
-        int execute = insert(jdbcTemplate, OPPFOLGINGSBRUKER)
-            .value("PERSON_ID", expectedPersonId.toString())
-            .value("FODSELSNR", fnr.toString())
-            .value("NAV_KONTOR", "123")
-            .execute();
-
-        assertTrue(execute > 0);
+        insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
 
         Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
         assertTrue(result.isSuccess());
         assertEquals(expectedPersonId, result.get());
     }
 
+    private int insertOppfolgingsbrukerForPersonIdToFnrMapping(Fnr fnr, PersonId personId) {
+        return insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
+            .value("PERSON_ID", personId.toString())
+            .value("FODSELSNR", fnr.toString())
+            .value("NAV_KONTOR", "123")
+            .execute();
+    }
+
     @Test
     public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
         Fnr fnr = new Fnr("99999999999");
         Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+
+        assertTrue(result.get() == null);
+    }
+
+    @Test
+    public void skalHenteFnrForPersonIdFraDatabase() throws Exception {
+        PersonId personId = PersonId.of("123456");
+
+        Fnr expectedFnr = new Fnr("12345678900");
+
+        insertOppfolgingsbrukerForPersonIdToFnrMapping(expectedFnr, personId);
+
+        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(personId);
+        assertTrue(result.isSuccess());
+        assertEquals(expectedFnr, result.get());
+    }
+
+    @Test
+    public void skalIkkeFeileOmIngenFnrForPersonIdFinnes() throws Exception {
+        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(PersonId.of("123456"));
 
         assertTrue(result.get() == null);
     }

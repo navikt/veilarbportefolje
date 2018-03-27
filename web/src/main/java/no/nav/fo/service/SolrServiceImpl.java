@@ -9,7 +9,6 @@ import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
-import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.BatchConsumer;
 import no.nav.fo.util.DateUtils;
 import no.nav.fo.util.SolrUtils;
@@ -65,7 +64,6 @@ public class SolrServiceImpl implements SolrService {
     private AktivitetDAO aktivitetDAO;
     private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
-    private Timestamp datofilterTiltak;
 
     @Inject
     public SolrServiceImpl(
@@ -83,7 +81,6 @@ public class SolrServiceImpl implements SolrService {
         this.aktivitetDAO = aktivitetDAO;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
-        this.datofilterTiltak = AktivitetUtils.parseDato(System.getProperty(DATOFILTER_PROPERTY));
     }
 
     @Transactional
@@ -112,7 +109,7 @@ public class SolrServiceImpl implements SolrService {
         consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
 
         commit();
-        brukerRepository.updateTidsstempel(Timestamp.valueOf(t0));
+        brukerRepository.updateIndeksertTidsstempel(Timestamp.valueOf(t0));
 
         logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
     }
@@ -148,7 +145,7 @@ public class SolrServiceImpl implements SolrService {
                 .forEach((bruker) -> slettBruker((String) bruker.get("fnr").getValue()));
 
         commit();
-        brukerRepository.updateTidsstempel(timestamp);
+        brukerRepository.updateIndeksertTidsstempel(timestamp);
 
         int antall = dokumenter.size();
         Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
