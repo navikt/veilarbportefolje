@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+
 import javax.sql.DataSource;
 
 import static org.mockito.Mockito.mock;
@@ -67,5 +69,10 @@ public class ApplicationConfigTest {
     @Bean
     public PepClientImpl pepClient() {
         return mock(PepClientImpl.class);
+    }
+    
+    @Bean
+    public LockingTaskExecutor lockingTaskExecutor() {
+        return mock(LockingTaskExecutor.class);
     }
 }

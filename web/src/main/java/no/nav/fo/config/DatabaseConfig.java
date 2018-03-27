@@ -13,6 +13,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jndi.JndiTemplate;
 
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -86,4 +90,10 @@ public class DatabaseConfig {
             }
         };
     }
+    
+    @Bean
+    public LockingTaskExecutor taskExecutor(DataSource ds) {
+        return new DefaultLockingTaskExecutor(new JdbcLockProvider(ds));
+    }
+
 }

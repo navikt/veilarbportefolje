@@ -6,6 +6,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.util.sql.SqlUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,11 +17,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import io.vavr.control.Try;
 
 import javax.inject.Inject;
+
 import java.util.Optional;
 
 import static no.nav.fo.util.sql.SqlUtils.insert;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -66,7 +69,7 @@ public class AktoerServiceImplTest {
         aktoerService.hentAktoeridFraPersonid(personId);
         verify(aktorService, times(1)).getAktorId(any());
 
-        assertThat(brukerRepository.retrievePersonid(aktoerId).get()).isEqualTo(personId);
+        assertThat(brukerRepository.retrievePersonid(aktoerId).get(), is(personId));
     }
 
     @Test
@@ -85,4 +88,34 @@ public class AktoerServiceImplTest {
         assertEquals(aktoerId, result.get());
     }
 
+    @Test
+    public void mapAktorId_skal_mappe_alle_aktorer_som_ikke_har_mapping() {
+ 
+        insert(db, "OPPFOLGING_DATA")
+            .value("AKTOERID", AKTOER_ID)
+            .execute();
+
+        insert(db, "OPPFOLGINGSBRUKER")
+            .value("FODSELSNR", FNR)
+            .value("PERSON_ID", PERSON_ID)
+            .execute();
+
+        //assert no mappings exist
+        assertThat(getMappedPersonidFromDb(AKTOER_ID).isFailure(), is(true));
+
+        when(aktorService.getFnr(AKTOER_ID)).thenReturn(Optional.of(FNR));
+        aktoerService.mapAktorId();
+
+        Try<String> mappedPersonid = getMappedPersonidFromDb(AKTOER_ID);
+        assertThat(mappedPersonid.get(), is(PERSON_ID));
+
+    }
+
+    private Try<String> getMappedPersonidFromDb(String aktoerID) {
+        return Try.of(() -> db.queryForObject(
+                "SELECT PERSONID FROM AKTOERID_TO_PERSONID WHERE AKTOERID = ?", 
+                new Object[] {aktoerID}, 
+                (rs, rowNum) -> rs.getString("PERSONID")));
+    }
+ 
 }
