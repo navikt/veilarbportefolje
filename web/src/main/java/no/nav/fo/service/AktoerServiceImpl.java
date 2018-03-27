@@ -48,7 +48,8 @@ public class AktoerServiceImpl implements AktoerService {
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM VW_OPPFOLGING_DATA "
-            + "WHERE AKTOERID NOT IN "
+            + "WHERE OPPFOLGING = 'J' "
+            + "AND AKTOERID NOT IN "
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
 
     

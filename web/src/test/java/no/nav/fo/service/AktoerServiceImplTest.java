@@ -93,6 +93,7 @@ public class AktoerServiceImplTest {
  
         insert(db, "OPPFOLGING_DATA")
             .value("AKTOERID", AKTOER_ID)
+            .value("OPPFOLGING", "J")
             .execute();
 
         insert(db, "OPPFOLGINGSBRUKER")
