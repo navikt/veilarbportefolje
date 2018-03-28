@@ -98,7 +98,7 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.ferdigfilterListe.add(Brukerstatus.INAKTIVE_BRUKERE);
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.INAKTIVE_BRUKERE);
         String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
@@ -112,7 +112,7 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedNyeBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.ferdigfilterListe.add(Brukerstatus.UFORDELTE_BRUKERE);
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.UFORDELTE_BRUKERE);
         String ufordeltBrukerFilter = "(ny_for_enhet:true)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
