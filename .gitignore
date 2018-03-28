@@ -25,3 +25,5 @@ npm-debug.log
 activemq-data/
 
 !.idea/runConfigurations/
+
+veilarbportefolje-local.properties
