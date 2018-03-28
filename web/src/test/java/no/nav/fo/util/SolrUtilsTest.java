@@ -112,20 +112,20 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedNyeBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.ferdigfilterListe.add(Brukerstatus.UTFORDELTE_BRUKERE);
-        String utfordelteBrukereFilter = "(ny_for_enhet:true)";
+        filtervalg.ferdigfilterListe.add(Brukerstatus.UFORDELTE_BRUKERE);
+        String ufordeltBrukerFilter = "(ny_for_enhet:true)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
         SolrQuery query = SolrUtils.buildSolrQuery(queryString, false,"","", filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
-        assertThat(query.getFilterQueries()).contains(utfordelteBrukereFilter);
+        assertThat(query.getFilterQueries()).contains(ufordeltBrukerFilter);
     }
 
     @Test
     public void skalByggSolrQueryMedNyeBrukereOgInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.ferdigfilterListe = asList(Brukerstatus.UTFORDELTE_BRUKERE, Brukerstatus.INAKTIVE_BRUKERE);
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.UFORDELTE_BRUKERE, Brukerstatus.INAKTIVE_BRUKERE);
         String forventetFilter = "(ny_for_enhet:true AND formidlingsgruppekode:ISERV)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;

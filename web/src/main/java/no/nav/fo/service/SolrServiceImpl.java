@@ -336,7 +336,7 @@ public class SolrServiceImpl implements SolrService {
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
-        String utfordelteBrukere = "ny_for_enhet:true";
+        String ufordelteBrukere = "ny_for_enhet:true";
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
@@ -345,7 +345,7 @@ public class SolrServiceImpl implements SolrService {
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
-        solrQuery.addFacetQuery(utfordelteBrukere);
+        solrQuery.addFacetQuery(ufordelteBrukere);
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
@@ -360,7 +360,7 @@ public class SolrServiceImpl implements SolrService {
         response = timed("solr.statustall.enhet", () -> getResponse(solrQuery));
 
         long antallTotalt = response.getResults().getNumFound();
-        long antallUtfordelteBrukere = response.getFacetQuery().get(utfordelteBrukere);
+        long antallUfordelteBrukere = response.getFacetQuery().get(ufordelteBrukere);
         long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
         long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
         long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
@@ -370,8 +370,8 @@ public class SolrServiceImpl implements SolrService {
         statusTall
                 .setTotalt(antallTotalt)
                 .setInaktiveBrukere(antallInaktiveBrukere)
-                .setNyeBrukere(antallUtfordelteBrukere)
-                .setUtfordelteBrukere(antallUtfordelteBrukere)
+                .setNyeBrukere(antallUfordelteBrukere)
+                .setUfordelteBrukere(antallUfordelteBrukere)
                 .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
                 .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
                 .setIavtaltAktivitet(antalliavtaltAktivitet)
