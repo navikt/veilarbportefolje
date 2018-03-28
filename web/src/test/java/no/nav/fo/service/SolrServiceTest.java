@@ -11,6 +11,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
@@ -126,16 +127,18 @@ public class SolrServiceTest {
     }
 
     @Test
-    public void skalIkkeLeggeTilIIndeksOmBrukerIkkeErUnderOppfolging() throws Exception {
+    public void skalFjerneFraIndeksOmBrukerIkkeErUnderOppfolging() throws Exception {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.setField("oppfolging",false);
         solrInputDocument.setField("person_id","dummy");
         solrInputDocument.setField("kvalifiseringsgruppekode","dummy");
         solrInputDocument.setField("formidlingsgruppekode","dummy");
         when(brukerRepository.retrieveBrukermedBrukerdata(any())).thenReturn(solrInputDocument);
-
+        when(solrClientMaster.deleteByQuery("person_id:dummy")).thenReturn(mock(UpdateResponse.class));
+        
         service.indekserBrukerdata(PersonId.of("dummy"));
         verify(solrClientMaster, never()).add(any(Collection.class));
+        verify(solrClientMaster).deleteByQuery("person_id:dummy");
     }
 
     private QueryResponse queryResponse(int status, SolrDocumentList data) {

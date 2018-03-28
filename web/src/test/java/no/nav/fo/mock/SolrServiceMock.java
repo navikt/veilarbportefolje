@@ -13,6 +13,7 @@ import java.util.Optional;
 import static java.util.Collections.emptyList;
 
 public class SolrServiceMock implements SolrService {
+
     @Override
     public void hovedindeksering() {
     }
@@ -100,5 +101,9 @@ public class SolrServiceMock implements SolrService {
     @Override
     public void populerIndeksForPersonids(List<PersonId> personIds) {
 
+    }
+
+    @Override
+    public void indekserAsynkront(AktoerId aktoerId) {
     }
 }

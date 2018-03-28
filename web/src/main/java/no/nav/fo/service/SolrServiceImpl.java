@@ -36,6 +36,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 
 import static java.lang.String.format;
@@ -64,6 +67,7 @@ public class SolrServiceImpl implements SolrService {
     private AktivitetDAO aktivitetDAO;
     private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
+    private Executor executor;
 
     @Inject
     public SolrServiceImpl(
@@ -81,6 +85,7 @@ public class SolrServiceImpl implements SolrService {
         this.aktivitetDAO = aktivitetDAO;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
+        this.executor = Executors.newFixedThreadPool(5);
     }
 
     @Transactional
@@ -240,7 +245,7 @@ public class SolrServiceImpl implements SolrService {
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:" + personid.toString());
     }
-
+    
     @Override
     public void slettBrukere(List<PersonId> personIds) {
         personIds.forEach(this::slettBruker);
@@ -270,14 +275,15 @@ public class SolrServiceImpl implements SolrService {
     public void indekserBrukerdata(PersonId personId) {
         SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
         if (!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
-            return;
+            log.info("Sletter bruker med personId {} fra indeksen ", personId);
+            slettBruker(personId);
+        } else {
+            log.info("Legger bruker med personId {} til i indeksen ", personId);
+            leggDataTilSolrDocument(singletonList(brukerDokument));
+            addDocumentsToIndex(singletonList(brukerDokument));
         }
-        log.info("Legger bruker med personId {} til i indeksen ", personId);
-
-        leggDataTilSolrDocument(singletonList(brukerDokument));
-        addDocumentsToIndex(singletonList(brukerDokument));
         commit();
-        log.info("Bruker med personId {} lagt til i indeksen", personId);
+        log.info("Indeks oppdatert for person med personId {}", personId);
     }
 
     @Override
@@ -285,6 +291,11 @@ public class SolrServiceImpl implements SolrService {
         aktoerService
                 .hentPersonidFraAktoerid(aktoerId)
                 .onSuccess(this::indekserBrukerdata);
+    }
+
+    @Override
+    public void indekserAsynkront(AktoerId aktoerId) {
+        CompletableFuture.runAsync(() -> indekserBrukerdata(aktoerId), executor);
     }
 
     @Override
@@ -452,4 +463,5 @@ public class SolrServiceImpl implements SolrService {
                 .map(res -> res.getResults().stream().map(Bruker::of).collect(toList()))
                 .onFailure(e -> log.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
     }
+
 }
