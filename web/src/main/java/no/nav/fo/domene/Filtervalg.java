@@ -15,7 +15,7 @@ import static java.util.Arrays.asList;
 @Accessors(chain = true)
 public class Filtervalg {
     public Brukerstatus brukerstatus;
-    public List<Brukerstatus> ferdigfilterListe = new ArrayList<>();
+    public List<Brukerstatus> ferdigfilterListe;
     public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
     public List<Kjonn> kjonn = new ArrayList<>();
@@ -46,8 +46,10 @@ public class Filtervalg {
     public List<Brukerstatus> getFerdigFilterListe() {
         if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
             return ferdigfilterListe;
-        } else {
+        } else if(brukerstatus != null){
             return asList(brukerstatus);
+        }else{
+            return null;
         }
     }
 
