@@ -59,6 +59,7 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
         insertoppfolgingsbrukerTestData();
+        brukerRepository.nyStrukturForIndeksering = false;
     }
 
     @Test
