@@ -4,6 +4,7 @@ case class RequestFilter(
     aktiviteter: AktivitetRequestFilter = AktivitetRequestFilter(),
     alder: List[String] = List (),
     brukerstatus: String = "NYE_BRUKERE",
+    ferdigfilterListe: List[String] = List (),
     fodselsdagIMnd: List[String] = List (),
     formidlingsgruppe: List[String] = List (),
     innsatsgruppe: List[String] = List (),
