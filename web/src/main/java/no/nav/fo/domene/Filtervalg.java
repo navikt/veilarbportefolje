@@ -9,10 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 
+import static java.util.Arrays.asList;
+
 @Data()
 @Accessors(chain = true)
 public class Filtervalg {
     public Brukerstatus brukerstatus;
+    public List<Brukerstatus> ferdigfilterListe;
     public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
     public List<Kjonn> kjonn = new ArrayList<>();
@@ -26,7 +29,7 @@ public class Filtervalg {
     public List<String> tiltakstyper = new ArrayList<>();
 
     public boolean harAktiveFilter() {
-        return harBrukerstatus() ||
+        return harFerdigFilter() ||
                 harYtelsefilter() ||
                 !alder.isEmpty() ||
                 !kjonn.isEmpty() ||
@@ -40,8 +43,18 @@ public class Filtervalg {
                 !tiltakstyper.isEmpty();
     }
 
-    private boolean harBrukerstatus() {
-        return brukerstatus != null;
+    public List<Brukerstatus> getFerdigFilterListe() {
+        if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
+            return ferdigfilterListe;
+        } else if(brukerstatus != null){
+            return asList(brukerstatus);
+        }else{
+            return null;
+        }
+    }
+
+    private boolean harFerdigFilter() {
+        return brukerstatus != null || (ferdigfilterListe != null && !ferdigfilterListe.isEmpty());
     }
 
     public boolean harYtelsefilter() {
