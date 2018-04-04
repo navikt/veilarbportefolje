@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.SolrSortUtils.addSort;
@@ -92,8 +93,9 @@ public class SolrUtils {
         List<String> ferdigFilterStatements = new ArrayList<>();
         final List<String> filtrerBrukereStatements = new ArrayList<>();
 
-        if (filtervalg.getFerdigFilterListe() != null) {
-            ferdigFilterStatements = filtervalg.getFerdigFilterListe()
+        List<Brukerstatus> brukerstatuses = ferdigFilterListeEllerBrukerstatus(filtervalg);
+        if (brukerstatuses != null) {
+            ferdigFilterStatements = brukerstatuses
                     .stream()
                     .map(ferdigfilter -> ferdigfilterStatus.get(ferdigfilter))
                     .collect(toList());
@@ -136,6 +138,18 @@ public class SolrUtils {
                     .filter(StringUtils::isNotBlank)
                     .map(statement -> "(" + statement + ")")
                     .collect(Collectors.joining(" AND ")));
+        }
+    }
+
+    private static List<Brukerstatus> ferdigFilterListeEllerBrukerstatus(Filtervalg filtervalg) {
+        List<Brukerstatus> ferdigfilterListe = filtervalg.ferdigfilterListe;
+        Brukerstatus brukerstatus = filtervalg.brukerstatus;
+        if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
+            return ferdigfilterListe;
+        } else if (brukerstatus != null) {
+            return asList(brukerstatus);
+        } else {
+            return null;
         }
     }
 

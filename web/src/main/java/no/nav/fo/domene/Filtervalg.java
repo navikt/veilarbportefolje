@@ -43,16 +43,6 @@ public class Filtervalg {
                 !tiltakstyper.isEmpty();
     }
 
-    public List<Brukerstatus> getFerdigFilterListe() {
-        if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
-            return ferdigfilterListe;
-        } else if(brukerstatus != null){
-            return asList(brukerstatus);
-        }else{
-            return null;
-        }
-    }
-
     private boolean harFerdigFilter() {
         return brukerstatus != null || (ferdigfilterListe != null && !ferdigfilterListe.isEmpty());
     }
