@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.SolrSortUtils.addSort;
@@ -90,16 +89,13 @@ public class SolrUtils {
             return;
         }
 
-        List<String> ferdigFilterStatements = new ArrayList<>();
         final List<String> filtrerBrukereStatements = new ArrayList<>();
 
         List<Brukerstatus> brukerstatuses = ferdigFilterListeEllerBrukerstatus(filtervalg);
-        if (brukerstatuses != null) {
-            ferdigFilterStatements = brukerstatuses
-                    .stream()
-                    .map(ferdigfilter -> ferdigfilterStatus.get(ferdigfilter))
-                    .collect(toList());
-        }
+        List<String> ferdigFilterStatements = brukerstatuses
+                .stream()
+                .map(ferdigfilter -> ferdigfilterStatus.get(ferdigfilter))
+                .collect(toList());
 
         filtrerBrukereStatements.add(orStatement(filtervalg.alder, SolrUtils::alderFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));
@@ -147,9 +143,9 @@ public class SolrUtils {
         if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
             return ferdigfilterListe;
         } else if (brukerstatus != null) {
-            return asList(brukerstatus);
+            return Collections.singletonList(brukerstatus);
         } else {
-            return null;
+            return Collections.emptyList();
         }
     }
 
