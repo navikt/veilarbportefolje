@@ -4,9 +4,11 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.DialogDataFeedHandler;
+import no.nav.fo.consumer.NyDialogDataFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.DialogFeedRepository;
+import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.consumer.FeedConsumerConfig.SimplePollingConfig;
@@ -38,6 +40,9 @@ public class DialogaktorfeedConfig {
     @Value("${dialogaktor.feed.pollingintervalseconds: 10}")
     private int pollingIntervalInSeconds;
 
+    @Value("${ny.dialogfeedhandler:false}")
+    private boolean nyHandler;
+
     @Inject
     private DataSource dataSource;
 
@@ -47,7 +52,7 @@ public class DialogaktorfeedConfig {
     }
 
     @Bean
-    public FeedConsumer<DialogDataFraFeed> dialogDataFraFeedFeedConsumer(JdbcTemplate db, DialogDataFeedHandler callback) {
+    public FeedConsumer<DialogDataFraFeed> dialogDataFraFeedFeedConsumer(JdbcTemplate db, FeedCallback<DialogDataFraFeed> callback) {
         BaseConfig<DialogDataFraFeed> baseConfig = new BaseConfig<>(
                 DialogDataFraFeed.class,
                 Utils.apply(DialogaktorfeedConfig::sisteEndring, db),
@@ -70,10 +75,12 @@ public class DialogaktorfeedConfig {
     }
 
     @Bean
-    public DialogDataFeedHandler dialogDataFeedHandler(AktoerService aktoerService,
+    public FeedCallback<DialogDataFraFeed> dialogDataFeedHandler(AktoerService aktoerService,
                                                        BrukerRepository brukerRepository,
                                                        SolrService solrService,
                                                        DialogFeedRepository dialogFeedRepository) {
-        return new DialogDataFeedHandler(aktoerService, brukerRepository, solrService, dialogFeedRepository);
+        return nyHandler 
+                ? new NyDialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository)
+                : new DialogDataFeedHandler(aktoerService, brukerRepository, solrService, dialogFeedRepository);
     }
 }

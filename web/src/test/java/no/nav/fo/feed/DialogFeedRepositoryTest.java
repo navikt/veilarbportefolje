@@ -1,22 +1,26 @@
 package no.nav.fo.feed;
 
 import no.nav.fo.database.BrukerRepository;
+
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Brukerdata;
 import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
 
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 
 public class DialogFeedRepositoryTest {
@@ -50,7 +54,7 @@ public class DialogFeedRepositoryTest {
 
         dialogFeedRepository.upsertDialogdata(dialogDataFraFeed, personId);
         Brukerdata brukerdata = brukerRepository.retrieveBrukerdata(Collections.singletonList(personId.toString())).get(0);
-        assertThat(brukerdata.getVenterPaSvarFraBruker()).isEqualTo(date.toLocalDateTime());
+        assertThat(brukerdata.getVenterPaSvarFraBruker(), is(date.toLocalDateTime()));
     }
 
     @Test
@@ -77,6 +81,26 @@ public class DialogFeedRepositoryTest {
         dialogFeedRepository.upsertDialogdata(dialogDataFraFeed, personId);
 
         Brukerdata brukerdataUpdated = brukerRepository.retrieveBrukerdata(Collections.singletonList(personId.toString())).get(0);
-        assertThat(brukerdataUpdated).isEqualTo(brukerdata.setVenterPaSvarFraNav(eldsteVentende2.toLocalDateTime()));
+        assertThat(brukerdataUpdated, is(brukerdata.setVenterPaSvarFraNav(eldsteVentende2.toLocalDateTime())));
     }
+    
+    @Test
+    public void oppdaterDialogInfoForBruker_skal_sette_inn_i_egen_tabell_og_vare_tilgjengelig_i_dialogview() {
+        AktoerId aktoerId = AktoerId.of("1111");
+        Timestamp date = new Timestamp(Instant.now().toEpochMilli());
+
+        DialogDataFraFeed dialogDataFraFeed = new DialogDataFraFeed()
+                .setAktorId(aktoerId.toString())
+                .setTidspunktEldsteUbehandlede(date)
+                .setSisteEndring(date)
+                .setTidspunktEldsteVentende(date);
+
+        dialogFeedRepository.oppdaterDialogInfoForBruker(dialogDataFraFeed);
+        DialogDataFraFeed dialogFraDatabase =  dialogFeedRepository.retrieveDialogData(aktoerId.toString()).get();
+        assertThat(dialogFraDatabase.getTidspunktEldsteVentende(), is(date));
+        assertThat(dialogFraDatabase.getTidspunktEldsteUbehandlede(), is(date));
+        assertThat(dialogFraDatabase.getSisteEndring(), is(date));
+        assertThat(dialogFraDatabase.getAktorId(), is(aktoerId.toString()));
+    }
+
 }
