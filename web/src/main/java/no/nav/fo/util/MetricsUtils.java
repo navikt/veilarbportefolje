@@ -8,6 +8,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class MetricsUtils {
 
     public static <S, T> Function<S, T> timed(String navn, Function<S, T> function) {
@@ -19,6 +22,7 @@ public class MetricsUtils {
             boolean hasFailed = false;
             Timer timer = MetricsFactory.createTimer(navn);
             T t;
+            long startTime = System.currentTimeMillis();
             try {
                 timer.start();
                 t = function.apply(s);
@@ -34,6 +38,7 @@ public class MetricsUtils {
                 }
 
                 timer.report();
+                log.info("Timer: Tidsbruk (ms): [{}], Navn: [{}]", System.currentTimeMillis() - startTime, navn);
             }
             return t;
         };
