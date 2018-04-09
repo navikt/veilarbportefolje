@@ -27,6 +27,8 @@ public class StartJettyVeilArbPortefolje {
 
         loadTestConfigFromProperties();
 
+        setupTestContext();
+
         DriverManagerDataSource dataSource  = (parseBoolean(getProperty("lokal.database"))) ? 
                 setupInMemoryDatabase() : 
                     setupDataSourceWithCredentials(createDbCredentials());
@@ -45,8 +47,6 @@ public class StartJettyVeilArbPortefolje {
                 .overrideWebXml(), new ISSOSecurityConfig(APPLICATION_NAME))
                 .configureForJaspic()
                 .buildJetty();
-
-        setupTestContext();
 
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
