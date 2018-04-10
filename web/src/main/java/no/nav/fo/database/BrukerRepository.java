@@ -202,10 +202,9 @@ public class BrukerRepository {
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
-        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";
         return Try.of(
                 () -> {
-                    return select(ds, tableName, this::mapToEnhet)
+                    return select(ds, "OPPFOLGINGSBRUKER", this::mapToEnhet)
                             .column("NAV_KONTOR")
                             .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                             .execute();
@@ -233,9 +232,8 @@ public class BrukerRepository {
     }
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
-        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";
         return Try.of(() ->
-                select(db.getDataSource(), tableName, this::mapPersonIdFromOppfolgingsbruker)
+                select(db.getDataSource(), "OPPFOLGINGSBRUKER", this::mapPersonIdFromOppfolgingsbruker)
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
@@ -243,9 +241,8 @@ public class BrukerRepository {
     }
 
     public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
-        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";        
         return Try.of(() ->
-                select(db.getDataSource(), tableName, this::mapFnrFromOppfolgingsbruker)
+                select(db.getDataSource(), "OPPFOLGINGSBRUKER", this::mapFnrFromOppfolgingsbruker)
                         .column("FODSELSNR")
                         .where(WhereClause.equals("PERSON_ID", personId.toString()))
                         .execute()
@@ -553,14 +550,12 @@ public class BrukerRepository {
     }
 
     private String getPersonIdsFromFnrsSQL() {
-        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGINGSBRUKER" : "OPPFOLGINGSBRUKER";
         return
                 "SELECT " +
                         "person_id, " +
                         "fodselsnr " +
                         "FROM " +
-                        tableName + 
-                        " " +
+                        "OPPFOLGINGSBRUKER " + 
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
     }
