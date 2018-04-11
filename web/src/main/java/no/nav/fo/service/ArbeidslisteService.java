@@ -59,7 +59,7 @@ public class ArbeidslisteService {
         data.setAktoerId(aktoerId.get());
         return arbeidslisteRepository
                 .insertArbeidsliste(data)
-                .onSuccess(solrService::indekserBrukerdata);
+                .onSuccess(solrService::indekserAsynkront);
     }
 
     public Try<AktoerId> updateArbeidsliste(ArbeidslisteData data) {
@@ -70,7 +70,7 @@ public class ArbeidslisteService {
 
         return arbeidslisteRepository
                 .updateArbeidsliste(data.setAktoerId(aktoerId.get()))
-                .onSuccess(solrService::indekserBrukerdata);
+                .onSuccess(solrService::indekserAsynkront);
     }
 
     public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
@@ -80,13 +80,7 @@ public class ArbeidslisteService {
         }
         return arbeidslisteRepository
                 .deleteArbeidsliste(aktoerId.get())
-                .onSuccess(solrService::indekserBrukerdata);
-    }
-
-    public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerId) {
-        return arbeidslisteRepository
-                .deleteArbeidsliste(aktoerId)
-                .onSuccess(solrService::indekserBrukerdata);
+                .onSuccess(solrService::indekserAsynkront);
     }
 
     public Try<String> hentEnhet(Fnr fnr) {
