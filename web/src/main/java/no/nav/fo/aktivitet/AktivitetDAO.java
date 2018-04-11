@@ -9,7 +9,6 @@ import no.nav.fo.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.util.DbUtils;
-import no.nav.fo.util.sql.InsertQuery;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.UpsertQuery;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -216,15 +215,6 @@ public class AktivitetDAO {
             .set("AKTIVITETTYPE", aktivitetstype)
             .set("AKTOERID", aktoerid)
             .set("NESTE_UTLOPSDATO", nesteUtlopsdato);
-    }
-
-    private static InsertQuery getInsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
-        return SqlUtils.insert(db, BRUKERSTATUS_AKTIVITETER)
-            .value("STATUS", boolTo0OR1(status))
-            .value("PERSONID", personid)
-            .value("AKTIVITETTYPE", aktivitetstype)
-            .value("AKTOERID", aktoerid)
-            .value("NESTE_UTLOPSDATO", nesteUtlopsdato);
     }
 
     public void slettAktivitetDatoer() {

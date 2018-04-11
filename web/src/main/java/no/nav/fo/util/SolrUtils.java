@@ -7,9 +7,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,6 +18,19 @@ import static no.nav.fo.util.SolrSortUtils.addSort;
 
 public class SolrUtils {
     static String TILTAK = "TILTAK";
+
+    static Map<Brukerstatus, String> ferdigfilterStatus = new HashMap<Brukerstatus, String>() {{
+        put(Brukerstatus.NYE_BRUKERE, "ny_for_enhet:true");
+        put(Brukerstatus.UFORDELTE_BRUKERE, "ny_for_enhet:true");
+        put(Brukerstatus.INAKTIVE_BRUKERE, "formidlingsgruppekode:ISERV");
+        put(Brukerstatus.VENTER_PA_SVAR_FRA_NAV, "venterpasvarfranav:*");
+        put(Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER, "venterpasvarfrabruker:*");
+        put(Brukerstatus.I_AVTALT_AKTIVITET, "aktiviteter:*");
+        put(Brukerstatus.IKKE_I_AVTALT_AKTIVITET, "-aktiviteter:*");
+        put(Brukerstatus.UTLOPTE_AKTIVITETER, "nyesteutlopteaktivitet:*");
+        put(Brukerstatus.MIN_ARBEIDSLISTE, "arbeidsliste_aktiv:*");
+        put(Brukerstatus.NYE_BRUKERE_FOR_VEILEDER, "ny_for_veileder:true");
+    }};
 
     private static Locale locale = new Locale("no", "NO");
     private static Collator collator = Collator.getInstance(locale);
@@ -78,30 +89,13 @@ public class SolrUtils {
             return;
         }
 
-        List<String> oversiktStatements = new ArrayList<>();
         final List<String> filtrerBrukereStatements = new ArrayList<>();
 
-        if (filtervalg.brukerstatus == Brukerstatus.NYE_BRUKERE) {
-            oversiktStatements.add("-veileder_id:*");
-//            oversiktStatements.add("(ny_for_enhet:true)"); //TODO use me
-        } else if (filtervalg.brukerstatus == Brukerstatus.INAKTIVE_BRUKERE) {
-            oversiktStatements.add("(formidlingsgruppekode:ISERV)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_NAV) {
-            oversiktStatements.add("(venterpasvarfranav:*)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER) {
-            oversiktStatements.add("(venterpasvarfrabruker:*)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.I_AVTALT_AKTIVITET) {
-            oversiktStatements.add("(aktiviteter:*)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.IKKE_I_AVTALT_AKTIVITET) {
-            oversiktStatements.add("(-aktiviteter:*)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.UTLOPTE_AKTIVITETER) {
-            oversiktStatements.add("(nyesteutlopteaktivitet:*)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.MIN_ARBEIDSLISTE) {
-            oversiktStatements.add("(arbeidsliste_aktiv:*)");
-        } else if (filtervalg.brukerstatus == Brukerstatus.NYE_BRUKERE_FOR_VEILEDER) {
-            oversiktStatements.add("(ny_for_veileder:true)");
-        }
-
+        List<Brukerstatus> brukerstatuses = ferdigFilterListeEllerBrukerstatus(filtervalg);
+        List<String> ferdigFilterStatements = brukerstatuses
+                .stream()
+                .map(ferdigfilter -> ferdigfilterStatus.get(ferdigfilter))
+                .collect(toList());
 
         filtrerBrukereStatements.add(orStatement(filtervalg.alder, SolrUtils::alderFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));
@@ -111,7 +105,6 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
-
 
         if (filtervalg.harAktivitetFilter()) {
             filtervalg.aktiviteter.forEach((key, value) -> {
@@ -131,8 +124,8 @@ public class SolrUtils {
             filtrerBrukereStatements.add(orStatement(filtervalg.ytelse.underytelser, SolrUtils::ytelseFilter));
         }
 
-        if (!oversiktStatements.isEmpty()) {
-            query.addFilterQuery(StringUtils.join(oversiktStatements, " OR "));
+        if (!ferdigFilterStatements.isEmpty()) {
+            query.addFilterQuery("(" + StringUtils.join(ferdigFilterStatements, " AND ") + ")");
         }
 
         if (!filtrerBrukereStatements.isEmpty()) {
@@ -141,6 +134,18 @@ public class SolrUtils {
                     .filter(StringUtils::isNotBlank)
                     .map(statement -> "(" + statement + ")")
                     .collect(Collectors.joining(" AND ")));
+        }
+    }
+
+    private static List<Brukerstatus> ferdigFilterListeEllerBrukerstatus(Filtervalg filtervalg) {
+        List<Brukerstatus> ferdigfilterListe = filtervalg.ferdigfilterListe;
+        Brukerstatus brukerstatus = filtervalg.brukerstatus;
+        if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
+            return ferdigfilterListe;
+        } else if (brukerstatus != null) {
+            return Collections.singletonList(brukerstatus);
+        } else {
+            return Collections.emptyList();
         }
     }
 

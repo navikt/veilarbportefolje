@@ -37,7 +37,7 @@ import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
         AktorConfig.class,
         FeedConfig.class
 })
-public class LocalApplicationConfig implements ApiApplication{
+public class LocalApplicationConfig implements ApiApplication {
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(DataSource dataSource) {

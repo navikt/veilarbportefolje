@@ -9,7 +9,6 @@ import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
-import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.BatchConsumer;
 import no.nav.fo.util.DateUtils;
 import no.nav.fo.util.SolrUtils;
@@ -37,6 +36,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 
 import static java.lang.String.format;
@@ -65,7 +67,7 @@ public class SolrServiceImpl implements SolrService {
     private AktivitetDAO aktivitetDAO;
     private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
-    private Timestamp datofilterTiltak;
+    private Executor executor;
 
     @Inject
     public SolrServiceImpl(
@@ -83,7 +85,7 @@ public class SolrServiceImpl implements SolrService {
         this.aktivitetDAO = aktivitetDAO;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
-        this.datofilterTiltak = AktivitetUtils.parseDato(System.getProperty(DATOFILTER_PROPERTY));
+        this.executor = Executors.newFixedThreadPool(5);
     }
 
     @Transactional
@@ -112,7 +114,7 @@ public class SolrServiceImpl implements SolrService {
         consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
 
         commit();
-        brukerRepository.updateTidsstempel(Timestamp.valueOf(t0));
+        brukerRepository.updateIndeksertTidsstempel(Timestamp.valueOf(t0));
 
         logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
     }
@@ -148,7 +150,7 @@ public class SolrServiceImpl implements SolrService {
                 .forEach((bruker) -> slettBruker((String) bruker.get("fnr").getValue()));
 
         commit();
-        brukerRepository.updateTidsstempel(timestamp);
+        brukerRepository.updateIndeksertTidsstempel(timestamp);
 
         int antall = dokumenter.size();
         Event event = MetricsFactory.createEvent("deltaindeksering.fullfort");
@@ -243,7 +245,7 @@ public class SolrServiceImpl implements SolrService {
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:" + personid.toString());
     }
-
+    
     @Override
     public void slettBrukere(List<PersonId> personIds) {
         personIds.forEach(this::slettBruker);
@@ -273,14 +275,15 @@ public class SolrServiceImpl implements SolrService {
     public void indekserBrukerdata(PersonId personId) {
         SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
         if (!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
-            return;
+            log.info("Sletter bruker med personId {} fra indeksen ", personId);
+            slettBruker(personId);
+        } else {
+            log.info("Legger bruker med personId {} til i indeksen ", personId);
+            leggDataTilSolrDocument(singletonList(brukerDokument));
+            addDocumentsToIndex(singletonList(brukerDokument));
         }
-        log.info("Legger bruker med personId {} til i indeksen ", personId);
-
-        leggDataTilSolrDocument(singletonList(brukerDokument));
-        addDocumentsToIndex(singletonList(brukerDokument));
         commit();
-        log.info("Bruker med personId {} lagt til i indeksen", personId);
+        log.info("Indeks oppdatert for person med personId {}", personId);
     }
 
     @Override
@@ -288,6 +291,11 @@ public class SolrServiceImpl implements SolrService {
         aktoerService
                 .hentPersonidFraAktoerid(aktoerId)
                 .onSuccess(this::indekserBrukerdata);
+    }
+
+    @Override
+    public void indekserAsynkront(AktoerId aktoerId) {
+        CompletableFuture.runAsync(() -> indekserBrukerdata(aktoerId), executor);
     }
 
     @Override
@@ -339,8 +347,7 @@ public class SolrServiceImpl implements SolrService {
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
-        String nyeBrukere = "-veileder_id:*";
-//        String nyeBrukere = "ny_for_enhet:true"; //TODO use me
+        String ufordelteBrukere = "ny_for_enhet:true";
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
@@ -349,7 +356,7 @@ public class SolrServiceImpl implements SolrService {
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
-        solrQuery.addFacetQuery(nyeBrukere);
+        solrQuery.addFacetQuery(ufordelteBrukere);
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
@@ -364,7 +371,7 @@ public class SolrServiceImpl implements SolrService {
         response = timed("solr.statustall.enhet", () -> getResponse(solrQuery));
 
         long antallTotalt = response.getResults().getNumFound();
-        long antallNyeBrukere = response.getFacetQuery().get(nyeBrukere);
+        long antallUfordelteBrukere = response.getFacetQuery().get(ufordelteBrukere);
         long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
         long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
         long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
@@ -374,7 +381,8 @@ public class SolrServiceImpl implements SolrService {
         statusTall
                 .setTotalt(antallTotalt)
                 .setInaktiveBrukere(antallInaktiveBrukere)
-                .setNyeBrukere(antallNyeBrukere)
+                .setNyeBrukere(antallUfordelteBrukere)
+                .setUfordelteBrukere(antallUfordelteBrukere)
                 .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
                 .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
                 .setIavtaltAktivitet(antalliavtaltAktivitet)
@@ -456,4 +464,5 @@ public class SolrServiceImpl implements SolrService {
                 .map(res -> res.getResults().stream().map(Bruker::of).collect(toList()))
                 .onFailure(e -> log.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
     }
+
 }

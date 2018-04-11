@@ -18,8 +18,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
-import static no.nav.fo.mock.AktoerServiceMock.*;
 import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -80,7 +78,7 @@ public class AktoerServiceTest {
         PersonId personId = PersonId.of("222");
 
         int updated =
-                insert(db, OPPFOLGINGSBRUKER)
+                insert(db, "OPPFOLGINGSBRUKER")
                         .value("PERSON_ID", personId.toString())
                         .value("FODSELSNR", FNR_FRA_SOAP_TJENESTE)
                         .execute();
@@ -104,35 +102,11 @@ public class AktoerServiceTest {
     }
 
     @Test
-    public void skalHenteAktoerIdFraPersonId() throws Exception {
-        PersonId personId = PersonId.of(PERSON_ID);
-        AktoerId aktoerId = AktoerId.of(AKTOER_ID);
-        int updated = insert(db, "AKTOERID_TO_PERSONID")
-                .value("AKTOERID", aktoerId.toString())
-                .value("PERSONID", personId.toString())
-                .execute();
-
-        assertTrue(updated > 0);
-
-        Try<AktoerId> result = aktoerService.hentAktoeridFraPersonid(personId);
-        assertTrue(result.isSuccess());
-        assertEquals(aktoerId, result.get());
-    }
-
-    @Test
     public void skalHenteAktoerIdFraFnrViaSoap() throws Exception {
-        Fnr fnr = new Fnr(FNR);
+        Fnr fnr = new Fnr("11111111111");
         Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(fnr);
         assertTrue(aktoerId.isSuccess());
         assertEquals(AktoerId.of(AKTOERID_FRA_SOAP_TJENESTE), aktoerId.get());
     }
 
-    @Test
-    public void skalIKKEHenteFnrFraAktoerIdFraDb() throws Exception {
-        AktoerId aktoerId = AktoerId.of(AKTOER_ID);
-
-        Try<Fnr> result = aktoerService.hentFnrFraAktoerid(aktoerId);
-        assertTrue(result.isSuccess());
-        assertEquals(new Fnr(FNR_FRA_SOAP_TJENESTE), result.get());
-    }
 }

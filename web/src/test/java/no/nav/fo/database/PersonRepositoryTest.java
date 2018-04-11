@@ -12,7 +12,6 @@ import javax.sql.DataSource;
 import java.util.Optional;
 
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
-import static no.nav.fo.database.BrukerRepository.OPPFOLGINGSBRUKER;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class PersonRepositoryTest {
@@ -37,7 +36,7 @@ public class PersonRepositoryTest {
     public void skalHentePersonifoForFnr() {
         Fnr fnr = Fnr.of("00000000000");
 
-        SqlUtils.insert(db, OPPFOLGINGSBRUKER)
+        SqlUtils.insert(db, "OPPFOLGINGSBRUKER")
                 .value("PERSON_ID", 11111)
                 .value("FODSELSNR", fnr.toString())
                 .value("SIKKERHETSTILTAK_TYPE_KODE", "FYUS")

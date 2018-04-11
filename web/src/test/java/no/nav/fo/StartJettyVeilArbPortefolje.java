@@ -16,6 +16,7 @@ import static no.nav.fo.config.LocalJndiContextConfig.*;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
 import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
+import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public class StartJettyVeilArbPortefolje {
 
@@ -23,7 +24,10 @@ public class StartJettyVeilArbPortefolje {
     public static final String SERVICE_USER_NAME = "srvveilarbportefolje";
 
     public static void main(String[] args) throws Exception {
-        SystemProperties.setFrom("veilarbportefolje.properties");
+
+        loadTestConfigFromProperties();
+
+        setupTestContext();
 
         DriverManagerDataSource dataSource  = (parseBoolean(getProperty("lokal.database"))) ? 
                 setupInMemoryDatabase() : 
@@ -45,6 +49,18 @@ public class StartJettyVeilArbPortefolje {
                 .buildJetty();
 
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
+    }
+
+    /**
+     * Støtte for utvikler-lokale properties som ikke sjekkes inn i git
+     * Bruker default test-properties dersom "veilarbportefolje-local.properties" ikke eksisterer
+     */
+    private static void loadTestConfigFromProperties() {
+        try {
+            SystemProperties.setFrom("veilarbportefolje-local.properties");
+        } catch (Exception e) {
+            SystemProperties.setFrom("veilarbportefolje.properties");
+        }
     }
 
     private static DbCredentials createDbCredentials() {

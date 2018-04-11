@@ -40,6 +40,7 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         AktorConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
+    public static final String APPLICATION_NAME = "veilarbportefolje";
 
     private final String APPLICATION_NAME = "veilarbportefolje";
 
@@ -51,6 +52,11 @@ public class ApplicationConfig implements ApiApplication {
     @Bean
     public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Override
+    public String getApplicationName() {
+        return APPLICATION_NAME;
     }
 
     @Bean

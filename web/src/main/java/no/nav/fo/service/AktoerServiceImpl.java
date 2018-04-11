@@ -2,14 +2,21 @@ package no.nav.fo.service;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.PersonId;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +24,9 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.MetricsUtils.timed;
+
+import java.time.Instant;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -30,6 +40,42 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private BrukerRepository brukerRepository;
 
+    @Inject
+    private LockingTaskExecutor taskExecutor;
+    
+    @Value("${lock.aktoridmapping.seconds:3600}")
+    private int lockAktoridmappingSeconds;
+
+    private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
+            + "FROM VW_OPPFOLGING_DATA "
+            + "WHERE OPPFOLGING = 'J' "
+            + "AND AKTOERID NOT IN "
+            + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
+
+    
+    @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterMapping.cron:0 0/5 * * * *}")
+    private void scheduledOppdaterAktoerTilPersonIdMapping() {
+        mapAktorIdWithLock();
+    }
+
+    private void mapAktorIdWithLock() {
+        Instant lockAtMostUntil = Instant.now().plusSeconds(lockAktoridmappingSeconds);
+        Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
+        taskExecutor.executeWithLock(
+                () -> mapAktorId(), 
+                new LockConfiguration("oppdaterAktoerTilPersonIdMapping", lockAtMostUntil, lockAtLeastUntil));
+    }
+
+    void mapAktorId() {
+        timed("map.aktorid", () ->   {
+            log.debug("Starter mapping av aktørid");
+            List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (RowMapper<String>) (rs, rowNum) -> rs.getString("AKTOERID"));
+            log.info("Aktørider som skal mappes " + aktoerIder);
+            aktoerIder.forEach((id) -> hentPersonidFraAktoerid(AktoerId.of(id)));
+            log.info("Ferdig med mapping av [" + aktoerIder.size() + "] aktørider");
+        });
+    }
+
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         Try<PersonId> personid = brukerRepository.retrievePersonid(aktoerId);
 
@@ -39,14 +85,13 @@ public class AktoerServiceImpl implements AktoerService {
         return personid;
     }
 
-    @Override
-    public Try<AktoerId> hentAktoeridFraPersonid(PersonId personId) {
+    Try<AktoerId> hentAktoeridFraPersonid(PersonId personId) {
         return hentSingleFraDb(
                 db,
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ?",
                 (data) -> AktoerId.of((String) data.get("aktoerid")),
                 personId.toString()
-        ).orElse(() -> hentFnrFraPersonid(personId)
+        ).orElse(() -> brukerRepository.retrieveFnrFromPersonid(personId)
                 .flatMap(this::hentAktoeridFraFnr))
                 .onSuccess(aktoerId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId));
     }
@@ -55,31 +100,6 @@ public class AktoerServiceImpl implements AktoerService {
     public Try<AktoerId> hentAktoeridFraFnr(Fnr fnr) {
         return Try.of(() -> aktorService.getAktorId(fnr.toString()).get())
                 .map(AktoerId::of);
-    }
-
-    @Override
-    public Try<PersonId> hentPersonidFromFnr(Fnr fnr) {
-        return hentSingleFraDb(
-                db,
-                "SELECT PERSON_ID FROM OPPFOLGINGSBRUKER WHERE FODSELSNR = ?",
-                (data) -> String.valueOf(((Number) data.get("person_id")).intValue()),
-                fnr.toString()
-        ).map(PersonId::of);
-    }
-
-    @Override
-    public Try<Fnr> hentFnrFraAktoerid(AktoerId aktoerId) {
-        return hentFnrViaSoap(aktoerId);
-    }
-
-    @Override
-    public Try<Fnr> hentFnrFraPersonid(PersonId personId) {
-        return hentSingleFraDb(
-                db,
-                "SELECT FODSELSNR FROM OPPFOLGINGSBRUKER WHERE PERSON_ID = ?",
-                (data) -> Fnr.of((String) data.get("fodselsnr")),
-                personId.toString()
-        );
     }
 
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {

@@ -1,5 +1,7 @@
 package no.nav.fo.config.feed;
 
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.consumer.AktivitetFeedHandler;
@@ -15,13 +17,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.inject.Inject;
+import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
-import static no.nav.fo.feed.consumer.FeedConsumerConfig.PollingConfig;
 
 
 @Configuration
@@ -30,11 +33,19 @@ public class AktiviteterfeedConfig {
     @Value("${veilarbaktivitet.api.url}")
     private String host;
 
-    @Value("${aktiviteter.feed.consumer.pollingrate.cron}")
-    private String polling;
-
     @Value("${aktiviteter.feed.pagesize: 500}")
     private int pageSize;
+
+    @Value("${aktiviteter.feed.pollingintervalseconds: 10}")
+    private int pollingIntervalInSeconds;
+
+    @Inject
+    private DataSource dataSource;
+
+    @Bean
+    public LockProvider lockProvider(DataSource dataSource) {
+        return new JdbcLockProvider(dataSource);
+    }
 
     @Bean
     public FeedConsumer<AktivitetDataFraFeed> aktivitetDataFraFeedFeedConsumer(JdbcTemplate db, AktivitetFeedHandler callback, AktivitetDAO aktivitetDAO) {
@@ -45,9 +56,10 @@ public class AktiviteterfeedConfig {
                 "aktiviteter"
         );
 
-        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new PollingConfig(polling))
+        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(pollingIntervalInSeconds))
                 .callback(callback)
                 .pageSize(pageSize)
+                .lockProvider(lockProvider(dataSource), 5)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);

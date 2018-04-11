@@ -10,6 +10,7 @@ import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -38,12 +39,8 @@ import static no.nav.fo.util.sql.SqlUtils.*;
 @Slf4j
 public class BrukerRepository {
 
-    public static final String OPPFOLGINGSBRUKER = "OPPFOLGINGSBRUKER";
-    public static final String BRUKERDATA = "BRUKER_DATA";
-    private final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
-    private final String METADATA = "METADATA";
-    static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
-    static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
+    @Value("${ny.struktur.for.indeksering:true}")
+    boolean nyStrukturForIndeksering;
 
     JdbcTemplate db;
     private DataSource ds;
@@ -56,6 +53,109 @@ public class BrukerRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
+    private static final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
+    private static final String METADATA = "METADATA";
+    private static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
+    private static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
+
+    private static final String SELECT_PORTEFOLJEINFO_FROM_OPPFBRUKER_AND_BRUKER_DATA = 
+            "SELECT " +
+            "person_id, " +
+            "fodselsnr, " +
+            "fornavn, " +
+            "etternavn, " +
+            "nav_kontor, " +
+            "formidlingsgruppekode, " +
+            "iserv_fra_dato, " +
+            "kvalifiseringsgruppekode, " +
+            "rettighetsgruppekode, " +
+            "hovedmaalkode, " +
+            "sikkerhetstiltak_type_kode, " +
+            "fr_kode, " +
+            "sperret_ansatt, " +
+            "er_doed, " +
+            "doed_fra_dato, " +
+            "tidsstempel, " +
+            "veilederident, " +
+            "ytelse, " +
+            "utlopsdato, " +
+            "ny_for_veileder, " +
+            "utlopsdatofasett, " +
+            "dagputlopuke, dagputlopukefasett, " +
+            "permutlopuke, permutlopukefasett, " +
+            "aapmaxtiduke, aapmaxtidukefasett, " +
+            "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
+            "oppfolging, " +
+            "venterpasvarfrabruker, " +
+            "venterpasvarfranav, " +
+            "nyesteutlopteaktivitet, " +
+            "aktivitet_start, " +
+            "neste_aktivitet_start, " +
+            "forrige_aktivitet_start " +
+            "FROM " +
+            "oppfolgingsbruker " +
+            "LEFT JOIN bruker_data " +
+            "ON " +
+            "bruker_data.personid = oppfolgingsbruker.person_id";
+
+    private static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO = 
+            "SELECT " +
+            "person_id, " +
+            "fodselsnr, " +
+            "fornavn, " +
+            "etternavn, " +
+            "nav_kontor, " +
+            "formidlingsgruppekode, " +
+            "iserv_fra_dato, " +
+            "kvalifiseringsgruppekode, " +
+            "rettighetsgruppekode, " +
+            "hovedmaalkode, " +
+            "sikkerhetstiltak_type_kode, " +
+            "fr_kode, " +
+            "sperret_ansatt, " +
+            "er_doed, " +
+            "doed_fra_dato, " +
+            "tidsstempel, " +
+            "veilederident, " +
+            "ytelse, " +
+            "utlopsdato, " +
+            "ny_for_veileder, " +
+            "utlopsdatofasett, " +
+            "dagputlopuke, dagputlopukefasett, " +
+            "permutlopuke, permutlopukefasett, " +
+            "aapmaxtiduke, aapmaxtidukefasett, " +
+            "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
+            "oppfolging, " +
+            "venterpasvarfrabruker, " +
+            "venterpasvarfranav, " +
+            "nyesteutlopteaktivitet, " +
+            "aktivitet_start, " +
+            "neste_aktivitet_start, " +
+            "forrige_aktivitet_start " +
+            "FROM " +
+            "vw_portefolje_info";
+
+    private static final String OPPFOLGING_STATUS_FRA_BRUKER_DATA_OG_OPPFOLGINGSBRUKER = 
+            "SELECT " +
+            "person_id, " +
+            "formidlingsgruppekode, " +
+            "kvalifiseringsgruppekode, " +
+            "bruker_data.oppfolging, " +
+            "veilederident " +
+            "FROM " +
+            "oppfolgingsbruker " +
+            "LEFT JOIN bruker_data " +
+            "ON " +
+            "bruker_data.personid = oppfolgingsbruker.person_id " +
+            "WHERE " +
+            "person_id in (:personids) ";
+
+    private static final String OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO = 
+            SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
+            " " +
+            "WHERE " +
+            "person_id in (:personids) ";
+
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
     }
@@ -65,7 +165,7 @@ public class BrukerRepository {
                 .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
     }
 
-    public Try<Map<PersonId, Oppfolgingstatus>> tryRetrieveOppfolgingstatus(List<PersonId> personIds) {
+    private Try<Map<PersonId, Oppfolgingstatus>> tryRetrieveOppfolgingstatus(List<PersonId> personIds) {
         return Try.of(() -> {
             Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = new HashMap<>();
 
@@ -90,20 +190,25 @@ public class BrukerRepository {
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
+        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGING_DATA" : "BRUKER_DATA";
         return Try.of(
-                () -> select(ds, BRUKERDATA, this::mapToVeilederId)
-                        .column("VEILEDERIDENT")
-                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                        .execute()
+                () -> {
+                    return select(ds, tableName, this::mapToVeilederId)
+                            .column("VEILEDERIDENT")
+                            .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                            .execute();
+                }
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
-                () -> select(ds, OPPFOLGINGSBRUKER, this::mapToEnhet)
-                        .column("NAV_KONTOR")
-                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
-                        .execute()
+                () -> {
+                    return select(ds, "OPPFOLGINGSBRUKER", this::mapToEnhet)
+                            .column("NAV_KONTOR")
+                            .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                            .execute();
+                }
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
@@ -119,7 +224,7 @@ public class BrukerRepository {
 
     public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
         return Try.of(
-                () -> select(db.getDataSource(), AKTOERID_TO_PERSONID, this::mapToPersonId)
+                () -> select(db.getDataSource(), AKTOERID_TO_PERSONID, this::mapToPersonIdFromAktoerIdToPersonId)
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
@@ -128,11 +233,20 @@ public class BrukerRepository {
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
         return Try.of(() ->
-                select(db.getDataSource(), OPPFOLGINGSBRUKER, this::personIdMapper)
+                select(db.getDataSource(), "OPPFOLGINGSBRUKER", this::mapPersonIdFromOppfolgingsbruker)
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
         ).onFailure(e -> log.warn("Fant ikke personid for fnr: {}", getCauseString(e)));
+    }
+
+    public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
+        return Try.of(() ->
+                select(db.getDataSource(), "OPPFOLGINGSBRUKER", this::mapFnrFromOppfolgingsbruker)
+                        .column("FODSELSNR")
+                        .where(WhereClause.equals("PERSON_ID", personId.toString()))
+                        .execute()
+        ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
     }
 
     public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
@@ -160,15 +274,20 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private PersonId mapToPersonId(ResultSet rs) {
+    private PersonId mapToPersonIdFromAktoerIdToPersonId(ResultSet rs) {
         return PersonId.of(rs.getString("PERSONID"));
     }
 
     @SneakyThrows
-    private PersonId personIdMapper(ResultSet resultSet) {
+    private PersonId mapPersonIdFromOppfolgingsbruker(ResultSet resultSet) {
         return PersonId.of(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
     }
 
+    @SneakyThrows
+    private Fnr mapFnrFromOppfolgingsbruker(ResultSet resultSet) {
+        return Fnr.of(resultSet.getString("FODSELSNR"));
+    }
+    
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
     }
@@ -253,8 +372,8 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public int updateTidsstempel(Timestamp tidsstempel) {
-        String sql = updateTidsstempelSQL();
+    public int updateIndeksertTidsstempel(Timestamp tidsstempel) {
+        String sql = updateSistIndeksertSQL();
         return timed(dbTimerNavn(sql), () -> db.update(sql, tidsstempel));
     }
 
@@ -389,88 +508,35 @@ public class BrukerRepository {
     }
 
     private String retrieveOppfolgingstatusListSql() {
-        return "SELECT " +
-                "person_id, " +
-                "formidlingsgruppekode, " +
-                "kvalifiseringsgruppekode, " +
-                "bruker_data.oppfolging, " +
-                "veilederident " +
-                "FROM " +
-                "oppfolgingsbruker " +
-                "LEFT JOIN bruker_data " +
-                "ON " +
-                "bruker_data.personid = oppfolgingsbruker.person_id " +
-                "WHERE " +
-                "person_id in (:personids) ";
+        return nyStrukturForIndeksering 
+                ? OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO
+                : OPPFOLGING_STATUS_FRA_BRUKER_DATA_OG_OPPFOLGINGSBRUKER;
     }
-
-    private static String baseSelect = "SELECT " +
-            "person_id, " +
-            "fodselsnr, " +
-            "fornavn, " +
-            "etternavn, " +
-            "nav_kontor, " +
-            "formidlingsgruppekode, " +
-            "iserv_fra_dato, " +
-            "kvalifiseringsgruppekode, " +
-            "rettighetsgruppekode, " +
-            "hovedmaalkode, " +
-            "sikkerhetstiltak_type_kode, " +
-            "fr_kode, " +
-            "sperret_ansatt, " +
-            "er_doed, " +
-            "doed_fra_dato, " +
-            "tidsstempel, " +
-            "veilederident, " +
-            "ytelse, " +
-            "utlopsdato, " +
-            "ny_for_veileder, " +
-            "utlopsdatofasett, " +
-            "dagputlopuke, dagputlopukefasett, " +
-            "permutlopuke, permutlopukefasett, " +
-            "aapmaxtiduke, aapmaxtidukefasett, " +
-            "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
-            "oppfolging, " +
-            "venterpasvarfrabruker, " +
-            "venterpasvarfranav, " +
-            "nyesteutlopteaktivitet, " +
-            "aktivitet_start, " +
-            "neste_aktivitet_start, " +
-            "forrige_aktivitet_start " +
-            "FROM " +
-            "oppfolgingsbruker ";
 
     String retrieveBrukereSQL() {
-        return baseSelect +
-                "LEFT JOIN bruker_data " +
-                "ON " +
-                "bruker_data.personid = oppfolgingsbruker.person_id";
-
+        return nyStrukturForIndeksering 
+                ? SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO
+                : SELECT_PORTEFOLJEINFO_FROM_OPPFBRUKER_AND_BRUKER_DATA;
     }
 
+
     private String retrieveBrukerMedBrukerdataSQL() {
-        return baseSelect +
-                "LEFT JOIN bruker_data " +
-                "ON " +
-                "bruker_data.personid = oppfolgingsbruker.person_id " +
+        return retrieveBrukereSQL() +
+                " " + 
                 "WHERE " +
                 "person_id = ?";
     }
 
     private String retrieveBrukereMedBrukerdataSQL() {
-        return baseSelect +
-                "LEFT JOIN bruker_data " +
-                "ON " +
-                "bruker_data.personid = oppfolgingsbruker.person_id " +
+        return retrieveBrukereSQL() +
+                " " + 
                 "WHERE " +
                 "person_id in (:personids)";
     }
 
     String retrieveOppdaterteBrukereSQL() {
-        return baseSelect +
-                "LEFT JOIN bruker_data " +
-                "ON " +
-                "bruker_data.personid = oppfolgingsbruker.person_id " +
+        return retrieveBrukereSQL() +
+                " " + 
                 "WHERE " +
                 "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
@@ -479,7 +545,7 @@ public class BrukerRepository {
         return "SELECT SIST_INDEKSERT FROM METADATA";
     }
 
-    String updateTidsstempelSQL() {
+    String updateSistIndeksertSQL() {
         return "UPDATE METADATA SET SIST_INDEKSERT = ?";
     }
 
@@ -489,7 +555,7 @@ public class BrukerRepository {
                         "person_id, " +
                         "fodselsnr " +
                         "FROM " +
-                        "oppfolgingsbruker " +
+                        "OPPFOLGINGSBRUKER " + 
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
     }

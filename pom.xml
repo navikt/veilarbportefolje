@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2017.11.15.12.13</version>
+        <version>2018.03.20.13.56</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -46,7 +46,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>2018.03.07.10.34</version>
+                <version>2018.03.20.13.56</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

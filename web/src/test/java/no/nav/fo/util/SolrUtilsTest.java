@@ -98,7 +98,7 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.brukerstatus = Brukerstatus.INAKTIVE_BRUKERE;
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.INAKTIVE_BRUKERE);
         String inaktiveBrukereFilter = "(formidlingsgruppekode:ISERV)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
@@ -112,15 +112,27 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedNyeBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.brukerstatus = Brukerstatus.NYE_BRUKERE;
-        String nyeBrukereFilter = "-veileder_id:*";
-//        String nyeBrukereFilter = "ny_for_enhet desc"; todo use me
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.UFORDELTE_BRUKERE);
+        String ufordeltBrukerFilter = "(ny_for_enhet:true)";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
         SolrQuery query = SolrUtils.buildSolrQuery(queryString, false,"","", filtervalg);
         assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
-        assertThat(query.getFilterQueries()).contains(nyeBrukereFilter);
+        assertThat(query.getFilterQueries()).contains(ufordeltBrukerFilter);
+    }
+
+    @Test
+    public void skalByggSolrQueryMedNyeBrukereOgInaktiveBrukere() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.UFORDELTE_BRUKERE, Brukerstatus.INAKTIVE_BRUKERE);
+        String forventetFilter = "(ny_for_enhet:true AND formidlingsgruppekode:ISERV)";
+        String enhetId = "0713";
+        String queryString = "enhet_id:" + enhetId;
+
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, false,"","", filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(forventetFilter);
     }
 
     @Test

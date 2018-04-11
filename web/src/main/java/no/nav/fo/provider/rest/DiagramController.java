@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
+import no.nav.fo.util.StepperUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -14,12 +15,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 
@@ -51,7 +53,7 @@ public class DiagramController {
             ValideringsRegler.harYtelsesFilter(filtervalg);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            Function<Bruker, FasettMapping> mapper = brukerMapping(filtervalg.ytelse);
+            Function<Bruker, FasettMapping> mapper = brukerFacetMapping(filtervalg.ytelse);
             List<FasettMapping> alleFacetter = fasetter(filtervalg.ytelse);
 
             BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
@@ -67,7 +69,62 @@ public class DiagramController {
         });
     }
 
-    private static Function<Bruker, FasettMapping> brukerMapping(YtelseFilter ytelse) {
+    @POST
+    @Path("/v2")
+    public Response hentDiagramData2(
+            @QueryParam("veilederident") String veilederIdent,
+            @QueryParam("enhet") String enhet,
+            Filtervalg filtervalg
+    ) {
+        return createResponse(() -> {
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, true);
+            ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkFiltervalg(filtervalg);
+            ValideringsRegler.harYtelsesFilter(filtervalg);
+            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+
+            Optional<StepperFacetConfig> stepperConfig = StepperFacetConfig.stepperFacetConfig(filtervalg.ytelse);
+            if (stepperConfig.isPresent()) {
+                BrukereMedAntall brukere = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+                return StepperUtils.groupByStepping(stepperConfig.get(), brukere.getBrukere(), brukerUkeMapping(stepperConfig.get().getYtelse()));
+            } else {
+                BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+
+                Map<ManedFasettMapping, Long> grupperte = brukereMedAntall
+                        .getBrukere()
+                        .stream()
+                        .filter((bruker) -> bruker.getUtlopsdatoFasett() != null)
+                        .map(Bruker::getUtlopsdatoFasett)
+                        .collect(groupingBy(Function.identity(), counting()));
+
+                stream(ManedFasettMapping.values()).forEach((key) -> grupperte.putIfAbsent(key, 0L));
+
+                return grupperte
+                        .entrySet()
+                        .stream()
+                        .map((entry) -> {
+                            int gruppe = entry.getKey().ordinal() + 1;
+                            return new StepperUtils.Step(gruppe, gruppe, entry.getValue());
+                        })
+                        .collect(toList());
+            }
+        });
+    }
+
+    private static Function<Bruker, Integer> brukerUkeMapping(YtelseFilter ytelse) {
+        if (ytelse == YtelseFilter.AAP_MAXTID) {
+            return Bruker::getAapmaxtidUke;
+        } else if (ytelse == YtelseFilter.AAP_UNNTAK) {
+            return Bruker::getAapUnntakUkerIgjen;
+        } else if (ytelse == YtelseFilter.DAGPENGER_MED_PERMITTERING) {
+            return Bruker::getPermutlopUke;
+        } else if (ytelse == YtelseFilter.DAGPENGER || ytelse == YtelseFilter.DAGPENGER_OVRIGE || ytelse == YtelseFilter.ORDINARE_DAGPENGER) {
+            return Bruker::getDagputlopUke;
+        }
+        return (Bruker bruker) -> -1;
+    }
+
+    private static Function<Bruker, FasettMapping> brukerFacetMapping(YtelseFilter ytelse) {
         if (ytelse == YtelseFilter.AAP_MAXTID) {
             return Bruker::getAapmaxtidUkeFasett;
         } else if (ytelse == YtelseFilter.AAP_UNNTAK) {
@@ -83,7 +140,7 @@ public class DiagramController {
     private static List<FasettMapping> fasetter(YtelseFilter ytelse) {
         if (ytelse == YtelseFilter.AAP_MAXTID) {
             return asList(AAPMaxtidUkeFasettMapping.values());
-        } else if (ytelse == YtelseFilter.AAP_UNNTAK ){
+        } else if (ytelse == YtelseFilter.AAP_UNNTAK) {
             return asList(AAPUnntakUkerIgjenFasettMapping.values());
         } else if (ytelse == YtelseFilter.DAGPENGER || ytelse == YtelseFilter.DAGPENGER_OVRIGE || ytelse == YtelseFilter.ORDINARE_DAGPENGER || ytelse == YtelseFilter.DAGPENGER_MED_PERMITTERING) {
             return asList(DagpengerUkeFasettMapping.values());

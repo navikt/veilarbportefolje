@@ -45,4 +45,6 @@ public interface SolrService {
 
     void populerIndeksForPersonids(List<PersonId> personIds);
 
+    void indekserAsynkront(AktoerId aktoerId);
+
 }
