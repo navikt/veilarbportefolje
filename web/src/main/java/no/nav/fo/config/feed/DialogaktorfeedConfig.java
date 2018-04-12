@@ -40,7 +40,7 @@ public class DialogaktorfeedConfig {
     @Value("${dialogaktor.feed.pollingintervalseconds: 10}")
     private int pollingIntervalInSeconds;
 
-    @Value("${ny.dialogfeedhandler:false}")
+    @Value("${ny.dialogfeedhandler:true}")
     private boolean nyHandler;
 
     @Inject
