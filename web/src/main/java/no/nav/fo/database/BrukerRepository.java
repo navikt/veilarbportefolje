@@ -91,11 +91,20 @@ public class BrukerRepository {
             "FROM " +
             "vw_portefolje_info";
 
-    private static final String OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO = 
-            SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-            " " +
+    private static final String OPPFOLGINGSSTAUTS_QUERY = 
+        "SELECT " +
+            "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +  
+            "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +  
+            "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +  
+            "VW_OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
+            "VW_OD.OPPFOLGING AS OPPFOLGING " +  
+        "FROM " +
+            "(SELECT * FROM " + 
+                "OPPFOLGINGSBRUKER OB " + 
+                "LEFT JOIN VW_AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
+            "LEFT JOIN VW_OPPFOLGING_DATA VW_OD ON VW_OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
             "WHERE " +
-            "person_id in (:personids) ";
+            "PERSON_ID IN (:personids) ";
 
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
@@ -114,8 +123,8 @@ public class BrukerRepository {
                     .forEach(personIdsBatch -> {
                         Map<String, Object> params = new HashMap<>(personIdsBatch.size());
                         params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
-                        String sql = retrieveOppfolgingstatusListSql();
-                        timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(sql, params))
+                        timed(dbTimerNavn(OPPFOLGINGSSTAUTS_QUERY), 
+                                () -> namedParameterJdbcTemplate.queryForList(OPPFOLGINGSSTAUTS_QUERY, params))
                                 .forEach(data -> personIdOppfolgingstatusMap.put(
                                         PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
                                         new Oppfolgingstatus()
@@ -446,10 +455,6 @@ public class BrukerRepository {
                 .set("aapunntakdagerigjen", null)
                 .set("aapunntakukerigjenfasett", null)
                 .execute();
-    }
-
-    private String retrieveOppfolgingstatusListSql() {
-        return OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO;
     }
 
     private String retrieveBrukerMedBrukerdataSQL() {
