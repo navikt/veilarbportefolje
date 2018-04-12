@@ -81,7 +81,7 @@ public class DiagramController {
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkFiltervalg(filtervalg);
             ValideringsRegler.harYtelsesFilter(filtervalg);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             Optional<StepperFacetConfig> stepperConfig = StepperFacetConfig.stepperFacetConfig(filtervalg.ytelse);
             if (stepperConfig.isPresent()) {

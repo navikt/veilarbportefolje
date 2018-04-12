@@ -42,8 +42,6 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
 public class ApplicationConfig implements ApiApplication {
     public static final String APPLICATION_NAME = "veilarbportefolje";
 
-    private final String APPLICATION_NAME = "veilarbportefolje";
-
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager() {
         return new JtaTransactionManager();
@@ -62,11 +60,6 @@ public class ApplicationConfig implements ApiApplication {
     @Bean
     public PepClient pepClient(Pep pep) {
         return new PepClientImpl(pep);
-    }
-
-    @Override
-    public String getApplicationName() {
-        return APPLICATION_NAME;
     }
 
     @Override
