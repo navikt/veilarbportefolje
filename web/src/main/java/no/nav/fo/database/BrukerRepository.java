@@ -10,7 +10,6 @@ import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -39,9 +38,6 @@ import static no.nav.fo.util.sql.SqlUtils.*;
 @Slf4j
 public class BrukerRepository {
 
-    @Value("${ny.struktur.for.indeksering:true}")
-    boolean nyStrukturForIndeksering;
-
     JdbcTemplate db;
     private DataSource ds;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -58,47 +54,7 @@ public class BrukerRepository {
     private static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     private static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
-    private static final String SELECT_PORTEFOLJEINFO_FROM_OPPFBRUKER_AND_BRUKER_DATA = 
-            "SELECT " +
-            "person_id, " +
-            "fodselsnr, " +
-            "fornavn, " +
-            "etternavn, " +
-            "nav_kontor, " +
-            "formidlingsgruppekode, " +
-            "iserv_fra_dato, " +
-            "kvalifiseringsgruppekode, " +
-            "rettighetsgruppekode, " +
-            "hovedmaalkode, " +
-            "sikkerhetstiltak_type_kode, " +
-            "fr_kode, " +
-            "sperret_ansatt, " +
-            "er_doed, " +
-            "doed_fra_dato, " +
-            "tidsstempel, " +
-            "veilederident, " +
-            "ytelse, " +
-            "utlopsdato, " +
-            "ny_for_veileder, " +
-            "utlopsdatofasett, " +
-            "dagputlopuke, dagputlopukefasett, " +
-            "permutlopuke, permutlopukefasett, " +
-            "aapmaxtiduke, aapmaxtidukefasett, " +
-            "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
-            "oppfolging, " +
-            "venterpasvarfrabruker, " +
-            "venterpasvarfranav, " +
-            "nyesteutlopteaktivitet, " +
-            "aktivitet_start, " +
-            "neste_aktivitet_start, " +
-            "forrige_aktivitet_start " +
-            "FROM " +
-            "oppfolgingsbruker " +
-            "LEFT JOIN bruker_data " +
-            "ON " +
-            "bruker_data.personid = oppfolgingsbruker.person_id";
-
-    private static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO = 
+    static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO = 
             "SELECT " +
             "person_id, " +
             "fodselsnr, " +
@@ -134,21 +90,6 @@ public class BrukerRepository {
             "forrige_aktivitet_start " +
             "FROM " +
             "vw_portefolje_info";
-
-    private static final String OPPFOLGING_STATUS_FRA_BRUKER_DATA_OG_OPPFOLGINGSBRUKER = 
-            "SELECT " +
-            "person_id, " +
-            "formidlingsgruppekode, " +
-            "kvalifiseringsgruppekode, " +
-            "bruker_data.oppfolging, " +
-            "veilederident " +
-            "FROM " +
-            "oppfolgingsbruker " +
-            "LEFT JOIN bruker_data " +
-            "ON " +
-            "bruker_data.personid = oppfolgingsbruker.person_id " +
-            "WHERE " +
-            "person_id in (:personids) ";
 
     private static final String OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO = 
             SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
@@ -190,7 +131,7 @@ public class BrukerRepository {
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
-        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGING_DATA" : "BRUKER_DATA";
+        String tableName = "VW_OPPFOLGING_DATA";
         return Try.of(
                 () -> {
                     return select(ds, tableName, this::mapToVeilederId)
@@ -294,7 +235,7 @@ public class BrukerRepository {
 
     void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
-        String sql = retrieveBrukereSQL();
+        String sql = SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO;
         timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
@@ -508,34 +449,25 @@ public class BrukerRepository {
     }
 
     private String retrieveOppfolgingstatusListSql() {
-        return nyStrukturForIndeksering 
-                ? OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO
-                : OPPFOLGING_STATUS_FRA_BRUKER_DATA_OG_OPPFOLGINGSBRUKER;
+        return OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO;
     }
-
-    String retrieveBrukereSQL() {
-        return nyStrukturForIndeksering 
-                ? SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO
-                : SELECT_PORTEFOLJEINFO_FROM_OPPFBRUKER_AND_BRUKER_DATA;
-    }
-
 
     private String retrieveBrukerMedBrukerdataSQL() {
-        return retrieveBrukereSQL() +
+        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
                 " " + 
                 "WHERE " +
                 "person_id = ?";
     }
 
     private String retrieveBrukereMedBrukerdataSQL() {
-        return retrieveBrukereSQL() +
+        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
                 " " + 
                 "WHERE " +
                 "person_id in (:personids)";
     }
 
     String retrieveOppdaterteBrukereSQL() {
-        return retrieveBrukereSQL() +
+        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
                 " " + 
                 "WHERE " +
                 "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";

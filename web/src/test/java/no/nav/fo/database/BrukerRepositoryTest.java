@@ -42,7 +42,7 @@ public class BrukerRepositoryTest {
     private JdbcTemplate jdbcTemplate;
 
     @Inject
-    BrukerRepository brukerRepository;
+    private BrukerRepository brukerRepository;
 
     public void insertoppfolgingsbrukerTestData() {
         try {
@@ -59,19 +59,18 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
         insertoppfolgingsbrukerTestData();
-        brukerRepository.nyStrukturForIndeksering = false;
     }
 
     @Test
     public void skalHenteUtAlleBrukereFraDatabasen() {
-        List<Map<String, Object>> brukere = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL());
+        List<Map<String, Object>> brukere = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO);
 
         assertThat(brukere.size()).isEqualTo(72);
     }
 
     @Test
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
-        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
+        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
