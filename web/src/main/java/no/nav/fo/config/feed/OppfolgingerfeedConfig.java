@@ -42,7 +42,7 @@ public class OppfolgingerfeedConfig {
     @Value("${oppfolging.feed.pagesize:500}")
     private int pageSize;
     
-    @Value("${ny.oppfolgingfeedhandler:false}")
+    @Value("${ny.oppfolgingfeedhandler:true}")
     private boolean nyHandler;
 
     @Value("${oppfolging.feed.pollingintervalseconds: 10}")
