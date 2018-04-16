@@ -74,7 +74,7 @@ public class NyOppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInfo
             if(skalArbeidslisteSlettes(eksisterendeVeileder, info.getVeileder(), info.getOppfolging())) {
                 arbeidslisteService.deleteArbeidslisteForAktoerids(asList(AktoerId.of(info.getAktoerid())));
             }
-            oppfolgingDataRepository.oppdaterOppfolgingData(info);
+            timed("oppdater.oppfolgingsinformasjon", ()->oppfolgingDataRepository.oppdaterOppfolgingData(info));
         });
 
     }
