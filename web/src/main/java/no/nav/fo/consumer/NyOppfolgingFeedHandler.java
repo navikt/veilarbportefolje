@@ -17,7 +17,6 @@ import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import static java.util.Arrays.asList;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
 
@@ -72,7 +71,7 @@ public class NyOppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInfo
 
         transactor.inTransaction(() -> {                
             if(skalArbeidslisteSlettes(eksisterendeVeileder, info.getVeileder(), info.getOppfolging())) {
-                arbeidslisteService.deleteArbeidslisteForAktoerids(asList(AktoerId.of(info.getAktoerid())));
+                arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
             }
             timed("oppdater.oppfolgingsinformasjon", ()->oppfolgingDataRepository.oppdaterOppfolgingData(info));
         });
