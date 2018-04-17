@@ -6,14 +6,12 @@ import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.consumer.NyOppfolgingFeedHandler;
-import no.nav.fo.consumer.OppfolgingFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
-import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.jdbc.Transactor;
@@ -44,9 +42,6 @@ public class OppfolgingerfeedConfig {
     @Value("${oppfolging.feed.pagesize:500}")
     private int pageSize;
     
-    @Value("${ny.oppfolgingfeedhandler:true}")
-    private boolean nyHandler;
-
     @Value("${oppfolging.feed.pollingintervalseconds: 10}")
     private int pollingIntervalInSeconds;
 
@@ -83,13 +78,10 @@ public class OppfolgingerfeedConfig {
     @Bean
     public FeedCallback<BrukerOppdatertInformasjon> oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                                        BrukerRepository brukerRepository,
-                                                       AktoerService aktoerService,
                                                        SolrService solrService,
                                                        OppfolgingFeedRepository oppfolgingFeedRepository,
                                                        Transactor transactor) {
-        return nyHandler 
-                ? new NyOppfolgingFeedHandler(arbeidslisteService, brukerRepository, solrService, oppfolgingFeedRepository, transactor)
-                : new OppfolgingFeedHandler(arbeidslisteService, brukerRepository, aktoerService, solrService, oppfolgingFeedRepository);
+        return new NyOppfolgingFeedHandler(arbeidslisteService, brukerRepository, solrService, oppfolgingFeedRepository, transactor);
     }
 
     private static String sisteEndring(JdbcTemplate db) {

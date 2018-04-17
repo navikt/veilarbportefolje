@@ -24,7 +24,7 @@ import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
 @Slf4j
 public class NyOppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
-    private static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
+    public static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
