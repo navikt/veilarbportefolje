@@ -95,7 +95,7 @@ public class OppfolgingerfeedConfig {
     private static String sisteEndring(JdbcTemplate db) {
         Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT oppfolging_sist_oppdatert FROM METADATA").get(0).get("oppfolging_sist_oppdatert");
         String sisteEndringStr = ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
-        log.info("OppfolgingerfeedDebug sisteEndring", sisteEndringStr);
+        log.info("OppfolgingerfeedDebug sisteEndring: {}", sisteEndringStr);
         return sisteEndringStr;
     }
 }

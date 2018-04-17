@@ -50,7 +50,7 @@ public class NyOppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInfo
 
         try {
             timed("feed.oppfolging.objekt.ny", () -> {
-                log.info("OppfolgingerfeedDebug data", data);
+                log.info("OppfolgingerfeedDebug data: {}", data);
 
                 data.forEach(info -> {
                     oppdaterOppfolgingData(info);
