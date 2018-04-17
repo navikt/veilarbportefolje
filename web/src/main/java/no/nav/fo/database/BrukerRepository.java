@@ -96,13 +96,13 @@ public class BrukerRepository {
             "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +  
             "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +  
             "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +  
-            "VW_OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
-            "VW_OD.OPPFOLGING AS OPPFOLGING " +  
+            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
+            "OD.OPPFOLGING AS OPPFOLGING " +  
         "FROM " +
             "(SELECT * FROM " + 
                 "OPPFOLGINGSBRUKER OB " + 
-                "LEFT JOIN VW_AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
-            "LEFT JOIN VW_OPPFOLGING_DATA VW_OD ON VW_OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
+                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
+            "LEFT JOIN OPPFOLGING_DATA OD ON OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
             "WHERE " +
             "PERSON_ID IN (:personids) ";
 
@@ -140,10 +140,9 @@ public class BrukerRepository {
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
-        String tableName = "VW_OPPFOLGING_DATA";
         return Try.of(
                 () -> {
-                    return select(ds, tableName, this::mapToVeilederId)
+                    return select(ds, "OPPFOLGING_DATA", this::mapToVeilederId)
                             .column("VEILEDERIDENT")
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                             .execute();

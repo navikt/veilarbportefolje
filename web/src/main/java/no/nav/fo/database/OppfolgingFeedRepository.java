@@ -43,7 +43,7 @@ public class OppfolgingFeedRepository {
     
     public Try<BrukerOppdatertInformasjon> retrieveOppfolgingData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
-                "SELECT * FROM VW_OPPFOLGING_DATA WHERE AKTOERID = ?", 
+                "SELECT * FROM OPPFOLGING_DATA WHERE AKTOERID = ?", 
                 new Object[] {aktoerId}, 
                 this::mapToBrukerOppdatertInformasjon)
         ).onFailure(e -> log.info("Fant ikke oppfølgingsdata for bruker med aktoerId {}", aktoerId));
