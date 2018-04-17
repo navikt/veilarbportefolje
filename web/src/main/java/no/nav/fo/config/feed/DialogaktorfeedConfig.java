@@ -63,7 +63,7 @@ public class DialogaktorfeedConfig {
         FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds))
                 .callback(callback)
                 .pageSize(pageSize)
-                .lockProvider(lockProvider(dataSource), 5)
+                .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
 
         return new FeedConsumer<>(config);
