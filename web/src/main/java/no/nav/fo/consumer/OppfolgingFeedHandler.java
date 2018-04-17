@@ -48,7 +48,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
 
         try {
-            timed("feed.oppfolging.objekt.ny", () -> {
+            timed("feed.oppfolging.objekt", () -> {
                 log.info("OppfolgingerfeedDebug data: {}", data);
 
                 data.forEach(info -> {
