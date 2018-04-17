@@ -50,6 +50,8 @@ public class NyOppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInfo
 
         try {
             timed("feed.oppfolging.objekt.ny", () -> {
+                log.info("OppfolgingerfeedDebug data", data);
+
                 data.forEach(info -> {
                     oppdaterOppfolgingData(info);
                     solrService.indekserAsynkront(AktoerId.of(info.getAktoerid()));

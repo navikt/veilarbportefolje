@@ -1,5 +1,6 @@
 package no.nav.fo.config.feed;
 
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
@@ -34,6 +35,7 @@ import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 
 @Configuration
+@Slf4j
 public class OppfolgingerfeedConfig {
 
     @Value("${veilarboppfolging.api.url}")
@@ -92,6 +94,8 @@ public class OppfolgingerfeedConfig {
 
     private static String sisteEndring(JdbcTemplate db) {
         Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT oppfolging_sist_oppdatert FROM METADATA").get(0).get("oppfolging_sist_oppdatert");
-        return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
+        String sisteEndringStr = ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
+        log.info("OppfolgingerfeedDebug sisteEndring", sisteEndringStr);
+        return sisteEndringStr;
     }
 }

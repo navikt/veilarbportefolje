@@ -55,7 +55,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
-        log.debug(String.format("Feed-data mottatt: %s", data));
+        log.info("OppfolgingerfeedDebug data", data);
         behandleObjektFraFeed(data);
         brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
         Event event = MetricsFactory.createEvent("datamotattfrafeed");
