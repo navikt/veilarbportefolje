@@ -21,7 +21,7 @@ import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
 
 @Slf4j
-public class NyOppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
+public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
     public static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
 
@@ -32,7 +32,7 @@ public class NyOppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInfo
     private Transactor transactor;
     
     @Inject
-    public NyOppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
+    public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
                                  SolrService solrService,
                                  OppfolgingFeedRepository oppfolgingFeedRepository,

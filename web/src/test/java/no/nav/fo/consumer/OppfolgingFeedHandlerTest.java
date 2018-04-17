@@ -20,7 +20,7 @@ import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.jdbc.Transactor;
 
-public class NyOppfolgingFeedHandlerTest {
+public class OppfolgingFeedHandlerTest {
 
     private class TestTransactor extends Transactor {
 
@@ -41,7 +41,7 @@ public class NyOppfolgingFeedHandlerTest {
     private SolrService solrService;
     private OppfolgingFeedRepository oppfolgingFeedRepository;
 
-    private NyOppfolgingFeedHandler oppfolgingFeedHandler;
+    private OppfolgingFeedHandler oppfolgingFeedHandler;
 
     private static final AktoerId AKTOER_ID = AktoerId.of("DUMMY");
 
@@ -52,7 +52,7 @@ public class NyOppfolgingFeedHandlerTest {
         solrService = mock(SolrService.class);
         oppfolgingFeedRepository = mock(OppfolgingFeedRepository.class);
 
-        oppfolgingFeedHandler = new NyOppfolgingFeedHandler(
+        oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService, 
                 brukerRepository, 
                 solrService, 

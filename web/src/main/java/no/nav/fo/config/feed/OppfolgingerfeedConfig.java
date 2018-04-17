@@ -5,7 +5,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.consumer.NyOppfolgingFeedHandler;
+import no.nav.fo.consumer.OppfolgingFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
@@ -81,7 +81,7 @@ public class OppfolgingerfeedConfig {
                                                        SolrService solrService,
                                                        OppfolgingFeedRepository oppfolgingFeedRepository,
                                                        Transactor transactor) {
-        return new NyOppfolgingFeedHandler(arbeidslisteService, brukerRepository, solrService, oppfolgingFeedRepository, transactor);
+        return new OppfolgingFeedHandler(arbeidslisteService, brukerRepository, solrService, oppfolgingFeedRepository, transactor);
     }
 
     private static String sisteEndring(JdbcTemplate db) {
