@@ -28,6 +28,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     private static final JdbcTemplate DB = new JdbcTemplate(ds);
 
     private static final String TEST_VEILEDERID = "testident";
+    public static final String UNAUTHORIZED_NAV_KONTOR = "XOXOXO";
 
     @Override
     @Before
@@ -341,7 +342,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
         int result = insert(DB, "OPPFOLGINGSBRUKER")
                 .value("PERSON_ID", PERSON_ID_UNAUTHORIZED)
                 .value("FODSELSNR", FNR_UNAUTHORIZED)
-                .value("NAV_KONTOR", "XOXOXO")
+                .value("NAV_KONTOR", UNAUTHORIZED_NAV_KONTOR)
                 .execute();
 
         assertTrue(result > 0);

@@ -70,11 +70,11 @@ public class SjekkBrukertilgangTest {
 
     private void gitt_at_pep_sier(Decision decision) throws PepException {
         BiasedDecisionResponse response = new BiasedDecisionResponse(decision, null);
-        when(pep.harTilgangTilEnhet(any(), any())).thenReturn(response);
+        when(pep.harTilgangTilEnhet(any(), any(), any())).thenReturn(response);
     }
 
     private void gitt_at_pep_kaster_feil() throws PepException {
-        when(pep.harTilgangTilEnhet(any(), any())).thenThrow(new PepException("Noe gikk veldig feil"));
+        when(pep.harTilgangTilEnhet(any(), any(), any())).thenThrow(new PepException("Noe gikk veldig feil"));
 
     }
 }

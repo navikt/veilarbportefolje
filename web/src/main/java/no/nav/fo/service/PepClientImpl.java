@@ -83,7 +83,7 @@ public class PepClientImpl implements PepClient {
     public boolean tilgangTilEnhet(String ident, String enhet) {
         BiasedDecisionResponse callAllowed;
         try {
-            callAllowed = pep.harTilgangTilEnhet(enhet, "srvveilarbportefolje");
+            callAllowed = pep.harTilgangTilEnhet(enhet, "srvveilarbportefolje", "veilarb");
         } catch (PepException e) {
             throw new InternalServerErrorException("Something went wrong in PEP", e);
         }
