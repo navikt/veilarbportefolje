@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
+import static no.nav.fo.database.OppfolgingFeedRepository.safeToJaNei;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -90,4 +91,10 @@ public class OppfolgingFeedRepositoryTest {
 
     }
 
+    @Test
+    public void skalReturnereJaNeiStreng() {
+        assertThat(safeToJaNei(true), is("J"));
+        assertThat(safeToJaNei(false), is("N"));
+        assertThat(safeToJaNei(null), is("N"));
+    }
 }

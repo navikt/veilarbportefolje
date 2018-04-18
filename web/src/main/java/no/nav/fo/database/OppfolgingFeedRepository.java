@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 
-import static no.nav.fo.domene.Brukerdata.safeToJaNei;
+import static java.lang.Boolean.TRUE;
 import static no.nav.fo.util.DbUtils.parseJaNei;
 
 import java.sql.ResultSet;
@@ -41,6 +41,10 @@ public class OppfolgingFeedRepository {
             .execute();
     }
     
+    static String safeToJaNei(Boolean aBoolean) {
+        return TRUE.equals(aBoolean) ? "J" : "N";
+    }
+
     public Try<BrukerOppdatertInformasjon> retrieveOppfolgingData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT * FROM OPPFOLGING_DATA WHERE AKTOERID = ?", 
