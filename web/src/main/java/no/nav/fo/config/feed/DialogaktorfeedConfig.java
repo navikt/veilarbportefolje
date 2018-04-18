@@ -3,7 +3,6 @@ package no.nav.fo.config.feed;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.consumer.DialogDataFeedHandler;
 import no.nav.fo.consumer.NyDialogDataFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
@@ -39,9 +38,6 @@ public class DialogaktorfeedConfig {
 
     @Value("${dialogaktor.feed.pollingintervalseconds: 10}")
     private int pollingIntervalInSeconds;
-
-    @Value("${ny.dialogfeedhandler:true}")
-    private boolean nyHandler;
 
     @Inject
     private DataSource dataSource;
@@ -79,8 +75,6 @@ public class DialogaktorfeedConfig {
                                                        BrukerRepository brukerRepository,
                                                        SolrService solrService,
                                                        DialogFeedRepository dialogFeedRepository) {
-        return nyHandler 
-                ? new NyDialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository)
-                : new DialogDataFeedHandler(aktoerService, brukerRepository, solrService, dialogFeedRepository);
+        return new NyDialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
     }
 }

@@ -198,17 +198,6 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
     }
 
-    public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
-        io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
-                .forEach(aktoerIdsBatch -> {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("personids", aktoerIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
-                    String sql = deleteBrukerdataSql();
-                    timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.update(sql, params));
-                });
-    }
-
-
     /**
      * MAPPING-FUNKSJONER
      */
@@ -495,11 +484,6 @@ public class BrukerRepository {
     private String retrieveBrukerdataSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
-
-    private String deleteBrukerdataSql() {
-        return "DELETE FROM BRUKER_DATA where PERSONID in (:personids)";
-    }
-
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         return oppfolgingsFlaggSatt(bruker) || erOppfolgingsBrukerIarena(bruker);

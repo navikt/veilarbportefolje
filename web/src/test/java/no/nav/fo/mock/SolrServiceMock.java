@@ -99,11 +99,6 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
-    public void populerIndeksForPersonids(List<PersonId> personIds) {
-
-    }
-
-    @Override
     public void indekserAsynkront(AktoerId aktoerId) {
     }
 }

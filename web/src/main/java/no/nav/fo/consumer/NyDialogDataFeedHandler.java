@@ -1,7 +1,5 @@
 package no.nav.fo.consumer;
 
-
-
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;

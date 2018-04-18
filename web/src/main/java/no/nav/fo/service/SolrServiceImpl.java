@@ -159,11 +159,6 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
-    public void populerIndeksForPersonids(List<PersonId> personIds) {
-        List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds);
-        indekserDokumenter(dokumenter);
-    }
-
     public void indekserDokumenter(List<SolrInputDocument> dokumenter) {
         leggDataTilSolrDocument(dokumenter);
         addDocumentsToIndex(dokumenter);
