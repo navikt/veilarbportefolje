@@ -1,92 +1,130 @@
 package no.nav.fo.consumer;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import io.vavr.control.Try;
+import lombok.SneakyThrows;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
-import no.nav.fo.domene.Oppfolgingstatus;
-import no.nav.fo.domene.PersonId;
-import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import no.nav.sbl.jdbc.Transactor;
 
-import java.util.*;
-
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-@RunWith(MockitoJUnitRunner.class)
 public class OppfolgingFeedHandlerTest {
 
-    @Mock
+    private class TestTransactor extends Transactor {
+
+        public TestTransactor() {
+            super(null);
+        }
+
+        @Override
+        @SneakyThrows
+        public void inTransaction(InTransaction inTransaction) {
+            inTransaction.run();
+        }
+
+    }
+
     private ArbeidslisteService arbeidslisteService;
-
-    @Mock
     private BrukerRepository brukerRepository;
-
-    @Mock
-    private AktoerService aktoerService;
-
-    @Mock
     private SolrService solrService;
-
-    @Mock
     private OppfolgingFeedRepository oppfolgingFeedRepository;
 
-    @InjectMocks
     private OppfolgingFeedHandler oppfolgingFeedHandler;
+
+    private static final AktoerId AKTOER_ID = AktoerId.of("DUMMY");
 
     @Before
     public void resetMocks() {
-        reset(arbeidslisteService, brukerRepository, aktoerService, solrService);
+        arbeidslisteService = mock(ArbeidslisteService.class);
+        brukerRepository = mock(BrukerRepository.class);
+        solrService = mock(SolrService.class);
+        oppfolgingFeedRepository = mock(OppfolgingFeedRepository.class);
+
+        oppfolgingFeedHandler = new OppfolgingFeedHandler(
+                arbeidslisteService, 
+                brukerRepository, 
+                solrService, 
+                oppfolgingFeedRepository, 
+                new TestTransactor());
     }
 
     @Test
-    public void skalSletteBrukerOgArbeidslisteNaarDenIkkeErUnderOppfolging() {
-        AktoerId aktoerId = AktoerId.of("DUMMY");
-        PersonId personId = PersonId.of("1111111");
+    public void skalLagreBrukerOgOppdatereIndeksAsynkront() {
 
-        ArgumentCaptor<List<PersonId>> captorUnderOppfolging = ArgumentCaptor.forClass(List.class);
-        ArgumentCaptor<List<PersonId>> captorIkkeUnderOppfolging = ArgumentCaptor.forClass(List.class);
+        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(false, null);
 
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.failure(new RuntimeException()));
 
-        Oppfolgingstatus arenaStatus = new Oppfolgingstatus()
-                .setFormidlingsgruppekode("DUMMY")
-                .setServicegruppekode("DUMMY");
+        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
 
-        BrukerOppdatertInformasjon bruker = new BrukerOppdatertInformasjon()
-                .setOppfolging(false)
-                .setAktoerid(aktoerId.toString());
+        verify(solrService).indekserAsynkront(AKTOER_ID);
+        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
 
-        Map<PersonId, Oppfolgingstatus> oppfolgingsstatus = new HashMap<>();
-        oppfolgingsstatus.put(personId, arenaStatus);
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenReturn(oppfolgingsstatus);
-
-        Map<AktoerId, Optional<PersonId>> identMap = new HashMap<>();
-        identMap.put(aktoerId, Optional.of(personId));
-        when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(identMap);
-
-        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(bruker));
-
-        verify(solrService, times(1)).populerIndeksForPersonids(captorUnderOppfolging.capture());
-        verify(oppfolgingFeedRepository, times(1)).insertVeilederOgOppfolginsinfo(any(), any());
-        verify(brukerRepository, times(1)).deleteBrukerdataForPersonIds(captorIkkeUnderOppfolging.capture());
-        verify(solrService, times(1)).slettBrukere(captorIkkeUnderOppfolging.capture());
-        verify(solrService, times(1)).commit();
-
-        assertLengthOfSublists(captorUnderOppfolging.getAllValues(), 0);
-        assertLengthOfSublists(captorIkkeUnderOppfolging.getAllValues(), 1);
     }
 
-    private void assertLengthOfSublists(List<List<PersonId>> lists, int size) {
-        lists.forEach(l -> assertThat(l.size()).isEqualTo(size));
+    private BrukerOppdatertInformasjon brukerInfo(boolean oppfolging, String veileder) {
+        return new BrukerOppdatertInformasjon()
+                .setOppfolging(oppfolging)
+                .setVeileder(veileder)
+                .setAktoerid(AKTOER_ID.toString());
+    }
+
+    @Test
+    public void skalSletteArbeidslisteHvisBrukerIkkeErUnderOppfolging() {
+
+        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(false, null);
+
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.failure(new RuntimeException()));
+
+        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
+
+        verify(arbeidslisteService).deleteArbeidslisteForAktoerid(AKTOER_ID);
+        verify(solrService).indekserAsynkront(AKTOER_ID);
+        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
+
+    }
+
+    @Test
+    public void skalSletteArbeidslisteHvisBrukerHarEndretVeileder() {
+
+        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
+        BrukerOppdatertInformasjon eksisterendeInformasjon = brukerInfo(true, "gammelVeileder");
+
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.success(eksisterendeInformasjon));
+
+        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
+
+        verify(arbeidslisteService).deleteArbeidslisteForAktoerid(AKTOER_ID);
+        verify(solrService).indekserAsynkront(AKTOER_ID);
+        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
+
+    }
+
+    @Test
+    public void skalIkkeSletteArbeidslisteHvisBrukerHarSammeVeilederOgErUnderOppfolging() {
+
+        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
+        BrukerOppdatertInformasjon eksisterendeInformasjon = brukerInfo(true, "nyVeileder");
+
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.success(eksisterendeInformasjon));
+
+        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
+
+        verify(arbeidslisteService, never()).deleteArbeidslisteForAktoerid(AKTOER_ID);
+        verify(solrService).indekserAsynkront(AKTOER_ID);
+        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
+
     }
 }

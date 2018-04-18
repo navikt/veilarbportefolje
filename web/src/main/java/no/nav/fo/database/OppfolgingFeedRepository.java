@@ -1,7 +1,6 @@
 package no.nav.fo.database;
 
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
-import no.nav.fo.domene.PersonId;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 
@@ -28,18 +27,6 @@ public class OppfolgingFeedRepository {
     @Inject
     public OppfolgingFeedRepository(JdbcTemplate db) {
         this.db = db;
-    }
-
-    public void insertVeilederOgOppfolginsinfo(BrukerOppdatertInformasjon bruker, PersonId personId) {
-        SqlUtils.upsert(db, "BRUKER_DATA")
-                .set("VEILEDERIDENT", bruker.getVeileder())
-                .set("PERSONID", personId.toString())
-                .set("TILDELT_TIDSPUNKT", bruker.getEndretTimestamp())
-                .set("OPPFOLGING", safeToJaNei(bruker.getOppfolging()))
-                .set("NY_FOR_VEILEDER", safeToJaNei(bruker.getNyForVeileder()))
-                .set("AKTOERID", bruker.getAktoerid())
-                .where(WhereClause.equals("PERSONID", personId.toString()))
-                .execute();
     }
 
     public void oppdaterOppfolgingData(BrukerOppdatertInformasjon info) {
