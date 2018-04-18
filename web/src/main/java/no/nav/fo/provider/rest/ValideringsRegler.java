@@ -41,6 +41,7 @@ public class ValideringsRegler {
             "neste_aktivitet_start",
             "forrige_aktivitet_start",
             "iavtaltaktivitet",
+            "aaprettighetsperiode",
             "veileder_id");
 
     static void sjekkEnhet(String enhet) {
