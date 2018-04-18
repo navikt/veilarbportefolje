@@ -34,7 +34,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        DB.execute("truncate table " + "BRUKER_DATA");
+        DB.execute("truncate table " + "OPPFOLGING_DATA");
         DB.execute("truncate table " + "OPPFOLGINGSBRUKER");
         DB.execute("truncate table " + ARBEIDSLISTE);
     }
@@ -287,8 +287,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     }
 
     private static void insertSuccessfulBrukere() {
-        int result = insert(DB, "BRUKER_DATA")
-                .value("PERSONID", PERSON_ID)
+        int result = insert(DB, "OPPFOLGING_DATA")
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", AKTOER_ID)
                 .execute();
@@ -311,8 +310,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
         assertTrue(result2 > 0);
 
-        int result3 = insert(DB, "BRUKER_DATA")
-                .value("PERSONID", PERSON_ID_2)
+        int result3 = insert(DB, "OPPFOLGING_DATA")
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", AKTOER_ID_2)
                 .execute();
@@ -347,8 +345,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
         assertTrue(result > 0);
 
-        int result2 = insert(DB, "BRUKER_DATA")
-                .value("PERSONID", PERSON_ID_UNAUTHORIZED)
+        int result2 = insert(DB, "OPPFOLGING_DATA")
                 .value("VEILEDERIDENT", "X22222")
                 .value("AKTOERID", AKTOER_ID_UNAUTHORIZED)
                 .execute();

@@ -47,7 +47,7 @@ public class AktoerServiceImpl implements AktoerService {
     private int lockAktoridmappingSeconds;
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
-            + "FROM VW_OPPFOLGING_DATA "
+            + "FROM OPPFOLGING_DATA "
             + "WHERE OPPFOLGING = 'J' "
             + "AND AKTOERID NOT IN "
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
