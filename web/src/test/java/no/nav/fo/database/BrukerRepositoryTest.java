@@ -347,8 +347,7 @@ public class BrukerRepositoryTest {
         AktoerId aktoerId = AktoerId.of("101010");
         VeilederId expectedVeilederId = VeilederId.of("X11111");
 
-        insert(jdbcTemplate, "BRUKER_DATA")
-            .value("PERSONID", "123456")
+        insert(jdbcTemplate, "OPPFOLGING_DATA")
             .value("AKTOERID", aktoerId.toString())
             .value("VEILEDERIDENT", expectedVeilederId.toString())
             .execute();
