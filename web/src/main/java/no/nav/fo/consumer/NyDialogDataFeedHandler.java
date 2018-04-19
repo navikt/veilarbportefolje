@@ -38,7 +38,7 @@ public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> 
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
 
         try {
-            timed("feed.dialog.objekt.ny",
+            timed("feed.dialog.objekt",
                     () -> {
                         data.forEach(info -> {
                             dialogFeedRepository.oppdaterDialogInfoForBruker(info);
