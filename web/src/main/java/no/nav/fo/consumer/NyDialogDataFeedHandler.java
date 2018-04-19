@@ -20,6 +20,7 @@ import static no.nav.fo.util.MetricsUtils.timed;
 @Slf4j
 public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
+    static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
     private final SolrService solrService;
     private final DialogFeedRepository dialogFeedRepository;
@@ -47,7 +48,7 @@ public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> 
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size()))
             );
-            brukerRepository.updateMetadata("dialogaktor_sist_oppdatert", Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+            brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
         } catch(Exception e) {
             log.error("Feil ved behandling av dialogdata fra feed for liste med brukere.", e);
         }
