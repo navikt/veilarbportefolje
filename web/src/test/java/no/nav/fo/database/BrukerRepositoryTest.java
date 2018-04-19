@@ -230,8 +230,6 @@ public class BrukerRepositoryTest {
         return new Brukerdata()
             .setAktoerid(aktoerid)
             .setPersonid(personId)
-            .setVeileder(veileder)
-            .setTildeltTidspunkt(tildeltTidspunkt)
             .setUtlopsdato(utlopsdato)
             .setUtlopsFasett(utlopsdatoFasett)
             .setDagputlopUke(dagpUtlopUke)
@@ -242,16 +240,12 @@ public class BrukerRepositoryTest {
             .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
             .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
             .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasett)
-            .setYtelse(ytelse)
-            .setOppfolging(oppfolging)
-            .setNyForVeileder(nyForVeileder);
+            .setYtelse(ytelse);
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
         assertThat(b1.getPersonid()).isEqualTo(b2.getPersonid());
         assertThat(b1.getAktoerid()).isEqualTo(b2.getAktoerid());
-        assertThat(b1.getTildeltTidspunkt()).isEqualTo(b2.getTildeltTidspunkt());
-        assertThat(b1.getVeileder()).isEqualTo(b2.getVeileder());
         assertThat(b1.getUtlopsdato()).isEqualTo(b2.getUtlopsdato());
         assertThat(b1.getUtlopsFasett()).isEqualTo(b2.getUtlopsFasett());
         assertThat(b1.getDagputlopUke()).isEqualTo(b2.getDagputlopUke());
@@ -322,15 +316,11 @@ public class BrukerRepositoryTest {
             .setAapmaxtidUke(1)
             .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
             .setAktoerid("aktoerid")
-            .setOppfolging(true)
-            .setTildeltTidspunkt(Timestamp.from(Instant.now()))
             .setUtlopsdato(LocalDateTime.now())
             .setUtlopsFasett(ManedFasettMapping.MND1)
-            .setVeileder("Veileder")
             .setVenterPaSvarFraBruker(LocalDateTime.now())
             .setVenterPaSvarFraNav(LocalDateTime.now())
             .setYtelse(YtelseMapping.AAP_MAXTID)
-            .setNyForVeileder(false)
             .setAktivitetStart(new Timestamp(1))
             .setNesteAktivitetStart(new Timestamp(2))
             .setForrigeAktivitetStart(new Timestamp(3));

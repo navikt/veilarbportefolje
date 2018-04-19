@@ -66,11 +66,8 @@ public class DialogFeedRepositoryTest {
 
         Brukerdata brukerdata = new Brukerdata()
                 .setPersonid(personId.toString())
-                .setVeileder("Z000000")
                 .setAktoerid(aktoerId.toString())
-                .setVenterPaSvarFraNav(eldsteVentende1.toLocalDateTime())
-                .setNyForVeileder(false)
-                .setOppfolging(true);
+                .setVenterPaSvarFraNav(eldsteVentende1.toLocalDateTime());
 
         brukerRepository.insertOrUpdateBrukerdata(Collections.singletonList(brukerdata), Collections.emptyList());
 

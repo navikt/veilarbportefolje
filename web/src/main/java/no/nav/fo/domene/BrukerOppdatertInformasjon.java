@@ -17,16 +17,6 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
     private Boolean nyForVeileder;
     private Timestamp endretTimestamp;
 
-
-    public BrukerinformasjonFraFeed applyTo(BrukerinformasjonFraFeed brukerinformasjonFraFeed) {
-        return brukerinformasjonFraFeed
-                .setAktoerid(aktoerid)
-                .setVeileder(veileder)
-                .setOppfolging(oppfolging)
-                .setOppdatert(endretTimestamp)
-                .setNyForVeileder(nyForVeileder);
-    }
-
     @Override
     public int compareTo(BrukerOppdatertInformasjon o) {
         return endretTimestamp.compareTo(o.getEndretTimestamp());
