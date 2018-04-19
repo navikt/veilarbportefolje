@@ -5,6 +5,7 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
+import no.nav.fo.config.RemoteFeatureConfig.FlyttSomNyeFeature;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
@@ -51,6 +52,7 @@ import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
 import static no.nav.fo.util.DateUtils.toUtcString;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
+import static no.nav.fo.util.SolrUtils.harIkkeVeilederFilter;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
@@ -67,7 +69,9 @@ public class SolrServiceImpl implements SolrService {
     private AktivitetDAO aktivitetDAO;
     private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
+    private VeilederService veilederService;
     private Executor executor;
+    private FlyttSomNyeFeature flyttSomNyeFeature;
 
     @Inject
     public SolrServiceImpl(
@@ -76,7 +80,9 @@ public class SolrServiceImpl implements SolrService {
             BrukerRepository brukerRepository,
             ArbeidslisteRepository arbeidslisteRepository,
             AktoerService aktoerService,
-            AktivitetDAO aktivitetDAO
+            VeilederService veilederService,
+            AktivitetDAO aktivitetDAO,
+            FlyttSomNyeFeature flyttSomNyeFeature
     ) {
 
         this.solrClientMaster = solrClientMaster;
@@ -85,7 +91,9 @@ public class SolrServiceImpl implements SolrService {
         this.aktivitetDAO = aktivitetDAO;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
+        this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
+        this.flyttSomNyeFeature = flyttSomNyeFeature;
     }
 
     @Transactional
@@ -173,7 +181,13 @@ public class SolrServiceImpl implements SolrService {
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         String queryString = byggQueryString(enhetId, veilederIdent);
         boolean sorterNyeForVeileder = veilederIdent.map(StringUtils::isNotBlank).orElse(false);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sorterNyeForVeileder, sortOrder, sortField, filtervalg);
+
+        List<VeilederId> veiledere = null;
+        if(flyttSomNyeFeature.erAktiv()){ //ryd nullsjekker taget med komentert med FO-610 rydde
+            log.info("henter brukere med flyttetde som ufordelte");
+            veiledere = veilederService.getIdenter(enhetId);
+        }
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sorterNyeForVeileder, veiledere, sortOrder, sortField, filtervalg);
         addPaging(solrQuery, fra, antall);
         QueryResponse response = timed("solr.hentbrukere",() -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
         SolrUtils.checkSolrResponseCode(response.getStatus());
@@ -245,7 +259,7 @@ public class SolrServiceImpl implements SolrService {
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:" + personid.toString());
     }
-    
+
     @Override
     public void slettBrukere(List<PersonId> personIds) {
         personIds.forEach(this::slettBruker);
@@ -347,13 +361,21 @@ public class SolrServiceImpl implements SolrService {
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
-        String ufordelteBrukere = "ny_for_enhet:true";
+        String ufordelteBrukere;
+        if(flyttSomNyeFeature.erAktiv()) {
+            log.info("henter statustall med flyttet som nye");
+            List<VeilederId> identer = veilederService.getIdenter(enhet);
+            ufordelteBrukere = harIkkeVeilederFilter(identer);
+        } else {
+            ufordelteBrukere = "ny_for_enhet:true";
+        }
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
         String iavtaltAktivitet = "aktiviteter:*";
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
+
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFacetQuery(ufordelteBrukere);

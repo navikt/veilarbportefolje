@@ -17,7 +17,6 @@ import static no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext.ABAC_CA
 @Configuration
 @EnableCaching
 public class CacheConfig {
-
     public static final String TILGANG_TIL_ENHET = "tilgangTilEnhet";
     private static final CacheConfiguration TILGANG_TIL_ENHET_CACHE =
             new CacheConfiguration(TILGANG_TIL_ENHET, 5000)

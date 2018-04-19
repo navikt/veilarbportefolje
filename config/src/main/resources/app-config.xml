@@ -40,6 +40,8 @@
         <rest alias="veilArbOppfolgingAPI" mapToProperty="veilarboppfolging.api" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
         <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
+        <rest alias="veilarbveilederAPi" mapToProperty="veilarbveileder.api" />
+        <rest alias="feature_endpoint" mapToProperty="feature_endpoint" />
 
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
@@ -56,7 +58,7 @@
         <exposedRest name="no.nav.fo.portefolje.totalhovedindeksering" path="/veilarbportefolje/internal/totalhovedindeksering"/>
         <exposedRest name="veilArbPortefoljeAPI" path="/veilarbportefolje/api"/>
     </exposed-services>
-  
+
     <serverOptions>
         <memoryParameters resourceAlias="veilarb-memparams"/>
     </serverOptions>

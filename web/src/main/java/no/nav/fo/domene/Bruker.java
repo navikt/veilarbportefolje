@@ -105,9 +105,14 @@ public class Bruker {
     }
 
     private static boolean isNyForEnhet(SolrDocument document) {
-        return Optional.
-                ofNullable((Boolean) document.get("ny_for_enhet"))
-                .orElse(false);
+        return Optional. //FO-610 rydde
+                ofNullable((Boolean) document.get("har_veileder_fra_enhet"))
+                .map(a -> !a)
+                .orElse(
+                        Optional
+                                .ofNullable((Boolean) document.get("ny_for_enhet"))
+                                .orElse(false));
+
     }
 
     private static boolean isNyForVeileder(SolrDocument document) {

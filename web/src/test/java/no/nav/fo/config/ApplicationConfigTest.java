@@ -62,6 +62,11 @@ public class ApplicationConfigTest {
     }
 
     @Bean
+    public VeilederService veilederService() {
+        return mock(VeilederService.class);
+    }
+
+    @Bean
     public Pep pep() {
         return mock(Pep.class);
     }
@@ -70,7 +75,7 @@ public class ApplicationConfigTest {
     public PepClientImpl pepClient() {
         return mock(PepClientImpl.class);
     }
-    
+
     @Bean
     public LockingTaskExecutor lockingTaskExecutor() {
         return mock(LockingTaskExecutor.class);
