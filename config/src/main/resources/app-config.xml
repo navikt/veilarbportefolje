@@ -40,7 +40,7 @@
         <rest alias="veilArbOppfolgingAPI" mapToProperty="veilarboppfolging.api" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
         <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
-        <rest alias="veilarbveilederAPi" mapToProperty="veilarbveileder.api" />
+        <rest alias="veilarbveilederAPI" mapToProperty="veilarbveileder.api" />
         <rest alias="feature_endpoint" mapToProperty="feature_endpoint" />
 
         <baseUrl alias="isso-host"/>
