@@ -10,23 +10,23 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static no.nav.fo.consumer.NyDialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
+import static no.nav.fo.consumer.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static org.mockito.Mockito.*;
 
-public class NyDialogDataFeedHandlerTest {
+public class DialogDataFeedHandlerTest {
 
     private SolrService solrService;
     private DialogFeedRepository dialogFeedRepository;
     private BrukerRepository brukerRepository;
 
-    private NyDialogDataFeedHandler dialogDataFeedHandler;
+    private DialogDataFeedHandler dialogDataFeedHandler;
 
     @Before
     public void setUp() {
         solrService = mock(SolrService.class);                
         dialogFeedRepository = mock(DialogFeedRepository.class);
         brukerRepository = mock(BrukerRepository.class);
-        dialogDataFeedHandler = new NyDialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
+        dialogDataFeedHandler = new DialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
     }
 
     @Test

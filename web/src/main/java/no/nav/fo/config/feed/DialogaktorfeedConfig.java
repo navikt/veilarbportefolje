@@ -3,7 +3,7 @@ package no.nav.fo.config.feed;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.consumer.NyDialogDataFeedHandler;
+import no.nav.fo.consumer.DialogDataFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.feed.DialogFeedRepository;
@@ -75,6 +75,6 @@ public class DialogaktorfeedConfig {
                                                        BrukerRepository brukerRepository,
                                                        SolrService solrService,
                                                        DialogFeedRepository dialogFeedRepository) {
-        return new NyDialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
+        return new DialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
     }
 }

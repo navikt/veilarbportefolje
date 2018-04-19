@@ -18,7 +18,7 @@ import java.util.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
-public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
+public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
     static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
@@ -26,7 +26,7 @@ public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> 
     private final DialogFeedRepository dialogFeedRepository;
 
     @Inject
-    public NyDialogDataFeedHandler(BrukerRepository brukerRepository,
+    public DialogDataFeedHandler(BrukerRepository brukerRepository,
                                  SolrService solrService,
                                  DialogFeedRepository dialogFeedRepository) {
         this.brukerRepository = brukerRepository;
