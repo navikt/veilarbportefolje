@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
-import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
@@ -29,18 +28,15 @@ import static no.nav.fo.provider.rest.RestUtils.createResponse;
 @Produces(APPLICATION_JSON)
 public class VeilederController {
 
-    private BrukertilgangService brukertilgangService;
     private SolrService solrService;
     private PepClient pepClient;
 
     @Inject
     public VeilederController(
-            BrukertilgangService brukertilgangService,
             SolrService solrService,
             PepClient pepClient
     ) {
 
-        this.brukertilgangService = brukertilgangService;
         this.solrService = solrService;
         this.pepClient = pepClient;
     }
@@ -62,7 +58,7 @@ public class VeilederController {
             ValideringsRegler.sjekkSortering(sortDirection, sortField);
             ValideringsRegler.sjekkFiltervalg(filtervalg);
             TilgangsRegler.tilgangTilOppfolging(pepClient);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
@@ -90,7 +86,7 @@ public class VeilederController {
             event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             return solrService.hentStatusTallForVeileder(enhet, veilederIdent);
         });
@@ -104,7 +100,7 @@ public class VeilederController {
             event.report();
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             return solrService
                     .hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet)

@@ -17,9 +17,7 @@ import java.util.Set;
 @Accessors(chain = true)
 public class Brukerdata {
     private String aktoerid;
-    private String veileder;
     private String personid;
-    private Timestamp tildeltTidspunkt;
     private YtelseMapping ytelse;
     private LocalDateTime utlopsdato;
     private FasettMapping utlopsFasett;
@@ -33,8 +31,6 @@ public class Brukerdata {
     private AAPUnntakUkerIgjenFasettMapping aapunntakUkerIgjenFasett;
     private LocalDateTime venterPaSvarFraBruker;
     private LocalDateTime venterPaSvarFraNav;
-    private Boolean oppfolging;
-    private Boolean nyForVeileder;
     private Timestamp nyesteUtlopteAktivitet;
     private Timestamp aktivitetStart;
     private Timestamp nesteAktivitetStart;
@@ -44,8 +40,6 @@ public class Brukerdata {
     public UpsertQuery toUpsertQuery(JdbcTemplate db) {
         return SqlUtils.upsert(db, "bruker_data")
                 .where(WhereClause.equals("PERSONID", personid))
-                .set("VEILEDERIDENT", veileder)
-                .set("TILDELT_TIDSPUNKT", tildeltTidspunkt)
                 .set("AKTOERID", aktoerid)
                 .set("YTELSE", ytelse != null ? ytelse.toString() : null)
                 .set("UTLOPSDATO", toTimestamp(utlopsdato))
@@ -61,8 +55,6 @@ public class Brukerdata {
                 .set("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
                 .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .set("PERSONID", personid)
-                .set("OPPFOLGING", safeToJaNei(oppfolging))
-                .set("NY_FOR_VEILEDER", safeToJaNei(nyForVeileder))
                 .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet)
                 .set("AKTIVITET_START", aktivitetStart)
                 .set("NESTE_AKTIVITET_START", nesteAktivitetStart)
@@ -73,8 +65,6 @@ public class Brukerdata {
         UpdateBatchQuery<Brukerdata> updateQuery = new UpdateBatchQuery<>(db, "bruker_data");
 
         return updateQuery
-                .add("VEILEDERIDENT", Brukerdata::getVeileder, String.class)
-                .add("TILDELT_TIDSPUNKT", (bruker) -> bruker.tildeltTidspunkt, Timestamp.class)
                 .add("AKTOERID", Brukerdata::getAktoerid, String.class)
                 .add("YTELSE", (bruker) -> safeToString(bruker.ytelse), String.class)
                 .add("UTLOPSDATO", (bruker) -> toTimestamp(bruker.utlopsdato), Timestamp.class)
@@ -87,8 +77,6 @@ public class Brukerdata {
                 .add("AAPMAXTIDUKEFASETT", (bruker) -> safeToString(bruker.aapmaxtidUkeFasett), String.class)
                 .add("AAPUNNTAKDAGERIGJEN", (bruker) -> bruker.aapUnntakDagerIgjen, Integer.class)
                 .add("AAPUNNTAKUKERIGJENFASETT", (bruker) -> safeToString(bruker.aapunntakUkerIgjenFasett), String.class)
-                .add("OPPFOLGING", (bruker) -> safeToJaNei(bruker.oppfolging), String.class)
-                .add("NY_FOR_VEILEDER", (bruker) -> safeToJaNei(bruker.nyForVeileder), String.class)
                 .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
                 .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .add("NYESTEUTLOPTEAKTIVITET", (bruker) ->  bruker.nyesteUtlopteAktivitet, Timestamp.class)
@@ -97,13 +85,6 @@ public class Brukerdata {
                 .add("FORRIGE_AKTIVITET_START", (bruker) ->  bruker.forrigeAktivitetStart, Timestamp.class)
                 .addWhereClause((bruker) -> WhereClause.equals("PERSONID",bruker.personid))
                 .execute(data);
-    }
-
-    public static String safeToJaNei(Boolean aBoolean) {
-        if (aBoolean == null) {
-            return "N";
-        }
-        return aBoolean ? "J" : "N";
     }
 
     private static Object safeToString(Object o) {

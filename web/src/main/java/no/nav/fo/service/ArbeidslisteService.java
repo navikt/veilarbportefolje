@@ -88,8 +88,8 @@ public class ArbeidslisteService {
                 .retrieveEnhet(fnr);
     }
 
-    public void deleteArbeidslisteForAktoerids(List<AktoerId> aktoerIds) {
-        arbeidslisteRepository.deleteArbeidslisteForAktoerids(aktoerIds);
+    public void deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
+        arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
     }
 
     private Try<AktoerId> hentAktoerId(Fnr fnr) {

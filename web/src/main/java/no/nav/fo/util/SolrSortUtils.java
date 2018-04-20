@@ -49,6 +49,9 @@ public class SolrSortUtils {
         if("arbeidslistefrist".equals(sortField)) {
             return solrQuery.addSort("arbeidsliste_frist", order);
         }
+        if("aaprettighetsperiode".equals(sortField)) {
+            return solrQuery.addSort("max(aapmaxtiduke, aapunntakukerigjen)", order);
+        }
         if(sortFields.contains(sortField)) {
             return solrQuery.addSort(sortField, order);
         }

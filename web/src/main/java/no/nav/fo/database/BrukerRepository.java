@@ -96,13 +96,13 @@ public class BrukerRepository {
             "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +  
             "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +  
             "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +  
-            "VW_OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
-            "VW_OD.OPPFOLGING AS OPPFOLGING " +  
+            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
+            "OD.OPPFOLGING AS OPPFOLGING " +  
         "FROM " +
             "(SELECT * FROM " + 
                 "OPPFOLGINGSBRUKER OB " + 
-                "LEFT JOIN VW_AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
-            "LEFT JOIN VW_OPPFOLGING_DATA VW_OD ON VW_OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
+                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
+            "LEFT JOIN OPPFOLGING_DATA OD ON OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
             "WHERE " +
             "PERSON_ID IN (:personids) ";
 
@@ -140,10 +140,9 @@ public class BrukerRepository {
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
-        String tableName = "VW_OPPFOLGING_DATA";
         return Try.of(
                 () -> {
-                    return select(ds, tableName, this::mapToVeilederId)
+                    return select(ds, "OPPFOLGING_DATA", this::mapToVeilederId)
                             .column("VEILEDERIDENT")
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                             .execute();
@@ -198,17 +197,6 @@ public class BrukerRepository {
                         .execute()
         ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
     }
-
-    public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
-        io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
-                .forEach(aktoerIdsBatch -> {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("personids", aktoerIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
-                    String sql = deleteBrukerdataSql();
-                    timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.update(sql, params));
-                });
-    }
-
 
     /**
      * MAPPING-FUNKSJONER
@@ -297,9 +285,7 @@ public class BrukerRepository {
                 .stream()
                 .map(data -> new Brukerdata()
                         .setAktoerid((String) data.get("AKTOERID"))
-                        .setVeileder((String) data.get("VEILEDERIDENT"))
                         .setPersonid((String) data.get("PERSONID"))
-                        .setTildeltTidspunkt((Timestamp) data.get("TILDELT_TIDSPUNKT"))
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
                         .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
@@ -311,11 +297,9 @@ public class BrukerRepository {
                         .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
                         .setAapUnntakDagerIgjen(intValue(data.get("AAPUNNTAKDAGERIGJEN")))
                         .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasettMappingOrNull((String) data.get("AAPUNNTAKUKERIGJENFASETT")))
-                        .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
                         .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET"))
-                        .setNyForVeileder(parseJaNei(data.get("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                         .setAktivitetStart((Timestamp) data.get("AKTIVITET_START"))
                         .setNesteAktivitetStart((Timestamp) data.get("NESTE_AKTIVITET_START"))
                         .setForrigeAktivitetStart((Timestamp) data.get("FORRIGE_AKTIVITET_START")))
@@ -500,11 +484,6 @@ public class BrukerRepository {
     private String retrieveBrukerdataSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
-
-    private String deleteBrukerdataSql() {
-        return "DELETE FROM BRUKER_DATA where PERSONID in (:personids)";
-    }
-
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         return oppfolgingsFlaggSatt(bruker) || erOppfolgingsBrukerIarena(bruker);

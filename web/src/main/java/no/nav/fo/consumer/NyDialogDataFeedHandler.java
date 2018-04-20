@@ -1,7 +1,5 @@
 package no.nav.fo.consumer;
 
-
-
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
@@ -22,6 +20,7 @@ import static no.nav.fo.util.MetricsUtils.timed;
 @Slf4j
 public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
+    static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
     private final SolrService solrService;
     private final DialogFeedRepository dialogFeedRepository;
@@ -40,7 +39,7 @@ public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> 
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
 
         try {
-            timed("feed.dialog.objekt.ny",
+            timed("feed.dialog.objekt",
                     () -> {
                         data.forEach(info -> {
                             dialogFeedRepository.oppdaterDialogInfoForBruker(info);
@@ -49,7 +48,7 @@ public class NyDialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> 
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size()))
             );
-            brukerRepository.updateMetadata("dialogaktor_sist_oppdatert", Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+            brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
         } catch(Exception e) {
             log.error("Feil ved behandling av dialogdata fra feed for liste med brukere.", e);
         }

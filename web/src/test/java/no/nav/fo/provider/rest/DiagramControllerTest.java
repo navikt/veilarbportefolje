@@ -2,7 +2,7 @@ package no.nav.fo.provider.rest;
 
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.domene.*;
-import no.nav.fo.service.BrukertilgangService;
+import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.StepperUtils;
 import org.junit.Before;
@@ -65,7 +65,7 @@ public class DiagramControllerTest {
     private SolrService solr;
 
     @Mock
-    private BrukertilgangService brukertilgangService;
+    private PepClient pepClient;
 
     private DiagramController controller;
 
@@ -78,14 +78,14 @@ public class DiagramControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        controller = new DiagramController(brukertilgangService, solr);
-        when(brukertilgangService.harBrukerTilgang(any(), any())).thenReturn(true);
+        controller = new DiagramController(pepClient, solr);
+        when(pepClient.tilgangTilEnhet(any(), any())).thenReturn(true);
         when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(BRUKERE.size(),BRUKERE));
     }
 
     @Test
     public void skalSjekkeTilgang() throws Exception {
-        when(brukertilgangService.harBrukerTilgang(any(),any())).thenReturn(false);
+        when(pepClient.tilgangTilEnhet(any(),any())).thenReturn(false);
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
         assertThat(response.getStatus()).isEqualTo(FORBIDDEN.getStatusCode());
     }

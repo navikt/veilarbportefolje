@@ -6,7 +6,6 @@ import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.AktoerServiceImpl;
-import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClientImpl;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.VeilederService;
@@ -38,11 +37,6 @@ public class ApplicationConfigTest {
     @Bean
     public AktorService aktorService() {
         return mock(AktorService.class);
-    }
-
-    @Bean
-    public BrukertilgangService brukertilgangService() {
-        return new BrukertilgangService();
     }
 
     @Bean

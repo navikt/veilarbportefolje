@@ -1,7 +1,6 @@
 package no.nav.fo.database;
 
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
-import no.nav.fo.domene.PersonId;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 
@@ -13,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 
-import static no.nav.fo.domene.Brukerdata.safeToJaNei;
+import static java.lang.Boolean.TRUE;
 import static no.nav.fo.util.DbUtils.parseJaNei;
 
 import java.sql.ResultSet;
@@ -30,18 +29,6 @@ public class OppfolgingFeedRepository {
         this.db = db;
     }
 
-    public void insertVeilederOgOppfolginsinfo(BrukerOppdatertInformasjon bruker, PersonId personId) {
-        SqlUtils.upsert(db, "BRUKER_DATA")
-                .set("VEILEDERIDENT", bruker.getVeileder())
-                .set("PERSONID", personId.toString())
-                .set("TILDELT_TIDSPUNKT", bruker.getEndretTimestamp())
-                .set("OPPFOLGING", safeToJaNei(bruker.getOppfolging()))
-                .set("NY_FOR_VEILEDER", safeToJaNei(bruker.getNyForVeileder()))
-                .set("AKTOERID", bruker.getAktoerid())
-                .where(WhereClause.equals("PERSONID", personId.toString()))
-                .execute();
-    }
-
     public void oppdaterOppfolgingData(BrukerOppdatertInformasjon info) {
         SqlUtils.upsert(db, "OPPFOLGING_DATA")
             .set("VEILEDERIDENT", info.getVeileder())
@@ -54,9 +41,13 @@ public class OppfolgingFeedRepository {
             .execute();
     }
     
+    static String safeToJaNei(Boolean aBoolean) {
+        return TRUE.equals(aBoolean) ? "J" : "N";
+    }
+
     public Try<BrukerOppdatertInformasjon> retrieveOppfolgingData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
-                "SELECT * FROM VW_OPPFOLGING_DATA WHERE AKTOERID = ?", 
+                "SELECT * FROM OPPFOLGING_DATA WHERE AKTOERID = ?", 
                 new Object[] {aktoerId}, 
                 this::mapToBrukerOppdatertInformasjon)
         ).onFailure(e -> log.info("Fant ikke oppfølgingsdata for bruker med aktoerId {}", aktoerId));

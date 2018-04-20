@@ -1,22 +1,15 @@
 package no.nav.fo.feed;
 
-import no.nav.fo.database.BrukerRepository;
 
 import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.Brukerdata;
-import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import javax.sql.DataSource;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collections;
 
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.hamcrest.Matchers.*;
@@ -25,82 +18,53 @@ import static org.junit.Assert.assertThat;
 
 public class DialogFeedRepositoryTest {
 
-    private DataSource ds;
-    private JdbcTemplate db;
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    private BrukerRepository brukerRepository;
     private DialogFeedRepository dialogFeedRepository;
 
     @BeforeEach
     public void setup() {
-        ds = setupInMemoryDatabase();
-        db = new JdbcTemplate(ds);
-        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
-        brukerRepository = new BrukerRepository(db,ds,namedParameterJdbcTemplate);
-        dialogFeedRepository = new DialogFeedRepository(db);
+        dialogFeedRepository = new DialogFeedRepository(new JdbcTemplate(setupInMemoryDatabase()));
     }
 
+    private static final AktoerId AKTOER_ID = AktoerId.of("1111");
+
     @Test
-    public void skalInserteDialogdata() {
-        PersonId personId = PersonId.of("0000");
-        AktoerId aktoerId = AktoerId.of("1111");
-        Timestamp date = new Timestamp(Instant.now().toEpochMilli());
+    public void oppdaterDialogInfoForBruker_skal_sette_inn_i_tabell_og_vare_tilgjengelig_i_dialogview() {
+        long now = Instant.now().toEpochMilli();
+        Timestamp endringsDato = new Timestamp(now);
+        Timestamp venteDato = new Timestamp(now - 1000);
 
-        DialogDataFraFeed dialogDataFraFeed = new DialogDataFraFeed()
-                .setAktorId(aktoerId.toString())
-                .setTidspunktEldsteUbehandlede(date)
-                .setTidspunktEldsteVentende(date);
-
-        dialogFeedRepository.upsertDialogdata(dialogDataFraFeed, personId);
-        Brukerdata brukerdata = brukerRepository.retrieveBrukerdata(Collections.singletonList(personId.toString())).get(0);
-        assertThat(brukerdata.getVenterPaSvarFraBruker(), is(date.toLocalDateTime()));
+        dialogFeedRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, endringsDato));
+        DialogDataFraFeed dialogFraDatabase = dialogFeedRepository.retrieveDialogData(AKTOER_ID.toString()).get();
+        verifiserData(venteDato, dialogFraDatabase, endringsDato);
     }
 
-    @Test
-    public void skalUpserteDialogdata() {
-        PersonId personId = PersonId.of("0000");
-        AktoerId aktoerId = AktoerId.of("1111");
-        Timestamp eldsteVentende1 = new Timestamp(0);
-        Timestamp eldsteVentende2 = new Timestamp(Instant.now().toEpochMilli());
-
-        Brukerdata brukerdata = new Brukerdata()
-                .setPersonid(personId.toString())
-                .setVeileder("Z000000")
-                .setAktoerid(aktoerId.toString())
-                .setVenterPaSvarFraNav(eldsteVentende1.toLocalDateTime())
-                .setNyForVeileder(false)
-                .setOppfolging(true);
-
-        brukerRepository.insertOrUpdateBrukerdata(Collections.singletonList(brukerdata), Collections.emptyList());
-
-        DialogDataFraFeed dialogDataFraFeed = new DialogDataFraFeed()
-                .setAktorId(aktoerId.toString())
-                .setTidspunktEldsteUbehandlede(eldsteVentende2);
-
-        dialogFeedRepository.upsertDialogdata(dialogDataFraFeed, personId);
-
-        Brukerdata brukerdataUpdated = brukerRepository.retrieveBrukerdata(Collections.singletonList(personId.toString())).get(0);
-        assertThat(brukerdataUpdated, is(brukerdata.setVenterPaSvarFraNav(eldsteVentende2.toLocalDateTime())));
+    private DialogDataFraFeed lagDialogData(Timestamp venteDato, Timestamp endringsDato) {
+        return new DialogDataFraFeed()
+                .setAktorId(AKTOER_ID.toString())
+                .setTidspunktEldsteUbehandlede(venteDato)
+                .setSisteEndring(endringsDato)
+                .setTidspunktEldsteVentende(venteDato);
     }
     
-    @Test
-    public void oppdaterDialogInfoForBruker_skal_sette_inn_i_egen_tabell_og_vare_tilgjengelig_i_dialogview() {
-        AktoerId aktoerId = AktoerId.of("1111");
-        Timestamp date = new Timestamp(Instant.now().toEpochMilli());
-
-        DialogDataFraFeed dialogDataFraFeed = new DialogDataFraFeed()
-                .setAktorId(aktoerId.toString())
-                .setTidspunktEldsteUbehandlede(date)
-                .setSisteEndring(date)
-                .setTidspunktEldsteVentende(date);
-
-        dialogFeedRepository.oppdaterDialogInfoForBruker(dialogDataFraFeed);
-        DialogDataFraFeed dialogFraDatabase =  dialogFeedRepository.retrieveDialogData(aktoerId.toString()).get();
+    private void verifiserData(Timestamp date, DialogDataFraFeed dialogFraDatabase, Timestamp endringsDato) {
         assertThat(dialogFraDatabase.getTidspunktEldsteVentende(), is(date));
         assertThat(dialogFraDatabase.getTidspunktEldsteUbehandlede(), is(date));
-        assertThat(dialogFraDatabase.getSisteEndring(), is(date));
-        assertThat(dialogFraDatabase.getAktorId(), is(aktoerId.toString()));
+        assertThat(dialogFraDatabase.getSisteEndring(), is(endringsDato));
+        assertThat(dialogFraDatabase.getAktorId(), is(AKTOER_ID.toString()));
     }
 
+    @Test
+    public void oppdaterDialogInfoForBruker_skal_oppdatere_tabell_og_vare_tilgjengelig_i_dialogview() {
+        Timestamp venteDato = new Timestamp(Instant.now().toEpochMilli()-1000);
+
+        dialogFeedRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, venteDato));
+        DialogDataFraFeed dialogFraDatabase = dialogFeedRepository.retrieveDialogData(AKTOER_ID.toString()).get();
+        verifiserData(venteDato, dialogFraDatabase, venteDato);
+        
+        Timestamp nyEndringsDato = new Timestamp(Instant.now().toEpochMilli());
+        dialogFeedRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, nyEndringsDato));
+        dialogFraDatabase = dialogFeedRepository.retrieveDialogData(AKTOER_ID.toString()).get();
+        verifiserData(venteDato, dialogFraDatabase, nyEndringsDato);
+    }
 }

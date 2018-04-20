@@ -11,6 +11,8 @@ import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
 
+import static no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision.Permit;
+
 @Slf4j
 public class PepClientImpl implements PepClient {
 
@@ -28,7 +30,7 @@ public class PepClientImpl implements PepClient {
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
-        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+        return Permit.equals(callAllowed.getBiasedDecision());
     }
 
     public boolean isSubjectAuthorizedToSeeKode6(String token) {
@@ -38,7 +40,7 @@ public class PepClientImpl implements PepClient {
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
-        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+        return Permit.equals(callAllowed.getBiasedDecision());
     }
 
     public boolean isSubjectAuthorizedToSeeEgenAnsatt(String token) {
@@ -48,7 +50,7 @@ public class PepClientImpl implements PepClient {
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
-        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+        return Permit.equals(callAllowed.getBiasedDecision());
     }
 
     public boolean isSubjectMemberOfModiaOppfolging(String ident, String token) {
@@ -65,7 +67,7 @@ public class PepClientImpl implements PepClient {
         if (callAllowed.getBiasedDecision().equals(Decision.Deny)) {
             log.info("User " + ident + " is not in group MODIA-OPPFOLGING");
         }
-        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+        return Permit.equals(callAllowed.getBiasedDecision());
     }
 
     public boolean tilgangTilBruker(String fnr) {
@@ -75,7 +77,17 @@ public class PepClientImpl implements PepClient {
         } catch (PepException e) {
             throw new InternalServerErrorException("something went wrong in PEP", e);
         }
-        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+        return Permit.equals(callAllowed.getBiasedDecision());
+    }
+
+    public boolean tilgangTilEnhet(String ident, String enhet) {
+        BiasedDecisionResponse callAllowed;
+        try {
+            callAllowed = pep.harTilgangTilEnhet(enhet, "srvveilarbportefolje", "veilarb");
+        } catch (PepException e) {
+            throw new InternalServerErrorException("Something went wrong in PEP", e);
+        }
+        return Permit.equals(callAllowed.getBiasedDecision());
     }
 
     @Override

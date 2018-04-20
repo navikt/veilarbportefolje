@@ -15,7 +15,6 @@ import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
-import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import org.springframework.stereotype.Component;
 
@@ -47,9 +46,6 @@ public class ArbeidsListeRessurs {
 
     @Inject
     private ArbeidslisteService arbeidslisteService;
-
-    @Inject
-    private BrukertilgangService brukertilgangService;
 
     @Inject
     private BrukerRepository brukerRepository;
@@ -103,7 +99,7 @@ public class ArbeidsListeRessurs {
                 .getOrElse(false);
 
         boolean harVeilederTilgang = arbeidslisteService.hentEnhet(newFnr)
-                .map(enhet -> brukertilgangService.harBrukerTilgang(innloggetVeileder, enhet))
+                .map(enhet -> pepClient.tilgangTilEnhet(innloggetVeileder, enhet))
                 .getOrElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
@@ -225,7 +221,7 @@ public class ArbeidsListeRessurs {
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
         String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new RestBadGateWayException("Kunne ikke hente enhet for denne brukeren"));
-        TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+        TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
     }
 
     private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {

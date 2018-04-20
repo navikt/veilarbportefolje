@@ -43,8 +43,6 @@ public interface SolrService {
 
     String byggQueryString(String enhetId, Optional<String> veilederIdent);
 
-    void populerIndeksForPersonids(List<PersonId> personIds);
-
     void indekserAsynkront(AktoerId aktoerId);
 
 }
