@@ -13,13 +13,19 @@ import static no.nav.fo.util.AktivitetUtils.addPrefixForAktivitetUtlopsdato;
 
 public class SolrSortUtils {
 
-    static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, String sortOrder, String sortField, Filtervalg filtervalg) {
+
+    static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, String veilederMedTilgangQuery, String sortOrder, String sortField, Filtervalg filtervalg) {
 
         if(minoversikt){
             solrQuery.addSort("ny_for_veileder", SolrQuery.ORDER.desc);
         } else {
-            solrQuery.addSort("ny_for_enhet", SolrQuery.ORDER.desc);
+            if(veilederMedTilgangQuery == null) { //FO-610 rydde
+                solrQuery.addSort("ny_for_enhet", SolrQuery.ORDER.desc);
+            } else {
+                solrQuery.addSort(veilederMedTilgangQuery, SolrQuery.ORDER.asc);
+            }
         }
+
         SolrQuery.ORDER order = "ascending".equals(sortOrder) ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc;
         if("ikke_satt".equals(sortField)) {
             return solrQuery.addSort("person_id", SolrQuery.ORDER.asc);

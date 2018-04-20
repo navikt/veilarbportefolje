@@ -12,7 +12,9 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.getProperty;
+import static java.lang.System.setProperty;
 import static no.nav.fo.config.LocalJndiContextConfig.*;
+import static no.nav.fo.service.VeilederService.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
 import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
@@ -25,15 +27,21 @@ public class StartJettyVeilArbPortefolje {
 
     public static void main(String[] args) throws Exception {
 
+        setProperty(VEILARBVEILEDER_URL_PROPERTY, "http://localhost:8080/veilarbveileder/api");
+        setProperty("feature_endpoint.url", "");
+
+
         loadTestConfigFromProperties();
 
         setupTestContext();
 
-        DriverManagerDataSource dataSource  = (parseBoolean(getProperty("lokal.database"))) ? 
-                setupInMemoryDatabase() : 
+        DriverManagerDataSource dataSource  = (parseBoolean(getProperty("lokal.database"))) ?
+                setupInMemoryDatabase() :
                     setupDataSourceWithCredentials(createDbCredentials());
-        
+
         setServiceUserCredentials(FasitUtils.getServiceUser(SERVICE_USER_NAME, APPLICATION_NAME));
+
+
 
         // TODO slett når common-jetty registerer datasource fornuftig
         new Resource(DatabaseConfig.JNDI_NAME, dataSource);
@@ -70,5 +78,5 @@ public class StartJettyVeilArbPortefolje {
                 .setUsername(getProperty("database.brukernavn", "sa"))
                 .setPassword(getProperty("database.passord", ""));
     }
-    
+
 }
