@@ -18,10 +18,11 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @Slf4j
 public class VeilederService {
     public static final String VEILARBVEILEDER_URL_PROPERTY = "veilarbveileder.api.url";
-    private static final Client restClient = RestUtils.createClient();
+    private final Client restClient;
     private final String host;
 
-    public VeilederService() {
+    public VeilederService(Client client) {
+        this.restClient = client;
         host = getRequiredProperty(VEILARBVEILEDER_URL_PROPERTY).toLowerCase();
     }
 
