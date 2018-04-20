@@ -1,9 +1,14 @@
 package no.nav.fo.config;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.service.*;
+import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.AktoerServiceImpl;
+import no.nav.fo.service.PepClientImpl;
+import no.nav.fo.service.SolrService;
+import no.nav.fo.service.VeilederService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -12,8 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
 import javax.sql.DataSource;
 
@@ -37,11 +40,6 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public BrukertilgangService brukertilgangService() {
-        return new BrukertilgangService();
-    }
-
-    @Bean
     public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
         return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
     }
@@ -62,6 +60,11 @@ public class ApplicationConfigTest {
     }
 
     @Bean
+    public VeilederService veilederService() {
+        return mock(VeilederService.class);
+    }
+
+    @Bean
     public Pep pep() {
         return mock(Pep.class);
     }
@@ -70,7 +73,7 @@ public class ApplicationConfigTest {
     public PepClientImpl pepClient() {
         return mock(PepClientImpl.class);
     }
-    
+
     @Bean
     public LockingTaskExecutor lockingTaskExecutor() {
         return mock(LockingTaskExecutor.class);

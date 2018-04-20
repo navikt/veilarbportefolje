@@ -3,7 +3,6 @@ package no.nav.fo.provider.rest;
 import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
-import no.nav.fo.service.BrukertilgangService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.TiltakService;
@@ -29,18 +28,15 @@ import static no.nav.fo.provider.rest.RestUtils.createResponse;
 @Produces(APPLICATION_JSON)
 public class EnhetController {
 
-    private BrukertilgangService brukertilgangService;
     private SolrService solrService;
     private PepClient pepClient;
     private TiltakService tiltakService;
 
     @Inject
-    public EnhetController(BrukertilgangService brukertilgangService,
-                           SolrService solrService,
-                           PepClient pepClient,
-                           TiltakService tiltakService)
-    {
-        this.brukertilgangService = brukertilgangService;
+    public EnhetController(
+            SolrService solrService,
+            PepClient pepClient,
+            TiltakService tiltakService) {
         this.solrService = solrService;
         this.tiltakService = tiltakService;
         this.pepClient = pepClient;
@@ -62,7 +58,7 @@ public class EnhetController {
             ValideringsRegler.sjekkSortering(sortDirection, sortField);
             ValideringsRegler.sjekkFiltervalg(filtervalg);
             TilgangsRegler.tilgangTilOppfolging(pepClient);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
@@ -86,7 +82,7 @@ public class EnhetController {
     public Response hentPortefoljestorrelser(@PathParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             return solrService.hentPortefoljestorrelser(enhet);
         });
@@ -97,7 +93,7 @@ public class EnhetController {
     public Response hentStatusTall(@PathParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             return solrService.hentStatusTallForPortefolje(enhet);
         });
@@ -108,7 +104,7 @@ public class EnhetController {
     public Response hentTiltak(@PathParam("enhet") String enhet) {
         return createResponse(() -> {
             ValideringsRegler.sjekkEnhet(enhet);
-            TilgangsRegler.tilgangTilEnhet(brukertilgangService, enhet);
+            TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
             return tiltakService.hentEnhettiltak(enhet)
                     .getOrElse(new EnhetTiltak());

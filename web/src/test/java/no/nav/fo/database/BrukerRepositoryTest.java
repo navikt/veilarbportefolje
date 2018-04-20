@@ -42,7 +42,7 @@ public class BrukerRepositoryTest {
     private JdbcTemplate jdbcTemplate;
 
     @Inject
-    BrukerRepository brukerRepository;
+    private BrukerRepository brukerRepository;
 
     public void insertoppfolgingsbrukerTestData() {
         try {
@@ -59,19 +59,18 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
         insertoppfolgingsbrukerTestData();
-        brukerRepository.nyStrukturForIndeksering = false;
     }
 
     @Test
     public void skalHenteUtAlleBrukereFraDatabasen() {
-        List<Map<String, Object>> brukere = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL());
+        List<Map<String, Object>> brukere = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO);
 
         assertThat(brukere.size()).isEqualTo(72);
     }
 
     @Test
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
-        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveBrukereSQL()).get(0).keySet();
+        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO).get(0).keySet();
         String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
             "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
             "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
@@ -231,8 +230,6 @@ public class BrukerRepositoryTest {
         return new Brukerdata()
             .setAktoerid(aktoerid)
             .setPersonid(personId)
-            .setVeileder(veileder)
-            .setTildeltTidspunkt(tildeltTidspunkt)
             .setUtlopsdato(utlopsdato)
             .setUtlopsFasett(utlopsdatoFasett)
             .setDagputlopUke(dagpUtlopUke)
@@ -243,16 +240,12 @@ public class BrukerRepositoryTest {
             .setAapmaxtidUkeFasett(aapmaxtidUkeFasett)
             .setAapUnntakDagerIgjen(aapUnntakDagerIgjen)
             .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasett)
-            .setYtelse(ytelse)
-            .setOppfolging(oppfolging)
-            .setNyForVeileder(nyForVeileder);
+            .setYtelse(ytelse);
     }
 
     private void assertThatBrukerdataIsEqual(Brukerdata b1, Brukerdata b2) {
         assertThat(b1.getPersonid()).isEqualTo(b2.getPersonid());
         assertThat(b1.getAktoerid()).isEqualTo(b2.getAktoerid());
-        assertThat(b1.getTildeltTidspunkt()).isEqualTo(b2.getTildeltTidspunkt());
-        assertThat(b1.getVeileder()).isEqualTo(b2.getVeileder());
         assertThat(b1.getUtlopsdato()).isEqualTo(b2.getUtlopsdato());
         assertThat(b1.getUtlopsFasett()).isEqualTo(b2.getUtlopsFasett());
         assertThat(b1.getDagputlopUke()).isEqualTo(b2.getDagputlopUke());
@@ -323,15 +316,11 @@ public class BrukerRepositoryTest {
             .setAapmaxtidUke(1)
             .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
             .setAktoerid("aktoerid")
-            .setOppfolging(true)
-            .setTildeltTidspunkt(Timestamp.from(Instant.now()))
             .setUtlopsdato(LocalDateTime.now())
             .setUtlopsFasett(ManedFasettMapping.MND1)
-            .setVeileder("Veileder")
             .setVenterPaSvarFraBruker(LocalDateTime.now())
             .setVenterPaSvarFraNav(LocalDateTime.now())
             .setYtelse(YtelseMapping.AAP_MAXTID)
-            .setNyForVeileder(false)
             .setAktivitetStart(new Timestamp(1))
             .setNesteAktivitetStart(new Timestamp(2))
             .setForrigeAktivitetStart(new Timestamp(3));
@@ -348,8 +337,7 @@ public class BrukerRepositoryTest {
         AktoerId aktoerId = AktoerId.of("101010");
         VeilederId expectedVeilederId = VeilederId.of("X11111");
 
-        insert(jdbcTemplate, "BRUKER_DATA")
-            .value("PERSONID", "123456")
+        insert(jdbcTemplate, "OPPFOLGING_DATA")
             .value("AKTOERID", aktoerId.toString())
             .value("VEILEDERIDENT", expectedVeilederId.toString())
             .execute();
@@ -502,20 +490,5 @@ public class BrukerRepositoryTest {
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds);
         assertThat(dokumenter.size()).isEqualTo(5);
     }
-
-    @Test
-    public void skalSletteBrukereMedPersonid() {
-        PersonId personId1 = PersonId.of("4120339");
-        PersonId personId2 = PersonId.of("4120327");
-        Brukerdata brukerdata1 = new Brukerdata().setPersonid(personId1.toString());
-        Brukerdata brukerdata2 = new Brukerdata().setPersonid(personId2.toString());
-        brukerRepository.insertOrUpdateBrukerdata(asList(brukerdata1, brukerdata2), emptyList());
-
-        List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(asList(personId1.toString(), personId2.toString()));
-        assertThat(brukerdata.size()).isEqualTo(2);
-
-        brukerRepository.deleteBrukerdataForPersonIds(asList(personId1, personId2));
-        List<Brukerdata> brukerdataDeleted = brukerRepository.retrieveBrukerdata(asList(personId1.toString(), personId2.toString()));
-        assertThat(brukerdataDeleted.size()).isEqualTo(0);
-    }
+    
 }

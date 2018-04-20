@@ -10,7 +10,6 @@ import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -39,9 +38,6 @@ import static no.nav.fo.util.sql.SqlUtils.*;
 @Slf4j
 public class BrukerRepository {
 
-    @Value("${ny.struktur.for.indeksering:true}")
-    boolean nyStrukturForIndeksering;
-
     JdbcTemplate db;
     private DataSource ds;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -58,47 +54,7 @@ public class BrukerRepository {
     private static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     private static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
-    private static final String SELECT_PORTEFOLJEINFO_FROM_OPPFBRUKER_AND_BRUKER_DATA = 
-            "SELECT " +
-            "person_id, " +
-            "fodselsnr, " +
-            "fornavn, " +
-            "etternavn, " +
-            "nav_kontor, " +
-            "formidlingsgruppekode, " +
-            "iserv_fra_dato, " +
-            "kvalifiseringsgruppekode, " +
-            "rettighetsgruppekode, " +
-            "hovedmaalkode, " +
-            "sikkerhetstiltak_type_kode, " +
-            "fr_kode, " +
-            "sperret_ansatt, " +
-            "er_doed, " +
-            "doed_fra_dato, " +
-            "tidsstempel, " +
-            "veilederident, " +
-            "ytelse, " +
-            "utlopsdato, " +
-            "ny_for_veileder, " +
-            "utlopsdatofasett, " +
-            "dagputlopuke, dagputlopukefasett, " +
-            "permutlopuke, permutlopukefasett, " +
-            "aapmaxtiduke, aapmaxtidukefasett, " +
-            "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
-            "oppfolging, " +
-            "venterpasvarfrabruker, " +
-            "venterpasvarfranav, " +
-            "nyesteutlopteaktivitet, " +
-            "aktivitet_start, " +
-            "neste_aktivitet_start, " +
-            "forrige_aktivitet_start " +
-            "FROM " +
-            "oppfolgingsbruker " +
-            "LEFT JOIN bruker_data " +
-            "ON " +
-            "bruker_data.personid = oppfolgingsbruker.person_id";
-
-    private static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO = 
+    static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO = 
             "SELECT " +
             "person_id, " +
             "fodselsnr, " +
@@ -135,26 +91,20 @@ public class BrukerRepository {
             "FROM " +
             "vw_portefolje_info";
 
-    private static final String OPPFOLGING_STATUS_FRA_BRUKER_DATA_OG_OPPFOLGINGSBRUKER = 
-            "SELECT " +
-            "person_id, " +
-            "formidlingsgruppekode, " +
-            "kvalifiseringsgruppekode, " +
-            "bruker_data.oppfolging, " +
-            "veilederident " +
-            "FROM " +
-            "oppfolgingsbruker " +
-            "LEFT JOIN bruker_data " +
-            "ON " +
-            "bruker_data.personid = oppfolgingsbruker.person_id " +
+    private static final String OPPFOLGINGSSTAUTS_QUERY = 
+        "SELECT " +
+            "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +  
+            "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +  
+            "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +  
+            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
+            "OD.OPPFOLGING AS OPPFOLGING " +  
+        "FROM " +
+            "(SELECT * FROM " + 
+                "OPPFOLGINGSBRUKER OB " + 
+                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
+            "LEFT JOIN OPPFOLGING_DATA OD ON OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
             "WHERE " +
-            "person_id in (:personids) ";
-
-    private static final String OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO = 
-            SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-            " " +
-            "WHERE " +
-            "person_id in (:personids) ";
+            "PERSON_ID IN (:personids) ";
 
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
@@ -173,8 +123,8 @@ public class BrukerRepository {
                     .forEach(personIdsBatch -> {
                         Map<String, Object> params = new HashMap<>(personIdsBatch.size());
                         params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
-                        String sql = retrieveOppfolgingstatusListSql();
-                        timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(sql, params))
+                        timed(dbTimerNavn(OPPFOLGINGSSTAUTS_QUERY), 
+                                () -> namedParameterJdbcTemplate.queryForList(OPPFOLGINGSSTAUTS_QUERY, params))
                                 .forEach(data -> personIdOppfolgingstatusMap.put(
                                         PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
                                         new Oppfolgingstatus()
@@ -190,10 +140,9 @@ public class BrukerRepository {
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
-        String tableName = nyStrukturForIndeksering ? "VW_OPPFOLGING_DATA" : "BRUKER_DATA";
         return Try.of(
                 () -> {
-                    return select(ds, tableName, this::mapToVeilederId)
+                    return select(ds, "OPPFOLGING_DATA", this::mapToVeilederId)
                             .column("VEILEDERIDENT")
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                             .execute();
@@ -249,17 +198,6 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
     }
 
-    public void deleteBrukerdataForPersonIds(List<PersonId> personIds) {
-        io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
-                .forEach(aktoerIdsBatch -> {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("personids", aktoerIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
-                    String sql = deleteBrukerdataSql();
-                    timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.update(sql, params));
-                });
-    }
-
-
     /**
      * MAPPING-FUNKSJONER
      */
@@ -294,7 +232,7 @@ public class BrukerRepository {
 
     void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         db.setFetchSize(fetchSize);
-        String sql = retrieveBrukereSQL();
+        String sql = SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO;
         timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
             SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
             if (filter.test(brukerDokument)) {
@@ -347,9 +285,7 @@ public class BrukerRepository {
                 .stream()
                 .map(data -> new Brukerdata()
                         .setAktoerid((String) data.get("AKTOERID"))
-                        .setVeileder((String) data.get("VEILEDERIDENT"))
                         .setPersonid((String) data.get("PERSONID"))
-                        .setTildeltTidspunkt((Timestamp) data.get("TILDELT_TIDSPUNKT"))
                         .setYtelse(ytelsemappingOrNull((String) data.get("YTELSE")))
                         .setUtlopsdato(toLocalDateTime((Timestamp) data.get("UTLOPSDATO")))
                         .setUtlopsFasett(manedmappingOrNull((String) data.get("UTLOPSDATOFASETT")))
@@ -361,11 +297,9 @@ public class BrukerRepository {
                         .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
                         .setAapUnntakDagerIgjen(intValue(data.get("AAPUNNTAKDAGERIGJEN")))
                         .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasettMappingOrNull((String) data.get("AAPUNNTAKUKERIGJENFASETT")))
-                        .setOppfolging(parseJaNei((String) data.get("OPPFOLGING"), "OPPFOLGING"))
                         .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
                         .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
                         .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET"))
-                        .setNyForVeileder(parseJaNei(data.get("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                         .setAktivitetStart((Timestamp) data.get("AKTIVITET_START"))
                         .setNesteAktivitetStart((Timestamp) data.get("NESTE_AKTIVITET_START"))
                         .setForrigeAktivitetStart((Timestamp) data.get("FORRIGE_AKTIVITET_START")))
@@ -507,35 +441,22 @@ public class BrukerRepository {
                 .execute();
     }
 
-    private String retrieveOppfolgingstatusListSql() {
-        return nyStrukturForIndeksering 
-                ? OPPFOLGINGSSTAUTS_FRA_VW_PORTEFOLJE_INFO
-                : OPPFOLGING_STATUS_FRA_BRUKER_DATA_OG_OPPFOLGINGSBRUKER;
-    }
-
-    String retrieveBrukereSQL() {
-        return nyStrukturForIndeksering 
-                ? SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO
-                : SELECT_PORTEFOLJEINFO_FROM_OPPFBRUKER_AND_BRUKER_DATA;
-    }
-
-
     private String retrieveBrukerMedBrukerdataSQL() {
-        return retrieveBrukereSQL() +
+        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
                 " " + 
                 "WHERE " +
                 "person_id = ?";
     }
 
     private String retrieveBrukereMedBrukerdataSQL() {
-        return retrieveBrukereSQL() +
+        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
                 " " + 
                 "WHERE " +
                 "person_id in (:personids)";
     }
 
     String retrieveOppdaterteBrukereSQL() {
-        return retrieveBrukereSQL() +
+        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
                 " " + 
                 "WHERE " +
                 "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
@@ -563,11 +484,6 @@ public class BrukerRepository {
     private String retrieveBrukerdataSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
     }
-
-    private String deleteBrukerdataSql() {
-        return "DELETE FROM BRUKER_DATA where PERSONID in (:personids)";
-    }
-
 
     public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
         return oppfolgingsFlaggSatt(bruker) || erOppfolgingsBrukerIarena(bruker);

@@ -1,10 +1,10 @@
 package no.nav.fo.config.feed;
 
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.consumer.NyOppfolgingFeedHandler;
 import no.nav.fo.consumer.OppfolgingFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
@@ -12,7 +12,6 @@ import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
-import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.jdbc.Transactor;
@@ -34,6 +33,7 @@ import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 
 @Configuration
+@Slf4j
 public class OppfolgingerfeedConfig {
 
     @Value("${veilarboppfolging.api.url}")
@@ -42,9 +42,6 @@ public class OppfolgingerfeedConfig {
     @Value("${oppfolging.feed.pagesize:500}")
     private int pageSize;
     
-    @Value("${ny.oppfolgingfeedhandler:false}")
-    private boolean nyHandler;
-
     @Value("${oppfolging.feed.pollingintervalseconds: 10}")
     private int pollingIntervalInSeconds;
 
@@ -72,7 +69,7 @@ public class OppfolgingerfeedConfig {
         FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds), webhookPollingConfig)
                 .callback(callback)
                 .pageSize(pageSize)
-                .lockProvider(lockProvider(dataSource), 5)
+                .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()))
                 .authorizatioModule(new OidcFeedAuthorizationModule());
         return new FeedConsumer<>(config);
@@ -81,17 +78,16 @@ public class OppfolgingerfeedConfig {
     @Bean
     public FeedCallback<BrukerOppdatertInformasjon> oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                                        BrukerRepository brukerRepository,
-                                                       AktoerService aktoerService,
                                                        SolrService solrService,
                                                        OppfolgingFeedRepository oppfolgingFeedRepository,
                                                        Transactor transactor) {
-        return nyHandler 
-                ? new NyOppfolgingFeedHandler(arbeidslisteService, brukerRepository, solrService, oppfolgingFeedRepository, transactor)
-                : new OppfolgingFeedHandler(arbeidslisteService, brukerRepository, aktoerService, solrService, oppfolgingFeedRepository);
+        return new OppfolgingFeedHandler(arbeidslisteService, brukerRepository, solrService, oppfolgingFeedRepository, transactor);
     }
 
     private static String sisteEndring(JdbcTemplate db) {
         Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT oppfolging_sist_oppdatert FROM METADATA").get(0).get("oppfolging_sist_oppdatert");
-        return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
+        String sisteEndringStr = ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
+        log.info("OppfolgingerfeedDebug sisteEndring: {}", sisteEndringStr);
+        return sisteEndringStr;
     }
 }

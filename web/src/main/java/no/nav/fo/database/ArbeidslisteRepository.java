@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ import static no.nav.fo.util.sql.SqlUtils.*;
 
 @Slf4j
 public class ArbeidslisteRepository {
+
+    private static final String DELETE_FROM_ARBEIDSLISTE_SQL = "delete from arbeidsliste where aktoerid = :aktoerid";
 
     @Inject
     private JdbcTemplate db;
@@ -130,14 +133,10 @@ public class ArbeidslisteRepository {
                 .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
     }
 
-    public void deleteArbeidslisteForAktoerids(List<AktoerId> aktoerIds) {
-        io.vavr.collection.List.ofAll(aktoerIds).sliding(1000,1000)
-                .forEach(aktoerIdsBatch -> {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("aktoerids", aktoerIdsBatch.toJavaStream().map(AktoerId::toString).collect(toList()));
-                    String sql = deleteArbeidslisteSql();
-                    timed(dbTimerNavn(sql),()-> namedParameterJdbcTemplate.update(sql, params));
-                });
+    public void deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
+        timed(dbTimerNavn(
+                DELETE_FROM_ARBEIDSLISTE_SQL),
+                ()-> namedParameterJdbcTemplate.update(DELETE_FROM_ARBEIDSLISTE_SQL, Collections.singletonMap("aktoerid", aktoerId.toString())));
     }
 
     @SneakyThrows
@@ -155,9 +154,5 @@ public class ArbeidslisteRepository {
                 toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
                 (String) rs.get("KOMMENTAR"),
                 toZonedDateTime((Timestamp) rs.get("FRIST")));
-    }
-
-    private String deleteArbeidslisteSql() {
-        return "delete from arbeidsliste where aktoerid in (:aktoerids)";
     }
 }
