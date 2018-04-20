@@ -68,7 +68,7 @@ public class SolrUtils {
 
         String medTilgangSubquery = null;
         if(veiledereMedTilgang != null) { //FO-610 rydde
-            medTilgangSubquery = harVeiledSubQuery(veiledereMedTilgang);
+            medTilgangSubquery = harVeilederSubQuery(veiledereMedTilgang);
             solrQuery.addField("har_veileder_fra_enhet:" + medTilgangSubquery);
         }
         solrQuery.addFilterQuery(queryString);
@@ -160,10 +160,10 @@ public class SolrUtils {
     }
 
     public static String harIkkeVeilederFilter(List<VeilederId> identer) {
-        return "-veileder_id:(" + spaceSeperadet(identer) + ")";
+        return "-veileder_id:(" + spaceSeperated(identer) + ")";
     }
 
-    private static String spaceSeperadet(List<VeilederId> veilederListe) {
+    private static String spaceSeperated(List<VeilederId> veilederListe) {
         return veilederListe
                 .stream()
                 .map(VeilederId::getVeilederId)
@@ -240,7 +240,7 @@ public class SolrUtils {
         return "tiltak:" + tiltak;
     }
 
-    static String harVeiledSubQuery(List<VeilederId> identer) {
-        return "exists(query({!v='veileder_id:(" + spaceSeperadet(identer) + " )'}))";
+    static String harVeilederSubQuery(List<VeilederId> identer) {
+        return "exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))";
     }
 }
