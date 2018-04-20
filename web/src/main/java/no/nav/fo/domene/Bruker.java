@@ -32,6 +32,7 @@ public class Bruker {
     boolean nyForVeileder;
     boolean nyForEnhet;
     boolean erDoed;
+    String manuellbruker;
     int fodselsdagIMnd;
     LocalDateTime fodselsdato;
     String kjonn;
@@ -91,6 +92,7 @@ public class Bruker {
                 .setNesteAktivitetStart(toLocalDateTime((Date) document.get("neste_aktivitet_start")))
                 .setForrigeAktivitetStart(toLocalDateTime((Date) document.get("forrige_aktivitet_start")))
                 .setBrukertiltak(getBrukertiltak(document))
+                .setManuellbruker((String) document.get("manuell_bruker"))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp((Date) document.get("aktivitet_tiltak_utlopsdato")))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp((Date) document.get("aktivitet_behandling_utlopsdato")))
                 .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp((Date) document.get("aktivitet_sokeavtale_utlopsdato")))
@@ -100,8 +102,7 @@ public class Bruker {
                 .addAktivitetUtlopsdato("egen", dateToTimestamp((Date) document.get("aktivitet_egen_utlopsdato")))
                 .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp((Date) document.get("aktivitet_gruppeaktivitet_utlopsdato")))
                 .addAktivitetUtlopsdato("mote", dateToTimestamp((Date) document.get("aktivitet_mote_utlopsdato")))
-                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp((Date) document.get("aktivitet_utdanningaktivitet_utlopsdato")))
-                ;
+                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp((Date) document.get("aktivitet_utdanningaktivitet_utlopsdato")));
     }
 
     private static boolean isNyForEnhet(SolrDocument document) {

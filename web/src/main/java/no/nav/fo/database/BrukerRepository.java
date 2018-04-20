@@ -54,7 +54,7 @@ public class BrukerRepository {
     private static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
     private static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
-    static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO = 
+    static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO =
             "SELECT " +
             "person_id, " +
             "fodselsnr, " +
@@ -87,7 +87,8 @@ public class BrukerRepository {
             "nyesteutlopteaktivitet, " +
             "aktivitet_start, " +
             "neste_aktivitet_start, " +
-            "forrige_aktivitet_start " +
+            "forrige_aktivitet_start, " +
+            "manuell_bruker "+
             "FROM " +
             "vw_portefolje_info";
 

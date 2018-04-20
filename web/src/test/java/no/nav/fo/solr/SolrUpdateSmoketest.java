@@ -203,6 +203,7 @@ public class SolrUpdateSmoketest {
         document.setField("kjonn", "M");
         document.setField("enhet_id", "testenhet");
         document.setField("oppfolging", true);
+        document.setField("manuell_bruker", "MANUELL");
         return document;
     }
 

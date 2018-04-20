@@ -127,6 +127,7 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.manuellbrukere, SolrUtils::manuellBrukerFilter));
 
         if (filtervalg.harAktivitetFilter()) {
             filtervalg.aktiviteter.forEach((key, value) -> {
@@ -242,5 +243,9 @@ public class SolrUtils {
 
     static String harVeilederSubQuery(List<VeilederId> identer) {
         return "exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))";
+    }
+
+    static String manuellBrukerFilter(ManuellBrukere manuell_bruker) {
+        return "manuell_bruker:" + manuell_bruker.toString();
     }
 }
