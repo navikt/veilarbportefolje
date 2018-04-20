@@ -39,6 +39,7 @@ import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
         AktorConfig.class,
         FeedConfig.class,
         VeilederServiceConfig.class,
+        ClientConfig.class,
         RemoteFeatureConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication {

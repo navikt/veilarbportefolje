@@ -39,6 +39,7 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         RestConfig.class,
         AktorConfig.class,
         VeilederServiceConfig.class,
+        ClientConfig.class,
         RemoteFeatureConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
