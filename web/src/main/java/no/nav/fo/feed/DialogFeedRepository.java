@@ -40,7 +40,7 @@ public class DialogFeedRepository {
 
     public Try<DialogDataFraFeed> retrieveDialogData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
-                "SELECT * FROM VW_DIALOG WHERE AKTOERID = ?", 
+                "SELECT * FROM DIALOG WHERE AKTOERID = ?", 
                 new Object[] {aktoerId}, 
                 this::mapToDialogData)
         ).onFailure(e -> {});
