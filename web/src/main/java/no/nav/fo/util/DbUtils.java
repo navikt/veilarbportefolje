@@ -85,7 +85,7 @@ public class DbUtils {
     }
 
     public static String identifiserManuellEllerKRRBruker(Object janei){
-        return ("J".equals(janei)) ? "MANUELL" : "IKKE_MANUELL";
+        return "J".equals(janei) ? "MANUELL" : "IKKE_MANUELL";
     }
 
     public static boolean parseJaNei(Object janei, String name) {
