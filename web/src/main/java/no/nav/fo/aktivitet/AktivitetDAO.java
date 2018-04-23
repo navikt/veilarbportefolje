@@ -22,13 +22,11 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
-import static no.nav.fo.util.DbUtils.boolTo0OR1;
 import static no.nav.fo.util.DbUtils.parse0OR1;
 
 @Slf4j
 public class AktivitetDAO {
 
-    private static final String BRUKERSTATUS_AKTIVITETER = "BRUKERSTATUS_AKTIVITETER";
     private static final String AKTIVITETER = "AKTIVITETER";
     private static final String AKTIVITETID = "AKTIVITETID";
 
@@ -49,14 +47,6 @@ public class AktivitetDAO {
 
     public Timestamp getAktiviteterSistOppdatert() {
         return (Timestamp) db.queryForList("SELECT aktiviteter_sist_oppdatert from METADATA").get(0).get("aktiviteter_sist_oppdatert");
-    }
-
-    public List<AktivitetDTO> getAktiviteterForAktoerid(AktoerId aktoerid) {
-        return db.queryForList(getAktiviteterForAktoeridSql(), aktoerid.toString())
-            .stream()
-            .map(AktivitetDAO::mapToAktivitetDTO)
-            .filter(aktivitet -> AktivitetTyper.contains(aktivitet.getAktivitetType()))
-            .collect(toList());
     }
 
     public List<AktoerAktiviteter> getAktiviteterForListOfAktoerid(Collection<String> aktoerids) {
@@ -114,13 +104,6 @@ public class AktivitetDAO {
 
     void upsertAktivitet(Collection<AktivitetDataFraFeed> aktiviteter) {
         aktiviteter.forEach(this::upsertAktivitet);
-    }
-
-
-    public void upsertAktivitetStatus(AktivitetStatus a) {
-        getUpsertAktivitetStatuserForBrukerQuery(a.getAktivitetType(), this.db, a.isAktiv(),
-            a.getAktoerid().aktoerId, a.getPersonid().personId, a.getNesteUtlop())
-            .execute();
     }
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
@@ -207,16 +190,6 @@ public class AktivitetDAO {
             .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
 
-    private static UpsertQuery getUpsertAktivitetStatuserForBrukerQuery(String aktivitetstype, JdbcTemplate db, boolean status, String aktoerid, String personid, Timestamp nesteUtlopsdato) {
-        return SqlUtils.upsert(db, BRUKERSTATUS_AKTIVITETER)
-            .where(WhereClause.equals("PERSONID", personid).and(WhereClause.equals("AKTIVITETTYPE", aktivitetstype)))
-            .set("STATUS", boolTo0OR1(status))
-            .set("PERSONID", personid)
-            .set("AKTIVITETTYPE", aktivitetstype)
-            .set("AKTOERID", aktoerid)
-            .set("NESTE_UTLOPSDATO", nesteUtlopsdato);
-    }
-
     public void slettAktivitetDatoer() {
         SqlUtils.update(db, "bruker_data")
                 .set("NYESTEUTLOPTEAKTIVITET", null)
@@ -233,10 +206,6 @@ public class AktivitetDAO {
             "TILDATO " +
             "FROM BRUKERTILTAK " +
             "WHERE FODSELSNR in(:fnrs)";
-    }
-
-    private String getAktiviteterForAktoeridSql() {
-        return "SELECT AKTIVITETTYPE, STATUS, FRADATO, TILDATO FROM AKTIVITETER where aktoerid=?";
     }
 
     private String getAktiviteterForAktoeridsSql() {

@@ -7,7 +7,6 @@ import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetData;
 import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.service.AktoerService;
@@ -124,34 +123,6 @@ public class AktivitetUtilsTest {
         LocalDate today1 = LocalDate.parse("2017-06-09");
 
         assertThat(erAktivitetIPeriode(aktivitet, today1)).isTrue();
-    }
-
-    @Test
-    public void brukerErIAktivAktivitet() {
-        String fullfortStatus = AktivitetData.fullførteStatuser.get(0).toString();
-        String ikkeFullfortStatus = "enStatusSomIkkeErfullfort";
-        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus)).isFalse();
-        LocalDate today = LocalDate.parse("2017-06-03");
-
-        AktivitetDTO aktivitet1 = new AktivitetDTO()
-                .setTilDato(DateUtils.timestampFromISO8601("2017-06-08T01:00:00+02:00"))
-                .setStatus(ikkeFullfortStatus);
-
-        AktivitetDTO aktivitet2 = new AktivitetDTO().setStatus(fullfortStatus);
-
-        assertThat(erBrukerIAktivAktivitet(asList(aktivitet1,aktivitet2),today)).isTrue();
-    }
-
-    @Test
-    public void brukerErIkkeIAktivAktivitet() {
-        String fullfortStatus = AktivitetData.fullførteStatuser.get(0).toString();
-        LocalDate today = LocalDate.parse("2017-06-03");
-
-        AktivitetDTO aktivitet1 = new AktivitetDTO().setStatus(fullfortStatus);
-
-        AktivitetDTO aktivitet2 = new AktivitetDTO().setStatus(fullfortStatus);
-
-        assertThat(erBrukerIAktivAktivitet(asList(aktivitet1,aktivitet2),today)).isFalse();
     }
 
     @Test
