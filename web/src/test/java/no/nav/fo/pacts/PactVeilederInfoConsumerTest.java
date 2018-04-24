@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,11 +30,10 @@ public class PactVeilederInfoConsumerTest {
         return builder
                 .given("a request for info about a veileder")
                 .uponReceiving("request about an existing veileder")
-                    .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w{7}")
+                    .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w{7}", VEILARBVEILEDER_VEILEDER_API + "/AB12345")
                     .method("GET")
                 .willRespondWith()
                     .status(200)
-                    .headers(Collections.singletonMap("content-type", "application/json; charset=UTF-8"))
                     .body(newJsonBody(body -> {
                         body.stringType("ident");
                         body.stringType("navn");
@@ -48,7 +46,7 @@ public class PactVeilederInfoConsumerTest {
     @Test
     @PactTestFor(pactMethod = "createPactVeilederInfoFinnes")
     void testPactVeilederInfoFinnes(MockServer mockServer) throws IOException {
-        HttpResponse httpResponse = Request.Get(mockServer.getUrl() + VEILARBVEILEDER_VEILEDER_API + "/Z990257").execute().returnResponse();
+        HttpResponse httpResponse = Request.Get(mockServer.getUrl() + VEILARBVEILEDER_VEILEDER_API + "/AB12345").execute().returnResponse();
         assertThat(httpResponse.getStatusLine().getStatusCode(), is(equalTo(200)));
     }
 
@@ -57,7 +55,7 @@ public class PactVeilederInfoConsumerTest {
         return builder
                 .given("a request for info about an unknown veileder")
                 .uponReceiving("request about an unknown veileder")
-                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w+")
+                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w+", VEILARBVEILEDER_VEILEDER_API + "/unknown")
                 .method("GET")
                 .willRespondWith()
                 .status(204)
