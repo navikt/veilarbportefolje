@@ -11,7 +11,6 @@ import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
-import java.util.List;
 
 import static no.nav.metrics.MetricsFactory.createEvent;
 

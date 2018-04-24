@@ -10,5 +10,4 @@ public class AktivitetData {
 
     public static final List<AktivitetTyperFraAktivitetspan> aktivitetTyperFraAktivitetsplanList = asList(AktivitetTyperFraAktivitetspan.values());
 
-    public static final List<AktivitetFullfortStatuser> fullførteStatuser = asList(AktivitetFullfortStatuser.values());
 }

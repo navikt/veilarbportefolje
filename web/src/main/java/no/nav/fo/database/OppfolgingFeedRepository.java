@@ -63,7 +63,7 @@ public class OppfolgingFeedRepository {
                 .setNyForVeileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setVeileder(rs.getString("VEILEDERIDENT"))
-                .setManuellBruker(parseJaNei(rs.getString("MANUELL_STATUS"), "MANUELL_STATUS"));
+                .setManuellBruker(parseJaNei(rs.getString("MANUELL_BRUKER"), "MANUELL_BRUKER"));
     }
 
 }
