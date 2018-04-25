@@ -318,8 +318,6 @@ public class BrukerRepositoryTest {
             .setAktoerid("aktoerid")
             .setUtlopsdato(LocalDateTime.now())
             .setUtlopsFasett(ManedFasettMapping.MND1)
-            .setVenterPaSvarFraBruker(LocalDateTime.now())
-            .setVenterPaSvarFraNav(LocalDateTime.now())
             .setYtelse(YtelseMapping.AAP_MAXTID)
             .setAktivitetStart(new Timestamp(1))
             .setNesteAktivitetStart(new Timestamp(2))
