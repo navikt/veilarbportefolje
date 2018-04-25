@@ -16,6 +16,7 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
     private Boolean oppfolging;
     private Boolean nyForVeileder;
     private Timestamp endretTimestamp;
+    private Boolean manuellBruker;
 
     @Override
     public int compareTo(BrukerOppdatertInformasjon o) {

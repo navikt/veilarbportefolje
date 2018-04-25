@@ -1,6 +1,7 @@
 package no.nav.fo.service;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
+import no.nav.fo.config.RemoteFeatureConfig;
 import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
@@ -51,12 +52,16 @@ public class SolrServiceTest {
     private ArbeidslisteRepository arbeidslisteRepository;
     @Mock
     private AktoerService aktoerService;
+    @Mock
+    private VeilederService veilederService;
+    @Mock
+    private RemoteFeatureConfig.FlyttSomNyeFeature flyttSomNyeFeature;
 
     private SolrService service;
 
     @Before
     public void setup() {
-        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, aktivitetDAO);
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
     }
 
     @Test
@@ -135,7 +140,7 @@ public class SolrServiceTest {
         solrInputDocument.setField("formidlingsgruppekode","dummy");
         when(brukerRepository.retrieveBrukermedBrukerdata(any())).thenReturn(solrInputDocument);
         when(solrClientMaster.deleteByQuery("person_id:dummy")).thenReturn(mock(UpdateResponse.class));
-        
+
         service.indekserBrukerdata(PersonId.of("dummy"));
         verify(solrClientMaster, never()).add(any(Collection.class));
         verify(solrClientMaster).deleteByQuery("person_id:dummy");

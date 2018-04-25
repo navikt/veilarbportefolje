@@ -32,7 +32,7 @@ public class AktivitetUtils {
                 .stream()
                 .map(aktoerAktivitet -> {
                     AktoerId aktoerId = AktoerId.of(aktoerAktivitet.getAktoerid());
-                    Try<PersonId> personid = getPersonId(aktoerId, aktoerService)
+                    Try<PersonId> personid = aktoerService.hentPersonidFraAktoerid(aktoerId)
                             .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerAktivitet.getAktoerid(), e));
 
                     return personid.isSuccess() && personid.get() != null ?
@@ -78,14 +78,6 @@ public class AktivitetUtils {
     public static List<AktivitetBrukerOppdatering> hentAktivitetBrukerOppdateringer(List<AktoerId> aktoerIds, AktoerService aktoerService, AktivitetDAO aktivitetDAO) {
         List<AktoerAktiviteter> aktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerIds.stream().map(AktoerId::toString).collect(toList()));
         return konverterTilBrukerOppdatering(aktiviteter, aktoerService);
-    }
-
-    static boolean erBrukerIAktivAktivitet(List<AktivitetDTO> aktiviteter, LocalDate today) {
-        return aktiviteter
-                .stream()
-                .filter(AktivitetUtils::harIkkeStatusFullfort)
-                .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
-                .anyMatch(match -> true);
     }
 
     static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
@@ -272,11 +264,6 @@ public class AktivitetUtils {
             log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
             return null;
         }
-    }
-
-    private static Try<PersonId> getPersonId(AktoerId aktoerid, AktoerService aktoerService) {
-        return aktoerService
-                .hentPersonidFraAktoerid(aktoerid);
     }
 
     private static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {

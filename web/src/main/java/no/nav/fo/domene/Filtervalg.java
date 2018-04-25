@@ -27,9 +27,10 @@ public class Filtervalg {
     public List<String> veiledere = new ArrayList<>();
     public Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
     public List<String> tiltakstyper = new ArrayList<>();
+    public List<ManuellBrukere> manuellbrukere = new ArrayList<>();
 
     public boolean harAktiveFilter() {
-        return harFerdigFilter() ||
+         return harFerdigFilter() ||
                 harYtelsefilter() ||
                 !alder.isEmpty() ||
                 !kjonn.isEmpty() ||
@@ -40,7 +41,8 @@ public class Filtervalg {
                 !rettighetsgruppe.isEmpty() ||
                 !veiledere.isEmpty() ||
                 !aktiviteter.isEmpty() ||
-                !tiltakstyper.isEmpty();
+                !tiltakstyper.isEmpty() ||
+                harManuellbrukere();
     }
 
     private boolean harFerdigFilter() {
@@ -59,6 +61,9 @@ public class Filtervalg {
         return !tiltakstyper.isEmpty();
     }
 
+    public boolean harManuellbrukere() {
+        return manuellbrukere != null && !manuellbrukere.isEmpty();
+    }
 
     public boolean valider() {
         if (!harAktiveFilter()) {

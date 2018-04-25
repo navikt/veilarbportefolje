@@ -36,6 +36,10 @@
             <groupId>no.nav.sbl</groupId>
             <artifactId>jdbc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>feature-toggle</artifactId>
+        </dependency>
 
         <!-- Virksomhetstjenester -->
         <dependency>

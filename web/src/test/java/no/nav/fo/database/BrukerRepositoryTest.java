@@ -77,7 +77,7 @@ public class BrukerRepositoryTest {
             "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
             "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
             "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START"};
+            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START", "MANUELL_BRUKER"};
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
     }
@@ -100,7 +100,7 @@ public class BrukerRepositoryTest {
             "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
             "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
             "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START"};
+            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START", "MANUELL_BRUKER"};
 
 
         assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
@@ -490,20 +490,5 @@ public class BrukerRepositoryTest {
         List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds);
         assertThat(dokumenter.size()).isEqualTo(5);
     }
-
-    @Test
-    public void skalSletteBrukereMedPersonid() {
-        PersonId personId1 = PersonId.of("4120339");
-        PersonId personId2 = PersonId.of("4120327");
-        Brukerdata brukerdata1 = new Brukerdata().setPersonid(personId1.toString());
-        Brukerdata brukerdata2 = new Brukerdata().setPersonid(personId2.toString());
-        brukerRepository.insertOrUpdateBrukerdata(asList(brukerdata1, brukerdata2), emptyList());
-
-        List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(asList(personId1.toString(), personId2.toString()));
-        assertThat(brukerdata.size()).isEqualTo(2);
-
-        brukerRepository.deleteBrukerdataForPersonIds(asList(personId1, personId2));
-        List<Brukerdata> brukerdataDeleted = brukerRepository.retrieveBrukerdata(asList(personId1.toString(), personId2.toString()));
-        assertThat(brukerdataDeleted.size()).isEqualTo(0);
-    }
+    
 }

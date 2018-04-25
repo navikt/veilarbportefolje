@@ -66,7 +66,7 @@ public class DbUtils {
         document.addField("aktivitet_start", toIsoUTC(rs.getTimestamp("aktivitet_start")));
         document.addField("neste_aktivitet_start", toIsoUTC(rs.getTimestamp("neste_aktivitet_start")));
         document.addField("forrige_aktivitet_start", toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")));
-
+        document.addField("manuell_bruker", identifiserManuellEllerKRRBruker(rs.getString("MANUELL_BRUKER")));
         return document;
     }
 
@@ -82,6 +82,10 @@ public class DbUtils {
 
     static String kapitaliser(String s) {
         return WordUtils.capitalizeFully(s, ' ', '\'', '-');
+    }
+
+    public static String identifiserManuellEllerKRRBruker(Object janei){
+        return "J".equals(janei) ? "MANUELL" : "IKKE_MANUELL";
     }
 
     public static boolean parseJaNei(Object janei, String name) {

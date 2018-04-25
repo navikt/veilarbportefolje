@@ -37,7 +37,10 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         PingConfig.class,
         FeedConfig.class,
         RestConfig.class,
-        AktorConfig.class
+        AktorConfig.class,
+        VeilederServiceConfig.class,
+        ClientConfig.class,
+        RemoteFeatureConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
     public static final String APPLICATION_NAME = "veilarbportefolje";

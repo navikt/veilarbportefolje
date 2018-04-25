@@ -1,11 +1,9 @@
 package no.nav.fo.aktivitet;
 
 import com.google.common.base.Joiner;
-import io.vavr.Tuple;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepositoryTest;
 import no.nav.fo.domene.*;
-import no.nav.fo.domene.aktivitet.AktivitetDTO;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import org.apache.commons.io.IOUtils;
@@ -22,7 +20,6 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static no.nav.fo.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -109,48 +106,6 @@ public class AktivitetDAOTest {
 
 
     @Test
-    public void skalHenteAlleAktiviteterForBruker() {
-        String aktivitettpe = aktivitetTyperList.get(0).toString();
-
-        AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
-            .setAktivitetId("aktivitetid1")
-            .setAktivitetType(aktivitettpe)
-            .setAktorId("aktoerid")
-            .setAvtalt(true)
-            .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-            .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-            .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ikke startet");
-
-        AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
-            .setAktivitetId("aktivitetid2")
-            .setAktivitetType(aktivitettpe)
-            .setAktorId("aktoerid")
-            .setAvtalt(true)
-            .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ferdig");
-
-        AktivitetDTO aktivitetDTO1 = new AktivitetDTO()
-            .setAktivitetType(aktivitettpe)
-            .setStatus("ikke startet")
-            .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-            .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"));
-
-        AktivitetDTO aktivitetDTO2 = new AktivitetDTO()
-            .setAktivitetType(aktivitettpe)
-            .setStatus("ferdig");
-
-
-        aktivitetDAO.upsertAktivitet(aktivitet1);
-        aktivitetDAO.upsertAktivitet(aktivitet2);
-
-        List<AktivitetDTO> aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktoerId.of("aktoerid"));
-
-        assertThat(aktiviteter).contains(aktivitetDTO1);
-        assertThat(aktiviteter).contains(aktivitetDTO2);
-    }
-
-    @Test
     public void skalHenteDistinkteAktorider() {
 
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
@@ -204,38 +159,6 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void skalOppdatereAktivitetstatusForBruker() {
-        String aktivitetstype1 = aktivitetTyperList.get(0).toString();
-        String aktivitetstype2 = aktivitetTyperList.get(1).toString();
-        PersonId personId1 = PersonId.of("personid1");
-        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
-
-        PersonId personId2 = PersonId.of("personid2");
-        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
-
-
-        AktivitetStatus a1 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype1,true, new Timestamp(0));
-        AktivitetStatus a2 = AktivitetStatus.of(personId1,aktoerId1,aktivitetstype2,false, new Timestamp(0));
-        AktivitetStatus b1 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype1,true, new Timestamp(0));
-        AktivitetStatus b2 = AktivitetStatus.of(personId2,aktoerId2,aktivitetstype2,false, new Timestamp(0));
-
-        Set<AktivitetStatus> aktiviteter1 = new HashSet<>();
-        Set<AktivitetStatus> aktiviteter2 = new HashSet<>();
-        aktiviteter1.add(a1);
-        aktiviteter1.add(a2);
-        aktiviteter2.add(b1);
-        aktiviteter2.add(b2);
-
-        aktiviteter1.forEach(aktivitetDAO::upsertAktivitetStatus);
-        aktiviteter2.forEach(aktivitetDAO::upsertAktivitetStatus);
-
-        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = aktivitetDAO.getAktivitetstatusForBrukere(asList(personId1, personId2));
-
-        assertThat(aktivitetStatuser.get(personId1)).containsExactlyInAnyOrder(a1, a2);
-        assertThat(aktivitetStatuser.get(personId2)).containsExactlyInAnyOrder(b1, b2);
-    }
-
-    @Test
     public void skalInserteBatchAvAktivitetstatuser() {
         List<AktivitetStatus> statuser = new ArrayList<>();
         statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"),"a1",true, new Timestamp(0)));
@@ -248,26 +171,6 @@ public class AktivitetDAOTest {
     @Test
     public void skalReturnereTomtMapDersomIngenBrukerHarAktivitetstatusIDB() {
         assertThat(aktivitetDAO.getAktivitetstatusForBrukere(asList(PersonId.of("personid")))).isEqualTo(new HashMap<>());
-    }
-
-    @Test
-    public void skalUpdateAktivteterSomAlleredeFinnes() {
-        String aktivitetstype1 = aktivitetTyperList.get(0).toString();
-        String aktivitetstype2 = aktivitetTyperList.get(1).toString();
-        PersonId personId = PersonId.of("111111");
-        AktoerId aktoerId = AktoerId.of("222222");
-
-        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, true, new Timestamp(0));
-        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, aktivitetstype1, false, new Timestamp(0));
-        AktivitetStatus a3 = AktivitetStatus.of(personId, aktoerId, aktivitetstype2, false, new Timestamp(0));
-
-
-        aktivitetDAO.upsertAktivitetStatus(a1);
-        aktivitetDAO.insertOrUpdateAktivitetStatus(asList(a2,a3),singletonList(Tuple.of(personId,aktivitetstype1)));
-
-        Set<AktivitetStatus> statuser = aktivitetDAO.getAktivitetstatusForBrukere(singletonList(personId)).get(personId);
-
-        assertThat(statuser).containsExactlyInAnyOrder(a2,a3);
     }
 
     @Test

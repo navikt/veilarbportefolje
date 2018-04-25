@@ -1,6 +1,5 @@
 package no.nav.fo.feed;
 
-import no.nav.fo.domene.PersonId;
 import no.nav.fo.domene.feed.DialogDataFraFeed;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
@@ -22,15 +21,6 @@ public class DialogFeedRepository {
         this.db = db;
     }
 
-    public void upsertDialogdata(DialogDataFraFeed dialog, PersonId personId) {
-        SqlUtils.upsert(db, "BRUKER_DATA")
-                .set("VENTERPASVARFRABRUKER", toTimestamp(dialog.getTidspunktEldsteVentende()))
-                .set("VENTERPASVARFRANAV", toTimestamp(dialog.getTidspunktEldsteUbehandlede()))
-                .set("AKTOERID", dialog.getAktorId())
-                .set("PERSONID", personId.toString())
-                .where(WhereClause.equals("PERSONID", personId.toString())).execute();
-    }
-
     private Timestamp toTimestamp(Date date) {
         if(Objects.isNull(date)) {
             return null;
@@ -50,7 +40,7 @@ public class DialogFeedRepository {
 
     public Try<DialogDataFraFeed> retrieveDialogData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
-                "SELECT * FROM VW_DIALOG WHERE AKTOERID = ?", 
+                "SELECT * FROM DIALOG WHERE AKTOERID = ?", 
                 new Object[] {aktoerId}, 
                 this::mapToDialogData)
         ).onFailure(e -> {});

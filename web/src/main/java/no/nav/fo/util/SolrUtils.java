@@ -1,5 +1,6 @@
 package no.nav.fo.util;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.util.SolrSortUtils.addSort;
 
+@Slf4j
 public class SolrUtils {
     static String TILTAK = "TILTAK";
 
@@ -34,6 +36,8 @@ public class SolrUtils {
 
     private static Locale locale = new Locale("no", "NO");
     private static Collator collator = Collator.getInstance(locale);
+
+
 
     static {
         collator.setStrength(Collator.PRIMARY);
@@ -58,11 +62,18 @@ public class SolrUtils {
     }
 
 
-    public static SolrQuery buildSolrQuery(String queryString, boolean sorterNyeForVeileder, String sortOrder, String sortField, Filtervalg filtervalg) {
+    public static SolrQuery buildSolrQuery(String queryString, boolean sorterNyeForVeileder, List<VeilederId> veiledereMedTilgang, String sortOrder, String sortField, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
+        solrQuery.addField("*");
+
+        String medTilgangSubquery = null;
+        if(veiledereMedTilgang != null) { //FO-610 rydde
+            medTilgangSubquery = harVeilederSubQuery(veiledereMedTilgang);
+            solrQuery.addField("har_veileder_fra_enhet:" + medTilgangSubquery);
+        }
         solrQuery.addFilterQuery(queryString);
-        addSort(solrQuery, sorterNyeForVeileder, sortOrder, sortField, filtervalg);
-        leggTilFiltervalg(solrQuery, filtervalg);
+        addSort(solrQuery, sorterNyeForVeileder, medTilgangSubquery, sortOrder, sortField, filtervalg);
+        leggTilFiltervalg(solrQuery, filtervalg, veiledereMedTilgang);
         return solrQuery;
     }
 
@@ -84,7 +95,7 @@ public class SolrUtils {
         return filter.stream().map(mapper).collect(joining(" OR "));
     }
 
-    private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg) {
+    private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang) {
         if (!filtervalg.harAktiveFilter()) {
             return;
         }
@@ -92,10 +103,21 @@ public class SolrUtils {
         final List<String> filtrerBrukereStatements = new ArrayList<>();
 
         List<Brukerstatus> brukerstatuses = ferdigFilterListeEllerBrukerstatus(filtervalg);
+
+        Optional<String> ufordelteBrukere = Optional.empty();
+
+        if(veiledereMedTilgang != null && brukerstatuses.contains(Brukerstatus.UFORDELTE_BRUKERE)) {//FO-610 rydde
+            ferdigfilterStatus.remove(Brukerstatus.UFORDELTE_BRUKERE);
+            ufordelteBrukere = Optional.of(harIkkeVeilederFilter(veiledereMedTilgang));
+        }
+
         List<String> ferdigFilterStatements = brukerstatuses
                 .stream()
                 .map(ferdigfilter -> ferdigfilterStatus.get(ferdigfilter))
+                .filter(Objects::nonNull) //FO-610 rydde
                 .collect(toList());
+
+        ufordelteBrukere.ifPresent(ferdigFilterStatements::add);//FO-610 rydde
 
         filtrerBrukereStatements.add(orStatement(filtervalg.alder, SolrUtils::alderFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));
@@ -105,6 +127,7 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.manuellbrukere, SolrUtils::manuellBrukerFilter));
 
         if (filtervalg.harAktivitetFilter()) {
             filtervalg.aktiviteter.forEach((key, value) -> {
@@ -135,6 +158,17 @@ public class SolrUtils {
                     .map(statement -> "(" + statement + ")")
                     .collect(Collectors.joining(" AND ")));
         }
+    }
+
+    public static String harIkkeVeilederFilter(List<VeilederId> identer) {
+        return "-veileder_id:(" + spaceSeperated(identer) + ")";
+    }
+
+    private static String spaceSeperated(List<VeilederId> veilederListe) {
+        return veilederListe
+                .stream()
+                .map(VeilederId::getVeilederId)
+                .collect(Collectors.joining(" "));
     }
 
     private static List<Brukerstatus> ferdigFilterListeEllerBrukerstatus(Filtervalg filtervalg) {
@@ -205,5 +239,13 @@ public class SolrUtils {
 
     static String tiltakJaFilter(String tiltak) {
         return "tiltak:" + tiltak;
+    }
+
+    static String harVeilederSubQuery(List<VeilederId> identer) {
+        return "exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))";
+    }
+
+    static String manuellBrukerFilter(ManuellBrukere manuell_bruker) {
+        return "manuell_bruker:" + manuell_bruker.toString();
     }
 }

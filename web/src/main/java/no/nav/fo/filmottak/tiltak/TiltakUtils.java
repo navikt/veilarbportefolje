@@ -22,9 +22,9 @@ import static no.nav.fo.util.DbUtils.not;
 
 public class TiltakUtils {
 
-    final static String tiltak = "tiltak";
-    final static String gruppeaktivitet = "gruppeaktivitet";
-    final static String utdanningaktivitet = "utdanningaktivitet";
+    final static String TILTAK = "tiltak";
+    final static String GRUPPEAKTIVITET = "gruppeaktivitet";
+    final static String UTDANNINGAKTIVITET = "utdanningaktivitet";
 
     static AktivitetStatus utledAktivitetstatusForTiltak(Bruker bruker, PersonId personId) {
         List<Tiltaksaktivitet> tiltaksAktiviteterEtterDatoFilter =
@@ -44,7 +44,7 @@ public class TiltakUtils {
                 .collect(toList()))
                 .orElse(null);
 
-        return AktivitetStatus.of(personId, AktoerId.of(null), tiltak, true, nesteUtlopsdato);
+        return AktivitetStatus.of(personId, AktoerId.of(null), TILTAK, true, nesteUtlopsdato);
     }
 
     static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId) {
@@ -63,7 +63,7 @@ public class TiltakUtils {
 
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoForMoteplan(gruppeAktiviteterEtterDatoFilter).orElse(null);
 
-        return AktivitetStatus.of(personId, AktoerId.of(null), gruppeaktivitet, true, nesteUtlopsdato);
+        return AktivitetStatus.of(personId, AktoerId.of(null), GRUPPEAKTIVITET, true, nesteUtlopsdato);
     }
 
     static AktivitetStatus utledUtdanningsaktivitetstatus(Bruker bruker, PersonId personId) {
@@ -79,7 +79,7 @@ public class TiltakUtils {
 
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato).orElse(null);
 
-        return AktivitetStatus.of(personId, AktoerId.of(null), utdanningaktivitet, true, nesteUtlopsdato);
+        return AktivitetStatus.of(personId, AktoerId.of(null), UTDANNINGAKTIVITET, true, nesteUtlopsdato);
 
     }
 
@@ -117,7 +117,7 @@ public class TiltakUtils {
         return LocalDate.now().isBefore(localDate.plusDays(1));
     }
 
-    public static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
+    private static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
         return Optional.ofNullable(calendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
                 .map(GregorianCalendar::getTime)
@@ -132,14 +132,14 @@ public class TiltakUtils {
                 .map(TiltakUtils::tilTimestamp);
     }
 
-    public static Optional<Timestamp> utledFradato(Periode periode) {
+    private static Optional<Timestamp> utledFradato(Periode periode) {
         return Optional.ofNullable(periode)
                 .map(Periode::getFom)
                 .map(TiltakUtils::tilTimestamp);
     }
 
 
-    static Timestamp hentUtlopsdatoForTiltak(Tiltaksaktivitet tiltaksaktivitet) {
+    private static Timestamp hentUtlopsdatoForTiltak(Tiltaksaktivitet tiltaksaktivitet) {
         return Optional.of(tiltaksaktivitet)
                 .map(Tiltaksaktivitet::getDeltakelsePeriode)
                 .map(Periode::getTom)
@@ -147,7 +147,7 @@ public class TiltakUtils {
                 .orElse(null);
     }
 
-    static Timestamp finnNyesteTOMForMoteplanliste(List<Moeteplan> moteplanliste) {
+    private static Timestamp finnNyesteTOMForMoteplanliste(List<Moeteplan> moteplanliste) {
         return moteplanliste.stream()
                 .map(Moeteplan::getSluttDato)
                 .map(TiltakUtils::tilTimestamp)
@@ -156,7 +156,7 @@ public class TiltakUtils {
                 .findFirst().orElse(null);
     }
 
-    static Timestamp finnEldsteFOMForMoteplanliste(List<Moeteplan> moteplanliste) {
+    private static Timestamp finnEldsteFOMForMoteplanliste(List<Moeteplan> moteplanliste) {
         return moteplanliste.stream()
                 .map(Moeteplan::getStartDato)
                 .map(TiltakUtils::tilTimestamp)

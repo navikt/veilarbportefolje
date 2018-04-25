@@ -69,7 +69,7 @@ public class OppfolgingerfeedConfig {
         FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds), webhookPollingConfig)
                 .callback(callback)
                 .pageSize(pageSize)
-                .lockProvider(lockProvider(dataSource), 5)
+                .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()))
                 .authorizatioModule(new OidcFeedAuthorizationModule());
         return new FeedConsumer<>(config);
