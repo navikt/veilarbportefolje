@@ -13,7 +13,6 @@ import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.BatchConsumer;
 import no.nav.fo.util.DateUtils;
 import no.nav.fo.util.SolrUtils;
-import no.nav.fo.util.sql.UpdateQuery;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
@@ -32,9 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
-import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +45,7 @@ import java.util.function.BiConsumer;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
@@ -56,7 +56,6 @@ import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
 import static no.nav.fo.util.SolrUtils.harIkkeVeilederFilter;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
 
 @Slf4j
 public class SolrServiceImpl implements SolrService {
@@ -99,7 +98,7 @@ public class SolrServiceImpl implements SolrService {
         this.flyttSomNyeFeature = flyttSomNyeFeature;
     }
 
-    @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterOppfolgingData.cron:0 0 17 26 4 ?}")
+    @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterOppfolgingData.cron:0 0 21 26 4 ?}")
     public void updateOppfolgingDataSisteOppdatrt(){
         brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, timestampFromISO8601("1970-01-01T00:00:00Z"));
     }
