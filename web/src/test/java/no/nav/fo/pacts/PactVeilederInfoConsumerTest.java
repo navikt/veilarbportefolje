@@ -2,7 +2,6 @@ package no.nav.fo.pacts;
 
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.Pact;
-import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
@@ -33,20 +32,19 @@ public class PactVeilederInfoConsumerTest {
 
     @Pact(provider = VEILARB_VEILEDER, consumer = VEILARB_PORTEFOLJE)
     public RequestResponsePact createPactVeilederInfoFinnes(PactDslWithProvider builder) {
-        PactDslJsonBody jsonBody = new PactDslJsonBody();
         return builder
                 .given("a request for info about a veileder")
                 .uponReceiving("request about an existing veileder")
-                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w{7}", VEILARBVEILEDER_VEILEDER_API + "/" + VEILEDER_ID)
-                .method("GET")
+                    .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w{7}", VEILARBVEILEDER_VEILEDER_API + "/" + VEILEDER_ID)
+                    .method("GET")
                 .willRespondWith()
-                .status(200)
-                .body(newJsonBody(body -> {
-                    body.stringType("ident");
-                    body.stringType("navn");
-                    body.stringType("fornavn");
-                    body.stringType("etternavn");
-                }).build())
+                    .status(200)
+                    .body(newJsonBody(body -> {
+                        body.stringType("ident");
+                        body.stringType("navn");
+                        body.stringType("fornavn");
+                        body.stringType("etternavn");
+                    }).build())
                 .toPact();
     }
 
@@ -68,10 +66,10 @@ public class PactVeilederInfoConsumerTest {
         return builder
                 .given("a request for info about an unknown veileder")
                 .uponReceiving("request about an unknown veileder")
-                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w+", VEILARBVEILEDER_VEILEDER_API + "/unknown")
-                .method("GET")
+                    .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w+", VEILARBVEILEDER_VEILEDER_API + "/unknown")
+                    .method("GET")
                 .willRespondWith()
-                .status(404)
+                    .status(204)
                 .toPact();
     }
 
