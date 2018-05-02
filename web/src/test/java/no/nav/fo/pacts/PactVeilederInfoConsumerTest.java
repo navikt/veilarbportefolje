@@ -2,6 +2,8 @@ package no.nav.fo.pacts;
 
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.Pact;
+import au.com.dius.pact.consumer.dsl.PactDslJsonArray;
+import au.com.dius.pact.consumer.dsl.PactDslJsonRootValue;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
@@ -18,7 +20,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonArray;
 import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 import static java.lang.String.format;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
@@ -68,7 +69,6 @@ public class PactVeilederInfoConsumerTest {
                 .get()
                 .getStatus()
         );
-
         assertThat(responseStatus, is(equalTo(200)));
     }
 
@@ -81,7 +81,7 @@ public class PactVeilederInfoConsumerTest {
                     .method("GET")
                 .willRespondWith()
                     .status(200)
-                    .body(newJsonArray(jsonArray -> jsonArray.stringMatcher("\\w{7,}", VEILEDER_ID)).build())
+                    .body(PactDslJsonArray.arrayMinLike(1, PactDslJsonRootValue.stringType(VEILEDER_ID)))
                 .toPact();
     }
 
