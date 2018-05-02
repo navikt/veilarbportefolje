@@ -12,7 +12,8 @@ public class StepperFacetConfig {
     public static final List<YtelseFilter> DAGPENGER_VALG = asList(
             YtelseFilter.ORDINARE_DAGPENGER,
             YtelseFilter.DAGPENGER_MED_PERMITTERING,
-            YtelseFilter.DAGPENGER_OVRIGE,
+            YtelseFilter.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
+            YtelseFilter.LONNSGARANTIMIDLER_DAGPENGER,
             YtelseFilter.DAGPENGER
     );
 

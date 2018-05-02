@@ -14,10 +14,11 @@ public enum YtelseMapping {
     DAGPENGER_MED_PERMITTERING(
             (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode()) && "PERM".equals(vedtak.getRettighetstypeKode())
     ),
-    DAGPENGER_OVRIGE(
-            (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode())
-                    && !"DAGO".equals(vedtak.getRettighetstypeKode())
-                    && !"PERM".equals(vedtak.getRettighetstypeKode())
+    DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI(
+            (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode()) && "FISK".equals(vedtak.getRettighetstypeKode())
+    ),
+    LONNSGARANTIMIDLER_DAGPENGER(
+            (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode()) && "LONN".equals(vedtak.getRettighetstypeKode())
     ),
     AAP_MAXTID(
             (vedtak) -> "AA".equals(vedtak.getSakstypeKode())

@@ -31,7 +31,8 @@ public class IndekserYtelserHandler {
 
     static {
         ytelsesSpesifikeFelter.put(YtelseMapping.TILTAKSPENGER, IndekserYtelserHandler::settUtlopsdatoOgMndFasett);
-        ytelsesSpesifikeFelter.put(YtelseMapping.DAGPENGER_OVRIGE, IndekserYtelserHandler::settDagpUke);
+        ytelsesSpesifikeFelter.put(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI, IndekserYtelserHandler::settDagpUke);
+        ytelsesSpesifikeFelter.put(YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER, IndekserYtelserHandler::settDagpUke);
         ytelsesSpesifikeFelter.put(YtelseMapping.ORDINARE_DAGPENGER, IndekserYtelserHandler::settDagpUke);
         ytelsesSpesifikeFelter.put(YtelseMapping.AAP_MAXTID, exec(
                 IndekserYtelserHandler::settUtlopsdatoOgMndFasett,
