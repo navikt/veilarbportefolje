@@ -36,6 +36,11 @@ public class YtelseFasettMappingTest {
     }
 
     @Test
+    public void skalKlassifisereOvrigeDagpenger() throws Exception {
+        assertThat(YtelseMapping.of(lagVedtak("DAGP", "NOEANNET"))).isEqualTo(Optional.of(DAGPENGER_OVRIGE));
+    }
+
+    @Test
     public void skalKlassifisereAAPMaxTid() throws Exception {
         LoependeVedtak vedtak = lagVedtak("AA", "AAP");
         vedtak.setAaptellere(new AAPtellere());

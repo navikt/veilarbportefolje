@@ -14,6 +14,7 @@ public class StepperFacetConfig {
             YtelseFilter.DAGPENGER_MED_PERMITTERING,
             YtelseFilter.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
             YtelseFilter.LONNSGARANTIMIDLER_DAGPENGER,
+            YtelseFilter.DAGPENGER_OVRIGE,
             YtelseFilter.DAGPENGER
     );
 

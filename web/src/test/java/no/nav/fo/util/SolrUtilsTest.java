@@ -227,7 +227,8 @@ public class SolrUtilsTest {
                 "(ytelse:ORDINARE_DAGPENGER OR " +
                 "ytelse:DAGPENGER_MED_PERMITTERING OR " +
                 "ytelse:DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI OR " +
-                "ytelse:LONNSGARANTIMIDLER_DAGPENGER)"
+                "ytelse:LONNSGARANTIMIDLER_DAGPENGER OR " +
+                "ytelse:DAGPENGER_OVRIGE)"
         );
     }
 

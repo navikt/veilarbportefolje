@@ -89,6 +89,7 @@ public class DiagramController {
             return Bruker::getPermutlopUke;
         } else if (ytelse == YtelseFilter.DAGPENGER ||
                 ytelse == YtelseFilter.ORDINARE_DAGPENGER ||
+                ytelse == YtelseFilter.DAGPENGER_OVRIGE ||
                 ytelse == YtelseFilter.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI ||
                 ytelse == YtelseFilter.LONNSGARANTIMIDLER_DAGPENGER) {
             return Bruker::getDagputlopUke;

@@ -20,6 +20,13 @@ public enum YtelseMapping {
     LONNSGARANTIMIDLER_DAGPENGER(
             (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode()) && "LONN".equals(vedtak.getRettighetstypeKode())
     ),
+    DAGPENGER_OVRIGE(
+            (vedtak) -> "DAGP".equals(vedtak.getSakstypeKode())
+                    && !"DAGO".equals(vedtak.getRettighetstypeKode())
+                    && !"PERM".equals(vedtak.getRettighetstypeKode())
+                    && !"FISK".equals(vedtak.getRettighetstypeKode())
+                    && !"LONN".equals(vedtak.getRettighetstypeKode())
+    ),
     AAP_MAXTID(
             (vedtak) -> "AA".equals(vedtak.getSakstypeKode())
                     && "AAP".equals(vedtak.getRettighetstypeKode())
