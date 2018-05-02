@@ -13,12 +13,26 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class YtelseFasettMappingTest {
     @Test
     public void skalKlassifisereOrdinareDagpenger() throws Exception {
-        assertThat(YtelseMapping.of(lagVedtak("DAGP", "DAGO"))).isEqualTo(Optional.of(ORDINARE_DAGPENGER));
+        assertThat(YtelseMapping.of(lagVedtak("DAGP", "DAGO")))
+                .isEqualTo(Optional.of(ORDINARE_DAGPENGER));
     }
 
     @Test
     public void skalKlassifisereDagpengerMedPermittering() throws Exception {
-        assertThat(YtelseMapping.of(lagVedtak("DAGP", "PERM"))).isEqualTo(Optional.of(DAGPENGER_MED_PERMITTERING));
+        assertThat(YtelseMapping.of(lagVedtak("DAGP", "PERM")))
+                .isEqualTo(Optional.of(DAGPENGER_MED_PERMITTERING));
+    }
+
+    @Test
+    public void skalKlassifisereDagpengerMedPermitteringFiskeindustri() throws Exception {
+        assertThat(YtelseMapping.of(lagVedtak("DAGP", "FISK")))
+                .isEqualTo(Optional.of(DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI));
+    }
+
+    @Test
+    public void skalKlassifisereLonnsgarantimidlerDagpenger() throws Exception {
+        assertThat(YtelseMapping.of(lagVedtak("DAGP", "LONN")))
+                .isEqualTo(Optional.of(LONNSGARANTIMIDLER_DAGPENGER));
     }
 
     @Test
