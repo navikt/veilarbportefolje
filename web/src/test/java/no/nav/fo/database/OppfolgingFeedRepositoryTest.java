@@ -41,7 +41,8 @@ public class OppfolgingFeedRepositoryTest {
                 .setOppfolging(true)
                 .setNyForVeileder(true)
                 .setVeileder(VEILEDER_ID)
-                .setEndretTimestamp(tildeltTidspunkt);
+                .setEndretTimestamp(tildeltTidspunkt)
+                .setManuell(true);
     }
 
     @Test

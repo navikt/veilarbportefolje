@@ -36,7 +36,7 @@ public class OppfolgingFeedRepository {
             .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
             .set("OPPFOLGING", safeToJaNei(info.getOppfolging()))
             .set("NY_FOR_VEILEDER", safeToJaNei(info.getNyForVeileder()))
-            .set("MANUELL_BRUKER", safeToJaNei(info.getManuellBruker()))
+            .set("MANUELL_BRUKER", safeToJaNei(info.getManuell()))
             .set("AKTOERID", info.getAktoerid())
             .where(WhereClause.equals("AKTOERID", info.getAktoerid()))
             .execute();
@@ -63,7 +63,7 @@ public class OppfolgingFeedRepository {
                 .setNyForVeileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setVeileder(rs.getString("VEILEDERIDENT"))
-                .setManuellBruker(parseJaNei(rs.getString("MANUELL_BRUKER"), "MANUELL_BRUKER"));
+                .setManuell(parseJaNei(rs.getString("MANUELL_BRUKER"), "MANUELL_BRUKER"));
     }
 
 }

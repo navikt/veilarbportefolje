@@ -1,6 +1,6 @@
 package no.nav.fo.domene;
 
-public enum ManuellBrukere {
+public enum ManuellBrukerStatus {
  MANUELL,
  KRR
 }
