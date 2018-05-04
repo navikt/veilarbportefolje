@@ -29,8 +29,6 @@ public class Brukerdata {
     private AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
     private Integer aapUnntakDagerIgjen;
     private AAPUnntakUkerIgjenFasettMapping aapunntakUkerIgjenFasett;
-    private LocalDateTime venterPaSvarFraBruker;
-    private LocalDateTime venterPaSvarFraNav;
     private Timestamp nyesteUtlopteAktivitet;
     private Timestamp aktivitetStart;
     private Timestamp nesteAktivitetStart;
@@ -52,8 +50,6 @@ public class Brukerdata {
                 .set("AAPMAXTIDUKEFASETT", safeToString(aapmaxtidUkeFasett))
                 .set("AAPUNNTAKDAGERIGJEN", safeToString(aapUnntakDagerIgjen))
                 .set("AAPUNNTAKUKERIGJENFASETT", safeToString(aapunntakUkerIgjenFasett))
-                .set("VENTERPASVARFRABRUKER", toTimestamp(venterPaSvarFraBruker))
-                .set("VENTERPASVARFRANAV", toTimestamp(venterPaSvarFraNav))
                 .set("PERSONID", personid)
                 .set("NYESTEUTLOPTEAKTIVITET", nyesteUtlopteAktivitet)
                 .set("AKTIVITET_START", aktivitetStart)
@@ -77,8 +73,6 @@ public class Brukerdata {
                 .add("AAPMAXTIDUKEFASETT", (bruker) -> safeToString(bruker.aapmaxtidUkeFasett), String.class)
                 .add("AAPUNNTAKDAGERIGJEN", (bruker) -> bruker.aapUnntakDagerIgjen, Integer.class)
                 .add("AAPUNNTAKUKERIGJENFASETT", (bruker) -> safeToString(bruker.aapunntakUkerIgjenFasett), String.class)
-                .add("VENTERPASVARFRABRUKER", (bruker) -> toTimestamp(bruker.venterPaSvarFraBruker), Timestamp.class)
-                .add("VENTERPASVARFRANAV", (bruker) -> toTimestamp(bruker.venterPaSvarFraNav), Timestamp.class)
                 .add("NYESTEUTLOPTEAKTIVITET", (bruker) ->  bruker.nyesteUtlopteAktivitet, Timestamp.class)
                 .add("AKTIVITET_START", (bruker) ->  bruker.aktivitetStart, Timestamp.class)
                 .add("NESTE_AKTIVITET_START", (bruker) ->  bruker.nesteAktivitetStart, Timestamp.class)

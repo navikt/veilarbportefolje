@@ -15,7 +15,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -109,64 +108,13 @@ public class DiagramControllerTest {
     }
 
     @Test
-    public void skalGrupperePaUtlopsdato() throws Exception {
-        List<Bruker> brukere = new ArrayList<>(BRUKERE);
-        brukere.add(BRUKERE.get(3));
-
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
-
-        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
-
-        Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
-        Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
-
-        assertThat(gruppering).hasSize(14);
-        assertThat(storsteGruppe).contains(5L);
-        assertThat(gruppering.get(UKE10_13)).isEqualTo(2L);
-        assertThat(gruppering.get(UKE50_52)).isEqualTo(5L);
-    }
-
-    @Test
-    public void skalGrupperePaAApUtlopsdato() throws Exception {
-        List<Bruker> brukere = new ArrayList<>(BRUKERE);
-        brukere.add(BRUKERE.get(3));
-
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
-
-        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
-
-        Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
-        Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
-
-        assertThat(gruppering).hasSize(18);
-        assertThat(storsteGruppe).contains(2L);
-        assertThat(gruppering.get(UKE36_47)).isEqualTo(2L);
-    }
-
-    @Test
-    public void skalGrupperePaAAPUnntakUtlopsdato() throws Exception {
-        List<Bruker> brukere = new ArrayList<>(BRUKERE_AAP_UNNTAK);
-
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(), brukere));
-
-        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_UNNTAK));
-
-        Map<FasettMapping, Long> gruppering = (Map<FasettMapping, Long>) response.getEntity();
-        Optional<Long> storsteGruppe = gruppering.values().stream().max(Long::compare);
-
-        assertThat(gruppering).hasSize(9);
-        assertThat(storsteGruppe).contains(2L);
-        assertThat(gruppering.get(AAPUnntakUkerIgjenFasettMapping.UKE36_47)).isEqualTo(2L);
-    }
-
-    @Test
     public void skalGrupperePaUtlopsdatoV2() throws Exception {
         List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
         when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
 
-        Response response = controller.hentDiagramData2("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
         List<StepperUtils.Step> gruppering = (List<StepperUtils.Step>) response.getEntity();
         Optional<Long> storsteGruppe = gruppering.stream().map(StepperUtils.Step::getVerdi).max(Long::compare);
@@ -188,7 +136,7 @@ public class DiagramControllerTest {
 
         when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
 
-        Response response = controller.hentDiagramData2("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
 
         List<StepperUtils.Step> gruppering = (List<StepperUtils.Step>) response.getEntity();
         Optional<Long> storsteGruppe = gruppering.stream().map(StepperUtils.Step::getVerdi).max(Long::compare);
@@ -206,7 +154,7 @@ public class DiagramControllerTest {
 
         when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(), brukere));
 
-        Response response = controller.hentDiagramData2("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_UNNTAK));
+        Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_UNNTAK));
 
         List<StepperUtils.Step> gruppering = (List<StepperUtils.Step>) response.getEntity();
         Optional<Long> storsteGruppe = gruppering.stream().map(StepperUtils.Step::getVerdi).max(Long::compare);

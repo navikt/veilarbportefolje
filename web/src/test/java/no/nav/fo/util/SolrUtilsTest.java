@@ -218,8 +218,17 @@ public class SolrUtilsTest {
         filter.ytelse = YtelseFilter.DAGPENGER;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("",false, new LinkedList<>(), "","", filter).getFilterQueries()).contains(
-                "(ytelse:ORDINARE_DAGPENGER OR ytelse:DAGPENGER_MED_PERMITTERING OR ytelse:DAGPENGER_OVRIGE)"
+        assertThat(SolrUtils.buildSolrQuery("",
+                false,
+                new LinkedList<>(),
+                "",
+                "",
+                filter).getFilterQueries()).contains(
+                "(ytelse:ORDINARE_DAGPENGER OR " +
+                "ytelse:DAGPENGER_MED_PERMITTERING OR " +
+                "ytelse:DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI OR " +
+                "ytelse:LONNSGARANTIMIDLER_DAGPENGER OR " +
+                "ytelse:DAGPENGER_OVRIGE)"
         );
     }
 

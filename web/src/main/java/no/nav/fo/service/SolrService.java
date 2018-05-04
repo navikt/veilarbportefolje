@@ -15,6 +15,7 @@ public interface SolrService {
     void deltaindeksering();
 
     Try<UpdateResponse> commit();
+    Try<UpdateResponse> softCommit();
 
     BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall);
     BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg);
