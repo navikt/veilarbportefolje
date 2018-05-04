@@ -301,6 +301,22 @@ public class SolrUtilsTest {
         assertThat(solrQuery.getFilterQueries()).contains("(aktiviteter:aktivitet1) AND (*:* AND -aktiviteter:aktivitet2)");
     }
 
+    @Test
+    public void skalLeggeTilManuellBrukerFilter() {
+        Filtervalg filtervalg = new Filtervalg();
+        SolrQuery solrQuery;
+        filtervalg.manuellBrukerStatus = singletonList(ManuellBrukerStatus.MANUELL);
+        solrQuery = SolrUtils.buildSolrQuery("", false, new LinkedList<>(), "","", filtervalg);
 
+        assertThat(solrQuery.getFilterQueries()).contains("(manuell_bruker:MANUELL)");
+
+        filtervalg.manuellBrukerStatus = singletonList(ManuellBrukerStatus.KRR);
+        solrQuery = SolrUtils.buildSolrQuery("",false, new LinkedList<>(), "","", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).contains("(manuell_bruker:KRR)");
+
+        filtervalg = new Filtervalg();
+        solrQuery = SolrUtils.buildSolrQuery("",false, new LinkedList<>(), "","", filtervalg);
+        assertThat(solrQuery.getFilterQueries()).containsOnly("");
+    }
 
 }
