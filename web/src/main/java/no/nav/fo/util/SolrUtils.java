@@ -127,7 +127,8 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
-        filtrerBrukereStatements.add(orStatement(filtervalg.manuellBrukerStatus, SolrUtils::manuellBrukerFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.manuellbrukere, SolrUtils::manuellBrukerFilter)); //TODO Slett når FO-123 er i prod
+        filtrerBrukereStatements.add(orStatement(filtervalg.manuellBrukerStatus, SolrUtils::manuellStatusFilter));
 
         if (filtervalg.harAktivitetFilter()) {
             filtervalg.aktiviteter.forEach((key, value) -> {
@@ -245,7 +246,12 @@ public class SolrUtils {
         return "exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))";
     }
 
-    static String manuellBrukerFilter(ManuellBrukerStatus manuellBrukerStatus) {
+    //TODO Slett når FO-123 er i prod
+    static String manuellBrukerFilter(ManuellBrukere manuellBrukerStatus) {
+        return "manuell_bruker:" + manuellBrukerStatus.toString();
+    }
+
+    static String manuellStatusFilter(ManuellBrukerStatus manuellBrukerStatus) {
         return "manuell_bruker:" + manuellBrukerStatus.toString();
     }
 }

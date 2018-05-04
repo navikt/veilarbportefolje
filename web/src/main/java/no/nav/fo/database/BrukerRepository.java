@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.domene.*;
 import no.nav.fo.util.UnderOppfolgingRegler;
+import no.nav.fo.util.sql.InsertBatchQuery;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
@@ -88,21 +89,22 @@ public class BrukerRepository {
             "aktivitet_start, " +
             "neste_aktivitet_start, " +
             "forrige_aktivitet_start, " +
-            "manuell_bruker "+
+            "manuell_bruker, " +
+            "reservertikrr " +
             "FROM " +
             "vw_portefolje_info";
 
-    private static final String OPPFOLGINGSSTAUTS_QUERY = 
+    private static final String OPPFOLGINGSSTAUTS_QUERY =
         "SELECT " +
-            "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +  
-            "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +  
-            "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +  
-            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
-            "OD.OPPFOLGING AS OPPFOLGING " +  
+            "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +
+            "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +
+            "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +
+            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +
+            "OD.OPPFOLGING AS OPPFOLGING " +
         "FROM " +
-            "(SELECT * FROM " + 
-                "OPPFOLGINGSBRUKER OB " + 
-                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
+            "(SELECT * FROM " +
+                "OPPFOLGINGSBRUKER OB " +
+                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " +
             "LEFT JOIN OPPFOLGING_DATA OD ON OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
             "WHERE " +
             "PERSON_ID IN (:personids) ";
@@ -124,7 +126,7 @@ public class BrukerRepository {
                     .forEach(personIdsBatch -> {
                         Map<String, Object> params = new HashMap<>(personIdsBatch.size());
                         params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
-                        timed(dbTimerNavn(OPPFOLGINGSSTAUTS_QUERY), 
+                        timed(dbTimerNavn(OPPFOLGINGSSTAUTS_QUERY),
                                 () -> namedParameterJdbcTemplate.queryForList(OPPFOLGINGSSTAUTS_QUERY, params))
                                 .forEach(data -> personIdOppfolgingstatusMap.put(
                                         PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
@@ -199,6 +201,42 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
     }
 
+    public void fjernKrrInformasjon(){
+        log.info("Starter sletting av data i KRR tabell");
+        db.execute("TRUNCATE TABLE KRR");
+        log.info("Ferdig med sletting av data i KRR tabell");
+    }
+
+    public void iterateFnrsUnderOppfolging(int fetchSize, Consumer<List<String>> fnrConsumer) {
+        String sql = "SELECT AKTOERID, FODSELSNR, KVALIFISERINGSGRUPPEKODE, FORMIDLINGSGRUPPEKODE, OPPFOLGING FROM VW_PORTEFOLJE_INFO";
+        List<String> fnrListe = new ArrayList<>();
+        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
+            String formidlingsgruppeKode = rs.getString("FORMIDLINGSGRUPPEKODE");
+            String servicegruppeKode = rs.getString("KVALIFISERINGSGRUPPEKODE");
+            boolean underOppfolging = parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
+            if (underOppfolging || UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppeKode, servicegruppeKode)) {
+                fnrListe.add(rs.getString("FODSELSNR"));
+
+                if (fnrListe.size() == fetchSize) {
+                    fnrConsumer.accept(fnrListe);
+                    fnrListe.clear();
+                }
+            }
+        }));
+        fnrConsumer.accept(fnrListe);
+    }
+
+    public int[] insertKRRBrukerData(List<DigitalKontaktInformasjon> digitalKontaktinformasjonListe) {
+        InsertBatchQuery<DigitalKontaktInformasjon> insertQuery = new InsertBatchQuery(db, "KRR");
+
+        return insertQuery
+                .add("aktoerid", DigitalKontaktInformasjon::getFnr, String.class)
+                .add("reservasjon", DigitalKontaktInformasjon::getReservertIKrr, String.class)
+                .add("sisteverifisert", DigitalKontaktInformasjon::getSistVerifisert, Timestamp.class)
+                .add("lagttilidb", DigitalKontaktInformasjon::getLagtTilIDB, Timestamp.class)
+                .execute(digitalKontaktinformasjonListe);
+    }
+
     /**
      * MAPPING-FUNKSJONER
      */
@@ -226,7 +264,7 @@ public class BrukerRepository {
     private Fnr mapFnrFromOppfolgingsbruker(ResultSet resultSet) {
         return Fnr.of(resultSet.getString("FODSELSNR"));
     }
-    
+
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
     }
@@ -298,8 +336,6 @@ public class BrukerRepository {
                         .setAapmaxtidUkeFasett(aapMaxtidUkeFasettMappingOrNull((String) data.get("AAPMAXTIDUKEFASETT")))
                         .setAapUnntakDagerIgjen(intValue(data.get("AAPUNNTAKDAGERIGJEN")))
                         .setAapunntakUkerIgjenFasett(aapUnntakUkerIgjenFasettMappingOrNull((String) data.get("AAPUNNTAKUKERIGJENFASETT")))
-                        .setVenterPaSvarFraBruker(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRABRUKER")))
-                        .setVenterPaSvarFraNav(toLocalDateTime((Timestamp) data.get("VENTERPASVARFRANAV")))
                         .setNyesteUtlopteAktivitet((Timestamp) data.get("NYESTEUTLOPTEAKTIVITET"))
                         .setAktivitetStart((Timestamp) data.get("AKTIVITET_START"))
                         .setNesteAktivitetStart((Timestamp) data.get("NESTE_AKTIVITET_START"))
@@ -444,21 +480,21 @@ public class BrukerRepository {
 
     private String retrieveBrukerMedBrukerdataSQL() {
         return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " + 
+                " " +
                 "WHERE " +
                 "person_id = ?";
     }
 
     private String retrieveBrukereMedBrukerdataSQL() {
         return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " + 
+                " " +
                 "WHERE " +
                 "person_id in (:personids)";
     }
 
     String retrieveOppdaterteBrukereSQL() {
         return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " + 
+                " " +
                 "WHERE " +
                 "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
@@ -477,7 +513,7 @@ public class BrukerRepository {
                         "person_id, " +
                         "fodselsnr " +
                         "FROM " +
-                        "OPPFOLGINGSBRUKER " + 
+                        "OPPFOLGINGSBRUKER " +
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
     }
