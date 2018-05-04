@@ -66,7 +66,7 @@ public class DbUtils {
         document.addField("aktivitet_start", toIsoUTC(rs.getTimestamp("aktivitet_start")));
         document.addField("neste_aktivitet_start", toIsoUTC(rs.getTimestamp("neste_aktivitet_start")));
         document.addField("forrige_aktivitet_start", toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")));
-        document.addField("manuell_bruker", identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"),rs.getString("MANUELL_BRUKER")));
+        document.addField("manuell_bruker", identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"),rs.getString("MANUELL")));
         return document;
     }
 
