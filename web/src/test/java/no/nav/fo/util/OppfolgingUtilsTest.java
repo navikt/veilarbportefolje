@@ -29,11 +29,6 @@ public class OppfolgingUtilsTest {
     }
 
     @Test
-    public void skalSletteArbeidsliste() {
-        assertTrue(OppfolgingUtils.skalArbeidslisteSlettes(null, "NY VEILEDER", true));
-    }
-
-    @Test
     public void brukerSkalVaereUnderOppfolging() {
         String formidlingsgruppekode = (String) ARBEIDSOKERKODER.toArray()[0];
         assertTrue(OppfolgingUtils.erBrukerUnderOppfolging(formidlingsgruppekode, "DUMMY", true));
