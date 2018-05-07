@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 @Configuration
 @Import({
         DatabaseConfigTest.class,
+        DigitalKontaktinformasjonConfig.class,
         ServiceConfig.class,
         RestConfig.class
 })
