@@ -7,7 +7,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.domene.*;
 import no.nav.fo.util.UnderOppfolgingRegler;
-import no.nav.fo.util.sql.InsertBatchQuery;
 import no.nav.fo.util.sql.SqlUtils;
 import no.nav.fo.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
@@ -199,42 +198,6 @@ public class BrukerRepository {
                         .where(WhereClause.equals("PERSON_ID", personId.toString()))
                         .execute()
         ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
-    }
-
-    public void fjernKrrInformasjon(){
-        log.info("Starter sletting av data i KRR tabell");
-        db.execute("TRUNCATE TABLE KRR");
-        log.info("Ferdig med sletting av data i KRR tabell");
-    }
-
-    public void iterateFnrsUnderOppfolging(int fetchSize, Consumer<List<String>> fnrConsumer) {
-        String sql = "SELECT AKTOERID, FODSELSNR, KVALIFISERINGSGRUPPEKODE, FORMIDLINGSGRUPPEKODE, OPPFOLGING FROM VW_PORTEFOLJE_INFO";
-        List<String> fnrListe = new ArrayList<>();
-        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
-            String formidlingsgruppeKode = rs.getString("FORMIDLINGSGRUPPEKODE");
-            String servicegruppeKode = rs.getString("KVALIFISERINGSGRUPPEKODE");
-            boolean underOppfolging = parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
-            if (underOppfolging || UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppeKode, servicegruppeKode)) {
-                fnrListe.add(rs.getString("FODSELSNR"));
-
-                if (fnrListe.size() == fetchSize) {
-                    fnrConsumer.accept(fnrListe);
-                    fnrListe.clear();
-                }
-            }
-        }));
-        fnrConsumer.accept(fnrListe);
-    }
-
-    public int[] insertKRRBrukerData(List<DigitalKontaktInformasjon> digitalKontaktinformasjonListe) {
-        InsertBatchQuery<DigitalKontaktInformasjon> insertQuery = new InsertBatchQuery(db, "KRR");
-
-        return insertQuery
-                .add("aktoerid", DigitalKontaktInformasjon::getFnr, String.class)
-                .add("reservasjon", DigitalKontaktInformasjon::getReservertIKrr, String.class)
-                .add("sisteverifisert", DigitalKontaktInformasjon::getSistVerifisert, Timestamp.class)
-                .add("lagttilidb", DigitalKontaktInformasjon::getLagtTilIDB, Timestamp.class)
-                .execute(digitalKontaktinformasjonListe);
     }
 
     /**
