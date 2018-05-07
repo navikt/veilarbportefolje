@@ -40,8 +40,10 @@ public class KrrService {
         krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(digitalKontaktinformasjonListe, kontaktInformasjonIkkeFunnetListe));
     }
 
-    private List<DigitalKontaktInformasjon> mapDigitalKontaktInformasjon(List<WSKontaktinformasjon> digitalKontaktinformasjonListe, List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe){
-
+    private List<DigitalKontaktInformasjon> mapDigitalKontaktInformasjon(
+                    List<WSKontaktinformasjon> digitalKontaktinformasjonListe,
+                    List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe)
+    {
         List<DigitalKontaktInformasjon> digitalKontaktInformasjonListe = digitalKontaktinformasjonListe.stream().map((krrInformasjon) -> {
                     DigitalKontaktInformasjon digitalKontaktInformasjon = new DigitalKontaktInformasjon();
                     digitalKontaktInformasjon.setFnr(krrInformasjon.getPersonident());
