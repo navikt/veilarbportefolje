@@ -3,6 +3,7 @@ package no.nav.fo.service;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.database.BrukerRepository;
+import no.nav.fo.database.KrrRepository;
 import no.nav.fo.domene.DigitalKontaktInformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSForretningsmessigUnntakForBolk;
@@ -20,14 +21,14 @@ import static java.lang.Boolean.TRUE;
 public class KrrService {
 
     @Inject
-    BrukerRepository brukerRepository;
+    private KrrRepository krrRepository;
 
     @Inject
     private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 
     public void hentDigitalKontaktInformasjonBolk() {
-        brukerRepository.fjernKrrInformasjon();
-        brukerRepository.iterateFnrsUnderOppfolging(1000, this::hentDigitalKontaktInformasjon);
+        krrRepository.slettKrrInformasjon();
+        krrRepository.iterateFnrsUnderOppfolging(1000, this::hentDigitalKontaktInformasjon);
     }
 
     @SneakyThrows
@@ -36,7 +37,7 @@ public class KrrService {
         List<WSKontaktinformasjon> digitalKontaktinformasjonListe = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req).getDigitalKontaktinformasjonListe();
         List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req).getForretningsmessigUnntakListe();
 
-        brukerRepository.insertKRRBrukerData(mapDigitalKontaktInformasjon(digitalKontaktinformasjonListe, kontaktInformasjonIkkeFunnetListe));
+        krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(digitalKontaktinformasjonListe, kontaktInformasjonIkkeFunnetListe));
     }
 
     private List<DigitalKontaktInformasjon> mapDigitalKontaktInformasjon(List<WSKontaktinformasjon> digitalKontaktinformasjonListe, List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe){

@@ -60,4 +60,7 @@ public class DatabaseConfigTest {
     public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
         return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
     }
+
+    @Bean
+    public KrrRepository krrRepository() { return new KrrRepository(); }
 }

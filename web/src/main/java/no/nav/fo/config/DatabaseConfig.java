@@ -78,6 +78,9 @@ public class DatabaseConfig {
     }
 
     @Bean
+    public KrrRepository krrRepository() { return new KrrRepository(); }
+
+    @Bean
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
