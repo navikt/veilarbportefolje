@@ -89,7 +89,7 @@ public class BrukerRepository {
             "aktivitet_start, " +
             "neste_aktivitet_start, " +
             "forrige_aktivitet_start, " +
-            "manuell_bruker, " +
+            "manuell, " +
             "reservertikrr " +
             "FROM " +
             "vw_portefolje_info";
