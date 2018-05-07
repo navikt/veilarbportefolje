@@ -7,8 +7,8 @@ import java.util.Objects;
 
 public class OppfolgingUtils {
 
-    public static boolean skalArbeidslisteSlettes(String gammelVeileder, String nyVeileder, boolean oppfolginsbruker) {
-               return nyVeileder == null || !oppfolginsbruker || !nyVeileder.equals(gammelVeileder);
+    public static boolean skalArbeidslisteSlettes(boolean oppfolginsbruker) {
+               return !oppfolginsbruker;
     }
 
     public static boolean erBrukerUnderOppfolging(String formidlingsgruppekode, String servicegruppekode, boolean oppfolgingsbruker) {

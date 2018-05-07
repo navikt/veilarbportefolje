@@ -1,15 +1,5 @@
 package no.nav.fo.consumer;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.fo.database.BrukerRepository;
@@ -19,6 +9,12 @@ import no.nav.fo.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
 import no.nav.sbl.jdbc.Transactor;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Collections;
+
+import static org.mockito.Mockito.*;
 
 public class OppfolgingFeedHandlerTest {
 
@@ -97,26 +93,10 @@ public class OppfolgingFeedHandlerTest {
     }
 
     @Test
-    public void skalSletteArbeidslisteHvisBrukerHarEndretVeileder() {
+    public void skalIkkeSletteArbeidslisteHvisBrukerHarEndretVeileder() {
 
         BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
         BrukerOppdatertInformasjon eksisterendeInformasjon = brukerInfo(true, "gammelVeileder");
-
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.success(eksisterendeInformasjon));
-
-        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
-
-        verify(arbeidslisteService).deleteArbeidslisteForAktoerid(AKTOER_ID);
-        verify(solrService).indekserAsynkront(AKTOER_ID);
-        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
-
-    }
-
-    @Test
-    public void skalIkkeSletteArbeidslisteHvisBrukerHarSammeVeilederOgErUnderOppfolging() {
-
-        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
-        BrukerOppdatertInformasjon eksisterendeInformasjon = brukerInfo(true, "nyVeileder");
 
         when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.success(eksisterendeInformasjon));
 
