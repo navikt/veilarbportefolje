@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -49,9 +50,7 @@ import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
-import static no.nav.fo.util.DateUtils.timestampFromISO8601;
-import static no.nav.fo.util.DateUtils.toUtcString;
+import static no.nav.fo.util.DateUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
 import static no.nav.fo.util.SolrUtils.harIkkeVeilederFilter;
@@ -316,8 +315,15 @@ public class SolrServiceImpl implements SolrService {
 
     @Override
     public Try<UpdateResponse> commit() {
+        String feilmeldingsTekst = "Kunne ikke gjennomføre commit til solrindeksen.";
         return Try.of(() -> solrClientMaster.commit())
-                .onFailure(e -> log.error("Kunne ikke gjennomføre commit til solrindeksen.", e));
+                .onFailure(e -> {
+                    if (e instanceof HttpSolrClient.RemoteSolrException) {
+                        log.warn(feilmeldingsTekst, e.getMessage());
+                    } else {
+                        log.error(feilmeldingsTekst, e);
+                    }
+                });
     }
 
     private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {
