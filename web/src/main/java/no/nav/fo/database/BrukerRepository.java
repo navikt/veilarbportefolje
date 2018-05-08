@@ -88,21 +88,22 @@ public class BrukerRepository {
             "aktivitet_start, " +
             "neste_aktivitet_start, " +
             "forrige_aktivitet_start, " +
-            "manuell_bruker "+
+            "manuell, " +
+            "reservertikrr " +
             "FROM " +
             "vw_portefolje_info";
 
-    private static final String OPPFOLGINGSSTAUTS_QUERY = 
+    private static final String OPPFOLGINGSSTAUTS_QUERY =
         "SELECT " +
-            "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +  
-            "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +  
-            "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +  
-            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +  
-            "OD.OPPFOLGING AS OPPFOLGING " +  
+            "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +
+            "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +
+            "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +
+            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +
+            "OD.OPPFOLGING AS OPPFOLGING " +
         "FROM " +
-            "(SELECT * FROM " + 
-                "OPPFOLGINGSBRUKER OB " + 
-                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " + 
+            "(SELECT * FROM " +
+                "OPPFOLGINGSBRUKER OB " +
+                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " +
             "LEFT JOIN OPPFOLGING_DATA OD ON OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
             "WHERE " +
             "PERSON_ID IN (:personids) ";
@@ -124,7 +125,7 @@ public class BrukerRepository {
                     .forEach(personIdsBatch -> {
                         Map<String, Object> params = new HashMap<>(personIdsBatch.size());
                         params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
-                        timed(dbTimerNavn(OPPFOLGINGSSTAUTS_QUERY), 
+                        timed(dbTimerNavn(OPPFOLGINGSSTAUTS_QUERY),
                                 () -> namedParameterJdbcTemplate.queryForList(OPPFOLGINGSSTAUTS_QUERY, params))
                                 .forEach(data -> personIdOppfolgingstatusMap.put(
                                         PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
@@ -226,7 +227,7 @@ public class BrukerRepository {
     private Fnr mapFnrFromOppfolgingsbruker(ResultSet resultSet) {
         return Fnr.of(resultSet.getString("FODSELSNR"));
     }
-    
+
     public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
         prosesserBrukere(10000, filter, prosess);
     }
@@ -442,21 +443,21 @@ public class BrukerRepository {
 
     private String retrieveBrukerMedBrukerdataSQL() {
         return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " + 
+                " " +
                 "WHERE " +
                 "person_id = ?";
     }
 
     private String retrieveBrukereMedBrukerdataSQL() {
         return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " + 
+                " " +
                 "WHERE " +
                 "person_id in (:personids)";
     }
 
     String retrieveOppdaterteBrukereSQL() {
         return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " + 
+                " " +
                 "WHERE " +
                 "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
@@ -475,7 +476,7 @@ public class BrukerRepository {
                         "person_id, " +
                         "fodselsnr " +
                         "FROM " +
-                        "OPPFOLGINGSBRUKER " + 
+                        "OPPFOLGINGSBRUKER " +
                         "WHERE " +
                         "fodselsnr in (:fnrs)";
     }

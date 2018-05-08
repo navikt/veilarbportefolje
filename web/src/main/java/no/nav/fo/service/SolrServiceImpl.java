@@ -106,7 +106,6 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void hovedindeksering() {
 
-
         if (SolrUtils.isSlaveNode()) {
             log.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
             return;

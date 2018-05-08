@@ -8,6 +8,7 @@ import no.nav.fo.mock.EnhetMock;
 import no.nav.fo.mock.SolrServiceMock;
 import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.virksomhet.tjenester.enhet.meldinger.v1.WSHentEnhetListeResponse;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.when;
         ServiceConfig.class,
         RestConfig.class
 })
+
 public class ComponentTestConfig implements ApiApplication {
 
     @Bean
@@ -78,7 +80,6 @@ public class ComponentTestConfig implements ApiApplication {
         return new EnhetMock();
     }
 
-
     @Override
     public String getApplicationName() {
         return APPLICATION_NAME;
@@ -89,4 +90,8 @@ public class ComponentTestConfig implements ApiApplication {
         return FSS;
     }
 
+    @Bean
+    public DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1() {
+        return mock(DigitalKontaktinformasjonV1.class);
+    }
 }

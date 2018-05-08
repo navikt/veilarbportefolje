@@ -27,7 +27,8 @@ public class Filtervalg {
     public List<String> veiledere = new ArrayList<>();
     public Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
     public List<String> tiltakstyper = new ArrayList<>();
-    public List<ManuellBrukere> manuellbrukere = new ArrayList<>();
+    public List<ManuellBrukere> manuellbrukere = new ArrayList<>();   //TODO Slett når FO-123 er i prod
+    public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
 
     public boolean harAktiveFilter() {
          return harFerdigFilter() ||
@@ -42,7 +43,8 @@ public class Filtervalg {
                 !veiledere.isEmpty() ||
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
-                harManuellbrukere();
+                 harManuellbrukere() ||   //TODO Slett når FO-123 er i prod
+                 harManuellBrukerStatus();
     }
 
     private boolean harFerdigFilter() {
@@ -61,8 +63,13 @@ public class Filtervalg {
         return !tiltakstyper.isEmpty();
     }
 
+    //TODO Slett når FO-123 er i prod
     public boolean harManuellbrukere() {
         return manuellbrukere != null && !manuellbrukere.isEmpty();
+    }
+
+    public boolean harManuellBrukerStatus() {
+        return manuellBrukerStatus != null && !manuellBrukerStatus.isEmpty();
     }
 
     public boolean valider() {
