@@ -1,6 +1,5 @@
 package no.nav.fo.consumer;
 
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
@@ -15,7 +14,7 @@ import no.nav.sbl.jdbc.Transactor;
 import javax.inject.Inject;
 import java.sql.Date;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.List;
 
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.OppfolgingUtils.skalArbeidslisteSlettes;
@@ -66,11 +65,8 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     }
 
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon info) {
-        Try<BrukerOppdatertInformasjon> eksisterendeData = oppfolgingDataRepository.retrieveOppfolgingData(info.getAktoerid());
-        String eksisterendeVeileder = eksisterendeData.isSuccess() ? eksisterendeData.get().getVeileder() : null;
-
-        transactor.inTransaction(() -> {                
-            if(skalArbeidslisteSlettes(eksisterendeVeileder, info.getVeileder(), info.getOppfolging())) {
+        transactor.inTransaction(() -> {
+            if(skalArbeidslisteSlettes(info.getOppfolging())) {
                 arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
             }
             timed("oppdater.oppfolgingsinformasjon", ()->oppfolgingDataRepository.oppdaterOppfolgingData(info));
