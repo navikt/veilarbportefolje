@@ -2,11 +2,12 @@ package no.nav.fo.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+
 import java.sql.Timestamp;
 
 @Data()
 @Accessors(chain = true)
-public class KrrDTO {
+public class KrrDAO {
     String fnr;
     String reservertIKrr;
     Timestamp sistVerifisert;

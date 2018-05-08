@@ -1,17 +1,23 @@
 package no.nav.fo.service;
 
+import io.vavr.API;
+import io.vavr.control.Option;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.database.KrrRepository;
-import no.nav.fo.domene.KrrDTO;
+import no.nav.fo.domene.KrrDAO;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSEpostadresse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSForretningsmessigUnntakForBolk;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSMobiltelefonnummer;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonBolkRequest;
 
 import javax.inject.Inject;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,34 +39,39 @@ public class KrrService {
     @SneakyThrows
     private void hentDigitalKontaktInformasjon(List<String> fnrListe) {
         val req = new WSHentDigitalKontaktinformasjonBolkRequest().withPersonidentListe(fnrListe);
-        List<WSKontaktinformasjon> digitalKontaktinformasjonListe = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req).getDigitalKontaktinformasjonListe();
-        List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req).getForretningsmessigUnntakListe();
+        val resp = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req);
 
-        krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(digitalKontaktinformasjonListe, kontaktInformasjonIkkeFunnetListe));
+        krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(
+                resp.getDigitalKontaktinformasjonListe(),
+                resp.getForretningsmessigUnntakListe()
+        ));
     }
 
-    private List<KrrDTO> mapDigitalKontaktInformasjon(
-                    List<WSKontaktinformasjon> digitalKontaktinformasjonListe,
-                    List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe)
-    {
-        List<KrrDTO> digitalKontaktInformasjonListe = digitalKontaktinformasjonListe.stream().map((krrInformasjon) -> {
-                    KrrDTO krrDTO = new KrrDTO();
-                    krrDTO.setFnr(krrInformasjon.getPersonident());
-                    krrDTO.setReservertIKrr(safeToJaNei(Boolean.valueOf(krrInformasjon.getReservasjon())));
-                    krrDTO.setSistVerifisert(hentNyesteSisteVerifisert(krrInformasjon));
-                    krrDTO.setLagtTilIDB(Timestamp.from(Instant.now()));
-                    return krrDTO;
-       }).collect(Collectors.toList());
+    private List<KrrDAO> mapDigitalKontaktInformasjon(
+            List<WSKontaktinformasjon> digitalKontaktinformasjonListe,
+            List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe) {
 
-        digitalKontaktInformasjonListe.addAll(
-                    kontaktInformasjonIkkeFunnetListe.stream().map((krrInformasjon) -> {
-                    KrrDTO krrDTO = new KrrDTO();
-                    krrDTO.setFnr(krrInformasjon.getPersonident());
-                    krrDTO.setReservertIKrr(safeToJaNei(Boolean.valueOf("true")));
-                    krrDTO.setSistVerifisert(null);
-                    krrDTO.setLagtTilIDB(Timestamp.from(Instant.now()));
-                    return krrDTO;
-        }).collect(Collectors.toList()));
+        List<KrrDAO> digitalKontaktInformasjonListe = digitalKontaktinformasjonListe
+                .stream()
+                .map((krrInformasjon) ->
+                        new KrrDAO()
+                                .setFnr(krrInformasjon.getPersonident())
+                                .setReservertIKrr(safeToJaNei(Boolean.valueOf(krrInformasjon.getReservasjon())))
+                                .setSistVerifisert(hentNyesteSisteVerifisert(krrInformasjon))
+                                .setLagtTilIDB(Timestamp.from(Instant.now())))
+                .collect(Collectors.toList());
+
+        List<KrrDAO> digitalKontaktInformasjonIkkeFunnet = kontaktInformasjonIkkeFunnetListe
+                .stream()
+                .map((krrInformasjon) ->
+                        new KrrDAO()
+                                .setFnr(krrInformasjon.getPersonident())
+                                .setReservertIKrr(safeToJaNei(Boolean.valueOf("true")))
+                                .setSistVerifisert(null)
+                                .setLagtTilIDB(Timestamp.from(Instant.now())))
+                .collect(Collectors.toList());
+
+        digitalKontaktInformasjonListe.addAll(digitalKontaktInformasjonIkkeFunnet);
 
         return digitalKontaktInformasjonListe;
     }
@@ -70,20 +81,34 @@ public class KrrService {
     }
 
     private Timestamp hentNyesteSisteVerifisert(WSKontaktinformasjon digitalKontaktInformasjon) {
-        Timestamp epostSisteVerifisert = null;
-        Timestamp mobileSisteVerifisert = null;
-        if(digitalKontaktInformasjon.getMobiltelefonnummer() != null){
-            mobileSisteVerifisert = new Timestamp(digitalKontaktInformasjon.getMobiltelefonnummer().getSistVerifisert().toGregorianCalendar().getTimeInMillis());
-        }
-        if(digitalKontaktInformasjon.getEpostadresse() != null){
-            epostSisteVerifisert = new Timestamp(digitalKontaktInformasjon.getEpostadresse().getSistVerifisert().toGregorianCalendar().getTimeInMillis());
-        }
+        Option<Timestamp> epostSisteVerifisertMaybe = Option.of(digitalKontaktInformasjon.getEpostadresse())
+                .map(WSEpostadresse::getSistVerifisert)
+                .flatMap(KrrService::toTimestamp);
 
-        if(epostSisteVerifisert != null && mobileSisteVerifisert != null){
-            return  mobileSisteVerifisert.compareTo(epostSisteVerifisert) == '1' ? mobileSisteVerifisert : epostSisteVerifisert;
-        } else if(mobileSisteVerifisert != null){
-            return  mobileSisteVerifisert;
+        Option<Timestamp> mobileSisteVerifisertMaybe = Option.of(digitalKontaktInformasjon.getMobiltelefonnummer())
+                .map(WSMobiltelefonnummer::getSistVerifisert)
+                .flatMap(KrrService::toTimestamp);
+
+        return nyesteAv(epostSisteVerifisertMaybe, mobileSisteVerifisertMaybe);
+    }
+
+    static Timestamp nyesteAv(Option<Timestamp> maybeFirst, Option<Timestamp> maybeSecond) {
+        Timestamp first = maybeFirst.get();
+        Timestamp second = maybeSecond.get();
+
+        if (first == null) {
+            return second;
+        } else if (second == null) {
+            return first;
+        } else {
+            return first.compareTo(second) >= 0 ? first : second;
         }
-        return  epostSisteVerifisert;
-     }
+    }
+
+    static Option<Timestamp> toTimestamp(XMLGregorianCalendar calendar) {
+        return Option.of(calendar)
+                .map(XMLGregorianCalendar::toGregorianCalendar)
+                .map(Calendar::getTimeInMillis)
+                .map(Timestamp::new);
+    }
 }

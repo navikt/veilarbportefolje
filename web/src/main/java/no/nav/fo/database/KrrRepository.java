@@ -1,7 +1,7 @@
 package no.nav.fo.database;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.domene.KrrDTO;
+import no.nav.fo.domene.KrrDAO;
 import no.nav.fo.util.UnderOppfolgingRegler;
 import no.nav.fo.util.sql.InsertBatchQuery;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -47,14 +47,14 @@ public class KrrRepository {
         fnrConsumer.accept(fnrListe);
     }
 
-    public int[] lagreKRRInformasjon(List<KrrDTO> digitalKontaktinformasjonListe) {
-        InsertBatchQuery<KrrDTO> insertQuery = new InsertBatchQuery(db, "KRR");
+    public int[] lagreKRRInformasjon(List<KrrDAO> digitalKontaktinformasjonListe) {
+        InsertBatchQuery<KrrDAO> insertQuery = new InsertBatchQuery(db, "KRR");
 
         return insertQuery
-                .add("fodselsnr", KrrDTO::getFnr, String.class)
-                .add("reservasjon", KrrDTO::getReservertIKrr, String.class)
-                .add("sisteverifisert", KrrDTO::getSistVerifisert, Timestamp.class)
-                .add("lagttilidb", KrrDTO::getLagtTilIDB, Timestamp.class)
+                .add("fodselsnr", KrrDAO::getFnr, String.class)
+                .add("reservasjon", KrrDAO::getReservertIKrr, String.class)
+                .add("sisteverifisert", KrrDAO::getSistVerifisert, Timestamp.class)
+                .add("lagttilidb", KrrDAO::getLagtTilIDB, Timestamp.class)
                 .execute(digitalKontaktinformasjonListe);
     }
 }
