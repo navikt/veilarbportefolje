@@ -296,7 +296,7 @@ public class SolrServiceImpl implements SolrService {
             leggDataTilSolrDocument(singletonList(brukerDokument));
             addDocumentsToIndex(singletonList(brukerDokument));
         }
-        commit();
+        softCommit();
         log.info("Indeks oppdatert for person med personId {}", personId);
     }
 
