@@ -6,8 +6,11 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.domene.PersonId;
+import no.nav.fo.domene.VeilederId;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
+import no.nav.fo.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +39,7 @@ public class OppfolgingFeedHandlerTest {
     private BrukerRepository brukerRepository;
     private SolrService solrService;
     private OppfolgingFeedRepository oppfolgingFeedRepository;
+    private VeilederService veilederService;
 
     private OppfolgingFeedHandler oppfolgingFeedHandler;
 
@@ -47,64 +51,139 @@ public class OppfolgingFeedHandlerTest {
         brukerRepository = mock(BrukerRepository.class);
         solrService = mock(SolrService.class);
         oppfolgingFeedRepository = mock(OppfolgingFeedRepository.class);
+        veilederService = mock(VeilederService.class);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
-                arbeidslisteService, 
-                brukerRepository, 
-                solrService, 
-                oppfolgingFeedRepository, 
+                arbeidslisteService,
+                brukerRepository,
+                solrService,
+                oppfolgingFeedRepository,
+                veilederService,
                 new TestTransactor());
     }
 
+    private BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
+    private BrukerOppdatertInformasjon eksisterendeInformasjon = brukerInfo(true, "gammelVeileder");
+
     @Test
     public void skalLagreBrukerOgOppdatereIndeksAsynkront() {
+        givenBrukerIkkeHarNoeOppfolgingsData();
+        whenOppdatererOppfolgingData();
+        thenOppfolgingDataErOppdatert();
+    }
 
-        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(false, null);
+    @Test
+    public void skalSletteArbeidslisteHvisBrukerIkkeErUnderOppfolging() {
+        givenBrukerBlirFjernetFraOppfolging();
+        whenOppdatererOppfolgingData();
+        thenArbeidslisteErSlettet();
+    }
 
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.failure(new RuntimeException()));
+    @Test
+    public void skalSletteArbeidslisteHvisBrukerHarEndretVeilederTilEnAnnenEnhet() {
+        givenBrukersHarOppfolgingsData();
+        givenBrukerHarVeilderFraAnnenEnhet();
 
-        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
+        whenOppdatererOppfolgingData();
+        thenArbeidslisteErSlettet();
+    }
 
-        verify(solrService).indekserAsynkront(AKTOER_ID);
-        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
+    @Test
+    public void skalIkkeSletteArbeidslisteHvisBrukerHarEndretVeilederPaSammeEnhet() {
+        givenBrukersHarOppfolgingsData();
+        givenBrukerHarVeilderFraSammeEnhet();
+
+        whenOppdatererOppfolgingData();
+        thenArbeidsliteErIkkeSlettet();
+    }
+
+
+    @Test
+    public void skalSletteArbeidslisteHvisBrukerHarEndretVeilederOgHaddeIkkeVeilederTidligere() {
+        givenBrukersHarOppfolgingsData();
+        whenOppdatererOppfolgingData();
+        thenArbeidslisteErSlettet();
+    }
+
+    @Test
+    public void skalSletteArbeidslisteHvisBrukerHarEndretVeilederOgManglerEnhet() {
+        givenBrukersHarOppfolgingsData();
+        givenBrukerManglerEnhet();
+        whenOppdatererOppfolgingData();
+        thenArbeidslisteErSlettet();
+    }
+
+    @Test
+    public void skalSletteArbeidslisteHvisBrukerHarEndretVeilederOgManglerPersonId() {
+        givenBrukersHarOppfolgingsData();
+        givenBrukerManglerPersonId();
+        whenOppdatererOppfolgingData();
+        thenArbeidslisteErSlettet();
+    }
+
+    private void givenBrukerIkkeHarNoeOppfolgingsData() {
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString()))
+                .thenReturn(Try.failure(new RuntimeException()));
+    }
+
+    private void givenBrukerBlirFjernetFraOppfolging() {
+        nyInformasjon = brukerInfo(false, null);
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString()))
+                .thenReturn(Try.success(nyInformasjon));
+    }
+
+    private void givenBrukersHarOppfolgingsData() {
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString()))
+                .thenReturn(Try.success(eksisterendeInformasjon));
+    }
+
+    private void givenBrukerHarVeilderFraAnnenEnhet() {
+        when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
+        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
+        when(veilederService.getIdenter(any())).thenReturn(Collections.singletonList(VeilederId.of("whatever")));
 
     }
+
+    private void givenBrukerHarVeilderFraSammeEnhet() {
+        when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
+        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
+        when(veilederService.getIdenter(any()))
+                .thenReturn(Collections.singletonList(VeilederId.of(eksisterendeInformasjon.getVeileder())));
+
+    }
+
+    private void givenBrukerManglerEnhet(){
+        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.success(eksisterendeInformasjon));
+        when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
+        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.failure(new RuntimeException()));
+    }
+
+    private void givenBrukerManglerPersonId(){
+        when(brukerRepository.retrievePersonid(any())).thenReturn(Try.failure(new RuntimeException()));
+    }
+
+    private void whenOppdatererOppfolgingData() {
+        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
+    }
+
+    private void thenOppfolgingDataErOppdatert() {
+        verify(solrService).indekserAsynkront(AKTOER_ID);
+        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
+    }
+
+    private void thenArbeidslisteErSlettet() {
+        verify(arbeidslisteService).deleteArbeidslisteForAktoerid(AKTOER_ID);
+    }
+
+    private void thenArbeidsliteErIkkeSlettet() {
+        verify(arbeidslisteService, never()).deleteArbeidslisteForAktoerid(AKTOER_ID);
+    }
+
 
     private BrukerOppdatertInformasjon brukerInfo(boolean oppfolging, String veileder) {
         return new BrukerOppdatertInformasjon()
                 .setOppfolging(oppfolging)
                 .setVeileder(veileder)
                 .setAktoerid(AKTOER_ID.toString());
-    }
-
-    @Test
-    public void skalSletteArbeidslisteHvisBrukerIkkeErUnderOppfolging() {
-
-        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(false, null);
-
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.failure(new RuntimeException()));
-
-        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
-
-        verify(arbeidslisteService).deleteArbeidslisteForAktoerid(AKTOER_ID);
-        verify(solrService).indekserAsynkront(AKTOER_ID);
-        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
-
-    }
-
-    @Test
-    public void skalIkkeSletteArbeidslisteHvisBrukerHarEndretVeileder() {
-
-        BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
-        BrukerOppdatertInformasjon eksisterendeInformasjon = brukerInfo(true, "gammelVeileder");
-
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.success(eksisterendeInformasjon));
-
-        oppfolgingFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(nyInformasjon));
-
-        verify(arbeidslisteService, never()).deleteArbeidslisteForAktoerid(AKTOER_ID);
-        verify(solrService).indekserAsynkront(AKTOER_ID);
-        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
-
     }
 }
