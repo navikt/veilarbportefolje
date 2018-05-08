@@ -163,6 +163,18 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
+    public Try<String> retrieveEnhet(PersonId personId) {
+        return Try.of(
+                () -> {
+                    return select(ds, "OPPFOLGINGSBRUKER", this::mapToEnhet)
+                            .column("NAV_KONTOR")
+                            .where(WhereClause.equals("PERSON_ID", personId.toString()))
+                            .execute();
+                }
+        ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
+    }
+
+
     public Try<Integer> insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
         return
                 Try.of(

@@ -14,8 +14,8 @@ import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
+import no.nav.fo.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -80,8 +80,14 @@ public class OppfolgingerfeedConfig {
                                                        BrukerRepository brukerRepository,
                                                        SolrService solrService,
                                                        OppfolgingFeedRepository oppfolgingFeedRepository,
+                                                       VeilederService veilederService,
                                                        Transactor transactor) {
-        return new OppfolgingFeedHandler(arbeidslisteService, brukerRepository, solrService, oppfolgingFeedRepository, transactor);
+        return new OppfolgingFeedHandler(arbeidslisteService,
+                brukerRepository,
+                solrService,
+                oppfolgingFeedRepository,
+                veilederService,
+                transactor);
     }
 
     private static String sisteEndring(JdbcTemplate db) {
