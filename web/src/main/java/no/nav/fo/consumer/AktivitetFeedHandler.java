@@ -108,7 +108,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
                         aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerIdUnderOppfolging);
                         solrService.slettBrukere(personIdIkkeUnderOppfolging);
-                        solrService.softCommit();
+                        solrService.commit();
                     }, (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
 
             );
