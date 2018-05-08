@@ -81,27 +81,27 @@ public class KrrService {
     }
 
     private Timestamp hentNyesteSisteVerifisert(WSKontaktinformasjon digitalKontaktInformasjon) {
-        Option<Timestamp> epostSisteVerifisertMaybe = Option.of(digitalKontaktInformasjon.getEpostadresse())
+        Option<Timestamp> epostSisteVerifisert = Option.of(digitalKontaktInformasjon.getEpostadresse())
                 .map(WSEpostadresse::getSistVerifisert)
                 .flatMap(KrrService::toTimestamp);
 
-        Option<Timestamp> mobileSisteVerifisertMaybe = Option.of(digitalKontaktInformasjon.getMobiltelefonnummer())
+        Option<Timestamp> mobileSisteVerifisert = Option.of(digitalKontaktInformasjon.getMobiltelefonnummer())
                 .map(WSMobiltelefonnummer::getSistVerifisert)
                 .flatMap(KrrService::toTimestamp);
 
-        return nyesteAv(epostSisteVerifisertMaybe, mobileSisteVerifisertMaybe);
+        return nyesteAv(epostSisteVerifisert, mobileSisteVerifisert);
     }
 
-    static Timestamp nyesteAv(Option<Timestamp> maybeFirst, Option<Timestamp> maybeSecond) {
-        Timestamp first = maybeFirst.get();
-        Timestamp second = maybeSecond.get();
+    static Timestamp nyesteAv(Option<Timestamp> epostSisteVerifisert, Option<Timestamp> mobileSisteVerifisert) {
+        Timestamp epostSistVerifisert = epostSisteVerifisert.get();
+        Timestamp mobileSistVerifisert = mobileSisteVerifisert.get();
 
-        if (first == null) {
-            return second;
-        } else if (second == null) {
-            return first;
+        if (epostSistVerifisert == null) {
+            return mobileSistVerifisert;
+        } else if (mobileSistVerifisert == null) {
+            return epostSistVerifisert;
         } else {
-            return first.compareTo(second) >= 0 ? first : second;
+            return epostSistVerifisert.compareTo(mobileSistVerifisert) >= 0 ? epostSistVerifisert : mobileSistVerifisert;
         }
     }
 
