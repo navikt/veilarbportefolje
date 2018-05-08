@@ -49,7 +49,9 @@ import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.util.DateUtils.*;
+import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
+import static no.nav.fo.util.DateUtils.timestampFromISO8601;
+import static no.nav.fo.util.DateUtils.toUtcString;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
 import static no.nav.fo.util.SolrUtils.harIkkeVeilederFilter;
@@ -316,12 +318,6 @@ public class SolrServiceImpl implements SolrService {
     public Try<UpdateResponse> commit() {
         return Try.of(() -> solrClientMaster.commit())
                 .onFailure(e -> log.error("Kunne ikke gjennomføre commit til solrindeksen.", e));
-    }
-
-    @Override
-    public Try<UpdateResponse> softCommit() {
-        return Try.of(() -> solrClientMaster.commit(true, true, true))
-                .onFailure(e -> log.error("Kunne ikke gjennomføre softcommit til solrindeksen.", e));
     }
 
     private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {

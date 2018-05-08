@@ -29,11 +29,6 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
-    public Try<UpdateResponse> softCommit() {
-        return Try.success(new UpdateResponse());
-    }
-
-    @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         return new BrukereMedAntall(0, emptyList());
     }
