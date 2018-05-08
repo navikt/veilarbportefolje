@@ -43,6 +43,7 @@ public class HovedindekseringScheduler {
 
             log.info("Setter i gang oppdatering av tiltak i databasen");
             timed("indeksering.oppdatering.tiltak", () -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
+            log.info("Ferdig med oppdatering av tiltak");
 
             log.info("Setter i gang krrIndeksering");
             timed("indeksering.oppdatering.krr", () -> krrService.hentDigitalKontaktInformasjonBolk());
