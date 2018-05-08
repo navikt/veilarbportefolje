@@ -2,9 +2,8 @@ package no.nav.fo.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.KrrRepository;
-import no.nav.fo.domene.DigitalKontaktInformasjon;
+import no.nav.fo.domene.KrrDTO;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSForretningsmessigUnntakForBolk;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
@@ -40,27 +39,27 @@ public class KrrService {
         krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(digitalKontaktinformasjonListe, kontaktInformasjonIkkeFunnetListe));
     }
 
-    private List<DigitalKontaktInformasjon> mapDigitalKontaktInformasjon(
+    private List<KrrDTO> mapDigitalKontaktInformasjon(
                     List<WSKontaktinformasjon> digitalKontaktinformasjonListe,
                     List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe)
     {
-        List<DigitalKontaktInformasjon> digitalKontaktInformasjonListe = digitalKontaktinformasjonListe.stream().map((krrInformasjon) -> {
-                    DigitalKontaktInformasjon digitalKontaktInformasjon = new DigitalKontaktInformasjon();
-                    digitalKontaktInformasjon.setFnr(krrInformasjon.getPersonident());
-                    digitalKontaktInformasjon.setReservertIKrr(safeToJaNei(Boolean.valueOf(krrInformasjon.getReservasjon())));
-                    digitalKontaktInformasjon.setSistVerifisert(hentNyesteSisteVerifisert(krrInformasjon));
-                    digitalKontaktInformasjon.setLagtTilIDB(Timestamp.from(Instant.now()));
-                    return digitalKontaktInformasjon;
+        List<KrrDTO> digitalKontaktInformasjonListe = digitalKontaktinformasjonListe.stream().map((krrInformasjon) -> {
+                    KrrDTO krrDTO = new KrrDTO();
+                    krrDTO.setFnr(krrInformasjon.getPersonident());
+                    krrDTO.setReservertIKrr(safeToJaNei(Boolean.valueOf(krrInformasjon.getReservasjon())));
+                    krrDTO.setSistVerifisert(hentNyesteSisteVerifisert(krrInformasjon));
+                    krrDTO.setLagtTilIDB(Timestamp.from(Instant.now()));
+                    return krrDTO;
        }).collect(Collectors.toList());
 
         digitalKontaktInformasjonListe.addAll(
                     kontaktInformasjonIkkeFunnetListe.stream().map((krrInformasjon) -> {
-                    DigitalKontaktInformasjon digitalKontaktInformasjon = new DigitalKontaktInformasjon();
-                    digitalKontaktInformasjon.setFnr(krrInformasjon.getPersonident());
-                    digitalKontaktInformasjon.setReservertIKrr(safeToJaNei(Boolean.valueOf("true")));
-                    digitalKontaktInformasjon.setSistVerifisert(null);
-                    digitalKontaktInformasjon.setLagtTilIDB(Timestamp.from(Instant.now()));
-                    return digitalKontaktInformasjon;
+                    KrrDTO krrDTO = new KrrDTO();
+                    krrDTO.setFnr(krrInformasjon.getPersonident());
+                    krrDTO.setReservertIKrr(safeToJaNei(Boolean.valueOf("true")));
+                    krrDTO.setSistVerifisert(null);
+                    krrDTO.setLagtTilIDB(Timestamp.from(Instant.now()));
+                    return krrDTO;
         }).collect(Collectors.toList()));
 
         return digitalKontaktInformasjonListe;

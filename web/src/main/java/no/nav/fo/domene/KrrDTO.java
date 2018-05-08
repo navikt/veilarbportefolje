@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 
 @Data()
 @Accessors(chain = true)
-public class DigitalKontaktInformasjon {
+public class KrrDTO {
     String fnr;
     String reservertIKrr;
     Timestamp sistVerifisert;
