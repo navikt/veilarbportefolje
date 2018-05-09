@@ -1,6 +1,5 @@
 package no.nav.fo.service;
 
-import io.vavr.API;
 import io.vavr.control.Option;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -76,7 +75,7 @@ public class KrrService {
         return digitalKontaktInformasjonListe;
     }
 
-    static String safeToJaNei(Boolean aBoolean) {
+    private static String safeToJaNei(Boolean aBoolean) {
         return TRUE.equals(aBoolean) ? "J" : "N";
     }
 
@@ -92,20 +91,19 @@ public class KrrService {
         return nyesteAv(epostSisteVerifisert, mobileSisteVerifisert);
     }
 
-    static Timestamp nyesteAv(Option<Timestamp> epostSisteVerifisert, Option<Timestamp> mobileSisteVerifisert) {
-        Timestamp epostSistVerifisert = epostSisteVerifisert.get();
-        Timestamp mobileSistVerifisert = mobileSisteVerifisert.get();
+    private static Timestamp nyesteAv(Option<Timestamp> epostSisteVerifisert, Option<Timestamp> mobileSisteVerifisert) {
+        Timestamp epostSistVerifisert = epostSisteVerifisert.getOrElse((Timestamp) null);
+        Timestamp mobileSistVerifisert = mobileSisteVerifisert.getOrElse((Timestamp) null);
 
-        if (epostSistVerifisert == null) {
+        if (epostSistVerifisert != null && mobileSistVerifisert != null) {
+            return mobileSistVerifisert.compareTo(epostSistVerifisert) >= 0 ? mobileSistVerifisert : epostSistVerifisert;
+        } else if (mobileSistVerifisert != null) {
             return mobileSistVerifisert;
-        } else if (mobileSistVerifisert == null) {
-            return epostSistVerifisert;
-        } else {
-            return epostSistVerifisert.compareTo(mobileSistVerifisert) >= 0 ? epostSistVerifisert : mobileSistVerifisert;
         }
+            return epostSistVerifisert;
     }
 
-    static Option<Timestamp> toTimestamp(XMLGregorianCalendar calendar) {
+    private static Option<Timestamp> toTimestamp(XMLGregorianCalendar calendar) {
         return Option.of(calendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
                 .map(Calendar::getTimeInMillis)
