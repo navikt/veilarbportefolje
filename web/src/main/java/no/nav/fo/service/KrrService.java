@@ -1,5 +1,6 @@
 package no.nav.fo.service;
 
+import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -91,16 +92,12 @@ public class KrrService {
         return nyesteAv(epostSisteVerifisert, mobileSisteVerifisert);
     }
 
-    private static Timestamp nyesteAv(Option<Timestamp> epostSisteVerifisert, Option<Timestamp> mobileSisteVerifisert) {
-        Timestamp epostSistVerifisert = epostSisteVerifisert.getOrElse((Timestamp) null);
-        Timestamp mobileSistVerifisert = mobileSisteVerifisert.getOrElse((Timestamp) null);
-
-        if (epostSistVerifisert != null && mobileSistVerifisert != null) {
-            return mobileSistVerifisert.compareTo(epostSistVerifisert) >= 0 ? mobileSistVerifisert : epostSistVerifisert;
-        } else if (mobileSistVerifisert != null) {
-            return mobileSistVerifisert;
-        }
-            return epostSistVerifisert;
+    static Timestamp nyesteAv(Option<Timestamp> epostSisteVerifisert, Option<Timestamp> mobileSisteVerifisert) {
+        return Stream.of(epostSisteVerifisert, mobileSisteVerifisert)
+                .filter(Option::isDefined)
+                .map(Option::get)
+                .max()
+                .getOrNull();
     }
 
     private static Option<Timestamp> toTimestamp(XMLGregorianCalendar calendar) {
