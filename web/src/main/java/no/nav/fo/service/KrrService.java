@@ -2,7 +2,7 @@ package no.nav.fo.service;
 
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.fo.database.KrrRepository;
 import no.nav.fo.domene.KrrDAO;
@@ -22,29 +22,37 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
+import static no.nav.fo.util.MetricsUtils.timed;
 
+@Slf4j
 public class KrrService {
-
-    @Inject
     private KrrRepository krrRepository;
 
-    @Inject
     private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
+
+    @Inject
+    public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1) {
+        this.krrRepository = krrRepository;
+        this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
+    }
 
     public void hentDigitalKontaktInformasjonBolk() {
         krrRepository.slettKrrInformasjon();
         krrRepository.iterateFnrsUnderOppfolging(1000, this::hentDigitalKontaktInformasjon);
     }
 
-    @SneakyThrows
-    private void hentDigitalKontaktInformasjon(List<String> fnrListe) {
-        val req = new WSHentDigitalKontaktinformasjonBolkRequest().withPersonidentListe(fnrListe);
-        val resp = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req);
+    void hentDigitalKontaktInformasjon(List<String> fnrListe) {
+        timed("indeksering.oppdatering.krr.bolk",
+                (error) -> log.error("Feil ved henting fra KRR", error),
+                () -> {
+                    val req = new WSHentDigitalKontaktinformasjonBolkRequest().withPersonidentListe(fnrListe);
+                    val resp = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req);
 
-        krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(
-                resp.getDigitalKontaktinformasjonListe(),
-                resp.getForretningsmessigUnntakListe()
-        ));
+                    krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(
+                            resp.getDigitalKontaktinformasjonListe(),
+                            resp.getForretningsmessigUnntakListe()
+                    ));
+                });
     }
 
     private List<KrrDAO> mapDigitalKontaktInformasjon(

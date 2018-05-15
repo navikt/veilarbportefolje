@@ -28,8 +28,7 @@ public class AuthorizationUtils {
         }
 
         String basicAuth = auth.substring(6);
-        String basicAuthDecoded;
-        basicAuthDecoded = new String(decoder.decode(basicAuth));
+        String basicAuthDecoded = new String(decoder.decode(basicAuth));
 
         String username = basicAuthDecoded.split(":")[0].toLowerCase();
         String password = basicAuthDecoded.split(":")[1];

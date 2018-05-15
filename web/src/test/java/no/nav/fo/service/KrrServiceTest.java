@@ -1,13 +1,20 @@
 package no.nav.fo.service;
 
+import io.netty.handler.timeout.ReadTimeoutException;
 import io.vavr.control.Option;
+import no.nav.fo.database.KrrRepository;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 import static no.nav.fo.service.KrrService.nyesteAv;
 import static no.nav.fo.util.DateUtils.timestampFromISO8601;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class KrrServiceTest {
 
@@ -45,5 +52,22 @@ public class KrrServiceTest {
     void nyesteAvHvisEpostOgMobilErNull() {
         Timestamp nyesteAvHvisEpostOgMobilErNull = nyesteAv(Option.none(), Option.none());
         assertThat(nyesteAvHvisEpostOgMobilErNull).isEqualTo(null);
+    }
+
+    @Test
+    void skalIkkeKasteExceptionsVedFeilMotKRR() throws Exception {
+        KrrRepository repo = mock(KrrRepository.class);
+        DigitalKontaktinformasjonV1 dkif = mock(DigitalKontaktinformasjonV1.class);
+        KrrService service = new KrrService(repo, dkif);
+
+        when(dkif.hentDigitalKontaktinformasjonBolk(any())).thenThrow(ReadTimeoutException.class);
+
+        try {
+            service.hentDigitalKontaktInformasjon(new ArrayList<>());
+        } catch (Exception e) {
+            fail(e.getMessage(), e);
+        }
+
+        verify(repo, never()).lagreKRRInformasjon(any());
     }
 }

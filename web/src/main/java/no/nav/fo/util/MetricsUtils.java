@@ -1,5 +1,7 @@
 package no.nav.fo.util;
 
+import io.vavr.CheckedRunnable;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 
@@ -7,8 +9,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MetricsUtils {
@@ -68,8 +68,15 @@ public class MetricsUtils {
         functionToRunnable(timed(navn, runnableToFunction(runnable), tagsAppender)).run();
     }
 
+    public static void timed(String navn, Consumer<Throwable> errorHandler, CheckedRunnable runnable) {
+        functionToRunnable(timed(navn, checkedrunnableToFunction(errorHandler, runnable))).run();
+    }
+
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
-        return (S s) -> { consumer.accept(s); return null; };
+        return (S s) -> {
+            consumer.accept(s);
+            return null;
+        };
     }
 
     private static <S> Consumer<S> functionToConsumer(Function<S, Void> function) {
@@ -91,6 +98,18 @@ public class MetricsUtils {
     private static Function<Void, Void> runnableToFunction(Runnable runnable) {
         return aVoid -> {
             runnable.run();
+            return null;
+        };
+    }
+
+    private static Function<Void, Void> checkedrunnableToFunction(Consumer<Throwable> errorHandler, CheckedRunnable runnable) {
+        return aVoid -> {
+            try {
+                runnable.run();
+            } catch (Throwable throwable) {
+                errorHandler.accept(throwable);
+                return null;
+            }
             return null;
         };
     }
