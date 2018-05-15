@@ -1,8 +1,10 @@
 package no.nav.fo.config;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
+import no.nav.fo.database.KrrRepository;
 import no.nav.fo.database.PersistentOppdatering;
 import no.nav.fo.service.*;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,8 +30,8 @@ public class ServiceConfig {
     public TiltakService tiltakService() { return new TiltakService(); }
 
     @Bean
-    public KrrService krrService() {
-        return new KrrService();
+    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif) {
+        return new KrrService(krrRepository, dkif);
     }
 
 }
