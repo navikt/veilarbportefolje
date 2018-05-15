@@ -1,11 +1,11 @@
 package no.nav.fo.service;
 
-import io.netty.handler.timeout.ReadTimeoutException;
 import io.vavr.control.Option;
 import no.nav.fo.database.KrrRepository;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.junit.jupiter.api.Test;
 
+import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
@@ -60,7 +60,7 @@ public class KrrServiceTest {
         DigitalKontaktinformasjonV1 dkif = mock(DigitalKontaktinformasjonV1.class);
         KrrService service = new KrrService(repo, dkif);
 
-        when(dkif.hentDigitalKontaktinformasjonBolk(any())).thenThrow(ReadTimeoutException.class);
+        when(dkif.hentDigitalKontaktinformasjonBolk(any())).thenThrow(SocketTimeoutException.class);
 
         try {
             service.hentDigitalKontaktInformasjon(new ArrayList<>());
