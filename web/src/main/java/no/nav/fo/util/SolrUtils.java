@@ -58,6 +58,7 @@ public class SolrUtils {
         SolrQuery solrQuery = new SolrQuery(query);
         solrQuery.setFacet(true);
         solrQuery.addFacetField(facetField);
+        solrQuery.setFacetLimit(-1);
         return solrQuery;
     }
 
