@@ -1,6 +1,7 @@
 package no.nav.fo.util;
 
 import io.vavr.CheckedRunnable;
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
@@ -69,7 +70,8 @@ public class MetricsUtils {
     }
 
     public static void timed(String navn, Consumer<Throwable> errorHandler, CheckedRunnable runnable) {
-        functionToRunnable(timed(navn, checkedrunnableToFunction(errorHandler, runnable))).run();
+        Try.run(() -> timed(navn, sneakyThrows(runnable)))
+                .onFailure((throwable -> errorHandler.accept(throwable.getCause())));
     }
 
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
@@ -102,15 +104,13 @@ public class MetricsUtils {
         };
     }
 
-    private static Function<Void, Void> checkedrunnableToFunction(Consumer<Throwable> errorHandler, CheckedRunnable runnable) {
-        return aVoid -> {
+    private static Runnable sneakyThrows(CheckedRunnable runnable) {
+        return () -> {
             try {
                 runnable.run();
             } catch (Throwable throwable) {
-                errorHandler.accept(throwable);
-                return null;
+                throw new RuntimeException(throwable);
             }
-            return null;
         };
     }
 
