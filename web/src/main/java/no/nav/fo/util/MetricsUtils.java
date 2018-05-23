@@ -71,7 +71,7 @@ public class MetricsUtils {
 
     public static void timed(String navn, Consumer<Throwable> errorHandler, CheckedRunnable runnable) {
         Try.run(() -> timed(navn, sneakyThrows(runnable)))
-                .onFailure((throwable -> errorHandler.accept(throwable.getCause())));
+                .onFailure((throwable) -> errorHandler.accept(throwable.getCause()));
     }
 
     private static <S> Function<S, Void> consumerToFunction(Consumer<S> consumer) {
