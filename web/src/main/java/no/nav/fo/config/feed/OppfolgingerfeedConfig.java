@@ -5,6 +5,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
+import no.nav.fo.consumer.DedupeFeedHandler;
 import no.nav.fo.consumer.OppfolgingFeedHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.OppfolgingFeedRepository;
@@ -41,7 +42,7 @@ public class OppfolgingerfeedConfig {
 
     @Value("${oppfolging.feed.pagesize:500}")
     private int pageSize;
-    
+
     @Value("${oppfolging.feed.pollingintervalseconds: 10}")
     private int pollingIntervalInSeconds;
 
@@ -55,7 +56,7 @@ public class OppfolgingerfeedConfig {
 
     @Bean
     public FeedConsumer<BrukerOppdatertInformasjon> brukerOppdatertInformasjonFeedConsumer(
-            JdbcTemplate db, 
+            JdbcTemplate db,
             FeedCallback<BrukerOppdatertInformasjon> callback) {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
@@ -67,7 +68,7 @@ public class OppfolgingerfeedConfig {
         SimpleWebhookPollingConfig webhookPollingConfig = new SimpleWebhookPollingConfig(10, FEED_API_ROOT);
 
         FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds), webhookPollingConfig)
-                .callback(callback)
+                .callback(DedupeFeedHandler.of(pageSize, callback))
                 .pageSize(pageSize)
                 .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()))
@@ -92,7 +93,7 @@ public class OppfolgingerfeedConfig {
 
     private static String sisteEndring(JdbcTemplate db) {
         Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT oppfolging_sist_oppdatert FROM METADATA").get(0).get("oppfolging_sist_oppdatert");
-        String sisteEndringStr = ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
+        String sisteEndringStr = ZonedDateTime.ofInstant(sisteEndring.toInstant().minusSeconds(10), ZoneId.systemDefault()).toString();
         log.info("OppfolgingerfeedDebug sisteEndring: {}", sisteEndringStr);
         return sisteEndringStr;
     }
