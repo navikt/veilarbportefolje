@@ -271,6 +271,8 @@ public class SolrServiceImpl implements SolrService {
         String facetFieldString = "veileder_id";
 
         SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
+        // ikke interessert i veiledere som ikke har tilordnede brukere
+        solrQuery.setFacetMinCount(1);
 
         QueryResponse response = new QueryResponse();
         try {
