@@ -47,8 +47,8 @@ public class EnhetController {
     @Path("/{enhet}/portefolje")
     public Response hentPortefoljeForEnhet(
             @PathParam("enhet") String enhet,
-            @QueryParam("fra") int fra,
-            @QueryParam("antall") int antall,
+            @QueryParam("fra") Integer fra,
+            @QueryParam("antall") Integer antall,
             @QueryParam("sortDirection") String sortDirection,
             @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
