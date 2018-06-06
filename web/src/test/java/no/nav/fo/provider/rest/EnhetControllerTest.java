@@ -44,4 +44,15 @@ public class EnhetControllerTest {
         verify(solrService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
+    @Test
+    public void skalHenteHelePortefoljeFraIndeksDersomManMangleAntall() throws Exception {
+        when(pepClient.tilgangTilEnhet(any(), any())).thenReturn(true);
+        when(pepClient.isSubjectMemberOfModiaOppfolging(any(), any())).thenReturn(true);
+
+        enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg());
+
+        verify(solrService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), isNull());
+    }
+
+
 }
