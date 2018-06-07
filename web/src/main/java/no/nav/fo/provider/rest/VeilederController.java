@@ -46,8 +46,8 @@ public class VeilederController {
     public Response hentPortefoljeForVeileder(
             @PathParam("veilederident") String veilederIdent,
             @QueryParam("enhet") String enhet,
-            @QueryParam("fra") int fra,
-            @QueryParam("antall") int antall,
+            @QueryParam("fra") Integer fra,
+            @QueryParam("antall") Integer antall,
             @QueryParam("sortDirection") String sortDirection,
             @QueryParam("sortField") String sortField,
             Filtervalg filtervalg) {
@@ -68,7 +68,10 @@ public class VeilederController {
             BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
             List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), token, pepClient);
 
-            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(), sensurerteBrukereSublist, enhet, fra);
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
+                    sensurerteBrukereSublist,
+                    enhet,
+                    Optional.ofNullable(fra).orElse(0));
 
             Event event = MetricsFactory.createEvent("minoversiktportefolje.lastet");
             event.addFieldToReport("identhash", identHash);
