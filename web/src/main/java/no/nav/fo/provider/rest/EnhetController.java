@@ -67,7 +67,10 @@ public class EnhetController {
             BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
             List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), token, pepClient);
 
-            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(), sensurerteBrukereSublist, enhet, fra);
+            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
+                    sensurerteBrukereSublist,
+                    enhet,
+                    Optional.ofNullable(fra).orElse(0));
 
             Event event = MetricsFactory.createEvent("enhetsportefolje.lastet");
             event.addFieldToReport("identhash", identHash);
