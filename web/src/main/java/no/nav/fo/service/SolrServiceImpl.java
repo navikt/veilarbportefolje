@@ -120,8 +120,7 @@ public class SolrServiceImpl implements SolrService {
 
         BatchConsumer<SolrInputDocument> consumer = batchConsumer(10000, (dokumenter) -> {
             antallBrukere[0] += dokumenter.size();
-            leggDataTilSolrDocument(dokumenter);
-            addDocumentsToIndex(dokumenter);
+            indekserDokumenter(dokumenter);
         });
         brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, consumer);
         consumer.flush(); // Må kalles slik at batcher mindre enn `size` også blir prosessert.
@@ -137,7 +136,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void deltaindeksering() {
         if (SolrUtils.isSlaveNode()) {
-            log.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
+            log.info("Noden er en slave. Kun masternoden kan iverksette indeksering. Avbryter.");
             return;
         }
 
@@ -155,8 +154,7 @@ public class SolrServiceImpl implements SolrService {
                 .filter(BrukerRepository::erOppfolgingsBruker)
                 .collect(toList());
 
-        leggDataTilSolrDocument(oppfolgingsbrukere);
-        addDocumentsToIndex(oppfolgingsbrukere);
+        indekserDokumenter(oppfolgingsbrukere);
 
         dokumenter.stream()
                 .filter((bruker) -> !BrukerRepository.erOppfolgingsBruker(bruker))
@@ -302,6 +300,14 @@ public class SolrServiceImpl implements SolrService {
         log.info("Indeks oppdatert for person med personId {}", personId);
     }
 
+    @Override
+    public void indekserBrukere(List<PersonId> personIds) {
+        List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds).stream()
+                .filter(BrukerRepository::erOppfolgingsBruker)
+                .collect(toList());
+        indekserDokumenter(dokumenter);
+    }
+    
     @Override
     public void indekserBrukerdata(AktoerId aktoerId) {
         aktoerService

@@ -45,4 +45,6 @@ public interface SolrService {
 
     void indekserAsynkront(AktoerId aktoerId);
 
+    void indekserBrukere(List<PersonId> personIds);
+
 }

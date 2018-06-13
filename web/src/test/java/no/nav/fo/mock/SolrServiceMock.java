@@ -101,4 +101,8 @@ public class SolrServiceMock implements SolrService {
     @Override
     public void indekserAsynkront(AktoerId aktoerId) {
     }
+
+    @Override
+    public void indekserBrukere(List<PersonId> personIds) {
+    }
 }
