@@ -120,7 +120,6 @@ public class AktivitetServiceTest {
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDB(captor.capture());
-        List<AktivitetBrukerOppdatering> oppdatering =  captor.getValue();
         Timestamp capturedDate = captor.getValue().get(0).getAktiviteter().stream()
                 .filter(a -> a.getAktivitetType().equals(aktivitetType))
                 .findFirst().get().getNesteUtlop();

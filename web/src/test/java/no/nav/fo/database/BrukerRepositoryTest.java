@@ -453,34 +453,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalHenteListeMedPersonids() {
-        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
-        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
-        AktoerId aktoerId3 = AktoerId.of("aktoerid3");
-
-        PersonId personId1 = PersonId.of("personid1");
-        PersonId personId2 = PersonId.of("personid2");
-
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerId1, personId1);
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerId2, personId2);
-
-        Map<AktoerId, Optional<PersonId>> aktoeridsToPersonids = brukerRepository.hentPersonidsFromAktoerids(asList(aktoerId1, aktoerId2, aktoerId3));
-
-        assertThat(aktoeridsToPersonids.get(aktoerId1).get()).isEqualTo(personId1);
-        assertThat(aktoeridsToPersonids.get(aktoerId2).get()).isEqualTo(personId2);
-        assertThat(aktoeridsToPersonids.get(aktoerId3).isPresent()).isFalse();
-    }
-
-    @Test
-    public void skalHenteOppfolgignsstatusForLsite() {
-        List<PersonId> personIds = Stream.of("4120339", "4120327", "1033279", "4024027", "183651")
-                .map(PersonId::of).collect(toList());
-
-        Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = brukerRepository.retrieveOppfolgingstatus(personIds);
-        assertThat(personIdOppfolgingstatusMap.size()).isEqualTo(5);
-    }
-
-    @Test
     public void skalHenteBrukereMedBrukerdata() {
         List<PersonId> personIds = Stream.of("4120339", "4120327", "1033279", "4024027", "183651")
                 .map(PersonId::of).collect(toList());

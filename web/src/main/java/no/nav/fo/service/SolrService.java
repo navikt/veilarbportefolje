@@ -23,15 +23,11 @@ public interface SolrService {
 
     void slettBruker(String fnr);
 
-    void slettBruker(PersonId personId);
-
-    void slettBrukere(List<PersonId> personId);
+    void slettBruker(PersonId personid);
 
     void indekserBrukerdata(PersonId personId);
 
     void indekserBrukerdata(AktoerId aktoerId);
-
-    void indekserDokumenter(List<SolrInputDocument> personIds);
 
     StatusTall hentStatusTallForPortefolje(String enhet);
 

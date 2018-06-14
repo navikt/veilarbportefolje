@@ -59,7 +59,6 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 @Tag(SMOKETEST)
-@SuppressWarnings("Duplicates")
 public class SolrUpdateSmoketest {
     private static SolrClient solrClient;
     private static String VEILARBPORTEFOLJE = "veilarbportefolje";
@@ -132,7 +131,9 @@ public class SolrUpdateSmoketest {
         List<LocalDateTime> descending = brukereDescending.getBrukere().stream().map(Bruker::getFodselsdato).collect(Collectors.toList());
         assertThat(ascending).isEqualTo(asList(fodselsdato3.toLocalDateTime(), fodselsdato2.toLocalDateTime(),fodselsdato1.toLocalDateTime()));
         assertThat(descending).isEqualTo(asList(fodselsdato1.toLocalDateTime(), fodselsdato2.toLocalDateTime(),fodselsdato3.toLocalDateTime()));
-        solrService.slettBrukere(asList(PersonId.of("1111"),PersonId.of("2222"), PersonId.of("3333")));
+        solrService.slettBruker(PersonId.of("1111"));
+        solrService.slettBruker(PersonId.of("2222"));
+        solrService.slettBruker(PersonId.of("3333"));
     }
 
     @Test

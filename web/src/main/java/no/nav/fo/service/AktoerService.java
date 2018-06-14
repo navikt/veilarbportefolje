@@ -14,5 +14,4 @@ public interface AktoerService {
     Try<AktoerId> hentAktoeridFraFnr(Fnr fnr);
     Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs);
     Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds);
-    Map<AktoerId, Optional<PersonId>> hentPersonidsForAktoerids(List<AktoerId> aktoerIds);
 }

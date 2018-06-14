@@ -1,6 +1,5 @@
 package no.nav.fo.consumer;
 
-import io.vavr.control.Try;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.database.PersistentOppdatering;
@@ -17,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import io.vavr.control.Try;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -69,8 +70,7 @@ public class AktivitetFeedHandlerTest {
         reset(brukerRepository, solrService, aktoerService, aktivitetDAOMock, persistentOppdatering, db, namedParameterJdbcTemplate, ds);
         aktivitetDAO = new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
         aktivitetService = new AktivitetService(aktoerService, aktivitetDAO, persistentOppdatering);
-        aktivitetDAO = new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
-        aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetServiceMock, aktoerService, solrService, aktivitetDAOMock);
+        aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetServiceMock, aktivitetDAOMock);
     }
 
 
@@ -82,30 +82,9 @@ public class AktivitetFeedHandlerTest {
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID2").setAvtalt(true));
 
-        Map<AktoerId, Optional<PersonId>> idMap = new HashMap<>();
-        idMap.put(AktoerId.of("AktoerID1"), Optional.of(PersonId.of("123123")));
-        idMap.put(AktoerId.of("AktoerID2"), Optional.of(PersonId.of("123123")));
-
-        when(aktoerService.hentPersonidsForAktoerids(any())).thenReturn(idMap);
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenAnswer((r) -> {
-            Map<PersonId, Oppfolgingstatus> statuser = new HashMap<>();
-            List<PersonId> personIds = r.getArgument(0);
-            personIds.forEach( (personid) -> {
-                statuser.put(personid,new Oppfolgingstatus().setOppfolgingsbruker(true));
-            });
-            return statuser;
-        });
-
         aktivitetFeedHandler.call("dontcare", data);
 
-        ArgumentCaptor<List<AktoerId>> aktoeridCaptor = ArgumentCaptor.forClass(List.class);
-
-        verify(aktivitetServiceMock, times(1)).utledOgIndekserAktivitetstatuserForAktoerid(aktoeridCaptor.capture());
-        List<AktoerId> capturedAktoerids = aktoeridCaptor.getValue();
-
-
-        assertThat(capturedAktoerids).contains(AktoerId.of("AktoerID1"));
-        assertThat(capturedAktoerids).contains(AktoerId.of("AktoerID2"));
+        verify(aktivitetServiceMock, times(1)).utledOgIndekserAktivitetstatuserForAktoerid(eq(Arrays.asList(AktoerId.of("AktoerID1"), AktoerId.of("AktoerID2"))));
     }
 
     @Test
@@ -123,20 +102,9 @@ public class AktivitetFeedHandlerTest {
 
     @Test
     public void skalOppdatereStatusForBrukerUtenAktiviteter() {
-        aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService, aktivitetDAO);
+        aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetService, aktivitetDAO);
         ArgumentCaptor<List<BrukerOppdatering>> captor = ArgumentCaptor.forClass(List.class);
 
-
-        when(aktoerService.hentPersonidsForAktoerids(any())).thenAnswer(invokation -> {
-            Map<AktoerId, Optional<PersonId>> aktoeridToPersonid = new HashMap<>();
-            ((List) invokation.getArgument(0)).forEach( arg -> aktoeridToPersonid.put((AktoerId) arg, Optional.of(PersonId.of(arg.toString()))));
-            return aktoeridToPersonid;
-        });
-        when(brukerRepository.retrieveOppfolgingstatus(anyList())).thenAnswer(invokation -> {
-            Map<PersonId, Oppfolgingstatus> oppfolgingstatus = new HashMap<>();
-            ((List) invokation.getArgument(0)).forEach(arg -> oppfolgingstatus.put((PersonId) arg, new Oppfolgingstatus().setOppfolgingsbruker(true)));
-            return oppfolgingstatus;
-        });
         when(aktoerService.hentPersonidFraAktoerid(any(AktoerId.class))).thenAnswer(invocation -> Try.success(PersonId.of(invocation.getArgument(0).toString())));
 
         aktivitetFeedHandler.behandleAktivitetdata(asList(AktoerId.of("a1"), AktoerId.of("a2")));
@@ -150,8 +118,8 @@ public class AktivitetFeedHandlerTest {
 
     @Test
     public void skalReturnereMedEnGangOmListenErTom() {
-        aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService, aktivitetDAO);
+        aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetServiceMock, aktivitetDAO);
         aktivitetFeedHandler.behandleAktivitetdata(Collections.emptyList());
-        verify(aktoerService, never()).hentPersonidsForAktoerids(any());
+        verify(aktivitetServiceMock, never()).utledOgIndekserAktivitetstatuserForAktoerid(any());
     }
 }

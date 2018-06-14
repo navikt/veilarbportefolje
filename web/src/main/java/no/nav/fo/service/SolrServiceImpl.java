@@ -170,7 +170,7 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
-    public void indekserDokumenter(List<SolrInputDocument> dokumenter) {
+    private void indekserDokumenter(List<SolrInputDocument> dokumenter) {
         leggDataTilSolrDocument(dokumenter);
         addDocumentsToIndex(dokumenter);
     }
@@ -259,11 +259,6 @@ public class SolrServiceImpl implements SolrService {
     }
 
     @Override
-    public void slettBrukere(List<PersonId> personIds) {
-        personIds.forEach(this::slettBruker);
-    }
-
-    @Override
     public FacetResults hentPortefoljestorrelser(String enhetId) {
 
         String facetFieldString = "veileder_id";
@@ -306,6 +301,7 @@ public class SolrServiceImpl implements SolrService {
                 .filter(BrukerRepository::erOppfolgingsBruker)
                 .collect(toList());
         indekserDokumenter(dokumenter);
+        commit();
     }
     
     @Override

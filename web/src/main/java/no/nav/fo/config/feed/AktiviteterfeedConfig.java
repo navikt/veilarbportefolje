@@ -10,8 +10,6 @@ import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.AktivitetService;
-import no.nav.fo.service.AktoerService;
-import no.nav.fo.service.SolrService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -68,10 +66,8 @@ public class AktiviteterfeedConfig {
     @Bean
     public AktivitetFeedHandler aktivitetFeedHandler(BrukerRepository brukerRepository,
                                                      AktivitetService aktivitetService,
-                                                     AktoerService aktoerService,
-                                                     SolrService solrService,
                                                      AktivitetDAO aktivitetDAO) {
-        return new AktivitetFeedHandler(brukerRepository, aktivitetService, aktoerService, solrService, aktivitetDAO);
+        return new AktivitetFeedHandler(brukerRepository, aktivitetService, aktivitetDAO);
     }
 
     private static String sisteEndring(AktivitetDAO aktivitetDAO) {

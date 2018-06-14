@@ -126,21 +126,6 @@ public class AktoerServiceImpl implements AktoerService {
         return personIdToAktoeridMap;
     }
 
-    @Override
-    public Map<AktoerId, Optional<PersonId>> hentPersonidsForAktoerids(List<AktoerId> aktoerIds) {
-        Map<AktoerId, Optional<PersonId>> aktoerIdToPersonidMap = new HashMap<>(aktoerIds.size());
-        Map<AktoerId, Optional<PersonId>> fromDb = brukerRepository.hentPersonidsFromAktoerids(aktoerIds);
-
-        fromDb.forEach((key, value) -> {
-            if(value.isPresent()) {
-                aktoerIdToPersonidMap.put(key, value);
-            } else {
-                aktoerIdToPersonidMap.put(key, (hentPersonIdViaSoap(key)).toJavaOptional());
-            }
-        });
-        return aktoerIdToPersonidMap;
-    }
-
     private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
         return hentFnrViaSoap(aktoerId)
                 .flatMap(brukerRepository::retrievePersonidFromFnr)
@@ -160,4 +145,5 @@ public class AktoerServiceImpl implements AktoerService {
         }
         return Try.success(mapper.apply(data.get(0)));
     }
+    
 }

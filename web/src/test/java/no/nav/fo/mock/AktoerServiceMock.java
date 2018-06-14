@@ -15,17 +15,17 @@ public class AktoerServiceMock implements AktoerService {
 
     public static final String FNR = "99999999991";
     public static final String FNR_2 = "99999999992";
-    public static final String FNR_FAIL = "99999999990";
+    private static final String FNR_FAIL = "99999999990";
     public static final String FNR_UNAUTHORIZED = "99999999900";
 
     public static final String PERSON_ID = "9991";
     public static final String PERSON_ID_2 = "9992";
     public static final String PERSON_ID_UNAUTHORIZED = "9900";
-    public static final String PERSON_ID_FAIL = "9000";
+    private static final String PERSON_ID_FAIL = "9000";
 
     public static final String AKTOER_ID = "9999999999991";
     public static final String AKTOER_ID_2 = "9999999999992";
-    public static final String AKTOER_ID_FAIL = "9999999999990";
+    private static final String AKTOER_ID_FAIL = "9999999999990";
     public static final String AKTOER_ID_UNAUTHORIZED = "9999999999900";
 
     private Map<String, Testbruker> testbrukere;
@@ -61,11 +61,6 @@ public class AktoerServiceMock implements AktoerService {
 
     @Override
     public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
-        return null;
-    }
-
-    @Override
-    public Map<AktoerId, Optional<PersonId>> hentPersonidsForAktoerids(List<AktoerId> aktoerIds) {
         return null;
     }
 

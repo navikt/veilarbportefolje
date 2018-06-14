@@ -15,7 +15,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import javax.ws.rs.InternalServerErrorException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -51,8 +50,6 @@ public class BrukerRepository {
 
     private static final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
     private static final String METADATA = "METADATA";
-    private static final String FORMIDLINGSGRUPPEKODE = "formidlingsgruppekode";
-    private static final String KVALIFISERINGSGRUPPEKODE = "kvalifiseringsgruppekode";
 
     static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO =
             "SELECT " +
@@ -93,52 +90,8 @@ public class BrukerRepository {
             "FROM " +
             "vw_portefolje_info";
 
-    private static final String OPPFOLGINGSSTAUTS_QUERY =
-        "SELECT " +
-            "OB_AND_MAPPING.PERSON_ID AS PERSON_ID, " +
-            "OB_AND_MAPPING.FORMIDLINGSGRUPPEKODE AS FORMIDLINGSGRUPPEKODE, " +
-            "OB_AND_MAPPING.KVALIFISERINGSGRUPPEKODE AS KVALIFISERINGSGRUPPEKODE, " +
-            "OD.VEILEDERIDENT AS VEILEDERIDENT, " +
-            "OD.OPPFOLGING AS OPPFOLGING " +
-        "FROM " +
-            "(SELECT * FROM " +
-                "OPPFOLGINGSBRUKER OB " +
-                "LEFT JOIN AKTOERID_TO_PERSONID MAP ON MAP.PERSONID = OB.PERSON_ID) OB_AND_MAPPING " +
-            "LEFT JOIN OPPFOLGING_DATA OD ON OD.AKTOERID = OB_AND_MAPPING.AKTOERID " +
-            "WHERE " +
-            "PERSON_ID IN (:personids) ";
-
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
-    }
-
-    public Map<PersonId, Oppfolgingstatus> retrieveOppfolgingstatus(List<PersonId> personIds) {
-        return tryRetrieveOppfolgingstatus(personIds)
-                .getOrElseThrow(() -> new InternalServerErrorException("Kunne ikke finne oppfolgingsstatus for liste av brukere i databasen"));
-    }
-
-    private Try<Map<PersonId, Oppfolgingstatus>> tryRetrieveOppfolgingstatus(List<PersonId> personIds) {
-        return Try.of(() -> {
-            Map<PersonId, Oppfolgingstatus> personIdOppfolgingstatusMap = new HashMap<>();
-
-            io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
-                    .forEach(personIdsBatch -> {
-                        Map<String, Object> params = new HashMap<>(personIdsBatch.size());
-                        params.put("personids", personIdsBatch.toJavaList().stream().map(PersonId::toString).collect(toList()));
-                        timed(dbTimerNavn(OPPFOLGINGSSTAUTS_QUERY),
-                                () -> namedParameterJdbcTemplate.queryForList(OPPFOLGINGSSTAUTS_QUERY, params))
-                                .forEach(data -> personIdOppfolgingstatusMap.put(
-                                        PersonId.of(Integer.toString(((BigDecimal) data.get("person_id")).intValue())),
-                                        new Oppfolgingstatus()
-                                                .setFormidlingsgruppekode((String) data.get(FORMIDLINGSGRUPPEKODE))
-                                                .setServicegruppekode((String) data.get(KVALIFISERINGSGRUPPEKODE))
-                                                .setOppfolgingsbruker(parseJaNei(data.get("OPPFOLGING"), "OPPFOLGING"))
-                                                .setVeileder((String) data.get("veilederident"))
-                                ));
-                    });
-
-            return personIdOppfolgingstatusMap;
-        });
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
@@ -350,30 +303,6 @@ public class BrukerRepository {
         return brukere;
     }
 
-    public Map<AktoerId, Optional<PersonId>> hentPersonidsFromAktoerids(List<AktoerId> aktoerIds) {
-        Map<AktoerId, Optional<PersonId>> brukere = new HashMap<>(aktoerIds.size());
-
-        batchProcess(1000, aktoerIds, timed("retreive.personids.batch", (aktoeridsBatch) -> {
-            Map<String, Object> params = new HashMap<>();
-            params.put("aktoerids", aktoeridsBatch.stream().map(AktoerId::toString).collect(toList()));
-            String sql = hentPersonidsFromAktoeridsSQL();
-            Map<AktoerId, Optional<PersonId>> aktoeridToPersonidsMap = timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(
-                    sql, params))
-                    .stream()
-                    .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
-                    )
-                    .collect(Collectors.toMap(Tuple2::_2, personData -> Optional.of(personData._1())));
-
-            brukere.putAll(aktoeridToPersonidsMap);
-        }));
-
-        aktoerIds.stream()
-                .filter(not(brukere::containsKey))
-                .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
-
-        return brukere;
-    }
-
     public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
         Map<PersonId, Optional<AktoerId>> brukere = new HashMap<>(personIds.size());
 
@@ -405,15 +334,6 @@ public class BrukerRepository {
                 "FROM " +
                 "AKTOERID_TO_PERSONID " +
                 "WHERE PERSONID in (:personids)";
-    }
-
-    private String hentPersonidsFromAktoeridsSQL() {
-        return "SELECT " +
-                "AKTOERID, " +
-                "PERSONID " +
-                "FROM " +
-                "AKTOERID_TO_PERSONID " +
-                "WHERE AKTOERID in (:aktoerids)";
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
