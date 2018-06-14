@@ -57,7 +57,7 @@ public class SolrServiceTest {
     @Mock
     private RemoteFeatureConfig.FlyttSomNyeFeature flyttSomNyeFeature;
 
-    private SolrService service;
+    private SolrServiceImpl service;
 
     @Before
     public void setup() {

@@ -1,6 +1,5 @@
 package no.nav.fo.service;
 
-import io.vavr.control.Either;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -199,20 +198,7 @@ public class SolrServiceImpl implements SolrService {
         return hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, null, null);
     }
 
-
-    @Override
-    public Either<Throwable, List<Bruker>> query(String query) {
-        return Try.of(() -> {
-            SolrQuery solrQuery = new SolrQuery("*:*");
-            solrQuery.addFilterQuery(query);
-            QueryResponse response = solrClientSlave.query(solrQuery);
-            SolrUtils.checkSolrResponseCode(response.getStatus());
-            SolrDocumentList results = response.getResults();
-            return results.stream().map(Bruker::of).collect(toList());
-        }).toEither();
-    }
-
-    public String byggQueryString(String enhetId, Optional<String> veilederIdent) {
+    String byggQueryString(String enhetId, Optional<String> veilederIdent) {
         return veilederIdent
                 .map((ident) -> isBlank(ident) ? null : ident)
                 .map((ident) -> "veileder_id: " + ident + " AND enhet_id: " + enhetId)
@@ -304,8 +290,7 @@ public class SolrServiceImpl implements SolrService {
         commit();
     }
     
-    @Override
-    public void indekserBrukerdata(AktoerId aktoerId) {
+    private void indekserBrukerdata(AktoerId aktoerId) {
         aktoerService
                 .hentPersonidFraAktoerid(aktoerId)
                 .onSuccess(this::indekserBrukerdata);
@@ -317,9 +302,9 @@ public class SolrServiceImpl implements SolrService {
     }
 
     @Override
-    public Try<UpdateResponse> commit() {
+    public void commit() {
         String feilmeldingsTekst = "Kunne ikke gjennomføre commit til solrindeksen.";
-        return Try.of(() -> solrClientMaster.commit())
+        Try.of(() -> solrClientMaster.commit())
                 .onFailure(e -> {
                     if (e instanceof HttpSolrClient.RemoteSolrException) {
                         log.warn(feilmeldingsTekst, e.getMessage());

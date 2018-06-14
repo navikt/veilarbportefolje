@@ -1,10 +1,7 @@
 package no.nav.fo.service;
 
-import io.vavr.control.Either;
 import io.vavr.control.Try;
 import no.nav.fo.domene.*;
-import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrInputDocument;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,12 +11,9 @@ public interface SolrService {
 
     void deltaindeksering();
 
-    Try<UpdateResponse> commit();
-
     BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall);
-    BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg);
 
-    Either<Throwable, List<Bruker>> query(String query);
+    BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg);
 
     void slettBruker(String fnr);
 
@@ -27,7 +21,7 @@ public interface SolrService {
 
     void indekserBrukerdata(PersonId personId);
 
-    void indekserBrukerdata(AktoerId aktoerId);
+    void commit();
 
     StatusTall hentStatusTallForPortefolje(String enhet);
 
@@ -36,8 +30,6 @@ public interface SolrService {
     StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent);
 
     Try<List<Bruker>> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet);
-
-    String byggQueryString(String enhetId, Optional<String> veilederIdent);
 
     void indekserAsynkront(AktoerId aktoerId);
 

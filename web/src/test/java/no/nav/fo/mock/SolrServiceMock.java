@@ -1,10 +1,8 @@
 package no.nav.fo.mock;
 
-import io.vavr.control.Either;
 import io.vavr.control.Try;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.SolrService;
-import org.apache.solr.client.solrj.response.UpdateResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +21,6 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
-    public Try<UpdateResponse> commit() {
-        return Try.success(new UpdateResponse());
-    }
-
-    @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         return new BrukereMedAntall(0, emptyList());
     }
@@ -35,11 +28,6 @@ public class SolrServiceMock implements SolrService {
     @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         return new BrukereMedAntall(0, emptyList());
-    }
-
-    @Override
-    public Either<Throwable, List<Bruker>> query(String query) {
-        return Either.right(emptyList());
     }
 
     @Override
@@ -54,11 +42,6 @@ public class SolrServiceMock implements SolrService {
     
     @Override
     public void indekserBrukerdata(PersonId personId) {
-
-    }
-
-    @Override
-    public void indekserBrukerdata(AktoerId aktoerId) {
 
     }
 
@@ -83,16 +66,15 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
-    public String byggQueryString(String enhetId, Optional<String> veilederIdent) {
-        return null;
-    }
-
-    @Override
     public void indekserAsynkront(AktoerId aktoerId) {
     }
 
     @Override
     public void indekserBrukere(List<PersonId> personIds) {
+    }
+
+    @Override
+    public void commit() {
     }
     
 }
