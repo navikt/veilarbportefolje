@@ -5,7 +5,6 @@ import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.RemoteFeatureConfig.FlyttSomNyeFeature;
-import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.AktoerService;
@@ -85,7 +84,7 @@ public class SolrUpdateSmoketest {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
         brukerRepository = new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
         solrService = new SolrServiceImpl(solrClient, solrClient,brukerRepository,
-                mock(ArbeidslisteRepository.class),mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(FlyttSomNyeFeature.class));
+                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(FlyttSomNyeFeature.class));
         }
 
     @Test

@@ -67,7 +67,6 @@ public class SolrServiceImpl implements SolrService {
     private SolrClient solrClientMaster;
     private BrukerRepository brukerRepository;
     private AktivitetDAO aktivitetDAO;
-    private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
     private VeilederService veilederService;
     private Executor executor;
@@ -78,7 +77,6 @@ public class SolrServiceImpl implements SolrService {
             @Named("solrClientMaster") SolrClient solrClientMaster,
             @Named("solrClientSlave") SolrClient solrClientSlave,
             BrukerRepository brukerRepository,
-            ArbeidslisteRepository arbeidslisteRepository,
             AktoerService aktoerService,
             VeilederService veilederService,
             AktivitetDAO aktivitetDAO,
@@ -89,7 +87,6 @@ public class SolrServiceImpl implements SolrService {
         this.solrClientSlave = solrClientSlave;
         this.brukerRepository = brukerRepository;
         this.aktivitetDAO = aktivitetDAO;
-        this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
@@ -209,7 +206,6 @@ public class SolrServiceImpl implements SolrService {
         Boolean batch = dokumenter.size() > 1;
         BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
         timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, aktivitetDAO), tagsAppeder);
-        timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
         timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO), tagsAppeder);
     }
 

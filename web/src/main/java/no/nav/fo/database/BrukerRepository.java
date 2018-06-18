@@ -86,7 +86,12 @@ public class BrukerRepository {
             "neste_aktivitet_start, " +
             "forrige_aktivitet_start, " +
             "manuell, " +
-            "reservertikrr " +
+            "reservertikrr, " +
+            "ARBEIDSLISTE_AKTIV, " +
+            "ARBEIDSLISTE_KOMMENTAR, " +
+            "ARBEIDSLISTE_FRIST, " +
+            "ARBEIDSLISTE_ENDRET_AV, " +
+            "ARBEIDSLISTE_ENDRET_TID " +
             "FROM " +
             "vw_portefolje_info";
 

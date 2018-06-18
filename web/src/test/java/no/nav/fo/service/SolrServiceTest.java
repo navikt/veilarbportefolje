@@ -2,10 +2,8 @@ package no.nav.fo.service;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.RemoteFeatureConfig;
-import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.PersonId;
 import org.apache.solr.client.solrj.SolrClient;
@@ -49,8 +47,6 @@ public class SolrServiceTest {
     @Mock
     private SolrClient solrClientMaster;
     @Mock
-    private ArbeidslisteRepository arbeidslisteRepository;
-    @Mock
     private AktoerService aktoerService;
     @Mock
     private VeilederService veilederService;
@@ -61,7 +57,7 @@ public class SolrServiceTest {
 
     @Before
     public void setup() {
-        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
     }
 
     @Test
@@ -77,10 +73,6 @@ public class SolrServiceTest {
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
         when(aktoerService.hentAktoeridsForPersonids(any())).thenReturn(personIdToAktoerid);
 
-        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = new HashMap<>();
-        arbeidslisteMap.put(AktoerId.of(AKTOER_ID), Optional.empty());
-
-        when(arbeidslisteRepository.retrieveArbeidsliste(anyList())).thenReturn(arbeidslisteMap);
         System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();
