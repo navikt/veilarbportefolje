@@ -19,11 +19,7 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
@@ -95,6 +91,7 @@ public class ArbeidslisteRepository {
                             .set("AKTOERID", aktoerId.toString())
                             .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
                             .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
+                            .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
@@ -111,6 +108,7 @@ public class ArbeidslisteRepository {
                     update(db, ARBEIDSLISTE)
                             .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
                             .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
+                            .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
                             .whereEquals("AKTOERID", data.getAktoerId().toString())
@@ -144,6 +142,7 @@ public class ArbeidslisteRepository {
         return new Arbeidsliste(
                 VeilederId.of(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
                 toZonedDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
+                rs.getString("OVERSKRIFT"),
                 rs.getString("KOMMENTAR"),
                 toZonedDateTime(rs.getTimestamp("FRIST")));
     }
@@ -152,6 +151,7 @@ public class ArbeidslisteRepository {
         return new Arbeidsliste(
                 VeilederId.of((String) rs.get("SIST_ENDRET_AV_VEILEDERIDENT")),
                 toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
+                (String) rs.get("OVERSKRIFT"),
                 (String) rs.get("KOMMENTAR"),
                 toZonedDateTime((Timestamp) rs.get("FRIST")));
     }

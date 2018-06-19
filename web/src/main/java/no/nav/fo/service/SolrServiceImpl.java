@@ -227,6 +227,7 @@ public class SolrServiceImpl implements SolrService {
                 dokument.setField("arbeidsliste_aktiv", true);
                 dokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.get().getSistEndretAv().toString());
                 dokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.get().getEndringstidspunkt()));
+                dokument.setField("arbeidsliste_overskrift", arbeidsliste.get().getOverskrift());
                 dokument.setField("arbeidsliste_kommentar", arbeidsliste.get().getKommentar());
                 dokument.setField("arbeidsliste_frist", arbeidsliste.map(Arbeidsliste::getFrist).map(DateUtils::toUtcString).orElse(getSolrMaxAsIsoUtc()));
                 dokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.get().getIsOppfolgendeVeileder());

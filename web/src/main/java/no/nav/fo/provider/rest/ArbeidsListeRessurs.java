@@ -140,8 +140,9 @@ public class ArbeidsListeRessurs {
     @Path("{fnr}/")
     public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
         TilgangsRegler.tilgangTilOppfolging(pepClient);
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         if (validateFnr.isInvalid()) {
             throw new RestValideringException(validateFnr.getError());
         }
@@ -176,7 +177,7 @@ public class ArbeidsListeRessurs {
 
         return arbeidslisteService
                 .deleteArbeidsliste(new Fnr(fnr))
-                .map((a) -> new Arbeidsliste(null,null,null,null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
+                .map((a) -> emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
                 .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
     }
 
@@ -228,6 +229,7 @@ public class ArbeidsListeRessurs {
         Timestamp frist = nullOrEmpty(body.getFrist()) ? null : Timestamp.from(Instant.parse(body.getFrist()));
         return new ArbeidslisteData(fnr)
                 .setVeilederId(VeilederId.of(SubjectHandler.getSubjectHandler().getUid()))
+                .setOverskrift(body.getOverskrift())
                 .setKommentar(body.getKommentar())
                 .setFrist(frist);
     }
@@ -255,6 +257,6 @@ public class ArbeidsListeRessurs {
     }
 
     private Arbeidsliste emptyArbeidsliste() {
-        return new Arbeidsliste(null, null, null, null);
+        return new Arbeidsliste(null, null, null, null, null);
     }
 }

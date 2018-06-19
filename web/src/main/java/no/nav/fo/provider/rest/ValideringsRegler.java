@@ -86,6 +86,7 @@ public class ValideringsRegler {
                 Validation
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
+                                valid(arbeidsliste.getOverskrift()),
                                 validateKommentar(arbeidsliste.getKommentar()),
                                 validateFrist(arbeidsliste.getFrist(), redigering)
                         )

@@ -22,6 +22,7 @@ import static no.nav.fo.util.DateUtils.toZonedDateTime;
 public class Arbeidsliste {
     final VeilederId sistEndretAv;
     final ZonedDateTime endringstidspunkt;
+    final String overskrift;
     final String kommentar;
     final ZonedDateTime frist;
     Boolean isOppfolgendeVeileder;
@@ -33,11 +34,12 @@ public class Arbeidsliste {
         Boolean arbeidslisteAktiv = (Boolean) brukerDokument.get("arbeidsliste_aktiv");
         VeilederId sistEndretAv = VeilederId.of((String) brukerDokument.get("arbeidsliste_sist_endret_av_veilederid"));
         ZonedDateTime endringstidspunkt = toZonedDateTime((Date) brukerDokument.get("arbeidsliste_endringstidspunkt"));
+        String overskrift = (String) brukerDokument.get("arbeidsliste_overskrift");
         String kommentar = (String) brukerDokument.get("arbeidsliste_kommentar");
         ZonedDateTime frist = toZonedDateTime(dateIfNotSolrMax((Date) brukerDokument.get("arbeidsliste_frist")));
         Boolean isOppfolgendeVeileder = (Boolean) brukerDokument.get("arbeidsliste_er_oppfolgende_veileder");
 
-        return new Arbeidsliste(sistEndretAv, endringstidspunkt, kommentar, frist)
+        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist)
                 .setIsOppfolgendeVeileder(isOppfolgendeVeileder)
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
@@ -49,6 +51,7 @@ public class Arbeidsliste {
     @JsonCreator
     public Arbeidsliste(@JsonProperty("sistEndretAv") VeilederId  sistEndretAv,
                         @JsonProperty("endringstidspunkt") ZonedDateTime endringstidspunkt,
+                        @JsonProperty("overskrift") String overskrift,
                         @JsonProperty("kommentar") String kommentar,
                         @JsonProperty("frist") ZonedDateTime frist,
                         @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
@@ -56,6 +59,7 @@ public class Arbeidsliste {
                         @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang) {
         this.sistEndretAv = sistEndretAv;
         this.endringstidspunkt = endringstidspunkt;
+        this.overskrift = overskrift;
         this.kommentar = kommentar;
         this.frist = frist;
         this.isOppfolgendeVeileder = isOppfolgendeVeileder;

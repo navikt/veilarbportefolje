@@ -34,7 +34,7 @@ public class SolrServiceImplTest {
 
         SolrInputDocument dokument = new SolrInputDocument();
         dokument.setField("person_id", personId.toString());
-        Arbeidsliste arbeidsliste = new Arbeidsliste(VeilederId.of("X111111"), toZonedDateTime(new Date(0)),"kommentar", toZonedDateTime(new Date(0)));
+        Arbeidsliste arbeidsliste = new Arbeidsliste(VeilederId.of("X111111"), toZonedDateTime(new Date(0)), "overskrift", "kommentar", toZonedDateTime(new Date(0)));
 
         when(aktoerService.hentAktoeridsForPersonids(any())).thenReturn(singletonMap(personId, Optional.of(aktoerId)));
         when(arbeidslisteRepository.retrieveArbeidsliste(anyList())).thenReturn(singletonMap(aktoerId, Optional.of(arbeidsliste)));
@@ -43,6 +43,7 @@ public class SolrServiceImplTest {
         assertThat(dokument.containsKey("arbeidsliste_aktiv")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_sist_endret_av_veilederid")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_endringstidspunkt")).isTrue();
+        assertThat(dokument.containsKey("arbeidsliste_overskrift")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_kommentar")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_frist")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_er_oppfolgende_veileder")).isTrue();
@@ -55,7 +56,7 @@ public class SolrServiceImplTest {
 
         SolrInputDocument dokument = new SolrInputDocument();
         dokument.setField("person_id", personId.toString());
-        Arbeidsliste arbeidsliste = new Arbeidsliste(VeilederId.of("X111111"), toZonedDateTime(new Date(0)),"kommentar",null);
+        Arbeidsliste arbeidsliste = new Arbeidsliste(VeilederId.of("X111111"), toZonedDateTime(new Date(0)), "overskrift", "kommentar",null);
 
         when(aktoerService.hentAktoeridsForPersonids(any())).thenReturn(singletonMap(personId, Optional.of(aktoerId)));
         when(arbeidslisteRepository.retrieveArbeidsliste(anyList())).thenReturn(singletonMap(aktoerId, Optional.of(arbeidsliste)));
@@ -64,6 +65,7 @@ public class SolrServiceImplTest {
         assertThat(dokument.containsKey("arbeidsliste_aktiv")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_sist_endret_av_veilederid")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_endringstidspunkt")).isTrue();
+        assertThat(dokument.containsKey("arbeidsliste_overskrift")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_kommentar")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_frist")).isTrue();
         assertThat(dokument.containsKey("arbeidsliste_er_oppfolgende_veileder")).isTrue();

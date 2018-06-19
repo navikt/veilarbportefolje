@@ -42,7 +42,8 @@ public class ArbeidslisteRepositoryTest {
                 .setAktoerId(AktoerId.of("22222222"))
                 .setVeilederId(VeilederId.of("X11111"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
-                .setKommentar("Dette er en kommentar");
+                .setKommentar("Dette er en kommentar")
+                .setOverskrift("Dette er en overskrift");
 
         data2 = new ArbeidslisteData(new Fnr("01010101011"))
                 .setAktoerId(AktoerId.of("22222223"))
@@ -55,6 +56,7 @@ public class ArbeidslisteRepositoryTest {
         Try<AktoerId> result1 = repo.insertArbeidsliste(data);
         Try<AktoerId> result2 = repo.insertArbeidsliste(data2);
         assertTrue(result1.isSuccess());
+        assertTrue(result2.isSuccess());
     }
 
     @Test
