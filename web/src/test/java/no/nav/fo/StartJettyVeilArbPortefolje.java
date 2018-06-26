@@ -15,9 +15,9 @@ import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 import static no.nav.fo.config.LocalJndiContextConfig.*;
 import static no.nav.fo.service.VeilederService.VEILARBVEILEDER_URL_PROPERTY;
-import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
-import static no.nav.modig.lang.collections.RunnableUtils.first;
-import static no.nav.modig.lang.collections.RunnableUtils.waitFor;
+import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.first;
+import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.gotKeypress;
+import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.waitFor;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public class StartJettyVeilArbPortefolje {
@@ -30,17 +30,13 @@ public class StartJettyVeilArbPortefolje {
         setProperty(VEILARBVEILEDER_URL_PROPERTY, "http://localhost:8080/veilarbveileder/api");
         setProperty("feature_endpoint.url", "");
 
-
         loadTestConfigFromProperties();
-
-        setupTestContext();
 
         DriverManagerDataSource dataSource  = (parseBoolean(getProperty("lokal.database"))) ?
                 setupInMemoryDatabase() :
                     setupDataSourceWithCredentials(createDbCredentials());
 
         setServiceUserCredentials(FasitUtils.getServiceUser(SERVICE_USER_NAME, APPLICATION_NAME));
-
 
 
         // TODO slett når common-jetty registerer datasource fornuftig

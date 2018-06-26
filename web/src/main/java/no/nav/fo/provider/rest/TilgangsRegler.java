@@ -3,34 +3,28 @@ package no.nav.fo.provider.rest;
 import io.vavr.Tuple;
 import io.vavr.control.Validation;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.PepClient;
-import no.nav.fo.util.TokenUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
+import static no.nav.fo.provider.rest.RestUtils.getSsoToken;
 
-public class TilgangsRegler {
-    final static Pattern pattern = Pattern.compile("\\d{4}");
-
+class TilgangsRegler {
     static void tilgangTilOppfolging(PepClient pep) {
-        SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
-        String veilederId = subjectHandler.getUid();
-        String token = TokenUtils.getTokenBody(subjectHandler.getSubject());
-
-        test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, token));
+        String veilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
+        test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, getSsoToken()));
     }
 
     static void tilgangTilEnhet(PepClient pep, String enhet) {
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        String veilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
         tilgangTilEnhet(pep, enhet, veilederId);
     }
 
@@ -61,8 +55,7 @@ public class TilgangsRegler {
     }
 
     static Validation<String, Fnr> erVeilederForBruker(ArbeidslisteService arbeidslisteService, String fnr) {
-        SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
-        VeilederId veilederId = VeilederId.of(subjectHandler.getUid());
+        VeilederId veilederId = SubjectHandler.getIdent().map(VeilederId::new).orElseThrow(IllegalStateException::new);
 
         Boolean erVeilederForBruker =
                 ValideringsRegler

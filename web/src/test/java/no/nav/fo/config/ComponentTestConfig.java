@@ -80,16 +80,6 @@ public class ComponentTestConfig implements ApiApplication {
         return new EnhetMock();
     }
 
-    @Override
-    public String getApplicationName() {
-        return APPLICATION_NAME;
-    }
-
-    @Override
-    public Sone getSone() {
-        return FSS;
-    }
-
     @Bean
     public DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1() {
         return mock(DigitalKontaktinformasjonV1.class);

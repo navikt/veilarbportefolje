@@ -18,7 +18,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
-import static no.nav.apiapp.ApiApplication.Sone.FSS;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 
 @EnableAspectJAutoProxy
@@ -58,16 +57,6 @@ public class LocalApplicationConfig implements ApiApplication {
     @Bean
     public PepClient pepClient(Pep pep) {
         return new PepClientImpl(pep);
-    }
-
-    @Override
-    public String getApplicationName() {
-        return APPLICATION_NAME;
-    }
-
-    @Override
-    public Sone getSone() {
-        return FSS;
     }
 
     @Bean

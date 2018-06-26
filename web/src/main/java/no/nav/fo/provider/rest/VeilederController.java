@@ -1,13 +1,12 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
-import no.nav.fo.util.TokenUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -21,6 +20,7 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
+import static no.nav.fo.provider.rest.RestUtils.getSsoToken;
 
 @Api(value = "Veileder")
 @Path("/veileder")
@@ -60,13 +60,11 @@ public class VeilederController {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            String ident = SubjectHandler.getSubjectHandler().getUid();
+            String ident = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-            String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
-
             BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), token, pepClient);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getSsoToken(), pepClient);
 
             Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
                     sensurerteBrukereSublist,

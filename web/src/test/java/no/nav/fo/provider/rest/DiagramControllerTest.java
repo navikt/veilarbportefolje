@@ -1,6 +1,5 @@
 package no.nav.fo.provider.rest;
 
-import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -67,13 +66,6 @@ public class DiagramControllerTest {
     private PepClient pepClient;
 
     private DiagramController controller;
-
-    @BeforeClass
-    public static void before() {
-        System.setProperty("disable.metrics.report", "true");
-        System.setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", ThreadLocalSubjectHandler.class.getName());
-
-    }
 
     @Before
     public void setUp() throws Exception {

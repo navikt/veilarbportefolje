@@ -5,7 +5,6 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import lombok.SneakyThrows;
-import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
@@ -14,7 +13,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.MetaInfConfiguration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -24,12 +22,12 @@ import java.io.IOException;
 import java.net.*;
 
 import static com.squareup.okhttp.MediaType.parse;
-import static java.lang.System.setProperty;
 import static java.util.Arrays.stream;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
-public abstract class ComponentTest {
+public abstract class
+ComponentTest {
     private static final String CONTEXT_NAME = ComponentTest.class.getSimpleName();
     private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());
     private static final OkHttpClient OKHTTPCLIENT = new OkHttpClient();
@@ -43,12 +41,6 @@ public abstract class ComponentTest {
     @AfterClass
     public static void stopJetty() {
         JETTY.stop.run();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
-        InternbrukerSubjectHandler.setVeilederIdent("testident");
     }
 
     @SneakyThrows

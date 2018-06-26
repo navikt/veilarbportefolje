@@ -56,19 +56,9 @@ public class ApplicationConfig implements ApiApplication {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-    @Override
-    public String getApplicationName() {
-        return APPLICATION_NAME;
-    }
-
     @Bean
     public PepClient pepClient(Pep pep) {
         return new PepClientImpl(pep);
-    }
-
-    @Override
-    public Sone getSone() {
-        return FSS;
     }
 
     @Bean

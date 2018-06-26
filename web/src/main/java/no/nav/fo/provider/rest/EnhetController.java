@@ -7,7 +7,6 @@ import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.TiltakService;
 import no.nav.fo.util.PortefoljeUtils;
-import no.nav.fo.util.TokenUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -21,6 +20,7 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
+import static no.nav.fo.provider.rest.RestUtils.getSsoToken;
 
 @Api(value = "Enhet")
 @Path("/enhet")
@@ -63,9 +63,8 @@ public class EnhetController {
             String ident = SubjectHandler.getSubjectHandler().getUid();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-            String token = TokenUtils.getTokenBody(SubjectHandler.getSubjectHandler().getSubject());
             BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), token, pepClient);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getSsoToken(), pepClient);
 
             Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
                     sensurerteBrukereSublist,
@@ -79,6 +78,7 @@ public class EnhetController {
             return portefolje;
         });
     }
+
 
     @GET
     @Path("/{enhet}/portefoljestorrelser")

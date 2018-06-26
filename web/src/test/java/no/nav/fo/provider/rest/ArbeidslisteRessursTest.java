@@ -30,10 +30,8 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     private static final String TEST_VEILEDERID = "testident";
     public static final String UNAUTHORIZED_NAV_KONTOR = "XOXOXO";
 
-    @Override
     @Before
-    public void setUp() throws Exception {
-        super.setUp();
+    public void setUp() {
         DB.execute("truncate table " + "OPPFOLGING_DATA");
         DB.execute("truncate table " + "OPPFOLGINGSBRUKER");
         DB.execute("truncate table " + ARBEIDSLISTE);

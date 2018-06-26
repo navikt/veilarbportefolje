@@ -3,6 +3,9 @@ package no.nav.fo.provider.rest;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.common.auth.SsoToken;
+import no.nav.common.auth.Subject;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.exception.RestBadGateWayException;
 import no.nav.fo.exception.RestNoContentException;
 import no.nav.fo.exception.RestNotFoundException;
@@ -45,5 +48,10 @@ class RestUtils {
                         },
                         (entity) -> Response.status(status).entity(entity)
                 ).build();
+    }
+
+    static String getSsoToken() {
+        Subject subject = SubjectHandler.getSubject().orElseThrow(IllegalStateException::new);
+        return subject.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
     }
 }

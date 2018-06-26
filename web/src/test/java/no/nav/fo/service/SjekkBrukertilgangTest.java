@@ -28,12 +28,6 @@ public class SjekkBrukertilgangTest {
     @InjectMocks
     private PepClientImpl pepClient;
 
-    @BeforeClass
-    public static void setup() {
-        System.setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler.class.getName());
-        System.setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", no.nav.modig.core.context.ThreadLocalSubjectHandler.class.getName());
-    }
-
     @Test
     public void brukerSkalIkkeHaTilgangTilEnhet() throws Exception {
         gitt_at_pep_sier(Decision.Deny);

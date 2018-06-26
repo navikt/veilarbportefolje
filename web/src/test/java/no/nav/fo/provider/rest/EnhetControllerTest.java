@@ -1,18 +1,19 @@
 package no.nav.fo.provider.rest;
 
 
-import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
-import org.junit.Before;
+import org.apache.wss4j.common.saml.bean.SubjectBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static java.lang.System.setProperty;
+import java.util.Optional;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -28,16 +29,11 @@ public class EnhetControllerTest {
     @InjectMocks
     private EnhetController enhetController;
 
-    @Before
-    public void setup() {
-        setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
-        InternbrukerSubjectHandler.setVeilederIdent("testident");
-    }
-
     @Test
     public void skalHentPortefoljeFraIndeksDersomTilgang() throws Exception {
         when(pepClient.tilgangTilEnhet(any(), any())).thenReturn(true);
         when(pepClient.isSubjectMemberOfModiaOppfolging(any(), any())).thenReturn(true);
+        when(SubjectHandler.getIdent()).thenReturn(Optional.of("testident"));
 
         enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
