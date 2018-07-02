@@ -13,8 +13,6 @@ import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.SolrServiceImpl;
 import no.nav.fo.service.VeilederService;
-import no.nav.sbl.dialogarena.test.ssl.SSLTestUtils;
-import org.apache.cxf.transport.https.SSLUtils;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -34,7 +32,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
@@ -46,6 +43,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -101,6 +99,7 @@ public class SolrUpdateSmoketest {
                 mock(ArbeidslisteRepository.class),mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(FlyttSomNyeFeature.class));
         }
 
+    @Disabled //Kan ikke enable igjen før vi har åpning mot databasen i q6 fra byggserver!!
     @Test
     @SneakyThrows
     public void skalOppdatereSolrIndeksKorrekt() {
