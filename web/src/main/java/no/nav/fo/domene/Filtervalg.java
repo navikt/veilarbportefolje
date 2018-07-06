@@ -27,7 +27,6 @@ public class Filtervalg {
     public List<String> veiledere = new ArrayList<>();
     public Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
     public List<String> tiltakstyper = new ArrayList<>();
-    public List<ManuellBrukere> manuellbrukere = new ArrayList<>();   //TODO Slett når FO-123 er i prod
     public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
 
     public boolean harAktiveFilter() {
@@ -43,7 +42,6 @@ public class Filtervalg {
                 !veiledere.isEmpty() ||
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
-                 harManuellbrukere() ||   //TODO Slett når FO-123 er i prod
                  harManuellBrukerStatus();
     }
 
@@ -61,11 +59,6 @@ public class Filtervalg {
 
     public boolean harTiltakstypeFilter() {
         return !tiltakstyper.isEmpty();
-    }
-
-    //TODO Slett når FO-123 er i prod
-    public boolean harManuellbrukere() {
-        return manuellbrukere != null && !manuellbrukere.isEmpty();
     }
 
     public boolean harManuellBrukerStatus() {

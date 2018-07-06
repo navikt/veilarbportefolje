@@ -32,7 +32,6 @@ public class Bruker {
     boolean nyForVeileder;
     boolean nyForEnhet;
     boolean erDoed;
-    String manuellBrukere;  //TODO slett når FO-123 er i prod
     String manuellBrukerStatus;
     int fodselsdagIMnd;
     LocalDateTime fodselsdato;
@@ -93,7 +92,6 @@ public class Bruker {
                 .setNesteAktivitetStart(toLocalDateTime((Date) document.get("neste_aktivitet_start")))
                 .setForrigeAktivitetStart(toLocalDateTime((Date) document.get("forrige_aktivitet_start")))
                 .setBrukertiltak(getBrukertiltak(document))
-                .setManuellBrukere((String) document.get("manuell_bruker"))
                 .setManuellBrukerStatus((String) document.get("manuell_bruker"))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp((Date) document.get("aktivitet_tiltak_utlopsdato")))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp((Date) document.get("aktivitet_behandling_utlopsdato")))
