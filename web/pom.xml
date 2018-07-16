@@ -326,7 +326,7 @@
         <dependency>
             <groupId>au.com.dius</groupId>
             <artifactId>pact-jvm-consumer-junit5_2.12</artifactId>
-            <version>3.5.15</version>
+            <version>3.5.19</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -339,7 +339,7 @@
         <dependency>
             <groupId>au.com.dius</groupId>
             <artifactId>pact-jvm-consumer-java8_2.12</artifactId>
-            <version>3.5.15</version>
+            <version>3.5.19</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -352,7 +352,7 @@
         <dependency>
             <groupId>au.com.dius</groupId>
             <artifactId>pact-jvm-consumer-junit_2.12</artifactId>
-            <version>3.5.15</version>
+            <version>3.5.19</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -365,7 +365,7 @@
         <dependency>
             <groupId>au.com.dius</groupId>
             <artifactId>pact-jvm-consumer_2.12</artifactId>
-            <version>3.5.15</version>
+            <version>3.5.19</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -378,7 +378,7 @@
         <dependency>
             <groupId>au.com.dius</groupId>
             <artifactId>pact-jvm-model</artifactId>
-            <version>3.5.15</version>
+            <version>3.5.19</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
