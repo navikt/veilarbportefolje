@@ -250,15 +250,15 @@ public class SolrServiceImpl implements SolrService {
         String facetFieldString = "veileder_id";
 
         SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
+        solrQuery.setRows(0);
         // ikke interessert i veiledere som ikke har tilordnede brukere
         solrQuery.setFacetMinCount(1);
 
         QueryResponse response = new QueryResponse();
         try {
             response = solrClientSlave.query(solrQuery);
-            log.debug(response.toString());
         } catch (SolrServerException | IOException e) {
-            log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
+            log.error("Spørring mot solrindeks feilet: " + solrQuery, e);
         }
 
         FacetField facetField = response.getFacetField(facetFieldString);
@@ -340,7 +340,7 @@ public class SolrServiceImpl implements SolrService {
             UpdateResponse response = solrClientMaster.deleteByQuery(query);
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException | SolrUpdateResponseCodeException e) {
-            log.error("Kunne ikke slette dokumenter fra solrindeks: {}", query, e);
+            log.error("Kunne ikke slette dokumenter fra solrindeks: " + query, e);
         }
     }
 
@@ -474,7 +474,7 @@ public class SolrServiceImpl implements SolrService {
                     .setNyeBrukereForVeileder(antallNyeBrukerForVeileder)
                     .setTrengerVurdering(antallTrengerVurdering);
         } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for veilederportefølje feilet: {}", solrQuery, e);
+            log.error("Henting av statustall for veilederportefølje feilet: " + solrQuery, e);
         }
 
         return statusTall;
