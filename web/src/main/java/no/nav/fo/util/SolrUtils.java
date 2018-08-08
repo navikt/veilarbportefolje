@@ -24,6 +24,7 @@ public class SolrUtils {
     static Map<Brukerstatus, String> ferdigfilterStatus = new HashMap<Brukerstatus, String>() {{
         put(Brukerstatus.NYE_BRUKERE, "ny_for_enhet:true");
         put(Brukerstatus.UFORDELTE_BRUKERE, "ny_for_enhet:true");
+        put(Brukerstatus.TRENGER_VURDERING, "trenger_vurdering:true");
         put(Brukerstatus.INAKTIVE_BRUKERE, "formidlingsgruppekode:ISERV");
         put(Brukerstatus.VENTER_PA_SVAR_FRA_NAV, "venterpasvarfranav:*");
         put(Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER, "venterpasvarfrabruker:*");

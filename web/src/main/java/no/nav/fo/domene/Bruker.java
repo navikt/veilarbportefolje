@@ -1,5 +1,6 @@
 package no.nav.fo.domene;
 
+import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,6 +32,7 @@ public class Bruker {
     boolean egenAnsatt;
     boolean nyForVeileder;
     boolean nyForEnhet;
+    boolean trengerVurdering;
     boolean erDoed;
     String manuellBrukerStatus;
     int fodselsdagIMnd;
@@ -63,6 +65,7 @@ public class Bruker {
                 .setFnr((String) document.get("fnr"))
                 .setNyForEnhet(isNyForEnhet(document))
                 .setNyForVeileder(isNyForVeileder(document))
+                .setTrengerVurdering(defaultBool(document, "trenger_vurdering", false))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilederId((String) document.get("veileder_id"))
@@ -117,7 +120,12 @@ public class Bruker {
     }
 
     private static boolean isNyForVeileder(SolrDocument document) {
-        return document.get("ny_for_veileder") == null ? false : (Boolean) document.get("ny_for_veileder");
+        return defaultBool(document, "ny_for_veileder", false);
+    }
+
+    private static boolean defaultBool(SolrDocument document, String field, boolean defaultValue) {
+        return Option.of(((Boolean) document.get(field)))
+                .getOrElse(defaultValue);
     }
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
