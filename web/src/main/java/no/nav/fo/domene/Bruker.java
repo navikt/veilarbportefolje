@@ -124,7 +124,7 @@ public class Bruker {
     }
 
     private static boolean defaultBool(SolrDocument document, String field, boolean defaultValue) {
-        return Option.of(((Boolean) document.get(field)))
+        return Option.of((Boolean) document.get(field))
                 .getOrElse(defaultValue);
     }
 
