@@ -15,6 +15,7 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.util.DateUtils.*;
+import static no.nav.fo.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Slf4j
@@ -33,6 +34,7 @@ public class Bruker {
     boolean nyForVeileder;
     boolean nyForEnhet;
     boolean trengerVurdering;
+    VurderingsBehov vurderingsBehov;
     boolean erDoed;
     String manuellBrukerStatus;
     int fodselsdagIMnd;
@@ -61,11 +63,15 @@ public class Bruker {
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
+        String formidlingsgruppekode = (String) document.get("formidlingsgruppekode");
+        String kvalifiseringsgruppekode = (String) document.get("kvalifiseringsgruppekode");
+
         return new Bruker()
                 .setFnr((String) document.get("fnr"))
                 .setNyForEnhet(isNyForEnhet(document))
                 .setNyForVeileder(isNyForVeileder(document))
                 .setTrengerVurdering(defaultBool(document, "trenger_vurdering", false))
+                .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilederId((String) document.get("veileder_id"))

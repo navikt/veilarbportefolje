@@ -1,8 +1,7 @@
 package no.nav.fo.util;
 
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import no.nav.fo.domene.VurderingsBehov;
 
 public class OppfolgingUtils {
     public static boolean erBrukerUnderOppfolging(String formidlingsgruppekode, String servicegruppekode, boolean oppfolgingsbruker) {
@@ -10,9 +9,8 @@ public class OppfolgingUtils {
                 UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);
     }
 
-    static boolean isNyForEnhet(ResultSet rs) throws SQLException {
-        String veilder = rs.getString("veilederident");
-        return veilder == null || veilder.isEmpty();
+    static boolean isNyForEnhet(String veileder) {
+        return veileder == null || veileder.isEmpty();
     }
 
     static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
@@ -20,5 +18,17 @@ public class OppfolgingUtils {
             return false;
         }
         return "IVURD".equals(kvalifiseringsgruppekode) || "BKART".equals(kvalifiseringsgruppekode);
+    }
+
+    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
+        if ("ISERV".equals(formidlingsgruppekode)) {
+            return null;
+        } else if ("IVURD".equals(kvalifiseringsgruppekode)) {
+            return VurderingsBehov.IKKE_VURDERT;
+        } else if ("BKART".equals(kvalifiseringsgruppekode)) {
+            return VurderingsBehov.ARBEIDSEVNE_VURDERING;
+        } else {
+            return null;
+        }
     }
 }
