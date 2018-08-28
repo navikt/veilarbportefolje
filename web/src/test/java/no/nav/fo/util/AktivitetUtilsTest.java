@@ -7,7 +7,7 @@ import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.domene.*;
 import no.nav.fo.domene.aktivitet.AktivitetDTO;
-import no.nav.fo.domene.aktivitet.AktivitetFullfortStatuser;
+import no.nav.fo.domene.aktivitet.AktivitetIkkeAktivStatuser;
 import no.nav.fo.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.service.AktoerService;
 import org.apache.solr.common.SolrInputDocument;
@@ -128,7 +128,7 @@ public class AktivitetUtilsTest {
     @Test
     public void skalFinneNyesteUtlopteAktivteAktivitet() {
         String ikkeFullfortStatus = "enStatusSomIkkeErfullfort";
-        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus)).isFalse();
+        assertThat(AktivitetIkkeAktivStatuser.contains(ikkeFullfortStatus)).isFalse();
         LocalDate today = LocalDate.parse("2017-07-01");
 
         AktivitetDTO denNyesteAktiviteten = new AktivitetDTO()
@@ -146,7 +146,7 @@ public class AktivitetUtilsTest {
     @Test
     public void skalReturnereNullNaarDetIkkeFinnesNoenUtlopteAktiviteter() {
         String ikkeFullfortStatus = "enStatusSomIkkeErfullfort";
-        assertThat(AktivitetFullfortStatuser.contains(ikkeFullfortStatus)).isFalse();
+        assertThat(AktivitetIkkeAktivStatuser.contains(ikkeFullfortStatus)).isFalse();
         LocalDate today = LocalDate.parse("2017-05-01");
 
         AktivitetDTO denNyesteAktiviteten = new AktivitetDTO()
