@@ -7,10 +7,10 @@ import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Arbeidsliste;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
-import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 import static no.nav.metrics.MetricsFactory.createEvent;
 
@@ -101,7 +101,7 @@ public class ArbeidslisteService {
                 .retrieveVeileder(aktoerId)
                 .map(veilederId -> veilederId.equals(arbeidsliste.getSistEndretAv()))
                 .map(arbeidsliste::setIsOppfolgendeVeileder)
-                .getOrElseThrow(() -> new RestNotFoundException("Fant ikke nåværende veileder for bruker"));
+                .getOrElseThrow(() -> new NotFoundException("Fant ikke nåværende veileder for bruker"));
     }
 
     public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
