@@ -15,13 +15,13 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -155,7 +155,7 @@ public class TiltakRepositoryTest {
         assertThat(mappedRader.get("0003")).containsExactly("22222222222", "11111111111");
     }
 
-    @Test(expected = UndeclaredThrowableException.class)
+    @Test(expected = DataIntegrityViolationException.class)
     public void skalKasteExceptionNarSletterKodeverkForResten() {
         insertTestData();
         tiltakRepository.slettTiltakskoder();
