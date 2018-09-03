@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.fo.util.DateUtils.toIsoUTC;
+import static no.nav.fo.util.OppfolgingUtils.isNyForEnhet;
 
 @Slf4j
 public class DbUtils {
@@ -26,15 +27,18 @@ public class DbUtils {
     }
 
     private static SolrInputDocument mapTilDokument(ResultSet rs) throws SQLException {
+        String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
+        String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
+
         SolrInputDocument document = new SolrInputDocument();
         document.addField("person_id", numberToString(rs.getBigDecimal("person_id")));
         document.addField("fnr", rs.getString("fodselsnr"));
         document.addField("fornavn", kapitaliser( rs.getString( "fornavn")));
         document.addField("etternavn", kapitaliser(rs.getString("etternavn")));
         document.addField("enhet_id", rs.getString("nav_kontor"));
-        document.addField("formidlingsgruppekode", rs.getString("formidlingsgruppekode"));
+        document.addField("formidlingsgruppekode", formidlingsgruppekode);
         document.addField("iserv_fra_dato", toIsoUTC(rs.getTimestamp("iserv_fra_dato")));
-        document.addField("kvalifiseringsgruppekode", rs.getString("kvalifiseringsgruppekode"));
+        document.addField("kvalifiseringsgruppekode", kvalifiseringsgruppekode);
         document.addField("rettighetsgruppekode", rs.getString("rettighetsgruppekode"));
         document.addField("hovedmaalkode", rs.getString("hovedmaalkode"));
         document.addField("sikkerhetstiltak", rs.getString("sikkerhetstiltak_type_kode"));
@@ -59,7 +63,8 @@ public class DbUtils {
         document.addField("aapunntakukerigjenfasett", rs.getString("aapunntakukerigjenfasett"));
         document.addField("oppfolging", parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"));
         document.addField("ny_for_veileder", parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"));
-        document.addField("ny_for_enhet", isNyForEnhet(rs));
+        document.addField("ny_for_enhet", isNyForEnhet(rs.getString("veilederident")));
+        document.addField("trenger_vurdering", OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode));
         document.addField("venterpasvarfrabruker", toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")));
         document.addField("venterpasvarfranav", toIsoUTC(rs.getTimestamp("venterpasvarfranav")));
         document.addField("nyesteutlopteaktivitet", toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")));
@@ -68,11 +73,6 @@ public class DbUtils {
         document.addField("forrige_aktivitet_start", toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")));
         document.addField("manuell_bruker", identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"),rs.getString("MANUELL")));
         return document;
-    }
-
-    private static boolean isNyForEnhet(ResultSet rs) throws SQLException {
-        String veilder = rs.getString("veilederident");
-        return veilder == null || veilder.isEmpty();
     }
 
     private static Integer konverterDagerTilUker(String antallDagerFraDB) {

@@ -36,7 +36,7 @@ public class PortefoljeSmoketest extends Smoketest{
     }
 
     @Test
-    public void hentPortefoljeForVeielderForAlleTilgjengeligeEnheter() {
+    public void hentPortefoljeForVeilederForAlleTilgjengeligeEnheter() {
         enhetsliste.forEach(enhet -> hentMax100BrukereForVeileder(enhet, INNLOGGET_VEILEDER));
     }
 
