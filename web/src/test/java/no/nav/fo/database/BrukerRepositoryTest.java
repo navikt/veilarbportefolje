@@ -426,25 +426,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalHenteListeMedAktoerids() {
-        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
-        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
-
-        PersonId personId1 = PersonId.of("personid1");
-        PersonId personId2 = PersonId.of("personid2");
-        PersonId personId3 = PersonId.of("personid3");
-
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerId1, personId1);
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerId2, personId2);
-
-        Map<PersonId, Optional<AktoerId>> personIdToAktoerid = brukerRepository.hentAktoeridsForPersonids(asList(personId1, personId2, personId3));
-
-        assertThat(personIdToAktoerid.get(personId1).get()).isEqualTo(aktoerId1);
-        assertThat(personIdToAktoerid.get(personId2).get()).isEqualTo(aktoerId2);
-        assertThat(personIdToAktoerid.get(personId3).isPresent()).isFalse();
-    }
-
-    @Test
     public void skalHenteBrukereMedBrukerdata() {
         List<PersonId> personIds = Stream.of("4120339", "4120327", "1033279", "4024027", "183651")
                 .map(PersonId::of).collect(toList());

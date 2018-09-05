@@ -71,7 +71,6 @@ public class SolrServiceTest {
         Map<PersonId, Optional<AktoerId>> personIdToAktoerid = new HashMap<>();
         personIdToAktoerid.put(PersonId.of("dummy"), Optional.of(AktoerId.of(AKTOER_ID)));
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
-        when(aktoerService.hentAktoeridsForPersonids(any())).thenReturn(personIdToAktoerid);
 
         System.setProperty("cluster.ismasternode", "true");
 
