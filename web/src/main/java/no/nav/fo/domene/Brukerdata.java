@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Accessors(chain = true)
@@ -33,7 +32,6 @@ public class Brukerdata {
     private Timestamp aktivitetStart;
     private Timestamp nesteAktivitetStart;
     private Timestamp forrigeAktivitetStart;
-    private Set<AktivitetStatus> aktiviteter;
 
     public UpsertQuery toUpsertQuery(JdbcTemplate db) {
         return SqlUtils.upsert(db, "bruker_data")
