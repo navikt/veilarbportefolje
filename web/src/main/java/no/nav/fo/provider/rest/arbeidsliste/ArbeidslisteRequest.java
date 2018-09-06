@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class ArbeidslisteRequest {
     String fnr;
+    String overskrift;
     String kommentar;
     String frist;
 }

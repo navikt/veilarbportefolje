@@ -5,12 +5,9 @@ import io.vavr.collection.List;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
-import no.nav.fo.exception.RestBadGateWayException;
-import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 import no.nav.fo.service.AktoerService;
@@ -30,8 +27,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.*;
 import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 import static no.nav.fo.provider.rest.RestUtils.createResponse;
 import static no.nav.fo.provider.rest.ValideringsRegler.validerArbeidsliste;
@@ -81,12 +77,7 @@ public class ArbeidsListeRessurs {
     @GET
     @Path("{fnr}/")
     public Arbeidsliste getArbeidsListe(@PathParam("fnr") String fnr) {
-        TilgangsRegler.tilgangTilOppfolging(pepClient);
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-        if (validateFnr.isInvalid()) {
-            throw new RestValideringException(validateFnr.getError());
-        }
+        validerOppfolgingOgBruker(fnr);
 
         String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
 
@@ -114,18 +105,8 @@ public class ArbeidsListeRessurs {
     @POST
     @Path("{fnr}/")
     public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
-        TilgangsRegler.tilgangTilOppfolging(pepClient);
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-        if (validateFnr.isInvalid()) {
-            throw new RestValideringException(validateFnr.getError());
-        }
-
-        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
-        if (validateVeileder.isInvalid()) {
-            throw new IngenTilgang(validateVeileder.getError());
-        }
-
+        validerOppfolgingOgBruker(fnr);
+        validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
 
         arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
@@ -139,13 +120,7 @@ public class ArbeidsListeRessurs {
     @PUT
     @Path("{fnr}/")
     public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
-        TilgangsRegler.tilgangTilOppfolging(pepClient);
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-        if (validateFnr.isInvalid()) {
-            throw new RestValideringException(validateFnr.getError());
-        }
-
+        validerOppfolgingOgBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
         validerArbeidsliste(body, true);
 
@@ -160,23 +135,13 @@ public class ArbeidsListeRessurs {
     @DELETE
     @Path("{fnr}/")
     public Arbeidsliste deleteArbeidsliste(@PathParam("fnr") String fnr) {
-        TilgangsRegler.tilgangTilOppfolging(pepClient);
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
-        if (validateFnr.isInvalid()) {
-            throw new RestValideringException(validateFnr.getError());
-        }
-
-        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
-        if (validateVeileder.isInvalid()) {
-            throw new IngenTilgang(validateVeileder.getError());
-        }
-
+        validerOppfolgingOgBruker(fnr);
+        validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
 
         return arbeidslisteService
                 .deleteArbeidsliste(new Fnr(fnr))
-                .map((a) -> new Arbeidsliste(null,null,null,null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
+                .map((a) -> emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
                 .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
     }
 
@@ -185,6 +150,7 @@ public class ArbeidsListeRessurs {
     public Response deleteArbeidslisteListe(java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         return createResponse(() -> {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
+
             java.util.List<String> feiledeFnrs = new ArrayList<>();
             java.util.List<String> okFnrs = new ArrayList<>();
 
@@ -196,7 +162,7 @@ public class ArbeidsListeRessurs {
             Validation<java.util.List<Fnr>, java.util.List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
             Validation<String, java.util.List<Fnr>> veilederForBrukere = TilgangsRegler.erVeilederForBrukere(arbeidslisteService, fnrs);
             if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
-                throw new RestValideringException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+                throw new BadRequestException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
             }
 
             validerFnrs.get()
@@ -220,7 +186,7 @@ public class ArbeidsListeRessurs {
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new RestBadGateWayException("Kunne ikke hente enhet for denne brukeren"));
+        String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new WebApplicationException("Kunne ikke hente enhet for denne brukeren", BAD_GATEWAY));
         TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
     }
 
@@ -228,6 +194,7 @@ public class ArbeidsListeRessurs {
         Timestamp frist = nullOrEmpty(body.getFrist()) ? null : Timestamp.from(Instant.parse(body.getFrist()));
         return new ArbeidslisteData(fnr)
                 .setVeilederId(VeilederId.of(SubjectHandler.getSubjectHandler().getUid()))
+                .setOverskrift(body.getOverskrift())
                 .setKommentar(body.getKommentar())
                 .setFrist(frist);
     }
@@ -255,6 +222,23 @@ public class ArbeidsListeRessurs {
     }
 
     private Arbeidsliste emptyArbeidsliste() {
-        return new Arbeidsliste(null, null, null, null);
+        return new Arbeidsliste(null, null, null, null, null);
+    }
+
+    private void validerOppfolgingOgBruker(String fnr) {
+        TilgangsRegler.tilgangTilOppfolging(pepClient);
+        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
+        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+        if (validateFnr.isInvalid()) {
+            throw new BadRequestException(validateFnr.getError());
+        }
+    }
+
+
+    private void validerErVeilederForBruker(String fnr) {
+        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+        if (validateVeileder.isInvalid()) {
+            throw new ForbiddenException(validateVeileder.getError());
+        }
     }
 }

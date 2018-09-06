@@ -2,7 +2,6 @@ package no.nav.fo.provider.rest;
 
 import io.vavr.Tuple;
 import io.vavr.control.Validation;
-import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
@@ -10,16 +9,15 @@ import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.util.TokenUtils;
 
+import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 
 public class TilgangsRegler {
-    final static Pattern pattern = Pattern.compile("\\d{4}");
 
     static void tilgangTilOppfolging(PepClient pep) {
         SubjectHandler subjectHandler = SubjectHandler.getSubjectHandler();
@@ -44,7 +42,7 @@ public class TilgangsRegler {
 
     static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new IngenTilgang(format("sjekk av %s feilet, %s", navn, data));
+            throw new ForbiddenException(format("sjekk av %s feilet, %s", navn, data));
         }
     }
 

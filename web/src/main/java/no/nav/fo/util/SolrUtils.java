@@ -24,6 +24,7 @@ public class SolrUtils {
     static Map<Brukerstatus, String> ferdigfilterStatus = new HashMap<Brukerstatus, String>() {{
         put(Brukerstatus.NYE_BRUKERE, "ny_for_enhet:true");
         put(Brukerstatus.UFORDELTE_BRUKERE, "ny_for_enhet:true");
+        put(Brukerstatus.TRENGER_VURDERING, "trenger_vurdering:true");
         put(Brukerstatus.INAKTIVE_BRUKERE, "formidlingsgruppekode:ISERV");
         put(Brukerstatus.VENTER_PA_SVAR_FRA_NAV, "venterpasvarfranav:*");
         put(Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER, "venterpasvarfrabruker:*");
@@ -36,8 +37,6 @@ public class SolrUtils {
 
     private static Locale locale = new Locale("no", "NO");
     private static Collator collator = Collator.getInstance(locale);
-
-
 
     static {
         collator.setStrength(Collator.PRIMARY);
@@ -128,7 +127,6 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
-        filtrerBrukereStatements.add(orStatement(filtervalg.manuellbrukere, SolrUtils::manuellBrukerFilter)); //TODO Slett når FO-123 er i prod
         filtrerBrukereStatements.add(orStatement(filtervalg.manuellBrukerStatus, SolrUtils::manuellStatusFilter));
 
         if (filtervalg.harAktivitetFilter()) {
@@ -245,11 +243,6 @@ public class SolrUtils {
 
     static String harVeilederSubQuery(List<VeilederId> identer) {
         return "exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))";
-    }
-
-    //TODO Slett når FO-123 er i prod
-    static String manuellBrukerFilter(ManuellBrukere manuellBrukerStatus) {
-        return "manuell_bruker:" + manuellBrukerStatus.toString();
     }
 
     static String manuellStatusFilter(ManuellBrukerStatus manuellBrukerStatus) {

@@ -3,7 +3,6 @@ package no.nav.fo.provider.rest;
 import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.domene.*;
-import no.nav.fo.exception.RestNotFoundException;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.PortefoljeUtils;
@@ -107,7 +106,7 @@ public class VeilederController {
 
             return solrService
                     .hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet)
-                    .getOrElseThrow(() -> new RestNotFoundException("Kunne ikke finne noen brukere med arbeidsliste"));
+                    .getOrElseThrow(() -> new NotFoundException("Kunne ikke finne noen brukere med arbeidsliste"));
         });
     }
 

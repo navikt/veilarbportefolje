@@ -222,15 +222,15 @@ public class SolrServiceImpl implements SolrService {
         String facetFieldString = "veileder_id";
 
         SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
+        solrQuery.setRows(0);
         // ikke interessert i veiledere som ikke har tilordnede brukere
         solrQuery.setFacetMinCount(1);
 
         QueryResponse response = new QueryResponse();
         try {
             response = solrClientSlave.query(solrQuery);
-            log.debug(response.toString());
         } catch (SolrServerException | IOException e) {
-            log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
+            log.error("Spørring mot solrindeks feilet: " + solrQuery, e);
         }
 
         FacetField facetField = response.getFacetField(facetFieldString);
@@ -261,7 +261,7 @@ public class SolrServiceImpl implements SolrService {
         indekserDokumenter(dokumenter);
         commit();
     }
-    
+
     private void indekserBrukerdata(AktoerId aktoerId) {
         aktoerService
                 .hentPersonidFraAktoerid(aktoerId)
@@ -312,7 +312,7 @@ public class SolrServiceImpl implements SolrService {
             UpdateResponse response = solrClientMaster.deleteByQuery(query);
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException | SolrUpdateResponseCodeException e) {
-            log.error("Kunne ikke slette dokumenter fra solrindeks: {}", query, e);
+            log.error("Kunne ikke slette dokumenter fra solrindeks: " + query, e);
         }
     }
 
@@ -343,6 +343,7 @@ public class SolrServiceImpl implements SolrService {
         String iavtaltAktivitet = "aktiviteter:*";
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
+        String trengerVurdering = "trenger_vurdering:true";
 
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
@@ -353,6 +354,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFacetQuery(iavtaltAktivitet);
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
+        solrQuery.addFacetQuery(trengerVurdering);
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -368,6 +370,8 @@ public class SolrServiceImpl implements SolrService {
         long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
         long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
         long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
+        long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
+
         statusTall
                 .setTotalt(antallTotalt)
                 .setInaktiveBrukere(antallInaktiveBrukere)
@@ -377,7 +381,8 @@ public class SolrServiceImpl implements SolrService {
                 .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
                 .setIavtaltAktivitet(antalliavtaltAktivitet)
                 .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
-                .setUtlopteAktiviteter(antallUtlopteAktiviteter);
+                .setUtlopteAktiviteter(antallUtlopteAktiviteter)
+                .setTrengerVurdering(antallTrengerVurdering);
 
         return statusTall;
     }
@@ -392,6 +397,7 @@ public class SolrServiceImpl implements SolrService {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
         String nyForVeileder = "ny_for_veileder:true";
+        String trengerVurdering = "trenger_vurdering:true";
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
@@ -403,6 +409,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
         solrQuery.addFacetQuery(nyForVeileder);
+        solrQuery.addFacetQuery(trengerVurdering);
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
@@ -426,6 +433,7 @@ public class SolrServiceImpl implements SolrService {
             long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
             long antallIarbeidsliste = response.getFacetQuery().get(minArbeidsliste);
             long antallNyeBrukerForVeileder = response.getFacetQuery().get(nyForVeileder);
+            long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
             statusTall
                     .setTotalt(antallTotalt)
                     .setInaktiveBrukere(antallInaktiveBrukere)
@@ -435,9 +443,10 @@ public class SolrServiceImpl implements SolrService {
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter)
                     .setMinArbeidsliste(antallIarbeidsliste)
-                    .setNyeBrukereForVeileder(antallNyeBrukerForVeileder);
+                    .setNyeBrukereForVeileder(antallNyeBrukerForVeileder)
+                    .setTrengerVurdering(antallTrengerVurdering);
         } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for veilederportefølje feilet: {}", solrQuery, e);
+            log.error("Henting av statustall for veilederportefølje feilet: " + solrQuery, e);
         }
 
         return statusTall;
