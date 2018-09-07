@@ -2,11 +2,11 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.brukerdialog.security.context.SubjectHandler;
-import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,9 +42,6 @@ public class ArbeidsListeRessurs {
 
     @Inject
     private ArbeidslisteService arbeidslisteService;
-
-    @Inject
-    private BrukerRepository brukerRepository;
 
     @Inject
     private AktoerService aktoerService;
@@ -76,27 +73,24 @@ public class ArbeidsListeRessurs {
 
     @GET
     @Path("{fnr}/")
-    public Arbeidsliste getArbeidsListe(@PathParam("fnr") String fnr) {
-        validerOppfolgingOgBruker(fnr);
+    public Arbeidsliste getArbeidsListe(@PathParam("fnr") String fnrString) {
+        validerOppfolgingOgBruker(fnrString);
 
         String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
 
-        Fnr newFnr = new Fnr(fnr);
-        Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(newFnr);
+        Fnr fnr = new Fnr(fnrString);
+        Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(fnr);
 
-        boolean erOppfolgendeVeileder = aktoerId.flatMap(brukerRepository::retrieveVeileder)
-                .map(Object::toString)
-                .map(v -> Objects.equals(innloggetVeileder, v))
-                .getOrElse(false);
-
-        boolean harVeilederTilgang = arbeidslisteService.hentEnhet(newFnr)
+        boolean harVeilederTilgang = arbeidslisteService.hentEnhet(fnr)
                 .map(enhet -> pepClient.tilgangTilEnhet(innloggetVeileder, enhet))
                 .getOrElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
                 .flatMap(arbeidslisteService::getArbeidsliste)
-                .getOrElse(this::emptyArbeidsliste)
-                .setIsOppfolgendeVeileder(erOppfolgendeVeileder)
+                .toJavaOptional()
+                .orElse(emptyArbeidsliste())
+                .setIsOppfolgendeVeileder(aktoerId.map(id -> 
+                    arbeidslisteService.erVeilederForBruker(id, VeilederId.of(innloggetVeileder))).get())
                 .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
@@ -113,23 +107,30 @@ public class ArbeidsListeRessurs {
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
+                .setHarVeilederTilgang(true)
+                .setIsOppfolgendeVeileder(true);
         return Response.status(CREATED).entity(arbeidsliste).build();
     }
 
     @PUT
     @Path("{fnr}/")
-    public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
-        validerOppfolgingOgBruker(fnr);
-        sjekkTilgangTilEnhet(new Fnr(fnr));
+    public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnrString) {
+        validerOppfolgingOgBruker(fnrString);
+        Fnr fnr = new Fnr(fnrString);
+        sjekkTilgangTilEnhet(fnr);
         validerArbeidsliste(body, true);
 
         arbeidslisteService
-                .updateArbeidsliste(data(body, new Fnr(fnr)))
+                .updateArbeidsliste(data(body, fnr))
                 .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get().setHarVeilederTilgang(true);
+        return arbeidslisteService.getArbeidsliste(fnr).get()
+                .setHarVeilederTilgang(true)
+                .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
+                        fnr, 
+                        VeilederId.of(SubjectHandler.getSubjectHandler().getUid())));
     }
 
     @DELETE
@@ -233,7 +234,6 @@ public class ArbeidsListeRessurs {
             throw new BadRequestException(validateFnr.getError());
         }
     }
-
 
     private void validerErVeilederForBruker(String fnr) {
         Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);

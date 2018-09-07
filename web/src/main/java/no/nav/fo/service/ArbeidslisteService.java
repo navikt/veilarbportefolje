@@ -10,7 +10,6 @@ import no.nav.fo.domene.VeilederId;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 
 import static no.nav.metrics.MetricsFactory.createEvent;
 
@@ -29,21 +28,11 @@ public class ArbeidslisteService {
     private SolrService solrService;
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
-        Try<AktoerId> aktoerId = hentAktoerId(fnr);
-        if (aktoerId.isFailure()) {
-            return Try.failure(aktoerId.getCause());
-        }
-
-        return arbeidslisteRepository
-                .retrieveArbeidsliste(aktoerId.get())
-                .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId.get()));
+        return hentAktoerId(fnr).map(this::getArbeidsliste).get();
     }
 
     public Try<Arbeidsliste> getArbeidsliste(AktoerId aktoerId) {
-
-        return arbeidslisteRepository
-                .retrieveArbeidsliste(aktoerId)
-                .map(arbeidsliste -> this.setOppfolgendeVeileder(arbeidsliste, aktoerId));
+        return arbeidslisteRepository.retrieveArbeidsliste(aktoerId);
     }
 
     public Try<AktoerId> createArbeidsliste(ArbeidslisteData data) {
@@ -83,8 +72,7 @@ public class ArbeidslisteService {
     }
 
     public Try<String> hentEnhet(Fnr fnr) {
-        return brukerRepository
-                .retrieveEnhet(fnr);
+        return brukerRepository.retrieveEnhet(fnr);
     }
 
     public void deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
@@ -96,19 +84,14 @@ public class ArbeidslisteService {
                 .hentAktoeridFraFnr(fnr);
     }
 
-    private Arbeidsliste setOppfolgendeVeileder(Arbeidsliste arbeidsliste, AktoerId aktoerId) {
-        return brukerRepository
-                .retrieveVeileder(aktoerId)
-                .map(veilederId -> veilederId.equals(arbeidsliste.getSistEndretAv()))
-                .map(arbeidsliste::setIsOppfolgendeVeileder)
-                .getOrElseThrow(() -> new NotFoundException("Fant ikke nåværende veileder for bruker"));
+    public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
+        return hentAktoerId(fnr)
+                .map(aktoerId -> erVeilederForBruker(aktoerId, veilederId))
+                .getOrElse(false);
     }
 
-    public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
-        return
-                hentAktoerId(fnr)
-                        .flatMap(brukerRepository::retrieveVeileder)
-                        .map(currentVeileder -> currentVeileder.equals(veilederId))
-                        .getOrElse(false);
+    public Boolean erVeilederForBruker(AktoerId aktoerId, VeilederId veilederId) {
+        return brukerRepository.retrieveVeileder(aktoerId).
+                map(currentVeileder -> currentVeileder.equals(veilederId)).getOrElse(false);
     }
 }
