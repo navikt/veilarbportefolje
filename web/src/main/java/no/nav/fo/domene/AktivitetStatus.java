@@ -61,7 +61,7 @@ public class AktivitetStatus {
                 .execute(data);
     }
 
-    public String aktoeridOrElseNull() {
+    private String aktoeridOrElseNull() {
         return Optional.ofNullable(aktoerid)
                 .map(AktoerId::toString)
                 .orElse(null);

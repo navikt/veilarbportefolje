@@ -28,7 +28,6 @@ public class AktivitetBrukerOppdatering implements BrukerOppdatering {
     @Override
     public Brukerdata applyTo(Brukerdata bruker) {
         return bruker
-                .setAktiviteter(aktiviteter)
                 .setAktoerid(aktoerid)
                 .setNyesteUtlopteAktivitet(nyesteUtlopteAktivitet)
                 .setAktivitetStart(aktivitetStart)
