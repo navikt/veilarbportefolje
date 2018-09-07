@@ -2,7 +2,6 @@ package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
 import io.vavr.collection.List;
-import io.vavr.control.Option;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
