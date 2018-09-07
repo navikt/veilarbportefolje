@@ -89,6 +89,7 @@ public class BrukerRepository {
             "reservertikrr, " +
             "ARBEIDSLISTE_AKTIV, " +
             "ARBEIDSLISTE_KOMMENTAR, " +
+            "ARBEIDSLISTE_OVERSKRIFT, " +
             "ARBEIDSLISTE_FRIST, " +
             "ARBEIDSLISTE_ENDRET_AV, " +
             "ARBEIDSLISTE_ENDRET_TID " +

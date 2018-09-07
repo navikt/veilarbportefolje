@@ -81,7 +81,7 @@ public class DbUtils {
             document.setField("arbeidsliste_sist_endret_av_veilederid", rs.getString("ARBEIDSLISTE_ENDRET_AV"));
             document.setField("arbeidsliste_endringstidspunkt", toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")));
             document.setField("arbeidsliste_kommentar", rs.getString("ARBEIDSLISTE_KOMMENTAR"));
-            document.setField("arbeidsliste_overskrift", rs.getString("OVERSKRIFT"));
+            document.setField("arbeidsliste_overskrift", rs.getString("ARBEIDSLISTE_OVERSKRIFT"));
             document.setField("arbeidsliste_frist", Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getSolrMaxAsIsoUtc()));
         }
         return document;
