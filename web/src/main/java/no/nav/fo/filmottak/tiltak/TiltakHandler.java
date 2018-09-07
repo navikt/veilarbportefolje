@@ -97,7 +97,8 @@ public class TiltakHandler {
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {
 
-        log.info("Starter populering av database");
+        log.info("Starter populering av database for tiltaksfil med uttrekkstidspunkt [{}]", 
+                tiltakOgAktiviteterForBrukere.getUttrekkstidspunkt());
 
         tiltakrepository.slettBrukertiltak();
         tiltakrepository.slettEnhettiltak();
