@@ -128,7 +128,7 @@ public class ArbeidsListeRessurs {
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
                         fnr,
-                        VeilederId.of(SubjectHandler.getSubjectHandler().getUid())));
+                        VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new))));
     }
 
     @DELETE
