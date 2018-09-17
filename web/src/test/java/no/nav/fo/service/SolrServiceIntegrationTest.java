@@ -2,7 +2,6 @@ package no.nav.fo.service;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.ApplicationConfigTest;
-import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.util.sql.SqlUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -49,14 +48,13 @@ public class SolrServiceIntegrationTest {
         insertISERVuser();
         SolrClient solrClientMaster = mock(SolrClient.class);
         SolrClient solrClientSlave = mock(SolrClient.class);
-        ArbeidslisteRepository arbeidslisteRepository = mock(ArbeidslisteRepository.class);
         AktoerService aktoerService = mock(AktoerService.class);
         AktivitetDAO aktivitetDAO = mock(AktivitetDAO.class);
         VeilederService veilederService = mock(VeilederService.class);
         FlyttSomNyeFeature flyttSomNyeFeature = mock(FlyttSomNyeFeature.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
+        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
 
 
         UpdateResponse response = new UpdateResponse();

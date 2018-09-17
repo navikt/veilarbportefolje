@@ -37,10 +37,8 @@ public class Arbeidsliste {
         String overskrift = (String) brukerDokument.get("arbeidsliste_overskrift");
         String kommentar = (String) brukerDokument.get("arbeidsliste_kommentar");
         ZonedDateTime frist = toZonedDateTime(dateIfNotSolrMax((Date) brukerDokument.get("arbeidsliste_frist")));
-        Boolean isOppfolgendeVeileder = (Boolean) brukerDokument.get("arbeidsliste_er_oppfolgende_veileder");
 
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist)
-                .setIsOppfolgendeVeileder(isOppfolgendeVeileder)
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 

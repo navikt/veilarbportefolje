@@ -5,12 +5,10 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.RemoteFeatureConfig.FlyttSomNyeFeature;
-import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.BatchConsumer;
-import no.nav.fo.util.DateUtils;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -35,7 +33,6 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -67,7 +64,6 @@ public class SolrServiceImpl implements SolrService {
     private SolrClient solrClientMaster;
     private BrukerRepository brukerRepository;
     private AktivitetDAO aktivitetDAO;
-    private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
     private VeilederService veilederService;
     private Executor executor;
@@ -78,7 +74,6 @@ public class SolrServiceImpl implements SolrService {
             @Named("solrClientMaster") SolrClient solrClientMaster,
             @Named("solrClientSlave") SolrClient solrClientSlave,
             BrukerRepository brukerRepository,
-            ArbeidslisteRepository arbeidslisteRepository,
             AktoerService aktoerService,
             VeilederService veilederService,
             AktivitetDAO aktivitetDAO,
@@ -89,7 +84,6 @@ public class SolrServiceImpl implements SolrService {
         this.solrClientSlave = solrClientSlave;
         this.brukerRepository = brukerRepository;
         this.aktivitetDAO = aktivitetDAO;
-        this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
@@ -209,30 +203,7 @@ public class SolrServiceImpl implements SolrService {
         Boolean batch = dokumenter.size() > 1;
         BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
         timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, aktivitetDAO), tagsAppeder);
-        timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
         timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO), tagsAppeder);
-    }
-
-    static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
-        List<PersonId> personIds = brukere.stream().map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
-        Map<PersonId, Optional<AktoerId>> personIdToAktoerId = aktoerService.hentAktoeridsForPersonids(personIds);
-        List<AktoerId> aktoerids = personIdToAktoerId.values().stream().filter(Optional::isPresent).map(Optional::get).collect(toList());
-
-        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = arbeidslisteRepository.retrieveArbeidsliste(aktoerids);
-
-        brukere.forEach((dokument) -> {
-            PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
-            Optional<Arbeidsliste> arbeidsliste = Optional.of(personId).flatMap(personIdToAktoerId::get).flatMap(arbeidslisteMap::get);
-            if (arbeidsliste.isPresent()) {
-                dokument.setField("arbeidsliste_aktiv", true);
-                dokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.get().getSistEndretAv().toString());
-                dokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.get().getEndringstidspunkt()));
-                dokument.setField("arbeidsliste_overskrift", arbeidsliste.get().getOverskrift());
-                dokument.setField("arbeidsliste_kommentar", arbeidsliste.get().getKommentar());
-                dokument.setField("arbeidsliste_frist", arbeidsliste.map(Arbeidsliste::getFrist).map(DateUtils::toUtcString).orElse(getSolrMaxAsIsoUtc()));
-                dokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.get().getIsOppfolgendeVeileder());
-            }
-        });
     }
 
     @Override

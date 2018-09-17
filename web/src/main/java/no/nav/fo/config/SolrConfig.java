@@ -1,7 +1,6 @@
 package no.nav.fo.config;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
@@ -64,8 +63,8 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService, RemoteFeatureConfig.FlyttSomNyeFeature flyttSomNyeFeature) {
-        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, arbeidslisteRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService, RemoteFeatureConfig.FlyttSomNyeFeature flyttSomNyeFeature) {
+        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
     }
 
     @Bean

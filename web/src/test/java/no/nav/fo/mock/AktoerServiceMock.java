@@ -59,11 +59,6 @@ public class AktoerServiceMock implements AktoerService {
         return null;
     }
 
-    @Override
-    public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
-        return null;
-    }
-
     private String finnAktoerid(Fnr fnr) {
         final String[] aktoerid = {null};
         testbrukere.forEach((key, value) -> {

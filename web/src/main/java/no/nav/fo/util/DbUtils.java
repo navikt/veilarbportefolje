@@ -1,6 +1,7 @@
 package no.nav.fo.util;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -8,9 +9,11 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static no.nav.fo.util.DateUtils.getSolrMaxAsIsoUtc;
 import static no.nav.fo.util.DateUtils.toIsoUTC;
 import static no.nav.fo.util.OppfolgingUtils.isNyForEnhet;
 
@@ -72,6 +75,15 @@ public class DbUtils {
         document.addField("neste_aktivitet_start", toIsoUTC(rs.getTimestamp("neste_aktivitet_start")));
         document.addField("forrige_aktivitet_start", toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")));
         document.addField("manuell_bruker", identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"),rs.getString("MANUELL")));
+        boolean arbeidslisteAktiv = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
+        if(arbeidslisteAktiv) {
+            document.setField("arbeidsliste_aktiv", true);
+            document.setField("arbeidsliste_sist_endret_av_veilederid", rs.getString("ARBEIDSLISTE_ENDRET_AV"));
+            document.setField("arbeidsliste_endringstidspunkt", toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")));
+            document.setField("arbeidsliste_kommentar", rs.getString("ARBEIDSLISTE_KOMMENTAR"));
+            document.setField("arbeidsliste_overskrift", rs.getString("ARBEIDSLISTE_OVERSKRIFT"));
+            document.setField("arbeidsliste_frist", Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getSolrMaxAsIsoUtc()));
+        }
         return document;
     }
 

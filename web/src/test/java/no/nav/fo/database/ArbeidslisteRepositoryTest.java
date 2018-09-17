@@ -17,10 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -89,28 +86,16 @@ public class ArbeidslisteRepositoryTest {
     }
 
     @Test
-    public void skalHenteArbeidslisteForListeAvAktoerid() {
-        AktoerId aktoerId1 = AktoerId.of("22222222");
-        AktoerId aktoerId2 = AktoerId.of("22222223");
-        AktoerId aktoerId3 = AktoerId.of("finnesikke");
-        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = repo.retrieveArbeidsliste(asList(aktoerId1,aktoerId2, aktoerId3));
-        assertTrue(arbeidslisteMap.get(aktoerId1).isPresent());
-        assertTrue(arbeidslisteMap.get(aktoerId2).isPresent());
-        assertFalse(arbeidslisteMap.get(aktoerId3).isPresent());
-    }
-
-    @Test
     public void skalSletteArbeidslisteForAktoerids() {
         AktoerId aktoerId1 = AktoerId.of("22222222");
-        AktoerId aktoerId2 = AktoerId.of("22222223");
-        Map<AktoerId, Optional<Arbeidsliste>> arbeidsliste = repo.retrieveArbeidsliste(asList(aktoerId1,aktoerId2));
-        assertTrue(arbeidsliste.get(aktoerId1).isPresent());
-        assertTrue(arbeidsliste.get(aktoerId2).isPresent());
+        Try<Arbeidsliste> arbeidsliste = repo.retrieveArbeidsliste(aktoerId1);
+        assertTrue(arbeidsliste.isSuccess());
+        assertTrue(arbeidsliste.get() != null);
 
         repo.deleteArbeidslisteForAktoerid(aktoerId1);
-        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteDeleted = repo.retrieveArbeidsliste(asList(aktoerId1,aktoerId2));
-        assertFalse(arbeidslisteDeleted.get(aktoerId1).isPresent());
-        assertTrue(arbeidslisteDeleted.get(aktoerId2).isPresent());
+        arbeidsliste = repo.retrieveArbeidsliste(aktoerId1);
+        assertTrue(arbeidsliste.isSuccess());
+        assertFalse(arbeidsliste.get() != null);
     }
     
 }
