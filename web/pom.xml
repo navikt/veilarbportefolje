@@ -43,9 +43,9 @@
 
         <!-- Virksomhetstjenester -->
         <dependency>
-        <groupId>no.nav.meldinger.virksomhet</groupId>
-        <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
-        <classifier>jaxb</classifier>
+            <groupId>no.nav.meldinger.virksomhet</groupId>
+            <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
+            <classifier>jaxb</classifier>
         </dependency>
 
         <dependency>
@@ -107,6 +107,10 @@
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>common-cxf</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>auth</artifactId>
+        </dependency>
 
         <!--Spring-->
         <dependency>
@@ -161,10 +165,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -323,14 +323,6 @@
         <dependency>
             <groupId>au.com.dius</groupId>
             <artifactId>pact-jvm-consumer-java8_2.12</artifactId>
-            <version>3.5.15</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>au.com.dius</groupId>
@@ -346,6 +338,11 @@
         </dependency>
 
         <!--TEST-->
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>auth</artifactId>
+            <type>test-jar</type>
+        </dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-jaspic_1.0_spec</artifactId>

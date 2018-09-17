@@ -1,6 +1,7 @@
 package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
+import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.mock.AktoerServiceMock;
@@ -20,8 +21,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.sql.DataSource;
 
 import static io.vavr.control.Try.success;
-import static no.nav.apiapp.ApiApplication.Sone.FSS;
-import static no.nav.fo.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.mock.EnhetMock.NAV_SANDE_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -33,8 +32,7 @@ import static org.mockito.Mockito.when;
         ServiceConfig.class,
         RestConfig.class
 })
-
-public class ComponentTestConfig implements ApiApplication {
+public class ComponentTestConfig implements ApiApplication.NaisApiApplication {
 
     @Bean
     public AktoerService aktoerService() {
@@ -83,5 +81,9 @@ public class ComponentTestConfig implements ApiApplication {
     @Bean
     public DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1() {
         return mock(DigitalKontaktinformasjonV1.class);
+    }
+
+    @Override
+    public void configure(ApiAppConfigurator apiAppConfigurator) {
     }
 }

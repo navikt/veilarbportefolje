@@ -1,11 +1,13 @@
 package no.nav.fo.provider.rest;
 
+import no.nav.brukerdialog.security.context.SubjectRule;
+import no.nav.common.auth.Subject;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.util.StepperUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -19,12 +21,14 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
+import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.domene.AAPMaxtidUkeFasettMapping.*;
 import static no.nav.fo.domene.DagpengerUkeFasettMapping.*;
 import static no.nav.fo.domene.ManedFasettMapping.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -59,6 +63,9 @@ public class DiagramControllerTest {
             new Bruker().setFnr("3").setUtlopsdatoFasett(MND3).setDagputlopUkeFasett(UKE6_9).setAapUnntakUkerIgjen(40).setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.UKE36_47)
     );
 
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token")));
+
     @Mock
     private SolrService solr;
 
@@ -71,12 +78,12 @@ public class DiagramControllerTest {
     public void setUp() throws Exception {
         controller = new DiagramController(pepClient, solr);
         when(pepClient.tilgangTilEnhet(any(), any())).thenReturn(true);
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(BRUKERE.size(),BRUKERE));
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(BRUKERE.size(), BRUKERE));
     }
 
     @Test
     public void skalSjekkeTilgang() throws Exception {
-        when(pepClient.tilgangTilEnhet(any(),any())).thenReturn(false);
+        when(pepClient.tilgangTilEnhet(any(), any())).thenReturn(false);
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
         assertThat(response.getStatus()).isEqualTo(FORBIDDEN.getStatusCode());
     }
@@ -104,7 +111,7 @@ public class DiagramControllerTest {
         List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(), brukere));
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.DAGPENGER));
 
@@ -126,7 +133,7 @@ public class DiagramControllerTest {
         List<Bruker> brukere = new ArrayList<>(BRUKERE);
         brukere.add(BRUKERE.get(3));
 
-        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(),brukere));
+        when(solr.hentBrukere(anyString(), any(), any(), any(), any(Filtervalg.class))).thenReturn(new BrukereMedAntall(brukere.size(), brukere));
 
         Response response = controller.hentDiagramData("Z999000", "0100", new Filtervalg().setYtelse(YtelseFilter.AAP_MAXTID));
 

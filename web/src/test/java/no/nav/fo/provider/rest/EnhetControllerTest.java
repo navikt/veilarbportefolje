@@ -1,24 +1,27 @@
 package no.nav.fo.provider.rest;
 
 
-import no.nav.common.auth.SubjectHandler;
+import no.nav.brukerdialog.security.context.SubjectRule;
+import no.nav.common.auth.Subject;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
-import org.apache.wss4j.common.saml.bean.SubjectBean;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Optional;
-
-import static org.mockito.Matchers.any;
+import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
+import static no.nav.common.auth.SsoToken.oidcToken;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EnhetControllerTest {
+
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token")));
 
     @Mock
     private SolrService solrService;
@@ -33,7 +36,6 @@ public class EnhetControllerTest {
     public void skalHentPortefoljeFraIndeksDersomTilgang() throws Exception {
         when(pepClient.tilgangTilEnhet(any(), any())).thenReturn(true);
         when(pepClient.isSubjectMemberOfModiaOppfolging(any(), any())).thenReturn(true);
-        when(SubjectHandler.getIdent()).thenReturn(Optional.of("testident"));
 
         enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 

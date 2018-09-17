@@ -7,6 +7,7 @@ import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
+import no.nav.testconfig.ApiAppTest;
 import org.eclipse.jetty.plus.jndi.Resource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -15,9 +16,7 @@ import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 import static no.nav.fo.config.LocalJndiContextConfig.*;
 import static no.nav.fo.service.VeilederService.VEILARBVEILEDER_URL_PROPERTY;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.first;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.gotKeypress;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.waitFor;
+import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public class StartJettyVeilArbPortefolje {
@@ -32,9 +31,11 @@ public class StartJettyVeilArbPortefolje {
 
         loadTestConfigFromProperties();
 
-        DriverManagerDataSource dataSource  = (parseBoolean(getProperty("lokal.database"))) ?
+        setupTestContext(ApiAppTest.Config.builder().applicationName(APPLICATION_NAME).build());
+
+        DriverManagerDataSource dataSource = (parseBoolean(getProperty("lokal.database"))) ?
                 setupInMemoryDatabase() :
-                    setupDataSourceWithCredentials(createDbCredentials());
+                setupDataSourceWithCredentials(createDbCredentials());
 
         setServiceUserCredentials(FasitUtils.getServiceUser(SERVICE_USER_NAME, APPLICATION_NAME));
 
@@ -68,11 +69,11 @@ public class StartJettyVeilArbPortefolje {
     }
 
     private static DbCredentials createDbCredentials() {
-        return (getProperty("database.url") == null)  ? FasitUtils.getDbCredentials(APPLICATION_NAME) :
+        return (getProperty("database.url") == null) ? FasitUtils.getDbCredentials(APPLICATION_NAME) :
                 new DbCredentials()
-                .setUrl(getProperty("database.url"))
-                .setUsername(getProperty("database.brukernavn", "sa"))
-                .setPassword(getProperty("database.passord", ""));
+                        .setUrl(getProperty("database.url"))
+                        .setUsername(getProperty("database.brukernavn", "sa"))
+                        .setPassword(getProperty("database.passord", ""));
     }
 
 }

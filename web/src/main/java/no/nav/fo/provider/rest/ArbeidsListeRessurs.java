@@ -6,7 +6,7 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.RestBadGateWayException;
@@ -88,7 +88,7 @@ public class ArbeidsListeRessurs {
             throw new RestValideringException(validateFnr.getError());
         }
 
-        String innloggetVeileder = SubjectHandler.getSubjectHandler().getUid();
+        String innloggetVeileder = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
         Fnr newFnr = new Fnr(fnr);
         Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(newFnr);
@@ -176,7 +176,7 @@ public class ArbeidsListeRessurs {
 
         return arbeidslisteService
                 .deleteArbeidsliste(new Fnr(fnr))
-                .map((a) -> new Arbeidsliste(null,null,null,null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
+                .map((a) -> new Arbeidsliste(null, null, null, null).setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
                 .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
     }
 
@@ -227,7 +227,7 @@ public class ArbeidsListeRessurs {
     private ArbeidslisteData data(ArbeidslisteRequest body, Fnr fnr) {
         Timestamp frist = nullOrEmpty(body.getFrist()) ? null : Timestamp.from(Instant.parse(body.getFrist()));
         return new ArbeidslisteData(fnr)
-                .setVeilederId(VeilederId.of(SubjectHandler.getSubjectHandler().getUid()))
+                .setVeilederId(VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new)))
                 .setKommentar(body.getKommentar())
                 .setFrist(frist);
     }

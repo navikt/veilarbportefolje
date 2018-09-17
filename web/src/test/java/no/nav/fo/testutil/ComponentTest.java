@@ -5,6 +5,9 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import lombok.SneakyThrows;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.auth.SsoToken;
+import no.nav.common.auth.Subject;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
@@ -16,22 +19,26 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import javax.servlet.*;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
 
 import static com.squareup.okhttp.MediaType.parse;
+import static java.lang.System.setProperty;
 import static java.util.Arrays.stream;
+import static no.nav.common.auth.SubjectHandler.withSubject;
 import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
-public abstract class
-ComponentTest {
+public abstract class ComponentTest {
     private static final String CONTEXT_NAME = ComponentTest.class.getSimpleName();
     private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());
     private static final OkHttpClient OKHTTPCLIENT = new OkHttpClient();
     protected static SingleConnectionDataSource ds;
+
+    private static final Subject TEST_SUBJECT = new Subject("testident", IdentType.InternBruker, SsoToken.oidcToken("token"));
 
     @BeforeClass
     public static void startJetty() {
@@ -121,6 +128,7 @@ ComponentTest {
                 .port(jettyPort)
                 .overrideWebXml(new File("src/test/resources/componenttest-web.xml"))
                 .disableAnnotationScanning()
+                .addFilter(new TestSubjectFilter())
                 .buildJetty();
 
         // MetaInfConfiguration førte til "java.util.zip.ZipException: error in opening zip file"
@@ -140,9 +148,28 @@ ComponentTest {
     }
 
     private static void setupProperties() {
+        setProperty("APP_NAME", APPLICATION_NAME);
         System.setProperty("APP_LOG_HOME", new File("target").getAbsolutePath());
         System.setProperty("application.name", APPLICATION_NAME);
         SystemProperties.setFrom("veilarbportefolje.properties");
     }
 
+    private static class TestSubjectFilter implements Filter {
+        @Override
+        public void init(FilterConfig filterConfig) throws ServletException {
+
+        }
+
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+            withSubject(TEST_SUBJECT, () -> {
+                chain.doFilter(request, response);
+            });
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+    }
 }

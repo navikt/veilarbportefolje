@@ -1,7 +1,7 @@
 package no.nav.fo.provider.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.SolrService;
@@ -60,7 +60,7 @@ public class EnhetController {
             TilgangsRegler.tilgangTilOppfolging(pepClient);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            String ident = SubjectHandler.getSubjectHandler().getUid();
+            String ident = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
             BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);

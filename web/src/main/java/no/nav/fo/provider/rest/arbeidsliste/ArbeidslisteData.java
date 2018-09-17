@@ -2,7 +2,7 @@ package no.nav.fo.provider.rest.arbeidsliste;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
@@ -23,7 +23,7 @@ public class ArbeidslisteData {
     public static ArbeidslisteData of(Fnr fnr, String kommentar, Timestamp frist) {
         return
                 new ArbeidslisteData(fnr)
-                        .setVeilederId(VeilederId.of(SubjectHandler.getSubjectHandler().getUid()))
+                        .setVeilederId(VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new)))
                         .setKommentar(kommentar)
                         .setFrist(frist);
     }
