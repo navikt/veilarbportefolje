@@ -13,10 +13,6 @@
     <name>${project.artifactId}</name>
     <packaging>war</packaging>
 
-    <properties>
-
-    </properties>
-
     <dependencies>
 
         <!--FELLESBIBLIOTEKER-->

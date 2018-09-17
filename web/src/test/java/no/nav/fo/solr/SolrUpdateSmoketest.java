@@ -1,11 +1,11 @@
 package no.nav.fo.solr;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.RemoteFeatureConfig.FlyttSomNyeFeature;
-import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.service.AktoerService;
@@ -23,11 +23,18 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -35,11 +42,13 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import javax.net.ssl.SSLContext;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -58,6 +67,7 @@ import static no.nav.fo.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+@Slf4j
 @Tag(SMOKETEST)
 public class SolrUpdateSmoketest {
     private static SolrClient solrClient;
@@ -85,9 +95,10 @@ public class SolrUpdateSmoketest {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
         brukerRepository = new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
         solrService = new SolrServiceImpl(solrClient, solrClient,brukerRepository,
-                mock(ArbeidslisteRepository.class),mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(FlyttSomNyeFeature.class));
+                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(FlyttSomNyeFeature.class));
         }
 
+    @Disabled //Kan ikke enable igjen før vi har åpning mot databasen i q6 fra byggserver!!
     @Test
     @SneakyThrows
     public void skalOppdatereSolrIndeksKorrekt() {
@@ -209,6 +220,7 @@ public class SolrUpdateSmoketest {
     }
 
 
+    @SneakyThrows
     private HttpClient createHttpClientForSolr() {
         String username = System.getProperty("no.nav.modig.security.systemuser.username");
         String password = System.getProperty("no.nav.modig.security.systemuser.password");
@@ -216,7 +228,22 @@ public class SolrUpdateSmoketest {
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 
-        return HttpClientBuilder.create()
+        SSLContext unsafeSSLContext = new SSLContextBuilder()
+                .loadTrustMaterial(null, (x509CertChain, authType) -> true)
+                .build();
+
+        log.info("USING UNSAFE HTTP CLIENT. YOU SHOULD NEVER SEE THIS IN PRODUCTION!!");
+        return HttpClientBuilder
+                .create()
+                .setSSLContext(unsafeSSLContext)
+                .setConnectionManager(
+                        new PoolingHttpClientConnectionManager(
+                                RegistryBuilder.<ConnectionSocketFactory>create()
+                                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                                .register("https", new SSLConnectionSocketFactory(unsafeSSLContext, NoopHostnameVerifier.INSTANCE))
+                                .build()
+                        )
+                )
                 .setDefaultCredentialsProvider(credentialsProvider)
                 .addInterceptorFirst(new PreemptiveAuthInterceptor())
                 .build();

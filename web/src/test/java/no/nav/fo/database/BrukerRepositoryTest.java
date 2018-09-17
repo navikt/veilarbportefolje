@@ -38,6 +38,15 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class BrukerRepositoryTest {
 
+    private static final String[] SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
+        "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
+        "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
+        "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
+        "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
+        "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
+        "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START", "MANUELL", "RESERVERTIKRR", 
+        "ARBEIDSLISTE_AKTIV", "ARBEIDSLISTE_KOMMENTAR", "ARBEIDSLISTE_OVERSKRIFT", "ARBEIDSLISTE_FRIST", "ARBEIDSLISTE_ENDRET_AV", "ARBEIDSLISTE_ENDRET_TID"};
+
     @Inject
     private JdbcTemplate jdbcTemplate;
 
@@ -71,15 +80,7 @@ public class BrukerRepositoryTest {
     @Test
     public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO).get(0).keySet();
-        String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
-            "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-            "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT", "YTELSE",
-            "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START", "MANUELL", "RESERVERTIKRR"};
-
-        assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
+        assertThat(faktiskeDatabaseFelter).containsExactly(SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING);
     }
 
     @Test
@@ -94,16 +95,7 @@ public class BrukerRepositoryTest {
     @Test
     public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
         Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
-        String[] skalHaDatabaseFelter = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
-            "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-            "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-            "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START" ,"FORRIGE_AKTIVITET_START", "MANUELL", "RESERVERTIKRR"};
-
-
-        assertThat(faktiskeDatabaseFelter).containsExactly(skalHaDatabaseFelter);
+        assertThat(faktiskeDatabaseFelter).containsExactly(SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING);
     }
 
     @Test
@@ -431,25 +423,6 @@ public class BrukerRepositoryTest {
                 .get(0)
                 .get("oppfolging_sist_oppdatert");
         assertEquals(date, upDated);
-    }
-
-    @Test
-    public void skalHenteListeMedAktoerids() {
-        AktoerId aktoerId1 = AktoerId.of("aktoerid1");
-        AktoerId aktoerId2 = AktoerId.of("aktoerid2");
-
-        PersonId personId1 = PersonId.of("personid1");
-        PersonId personId2 = PersonId.of("personid2");
-        PersonId personId3 = PersonId.of("personid3");
-
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerId1, personId1);
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerId2, personId2);
-
-        Map<PersonId, Optional<AktoerId>> personIdToAktoerid = brukerRepository.hentAktoeridsForPersonids(asList(personId1, personId2, personId3));
-
-        assertThat(personIdToAktoerid.get(personId1).get()).isEqualTo(aktoerId1);
-        assertThat(personIdToAktoerid.get(personId2).get()).isEqualTo(aktoerId2);
-        assertThat(personIdToAktoerid.get(personId3).isPresent()).isFalse();
     }
 
     @Test

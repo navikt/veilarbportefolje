@@ -43,7 +43,7 @@ public class PortefoljeSmoketest {
     }
 
     @Test
-    public void hentPortefoljeForVeielderForAlleTilgjengeligeEnheter() {
+    public void hentPortefoljeForVeilederForAlleTilgjengeligeEnheter() {
         enhetsliste.forEach(enhet -> hentMax100BrukereForVeileder(enhet, smoketestFSS.getInnloggetVeielder()));
     }
 

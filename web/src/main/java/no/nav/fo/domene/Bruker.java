@@ -1,5 +1,6 @@
 package no.nav.fo.domene;
 
+import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.util.DateUtils.*;
+import static no.nav.fo.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Slf4j
@@ -31,8 +33,9 @@ public class Bruker {
     boolean egenAnsatt;
     boolean nyForVeileder;
     boolean nyForEnhet;
+    boolean trengerVurdering;
+    VurderingsBehov vurderingsBehov;
     boolean erDoed;
-    String manuellBrukere;  //TODO slett når FO-123 er i prod
     String manuellBrukerStatus;
     int fodselsdagIMnd;
     LocalDateTime fodselsdato;
@@ -60,10 +63,15 @@ public class Bruker {
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
+        String formidlingsgruppekode = (String) document.get("formidlingsgruppekode");
+        String kvalifiseringsgruppekode = (String) document.get("kvalifiseringsgruppekode");
+
         return new Bruker()
                 .setFnr((String) document.get("fnr"))
                 .setNyForEnhet(isNyForEnhet(document))
                 .setNyForVeileder(isNyForVeileder(document))
+                .setTrengerVurdering(defaultBool(document, "trenger_vurdering", false))
+                .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
                 .setVeilederId((String) document.get("veileder_id"))
@@ -93,7 +101,6 @@ public class Bruker {
                 .setNesteAktivitetStart(toLocalDateTime((Date) document.get("neste_aktivitet_start")))
                 .setForrigeAktivitetStart(toLocalDateTime((Date) document.get("forrige_aktivitet_start")))
                 .setBrukertiltak(getBrukertiltak(document))
-                .setManuellBrukere((String) document.get("manuell_bruker"))
                 .setManuellBrukerStatus((String) document.get("manuell_bruker"))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp((Date) document.get("aktivitet_tiltak_utlopsdato")))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp((Date) document.get("aktivitet_behandling_utlopsdato")))
@@ -119,7 +126,12 @@ public class Bruker {
     }
 
     private static boolean isNyForVeileder(SolrDocument document) {
-        return document.get("ny_for_veileder") == null ? false : (Boolean) document.get("ny_for_veileder");
+        return defaultBool(document, "ny_for_veileder", false);
+    }
+
+    private static boolean defaultBool(SolrDocument document, String field, boolean defaultValue) {
+        return Option.of((Boolean) document.get(field))
+                .getOrElse(defaultValue);
     }
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {

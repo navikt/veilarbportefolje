@@ -5,12 +5,10 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.config.RemoteFeatureConfig.FlyttSomNyeFeature;
-import no.nav.fo.database.ArbeidslisteRepository;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.util.BatchConsumer;
-import no.nav.fo.util.DateUtils;
 import no.nav.fo.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -35,7 +33,6 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -67,7 +64,6 @@ public class SolrServiceImpl implements SolrService {
     private SolrClient solrClientMaster;
     private BrukerRepository brukerRepository;
     private AktivitetDAO aktivitetDAO;
-    private ArbeidslisteRepository arbeidslisteRepository;
     private AktoerService aktoerService;
     private VeilederService veilederService;
     private Executor executor;
@@ -78,7 +74,6 @@ public class SolrServiceImpl implements SolrService {
             @Named("solrClientMaster") SolrClient solrClientMaster,
             @Named("solrClientSlave") SolrClient solrClientSlave,
             BrukerRepository brukerRepository,
-            ArbeidslisteRepository arbeidslisteRepository,
             AktoerService aktoerService,
             VeilederService veilederService,
             AktivitetDAO aktivitetDAO,
@@ -89,7 +84,6 @@ public class SolrServiceImpl implements SolrService {
         this.solrClientSlave = solrClientSlave;
         this.brukerRepository = brukerRepository;
         this.aktivitetDAO = aktivitetDAO;
-        this.arbeidslisteRepository = arbeidslisteRepository;
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
@@ -209,29 +203,7 @@ public class SolrServiceImpl implements SolrService {
         Boolean batch = dokumenter.size() > 1;
         BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
         timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, aktivitetDAO), tagsAppeder);
-        timed("indeksering.applyarbeidslistedata", () -> applyArbeidslisteData(dokumenter, arbeidslisteRepository, aktoerService), tagsAppeder);
         timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO), tagsAppeder);
-    }
-
-    static void applyArbeidslisteData(List<SolrInputDocument> brukere, ArbeidslisteRepository arbeidslisteRepository, AktoerService aktoerService) {
-        List<PersonId> personIds = brukere.stream().map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
-        Map<PersonId, Optional<AktoerId>> personIdToAktoerId = aktoerService.hentAktoeridsForPersonids(personIds);
-        List<AktoerId> aktoerids = personIdToAktoerId.values().stream().filter(Optional::isPresent).map(Optional::get).collect(toList());
-
-        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = arbeidslisteRepository.retrieveArbeidsliste(aktoerids);
-
-        brukere.forEach((dokument) -> {
-            PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
-            Optional<Arbeidsliste> arbeidsliste = Optional.of(personId).flatMap(personIdToAktoerId::get).flatMap(arbeidslisteMap::get);
-            if (arbeidsliste.isPresent()) {
-                dokument.setField("arbeidsliste_aktiv", true);
-                dokument.setField("arbeidsliste_sist_endret_av_veilederid", arbeidsliste.get().getSistEndretAv().toString());
-                dokument.setField("arbeidsliste_endringstidspunkt", toUtcString(arbeidsliste.get().getEndringstidspunkt()));
-                dokument.setField("arbeidsliste_kommentar", arbeidsliste.get().getKommentar());
-                dokument.setField("arbeidsliste_frist", arbeidsliste.map(Arbeidsliste::getFrist).map(DateUtils::toUtcString).orElse(getSolrMaxAsIsoUtc()));
-                dokument.setField("arbeidsliste_er_oppfolgende_veileder", arbeidsliste.get().getIsOppfolgendeVeileder());
-            }
-        });
     }
 
     @Override
@@ -250,15 +222,15 @@ public class SolrServiceImpl implements SolrService {
         String facetFieldString = "veileder_id";
 
         SolrQuery solrQuery = SolrUtils.buildSolrFacetQuery("enhet_id: " + enhetId, facetFieldString);
+        solrQuery.setRows(0);
         // ikke interessert i veiledere som ikke har tilordnede brukere
         solrQuery.setFacetMinCount(1);
 
         QueryResponse response = new QueryResponse();
         try {
             response = solrClientSlave.query(solrQuery);
-            log.debug(response.toString());
         } catch (SolrServerException | IOException e) {
-            log.error("Spørring mot solrindeks feilet: {}", solrQuery.toString(), e);
+            log.error("Spørring mot solrindeks feilet: " + solrQuery, e);
         }
 
         FacetField facetField = response.getFacetField(facetFieldString);
@@ -289,7 +261,7 @@ public class SolrServiceImpl implements SolrService {
         indekserDokumenter(dokumenter);
         commit();
     }
-    
+
     private void indekserBrukerdata(AktoerId aktoerId) {
         aktoerService
                 .hentPersonidFraAktoerid(aktoerId)
@@ -340,7 +312,7 @@ public class SolrServiceImpl implements SolrService {
             UpdateResponse response = solrClientMaster.deleteByQuery(query);
             SolrUtils.checkSolrResponseCode(response.getStatus());
         } catch (SolrServerException | IOException | SolrUpdateResponseCodeException e) {
-            log.error("Kunne ikke slette dokumenter fra solrindeks: {}", query, e);
+            log.error("Kunne ikke slette dokumenter fra solrindeks: " + query, e);
         }
     }
 
@@ -371,6 +343,7 @@ public class SolrServiceImpl implements SolrService {
         String iavtaltAktivitet = "aktiviteter:*";
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
+        String trengerVurdering = "trenger_vurdering:true";
 
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
@@ -381,6 +354,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFacetQuery(iavtaltAktivitet);
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
+        solrQuery.addFacetQuery(trengerVurdering);
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -396,6 +370,8 @@ public class SolrServiceImpl implements SolrService {
         long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
         long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
         long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
+        long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
+
         statusTall
                 .setTotalt(antallTotalt)
                 .setInaktiveBrukere(antallInaktiveBrukere)
@@ -405,7 +381,8 @@ public class SolrServiceImpl implements SolrService {
                 .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
                 .setIavtaltAktivitet(antalliavtaltAktivitet)
                 .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
-                .setUtlopteAktiviteter(antallUtlopteAktiviteter);
+                .setUtlopteAktiviteter(antallUtlopteAktiviteter)
+                .setTrengerVurdering(antallTrengerVurdering);
 
         return statusTall;
     }
@@ -420,6 +397,7 @@ public class SolrServiceImpl implements SolrService {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
         String nyForVeileder = "ny_for_veileder:true";
+        String trengerVurdering = "trenger_vurdering:true";
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
@@ -431,6 +409,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
         solrQuery.addFacetQuery(nyForVeileder);
+        solrQuery.addFacetQuery(trengerVurdering);
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
@@ -454,6 +433,7 @@ public class SolrServiceImpl implements SolrService {
             long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
             long antallIarbeidsliste = response.getFacetQuery().get(minArbeidsliste);
             long antallNyeBrukerForVeileder = response.getFacetQuery().get(nyForVeileder);
+            long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
             statusTall
                     .setTotalt(antallTotalt)
                     .setInaktiveBrukere(antallInaktiveBrukere)
@@ -463,9 +443,10 @@ public class SolrServiceImpl implements SolrService {
                     .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                     .setUtlopteAktiviteter(antallUtlopteAktiviteter)
                     .setMinArbeidsliste(antallIarbeidsliste)
-                    .setNyeBrukereForVeileder(antallNyeBrukerForVeileder);
+                    .setNyeBrukereForVeileder(antallNyeBrukerForVeileder)
+                    .setTrengerVurdering(antallTrengerVurdering);
         } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for veilederportefølje feilet: {}", solrQuery, e);
+            log.error("Henting av statustall for veilederportefølje feilet: " + solrQuery, e);
         }
 
         return statusTall;

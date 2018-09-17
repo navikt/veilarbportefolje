@@ -86,7 +86,13 @@ public class BrukerRepository {
             "neste_aktivitet_start, " +
             "forrige_aktivitet_start, " +
             "manuell, " +
-            "reservertikrr " +
+            "reservertikrr, " +
+            "ARBEIDSLISTE_AKTIV, " +
+            "ARBEIDSLISTE_KOMMENTAR, " +
+            "ARBEIDSLISTE_OVERSKRIFT, " +
+            "ARBEIDSLISTE_FRIST, " +
+            "ARBEIDSLISTE_ENDRET_AV, " +
+            "ARBEIDSLISTE_ENDRET_TID " +
             "FROM " +
             "vw_portefolje_info";
 
@@ -301,39 +307,6 @@ public class BrukerRepository {
                 .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
 
         return brukere;
-    }
-
-    public Map<PersonId, Optional<AktoerId>> hentAktoeridsForPersonids(List<PersonId> personIds) {
-        Map<PersonId, Optional<AktoerId>> brukere = new HashMap<>(personIds.size());
-
-        batchProcess(1000, personIds, timed("retreive.aktoerid.batch", (personIdsBatch) -> {
-            Map<String, Object> params = new HashMap<>();
-            params.put("personids", personIdsBatch.stream().map(PersonId::toString).collect(toList()));
-            String sql = hentAktoeridsForPersonidsSQL();
-            Map<PersonId, Optional<AktoerId>> personIdToAktoeridMap = timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(
-                    sql, params))
-                    .stream()
-                    .map((rs) -> Tuple.of(PersonId.of((String) rs.get("PERSONID")), AktoerId.of((String) rs.get("AKTOERID")))
-                    )
-                    .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
-
-            brukere.putAll(personIdToAktoeridMap);
-        }));
-
-        personIds.stream()
-                .filter(not(brukere::containsKey))
-                .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
-
-        return brukere;
-    }
-
-    private String hentAktoeridsForPersonidsSQL() {
-        return "SELECT " +
-                "AKTOERID, " +
-                "PERSONID " +
-                "FROM " +
-                "AKTOERID_TO_PERSONID " +
-                "WHERE PERSONID in (:personids)";
     }
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {

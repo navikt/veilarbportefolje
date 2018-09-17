@@ -4,10 +4,10 @@ import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.Fnr;
-import no.nav.fo.exception.RestValideringException;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteData;
 import no.nav.fo.provider.rest.arbeidsliste.ArbeidslisteRequest;
 
+import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,6 +34,7 @@ public class ValideringsRegler {
             "aapmaxtiduke",
             "aapunntakukerigjen",
             "arbeidslistefrist",
+            "arbeidsliste_overskrift",
             "venterpasvarfranav",
             "venterpasvarfrabruker",
             "utlopteaktiviteter",
@@ -77,7 +78,7 @@ public class ValideringsRegler {
 
     private static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new RestValideringException(format("sjekk av %s feilet, %s", navn, data));
+            throw new BadRequestException(format("sjekk av %s feilet, %s", navn, data));
         }
     }
 
@@ -86,6 +87,7 @@ public class ValideringsRegler {
                 Validation
                         .combine(
                                 validerFnr(arbeidsliste.getFnr()),
+                                valid(arbeidsliste.getOverskrift()),
                                 validateKommentar(arbeidsliste.getKommentar()),
                                 validateFrist(arbeidsliste.getFrist(), redigering)
                         )

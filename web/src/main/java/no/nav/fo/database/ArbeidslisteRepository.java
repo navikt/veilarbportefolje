@@ -1,7 +1,5 @@
 package no.nav.fo.database;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +17,11 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import static java.util.Optional.empty;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.util.DateUtils.toZonedDateTime;
 import static no.nav.fo.util.DbUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
-import static no.nav.fo.util.StreamUtils.batchProcess;
 import static no.nav.fo.util.sql.SqlUtils.*;
 
 @Slf4j
@@ -59,30 +49,6 @@ public class ArbeidslisteRepository {
         );
     }
 
-    public Map<AktoerId, Optional<Arbeidsliste>> retrieveArbeidsliste(List<AktoerId> aktoerIds) {
-        Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMap = new HashMap<>(aktoerIds.size());
-        String arbeidslisteSQL = "SELECT * FROM ARBEIDSLISTE WHERE AKTOERID IN(:aktoerids)";
-
-        batchProcess(1000, aktoerIds, (aktoerIdsBatch) -> {
-            Map<String, Object> params = new HashMap<>();
-            params.put("aktoerids", aktoerIdsBatch.stream().map(AktoerId::toString).collect(toList()));
-
-            Map<AktoerId, Optional<Arbeidsliste>> arbeidslisteMapBatch =
-                    timed(arbeidslisteSQL,() ->namedParameterJdbcTemplate.queryForList(arbeidslisteSQL, params))
-                            .stream()
-                            .map((rs) -> Tuple.of(AktoerId.of((String) rs.get("AKTOERID")), arbeidslisteMapper(rs)))
-                            .collect(toMap(Tuple2::_1, (tuple) -> Optional.of(tuple._2())));
-
-            arbeidslisteMap.putAll(arbeidslisteMapBatch);
-        });
-
-        aktoerIds.stream()
-                .filter(not(arbeidslisteMap::containsKey))
-                .forEach(aktoerId -> arbeidslisteMap.put(aktoerId, empty()));
-
-        return arbeidslisteMap;
-    }
-
     public Try<AktoerId> insertArbeidsliste(ArbeidslisteData data) {
         return Try.of(
                 () -> {
@@ -95,6 +61,7 @@ public class ArbeidslisteRepository {
                             .set("AKTOERID", aktoerId.toString())
                             .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
                             .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
+                            .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
@@ -111,6 +78,7 @@ public class ArbeidslisteRepository {
                     update(db, ARBEIDSLISTE)
                             .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
                             .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
+                            .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
                             .whereEquals("AKTOERID", data.getAktoerId().toString())
@@ -144,15 +112,9 @@ public class ArbeidslisteRepository {
         return new Arbeidsliste(
                 VeilederId.of(rs.getString("SIST_ENDRET_AV_VEILEDERIDENT")),
                 toZonedDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
+                rs.getString("OVERSKRIFT"),
                 rs.getString("KOMMENTAR"),
                 toZonedDateTime(rs.getTimestamp("FRIST")));
     }
 
-    private static Arbeidsliste arbeidslisteMapper(Map<String, Object> rs) {
-        return new Arbeidsliste(
-                VeilederId.of((String) rs.get("SIST_ENDRET_AV_VEILEDERIDENT")),
-                toZonedDateTime((Timestamp) rs.get("ENDRINGSTIDSPUNKT")),
-                (String) rs.get("KOMMENTAR"),
-                toZonedDateTime((Timestamp) rs.get("FRIST")));
-    }
 }

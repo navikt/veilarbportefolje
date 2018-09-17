@@ -2,13 +2,13 @@ package no.nav.fo.provider.rest;
 
 import io.vavr.Tuple;
 import io.vavr.control.Validation;
-import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.domene.Fnr;
 import no.nav.fo.domene.VeilederId;
 import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.PepClient;
 
+import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +17,8 @@ import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static no.nav.fo.provider.rest.RestUtils.getSsoToken;
 
-class TilgangsRegler {
+public class TilgangsRegler {
+
     static void tilgangTilOppfolging(PepClient pep) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
         test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, getSsoToken()));
@@ -38,7 +39,7 @@ class TilgangsRegler {
 
     static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new IngenTilgang(format("sjekk av %s feilet, %s", navn, data));
+            throw new ForbiddenException(format("sjekk av %s feilet, %s", navn, data));
         }
     }
 

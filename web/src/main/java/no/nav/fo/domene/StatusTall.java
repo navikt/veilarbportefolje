@@ -9,6 +9,7 @@ public class StatusTall {
     private long totalt;
     private long nyeBrukere;
     private long ufordelteBrukere;
+    private long trengerVurdering;
     private long nyeBrukereForVeileder;
     private long inaktiveBrukere;
     private long venterPaSvarFraNAV;
