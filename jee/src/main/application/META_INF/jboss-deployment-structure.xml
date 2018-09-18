@@ -15,5 +15,19 @@
             <module name="org.slf4j.impl" />
             <module name="javaee.api"/>
         </exclusions>
+        <dependencies>
+            <module name="org.jboss.security.negotiation" />
+            <module name="sun.jdk"/>
+            <system>
+                <paths>
+                    <path name="com/sun/org/apache/xerces/internal/jaxp/datatype"/>
+                    <path name="com/sun/image/codec/jpeg"/>
+                </paths>
+            </system>
+            <module name="javax.jws.api" export="true"/>
+            <module name="javax.xml.ws.api" export="true"/>
+            <!-- This one always goes last. -->
+            <module name="javax.api" export="true"/>
+        </dependencies>
     </sub-deployment>
 </jboss-deployment-structure>
