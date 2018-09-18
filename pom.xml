@@ -73,13 +73,6 @@
                 <version>${vavr.version}</version>
             </dependency>
 
-            <!--Dialogarena-->
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>common-integrasjonsutils</artifactId>
-                <version>${common-integrasjonsutils.version}</version>
-            </dependency>
-
             <!--Solr-->
             <dependency>
                 <groupId>org.apache.solr</groupId>
@@ -105,11 +98,6 @@
                 <version>${dkif-tjenestespesifikasjon.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>20.0-hal</version>
-            </dependency>
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbportefolje-config</artifactId>
