@@ -3,10 +3,36 @@
         <exclude-subsystems>
             <subsystem name="webservices"/>
             <subsystem name="jaxrs"/>
+            <subsystem name="resteasy"/>
         </exclude-subsystems>
         <exclusions>
             <module name="org.slf4j" />
             <module name="org.slf4j.impl" />
+            <module name="org.apache.log4j" />
+            <module name="org.apache.commons.logging"/>
+            <module name="org.jboss.as.jaxrs"/>
+            <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+            <module name="org.jboss.resteasy.resteasy-cdi"/>
+            <module name="org.jboss.resteasy.jackson-provider"/>
+            <module name="org.jboss.resteasy.resteasy-atom-provider"/>
+            <module name="org.jboss.resteasy.resteasy-hibernatevalidator-provider"/>
+            <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
+            <module name="org.jboss.resteasy.resteasy-jettison-provider"/>
+            <module name="org.jboss.resteasy.resteasy-jsapi"/>
+            <module name="org.jboss.resteasy.resteasy-multipart-provider"/>
+            <module name="org.jboss.resteasy.resteasy-yaml-provider"/>
+            <module name="org.codehaus.jackson.jackson-core-asl"/>
+            <module name="org.codehaus.jackson.jackson-jaxrs"/>
+            <module name="org.codehaus.jackson.jackson-mapper-asl"/>
+            <module name="org.codehaus.jackson.jackson-xc"/>
+            <module name="org.codehaus.jettison"/>
+            <module name="javax.ws.rs.api"/>
+            <module name="com.fasterxml.jackson.core.jackson-databind"/>
+            <module name="com.fasterxml.jackson.core.jackson-core"/>
+            <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+            <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
+            <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
+            <module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider"/>
         </exclusions>
     </deployment>
     <sub-deployment name="veilarbportefolje-web.war">
@@ -26,6 +52,35 @@
             </system>
             <module name="javax.jws.api" export="true"/>
             <module name="javax.xml.ws.api" export="true"/>
+
+            <module name="org.slf4j" />
+            <module name="org.slf4j.impl" />
+            <module name="org.apache.log4j" />
+            <module name="org.apache.commons.logging"/>
+            <module name="org.jboss.as.jaxrs"/>
+            <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+            <module name="org.jboss.resteasy.resteasy-cdi"/>
+            <module name="org.jboss.resteasy.jackson-provider"/>
+            <module name="org.jboss.resteasy.resteasy-atom-provider"/>
+            <module name="org.jboss.resteasy.resteasy-hibernatevalidator-provider"/>
+            <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
+            <module name="org.jboss.resteasy.resteasy-jettison-provider"/>
+            <module name="org.jboss.resteasy.resteasy-jsapi"/>
+            <module name="org.jboss.resteasy.resteasy-multipart-provider"/>
+            <module name="org.jboss.resteasy.resteasy-yaml-provider"/>
+            <module name="org.codehaus.jackson.jackson-core-asl"/>
+            <module name="org.codehaus.jackson.jackson-jaxrs"/>
+            <module name="org.codehaus.jackson.jackson-mapper-asl"/>
+            <module name="org.codehaus.jackson.jackson-xc"/>
+            <module name="org.codehaus.jettison"/>
+            <module name="javax.ws.rs.api"/>
+            <module name="com.fasterxml.jackson.core.jackson-databind"/>
+            <module name="com.fasterxml.jackson.core.jackson-core"/>
+            <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+            <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
+            <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
+            <module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider"/>
+
             <!-- This one always goes last. -->
             <module name="javax.api" export="true"/>
         </dependencies>
