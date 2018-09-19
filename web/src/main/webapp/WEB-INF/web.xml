@@ -7,6 +7,10 @@
 
     <display-name>veilarbportefolje</display-name>
 
+    <listener>
+        <listener-class>no.nav.fo.config.LoadJacksonEarlyContextListener</listener-class>
+    </listener>
+
     <!--CONFIG FOR API-APP-->
     <context-param>
         <param-name>springKontekstKlasse</param-name>
