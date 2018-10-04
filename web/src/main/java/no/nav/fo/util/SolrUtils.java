@@ -23,7 +23,7 @@ public class SolrUtils {
 
     static Map<Brukerstatus, String> ferdigfilterStatus = new HashMap<Brukerstatus, String>() {{
         put(Brukerstatus.NYE_BRUKERE, "ny_for_enhet:true");
-        put(Brukerstatus.UFORDELTE_BRUKERE, "ny_for_enhet:true");
+        put(Brukerstatus.UFORDELTE_BRUKERE, "");
         put(Brukerstatus.TRENGER_VURDERING, "trenger_vurdering:true");
         put(Brukerstatus.INAKTIVE_BRUKERE, "formidlingsgruppekode:ISERV");
         put(Brukerstatus.VENTER_PA_SVAR_FRA_NAV, "venterpasvarfranav:*");
@@ -66,11 +66,9 @@ public class SolrUtils {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addField("*");
 
-        String medTilgangSubquery = null;
-        if(veiledereMedTilgang != null) { //FO-610 rydde
-            medTilgangSubquery = harVeilederSubQuery(veiledereMedTilgang);
-            solrQuery.addField("har_veileder_fra_enhet:" + medTilgangSubquery);
-        }
+        Optional<String> medTilgangSubquery = harVeilederSubQuery(veiledereMedTilgang);
+
+        medTilgangSubquery.ifPresent(subquery -> solrQuery.addField("har_veileder_fra_enhet:" + subquery));
         solrQuery.addFilterQuery(queryString);
         addSort(solrQuery, sorterNyeForVeileder, medTilgangSubquery, sortOrder, sortField, filtervalg);
         leggTilFiltervalg(solrQuery, filtervalg, veiledereMedTilgang);
@@ -95,30 +93,8 @@ public class SolrUtils {
         return filter.stream().map(mapper).collect(joining(" OR "));
     }
 
-    private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang) {
-        if (!filtervalg.harAktiveFilter()) {
-            return;
-        }
-
+    private static Optional<String> getFiltrerBrukerStatement(Filtervalg filtervalg){
         final List<String> filtrerBrukereStatements = new ArrayList<>();
-
-        List<Brukerstatus> brukerstatuses = ferdigFilterListeEllerBrukerstatus(filtervalg);
-
-        Optional<String> ufordelteBrukere = Optional.empty();
-
-        if(veiledereMedTilgang != null && brukerstatuses.contains(Brukerstatus.UFORDELTE_BRUKERE)) {//FO-610 rydde
-            ferdigfilterStatus.remove(Brukerstatus.UFORDELTE_BRUKERE);
-            ufordelteBrukere = Optional.of(harIkkeVeilederFilter(veiledereMedTilgang));
-        }
-
-        List<String> ferdigFilterStatements = brukerstatuses
-                .stream()
-                .map(ferdigfilter -> ferdigfilterStatus.get(ferdigfilter))
-                .filter(Objects::nonNull) //FO-610 rydde
-                .collect(toList());
-
-        ufordelteBrukere.ifPresent(ferdigFilterStatements::add);//FO-610 rydde
-
         filtrerBrukereStatements.add(orStatement(filtervalg.alder, SolrUtils::alderFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.fodselsdagIMnd, SolrUtils::fodselsdagIMndFilter));
@@ -128,6 +104,8 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.veiledere, SolrUtils::veilederFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.manuellBrukerStatus, SolrUtils::manuellStatusFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakJaFilter));
+        Optional.ofNullable(filtervalg.ytelse).ifPresent(ytelse -> filtrerBrukereStatements.add(orStatement(ytelse.underytelser, SolrUtils::ytelseFilter)));
 
         if (filtervalg.harAktivitetFilter()) {
             filtervalg.aktiviteter.forEach((key, value) -> {
@@ -139,29 +117,45 @@ public class SolrUtils {
             });
         }
 
-        if (filtervalg.harTiltakstypeFilter()) {
-            filtrerBrukereStatements.add(orStatement(filtervalg.tiltakstyper, SolrUtils::tiltakJaFilter));
-        }
+        String filter = filtrerBrukereStatements.stream()
+                .filter(StringUtils::isNotBlank)
+                .map(statement -> "(" + statement + ")")
+                .collect(Collectors.joining(" AND "));
 
-        if (filtervalg.harYtelsefilter()) {
-            filtrerBrukereStatements.add(orStatement(filtervalg.ytelse.underytelser, SolrUtils::ytelseFilter));
+        if (StringUtils.isNotBlank(filter)){
+            return Optional.of(filter);
         }
-
-        if (!ferdigFilterStatements.isEmpty()) {
-            query.addFilterQuery("(" + StringUtils.join(ferdigFilterStatements, " AND ") + ")");
-        }
-
-        if (!filtrerBrukereStatements.isEmpty()) {
-            query.addFilterQuery(filtrerBrukereStatements
-                    .stream()
-                    .filter(StringUtils::isNotBlank)
-                    .map(statement -> "(" + statement + ")")
-                    .collect(Collectors.joining(" AND ")));
-        }
+        return Optional.empty();
     }
 
-    public static String harIkkeVeilederFilter(List<VeilederId> identer) {
-        return "-veileder_id:(" + spaceSeperated(identer) + ")";
+    private static Optional<String> getFerdigFilterStatement(Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang){
+        List<String> ferdigFilterStatements = ferdigFilterListeEllerBrukerstatus(filtervalg)
+                .stream()
+                .map(ferdigfilterStatus::get)
+                .filter(StringUtils::isNotBlank)
+                .collect(toList());
+        harIkkeVeilederFilter(veiledereMedTilgang).ifPresent(ferdigFilterStatements::add);
+
+        if (!ferdigFilterStatements.isEmpty()){
+            return Optional.of("(" + StringUtils.join(ferdigFilterStatements, " AND ") + ")");
+        }
+        return Optional.empty();
+    }
+
+    private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang) {
+        if (!filtervalg.harAktiveFilter()) {
+            return;
+        }
+
+        getFerdigFilterStatement(filtervalg, veiledereMedTilgang).ifPresent(query::addFilterQuery);
+        getFiltrerBrukerStatement(filtervalg).ifPresent(query::addFilterQuery);
+    }
+
+    public static Optional<String> harIkkeVeilederFilter(List<VeilederId> identer) {
+        if (identer.isEmpty()){
+            return Optional.empty();
+        }
+        return Optional.of("-veileder_id:(" + spaceSeperated(identer) + ")");
     }
 
     private static String spaceSeperated(List<VeilederId> veilederListe) {
@@ -173,14 +167,10 @@ public class SolrUtils {
 
     private static List<Brukerstatus> ferdigFilterListeEllerBrukerstatus(Filtervalg filtervalg) {
         List<Brukerstatus> ferdigfilterListe = filtervalg.ferdigfilterListe;
-        Brukerstatus brukerstatus = filtervalg.brukerstatus;
         if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
             return ferdigfilterListe;
-        } else if (brukerstatus != null) {
-            return Collections.singletonList(brukerstatus);
-        } else {
-            return Collections.emptyList();
         }
+            return Collections.emptyList();
     }
 
     static void leggTilAktivitetFiltervalg(List<String> filtrerBrukereStatements, String key, AktivitetFiltervalg value) {
@@ -241,8 +231,11 @@ public class SolrUtils {
         return "tiltak:" + tiltak;
     }
 
-    static String harVeilederSubQuery(List<VeilederId> identer) {
-        return "exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))";
+    static Optional<String> harVeilederSubQuery(List<VeilederId> identer) {
+        if (identer.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of("exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))");
     }
 
     static String manuellStatusFilter(ManuellBrukerStatus manuellBrukerStatus) {

@@ -40,7 +40,6 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         AktorConfig.class,
         VeilederServiceConfig.class,
         ClientConfig.class,
-        RemoteFeatureConfig.class,
         DigitalKontaktinformasjonConfig.class
 })
 public class ApplicationConfig implements ApiApplication {

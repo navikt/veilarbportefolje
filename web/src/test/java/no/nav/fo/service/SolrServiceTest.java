@@ -1,7 +1,7 @@
 package no.nav.fo.service;
 
+import lombok.val;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.config.RemoteFeatureConfig;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Filtervalg;
@@ -23,10 +23,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -50,14 +51,12 @@ public class SolrServiceTest {
     private AktoerService aktoerService;
     @Mock
     private VeilederService veilederService;
-    @Mock
-    private RemoteFeatureConfig.FlyttSomNyeFeature flyttSomNyeFeature;
 
     private SolrServiceImpl service;
 
     @Before
     public void setup() {
-        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO);
     }
 
     @Test
@@ -87,6 +86,27 @@ public class SolrServiceTest {
         service.deltaindeksering();
 
         verify(brukerRepository, never()).updateIndeksertTidsstempel(any(Timestamp.class));
+    }
+
+    @Test
+    public void hentStatusTallForTomEnhet() throws Exception {
+        ArgumentCaptor<SolrQuery> captor = ArgumentCaptor.forClass(SolrQuery.class);
+        Map<String,Integer> facetResponse = Stream.of(new String [] {
+        "formidlingsgruppekode:ISERV", "venterpasvarfranav:*", "venterpasvarfrabruker:*", "aktiviteter:*", "-aktiviteter:*", "nyesteutlopteaktivitet:*", "trenger_vurdering:true"})
+                .collect(Collectors.toMap(facetName-> facetName, facetValue->0));
+        val queryResponse = mock(QueryResponse.class);
+
+        when(queryResponse.getResults()).thenReturn(new SolrDocumentList());
+        when(solrClientSlave.query(any(SolrQuery.class))).thenReturn(queryResponse);
+        when(queryResponse.getFacetQuery()).thenReturn(facetResponse);
+
+
+        service.hentStatusTallForPortefolje("0100");
+
+        verify(solrClientSlave, times(1)).query(captor.capture());
+        Pattern veilederFacetQueryPatter = Pattern.compile("[\"]-veileder_id:[(\"]+[\\w]+[\")]+");
+        assertThat(Arrays.stream(captor.getValue().getFacetQuery())
+                .noneMatch(veilederFacetQueryPatter.asPredicate()));
     }
 
     @Test

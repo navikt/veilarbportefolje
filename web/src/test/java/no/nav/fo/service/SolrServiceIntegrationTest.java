@@ -20,7 +20,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Date;
 
-import static no.nav.fo.config.RemoteFeatureConfig.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -51,10 +50,9 @@ public class SolrServiceIntegrationTest {
         AktoerService aktoerService = mock(AktoerService.class);
         AktivitetDAO aktivitetDAO = mock(AktivitetDAO.class);
         VeilederService veilederService = mock(VeilederService.class);
-        FlyttSomNyeFeature flyttSomNyeFeature = mock(FlyttSomNyeFeature.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
+        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO);
 
 
         UpdateResponse response = new UpdateResponse();

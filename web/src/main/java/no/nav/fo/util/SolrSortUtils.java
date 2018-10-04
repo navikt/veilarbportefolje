@@ -14,16 +14,12 @@ import static no.nav.fo.util.AktivitetUtils.addPrefixForAktivitetUtlopsdato;
 public class SolrSortUtils {
 
 
-    static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, String veilederMedTilgangQuery, String sortOrder, String sortField, Filtervalg filtervalg) {
+    static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, Optional<String> maybeVeilederMedTilgangQuery, String sortOrder, String sortField, Filtervalg filtervalg) {
 
         if(minoversikt){
             solrQuery.addSort("ny_for_veileder", SolrQuery.ORDER.desc);
         } else {
-            if(veilederMedTilgangQuery == null) { //FO-610 rydde
-                solrQuery.addSort("ny_for_enhet", SolrQuery.ORDER.desc);
-            } else {
-                solrQuery.addSort(veilederMedTilgangQuery, SolrQuery.ORDER.asc);
-            }
+            maybeVeilederMedTilgangQuery.ifPresent(veilederMedTilgangQuery -> solrQuery.addSort(veilederMedTilgangQuery, SolrQuery.ORDER.asc));
         }
 
         SolrQuery.ORDER order = "ascending".equals(sortOrder) ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc;
