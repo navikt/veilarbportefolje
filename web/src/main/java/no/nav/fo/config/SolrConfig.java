@@ -63,8 +63,8 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService, RemoteFeatureConfig.FlyttSomNyeFeature flyttSomNyeFeature) {
-        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService) {
+        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO);
     }
 
     @Bean

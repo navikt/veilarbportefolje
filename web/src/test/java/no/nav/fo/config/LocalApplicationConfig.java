@@ -40,7 +40,6 @@ import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
         FeedConfig.class,
         VeilederServiceConfig.class,
         ClientConfig.class,
-        RemoteFeatureConfig.class,
         DigitalKontaktinformasjonConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication {
