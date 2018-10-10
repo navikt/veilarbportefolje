@@ -124,7 +124,7 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedNyeBrukereOgInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.ferdigfilterListe = asList(Brukerstatus.UFORDELTE_BRUKERE, Brukerstatus.INAKTIVE_BRUKERE);
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.INAKTIVE_BRUKERE, Brukerstatus.UFORDELTE_BRUKERE);
         String forventetFilter = "(formidlingsgruppekode:ISERV AND -veileder_id:(a b c d))";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;

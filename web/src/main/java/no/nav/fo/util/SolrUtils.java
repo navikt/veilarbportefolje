@@ -131,15 +131,21 @@ public class SolrUtils {
     private static Optional<String> getFerdigFilterStatement(Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang){
         List<String> ferdigFilterStatements = ferdigFilterListeEllerBrukerstatus(filtervalg)
                 .stream()
-                .map(ferdigfilterStatus::get)
+                .map(brukerstatus -> getFerdigFilterStatus(brukerstatus, veiledereMedTilgang))
                 .filter(StringUtils::isNotBlank)
                 .collect(toList());
-        harIkkeVeilederFilter(veiledereMedTilgang).ifPresent(ferdigFilterStatements::add);
 
         if (!ferdigFilterStatements.isEmpty()){
             return Optional.of("(" + StringUtils.join(ferdigFilterStatements, " AND ") + ")");
         }
         return Optional.empty();
+    }
+
+    private static String getFerdigFilterStatus(Brukerstatus brukerstatus, List<VeilederId> veiledereMedTilgang) {
+        if(Brukerstatus.UFORDELTE_BRUKERE == brukerstatus) {
+            return harIkkeVeilederFilter(veiledereMedTilgang).orElse("");
+        }
+        return ferdigfilterStatus.get(brukerstatus);
     }
 
     private static void leggTilFiltervalg(SolrQuery query, Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang) {
@@ -170,7 +176,7 @@ public class SolrUtils {
         if (ferdigfilterListe != null && !ferdigfilterListe.isEmpty()) {
             return ferdigfilterListe;
         }
-            return Collections.emptyList();
+        return Collections.emptyList();
     }
 
     static void leggTilAktivitetFiltervalg(List<String> filtrerBrukereStatements, String key, AktivitetFiltervalg value) {
