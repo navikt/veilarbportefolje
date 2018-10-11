@@ -28,8 +28,6 @@ public class StartJettyVeilArbPortefolje {
     public static void main(String[] args) throws Exception {
 
         setProperty(VEILARBVEILEDER_URL_PROPERTY, "http://localhost:8080/veilarbveileder/api");
-        setProperty("feature_endpoint.url", "");
-
 
         loadTestConfigFromProperties();
 
