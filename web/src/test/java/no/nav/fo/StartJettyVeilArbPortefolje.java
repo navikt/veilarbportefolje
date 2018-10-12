@@ -34,8 +34,6 @@ public class StartJettyVeilArbPortefolje {
         setProperty(VEILARBOPPFOLGING_URL_PROPERTY, "http://localhost:8080/veilarboppfolging/api");
         setProperty(VEILARBAKTIVITET_URL_PROPERTY, "http://localhost:8080/veilarbaktivitet/api");
         setProperty(VEILARBVEILEDER_URL_PROPERTY, "http://localhost:8080/veilarbveileder/api");
-        setProperty("feature_endpoint.url", "");
-
 
         loadTestConfigFromProperties();
 
