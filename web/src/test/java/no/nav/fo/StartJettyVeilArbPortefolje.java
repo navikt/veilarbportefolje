@@ -14,6 +14,9 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 import static no.nav.fo.config.LocalJndiContextConfig.*;
+import static no.nav.fo.config.feed.AktiviteterfeedConfig.VEILARBAKTIVITET_URL_PROPERTY;
+import static no.nav.fo.config.feed.DialogaktorfeedConfig.VEILARBDIALOG_URL_PROPERTY;
+import static no.nav.fo.config.feed.OppfolgingerfeedConfig.VEILARBOPPFOLGING_URL_PROPERTY;
 import static no.nav.fo.service.VeilederService.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
@@ -27,6 +30,9 @@ public class StartJettyVeilArbPortefolje {
 
     public static void main(String[] args) throws Exception {
 
+        setProperty(VEILARBDIALOG_URL_PROPERTY, "http://localhost:8080/veilarbdialog/api");
+        setProperty(VEILARBOPPFOLGING_URL_PROPERTY, "http://localhost:8080/veilarboppfolging/api");
+        setProperty(VEILARBAKTIVITET_URL_PROPERTY, "http://localhost:8080/veilarbaktivitet/api");
         setProperty(VEILARBVEILEDER_URL_PROPERTY, "http://localhost:8080/veilarbveileder/api");
         setProperty("feature_endpoint.url", "");
 
@@ -35,12 +41,11 @@ public class StartJettyVeilArbPortefolje {
 
         setupTestContext();
 
-        DriverManagerDataSource dataSource  = (parseBoolean(getProperty("lokal.database"))) ?
+        DriverManagerDataSource dataSource = (parseBoolean(getProperty("lokal.database"))) ?
                 setupInMemoryDatabase() :
-                    setupDataSourceWithCredentials(createDbCredentials());
+                setupDataSourceWithCredentials(createDbCredentials());
 
         setServiceUserCredentials(FasitUtils.getServiceUser(SERVICE_USER_NAME, APPLICATION_NAME));
-
 
 
         // TODO slett når common-jetty registerer datasource fornuftig
@@ -72,11 +77,11 @@ public class StartJettyVeilArbPortefolje {
     }
 
     private static DbCredentials createDbCredentials() {
-        return (getProperty("database.url") == null)  ? FasitUtils.getDbCredentials(APPLICATION_NAME) :
+        return (getProperty("database.url") == null) ? FasitUtils.getDbCredentials(APPLICATION_NAME) :
                 new DbCredentials()
-                .setUrl(getProperty("database.url"))
-                .setUsername(getProperty("database.brukernavn", "sa"))
-                .setPassword(getProperty("database.passord", ""));
+                        .setUrl(getProperty("database.url"))
+                        .setUsername(getProperty("database.brukernavn", "sa"))
+                        .setPassword(getProperty("database.passord", ""));
     }
 
 }

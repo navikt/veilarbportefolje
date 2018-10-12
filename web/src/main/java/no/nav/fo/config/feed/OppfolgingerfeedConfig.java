@@ -17,7 +17,6 @@ import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,14 +30,14 @@ import java.time.ZonedDateTime;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.config.FeedConfig.*;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 
 @Configuration
 @Slf4j
 public class OppfolgingerfeedConfig {
 
-    @Value("${veilarboppfolging.api.url}")
-    private String host;
+    public static final String VEILARBOPPFOLGING_URL_PROPERTY = "veilarboppfolging.api.url";
 
     @Inject
     private DataSource dataSource;
@@ -55,7 +54,7 @@ public class OppfolgingerfeedConfig {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
                 Utils.apply(OppfolgingerfeedConfig::sisteEndring, db),
-                host,
+                getRequiredProperty(VEILARBOPPFOLGING_URL_PROPERTY),
                 BrukerOppdatertInformasjon.FEED_NAME
         );
 

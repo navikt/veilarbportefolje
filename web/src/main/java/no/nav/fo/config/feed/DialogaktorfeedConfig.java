@@ -13,7 +13,6 @@ import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.consumer.FeedConsumerConfig.SimplePollingConfig;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,12 +27,12 @@ import static java.util.Collections.singletonList;
 import static no.nav.fo.config.FeedConfig.FEED_PAGE_SIZE;
 import static no.nav.fo.config.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class DialogaktorfeedConfig {
 
-    @Value("${veilarbdialog.api.url}")
-    private String host;
+    public static final String VEILARBDIALOG_URL_PROPERTY = "veilarbdialog.api.url";
 
     @Inject
     private DataSource dataSource;
@@ -48,7 +47,7 @@ public class DialogaktorfeedConfig {
         BaseConfig<DialogDataFraFeed> baseConfig = new BaseConfig<>(
                 DialogDataFraFeed.class,
                 Utils.apply(DialogaktorfeedConfig::sisteEndring, db),
-                host,
+                getRequiredProperty(VEILARBDIALOG_URL_PROPERTY),
                 "dialogaktor"
         );
 
