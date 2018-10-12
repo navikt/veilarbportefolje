@@ -29,7 +29,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
-import static no.nav.fo.config.FeedConfig.FEED_API_ROOT;
+import static no.nav.fo.config.FeedConfig.*;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 
 
@@ -39,12 +39,6 @@ public class OppfolgingerfeedConfig {
 
     @Value("${veilarboppfolging.api.url}")
     private String host;
-
-    @Value("${oppfolging.feed.pagesize:500}")
-    private int pageSize;
-
-    @Value("${oppfolging.feed.pollingintervalseconds: 10}")
-    private int pollingIntervalInSeconds;
 
     @Inject
     private DataSource dataSource;
@@ -67,9 +61,9 @@ public class OppfolgingerfeedConfig {
 
         SimpleWebhookPollingConfig webhookPollingConfig = new SimpleWebhookPollingConfig(10, FEED_API_ROOT);
 
-        FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds), webhookPollingConfig)
-                .callback(DedupeFeedHandler.of(pageSize, callback))
-                .pageSize(pageSize)
+        FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(FEED_POLLING_INTERVAL_IN_SECONDS), webhookPollingConfig)
+                .callback(DedupeFeedHandler.of(FEED_PAGE_SIZE, callback))
+                .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()))
                 .authorizatioModule(new OidcFeedAuthorizationModule());
@@ -78,11 +72,11 @@ public class OppfolgingerfeedConfig {
 
     @Bean
     public FeedCallback<BrukerOppdatertInformasjon> oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
-                                                       BrukerRepository brukerRepository,
-                                                       SolrService solrService,
-                                                       OppfolgingFeedRepository oppfolgingFeedRepository,
-                                                       VeilederService veilederService,
-                                                       Transactor transactor) {
+                                                                          BrukerRepository brukerRepository,
+                                                                          SolrService solrService,
+                                                                          OppfolgingFeedRepository oppfolgingFeedRepository,
+                                                                          VeilederService veilederService,
+                                                                          Transactor transactor) {
         return new OppfolgingFeedHandler(arbeidslisteService,
                 brukerRepository,
                 solrService,

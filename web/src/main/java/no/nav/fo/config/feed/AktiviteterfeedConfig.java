@@ -22,6 +22,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.config.FeedConfig.FEED_PAGE_SIZE;
+import static no.nav.fo.config.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
 
 
@@ -30,12 +32,6 @@ public class AktiviteterfeedConfig {
 
     @Value("${veilarbaktivitet.api.url}")
     private String host;
-
-    @Value("${aktiviteter.feed.pagesize: 500}")
-    private int pageSize;
-
-    @Value("${aktiviteter.feed.pollingintervalseconds: 10}")
-    private int pollingIntervalInSeconds;
 
     @Inject
     private DataSource dataSource;
@@ -54,9 +50,9 @@ public class AktiviteterfeedConfig {
                 "aktiviteter"
         );
 
-        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(pollingIntervalInSeconds))
+        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(FEED_POLLING_INTERVAL_IN_SECONDS))
                 .callback(callback)
-                .pageSize(pageSize)
+                .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
 

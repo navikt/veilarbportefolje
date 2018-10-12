@@ -25,6 +25,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.config.FeedConfig.FEED_PAGE_SIZE;
+import static no.nav.fo.config.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
 
 @Configuration
@@ -32,12 +34,6 @@ public class DialogaktorfeedConfig {
 
     @Value("${veilarbdialog.api.url}")
     private String host;
-
-    @Value("${dialogaktor.feed.pagesize:500}")
-    private int pageSize;
-
-    @Value("${dialogaktor.feed.pollingintervalseconds: 10}")
-    private int pollingIntervalInSeconds;
 
     @Inject
     private DataSource dataSource;
@@ -56,9 +52,9 @@ public class DialogaktorfeedConfig {
                 "dialogaktor"
         );
 
-        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds))
+        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(FEED_POLLING_INTERVAL_IN_SECONDS))
                 .callback(callback)
-                .pageSize(pageSize)
+                .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
 
@@ -72,9 +68,9 @@ public class DialogaktorfeedConfig {
 
     @Bean
     public FeedCallback<DialogDataFraFeed> dialogDataFeedHandler(AktoerService aktoerService,
-                                                       BrukerRepository brukerRepository,
-                                                       SolrService solrService,
-                                                       DialogFeedRepository dialogFeedRepository) {
+                                                                 BrukerRepository brukerRepository,
+                                                                 SolrService solrService,
+                                                                 DialogFeedRepository dialogFeedRepository) {
         return new DialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
     }
 }
