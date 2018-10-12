@@ -12,11 +12,18 @@ import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class OppfolgingFeedHandlerTest {
@@ -120,7 +127,30 @@ public class OppfolgingFeedHandlerTest {
         whenOppdatererOppfolgingData();
         thenArbeidslisteErSlettet();
     }
+    
+    @Test
+    public void skalFinneMaxFeedId() {
+        Optional<BigDecimal> maxId = OppfolgingFeedHandler.finnMaxFeedId(Arrays.asList(
+                new BrukerOppdatertInformasjon().setFeedId(BigDecimal.valueOf(2)),
+                new BrukerOppdatertInformasjon(),
+                new BrukerOppdatertInformasjon().setFeedId(BigDecimal.valueOf(1))));
+        assertThat(maxId.isPresent(), is(true));
+        assertThat(maxId.get(), is(BigDecimal.valueOf(2)));
+    }
 
+    @Test
+    public void skalHandtereBareNull() {
+        Optional<BigDecimal> maxId = OppfolgingFeedHandler.finnMaxFeedId(Arrays.asList(
+                new BrukerOppdatertInformasjon()));
+        assertThat(maxId.isPresent(), is(false));
+    }
+    
+    @Test
+    public void skalHandtereTomListe() {
+        Optional<BigDecimal> maxId = OppfolgingFeedHandler.finnMaxFeedId(new ArrayList<>());
+        assertThat(maxId.isPresent(), is(false));
+    }
+    
     private void givenBrukerIkkeHarNoeOppfolgingsData() {
         when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString()))
                 .thenReturn(Try.failure(new RuntimeException()));

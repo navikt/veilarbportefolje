@@ -14,10 +14,14 @@ import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
+
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
+import static java.util.Comparator.naturalOrder;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
@@ -28,7 +32,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private SolrService solrService;
-    private OppfolgingFeedRepository oppfolgingDataRepository;
+    private OppfolgingFeedRepository oppfolgingFeedRepository;
     private VeilederService veilederService;
     private Transactor transactor;
 
@@ -42,7 +46,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
         this.solrService = solrService;
-        this.oppfolgingDataRepository = oppfolgingFeedRepository;
+        this.oppfolgingFeedRepository = oppfolgingFeedRepository;
         this.veilederService = veilederService;
         this.transactor = transactor;
     }
@@ -59,6 +63,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                             solrService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
                         });
                         brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntryId).toInstant()));
+                        finnMaxFeedId(data).ifPresent(id -> { oppfolgingFeedRepository.updateOppfolgingFeedId(id); });
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size())));
         } catch (Exception e) {
@@ -66,6 +71,10 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         }
 
         MetricsFactory.createEvent("datamotattfrafeed").report();
+    }
+
+    static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {
+        return data.stream().map(BrukerOppdatertInformasjon::getFeedId).filter(i -> i != null).max(naturalOrder());
     }
 
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon info) {
@@ -76,13 +85,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             if (slettes) {
                 arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
             }
-            timed("oppdater.oppfolgingsinformasjon", () -> oppfolgingDataRepository.oppdaterOppfolgingData(info));
+            timed("oppdater.oppfolgingsinformasjon", () -> oppfolgingFeedRepository.oppdaterOppfolgingData(info));
         });
 
     }
 
     private Boolean bytterTilVeilederPaSammeEnhet(AktoerId aktoerId) {
-        return oppfolgingDataRepository.retrieveOppfolgingData(aktoerId.toString())
+        return oppfolgingFeedRepository.retrieveOppfolgingData(aktoerId.toString())
                 .map(oppfolgingData -> brukerRepository
                         .retrievePersonid(aktoerId)
                         .flatMap(personId -> brukerRepository.retrieveEnhet(personId))
