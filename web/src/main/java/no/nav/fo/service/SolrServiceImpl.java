@@ -41,11 +41,9 @@ import java.util.function.BiConsumer;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.util.DateUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
 import static no.nav.fo.util.SolrUtils.harIkkeVeilederFilter;
@@ -84,11 +82,6 @@ public class SolrServiceImpl implements SolrService {
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
-    }
-
-    @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterOppfolgingData.cron:0 0 21 26 4 ?}")
-    public void updateOppfolgingDataSisteOppdatrt(){
-        brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, timestampFromISO8601("1970-01-01T00:00:00Z"));
     }
 
     @Transactional
