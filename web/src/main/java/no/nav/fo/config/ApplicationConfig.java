@@ -18,7 +18,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
+import javax.servlet.ServletContext;
+
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
 @Slf4j
 @EnableScheduling
@@ -44,6 +49,11 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
 })
 public class ApplicationConfig implements ApiApplication {
     public static final String APPLICATION_NAME = "veilarbportefolje";
+
+    @Override
+    public void startup(ServletContext servletContext) {
+        setProperty("oppfolging.feed.brukertilgang", getRequiredProperty("srvveilarboppfolging.username"), PUBLIC);
+    }
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager() {
