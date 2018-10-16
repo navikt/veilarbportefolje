@@ -45,7 +45,6 @@
         <baseUrl alias="isso.isalive"/>
         <credential alias="isso-rp-user"/>
         <credential alias="veilarbportefolje.filmottak.sftp.login"/>
-        <credential alias="srvveilarboppfolging"/>
     </resources>
 
     <exposed-services>

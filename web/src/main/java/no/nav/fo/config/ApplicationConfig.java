@@ -52,7 +52,7 @@ public class ApplicationConfig implements ApiApplication {
 
     @Override
     public void startup(ServletContext servletContext) {
-        setProperty("oppfolging.feed.brukertilgang", getRequiredProperty("srvveilarboppfolging.username"), PUBLIC);
+        setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
     }
 
     @Bean(name = "transactionManager")
