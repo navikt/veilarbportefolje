@@ -38,12 +38,7 @@ public class SolrConfig {
 
     @Bean
     public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-        PropertySourcesPlaceholderConfigurer propertiesConfig = new PropertySourcesPlaceholderConfigurer();
-        Properties properties = new Properties();
-        properties.put("veilarbportefolje.cron.hovedindeksering", System.getProperty("veilarbportefolje.cron.hovedindeksering"));
-        properties.put("veilarbportefolje.cron.deltaindeksering", System.getProperty("veilarbportefolje.cron.deltaindeksering"));
-        propertiesConfig.setProperties(properties);
-        return propertiesConfig;
+        return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
