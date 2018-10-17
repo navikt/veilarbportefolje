@@ -6,6 +6,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.AktoerId;
 import no.nav.fo.domene.Filtervalg;
 import no.nav.fo.domene.PersonId;
+import no.nav.fo.mock.LockServiceMock;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,7 +56,7 @@ public class SolrServiceTest {
 
     @Before
     public void setup() {
-        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO);
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, new LockServiceMock());
     }
 
     @Test
@@ -71,8 +71,6 @@ public class SolrServiceTest {
         personIdToAktoerid.put(PersonId.of("dummy"), Optional.of(AktoerId.of(AKTOER_ID)));
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(singletonList(dummyDocument));
 
-        System.setProperty("cluster.ismasternode", "true");
-
         service.deltaindeksering();
 
         verify(brukerRepository, atLeastOnce()).updateIndeksertTidsstempel(any(Timestamp.class));
@@ -81,7 +79,6 @@ public class SolrServiceTest {
     @Test
     public void deltaindekseringSkalIkkeOppdatereTidsstempel() throws Exception {
         when(brukerRepository.retrieveOppdaterteBrukere()).thenReturn(emptyList());
-        System.setProperty("cluster.ismasternode", "true");
 
         service.deltaindeksering();
 
@@ -91,9 +88,9 @@ public class SolrServiceTest {
     @Test
     public void hentStatusTallForTomEnhet() throws Exception {
         ArgumentCaptor<SolrQuery> captor = ArgumentCaptor.forClass(SolrQuery.class);
-        Map<String,Integer> facetResponse = Stream.of(new String [] {
-        "formidlingsgruppekode:ISERV", "venterpasvarfranav:*", "venterpasvarfrabruker:*", "aktiviteter:*", "-aktiviteter:*", "nyesteutlopteaktivitet:*", "trenger_vurdering:true"})
-                .collect(Collectors.toMap(facetName-> facetName, facetValue->0));
+        Map<String, Integer> facetResponse = Stream.of(new String[]{
+                "formidlingsgruppekode:ISERV", "venterpasvarfranav:*", "venterpasvarfrabruker:*", "aktiviteter:*", "-aktiviteter:*", "nyesteutlopteaktivitet:*", "trenger_vurdering:true"})
+                .collect(Collectors.toMap(facetName -> facetName, facetValue -> 0));
         val queryResponse = mock(QueryResponse.class);
 
         when(queryResponse.getResults()).thenReturn(new SolrDocumentList());
@@ -145,10 +142,10 @@ public class SolrServiceTest {
     @Test
     public void skalFjerneFraIndeksOmBrukerIkkeErUnderOppfolging() throws Exception {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.setField("oppfolging",false);
-        solrInputDocument.setField("person_id","dummy");
-        solrInputDocument.setField("kvalifiseringsgruppekode","dummy");
-        solrInputDocument.setField("formidlingsgruppekode","dummy");
+        solrInputDocument.setField("oppfolging", false);
+        solrInputDocument.setField("person_id", "dummy");
+        solrInputDocument.setField("kvalifiseringsgruppekode", "dummy");
+        solrInputDocument.setField("formidlingsgruppekode", "dummy");
         when(brukerRepository.retrieveBrukermedBrukerdata(any())).thenReturn(solrInputDocument);
         when(solrClientMaster.deleteByQuery("person_id:dummy")).thenReturn(mock(UpdateResponse.class));
 

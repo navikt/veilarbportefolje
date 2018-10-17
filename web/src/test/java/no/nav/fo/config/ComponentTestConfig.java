@@ -5,6 +5,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.mock.AktoerServiceMock;
 import no.nav.fo.mock.EnhetMock;
+import no.nav.fo.mock.LockServiceMock;
 import no.nav.fo.mock.SolrServiceMock;
 import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -93,5 +94,10 @@ public class ComponentTestConfig implements ApiApplication {
     @Bean
     public DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1() {
         return mock(DigitalKontaktinformasjonV1.class);
+    }
+
+    @Bean
+    public LockService lockService() {
+        return new LockServiceMock();
     }
 }

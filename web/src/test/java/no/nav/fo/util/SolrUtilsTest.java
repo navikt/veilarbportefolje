@@ -16,8 +16,6 @@ import static java.util.Collections.singletonList;
 import static no.nav.fo.util.SolrUtils.TILTAK;
 import static no.nav.fo.util.SolrUtils.orStatement;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -76,14 +74,6 @@ public class SolrUtilsTest {
         assertThat(solrQuery.getQuery()).isEqualTo(query);
         assertThat(solrQuery.getFacetFields()[0]).isEqualTo("value");
         assertThat(Boolean.parseBoolean(solrQuery.get("facet"))).isEqualTo(true);
-    }
-
-    @Test
-    public void skalKorrektAvgjoreOmErSlaveNode() throws Exception {
-        System.setProperty("cluster.ismasternode", "false");
-        assertTrue(SolrUtils.isSlaveNode());
-        System.setProperty("cluster.ismasternode", "true");
-        assertFalse(SolrUtils.isSlaveNode());
     }
 
     @Test

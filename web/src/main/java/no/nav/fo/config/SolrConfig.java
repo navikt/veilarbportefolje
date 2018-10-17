@@ -2,10 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.service.AktoerService;
-import no.nav.fo.service.SolrService;
-import no.nav.fo.service.SolrServiceImpl;
-import no.nav.fo.service.VeilederService;
+import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.http.HttpException;
@@ -31,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.io.IOException;
-import java.util.Properties;
 
 @Configuration
 public class SolrConfig {
@@ -58,8 +54,8 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService) {
-        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO);
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService, LockService lockService) {
+        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockService);
     }
 
     @Bean

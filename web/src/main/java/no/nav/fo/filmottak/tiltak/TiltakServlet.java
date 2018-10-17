@@ -14,25 +14,21 @@ import java.io.IOException;
 public class TiltakServlet extends HttpServlet {
 
     private TiltakHandler tiltakHandler;
-    private boolean ismasternode;
 
     @Override
     public void init() throws ServletException {
         this.tiltakHandler = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(TiltakHandler.class);
-        this.ismasternode = Boolean.valueOf(System.getProperty("cluster.ismasternode", "false"));
         super.init();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if(this.ismasternode) {
-            if(AuthorizationUtils.isBasicAuthAuthorized(req)) {
-                log.info("Setter i gang oppdatering av tiltak");
-                resp.getWriter().write("Setter i gang oppdatering av tiltak");
-                tiltakHandler.startOppdateringAvTiltakIDatabasen();
-            } else {
-                AuthorizationUtils.writeUnauthorized(resp);
-            }
+        if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
+            log.info("Setter i gang oppdatering av tiltak");
+            resp.getWriter().write("Setter i gang oppdatering av tiltak");
+            tiltakHandler.startOppdateringAvTiltakIDatabasen();
+        } else {
+            AuthorizationUtils.writeUnauthorized(resp);
         }
     }
 }

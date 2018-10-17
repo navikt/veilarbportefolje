@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.fo.service.AktivitetService;
+import no.nav.fo.service.LockService;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.metrics.aspects.Timed;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,11 +30,11 @@ public class KopierGR199FraArena {
     @Value("${loependeytelser.filnavn}")
     String filnavn;
 
-    @Value("${cluster.ismasternode}")
-    boolean isMaster;
-
     @Inject
     private AktivitetService aktivitetService;
+
+    @Inject
+    private LockService lockService;
 
     private boolean isRunning = false;
 
@@ -44,8 +45,12 @@ public class KopierGR199FraArena {
     }
 
     public void startOppdateringAvYtelser() {
+        lockService.runWithLock(this::startOppdateringAvYtelserWithLock);
+    }
+
+    public void startOppdateringAvYtelserWithLock() {
         log.info("Forsøker å starte oppdatering av ytelser.");
-        if(this.isRunning()) {
+        if (this.isRunning()) {
             log.info("Kunne ikke starte ny oppdatering av ytelser fordi den allerede er midt i en oppdatering.");
             return;
         }
@@ -54,7 +59,7 @@ public class KopierGR199FraArena {
     }
 
     @Timed(name = "GR199.kopierOgIndekser")
-    void kopierOgIndekser() {
+    private void kopierOgIndekser() {
         Supplier<Try<InputStream>> hentfil = () -> FilmottakFileUtils.lesYtelsesFil(new File(filpath, filnavn));
         log.info("Starter oppdatering av ytelser...");
 
@@ -74,7 +79,7 @@ public class KopierGR199FraArena {
                 });
     }
 
-    boolean isRunning() {
+    private boolean isRunning() {
         return this.isRunning;
     }
 

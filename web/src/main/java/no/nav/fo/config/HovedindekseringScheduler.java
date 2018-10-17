@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.service.KrrService;
+import no.nav.fo.service.LockService;
 import no.nav.fo.service.SolrService;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -13,8 +14,6 @@ import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
 public class HovedindekseringScheduler {
-
-    private boolean ismasternode = Boolean.valueOf(System.getProperty("cluster.ismasternode", "false"));
 
     @Inject
     private SolrService solrService;
@@ -28,11 +27,12 @@ public class HovedindekseringScheduler {
     @Inject
     private KrrService krrService;
 
+    @Inject
+    private LockService lockService;
+
     @Scheduled(cron = "0 0 4 * * ?")
-    public void prosessSchedulerHvisMaster() {
-        if(ismasternode) {
-            prosessScheduler();
-        }
+    public void prosessSchedulerWithLock() {
+        lockService.runWithLock(this::prosessScheduler);
     }
 
     public void prosessScheduler() {

@@ -7,6 +7,7 @@ import no.nav.fo.filmottak.tiltak.TiltakRepository;
 import no.nav.fo.filmottak.ytelser.IndekserYtelserHandler;
 import no.nav.fo.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.LockService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
@@ -65,8 +66,8 @@ public class FilmottakConfig {
 
 
     @Bean
-    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
-        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository);
+    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
+        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository, lockService);
     }
 
     @Bean

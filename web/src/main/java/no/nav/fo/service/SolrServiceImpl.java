@@ -64,6 +64,7 @@ public class SolrServiceImpl implements SolrService {
     private AktoerService aktoerService;
     private VeilederService veilederService;
     private Executor executor;
+    private LockService lockService;
 
     @Inject
     public SolrServiceImpl(
@@ -72,8 +73,8 @@ public class SolrServiceImpl implements SolrService {
             BrukerRepository brukerRepository,
             AktoerService aktoerService,
             VeilederService veilederService,
-            AktivitetDAO aktivitetDAO
-    ) {
+            AktivitetDAO aktivitetDAO,
+            LockService lockService) {
 
         this.solrClientMaster = solrClientMaster;
         this.solrClientSlave = solrClientSlave;
@@ -82,17 +83,16 @@ public class SolrServiceImpl implements SolrService {
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
+        this.lockService = lockService;
     }
 
     @Transactional
     @Override
     public void hovedindeksering() {
+        lockService.runWithLock(this::hovedindekseringWithLock);
+    }
 
-        if (SolrUtils.isSlaveNode()) {
-            log.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
-            return;
-        }
-
+    private void hovedindekseringWithLock() {
         log.info("Starter hovedindeksering");
         LocalDateTime t0 = LocalDateTime.now();
 
@@ -117,11 +117,10 @@ public class SolrServiceImpl implements SolrService {
     @Transactional
     @Override
     public void deltaindeksering() {
-        if (SolrUtils.isSlaveNode()) {
-            log.info("Noden er en slave. Kun masternoden kan iverksette indeksering. Avbryter.");
-            return;
-        }
+        lockService.runWithLock(this::deltaindekseringWithLock);
+    }
 
+    private void deltaindekseringWithLock() {
         log.info("Starter deltaindeksering");
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);
@@ -166,7 +165,7 @@ public class SolrServiceImpl implements SolrService {
 
         SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sorterNyeForVeileder, veiledere, sortOrder, sortField, filtervalg);
         addPaging(solrQuery, fra, antall);
-        QueryResponse response = timed("solr.hentbrukere",() -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
+        QueryResponse response = timed("solr.hentbrukere", () -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
         SolrUtils.checkSolrResponseCode(response.getStatus());
         SolrDocumentList results = response.getResults();
         List<Bruker> brukere = results.stream().map(Bruker::of).collect(toList());

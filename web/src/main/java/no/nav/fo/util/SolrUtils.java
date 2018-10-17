@@ -75,11 +75,6 @@ public class SolrUtils {
         return solrQuery;
     }
 
-    public static boolean isSlaveNode() {
-        String isMasterString = System.getProperty("cluster.ismasternode", "false");
-        return !Boolean.parseBoolean(isMasterString);
-    }
-
     public static void checkSolrResponseCode(int statusCode) {
         if (statusCode != 0) {
             throw new SolrUpdateResponseCodeException(format("Solr returnerte med statuskode %s", statusCode));

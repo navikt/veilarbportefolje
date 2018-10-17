@@ -34,6 +34,9 @@ public class SolrServiceIntegrationTest {
     @Inject
     private BrukerRepository brukerRepository;
 
+    @Inject
+    private LockService lockServiceMock;
+
     @Before
     public void deleteData() {
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
@@ -42,8 +45,6 @@ public class SolrServiceIntegrationTest {
 
     @Test
     public void skalSletteBrukerVedDeltaindeksering() throws IOException, SolrServerException {
-        System.setProperty("cluster.ismasternode", "true");
-
         insertISERVuser();
         SolrClient solrClientMaster = mock(SolrClient.class);
         SolrClient solrClientSlave = mock(SolrClient.class);
@@ -52,7 +53,7 @@ public class SolrServiceIntegrationTest {
         VeilederService veilederService = mock(VeilederService.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO);
+        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockServiceMock);
 
 
         UpdateResponse response = new UpdateResponse();
@@ -69,15 +70,15 @@ public class SolrServiceIntegrationTest {
 
     private void insertISERVuser() {
         SqlUtils.insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
-            .value("PERSON_ID", 1234)
-            .value("FODSELSNR", "11111111111")
-            .value("FORMIDLINGSGRUPPEKODE", "ISERV")
-            .value("KVALIFISERINGSGRUPPEKODE", "VARIG")
-            .value("TIDSSTEMPEL", new Date())
-            .execute();
+                .value("PERSON_ID", 1234)
+                .value("FODSELSNR", "11111111111")
+                .value("FORMIDLINGSGRUPPEKODE", "ISERV")
+                .value("KVALIFISERINGSGRUPPEKODE", "VARIG")
+                .value("TIDSSTEMPEL", new Date())
+                .execute();
 
         SqlUtils.insert(jdbcTemplate, "METADATA")
-            .value("SIST_INDEKSERT", new Date(0))
-            .execute();
+                .value("SIST_INDEKSERT", new Date(0))
+                .execute();
     }
 }

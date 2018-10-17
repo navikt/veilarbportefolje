@@ -7,6 +7,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.LockService;
 import no.nav.fo.service.SolrServiceImpl;
 import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.MetricsUtils;
@@ -41,16 +42,18 @@ public class TiltakHandler {
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
+    private final LockService lockService;
 
     private boolean kjorer;
 
     @Inject
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.kjorer = false;
         this.brukerRepository = brukerRepository;
+        this.lockService = lockService;
     }
 
     public static Timestamp getDatoFilter() {
@@ -58,6 +61,10 @@ public class TiltakHandler {
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
+        lockService.runWithLock(this::startOppdateringAvTiltakIDatabasenWithLock);
+    }
+
+    public void startOppdateringAvTiltakIDatabasenWithLock() {
         log.info("Forsøker å starte oppdatering av tiltaksaktiviteter.");
         if (this.kjorer()) {
             log.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
