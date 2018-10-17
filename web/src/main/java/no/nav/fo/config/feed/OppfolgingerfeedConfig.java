@@ -5,6 +5,9 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
+import no.nav.fo.config.ApplicationConfig;
+import no.nav.fo.config.unleash.UnleashService;
+import no.nav.fo.config.unleash.UnleashServiceConfig;
 import no.nav.fo.consumer.DedupeFeedHandler;
 import no.nav.fo.consumer.OppfolgingFeedHandler;
 import no.nav.fo.database.BrukerRepository;
@@ -18,7 +21,6 @@ import no.nav.fo.service.SolrService;
 import no.nav.fo.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,9 +51,19 @@ public class OppfolgingerfeedConfig {
     @Inject
     private DataSource dataSource;
 
-    @Value("${oppfolging.numerisk.id:false}")
-    private boolean brukNumeriskId;
-    
+    @Inject
+    private UnleashService unleashService;     
+
+    private static final String UNLEASH_URL = "unleash.url";
+
+    @Bean
+    public UnleashService unleashService() {
+        return new UnleashService(UnleashServiceConfig.builder()
+                .applicationName(ApplicationConfig.APPLICATION_NAME)
+                .unleashApiUrl(getRequiredProperty(UNLEASH_URL))
+                .build());
+    }
+
     @Bean
     public LockProvider lockProvider(DataSource dataSource) {
         return new JdbcLockProvider(dataSource);
@@ -63,7 +75,7 @@ public class OppfolgingerfeedConfig {
             FeedCallback<BrukerOppdatertInformasjon> callback) {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
-                () -> sisteId(db, brukNumeriskId),
+                () -> sisteId(db, unleashService),
                 getRequiredProperty(VEILARBOPPFOLGING_URL_PROPERTY),
                 BrukerOppdatertInformasjon.FEED_NAME
         );
@@ -94,8 +106,8 @@ public class OppfolgingerfeedConfig {
                 transactor);
     }
 
-    private static String sisteId(JdbcTemplate db, boolean brukNumeriskId) {
-        String id = brukNumeriskId ? finnSisteIdNumerisk(db) : finnSisteIdTidspunkt(db);
+    private static String sisteId(JdbcTemplate db, UnleashService unleashService) {
+        String id = unleashService.isEnabled("veilarbportefolje.numerisk.id.for.oppfolging") ? finnSisteIdNumerisk(db) : finnSisteIdTidspunkt(db);
         log.info("OppfolgingerfeedDebug sisteEndring: {}", id);
         return id;
     }

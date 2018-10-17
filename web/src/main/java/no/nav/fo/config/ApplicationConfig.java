@@ -1,6 +1,5 @@
 package no.nav.fo.config;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
@@ -9,6 +8,7 @@ import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientImpl;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -20,7 +20,6 @@ import org.springframework.transaction.jta.JtaTransactionManager;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
 
-@Slf4j
 @EnableScheduling
 @EnableAspectJAutoProxy
 @Configuration
@@ -74,4 +73,5 @@ public class ApplicationConfig implements ApiApplication {
     public HovedindekseringScheduler hovedindekseringScheduler() {
         return new HovedindekseringScheduler();
     }
+    
 }
