@@ -17,12 +17,16 @@ import no.nav.fo.service.ArbeidslisteService;
 import no.nav.fo.service.SolrService;
 import no.nav.fo.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -37,11 +41,17 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @Slf4j
 public class OppfolgingerfeedConfig {
 
+    static final String SELECT_OPPFOLGING_SIST_OPPDATERT_FROM_METADATA = "SELECT oppfolging_sist_oppdatert FROM METADATA";
+    static final String SELECT_OPPFOLGING_SIST_OPPDATERT_ID_FROM_METADATA = "SELECT oppfolging_sist_oppdatert_id FROM METADATA";
+
     public static final String VEILARBOPPFOLGING_URL_PROPERTY = "veilarboppfolging.api.url";
 
     @Inject
     private DataSource dataSource;
 
+    @Value("${oppfolging.numerisk.id:false}")
+    private boolean brukNumeriskId;
+    
     @Bean
     public LockProvider lockProvider(DataSource dataSource) {
         return new JdbcLockProvider(dataSource);
@@ -53,7 +63,7 @@ public class OppfolgingerfeedConfig {
             FeedCallback<BrukerOppdatertInformasjon> callback) {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
-                Utils.apply(OppfolgingerfeedConfig::sisteEndring, db),
+                () -> sisteId(db, brukNumeriskId),
                 getRequiredProperty(VEILARBOPPFOLGING_URL_PROPERTY),
                 BrukerOppdatertInformasjon.FEED_NAME
         );
@@ -84,10 +94,18 @@ public class OppfolgingerfeedConfig {
                 transactor);
     }
 
-    private static String sisteEndring(JdbcTemplate db) {
-        Timestamp sisteEndring = (Timestamp) db.queryForList("SELECT oppfolging_sist_oppdatert FROM METADATA").get(0).get("oppfolging_sist_oppdatert");
-        String sisteEndringStr = ZonedDateTime.ofInstant(sisteEndring.toInstant().minusSeconds(10), ZoneId.systemDefault()).toString();
-        log.info("OppfolgingerfeedDebug sisteEndring: {}", sisteEndringStr);
-        return sisteEndringStr;
+    private static String sisteId(JdbcTemplate db, boolean brukNumeriskId) {
+        String id = brukNumeriskId ? finnSisteIdNumerisk(db) : finnSisteIdTidspunkt(db);
+        log.info("OppfolgingerfeedDebug sisteEndring: {}", id);
+        return id;
+    }
+
+    static String finnSisteIdTidspunkt(JdbcTemplate db) {
+        Timestamp sisteEndring = (Timestamp) db.queryForList(SELECT_OPPFOLGING_SIST_OPPDATERT_FROM_METADATA).get(0).get("oppfolging_sist_oppdatert");
+        return ZonedDateTime.ofInstant(sisteEndring.toInstant().minusSeconds(10), ZoneId.systemDefault()).toString();
+    }
+
+    static String finnSisteIdNumerisk(JdbcTemplate db) {
+        return ((BigDecimal) db.queryForList(SELECT_OPPFOLGING_SIST_OPPDATERT_ID_FROM_METADATA).get(0).get("oppfolging_sist_oppdatert_id")).toPlainString();
     }
 }
