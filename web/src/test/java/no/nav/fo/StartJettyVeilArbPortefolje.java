@@ -16,6 +16,7 @@ import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
 import static no.nav.dialogarena.config.fasit.FasitUtils.*;
+import static no.nav.dialogarena.config.fasit.FasitUtils.getServiceUser;
 import static no.nav.fo.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
 import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.config.feed.AktiviteterfeedConfig.VEILARBAKTIVITET_URL_PROPERTY;
@@ -60,6 +61,11 @@ public class StartJettyVeilArbPortefolje {
         setProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY, "http://localhost:8080/veilarbportefoljeindeks/brukercore");
         setProperty("cluster.ismasternode", TRUE.toString());
 
+        ServiceUser tiltakSftpUser = getServiceUser("veilarbportefolje.filmottak.sftp.login", APPLICATION_NAME);
+        setProperty("veilarbportefolje.filmottak.sftp.login.username", tiltakSftpUser.getUsername());
+        setProperty("veilarbportefolje.filmottak.sftp.login.password", tiltakSftpUser.getPassword());
+
+        setProperty("environment.name", getDefaultEnvironment()); // TODO: Remove after bump of common
         setProperty("arena.aktivitet.datofilter", "2017-12-04");
 
         setupTestContext();

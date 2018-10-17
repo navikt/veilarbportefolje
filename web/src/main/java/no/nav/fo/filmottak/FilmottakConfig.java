@@ -14,8 +14,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.UUID;
+
+import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
+import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentClass;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class FilmottakConfig {
@@ -26,17 +32,21 @@ public class FilmottakConfig {
     @Value("${loependeytelser.filnavn}")
     String filnavn;
 
-    @Value("${filmottak.tiltak.sftp.URI}")
-    private String URI;
+    private static final String MILJO = getRequiredProperty("environment.name");
 
-    @Value("${veilarbportefolje.filmottak.sftp.login.username}")
-    private String filmottakBrukernavn;
+    public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
+            "filmottak",
+            "gr202",
+            "arena_paagaaende_aktiviteter.xml",
+            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.username"),
+            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.password"));
 
-    @Value("${veilarbportefolje.filmottak.sftp.login.password}")
-    private String filmottakPassord;
-
-    @Value("${environment.name}")
-    private String miljo;
+    private static final SftpConfig LOPENDEYTELSER_SFTP = new SftpConfig(
+            "filmottak-loependeytelser",
+            "gr199",
+            "arena_loepende_ytelser.xml",
+            "srvveilarb-arena", // TODO: Dette er en midlertidig bruker satt opp av Kashmira. Erstatt med Fasit Credential.
+            "srvveilarbarena");
 
     @Bean
     public IndekserYtelserHandler indekserYtelserHandler() {
@@ -62,9 +72,9 @@ public class FilmottakConfig {
     @Bean
     public Pingable nfsYtelserPing() {
         Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
-            "NFS via" + System.getProperty("loependeytelser.path"),
-            "Sjekker connection til fil med ytelser (nfs)",
-            true
+                "NFS via" + getRequiredProperty("loependeytelser.path"),
+                "Sjekker connection til fil med ytelser (nfs)",
+                true
         );
 
         return () -> {
@@ -78,24 +88,71 @@ public class FilmottakConfig {
     }
 
     @Bean
+    public Pingable sftpLopendeYtelserPing() {
+        return sftpPing(LOPENDEYTELSER_SFTP);
+    }
+
+    @Bean
     public Pingable sftpTiltakPing() {
-        String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
+        return sftpPing(AKTIVITETER_SFTP);
+    }
+
+    private Pingable sftpPing(SftpConfig sftpConfig) {
         Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
-            this.URI,
-            "Sjekker connection til fil med tiltak (sftp)",
-            true
+                UUID.randomUUID().toString(),
+                sftpConfig.getUrl(),
+                "Sjekker henting av fil over sftp",
+                true
         );
 
         return () -> {
             try {
-                FileObject fileObject = FilmottakFileUtils.hentTiltakFil(komplettURI).get();
-                if(fileObject.exists()) {
+                FileObject fileObject = FilmottakFileUtils.hentFil(sftpConfig).get();
+                if (fileObject.exists()) {
                     return Pingable.Ping.lyktes(metadata);
                 }
-                return Pingable.Ping.feilet(metadata, new FileNotFoundException("File not found at " + komplettURI));
+                return Pingable.Ping.feilet(metadata, new FileNotFoundException("File not found at " + sftpConfig.getUrl()));
             } catch (FileSystemException e) {
                 return Pingable.Ping.feilet(metadata, e);
             }
         };
+    }
+
+    public static class SftpConfig {
+        private String url;
+        private String username;
+        private String password;
+
+        SftpConfig(String host, String folder, String filename, String username, String password) {
+            this.url = buildUrl(host, folder, filename);
+            this.username = username;
+            this.password = password;
+        }
+
+        private String buildUrl(String host, String folder, String filename) {
+            boolean preprod = getEnvironmentClass() != P;
+            UriBuilder uriBuilder = UriBuilder.fromPath(folder)
+                    .scheme("sftp")
+                    .host(host + "." + (preprod ? "preprod.local" : "adeo.no"));
+            if (preprod) {
+                uriBuilder.path(MILJO);
+            }
+            return uriBuilder
+                    .path(filename)
+                    .build()
+                    .toString();
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        String getUsername() {
+            return username;
+        }
+
+        String getPassword() {
+            return password;
+        }
     }
 }

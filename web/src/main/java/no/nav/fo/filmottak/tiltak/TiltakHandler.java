@@ -15,7 +15,6 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktivi
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -30,24 +29,13 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
+import static no.nav.fo.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.filmottak.tiltak.TiltakUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.log;
 
 @Slf4j
 public class TiltakHandler {
-
-    @Value("${filmottak.tiltak.sftp.URI}")
-    private String URI;
-
-    @Value("${environment.name}")
-    private String miljo;
-
-    @Value("${veilarbportefolje.filmottak.sftp.login.username}")
-    private String filmottakBrukernavn;
-
-    @Value("${veilarbportefolje.filmottak.sftp.login.password}")
-    private String filmottakPassord;
 
     private final TiltakRepository tiltakrepository;
     private final AktivitetDAO aktivitetDAO;
@@ -97,7 +85,7 @@ public class TiltakHandler {
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {
 
-        log.info("Starter populering av database for tiltaksfil med uttrekkstidspunkt [{}]", 
+        log.info("Starter populering av database for tiltaksfil med uttrekkstidspunkt [{}]",
                 tiltakOgAktiviteterForBrukere.getUttrekkstidspunkt());
 
         tiltakrepository.slettBrukertiltak();
@@ -342,8 +330,7 @@ public class TiltakHandler {
     private Try<FileObject> hentFil() {
         log.info("Starter henting av tiltaksfil");
         try {
-            String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
-            return FilmottakFileUtils.hentTiltakFil(komplettURI);
+            return FilmottakFileUtils.hentFil(AKTIVITETER_SFTP);
         } catch (FileSystemException e) {
             log.info("Henting av tiltaksfil feilet");
             return Try.failure(e);
