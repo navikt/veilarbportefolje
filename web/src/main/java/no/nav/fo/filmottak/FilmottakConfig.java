@@ -1,6 +1,7 @@
 package no.nav.fo.filmottak;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
+import no.nav.fo.config.unleash.UnleashService;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.filmottak.tiltak.TiltakRepository;
@@ -9,23 +10,29 @@ import no.nav.fo.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.LockService;
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
+import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
+import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
 import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentClass;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class FilmottakConfig {
+
+    public static final String VEILARBPORTEFOLJE_SFTP_SELFTEST = "veilarbportefolje.sftp.selftest";
 
     @Value("${loependeytelser.path}")
     String filpath;
@@ -48,6 +55,9 @@ public class FilmottakConfig {
             "arena_loepende_ytelser.xml",
             "srvveilarb-arena", // TODO: Dette er en midlertidig bruker satt opp av Kashmira. Erstatt med Fasit Credential.
             "srvveilarbarena");
+
+    @Inject
+    private UnleashService unleashService;
 
     @Bean
     public IndekserYtelserHandler indekserYtelserHandler() {
@@ -72,7 +82,8 @@ public class FilmottakConfig {
 
     @Bean
     public Pingable nfsYtelserPing() {
-        Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
+        PingMetadata metadata = new PingMetadata(
+                UUID.randomUUID().toString(),
                 "NFS via" + getRequiredProperty("loependeytelser.path"),
                 "Sjekker connection til fil med ytelser (nfs)",
                 true
@@ -81,9 +92,9 @@ public class FilmottakConfig {
         return () -> {
             File file = new File(filpath, filnavn);
             if (file.exists()) {
-                return Pingable.Ping.lyktes(metadata);
+                return lyktes(metadata);
             } else {
-                return Pingable.Ping.feilet(metadata, new FileNotFoundException("File not found at " + filpath + filnavn));
+                return feilet(metadata, new FileNotFoundException("File not found at " + filpath + filnavn));
             }
         };
     }
@@ -99,22 +110,32 @@ public class FilmottakConfig {
     }
 
     private Pingable sftpPing(SftpConfig sftpConfig) {
-        Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
+        PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
                 sftpConfig.getUrl(),
                 "Sjekker henting av fil over sftp",
                 true
         );
+        PingMetadata disabledMetadata = new PingMetadata(
+                UUID.randomUUID().toString(),
+                sftpConfig.getUrl(),
+                "Sjekker henting av fil over sftp (disabled by feature-toggle)",
+                true
+        );
 
         return () -> {
+            boolean enabled = !sftpConfig.equals(LOPENDEYTELSER_SFTP) || unleashService.isEnabled(VEILARBPORTEFOLJE_SFTP_SELFTEST);
+            if (!enabled) {
+                return lyktes(disabledMetadata);
+            }
             try {
                 FileObject fileObject = FilmottakFileUtils.hentFil(sftpConfig).get();
                 if (fileObject.exists()) {
-                    return Pingable.Ping.lyktes(metadata);
+                    return lyktes(metadata);
                 }
-                return Pingable.Ping.feilet(metadata, new FileNotFoundException("File not found at " + sftpConfig.getUrl()));
+                return feilet(metadata, new FileNotFoundException("File not found at " + sftpConfig.getUrl()));
             } catch (FileSystemException e) {
-                return Pingable.Ping.feilet(metadata, e);
+                return feilet(metadata, e);
             }
         };
     }

@@ -38,6 +38,8 @@
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
         <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
         <rest alias="veilarbveilederAPI" mapToProperty="veilarbveileder.api" />
+        <rest alias="unleash-api" mapToProperty="unleash" />
+
 
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
