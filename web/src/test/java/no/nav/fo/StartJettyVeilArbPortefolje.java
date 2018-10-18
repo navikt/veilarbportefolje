@@ -22,6 +22,7 @@ import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.config.feed.AktiviteterfeedConfig.VEILARBAKTIVITET_URL_PROPERTY;
 import static no.nav.fo.config.feed.DialogaktorfeedConfig.VEILARBDIALOG_URL_PROPERTY;
 import static no.nav.fo.config.feed.OppfolgingerfeedConfig.VEILARBOPPFOLGING_URL_PROPERTY;
+import static no.nav.fo.config.unleash.UnleashSpringConfig.UNLEASH_URL;
 import static no.nav.fo.service.VeilederService.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.modig.lang.collections.FactoryUtils.gotKeypress;
 import static no.nav.modig.lang.collections.RunnableUtils.first;
@@ -59,6 +60,8 @@ public class StartJettyVeilArbPortefolje {
 
         setProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY, "http://localhost:8080/veilarbportefoljeindeks/brukercore");
         setProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY, "http://localhost:8080/veilarbportefoljeindeks/brukercore");
+        setProperty(UNLEASH_URL, "https://unleash.nais.adeo.no/api/");
+
         setProperty("cluster.ismasternode", TRUE.toString());
 
         ServiceUser tiltakSftpUser = getServiceUser("veilarbportefolje.filmottak.sftp.login", APPLICATION_NAME);
