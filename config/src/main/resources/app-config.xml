@@ -32,7 +32,6 @@
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
         <applicationProperties alias="veilarbportefolje.properties"/>
-        <applicationProperties alias="portefolje.pilot.properties"/>
 
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <rest alias="veilArbOppfolgingAPI" mapToProperty="veilarboppfolging.api" />

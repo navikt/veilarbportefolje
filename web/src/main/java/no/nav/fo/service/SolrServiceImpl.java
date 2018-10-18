@@ -113,7 +113,7 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
     }
 
-    @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     @Override
     public void deltaindeksering() {

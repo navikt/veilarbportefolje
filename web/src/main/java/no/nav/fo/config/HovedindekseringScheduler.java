@@ -28,7 +28,7 @@ public class HovedindekseringScheduler {
     @Inject
     private KrrService krrService;
 
-    @Scheduled(cron = "${veilarbportefolje.cron.hovedindeksering}")
+    @Scheduled(cron = "0 0 4 * * ?")
     public void prosessSchedulerHvisMaster() {
         if(ismasternode) {
             prosessScheduler();

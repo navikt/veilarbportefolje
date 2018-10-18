@@ -8,7 +8,6 @@ import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
-import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.eclipse.jetty.plus.jndi.Resource;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.MetaInfConfiguration;
@@ -150,7 +149,6 @@ public abstract class ComponentTest {
     private static void setupProperties() {
         System.setProperty("APP_LOG_HOME", new File("target").getAbsolutePath());
         System.setProperty("application.name", APPLICATION_NAME);
-        SystemProperties.setFrom("veilarbportefolje.properties");
     }
 
 }
