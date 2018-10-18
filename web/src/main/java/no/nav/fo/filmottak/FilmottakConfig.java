@@ -100,9 +100,7 @@ public class FilmottakConfig {
 
     @Bean
     public Pingable sftpLopendeYtelserPing() {
-        return unleashService.isEnabled(VEILARBPORTEFOLJE_SFTP_SELFTEST)
-                ? sftpPing(LOPENDEYTELSER_SFTP)
-                : disabledPing(LOPENDEYTELSER_SFTP);
+        return sftpPing(LOPENDEYTELSER_SFTP);
     }
 
     @Bean
@@ -110,23 +108,18 @@ public class FilmottakConfig {
         return sftpPing(AKTIVITETER_SFTP);
     }
 
-    private Pingable disabledPing(SftpConfig sftpConfig) {
-        PingMetadata metadata = new PingMetadata(
-                UUID.randomUUID().toString(),
-                sftpConfig.getUrl(),
-                "Selftesten kjøres ikke pga. featuretoggle: " + VEILARBPORTEFOLJE_SFTP_SELFTEST,
-                true
-        );
-        return () -> lyktes(metadata);
-    }
-
     private Pingable sftpPing(SftpConfig sftpConfig) {
+        boolean enabled = !sftpConfig.equals(LOPENDEYTELSER_SFTP) || unleashService.isEnabled(VEILARBPORTEFOLJE_SFTP_SELFTEST);
         PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
                 sftpConfig.getUrl(),
-                "Sjekker henting av fil over sftp",
+                "Sjekker henting av fil over sftp" + (!enabled ? " (disabled by feature-toggle)" : ""),
                 true
         );
+
+        if (!enabled) {
+            return () -> lyktes(metadata);
+        }
 
         return () -> {
             try {
