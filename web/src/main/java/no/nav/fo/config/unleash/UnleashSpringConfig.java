@@ -1,5 +1,6 @@
 package no.nav.fo.config.unleash;
 
+import static no.nav.fo.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 import org.springframework.context.annotation.Bean;
@@ -14,7 +15,7 @@ public class UnleashSpringConfig {
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.builder()
-                .applicationName("")
+                .applicationName(APPLICATION_NAME)
                 .unleashApiUrl(getRequiredProperty(UNLEASH_URL))
                 .build());
     }
