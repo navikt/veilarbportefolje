@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class UnleashSpringConfig {
 
-    private static final String UNLEASH_URL = "unleash.url";
+    public static final String UNLEASH_URL = "unleash.url";
 
     @Bean
     public UnleashService unleashService() {
