@@ -5,9 +5,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.config.ApplicationConfig;
 import no.nav.fo.config.unleash.UnleashService;
-import no.nav.fo.config.unleash.UnleashServiceConfig;
 import no.nav.fo.consumer.DedupeFeedHandler;
 import no.nav.fo.consumer.OppfolgingFeedHandler;
 import no.nav.fo.database.BrukerRepository;
@@ -54,18 +52,7 @@ public class OppfolgingerfeedConfig {
     @Inject
     private UnleashService unleashService;     
 
-    private static final String UNLEASH_URL = "unleash.url";
-
-    @Bean
-    public UnleashService unleashService() {
-        return new UnleashService(UnleashServiceConfig.builder()
-                .applicationName(ApplicationConfig.APPLICATION_NAME)
-                .unleashApiUrl(getRequiredProperty(UNLEASH_URL))
-                .build());
-    }
-
-    @Bean
-    public LockProvider lockProvider(DataSource dataSource) {
+    private LockProvider lockProvider(DataSource dataSource) {
         return new JdbcLockProvider(dataSource);
     }
 

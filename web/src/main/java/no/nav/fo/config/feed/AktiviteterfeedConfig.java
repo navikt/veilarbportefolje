@@ -35,8 +35,7 @@ public class AktiviteterfeedConfig {
     @Inject
     private DataSource dataSource;
 
-    @Bean
-    public LockProvider lockProvider(DataSource dataSource) {
+    private LockProvider lockProvider(DataSource dataSource) {
         return new JdbcLockProvider(dataSource);
     }
 

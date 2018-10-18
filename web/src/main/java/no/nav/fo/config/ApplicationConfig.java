@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.config.unleash.UnleashSpringConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.PepClient;
@@ -39,7 +40,8 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         AktorConfig.class,
         VeilederServiceConfig.class,
         ClientConfig.class,
-        DigitalKontaktinformasjonConfig.class
+        DigitalKontaktinformasjonConfig.class,
+        UnleashSpringConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
     public static final String APPLICATION_NAME = "veilarbportefolje";
