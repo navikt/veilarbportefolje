@@ -23,7 +23,6 @@ import javax.servlet.ServletContext;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
 @EnableScheduling
