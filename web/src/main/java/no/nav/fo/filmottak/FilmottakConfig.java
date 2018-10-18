@@ -109,19 +109,24 @@ public class FilmottakConfig {
     }
 
     private Pingable sftpPing(SftpConfig sftpConfig) {
-        boolean enabled = !sftpConfig.equals(LOPENDEYTELSER_SFTP) || unleashService.isEnabled(VEILARBPORTEFOLJE_SFTP_SELFTEST);
         PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
                 sftpConfig.getUrl(),
-                "Sjekker henting av fil over sftp" + (!enabled ? " (disabled by feature-toggle)" : ""),
+                "Sjekker henting av fil over sftp",
+                true
+        );
+        PingMetadata disabledMetadata = new PingMetadata(
+                UUID.randomUUID().toString(),
+                sftpConfig.getUrl(),
+                "Sjekker henting av fil over sftp (disabled by feature-toggle)",
                 true
         );
 
-        if (!enabled) {
-            return () -> lyktes(metadata);
-        }
-
         return () -> {
+            boolean enabled = !sftpConfig.equals(LOPENDEYTELSER_SFTP) || unleashService.isEnabled(VEILARBPORTEFOLJE_SFTP_SELFTEST);
+            if (!enabled) {
+                return lyktes(disabledMetadata);
+            }
             try {
                 FileObject fileObject = FilmottakFileUtils.hentFil(sftpConfig).get();
                 if (fileObject.exists()) {
