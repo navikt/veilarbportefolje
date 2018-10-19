@@ -22,7 +22,6 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -93,7 +92,7 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void hovedindekseringWithLock() {
-        log.info("Starter hovedindeksering");
+        log.info("Indeksering: Starter hovedindeksering...");
         LocalDateTime t0 = LocalDateTime.now();
 
         final int[] antallBrukere = {0};
@@ -113,7 +112,6 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
     }
 
-    @Scheduled(cron = "0 * * * * *")
     @Transactional
     @Override
     public void deltaindeksering() {
@@ -121,7 +119,7 @@ public class SolrServiceImpl implements SolrService {
     }
 
     private void deltaindekseringWithLock() {
-        log.info("Starter deltaindeksering");
+        log.info("Indeksering: Starter deltaindeksering");
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);
 
@@ -306,7 +304,7 @@ public class SolrServiceImpl implements SolrService {
         long hours = duration.toHours();
         long minutes = duration.toMinutes();
         long seconds = duration.getSeconds();
-        String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
+        String logString = format("Indeksering: %s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         log.info(logString);
     }
 

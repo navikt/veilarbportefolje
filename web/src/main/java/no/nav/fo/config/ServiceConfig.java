@@ -33,8 +33,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif) {
-        return new KrrService(krrRepository, dkif);
+    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif, LockService lockService) {
+        return new KrrService(krrRepository, dkif, lockService);
     }
 
     @Bean

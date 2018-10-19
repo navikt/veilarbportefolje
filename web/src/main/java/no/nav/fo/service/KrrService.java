@@ -26,19 +26,27 @@ import static no.nav.fo.util.MetricsUtils.timed;
 
 @Slf4j
 public class KrrService {
-    private KrrRepository krrRepository;
 
+    private KrrRepository krrRepository;
     private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
+    private LockService lockService;
 
     @Inject
-    public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1) {
+    public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1, LockService lockService) {
         this.krrRepository = krrRepository;
         this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
+        this.lockService = lockService;
     }
 
     public void hentDigitalKontaktInformasjonBolk() {
+        lockService.runWithLock(this::hentDigitalKontaktInformasjonBolkWithLock);
+    }
+
+    private void hentDigitalKontaktInformasjonBolkWithLock() {
+        log.info("Indeksering: Starter henting av KRR informasjon...");
         krrRepository.slettKrrInformasjon();
         krrRepository.iterateFnrsUnderOppfolging(1000, this::hentDigitalKontaktInformasjon);
+        log.info("Indeksering: Fullført henting av KRR informasjon");
     }
 
     void hentDigitalKontaktInformasjon(List<String> fnrListe) {

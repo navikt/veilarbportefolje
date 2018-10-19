@@ -44,14 +44,11 @@ public class TiltakHandler {
     private final AktoerService aktoerService;
     private final LockService lockService;
 
-    private boolean kjorer;
-
     @Inject
     public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
-        this.kjorer = false;
         this.brukerRepository = brukerRepository;
         this.lockService = lockService;
     }
@@ -61,33 +58,18 @@ public class TiltakHandler {
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
-        lockService.runWithLock(this::startOppdateringAvTiltakIDatabasenWithLock);
+        lockService.runWithLock(this::hentTiltakOgPopulerDatabaseWithLock);
     }
 
-    public void startOppdateringAvTiltakIDatabasenWithLock() {
-        log.info("Forsøker å starte oppdatering av tiltaksaktiviteter.");
-        if (this.kjorer()) {
-            log.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
-            return;
-        }
-        this.kjorer = true;
-        hentTiltakOgPopulerDatabase();
-    }
-
-    private boolean kjorer() {
-        return this.kjorer;
-    }
-
-    private void hentTiltakOgPopulerDatabase() {
-        Consumer<Throwable> stopped = (t) -> this.kjorer = false;
-        log.info("Starter oppdatering av tiltak fra Arena..");
-        timed("GR202.hentfil", this::hentFil)
-                .onFailure(log(log, "Kunne ikke hente tiltaksfil").andThen(stopped))
-                .flatMap(timed("GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
-                .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen").andThen(stopped))
-                .andThen(timed("GR202.populatedb", this::populerDatabase))
-                .onFailure(log(log, "Kunne ikke populere database").andThen(stopped))
-                .andThen(() -> this.kjorer = false);
+    private void hentTiltakOgPopulerDatabaseWithLock() {
+        log.info("Indeksering: Starter oppdatering av tiltak fra Arena...");
+        timed("indexering.GR202.hentfil", this::hentFil)
+                .onFailure(log(log, "Kunne ikke hente tiltaksfil"))
+                .flatMap(timed("indexering.GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
+                .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen"))
+                .andThen(timed("indexering.GR202.populatedb", this::populerDatabase))
+                .onFailure(log(log, "Kunne ikke populere database"));
+        log.info("Indeksering: Fullført oppdatering av tiltak fra Arena");
     }
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {

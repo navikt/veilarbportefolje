@@ -71,7 +71,7 @@ public class LocalApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public HovedindekseringScheduler hovedindekseringScheduler() {
-        return new HovedindekseringScheduler();
+    public IndekseringScheduler hovedindekseringScheduler() {
+        return new IndekseringScheduler();
     }
 }

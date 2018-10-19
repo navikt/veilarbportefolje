@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
+
 @Slf4j
 public class TiltakServlet extends HttpServlet {
 
@@ -24,9 +26,9 @@ public class TiltakServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
-            log.info("Setter i gang oppdatering av tiltak");
+            log.info("Manuell Indeksering: Oppdatering av tiltak");
             resp.getWriter().write("Setter i gang oppdatering av tiltak");
-            tiltakHandler.startOppdateringAvTiltakIDatabasen();
+            runAsync(() -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }

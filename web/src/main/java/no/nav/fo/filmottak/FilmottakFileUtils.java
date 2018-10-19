@@ -12,6 +12,7 @@ import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -45,7 +46,8 @@ public class FilmottakFileUtils {
         return Try.of(() -> {
             JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1");
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
-            JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = (JAXBElement<TiltakOgAktiviteterForBrukere>) unmarshaller.unmarshal(fileObject.getContent().getInputStream());
+            StreamSource source = new StreamSource(fileObject.getContent().getInputStream());
+            JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = unmarshaller.unmarshal(source, TiltakOgAktiviteterForBrukere.class);
             log.info("Unmarshalling av tiltaksfil ferdig!");
             return jaxbElement.getValue();
         });

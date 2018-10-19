@@ -1,5 +1,6 @@
 package no.nav.fo.filmottak.ytelser;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.internal.AuthorizationUtils;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -11,6 +12,7 @@ import java.io.IOException;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
+@Slf4j
 public class YtelserServlet extends HttpServlet {
 
     private KopierGR199FraArena kopierGR199FraArena;
@@ -24,6 +26,7 @@ public class YtelserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
+            log.info("Manuell Indeksering: Starter oppdatering av ytelser");
             runAsync(() -> kopierGR199FraArena.startOppdateringAvYtelser());
             resp.getWriter().write("reindeksering startet");
             resp.setStatus(200);
