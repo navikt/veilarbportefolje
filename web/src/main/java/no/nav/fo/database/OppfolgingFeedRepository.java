@@ -14,7 +14,9 @@ import javax.inject.Inject;
 
 import static java.lang.Boolean.TRUE;
 import static no.nav.fo.util.DbUtils.parseJaNei;
+import static no.nav.fo.util.sql.SqlUtils.update;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -38,6 +40,7 @@ public class OppfolgingFeedRepository {
             .set("NY_FOR_VEILEDER", safeToJaNei(info.getNyForVeileder()))
             .set("MANUELL", safeToJaNei(info.getManuell()))
             .set("AKTOERID", info.getAktoerid())
+            .set("FEED_ID", info.getFeedId())
             .where(WhereClause.equals("AKTOERID", info.getAktoerid()))
             .execute();
     }
@@ -65,5 +68,11 @@ public class OppfolgingFeedRepository {
                 .setVeileder(rs.getString("VEILEDERIDENT"))
                 .setManuell(parseJaNei(rs.getString("MANUELL"), "MANUELL"));
     }
+
+    public void updateOppfolgingFeedId(BigDecimal id) {
+        log.info("Oppdaterer feed_id for oppfølging: {}", id);
+        update(db, "METADATA").set("oppfolging_sist_oppdatert_id", id).execute();
+    }
+    
 
 }

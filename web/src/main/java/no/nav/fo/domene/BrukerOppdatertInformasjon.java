@@ -3,6 +3,7 @@ package no.nav.fo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Data
@@ -17,6 +18,7 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
     private Boolean nyForVeileder;
     private Timestamp endretTimestamp;
     private Boolean manuell;
+    private BigDecimal feedId;
 
     @Override
     public int compareTo(BrukerOppdatertInformasjon o) {

@@ -99,7 +99,7 @@ public class BrukerRepository {
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
     }
-
+    
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
                 () -> {
