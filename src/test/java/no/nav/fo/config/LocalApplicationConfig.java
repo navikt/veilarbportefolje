@@ -2,12 +2,13 @@ package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
-import no.nav.fo.config.unleash.UnleashSpringConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientImpl;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -19,7 +20,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
-import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
+import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static no.nav.sbl.util.EnvironmentUtils.requireApplicationName;
 
 @EnableAspectJAutoProxy
 @EnableScheduling
@@ -39,8 +42,7 @@ import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
         FeedConfig.class,
         VeilederServiceConfig.class,
         ClientConfig.class,
-        DigitalKontaktinformasjonConfig.class,
-        UnleashSpringConfig.class
+        DigitalKontaktinformasjonConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication {
 
@@ -62,5 +64,13 @@ public class LocalApplicationConfig implements ApiApplication {
     @Bean
     public IndekseringScheduler hovedindekseringScheduler() {
         return new IndekseringScheduler();
+    }
+
+    @Bean
+    public UnleashService unleashService() {
+        return new UnleashService(UnleashServiceConfig.builder()
+                .applicationName(requireApplicationName())
+                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                .build());
     }
 }

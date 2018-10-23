@@ -1,7 +1,6 @@
 package no.nav.fo.filmottak;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.config.unleash.UnleashService;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.filmottak.tiltak.TiltakRepository;
@@ -11,6 +10,7 @@ import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.LockService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.springframework.beans.factory.annotation.Value;

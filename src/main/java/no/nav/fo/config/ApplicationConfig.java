@@ -2,7 +2,6 @@ package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
-import no.nav.fo.config.unleash.UnleashSpringConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.PepClient;
@@ -10,6 +9,8 @@ import no.nav.fo.service.PepClientImpl;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -22,7 +23,10 @@ import org.springframework.transaction.jta.JtaTransactionManager;
 import javax.servlet.ServletContext;
 
 import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static no.nav.sbl.util.EnvironmentUtils.requireApplicationName;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
 @EnableScheduling
@@ -44,8 +48,7 @@ import static no.nav.sbl.util.EnvironmentUtils.setProperty;
         AktorConfig.class,
         VeilederServiceConfig.class,
         ClientConfig.class,
-        DigitalKontaktinformasjonConfig.class,
-        UnleashSpringConfig.class
+        DigitalKontaktinformasjonConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
     public static final String APPLICATION_NAME = "veilarbportefolje";
@@ -73,6 +76,14 @@ public class ApplicationConfig implements ApiApplication {
     @Bean
     public IndekseringScheduler hovedindekseringScheduler() {
         return new IndekseringScheduler();
+    }
+
+    @Bean
+    public UnleashService unleashService() {
+        return new UnleashService(UnleashServiceConfig.builder()
+                .applicationName(requireApplicationName())
+                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                .build());
     }
 
 }

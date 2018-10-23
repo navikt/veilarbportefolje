@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2018.09.18.10.04</version>
+        <version>2018.10.23.14.04</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -32,7 +32,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>2018.09.18.10.04</version>
+                <version>2018.10.23.14.04</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -94,11 +94,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>20.0-hal</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>veilarbportefolje-config</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.squareup.okhttp</groupId>
@@ -292,6 +287,10 @@
 
         <!--Diverse-->
         <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>feature-toggle</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
@@ -409,12 +408,6 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.finn.unleash</groupId>
-            <artifactId>unleash-client-java</artifactId>
-            <version>3.1.2</version>
-        </dependency>
-
 
         <!--PACT-->
         <dependency>
@@ -449,11 +442,11 @@
             <artifactId>geronimo-jaspic_1.0_spec</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-plus</artifactId>
-            <scope>test</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.eclipse.jetty</groupId>-->
+            <!--<artifactId>jetty-plus</artifactId>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
@@ -462,11 +455,6 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbportefolje-config</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

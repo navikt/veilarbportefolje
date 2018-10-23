@@ -21,12 +21,10 @@ import static no.nav.fo.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.config.feed.AktiviteterfeedConfig.VEILARBAKTIVITET_URL_PROPERTY;
 import static no.nav.fo.config.feed.DialogaktorfeedConfig.VEILARBDIALOG_URL_PROPERTY;
 import static no.nav.fo.config.feed.OppfolgingerfeedConfig.VEILARBOPPFOLGING_URL_PROPERTY;
-import static no.nav.fo.config.unleash.UnleashSpringConfig.UNLEASH_URL;
 import static no.nav.fo.service.VeilederService.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.first;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.gotKeypress;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.waitFor;
+import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
+import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public class StartJettyVeilArbPortefolje {
@@ -59,7 +57,7 @@ public class StartJettyVeilArbPortefolje {
 
         setProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY, "http://localhost:8080/veilarbportefoljeindeks/brukercore");
         setProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY, "http://localhost:8080/veilarbportefoljeindeks/brukercore");
-        setProperty(UNLEASH_URL, "https://unleash.nais.adeo.no/api/");
+        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleash.nais.adeo.no/api/");
 
         ServiceUser tiltakSftpUser = getServiceUser("veilarbportefolje.filmottak.sftp.login", APPLICATION_NAME);
         setProperty("veilarbportefolje.filmottak.sftp.login.username", tiltakSftpUser.getUsername());
