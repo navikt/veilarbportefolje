@@ -8,7 +8,7 @@
     <!--CONFIG FOR API-APP-->
     <context-param>
         <param-name>springKontekstKlasse</param-name>
-        <param-value>no.nav.fo.config.ComponentTestConfig</param-value>
+        <param-value>no.nav.fo.veilarbportefolje.config.ComponentTestConfig</param-value>
     </context-param>
 
 </web-app>
