@@ -1,0 +1,89 @@
+# ref https://raw.githubusercontent.com/nais/naisd/master/nais_example.yaml
+image: docker.adeo.no:5000/fo/veilarbportefolje
+team: oppfolging
+replicas:
+  min: 2
+  max: 4
+  cpuThresholdPercentage: 50
+port: 8080
+webproxy: true
+healthcheck:
+  liveness:
+    path: veilarbportefolje/internal/isAlive
+    initialDelay: 60
+  readiness:
+    path: veilarbportefolje/internal/selftest
+    initialDay: 60
+prometheus:
+  enabled: true
+  path: veilarbportefolje/internal/metrics
+resources:
+  limits:
+    cpu: 3
+    memory: 1024Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+fasitResources:
+  used:
+  - alias: loadbalancer:veilarbportefolje
+    resourceType: loadbalancerconfig
+  - alias: veilarbportefoljeDB
+    resourceType: datasource
+  - alias: srvveilarbportefolje
+    resourceType: credential
+  - alias: veilarbportefolje.filmottak.sftp.login
+    resourceType: credential
+  - alias: appdynamics
+    resourceType: applicationproperties
+  - alias: veilarbportefolje.properties
+    resourceType: applicationproperties
+
+  - alias: securityTokenService
+    resourceType: baseUrl
+  - alias: abac.pdp.endpoint
+    resourceType: restservice
+  - alias: Aktoer_v2 # TODO: mapTpProperty=aktoer.endpoint
+    resourceType: webserviceendpoint
+  - alias: virksomhet:DigitalKontakinformasjon_v1 # TODO: mapTpProperty=dkif.endpoint
+    resourceType: webserviceendpoint
+  - alias: virksomhet:Enhet_v1 # TODO: mapTpProperty=norg.virksomhet_enhet
+    resourceType: webserviceendpoint
+
+  - alias: veilarbportefolje.solr.brukercore # TODO: mapTpProperty=veilarbportefolje.solr.brukercore
+    resourceType: restservice
+  - alias: veilArbOppfolgingAPI # TODO: mapTpProperty=veilarboppfolging.api
+      resourceType: restservice
+  - alias: veilArbAktivitetAPI # TODO: mapTpProperty=veilarbaktivitet.api
+      resourceType: restservice
+  - alias: veilarbdialogAPI # TODO: mapTpProperty=veilarbdialog.api
+      resourceType: restservice
+  - alias: veilarbveilederAPI # TODO: mapTpProperty=veilarbveileder.api
+      resourceType: restservice
+  - alias: unleash-api # TODO: mapTpProperty=unleash
+      resourceType: restservice
+
+  # oidc med AzureAD B2C
+#  - alias: aad_b2c_clientid
+#    resourceType: credential
+#  - alias: aad_b2c_discovery
+#    resourceType: baseurl
+
+  # ISSO
+  - alias: isso-host
+    resourceType: baseurl
+  - alias: isso-jwks
+    resourceType: baseurl
+  - alias: isso-issuer
+    resourceType: baseurl
+  - alias: isso.isalive
+    resourceType: baseurl
+  - alias: isso-rp-user
+    resourceType: credential
+  - alias: veilarblogin.redirect-url # TODO: mapTpProperty=oidc-redirect
+    resourceType: baseurl
+
+  exposed:
+  - alias: veilArbPortefoljeAPI
+    resourceType: restservice
+    path: /veilarbportefolje/api
