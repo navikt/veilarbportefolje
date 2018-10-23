@@ -28,7 +28,7 @@ import static com.squareup.okhttp.MediaType.parse;
 import static java.lang.System.setProperty;
 import static java.util.Arrays.stream;
 import static no.nav.common.auth.SubjectHandler.withSubject;
-import static no.nav.fo.veilarbportefolje.StartJettyVeilArbPortefolje.APPLICATION_NAME;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 
 public abstract class ComponentTest {

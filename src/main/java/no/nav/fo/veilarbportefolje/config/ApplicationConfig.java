@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbportefolje.config;
 
 import no.nav.apiapp.ApiApplication;
+import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
 import no.nav.fo.veilarbportefolje.internal.PingConfig;
@@ -8,7 +9,6 @@ import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
-
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
 import org.springframework.context.annotation.Bean;
@@ -22,12 +22,9 @@ import org.springframework.transaction.jta.JtaTransactionManager;
 
 import javax.servlet.ServletContext;
 
-import static no.nav.apiapp.ApiApplication.Sone.FSS;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
-import static no.nav.sbl.util.EnvironmentUtils.requireApplicationName;
-import static no.nav.sbl.util.EnvironmentUtils.setProperty;
+import static no.nav.sbl.util.EnvironmentUtils.*;
 
 @EnableScheduling
 @EnableAspectJAutoProxy
@@ -50,12 +47,22 @@ import static no.nav.sbl.util.EnvironmentUtils.setProperty;
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class
 })
-public class ApplicationConfig implements ApiApplication {
+public class ApplicationConfig implements ApiApplication.NaisApiApplication {
+
     public static final String APPLICATION_NAME = "veilarbportefolje";
 
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
+    }
+
+    @Override
+    public void configure(ApiAppConfigurator apiAppConfigurator) {
+        apiAppConfigurator
+                .sts()
+//                .azureADB2CLogin()
+                .issoLogin()
+        ;
     }
 
     @Bean(name = "transactionManager")
@@ -85,5 +92,4 @@ public class ApplicationConfig implements ApiApplication {
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
     }
-
 }

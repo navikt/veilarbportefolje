@@ -1,14 +1,7 @@
-package no.nav.fo.veilarbportefolje;
-
-import no.nav.dialogarena.config.DevelopmentSecurity;
-import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
 import no.nav.dialogarena.config.fasit.DbCredentials;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.dialogarena.config.fasit.ServiceUser;
-import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
-import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.testconfig.ApiAppTest;
-import org.eclipse.jetty.plus.jndi.Resource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import static java.lang.Boolean.parseBoolean;
@@ -16,6 +9,7 @@ import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
 import static no.nav.dialogarena.config.fasit.FasitUtils.*;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarbportefolje.config.feed.AktiviteterfeedConfig.VEILARBAKTIVITET_URL_PROPERTY;
@@ -23,13 +17,12 @@ import static no.nav.fo.veilarbportefolje.config.feed.DialogaktorfeedConfig.VEIL
 import static no.nav.fo.veilarbportefolje.config.feed.OppfolgingerfeedConfig.VEILARBOPPFOLGING_URL_PROPERTY;
 import static no.nav.fo.veilarbportefolje.service.VeilederService.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
-public class StartJettyVeilArbPortefolje {
+public class MainTest {
 
-    public static final String APPLICATION_NAME = "veilarbportefolje";
+    private static final String PORT = "8800";
     private static final String SERVICE_USER_NAME = "srvveilarbportefolje";
     private static final String SECURITY_TOKEN_SERVICE_ALIAS = "securityTokenService";
     private static final String AKTOER_V2_ENDPOINTURL_PROPERTY = "aktoer.endpoint.url";
@@ -72,22 +65,24 @@ public class StartJettyVeilArbPortefolje {
                 setupInMemoryDatabase() :
                 setupDataSourceWithCredentials(createDbCredentials());
 
-        // TODO slett når common-jetty registerer datasource fornuftig
-        new Resource(DatabaseConfig.JNDI_NAME, dataSource);
+        Main.main(PORT);
+
+//        // TODO slett når common-jetty registerer datasource fornuftig
+//        new Resource(DatabaseConfig.JNDI_NAME, dataSource);
 
         //Må ha https for csrf-token
-        Jetty jetty = DevelopmentSecurity.setupISSO(
-                Jetty.usingWar()
-                        .at("veilarbportefolje")
-                        .sslPort(9594)
-                        .port(9595)
-                        .addDatasource(dataSource, DatabaseConfig.JNDI_NAME)
-                        .overrideWebXml(),
-                new ISSOSecurityConfig(APPLICATION_NAME))
-                .configureForJaspic()
-                .buildJetty();
+//        Jetty jetty = DevelopmentSecurity.setupISSO(
+//                Jetty.usingWar()
+//                        .at("veilarbportefolje")
+//                        .sslPort(9594)
+//                        .port(9595)
+//                        .addDatasource(dataSource, DatabaseConfig.JNDI_NAME)
+//                        .overrideWebXml(),
+//                new ISSOSecurityConfig(APPLICATION_NAME))
+//                .configureForJaspic()
+//                .buildJetty();
 
-        jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
+//        jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
 
     private static DbCredentials createDbCredentials() {
