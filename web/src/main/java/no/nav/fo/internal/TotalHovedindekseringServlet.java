@@ -1,6 +1,7 @@
 package no.nav.fo.internal;
 
-import no.nav.fo.config.HovedindekseringScheduler;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.config.IndekseringScheduler;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -8,19 +9,23 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
+
+@Slf4j
 public class TotalHovedindekseringServlet extends HttpServlet {
 
-    private HovedindekseringScheduler hovedindekseringScheduler;
+    private IndekseringScheduler indekseringScheduler;
 
     @Override
     public void init() throws ServletException {
-        this.hovedindekseringScheduler = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(HovedindekseringScheduler.class);
+        this.indekseringScheduler = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(IndekseringScheduler.class);
         super.init();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-        hovedindekseringScheduler.prosessScheduler();
+        log.info("Manuell Indeksering: Total indeksering");
+        runAsync(() -> indekseringScheduler.totalIndexering());
     }
 
 }

@@ -4,7 +4,6 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.config.RemoteFeatureConfig.FlyttSomNyeFeature;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.exception.SolrUpdateResponseCodeException;
@@ -23,7 +22,6 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -42,11 +40,9 @@ import java.util.function.BiConsumer;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
 import static no.nav.fo.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.util.DateUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.SolrSortUtils.addPaging;
 import static no.nav.fo.util.SolrUtils.harIkkeVeilederFilter;
@@ -67,7 +63,7 @@ public class SolrServiceImpl implements SolrService {
     private AktoerService aktoerService;
     private VeilederService veilederService;
     private Executor executor;
-    private FlyttSomNyeFeature flyttSomNyeFeature;
+    private LockService lockService;
 
     @Inject
     public SolrServiceImpl(
@@ -77,8 +73,7 @@ public class SolrServiceImpl implements SolrService {
             AktoerService aktoerService,
             VeilederService veilederService,
             AktivitetDAO aktivitetDAO,
-            FlyttSomNyeFeature flyttSomNyeFeature
-    ) {
+            LockService lockService) {
 
         this.solrClientMaster = solrClientMaster;
         this.solrClientSlave = solrClientSlave;
@@ -87,24 +82,17 @@ public class SolrServiceImpl implements SolrService {
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
-        this.flyttSomNyeFeature = flyttSomNyeFeature;
-    }
-
-    @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterOppfolgingData.cron:0 0 21 26 4 ?}")
-    public void updateOppfolgingDataSisteOppdatrt(){
-        brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, timestampFromISO8601("1970-01-01T00:00:00Z"));
+        this.lockService = lockService;
     }
 
     @Transactional
     @Override
     public void hovedindeksering() {
+        lockService.runWithLock(this::hovedindekseringWithLock);
+    }
 
-        if (SolrUtils.isSlaveNode()) {
-            log.info("Noden er en slave. Kun masternoden kan iverksett indeksering. Avbryter.");
-            return;
-        }
-
-        log.info("Starter hovedindeksering");
+    private void hovedindekseringWithLock() {
+        log.info("Indeksering: Starter hovedindeksering...");
         LocalDateTime t0 = LocalDateTime.now();
 
         final int[] antallBrukere = {0};
@@ -124,16 +112,14 @@ public class SolrServiceImpl implements SolrService {
         logFerdig(t0, antallBrukere[0], HOVEDINDEKSERING);
     }
 
-    @Scheduled(cron = "${veilarbportefolje.cron.deltaindeksering}")
     @Transactional
     @Override
     public void deltaindeksering() {
-        if (SolrUtils.isSlaveNode()) {
-            log.info("Noden er en slave. Kun masternoden kan iverksette indeksering. Avbryter.");
-            return;
-        }
+        lockService.runWithLock(this::deltaindekseringWithLock);
+    }
 
-        log.info("Starter deltaindeksering");
+    private void deltaindekseringWithLock() {
+        log.info("Indeksering: Starter deltaindeksering");
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);
 
@@ -173,14 +159,11 @@ public class SolrServiceImpl implements SolrService {
         String queryString = byggQueryString(enhetId, veilederIdent);
         boolean sorterNyeForVeileder = veilederIdent.map(StringUtils::isNotBlank).orElse(false);
 
-        List<VeilederId> veiledere = null;
-        if(flyttSomNyeFeature.erAktiv()){ //ryd nullsjekker taget med komentert med FO-610 rydde
-            log.info("henter brukere med flyttetde som ufordelte");
-            veiledere = veilederService.getIdenter(enhetId);
-        }
+        List<VeilederId> veiledere = veilederService.getIdenter(enhetId);
+
         SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sorterNyeForVeileder, veiledere, sortOrder, sortField, filtervalg);
         addPaging(solrQuery, fra, antall);
-        QueryResponse response = timed("solr.hentbrukere",() -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
+        QueryResponse response = timed("solr.hentbrukere", () -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
         SolrUtils.checkSolrResponseCode(response.getStatus());
         SolrDocumentList results = response.getResults();
         List<Bruker> brukere = results.stream().map(Bruker::of).collect(toList());
@@ -321,7 +304,7 @@ public class SolrServiceImpl implements SolrService {
         long hours = duration.toHours();
         long minutes = duration.toMinutes();
         long seconds = duration.getSeconds();
-        String logString = format("%s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
+        String logString = format("Indeksering: %s fullført! | Tid brukt(hh:mm:ss): %02d:%02d:%02d | Dokumenter oppdatert: %d", indekseringstype, hours, minutes, seconds, antall);
         log.info(logString);
     }
 
@@ -329,14 +312,8 @@ public class SolrServiceImpl implements SolrService {
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         SolrQuery solrQuery = new SolrQuery("*:*");
 
-        String ufordelteBrukere;
-        if(flyttSomNyeFeature.erAktiv()) {
-            log.info("henter statustall med flyttet som nye");
-            List<VeilederId> identer = veilederService.getIdenter(enhet);
-            ufordelteBrukere = harIkkeVeilederFilter(identer);
-        } else {
-            ufordelteBrukere = "ny_for_enhet:true";
-        }
+        Optional<String> maybeUfordelteBrukere = harIkkeVeilederFilter(veilederService.getIdenter(enhet));
+
         String inaktiveBrukere = "formidlingsgruppekode:ISERV";
         String venterPaSvarFraNAV = "venterpasvarfranav:*";
         String venterPaSvarFraBruker = "venterpasvarfrabruker:*";
@@ -347,7 +324,9 @@ public class SolrServiceImpl implements SolrService {
 
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
-        solrQuery.addFacetQuery(ufordelteBrukere);
+
+        maybeUfordelteBrukere.ifPresent(solrQuery::addFacetQuery);
+
         solrQuery.addFacetQuery(inaktiveBrukere);
         solrQuery.addFacetQuery(venterPaSvarFraNAV);
         solrQuery.addFacetQuery(venterPaSvarFraBruker);
@@ -363,7 +342,8 @@ public class SolrServiceImpl implements SolrService {
         response = timed("solr.statustall.enhet", () -> getResponse(solrQuery));
 
         long antallTotalt = response.getResults().getNumFound();
-        long antallUfordelteBrukere = response.getFacetQuery().get(ufordelteBrukere);
+        long antallUfordelteBrukere = maybeUfordelteBrukere.map(ufordelteBrukere ->
+                response.getFacetQuery().get(ufordelteBrukere)).orElse(0);
         long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
         long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
         long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
@@ -371,6 +351,7 @@ public class SolrServiceImpl implements SolrService {
         long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
         long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
         long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
+
 
         statusTall
                 .setTotalt(antallTotalt)

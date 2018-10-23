@@ -32,17 +32,14 @@
             <pool maxPoolSize="300" minPoolSize="1"/>
         </datasource>
         <applicationProperties alias="veilarbportefolje.properties"/>
-        <applicationProperties alias="portefolje.pilot.properties"/>
-        <applicationProperties alias="dialogaktorfeed.properties"/>
-        <applicationProperties alias="aktiviteterfeed.properties"/>
-        <applicationProperties alias="oppfolgingfeed.properties"/>
 
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <rest alias="veilArbOppfolgingAPI" mapToProperty="veilarboppfolging.api" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet.api" />
         <rest alias="veilarbdialogAPI" mapToProperty="veilarbdialog.api" />
         <rest alias="veilarbveilederAPI" mapToProperty="veilarbveileder.api" />
-        <rest alias="feature_endpoint" mapToProperty="feature_endpoint" />
+        <rest alias="unleash-api" mapToProperty="unleash" />
+
 
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>

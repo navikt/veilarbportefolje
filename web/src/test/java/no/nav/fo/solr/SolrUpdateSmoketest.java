@@ -5,13 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.aktivitet.AktivitetDAO;
-import no.nav.fo.config.RemoteFeatureConfig.FlyttSomNyeFeature;
 import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
-import no.nav.fo.service.AktoerService;
-import no.nav.fo.service.SolrService;
-import no.nav.fo.service.SolrServiceImpl;
-import no.nav.fo.service.VeilederService;
+import no.nav.fo.service.*;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -95,7 +91,7 @@ public class SolrUpdateSmoketest {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
         brukerRepository = new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
         solrService = new SolrServiceImpl(solrClient, solrClient,brukerRepository,
-                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(FlyttSomNyeFeature.class));
+                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(LockService.class));
         }
 
     @Disabled //Kan ikke enable igjen før vi har åpning mot databasen i q6 fra byggserver!!

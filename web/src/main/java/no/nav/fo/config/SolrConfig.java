@@ -2,10 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.service.AktoerService;
-import no.nav.fo.service.SolrService;
-import no.nav.fo.service.SolrServiceImpl;
-import no.nav.fo.service.VeilederService;
+import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.http.HttpException;
@@ -31,19 +28,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.io.IOException;
-import java.util.Properties;
 
 @Configuration
 public class SolrConfig {
 
     @Bean
     public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-        PropertySourcesPlaceholderConfigurer propertiesConfig = new PropertySourcesPlaceholderConfigurer();
-        Properties properties = new Properties();
-        properties.put("veilarbportefolje.cron.hovedindeksering", System.getProperty("veilarbportefolje.cron.hovedindeksering"));
-        properties.put("veilarbportefolje.cron.deltaindeksering", System.getProperty("veilarbportefolje.cron.deltaindeksering"));
-        propertiesConfig.setProperties(properties);
-        return propertiesConfig;
+        return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
@@ -63,8 +54,8 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService, RemoteFeatureConfig.FlyttSomNyeFeature flyttSomNyeFeature) {
-        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, flyttSomNyeFeature);
+    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService, LockService lockService) {
+        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockService);
     }
 
     @Bean

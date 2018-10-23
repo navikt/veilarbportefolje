@@ -21,6 +21,8 @@ import org.springframework.context.annotation.Import;
 public class FeedConfig {
 
     public static String FEED_API_ROOT = "veilarbportefolje/api";
+    public static final int FEED_PAGE_SIZE = 999;
+    public static final int FEED_POLLING_INTERVAL_IN_SECONDS = 10;
 
     @Bean
     public FeedController feedController(

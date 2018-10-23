@@ -10,7 +10,6 @@ import no.nav.fo.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.service.AktivitetService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,26 +21,21 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.config.FeedConfig.FEED_PAGE_SIZE;
+import static no.nav.fo.config.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 
 @Configuration
 public class AktiviteterfeedConfig {
 
-    @Value("${veilarbaktivitet.api.url}")
-    private String host;
-
-    @Value("${aktiviteter.feed.pagesize: 500}")
-    private int pageSize;
-
-    @Value("${aktiviteter.feed.pollingintervalseconds: 10}")
-    private int pollingIntervalInSeconds;
+    public static final String VEILARBAKTIVITET_URL_PROPERTY = "veilarbaktivitet.api.url";
 
     @Inject
     private DataSource dataSource;
 
-    @Bean
-    public LockProvider lockProvider(DataSource dataSource) {
+    private LockProvider lockProvider(DataSource dataSource) {
         return new JdbcLockProvider(dataSource);
     }
 
@@ -50,13 +44,13 @@ public class AktiviteterfeedConfig {
         BaseConfig<AktivitetDataFraFeed> baseConfig = new BaseConfig<>(
                 AktivitetDataFraFeed.class,
                 Utils.apply(AktiviteterfeedConfig::sisteEndring, aktivitetDAO),
-                host,
+                getRequiredProperty(VEILARBAKTIVITET_URL_PROPERTY),
                 "aktiviteter"
         );
 
-        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(pollingIntervalInSeconds))
+        FeedConsumerConfig<AktivitetDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(FEED_POLLING_INTERVAL_IN_SECONDS))
                 .callback(callback)
-                .pageSize(pageSize)
+                .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
 

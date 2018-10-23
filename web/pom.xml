@@ -32,11 +32,6 @@
             <groupId>no.nav.sbl</groupId>
             <artifactId>jdbc</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.sbl</groupId>
-            <artifactId>feature-toggle</artifactId>
-        </dependency>
-
         <!-- Virksomhetstjenester -->
         <dependency>
             <groupId>no.nav.meldinger.virksomhet</groupId>
@@ -310,6 +305,12 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.finn.unleash</groupId>
+            <artifactId>unleash-client-java</artifactId>
+	    <version>3.1.2</version>
+        </dependency>
+
 
         <!--PACT-->
         <dependency>

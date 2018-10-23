@@ -1,5 +1,6 @@
 package no.nav.fo.config;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.KrrRepository;
 import no.nav.fo.database.PersistentOppdatering;
@@ -27,11 +28,18 @@ public class ServiceConfig {
     }
 
     @Bean
-    public TiltakService tiltakService() { return new TiltakService(); }
+    public TiltakService tiltakService() {
+        return new TiltakService();
+    }
 
     @Bean
-    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif) {
-        return new KrrService(krrRepository, dkif);
+    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif, LockService lockService) {
+        return new KrrService(krrRepository, dkif, lockService);
+    }
+
+    @Bean
+    public LockService lockService(LockingTaskExecutor lockingTaskExecutor) {
+        return new LockServiceImpl(lockingTaskExecutor);
     }
 
 }

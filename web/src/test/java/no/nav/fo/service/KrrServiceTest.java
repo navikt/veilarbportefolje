@@ -2,6 +2,7 @@ package no.nav.fo.service;
 
 import io.vavr.control.Option;
 import no.nav.fo.database.KrrRepository;
+import no.nav.fo.mock.LockServiceMock;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +59,7 @@ public class KrrServiceTest {
     void skalIkkeKasteExceptionsVedFeilMotKRR() throws Exception {
         KrrRepository repo = mock(KrrRepository.class);
         DigitalKontaktinformasjonV1 dkif = mock(DigitalKontaktinformasjonV1.class);
-        KrrService service = new KrrService(repo, dkif);
+        KrrService service = new KrrService(repo, dkif, new LockServiceMock());
 
         when(dkif.hentDigitalKontaktinformasjonBolk(any())).thenThrow(SocketTimeoutException.class);
 

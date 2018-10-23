@@ -4,11 +4,8 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.aktivitet.AktivitetDAO;
 import no.nav.fo.database.PersistentOppdatering;
-import no.nav.fo.service.AktoerService;
-import no.nav.fo.service.AktoerServiceImpl;
-import no.nav.fo.service.PepClientImpl;
-import no.nav.fo.service.SolrService;
-import no.nav.fo.service.VeilederService;
+import no.nav.fo.mock.LockServiceMock;
+import no.nav.fo.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -77,5 +74,10 @@ public class ApplicationConfigTest {
     @Bean
     public LockingTaskExecutor lockingTaskExecutor() {
         return mock(LockingTaskExecutor.class);
+    }
+
+    @Bean
+    public LockService lockService() {
+        return new LockServiceMock();
     }
 }

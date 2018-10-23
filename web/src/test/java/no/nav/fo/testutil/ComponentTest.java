@@ -10,7 +10,6 @@ import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.Subject;
 import no.nav.fo.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
-import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.eclipse.jetty.plus.jndi.Resource;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.MetaInfConfiguration;
@@ -151,7 +150,6 @@ public abstract class ComponentTest {
         setProperty("APP_NAME", APPLICATION_NAME);
         System.setProperty("APP_LOG_HOME", new File("target").getAbsolutePath());
         System.setProperty("application.name", APPLICATION_NAME);
-        SystemProperties.setFrom("veilarbportefolje.properties");
     }
 
     private static class TestSubjectFilter implements Filter {

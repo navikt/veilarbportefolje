@@ -1,14 +1,15 @@
 package no.nav.fo.config;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.config.unleash.UnleashSpringConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.internal.PingConfig;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientImpl;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -18,9 +19,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
-import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import javax.servlet.ServletContext;
 
-@Slf4j
+import static no.nav.apiapp.ApiApplication.Sone.FSS;
+import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.setProperty;
+
 @EnableScheduling
 @EnableAspectJAutoProxy
 @Configuration
@@ -40,11 +44,16 @@ import static no.nav.apiapp.ApiApplication.Sone.FSS;
         AktorConfig.class,
         VeilederServiceConfig.class,
         ClientConfig.class,
-        RemoteFeatureConfig.class,
-        DigitalKontaktinformasjonConfig.class
+        DigitalKontaktinformasjonConfig.class,
+        UnleashSpringConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
     public static final String APPLICATION_NAME = "veilarbportefolje";
+
+    @Override
+    public void startup(ServletContext servletContext) {
+        setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
+    }
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager() {
@@ -62,7 +71,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public HovedindekseringScheduler hovedindekseringScheduler() {
-        return new HovedindekseringScheduler();
+    public IndekseringScheduler hovedindekseringScheduler() {
+        return new IndekseringScheduler();
     }
+
 }

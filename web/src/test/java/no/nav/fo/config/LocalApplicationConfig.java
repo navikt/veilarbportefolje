@@ -2,6 +2,7 @@ package no.nav.fo.config;
 
 import no.nav.apiapp.ApiApplication;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.config.unleash.UnleashSpringConfig;
 import no.nav.fo.filmottak.FilmottakConfig;
 import no.nav.fo.service.PepClient;
 import no.nav.fo.service.PepClientImpl;
@@ -32,15 +33,14 @@ import static no.nav.fo.StartJettyVeilArbPortefolje.APPLICATION_NAME;
         SolrConfig.class,
         FilmottakConfig.class,
         MetricsConfig.class,
-        AbacContext.class,
         CacheConfig.class,
         RestConfig.class,
         AktorConfig.class,
         FeedConfig.class,
         VeilederServiceConfig.class,
         ClientConfig.class,
-        RemoteFeatureConfig.class,
-        DigitalKontaktinformasjonConfig.class
+        DigitalKontaktinformasjonConfig.class,
+        UnleashSpringConfig.class
 })
 public class LocalApplicationConfig implements ApiApplication {
 
@@ -60,7 +60,7 @@ public class LocalApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public HovedindekseringScheduler hovedindekseringScheduler() {
-        return new HovedindekseringScheduler();
+    public IndekseringScheduler hovedindekseringScheduler() {
+        return new IndekseringScheduler();
     }
 }

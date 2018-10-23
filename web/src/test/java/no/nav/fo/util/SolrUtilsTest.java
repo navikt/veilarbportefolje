@@ -16,8 +16,6 @@ import static java.util.Collections.singletonList;
 import static no.nav.fo.util.SolrUtils.TILTAK;
 import static no.nav.fo.util.SolrUtils.orStatement;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -79,14 +77,6 @@ public class SolrUtilsTest {
     }
 
     @Test
-    public void skalKorrektAvgjoreOmErSlaveNode() throws Exception {
-        System.setProperty("cluster.ismasternode", "false");
-        assertTrue(SolrUtils.isSlaveNode());
-        System.setProperty("cluster.ismasternode", "true");
-        assertFalse(SolrUtils.isSlaveNode());
-    }
-
-    @Test
     public void skalKasteExceptionHvisStatusIkkeErNull() throws Exception {
         expectedException.expect(SolrUpdateResponseCodeException.class);
         SolrUtils.checkSolrResponseCode(1);
@@ -124,7 +114,7 @@ public class SolrUtilsTest {
     @Test
     public void skalByggSolrQueryMedNyeBrukereOgInaktiveBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        filtervalg.ferdigfilterListe = asList(Brukerstatus.UFORDELTE_BRUKERE, Brukerstatus.INAKTIVE_BRUKERE);
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.INAKTIVE_BRUKERE, Brukerstatus.UFORDELTE_BRUKERE);
         String forventetFilter = "(formidlingsgruppekode:ISERV AND -veileder_id:(a b c d))";
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;

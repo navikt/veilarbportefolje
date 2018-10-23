@@ -7,6 +7,7 @@ import no.nav.fo.database.BrukerRepository;
 import no.nav.fo.domene.*;
 import no.nav.fo.filmottak.FilmottakFileUtils;
 import no.nav.fo.service.AktoerService;
+import no.nav.fo.service.LockService;
 import no.nav.fo.service.SolrServiceImpl;
 import no.nav.fo.util.AktivitetUtils;
 import no.nav.fo.util.MetricsUtils;
@@ -15,7 +16,6 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktivi
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
+import static no.nav.fo.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.filmottak.tiltak.TiltakUtils.*;
 import static no.nav.fo.util.MetricsUtils.timed;
 import static no.nav.fo.util.StreamUtils.log;
@@ -37,32 +38,19 @@ import static no.nav.fo.util.StreamUtils.log;
 @Slf4j
 public class TiltakHandler {
 
-    @Value("${filmottak.tiltak.sftp.URI}")
-    private String URI;
-
-    @Value("${environment.name}")
-    private String miljo;
-
-    @Value("${veilarbportefolje.filmottak.sftp.login.username}")
-    private String filmottakBrukernavn;
-
-    @Value("${veilarbportefolje.filmottak.sftp.login.password}")
-    private String filmottakPassord;
-
     private final TiltakRepository tiltakrepository;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
-
-    private boolean kjorer;
+    private final LockService lockService;
 
     @Inject
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
-        this.kjorer = false;
         this.brukerRepository = brukerRepository;
+        this.lockService = lockService;
     }
 
     public static Timestamp getDatoFilter() {
@@ -70,34 +58,23 @@ public class TiltakHandler {
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
-        log.info("Forsøker å starte oppdatering av tiltaksaktiviteter.");
-        if (this.kjorer()) {
-            log.info("Kunne ikke starte ny oppdatering av tiltak fordi den allerede er midt i en oppdatering");
-            return;
-        }
-        this.kjorer = true;
-        hentTiltakOgPopulerDatabase();
+        lockService.runWithLock(this::hentTiltakOgPopulerDatabaseWithLock);
     }
 
-    private boolean kjorer() {
-        return this.kjorer;
-    }
-
-    private void hentTiltakOgPopulerDatabase() {
-        Consumer<Throwable> stopped = (t) -> this.kjorer = false;
-        log.info("Starter oppdatering av tiltak fra Arena..");
-        timed("GR202.hentfil", this::hentFil)
-                .onFailure(log(log, "Kunne ikke hente tiltaksfil").andThen(stopped))
-                .flatMap(timed("GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
-                .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen").andThen(stopped))
-                .andThen(timed("GR202.populatedb", this::populerDatabase))
-                .onFailure(log(log, "Kunne ikke populere database").andThen(stopped))
-                .andThen(() -> this.kjorer = false);
+    private void hentTiltakOgPopulerDatabaseWithLock() {
+        log.info("Indeksering: Starter oppdatering av tiltak fra Arena...");
+        timed("indexering.GR202.hentfil", this::hentFil)
+                .onFailure(log(log, "Kunne ikke hente tiltaksfil"))
+                .flatMap(timed("indexering.GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
+                .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen"))
+                .andThen(timed("indexering.GR202.populatedb", this::populerDatabase))
+                .onFailure(log(log, "Kunne ikke populere database"));
+        log.info("Indeksering: Fullført oppdatering av tiltak fra Arena");
     }
 
     private void populerDatabase(TiltakOgAktiviteterForBrukere tiltakOgAktiviteterForBrukere) {
 
-        log.info("Starter populering av database for tiltaksfil med uttrekkstidspunkt [{}]", 
+        log.info("Starter populering av database for tiltaksfil med uttrekkstidspunkt [{}]",
                 tiltakOgAktiviteterForBrukere.getUttrekkstidspunkt());
 
         tiltakrepository.slettBrukertiltak();
@@ -342,8 +319,7 @@ public class TiltakHandler {
     private Try<FileObject> hentFil() {
         log.info("Starter henting av tiltaksfil");
         try {
-            String komplettURI = this.URI.replace("<miljo>", this.miljo).replace("<brukernavn>", this.filmottakBrukernavn).replace("<passord>", filmottakPassord);
-            return FilmottakFileUtils.hentTiltakFil(komplettURI);
+            return FilmottakFileUtils.hentFil(AKTIVITETER_SFTP);
         } catch (FileSystemException e) {
             log.info("Henting av tiltaksfil feilet");
             return Try.failure(e);

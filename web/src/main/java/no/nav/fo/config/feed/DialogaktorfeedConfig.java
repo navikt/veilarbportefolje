@@ -13,7 +13,6 @@ import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.consumer.FeedConsumerConfig.SimplePollingConfig;
 import no.nav.fo.service.AktoerService;
 import no.nav.fo.service.SolrService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,25 +24,20 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.config.FeedConfig.FEED_PAGE_SIZE;
+import static no.nav.fo.config.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class DialogaktorfeedConfig {
 
-    @Value("${veilarbdialog.api.url}")
-    private String host;
-
-    @Value("${dialogaktor.feed.pagesize:500}")
-    private int pageSize;
-
-    @Value("${dialogaktor.feed.pollingintervalseconds: 10}")
-    private int pollingIntervalInSeconds;
+    public static final String VEILARBDIALOG_URL_PROPERTY = "veilarbdialog.api.url";
 
     @Inject
     private DataSource dataSource;
 
-    @Bean
-    public LockProvider lockProvider(DataSource dataSource) {
+    private LockProvider lockProvider(DataSource dataSource) {
         return new JdbcLockProvider(dataSource);
     }
 
@@ -52,13 +46,13 @@ public class DialogaktorfeedConfig {
         BaseConfig<DialogDataFraFeed> baseConfig = new BaseConfig<>(
                 DialogDataFraFeed.class,
                 Utils.apply(DialogaktorfeedConfig::sisteEndring, db),
-                host,
+                getRequiredProperty(VEILARBDIALOG_URL_PROPERTY),
                 "dialogaktor"
         );
 
-        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds))
+        FeedConsumerConfig<DialogDataFraFeed> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(FEED_POLLING_INTERVAL_IN_SECONDS))
                 .callback(callback)
-                .pageSize(pageSize)
+                .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()));
 
@@ -72,9 +66,9 @@ public class DialogaktorfeedConfig {
 
     @Bean
     public FeedCallback<DialogDataFraFeed> dialogDataFeedHandler(AktoerService aktoerService,
-                                                       BrukerRepository brukerRepository,
-                                                       SolrService solrService,
-                                                       DialogFeedRepository dialogFeedRepository) {
+                                                                 BrukerRepository brukerRepository,
+                                                                 SolrService solrService,
+                                                                 DialogFeedRepository dialogFeedRepository) {
         return new DialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
     }
 }
