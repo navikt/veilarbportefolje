@@ -22,7 +22,6 @@
 
         <!-- Tredjeparts -->
         <solr.version>6.4.2</solr.version>
-        <vavr.version>0.9.0</vavr.version>
         <okhttp.version>2.7.5</okhttp.version>
 
     </properties>
@@ -50,12 +49,6 @@
                 <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
                 <version>1.0.0</version>
                 <classifier>jaxb</classifier>
-            </dependency>
-
-            <dependency>
-                <groupId>io.vavr</groupId>
-                <artifactId>vavr</artifactId>
-                <version>${vavr.version}</version>
             </dependency>
 
             <!--Dialogarena-->
@@ -398,7 +391,6 @@
         <dependency>
             <groupId>jsch</groupId>
             <artifactId>jsch</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
