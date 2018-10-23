@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbportefolje.feed;
 
-import no.nav.fo.domene.feed.DialogDataFraFeed;
-import no.nav.fo.util.sql.SqlUtils;
-import no.nav.fo.util.sql.where.WhereClause;
+import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
+import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
+import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import io.vavr.control.Try;
