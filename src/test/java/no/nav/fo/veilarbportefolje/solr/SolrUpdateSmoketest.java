@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static no.nav.dialogarena.config.DevelopmentSecurity.setupIntegrationTestSecurity;
 import static no.nav.dialogarena.smoketest.Tag.SMOKETEST;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyAktivitetstatusToDocument;
@@ -82,7 +83,7 @@ public class SolrUpdateSmoketest {
         setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig(VEILARBPORTEFOLJE));
         Properties properties = FasitUtils.getApplicationEnvironment(VEILARBPORTEFOLJE);
         solrClient = new HttpSolrClient.Builder()
-                    .withBaseSolrUrl(properties.getProperty("veilarbportefolje.solr.masternode"))
+                    .withBaseSolrUrl(properties.getProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY))
                     .withHttpClient(createHttpClientForSolr())
                     .build();
 

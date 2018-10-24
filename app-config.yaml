@@ -43,25 +43,25 @@ fasitResources:
     resourceType: baseUrl
   - alias: abac.pdp.endpoint
     resourceType: restservice
-  - alias: Aktoer_v2 # TODO: mapTpProperty=aktoer.endpoint
+  - alias: Aktoer_v2
     resourceType: webserviceendpoint
-  - alias: virksomhet:DigitalKontakinformasjon_v1 # TODO: mapTpProperty=dkif.endpoint
+  - alias: virksomhet:DigitalKontakinformasjon_v1
     resourceType: webserviceendpoint
-  - alias: virksomhet:Enhet_v1 # TODO: mapTpProperty=norg.virksomhet_enhet
+  - alias: virksomhet:Enhet_v1
     resourceType: webserviceendpoint
 
-  - alias: veilarbportefolje.solr.brukercore # TODO: mapTpProperty=veilarbportefolje.solr.brukercore
+  - alias: veilarbportefolje.solr.brukercore
     resourceType: restservice
-  - alias: veilArbOppfolgingAPI # TODO: mapTpProperty=veilarboppfolging.api
-      resourceType: restservice
-  - alias: veilArbAktivitetAPI # TODO: mapTpProperty=veilarbaktivitet.api
-      resourceType: restservice
-  - alias: veilarbdialogAPI # TODO: mapTpProperty=veilarbdialog.api
-      resourceType: restservice
-  - alias: veilarbveilederAPI # TODO: mapTpProperty=veilarbveileder.api
-      resourceType: restservice
-  - alias: unleash-api # TODO: mapTpProperty=unleash
-      resourceType: restservice
+  - alias: veilArbOppfolgingAPI
+    resourceType: restservice
+  - alias: veilArbAktivitetAPI
+    resourceType: restservice
+  - alias: veilarbdialogAPI
+    resourceType: restservice
+  - alias: veilarbveilederAPI
+    resourceType: restservice
+  - alias: unleash-api
+    resourceType: restservice
 
   # oidc med AzureAD B2C
 #  - alias: aad_b2c_clientid
@@ -80,8 +80,8 @@ fasitResources:
     resourceType: baseurl
   - alias: isso-rp-user
     resourceType: credential
-  - alias: veilarblogin.redirect-url # TODO: mapTpProperty=oidc-redirect
-    resourceType: baseurl
+  - alias: veilarblogin.redirect-url
+    resourceType: restservice
 
   exposed:
   - alias: veilArbPortefoljeAPI

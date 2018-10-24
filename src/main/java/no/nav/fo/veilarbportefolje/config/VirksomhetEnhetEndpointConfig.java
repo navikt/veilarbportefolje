@@ -7,15 +7,21 @@ import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.UUID;
+
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VIRKSOMHET_ENHET_V1_URL_PROPERTY;
 import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class VirksomhetEnhetEndpointConfig {
 
+    private static final String URL = getRequiredProperty(VIRKSOMHET_ENHET_V1_URL_PROPERTY);
+
     @Bean
     public Enhet virksomhetEnhet() {
-        return createTimerProxyForWebService("enhet_v1",new CXFClient<>(Enhet.class)
-                .address(System.getProperty("norg.virksomhet_enhet.url"))
+        return createTimerProxyForWebService("enhet_v1", new CXFClient<>(Enhet.class)
+                .address(URL)
                 .configureStsForOnBehalfOfWithJWT()
                 .build(), Enhet.class);
     }
@@ -23,13 +29,14 @@ public class VirksomhetEnhetEndpointConfig {
     @Bean
     public Pingable virksomhetEnhetPing() {
         Enhet virksomhetEnhet = new CXFClient<>(Enhet.class)
-                .address(System.getProperty("norg.virksomhet_enhet.url"))
-                .configureStsForSystemUserInFSS()
+                .address(URL)
+                .configureStsForSystemUser()
                 .build();
 
         PingMetadata metadata = new PingMetadata(
-                "SOAP via " + System.getProperty("norg.virksomhet_enhet.url"),
-                "Tjeneste for å hente ut enheter (NAV Kontor) som veiel",
+                UUID.randomUUID().toString(),
+                "SOAP via " + URL,
+                "Tjeneste for å hente ut enheter (NAV Kontor) som veieleder",
                 true
         );
 

@@ -3,14 +3,14 @@ package no.nav.fo.veilarbportefolje.config.feed;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.veilarbportefolje.consumer.DialogDataFeedHandler;
-import no.nav.fo.veilarbportefolje.database.BrukerRepository;
-import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
-import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.consumer.FeedConsumerConfig.SimplePollingConfig;
+import no.nav.fo.veilarbportefolje.consumer.DialogDataFeedHandler;
+import no.nav.fo.veilarbportefolje.database.BrukerRepository;
+import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
+import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.service.SolrService;
 import org.springframework.context.annotation.Bean;
@@ -24,15 +24,14 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBDIALOG_URL_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.FeedConfig.FEED_PAGE_SIZE;
 import static no.nav.fo.veilarbportefolje.config.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
-import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class DialogaktorfeedConfig {
-
-    public static final String VEILARBDIALOG_URL_PROPERTY = "veilarbdialog.api.url";
 
     @Inject
     private DataSource dataSource;

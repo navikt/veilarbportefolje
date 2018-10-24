@@ -3,12 +3,12 @@ package no.nav.fo.veilarbportefolje.config.feed;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
+import no.nav.fo.feed.consumer.FeedConsumer;
+import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.consumer.AktivitetFeedHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.feed.AktivitetDataFraFeed;
-import no.nav.fo.feed.consumer.FeedConsumer;
-import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,16 +21,15 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
+import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBAKTIVITET_URL_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.FeedConfig.FEED_PAGE_SIZE;
 import static no.nav.fo.veilarbportefolje.config.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
-import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 
 @Configuration
 public class AktiviteterfeedConfig {
-
-    public static final String VEILARBAKTIVITET_URL_PROPERTY = "veilarbaktivitet.api.url";
 
     @Inject
     private DataSource dataSource;

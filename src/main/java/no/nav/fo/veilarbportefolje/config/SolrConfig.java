@@ -28,9 +28,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.io.IOException;
+import java.util.UUID;
+
+import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
+import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class SolrConfig {
+
+    private static final String URL = getRequiredProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY);
 
     @Bean
     public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -40,7 +49,7 @@ public class SolrConfig {
     @Bean
     public SolrClient solrClientSlave() {
         return new HttpSolrClient.Builder()
-                .withBaseSolrUrl(System.getProperty("veilarbportefolje.solr.brukercore.url"))
+                .withBaseSolrUrl(URL)
                 .withHttpClient(createHttpClientForSolr())
                 .build();
     }
@@ -48,7 +57,7 @@ public class SolrConfig {
     @Bean
     public SolrClient solrClientMaster() {
         return new HttpSolrClient.Builder()
-                .withBaseSolrUrl(System.getProperty("veilarbportefolje.solr.masternode"))
+                .withBaseSolrUrl(getRequiredProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY))
                 .withHttpClient(createHttpClientForSolr())
                 .build();
     }
@@ -61,7 +70,9 @@ public class SolrConfig {
     @Bean
     public Pingable solrServerPing() {
         SolrClient solrClient = solrClientSlave();
-        PingMetadata metadata = new PingMetadata("HTTP via " + System.getProperty("veilarbportefolje.solr.brukercore.url"),
+        PingMetadata metadata = new PingMetadata(
+                UUID.randomUUID().toString(),
+                "HTTP via " + URL,
                 "Solr-indeks for portefolje",
                 true
         );
@@ -77,9 +88,8 @@ public class SolrConfig {
     }
 
     private HttpClient createHttpClientForSolr() {
-        String username = System.getProperty("no.nav.modig.security.systemuser.username");
-        String password = System.getProperty("no.nav.modig.security.systemuser.password");
-
+        String username = getRequiredProperty(SYSTEMUSER_USERNAME);
+        String password = getRequiredProperty(SYSTEMUSER_PASSWORD);
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 

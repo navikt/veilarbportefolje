@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 import static java.lang.String.format;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -47,16 +48,16 @@ public class PactVeilederInfoConsumerTest {
         return builder
                 .given("a request for info about a veileder")
                 .uponReceiving("request about an existing veileder")
-                    .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w{7,}", format("%s/%s", VEILARBVEILEDER_VEILEDER_API, VEILEDER_ID))
-                    .method("GET")
+                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w{7,}", format("%s/%s", VEILARBVEILEDER_VEILEDER_API, VEILEDER_ID))
+                .method("GET")
                 .willRespondWith()
-                    .status(200)
-                    .body(newJsonBody(body -> {
-                        body.stringType("ident")
+                .status(200)
+                .body(newJsonBody(body -> {
+                    body.stringType("ident")
                             .stringType("navn")
                             .stringType("fornavn")
                             .stringType("etternavn");
-                    }).build())
+                }).build())
                 .toPact();
     }
 
@@ -77,18 +78,18 @@ public class PactVeilederInfoConsumerTest {
         return builder
                 .given("a request for info about a veileder in enhet")
                 .uponReceiving("request about an existing veileder in enhet")
-                    .matchPath(VEILARBVEILEDER_ENHET_API + "/\\d+/identer", format("%s/%s/%s", VEILARBVEILEDER_ENHET_API, VEILARB_ENHET, IDENTER))
-                    .method("GET")
+                .matchPath(VEILARBVEILEDER_ENHET_API + "/\\d+/identer", format("%s/%s/%s", VEILARBVEILEDER_ENHET_API, VEILARB_ENHET, IDENTER))
+                .method("GET")
                 .willRespondWith()
-                    .status(200)
-                    .body(PactDslJsonArray.arrayMinLike(1, PactDslJsonRootValue.stringType(VEILEDER_ID)))
+                .status(200)
+                .body(PactDslJsonArray.arrayMinLike(1, PactDslJsonRootValue.stringType(VEILEDER_ID)))
                 .toPact();
     }
 
     @Test
     @PactTestFor(pactMethod = "createPactVeilederInfoEnhetFinnes")
     void testPactVeilederInfoEnhetFinnes(MockServer mockServer) throws IOException {
-        EnvironmentUtils.setProperty("veilarbveileder.api.url",  mockServer.getUrl() + "/veilarbveileder/api", PUBLIC);
+        EnvironmentUtils.setProperty(VEILARBVEILEDER_URL_PROPERTY, mockServer.getUrl() + "/veilarbveileder/api", PUBLIC);
         VeilederService veilederService = new VeilederService(RestUtils.createClient());
         final List<VeilederId> identer = veilederService.getIdenter(VEILARB_ENHET);
         assertThat(identer, is(not(identer.isEmpty())));
@@ -99,10 +100,10 @@ public class PactVeilederInfoConsumerTest {
         return builder
                 .given("a request for info about an unknown veileder")
                 .uponReceiving("request about an unknown veileder")
-                    .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w+", VEILARBVEILEDER_VEILEDER_API + "/unknown")
-                    .method("GET")
+                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w+", VEILARBVEILEDER_VEILEDER_API + "/unknown")
+                .method("GET")
                 .willRespondWith()
-                    .status(204)
+                .status(204)
                 .toPact();
     }
 

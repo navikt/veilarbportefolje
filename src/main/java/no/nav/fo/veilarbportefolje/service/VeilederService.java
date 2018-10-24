@@ -2,7 +2,6 @@ package no.nav.fo.veilarbportefolje.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
-import no.nav.sbl.rest.RestUtils;
 import org.springframework.cache.annotation.Cacheable;
 
 import javax.ws.rs.client.Client;
@@ -12,12 +11,12 @@ import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.CacheConfig.VEILARBVEILEDER;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Slf4j
 public class VeilederService {
-    public static final String VEILARBVEILEDER_URL_PROPERTY = "veilarbveileder.api.url";
     private final Client restClient;
     private final String host;
 
@@ -33,7 +32,8 @@ public class VeilederService {
                 .target(String.format("%s/enhet/%s/identer", host, enhet))
                 .request()
                 .header(ACCEPT, APPLICATION_JSON)
-                .get(new GenericType<List<String>>() {});
+                .get(new GenericType<List<String>>() {
+                });
 
         return strings
                 .stream()

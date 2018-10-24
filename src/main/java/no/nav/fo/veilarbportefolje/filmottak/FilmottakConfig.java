@@ -23,11 +23,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
-import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentClass;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static no.nav.sbl.util.EnvironmentUtils.*;
 
 @Configuration
 public class FilmottakConfig {
@@ -40,14 +41,12 @@ public class FilmottakConfig {
     @Value("${loependeytelser.filnavn}")
     String filnavn;
 
-    private static final String MILJO = getRequiredProperty("environment.name");
-
     public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
             "filmottak",
             "gr202",
             "arena_paagaaende_aktiviteter.xml",
-            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.username"),
-            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.password"));
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY),
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY));
 
     private static final SftpConfig LOPENDEYTELSER_SFTP = new SftpConfig(
             "filmottak-loependeytelser",
@@ -157,7 +156,7 @@ public class FilmottakConfig {
                     .scheme("sftp")
                     .host(host + "." + (preprod ? "preprod.local" : "adeo.no"));
             if (preprod) {
-                uriBuilder.path(MILJO);
+                uriBuilder.path(requireEnvironmentName());
             }
             return uriBuilder
                     .path(filename)
