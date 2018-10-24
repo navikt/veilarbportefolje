@@ -1,5 +1,8 @@
 package no.nav.fo.veilarbportefolje.config;
 
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.*;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
@@ -7,37 +10,39 @@ import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.jdbc.DataSourceFactory;
 import no.nav.sbl.jdbc.Transactor;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jndi.JndiTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
-
-import javax.naming.NamingException;
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.SQLException;
+import java.util.UUID;
+
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class DatabaseConfig {
 
     public static final String JNDI_NAME = "java:/jboss/datasources/veilarbportefoljeDB";
+    public static final String VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_URL";
+    public static final String VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_USERNAME";
+    public static final String VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_PASSWORD";
 
     @Bean
-    public DataSource dataSource() throws ClassNotFoundException, NamingException {
-        return new JndiTemplate().lookup(JNDI_NAME, DataSource.class);
+    public DataSource dataSource() {
+        return DataSourceFactory.dataSource()
+                .url(getRequiredProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME))
+                .username(getRequiredProperty(VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME))
+                .password(getRequiredProperty(VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME))
+                .build();
     }
 
     @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) throws NamingException, SQLException, IOException {
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
@@ -57,10 +62,14 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public OppfolgingFeedRepository OppfolgingFeedRepository(JdbcTemplate db){ return new OppfolgingFeedRepository(db); }
+    public OppfolgingFeedRepository OppfolgingFeedRepository(JdbcTemplate db) {
+        return new OppfolgingFeedRepository(db);
+    }
 
     @Bean
-    public DialogFeedRepository dialogFeedRepository(JdbcTemplate db) { return new DialogFeedRepository(db); }
+    public DialogFeedRepository dialogFeedRepository(JdbcTemplate db) {
+        return new DialogFeedRepository(db);
+    }
 
     @Bean
     public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
@@ -78,7 +87,9 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public KrrRepository krrRepository() { return new KrrRepository(); }
+    public KrrRepository krrRepository() {
+        return new KrrRepository();
+    }
 
     @Bean
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
@@ -93,6 +104,7 @@ public class DatabaseConfig {
     @Bean
     public Pingable dbPinger(final DataSource ds) {
         PingMetadata metadata = new PingMetadata(
+                UUID.randomUUID().toString(),
                 "N/A",
                 "Database for portefolje",
                 true

@@ -20,7 +20,7 @@ public class MergeMigrationResolver extends BaseMigrationResolver {
     private PlaceholderReplacer placeholderReplacer;
     private ResolvedMigrationComparator comparator = new ResolvedMigrationComparator();
 
-    private String[] mergeLocations = new String[]{"testmigration", "db/migration/veilarbportefoljeDB"};
+    private String[] mergeLocations = new String[]{"testmigration", "db/migration"};
 
 
     @SneakyThrows

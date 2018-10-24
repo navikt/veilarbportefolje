@@ -11,16 +11,19 @@ import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
+import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.jta.JtaTransactionManager;
 
+import javax.inject.Inject;
 import javax.servlet.ServletContext;
+import javax.sql.DataSource;
 
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
@@ -51,9 +54,15 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
 
+    @Inject
+    private DataSource dataSource;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
+        Flyway flyway = new Flyway();
+        flyway.setDataSource(dataSource);
+        flyway.migrate();
     }
 
     @Override
@@ -66,8 +75,8 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     }
 
     @Bean(name = "transactionManager")
-    public PlatformTransactionManager transactionManager() {
-        return new JtaTransactionManager();
+    public PlatformTransactionManager transactionManager(DataSource ds) {
+        return new DataSourceTransactionManager(ds);
     }
 
     @Bean

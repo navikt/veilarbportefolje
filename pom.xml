@@ -124,13 +124,13 @@
             <groupId>no.nav.sbl</groupId>
             <artifactId>jdbc</artifactId>
         </dependency>
+
         <!-- Virksomhetstjenester -->
         <dependency>
             <groupId>no.nav.meldinger.virksomhet</groupId>
             <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
             <classifier>jaxb</classifier>
         </dependency>
-
         <dependency>
             <groupId>no.nav.meldinger.virksomhet</groupId>
             <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
@@ -279,6 +279,11 @@
         </dependency>
 
         <!--Diverse-->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>no.nav.sbl</groupId>
             <artifactId>feature-toggle</artifactId>
@@ -444,11 +449,11 @@
             <artifactId>jetty-webapp</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.flywaydb</groupId>-->
+            <!--<artifactId>flyway-core</artifactId>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
