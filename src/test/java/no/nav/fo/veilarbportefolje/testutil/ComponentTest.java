@@ -5,15 +5,16 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import lombok.SneakyThrows;
+import no.nav.apiapp.ApiApp;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.Subject;
+import no.nav.common.auth.SubjectHandler;
+import no.nav.fo.veilarbportefolje.config.ComponentTestConfig;
 import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
+import no.nav.testconfig.ApiAppTest;
 import org.eclipse.jetty.plus.jndi.Resource;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.webapp.MetaInfConfiguration;
-import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -26,27 +27,37 @@ import java.net.*;
 
 import static com.squareup.okhttp.MediaType.parse;
 import static java.lang.System.setProperty;
-import static java.util.Arrays.stream;
+import static javax.ws.rs.core.HttpHeaders.COOKIE;
+import static no.nav.brukerdialog.security.oidc.provider.AzureADB2CProvider.AZUREADB2C_OIDC_COOKIE_NAME;
 import static no.nav.common.auth.SubjectHandler.withSubject;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
+import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public abstract class ComponentTest {
-    private static final String CONTEXT_NAME = ComponentTest.class.getSimpleName();
-    private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());
+    private static final String CONTEXT_NAME = "veilarbportefolje";
+    private static final int PORT = tilfeldigPort();
+    //    private static final Jetty JETTY = nyJetty(CONTEXT_NAME, tilfeldigPort());
     private static final OkHttpClient OKHTTPCLIENT = new OkHttpClient();
     protected static SingleConnectionDataSource ds;
 
     private static final Subject TEST_SUBJECT = new Subject("testident", IdentType.InternBruker, SsoToken.oidcToken("token"));
+    private static Jetty jetty;
 
     @BeforeClass
     public static void startJetty() {
-        JETTY.start();
+        SubjectHandler.withSubject(new Subject("testident", IdentType.InternBruker, SsoToken.oidcToken("token")), () -> {
+            setupTestContext(ApiAppTest.Config.builder().applicationName(APPLICATION_NAME).build());
+            setupDataSource();
+            ApiApp apiApp = ApiApp.startApiApp(ComponentTestConfig.class, new String[]{String.valueOf(PORT)});
+            jetty = apiApp.getJetty();
+        });
     }
 
     @AfterClass
     public static void stopJetty() {
-        JETTY.stop.run();
+        jetty.stop.run();
+//        JETTY.stop.run();
     }
 
     @SneakyThrows
@@ -78,9 +89,10 @@ public abstract class ComponentTest {
     }
 
     @SneakyThrows
-    protected Response delete(String path) {
+    protected Response delete(String path, String token) {
         Request request = new Request.Builder()
                 .url(getUrl(path))
+                .header(COOKIE, AZUREADB2C_OIDC_COOKIE_NAME + "=" + token)
                 .delete()
                 .build();
         return OKHTTPCLIENT.newCall(request).execute();
@@ -91,7 +103,9 @@ public abstract class ComponentTest {
     }
 
     private URL getUrl(String path) throws MalformedURLException {
-        return uri(path).toURL();
+        URL url = uri(path).toURL();
+        System.out.println(url.toString());
+        return url;
     }
 
     private static URI uri(String path) {
@@ -99,7 +113,8 @@ public abstract class ComponentTest {
     }
 
     private static int getPort() {
-        return ((ServerConnector) JETTY.server.getConnectors()[0]).getPort();
+        return PORT;
+//        return ((ServerConnector) JETTY.server.getConnectors()[0]).getPort();
     }
 
     private static String getHostName() {
@@ -118,27 +133,27 @@ public abstract class ComponentTest {
         }
     }
 
-    private static Jetty nyJetty(String contextPath, int jettyPort) {
-        setupProperties();
-        setupDataSource();
-
-        Jetty jetty = Jetty.usingWar()
-                .at(contextPath)
-                .port(jettyPort)
-                .overrideWebXml(new File("src/test/resources/componenttest-web.xml"))
-                .disableAnnotationScanning()
-                .addFilter(new TestSubjectFilter())
-                .buildJetty();
-
-        // MetaInfConfiguration førte til "java.util.zip.ZipException: error in opening zip file"
-        WebAppContext context = jetty.context;
-        String[] configurations = stream(context.getConfigurationClasses())
-                .filter(className -> !MetaInfConfiguration.class.getName().equals(className))
-                .toArray(String[]::new);
-        context.setConfigurationClasses(configurations);
-
-        return jetty;
-    }
+//    private static Jetty nyJetty(String contextPath, int jettyPort) {
+//        setupProperties();
+//        setupDataSource();
+//
+//        Jetty jetty = Jetty.usingWar()
+//                .at(contextPath)
+//                .port(jettyPort)
+//                .overrideWebXml(new File("src/test/resources/componenttest-web.xml"))
+//                .disableAnnotationScanning()
+//                .addFilter(new TestSubjectFilter())
+//                .buildJetty();
+//
+//        // MetaInfConfiguration førte til "java.util.zip.ZipException: error in opening zip file"
+//        WebAppContext context = jetty.context;
+//        String[] configurations = stream(context.getConfigurationClasses())
+//                .filter(className -> !MetaInfConfiguration.class.getName().equals(className))
+//                .toArray(String[]::new);
+//        context.setConfigurationClasses(configurations);
+//
+//        return jetty;
+//    }
 
     @SneakyThrows
     private static void setupDataSource() {

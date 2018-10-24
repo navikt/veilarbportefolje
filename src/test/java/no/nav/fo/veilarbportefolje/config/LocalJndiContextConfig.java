@@ -60,10 +60,4 @@ public class LocalJndiContextConfig {
             throw new RuntimeException(e);
         }
     }
-
-    public static void setServiceUserCredentials(ServiceUser serviceUser) {
-        System.setProperty("no.nav.modig.security.systemuser.username", serviceUser.getUsername());
-        System.setProperty("no.nav.modig.security.systemuser.password", serviceUser.getPassword());
-    }
-
 }

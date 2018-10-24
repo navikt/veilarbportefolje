@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class KopierGR199FraArenaTest {
-    private static InputStream vedtakFormat = KopierGR199FraArenaTest.class.getResourceAsStream("arena-vedtak.xml");
+    private static InputStream vedtakFormat = KopierGR199FraArenaTest.class.getResourceAsStream("/arena-vedtak.xml");
 
     @Test
     public void unmarshalling() {

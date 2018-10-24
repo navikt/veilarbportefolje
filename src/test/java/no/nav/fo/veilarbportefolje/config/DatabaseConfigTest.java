@@ -13,17 +13,17 @@ import javax.sql.DataSource;
 public class DatabaseConfigTest {
 
     @Bean
-    public javax.sql.DataSource hsqldbDataSource() {
+    public DataSource hsqldbDataSource() {
       return LocalJndiContextConfig.setupInMemoryDatabase();
     }
 
     @Bean
-    public JdbcTemplate jdbcTemplate(javax.sql.DataSource dataSource) {
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(javax.sql.DataSource dataSource) {
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
