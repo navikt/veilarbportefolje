@@ -3,10 +3,10 @@ package no.nav.fo.service;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.config.ApplicationConfigTest;
 import no.nav.fo.database.BrukerRepository;
-import no.nav.fo.domene.AktoerId;
-import no.nav.fo.domene.PersonId;
-import no.nav.fo.util.sql.SqlUtils;
 
+import no.nav.fo.domene.AktoerId;
+import no.nav.fo.domene.Fnr;
+import no.nav.fo.domene.PersonId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +24,6 @@ import static no.nav.fo.util.sql.SqlUtils.insert;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
@@ -54,38 +52,11 @@ public class AktoerServiceImplTest {
         reset(aktorService);
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
-    }
 
-    @Test
-    public void skalKalleHenteAktoeridViaSoapOgInsertIDb() throws Exception {
-        PersonId personId = PersonId.of(PERSON_ID);
-        AktoerId aktoerId = AktoerId.of(AKTOER_ID);
-
-        SqlUtils.insert(db, "OPPFOLGINGSBRUKER")
-                .value("PERSON_ID", new Integer(PERSON_ID))
+        insert(db, "OPPFOLGINGSBRUKER")
                 .value("FODSELSNR", FNR)
+                .value("PERSON_ID", PERSON_ID)
                 .execute();
-        when(aktorService.getAktorId(anyString())).thenReturn(Optional.of(aktoerId.toString()));
-        aktoerService.hentAktoeridFraPersonid(personId);
-        verify(aktorService, times(1)).getAktorId(any());
-
-        assertThat(brukerRepository.retrievePersonid(aktoerId).get(), is(personId));
-    }
-
-    @Test
-    public void skalHenteAktoerIdFraPersonId() throws Exception {
-        PersonId personId = PersonId.of(PERSON_ID);
-        AktoerId aktoerId = AktoerId.of(AKTOER_ID);
-        int updated = insert(db, "AKTOERID_TO_PERSONID")
-                .value("AKTOERID", aktoerId.toString())
-                .value("PERSONID", personId.toString())
-                .execute();
-
-        assertTrue(updated > 0);
-
-        Try<AktoerId> result = aktoerService.hentAktoeridFraPersonid(personId);
-        assertTrue(result.isSuccess());
-        assertEquals(aktoerId, result.get());
     }
 
     @Test
@@ -96,20 +67,59 @@ public class AktoerServiceImplTest {
             .value("OPPFOLGING", "J")
             .execute();
 
-        insert(db, "OPPFOLGINGSBRUKER")
-            .value("FODSELSNR", FNR)
-            .value("PERSON_ID", PERSON_ID)
-            .execute();
-
         //assert no mappings exist
         assertThat(getMappedPersonidFromDb(AKTOER_ID).isFailure(), is(true));
 
         when(aktorService.getFnr(AKTOER_ID)).thenReturn(Optional.of(FNR));
+        when(aktorService.getAktorId(FNR)).thenReturn(Optional.of(AKTOER_ID));
         aktoerService.mapAktorId();
 
         Try<String> mappedPersonid = getMappedPersonidFromDb(AKTOER_ID);
         assertThat(mappedPersonid.get(), is(PERSON_ID));
 
+    }
+
+    @Test
+    public void skalSetteGamleAktorIdTilIkkeGjeldeOgSetteNyeAktoerIdTilGjeldene() {
+
+        insert(db, "AKTOERID_TO_PERSONID")
+                .value("AKTOERID", AKTOER_ID)
+                .value("PERSONID", PERSON_ID)
+                .value("GJELDENE", 1)
+                .execute();
+
+        AktoerId nyAktoerId = AktoerId.of("11111");
+
+        when(aktorService.getFnr(nyAktoerId.toString())).thenReturn(Optional.of(FNR));
+        when(aktorService.getAktorId(FNR)).thenReturn(Optional.of(nyAktoerId.toString()));
+
+        aktoerService.hentPersonidFraAktoerid(nyAktoerId);
+
+        Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
+        assertEquals(gamleAktorId.get(), AKTOER_ID);
+
+        Try<String> resultatNyAktoerId = getGjeldeneAktoerId(PERSON_ID);
+        assertEquals(resultatNyAktoerId.get(), nyAktoerId.toString());
+
+    }
+
+    @Test
+    public void skalSetteGamleAktorIdTilIkkeGjeldeneOgSetteAktoerIdFraTPSTilGjeldene() {
+
+        AktoerId aktoerId = AktoerId.of("99999");
+
+        AktoerId nyAktoerId = AktoerId.of("11111");
+
+        when(aktorService.getFnr(aktoerId.toString())).thenReturn(Optional.of(FNR));
+        when(aktorService.getAktorId(FNR)).thenReturn(Optional.of(nyAktoerId.toString()));
+
+        aktoerService.hentPersonidFraAktoerid(aktoerId);
+
+        Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
+        assertEquals(gamleAktorId.get(), aktoerId.toString());
+
+        Try<String> resultatNyAktoerId = getGjeldeneAktoerId(PERSON_ID);
+        assertEquals(resultatNyAktoerId.get(), nyAktoerId.toString());
     }
 
     private Try<String> getMappedPersonidFromDb(String aktoerID) {
@@ -118,5 +128,20 @@ public class AktoerServiceImplTest {
                 new Object[] {aktoerID}, 
                 (rs, rowNum) -> rs.getString("PERSONID")));
     }
+
+    private Try<String> getGjeldeneAktoerId (String personId) {
+        return Try.of(() -> db.queryForObject(
+                "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ? AND GJELDENE = 1",
+                new Object[] {personId},
+                (rs, rowNum) -> rs.getString("AKTOERID")));
+    }
+
+    private Try<String> getGamleAktoerId (String personId) {
+        return Try.of(() -> db.queryForObject(
+                "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ? AND GJELDENE = 0",
+                new Object[] {personId},
+                (rs, rowNum) -> rs.getString("AKTOERID")));
+    }
+
  
 }
