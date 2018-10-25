@@ -393,10 +393,5 @@
             <groupId>com.squareup.okhttp</groupId>
             <artifactId>okhttp</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>common-jetty</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
