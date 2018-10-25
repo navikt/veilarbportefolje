@@ -6,6 +6,7 @@ import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.domene.aktivitet.UtdanningaktivitetTyper;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import static java.lang.System.setProperty;
 import static junit.framework.TestCase.assertTrue;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -23,10 +25,13 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class TiltakUtilsTest {
 
+    @Before
+    public void setup() {
+        setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "1999-01-01");
+    }
 
     @Test
     public void skalFinneNesteUtlopsdatoForTiltak() {
-        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "1999-01-01");
         Bruker bruker = new Bruker();
         Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
         Timestamp compareTime = Timestamp.from(Instant.now());
@@ -41,7 +46,6 @@ public class TiltakUtilsTest {
 
     @Test
     public void skalFinneNesteUtlopsdatoForGruppeaktivitet() {
-        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "1999-01-01");
         Bruker bruker = new Bruker();
         Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
         Timestamp compareTime = Timestamp.from(Instant.now());
@@ -56,7 +60,6 @@ public class TiltakUtilsTest {
 
     @Test
     public void skalFinneNesteUtlopsdatoForUtdanningsaktivitet() {
-        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "1999-01-01");
 
         Bruker bruker = new Bruker();
         Timestamp past = Timestamp.from(Instant.now().minus(10, ChronoUnit.DAYS));
@@ -134,7 +137,7 @@ public class TiltakUtilsTest {
 
     @Test
     public void skalIkkeTaHensynTilDatoerForDatoFilter() {
-        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2000-01-01");
+        setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2000-01-01");
 
         Bruker bruker = new Bruker();
         Timestamp beforeFilter = AktivitetUtils.parseDato("1999-01-01");
