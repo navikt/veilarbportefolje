@@ -30,10 +30,12 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakUtils.*;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.log;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Slf4j
 public class TiltakHandler {
@@ -54,7 +56,7 @@ public class TiltakHandler {
     }
 
     public static Timestamp getDatoFilter() {
-        return AktivitetUtils.parseDato(System.getProperty(SolrServiceImpl.DATOFILTER_PROPERTY));
+        return AktivitetUtils.parseDato(getRequiredProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY));
     }
 
     public void startOppdateringAvTiltakIDatabasen() {

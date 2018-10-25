@@ -61,7 +61,6 @@ public class MainTest {
         setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY, tiltakSftpUser.getUsername());
         setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY, tiltakSftpUser.getPassword());
 
-        setProperty("arena.aktivitet.datofilter", "2017-12-04");
         setProperty("loependeytelser.path", "/");
         setProperty("loependeytelser.filnavn", "loependeytelser.xml");
 

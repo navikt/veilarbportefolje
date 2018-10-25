@@ -53,11 +53,11 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 public class ApplicationConfig implements ApiApplication.NaisApiApplication {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
-    public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_URL";
-    public static final String DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY = "DIGITALKONTAKINFORMASJON_V1_URL";
-    public static final String VIRKSOMHET_ENHET_V1_URL_PROPERTY = "VIRKSOMHET_ENHET_V1_URL";
+    public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
+    public static final String DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY = "VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL";
+    public static final String VIRKSOMHET_ENHET_V1_URL_PROPERTY = "VIRKSOMHET_ENHET_V1_ENDPOINTURL";
     public static final String VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY = "VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL";
-    public static final String VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY = "veilarbportefolje.solr.masternode"; // TODO : VEILARBPORTEFOLJE_SOLR_MASTERNODE ??
+    public static final String VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY = "VEILARBPORTEFOLJE_SOLR_MASTERNODE";
     public static final String VEILARBOPPFOLGING_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
     public static final String VEILARBAKTIVITET_URL_PROPERTY = "VEILARBAKTIVITETAPI_URL";
     public static final String VEILARBDIALOG_URL_PROPERTY = "VEILARBDIALOGAPI_URL";
@@ -65,6 +65,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     public static final String VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY = "VEILARBLOGIN_REDIRECT_URL_URL";
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME";
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD";
+    public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
 
     @Inject
     private DataSource dataSource;

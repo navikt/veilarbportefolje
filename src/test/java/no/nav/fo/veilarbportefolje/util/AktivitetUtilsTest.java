@@ -23,9 +23,9 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static java.util.Arrays.asList;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperList;
-import static no.nav.fo.veilarbportefolje.service.SolrServiceImpl.DATOFILTER_PROPERTY;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -241,7 +241,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalLeggeTilTiltakPaSolrDokument() {
-        System.setProperty(DATOFILTER_PROPERTY, "2017-01-17");
+        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-01-17");
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         Fnr fnr = Fnr.of("12345678910");
         solrInputDocument.addField("fnr", fnr.toString());
@@ -256,7 +256,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalFiltrereBortTiltakSomHarTildatoForDatofilter() {
-        System.setProperty(DATOFILTER_PROPERTY, "2017-01-17");
+        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-01-17");
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
         when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(tiltakData());
@@ -277,7 +277,7 @@ public class AktivitetUtilsTest {
     }
     @Test
     public void skalIkkeFiltrereNarTilDatoErNull() {
-        System.setProperty(DATOFILTER_PROPERTY, "2017-01-19");
+        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-01-19");
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
 
@@ -296,7 +296,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalIkkeLeggeTilTiltakPaSolrDokumentDersomTiltakIkkeFinnesForBrukeren() {
-        System.setProperty(DATOFILTER_PROPERTY, "2000-01-01");
+        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2000-01-01");
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField("fnr", "12345678910");
         when(aktivitetDAO.hentBrukertiltak(anyList())).thenReturn(Lists.emptyList());
