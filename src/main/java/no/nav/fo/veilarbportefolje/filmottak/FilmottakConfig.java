@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbportefolje.filmottak;
 
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
+import no.nav.fo.veilarbportefolje.config.ApplicationConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakRepository;
@@ -13,7 +14,6 @@ import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,13 +33,9 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 @Configuration
 public class FilmottakConfig {
 
-    public static final String VEILARBPORTEFOLJE_SFTP_SELFTEST = "veilarbportefolje.sftp.selftest";
-
-    @Value("${loependeytelser.path}")
-    String filpath;
-
-    @Value("${loependeytelser.filnavn}")
-    String filnavn;
+    private static final String VEILARBPORTEFOLJE_SFTP_SELFTEST = "veilarbportefolje.sftp.selftest";
+    private static final String LOEPENDEYTELSER_PATH = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_PATH_PROPERTY);
+    private static final String LOEPENDEYTELSER_FILNAVN = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_FILNAVN_PROPERTY);
 
     public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
             "filmottak",
@@ -89,11 +85,11 @@ public class FilmottakConfig {
         );
 
         return () -> {
-            File file = new File(filpath, filnavn);
+            File file = new File(LOEPENDEYTELSER_PATH, LOEPENDEYTELSER_FILNAVN);
             if (file.exists()) {
                 return lyktes(metadata);
             } else {
-                return feilet(metadata, new FileNotFoundException("File not found at " + filpath + filnavn));
+                return feilet(metadata, new FileNotFoundException("File not found at " + LOEPENDEYTELSER_PATH + LOEPENDEYTELSER_FILNAVN));
             }
         };
     }

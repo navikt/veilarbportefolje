@@ -2,11 +2,11 @@ package no.nav.fo.veilarbportefolje.filmottak.ytelser;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarbportefolje.config.ApplicationConfig;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakFileUtils;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
 import no.nav.fo.veilarbportefolje.service.LockService;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
@@ -17,15 +17,13 @@ import java.io.InputStream;
 
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.log;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Slf4j
 public class KopierGR199FraArena {
 
-    @Value("${loependeytelser.path}")
-    String filpath;
-
-    @Value("${loependeytelser.filnavn}")
-    String filnavn;
+    private static final String LOEPENDEYTELSER_PATH = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_PATH_PROPERTY);
+    private static final String LOEPENDEYTELSER_FILNAVN = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_FILNAVN_PROPERTY);
 
     @Inject
     private AktivitetService aktivitetService;
@@ -46,7 +44,7 @@ public class KopierGR199FraArena {
     private void kopierOgIndekser() {
         log.info("Indeksering: Starter oppdatering av ytelser...");
         aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
-        timed("GR199.hentfil", () -> FilmottakFileUtils.lesYtelsesFil(new File(filpath, filnavn)))
+        timed("GR199.hentfil", () -> FilmottakFileUtils.lesYtelsesFil(new File(LOEPENDEYTELSER_PATH, LOEPENDEYTELSER_FILNAVN)))
                 .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs"))
                 .flatMap(timed("indexering.GR199.unmarshall", KopierGR199FraArena::unmarshall))
                 .onFailure(log(log, "Unmarshalling av ytelsesfil feilet"))

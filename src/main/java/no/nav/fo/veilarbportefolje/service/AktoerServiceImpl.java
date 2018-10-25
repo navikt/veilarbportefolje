@@ -9,14 +9,12 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
-
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +23,6 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
-
-import java.time.Instant;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -43,9 +39,6 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private LockingTaskExecutor taskExecutor;
 
-    @Value("${lock.aktoridmapping.seconds:3600}")
-    private int lockAktoridmappingSeconds;
-
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM OPPFOLGING_DATA "
             + "WHERE OPPFOLGING = 'J' "
@@ -53,13 +46,13 @@ public class AktoerServiceImpl implements AktoerService {
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
 
 
-    @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterMapping.cron:0 0/5 * * * *}")
+    @Scheduled(cron = "0 0/5 * * * *")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
         mapAktorIdWithLock();
     }
 
     private void mapAktorIdWithLock() {
-        Instant lockAtMostUntil = Instant.now().plusSeconds(lockAktoridmappingSeconds);
+        Instant lockAtMostUntil = Instant.now().plusSeconds(3600);
         Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
         taskExecutor.executeWithLock(
                 () -> mapAktorId(),
@@ -67,7 +60,7 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     void mapAktorId() {
-        timed("map.aktorid", () ->   {
+        timed("map.aktorid", () -> {
             log.debug("Starter mapping av aktørid");
             List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (RowMapper<String>) (rs, rowNum) -> rs.getString("AKTOERID"));
             log.info("Aktørider som skal mappes " + aktoerIder);
