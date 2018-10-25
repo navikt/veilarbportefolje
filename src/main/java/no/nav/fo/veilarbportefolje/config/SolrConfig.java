@@ -63,7 +63,14 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(SolrClient solrClientMaster, SolrClient solrClientSlave, BrukerRepository brukerRepository, AktoerService aktoerService, AktivitetDAO aktivitetDAO, VeilederService veilederService, LockService lockService) {
+    public SolrService solrService(
+            SolrClient solrClientMaster,
+            SolrClient solrClientSlave,
+            BrukerRepository brukerRepository,
+            AktoerService aktoerService,
+            AktivitetDAO aktivitetDAO,
+            VeilederService veilederService,
+            LockService lockService) {
         return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockService);
     }
 
