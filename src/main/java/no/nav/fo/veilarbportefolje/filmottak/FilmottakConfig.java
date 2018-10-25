@@ -23,8 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY;
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
@@ -34,8 +33,8 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 public class FilmottakConfig {
 
     private static final String VEILARBPORTEFOLJE_SFTP_SELFTEST = "veilarbportefolje.sftp.selftest";
-    private static final String LOEPENDEYTELSER_PATH = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_PATH_PROPERTY);
-    private static final String LOEPENDEYTELSER_FILNAVN = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_FILNAVN_PROPERTY);
+    private static final String LOEPENDEYTELSER_PATH = getRequiredProperty(LOEPENDEYTELSER_PATH_PROPERTY);
+    private static final String LOEPENDEYTELSER_FILNAVN = getRequiredProperty(LOEPENDEYTELSER_FILNAVN_PROPERTY);
 
     public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
             "filmottak",
@@ -79,7 +78,7 @@ public class FilmottakConfig {
     public Pingable nfsYtelserPing() {
         PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
-                "NFS via" + getRequiredProperty("loependeytelser.path"),
+                "NFS via" + getRequiredProperty(LOEPENDEYTELSER_PATH_PROPERTY),
                 "Sjekker connection til fil med ytelser (nfs)",
                 true
         );
