@@ -2,7 +2,6 @@ package no.nav.fo.veilarbportefolje.filmottak.ytelser;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.config.ApplicationConfig;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakFileUtils;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
 import no.nav.fo.veilarbportefolje.service.LockService;
@@ -15,6 +14,8 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.InputStream;
 
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.LOEPENDEYTELSER_FILNAVN_PROPERTY;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.LOEPENDEYTELSER_PATH_PROPERTY;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.log;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -22,8 +23,8 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @Slf4j
 public class KopierGR199FraArena {
 
-    private static final String LOEPENDEYTELSER_PATH = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_PATH_PROPERTY);
-    private static final String LOEPENDEYTELSER_FILNAVN = getRequiredProperty(ApplicationConfig.LOEPENDEYTELSER_FILNAVN_PROPERTY);
+    private static final String LOEPENDEYTELSER_PATH = getRequiredProperty(LOEPENDEYTELSER_PATH_PROPERTY);
+    private static final String LOEPENDEYTELSER_FILNAVN = getRequiredProperty(LOEPENDEYTELSER_FILNAVN_PROPERTY);
 
     @Inject
     private AktivitetService aktivitetService;

@@ -11,6 +11,9 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Inject;
 
+import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+
 @Configuration
 public class PingConfig {
 
@@ -20,7 +23,7 @@ public class PingConfig {
     @Bean
     public Pingable pepPing() {
         PingMetadata metadata = new PingMetadata(
-                "ABAC via " + System.getProperty("abac.endpoint.url"),
+                "ABAC via " + getRequiredProperty(ABAC_ENDPOINT_URL_PROPERTY_NAME),
                 "Tilgangskontroll, sjekk om NAV-ansatt har tilgang til bruker.",
                 true
         );
@@ -36,8 +39,12 @@ public class PingConfig {
     }
 
     @Bean
-    public Pingable issoPing() { return new IssoIsAliveHelsesjekk(); }
+    public Pingable issoPing() {
+        return new IssoIsAliveHelsesjekk();
+    }
 
     @Bean
-    public Pingable SystemBrukerToken() { return new IssoSystemBrukerTokenHelsesjekk(); }
+    public Pingable SystemBrukerToken() {
+        return new IssoSystemBrukerTokenHelsesjekk();
+    }
 }

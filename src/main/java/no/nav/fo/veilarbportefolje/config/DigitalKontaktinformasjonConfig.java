@@ -8,15 +8,15 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.UUID;
 
-import static java.lang.System.getProperty;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class DigitalKontaktinformasjonConfig {
 
-    private static String URL = getProperty(DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY);
+    private static String URL = getRequiredProperty(DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY);
 
     @Bean
     public DigitalKontaktinformasjonV1 dkifV1() {
