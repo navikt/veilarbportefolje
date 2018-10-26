@@ -3,13 +3,8 @@ package no.nav.fo.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BinaryOperator;
-
-import static java.util.Arrays.asList;
 
 @Data()
 @Accessors(chain = true)
@@ -21,6 +16,7 @@ public class Filtervalg {
     public List<Kjonn> kjonn = new ArrayList<>();
     public List<String> fodselsdagIMnd = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
+    public List<Hovedmal> hovedmalListe = new ArrayList<>();
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
@@ -42,6 +38,7 @@ public class Filtervalg {
                 !veiledere.isEmpty() ||
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
+                !hovedmalListe.isEmpty() ||
                  harManuellBrukerStatus();
     }
 
@@ -55,10 +52,6 @@ public class Filtervalg {
 
     public boolean harAktivitetFilter() {
         return tiltakstyper != null;
-    }
-
-    public boolean harTiltakstypeFilter() {
-        return !tiltakstyper.isEmpty();
     }
 
     public boolean harManuellBrukerStatus() {

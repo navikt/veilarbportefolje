@@ -94,6 +94,7 @@ public class SolrUtils {
         filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.fodselsdagIMnd, SolrUtils::fodselsdagIMndFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.innsatsgruppe, SolrUtils::innsatsgruppeFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.hovedmalListe, SolrUtils::hovedmalFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.formidlingsgruppe, SolrUtils::formidlingsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
@@ -241,5 +242,9 @@ public class SolrUtils {
 
     static String manuellStatusFilter(ManuellBrukerStatus manuellBrukerStatus) {
         return "manuell_bruker:" + manuellBrukerStatus.toString();
+    }
+
+    static String hovedmalFilter(Hovedmal hovedmal) {
+        return "hovedmaalkode:" + hovedmal;
     }
 }
