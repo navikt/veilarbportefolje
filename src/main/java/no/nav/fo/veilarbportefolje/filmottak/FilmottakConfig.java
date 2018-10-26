@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbportefolje.filmottak;
 
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
-import no.nav.fo.veilarbportefolje.config.ApplicationConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakRepository;
@@ -19,11 +18,11 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.UriBuilder;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
@@ -33,8 +32,6 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 public class FilmottakConfig {
 
     private static final String VEILARBPORTEFOLJE_SFTP_SELFTEST = "veilarbportefolje.sftp.selftest";
-    private static final String LOEPENDEYTELSER_PATH = getRequiredProperty(LOEPENDEYTELSER_PATH_PROPERTY);
-    private static final String LOEPENDEYTELSER_FILNAVN = getRequiredProperty(LOEPENDEYTELSER_FILNAVN_PROPERTY);
 
     public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
             "filmottak",
@@ -43,12 +40,12 @@ public class FilmottakConfig {
             getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY),
             getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY));
 
-    private static final SftpConfig LOPENDEYTELSER_SFTP = new SftpConfig(
+    public static final SftpConfig LOPENDEYTELSER_SFTP = new SftpConfig(
             "filmottak-loependeytelser",
             "gr199",
             "arena_loepende_ytelser.xml",
-            "srvveilarb-arena", // TODO: Dette er en midlertidig bruker satt opp av Kashmira. Erstatt med Fasit Credential.
-            "srvveilarbarena");
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY),
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY));
 
     @Inject
     private UnleashService unleashService;
@@ -72,25 +69,6 @@ public class FilmottakConfig {
     @Bean
     public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
         return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository, lockService);
-    }
-
-    @Bean
-    public Pingable nfsYtelserPing() {
-        PingMetadata metadata = new PingMetadata(
-                UUID.randomUUID().toString(),
-                "NFS via" + getRequiredProperty(LOEPENDEYTELSER_PATH_PROPERTY),
-                "Sjekker connection til fil med ytelser (nfs)",
-                true
-        );
-
-        return () -> {
-            File file = new File(LOEPENDEYTELSER_PATH, LOEPENDEYTELSER_FILNAVN);
-            if (file.exists()) {
-                return lyktes(metadata);
-            } else {
-                return feilet(metadata, new FileNotFoundException("File not found at " + LOEPENDEYTELSER_PATH + LOEPENDEYTELSER_FILNAVN));
-            }
-        };
     }
 
     @Bean

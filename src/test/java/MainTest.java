@@ -61,9 +61,6 @@ public class MainTest {
         setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY, tiltakSftpUser.getUsername());
         setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY, tiltakSftpUser.getPassword());
 
-        setProperty(LOEPENDEYTELSER_PATH_PROPERTY, "/");
-        setProperty(LOEPENDEYTELSER_FILNAVN_PROPERTY, "loependeytelser.xml");
-
         ServiceUser isso_rp_user = getServiceUser("isso-rp-user", APPLICATION_NAME);
         String loginUrl = getRestService(VEILARBLOGIN_REDIRECT_URL_ALIAS, getDefaultEnvironment()).getUrl();
 

@@ -3,6 +3,7 @@ package no.nav.fo.veilarbportefolje.filmottak;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.SftpConfig;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.auth.StaticUserAuthenticator;
@@ -13,22 +14,24 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.nio.file.Files;
 
 @Slf4j
 public class FilmottakFileUtils {
 
-    public static Try<InputStream> lesYtelsesFil(File file) {
-        return Try.of(() -> {
-            final byte[] bytes = Files.readAllBytes(file.toPath());
-            return new ByteArrayInputStream(bytes);
-        });
+    public static Try<FileObject> hentFil(SftpConfig sftpConfig) {
+        log.info("Starter henting av fil fra %s", sftpConfig.getUrl());
+        try {
+            return FilmottakFileUtils.hentFilViaSftp(sftpConfig);
+        } catch (FileSystemException e) {
+            log.info("Henting av fil fra %s feilet", sftpConfig.getUrl());
+            return Try.failure(e);
+        } finally {
+            log.info("Henting av fil fra %s ferdig!", sftpConfig.getUrl());
+        }
     }
 
-    public static Try<FileObject> hentFil(SftpConfig sftpConfig) throws FileSystemException {
+    private static Try<FileObject> hentFilViaSftp(SftpConfig sftpConfig) throws FileSystemException {
         FileSystemOptions fsOptions = new FileSystemOptions();
         SftpFileSystemConfigBuilder sftpFileSystemConfigBuilder = SftpFileSystemConfigBuilder.getInstance();
         sftpFileSystemConfigBuilder.setPreferredAuthentications(fsOptions, "password");
@@ -42,13 +45,21 @@ public class FilmottakFileUtils {
     }
 
     public static Try<TiltakOgAktiviteterForBrukere> unmarshallTiltakFil(FileObject fileObject) {
-        log.info("Starter unmarshalling av tiltaksfil");
+        return Try.of(() -> fileObject.getContent().getInputStream()).flatMap(file -> unmarshallFile(file, TiltakOgAktiviteterForBrukere.class));
+    }
+
+    public static Try<LoependeYtelser> unmarshallLoependeYtelserFil(FileObject fileObject) {
+        return Try.of(() -> fileObject.getContent().getInputStream()).flatMap(file -> unmarshallFile(file, LoependeYtelser.class));
+    }
+
+    static <T> Try<T> unmarshallFile(InputStream is, Class<T> declaredType) {
+        log.info("Starter unmarshalling av %s", declaredType.getName());
         return Try.of(() -> {
-            JAXBContext jaxb = JAXBContext.newInstance("no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1");
+            JAXBContext jaxb = JAXBContext.newInstance(declaredType.getPackage().getName());
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
-            StreamSource source = new StreamSource(fileObject.getContent().getInputStream());
-            JAXBElement<TiltakOgAktiviteterForBrukere> jaxbElement = unmarshaller.unmarshal(source, TiltakOgAktiviteterForBrukere.class);
-            log.info("Unmarshalling av tiltaksfil ferdig!");
+            StreamSource source = new StreamSource(is);
+            JAXBElement<T> jaxbElement = unmarshaller.unmarshal(source, declaredType);
+            log.info("Unmarshalling av %s ferdig!", declaredType.getName());
             return jaxbElement.getValue();
         });
     }

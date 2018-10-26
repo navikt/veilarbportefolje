@@ -8,14 +8,11 @@ import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakFileUtils;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.service.LockService;
-import no.nav.fo.veilarbportefolje.service.SolrServiceImpl;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
 import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -65,7 +62,7 @@ public class TiltakHandler {
 
     private void hentTiltakOgPopulerDatabaseWithLock() {
         log.info("Indeksering: Starter oppdatering av tiltak fra Arena...");
-        timed("indexering.GR202.hentfil", this::hentFil)
+        timed("indexering.GR202.hentfil", () -> FilmottakFileUtils.hentFil(AKTIVITETER_SFTP))
                 .onFailure(log(log, "Kunne ikke hente tiltaksfil"))
                 .flatMap(timed("indexering.GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
                 .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen"))
@@ -316,17 +313,5 @@ public class TiltakHandler {
                     aktivitetDAO.insertAktivitetstatuser(aktivitetStatuses);
 
                 });
-    }
-
-    private Try<FileObject> hentFil() {
-        log.info("Starter henting av tiltaksfil");
-        try {
-            return FilmottakFileUtils.hentFil(AKTIVITETER_SFTP);
-        } catch (FileSystemException e) {
-            log.info("Henting av tiltaksfil feilet");
-            return Try.failure(e);
-        } finally {
-            log.info("Henting av tiltaksfil ferdig!");
-        }
     }
 }
