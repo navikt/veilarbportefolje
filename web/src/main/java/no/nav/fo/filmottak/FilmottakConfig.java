@@ -54,7 +54,7 @@ public class FilmottakConfig {
             "gr199",
             "arena_loepende_ytelser.xml",
             getRequiredProperty("veilarbportefolje.filmottak.sftp.login.username"),
-            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.password");
+            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.password"));
 
     @Inject
     private UnleashService unleashService;
