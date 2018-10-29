@@ -53,8 +53,8 @@ public class FilmottakConfig {
             "filmottak-loependeytelser",
             "gr199",
             "arena_loepende_ytelser.xml",
-            "srvveilarb-arena", // TODO: Dette er en midlertidig bruker satt opp av Kashmira. Erstatt med Fasit Credential.
-            "srvveilarbarena");
+            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.username"),
+            getRequiredProperty("veilarbportefolje.filmottak.sftp.login.password");
 
     @Inject
     private UnleashService unleashService;
