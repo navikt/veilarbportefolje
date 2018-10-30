@@ -88,12 +88,13 @@ public class SolrUtils {
         return filter.stream().map(mapper).collect(joining(" OR "));
     }
 
-    private static Optional<String> getFiltrerBrukerStatement(Filtervalg filtervalg){
+    private static Optional<String> getFiltrerBrukerStatement(Filtervalg filtervalg) {
         final List<String> filtrerBrukereStatements = new ArrayList<>();
         filtrerBrukereStatements.add(orStatement(filtervalg.alder, SolrUtils::alderFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.kjonn, SolrUtils::kjonnFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.fodselsdagIMnd, SolrUtils::fodselsdagIMndFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.innsatsgruppe, SolrUtils::innsatsgruppeFilter));
+        filtrerBrukereStatements.add(orStatement(filtervalg.hovedmalListe, SolrUtils::hovedmalFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.formidlingsgruppe, SolrUtils::formidlingsgruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.servicegruppe, SolrUtils::servicegruppeFilter));
         filtrerBrukereStatements.add(orStatement(filtervalg.rettighetsgruppe, SolrUtils::rettighetsgruppeFilter));
@@ -117,27 +118,27 @@ public class SolrUtils {
                 .map(statement -> "(" + statement + ")")
                 .collect(Collectors.joining(" AND "));
 
-        if (StringUtils.isNotBlank(filter)){
+        if (StringUtils.isNotBlank(filter)) {
             return Optional.of(filter);
         }
         return Optional.empty();
     }
 
-    private static Optional<String> getFerdigFilterStatement(Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang){
+    private static Optional<String> getFerdigFilterStatement(Filtervalg filtervalg, List<VeilederId> veiledereMedTilgang) {
         List<String> ferdigFilterStatements = ferdigFilterListeEllerBrukerstatus(filtervalg)
                 .stream()
                 .map(brukerstatus -> getFerdigFilterStatus(brukerstatus, veiledereMedTilgang))
                 .filter(StringUtils::isNotBlank)
                 .collect(toList());
 
-        if (!ferdigFilterStatements.isEmpty()){
+        if (!ferdigFilterStatements.isEmpty()) {
             return Optional.of("(" + StringUtils.join(ferdigFilterStatements, " AND ") + ")");
         }
         return Optional.empty();
     }
 
     private static String getFerdigFilterStatus(Brukerstatus brukerstatus, List<VeilederId> veiledereMedTilgang) {
-        if(Brukerstatus.UFORDELTE_BRUKERE == brukerstatus) {
+        if (Brukerstatus.UFORDELTE_BRUKERE == brukerstatus) {
             return harIkkeVeilederFilter(veiledereMedTilgang).orElse("");
         }
         return ferdigfilterStatus.get(brukerstatus);
@@ -153,7 +154,7 @@ public class SolrUtils {
     }
 
     public static Optional<String> harIkkeVeilederFilter(List<VeilederId> identer) {
-        if (identer.isEmpty()){
+        if (identer.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of("-veileder_id:(" + spaceSeperated(identer) + ")");
@@ -241,5 +242,9 @@ public class SolrUtils {
 
     static String manuellStatusFilter(ManuellBrukerStatus manuellBrukerStatus) {
         return "manuell_bruker:" + manuellBrukerStatus.toString();
+    }
+
+    static String hovedmalFilter(Hovedmal hovedmal) {
+        return "hovedmaalkode:" + hovedmal;
     }
 }
