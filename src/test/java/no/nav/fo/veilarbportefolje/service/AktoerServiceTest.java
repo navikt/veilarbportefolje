@@ -74,7 +74,7 @@ public class AktoerServiceTest {
 
     @Test
     public void skalFinnePersonIdViaSoapTjeneste() throws Exception {
-        AktoerId aktoerId = AktoerId.of("111");
+        AktoerId aktoerId = AktoerId.of(AKTOERID_FRA_SOAP_TJENESTE);
         PersonId personId = PersonId.of("222");
 
         int updated =
