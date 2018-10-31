@@ -19,11 +19,11 @@ prometheus:
   path: veilarbportefolje/internal/metrics
 resources:
   limits:
-    cpu: 3
-    memory: 1024Mi
+    cpu: 6
+    memory: 2048Mi
   requests:
     cpu: 200m
-    memory: 512Mi
+    memory: 768Mi
 fasitResources:
   used:
   - alias: loadbalancer:veilarbportefolje
