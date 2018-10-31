@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.util.DbUtils.getCauseString;
 import static no.nav.fo.util.MetricsUtils.timed;
 
 import java.time.Instant;
@@ -42,7 +44,7 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Inject
     private LockingTaskExecutor taskExecutor;
-    
+
     @Value("${lock.aktoridmapping.seconds:3600}")
     private int lockAktoridmappingSeconds;
 
@@ -52,7 +54,7 @@ public class AktoerServiceImpl implements AktoerService {
             + "AND AKTOERID NOT IN "
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
 
-    
+
     @Scheduled(cron = "${veilarbportefolje.schedule.oppdaterMapping.cron:0 0/5 * * * *}")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
         mapAktorIdWithLock();
@@ -62,12 +64,12 @@ public class AktoerServiceImpl implements AktoerService {
         Instant lockAtMostUntil = Instant.now().plusSeconds(lockAktoridmappingSeconds);
         Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
         taskExecutor.executeWithLock(
-                () -> mapAktorId(), 
+                () -> mapAktorId(),
                 new LockConfiguration("oppdaterAktoerTilPersonIdMapping", lockAtMostUntil, lockAtLeastUntil));
     }
 
     void mapAktorId() {
-        timed("map.aktorid", () ->   {
+        timed("map.aktorid", () -> {
             log.debug("Starter mapping av aktørid");
             List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (RowMapper<String>) (rs, rowNum) -> rs.getString("AKTOERID"));
             log.info("Aktørider som skal mappes " + aktoerIder);
@@ -77,23 +79,17 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
-        Try<PersonId> personid = brukerRepository.retrievePersonid(aktoerId);
-
-        if (personid.isSuccess() && personid.get() == null) {
-            return hentPersonIdViaSoap(aktoerId);
-        }
-        return personid;
+        return brukerRepository.retrievePersonid(aktoerId)
+                .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId);
     }
 
-    Try<AktoerId> hentAktoeridFraPersonid(PersonId personId) {
-        return hentSingleFraDb(
-                db,
-                "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ?",
-                (data) -> AktoerId.of((String) data.get("aktoerid")),
-                personId.toString()
-        ).orElse(() -> brukerRepository.retrieveFnrFromPersonid(personId)
-                .flatMap(this::hentAktoeridFraFnr))
-                .onSuccess(aktoerId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId));
+    private PersonId getPersonIdFromFnr(AktoerId aktoerId) {
+        Fnr fnr = hentFnrViaSoap(aktoerId).get();
+        PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
+        AktoerId nyAktorIdForPersonId = hentAktoeridFraFnr(fnr).get();
+
+        updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(aktoerId, nyPersonId, nyAktorIdForPersonId);
+        return nyPersonId;
     }
 
     @Override
@@ -109,24 +105,24 @@ public class AktoerServiceImpl implements AktoerService {
         return typeMap;
     }
 
-    private Try<PersonId> hentPersonIdViaSoap(AktoerId aktoerId) {
-        return hentFnrViaSoap(aktoerId)
-                .flatMap(brukerRepository::retrievePersonidFromFnr)
-                .andThen(personId -> brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId))
-                .onFailure(e -> log.warn("Kunne ikke finne personId for aktoerId {}.", aktoerId));
-    }
 
     private Try<Fnr> hentFnrViaSoap(AktoerId aktoerId) {
         return Try.of(() -> aktorService.getFnr(aktoerId.toString()).get())
+                .onFailure(e -> log.warn("Kunne ikke hente aktoerId for fnr : {}", getCauseString(e)))
                 .map(Fnr::of);
     }
 
-    private static <T> Try<T> hentSingleFraDb(JdbcTemplate db, String sql, Function<Map<String, Object>, T> mapper, Object... args) {
-        List<Map<String, Object>> data = db.queryForList(sql, args);
-        if (data.size() != 1) {
-            return Try.failure(new RuntimeException("Kunne ikke hente single fra Db"));
+    @Transactional
+    public void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
+        if (personId == null) {
+            return;
         }
-        return Try.success(mapper.apply(data.get(0)));
+        brukerRepository.setGjeldeneFlaggTilNull(personId);
+
+        if (!aktoerId.equals(aktoerIdFraTPS)) {
+            brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
+        }
+
+        brukerRepository.insertAktoeridToPersonidMapping(aktoerIdFraTPS, personId);
     }
-    
 }
