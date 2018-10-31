@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 public class AktoerServiceImplTest {
 
     private static final String AKTOER_ID = "aktoerid1";
-    private static final String FNR = "00000000000";
+    private static final String FNR = "10108000398";
     private static final String PERSON_ID = "111111";
 
     @Inject
