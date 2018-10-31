@@ -12,6 +12,7 @@ import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -53,48 +54,48 @@ public class BrukerRepository {
 
     static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO =
             "SELECT " +
-            "person_id, " +
-            "fodselsnr, " +
-            "fornavn, " +
-            "etternavn, " +
-            "nav_kontor, " +
-            "formidlingsgruppekode, " +
-            "iserv_fra_dato, " +
-            "kvalifiseringsgruppekode, " +
-            "rettighetsgruppekode, " +
-            "hovedmaalkode, " +
-            "sikkerhetstiltak_type_kode, " +
-            "fr_kode, " +
-            "sperret_ansatt, " +
-            "er_doed, " +
-            "doed_fra_dato, " +
-            "tidsstempel, " +
-            "veilederident, " +
-            "ytelse, " +
-            "utlopsdato, " +
-            "ny_for_veileder, " +
-            "utlopsdatofasett, " +
-            "dagputlopuke, dagputlopukefasett, " +
-            "permutlopuke, permutlopukefasett, " +
-            "aapmaxtiduke, aapmaxtidukefasett, " +
-            "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
-            "oppfolging, " +
-            "venterpasvarfrabruker, " +
-            "venterpasvarfranav, " +
-            "nyesteutlopteaktivitet, " +
-            "aktivitet_start, " +
-            "neste_aktivitet_start, " +
-            "forrige_aktivitet_start, " +
-            "manuell, " +
-            "reservertikrr, " +
-            "ARBEIDSLISTE_AKTIV, " +
-            "ARBEIDSLISTE_KOMMENTAR, " +
-            "ARBEIDSLISTE_OVERSKRIFT, " +
-            "ARBEIDSLISTE_FRIST, " +
-            "ARBEIDSLISTE_ENDRET_AV, " +
-            "ARBEIDSLISTE_ENDRET_TID " +
-            "FROM " +
-            "vw_portefolje_info";
+                    "person_id, " +
+                    "fodselsnr, " +
+                    "fornavn, " +
+                    "etternavn, " +
+                    "nav_kontor, " +
+                    "formidlingsgruppekode, " +
+                    "iserv_fra_dato, " +
+                    "kvalifiseringsgruppekode, " +
+                    "rettighetsgruppekode, " +
+                    "hovedmaalkode, " +
+                    "sikkerhetstiltak_type_kode, " +
+                    "fr_kode, " +
+                    "sperret_ansatt, " +
+                    "er_doed, " +
+                    "doed_fra_dato, " +
+                    "tidsstempel, " +
+                    "veilederident, " +
+                    "ytelse, " +
+                    "utlopsdato, " +
+                    "ny_for_veileder, " +
+                    "utlopsdatofasett, " +
+                    "dagputlopuke, dagputlopukefasett, " +
+                    "permutlopuke, permutlopukefasett, " +
+                    "aapmaxtiduke, aapmaxtidukefasett, " +
+                    "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
+                    "oppfolging, " +
+                    "venterpasvarfrabruker, " +
+                    "venterpasvarfranav, " +
+                    "nyesteutlopteaktivitet, " +
+                    "aktivitet_start, " +
+                    "neste_aktivitet_start, " +
+                    "forrige_aktivitet_start, " +
+                    "manuell, " +
+                    "reservertikrr, " +
+                    "ARBEIDSLISTE_AKTIV, " +
+                    "ARBEIDSLISTE_KOMMENTAR, " +
+                    "ARBEIDSLISTE_OVERSKRIFT, " +
+                    "ARBEIDSLISTE_FRIST, " +
+                    "ARBEIDSLISTE_ENDRET_AV, " +
+                    "ARBEIDSLISTE_ENDRET_TID " +
+                    "FROM " +
+                    "vw_portefolje_info";
 
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
@@ -133,15 +134,28 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
+    public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId){
+        return insert(db, AKTOERID_TO_PERSONID)
+                .value("AKTOERID", aktoerId.toString())
+                .value("PERSONID", personId.toString())
+                .value("GJELDENE", 1)
+                .execute();
 
-    public Try<Integer> insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
-        return
-                Try.of(
-                        () -> insert(db, AKTOERID_TO_PERSONID)
-                                .value("AKTOERID", aktoerId.toString())
-                                .value("PERSONID", personId.toString())
-                                .execute()
-                ).onFailure(e -> log.info("Kunne ikke inserte mapping Aktoerid {} -> personId {} i databasen: {}", aktoerId, personId, getCauseString(e)));
+    }
+
+    public Integer insertGamleAktoerIdMedGjeldeneFlaggNull(AktoerId aktoerId, PersonId personId) {
+        return insert(db, AKTOERID_TO_PERSONID)
+                .value("AKTOERID", aktoerId.toString())
+                .value("PERSONID", personId.toString())
+                .value("GJELDENE", 0)
+                .execute();
+    }
+
+    public Integer setGjeldeneFlaggTilNull(PersonId personId) {
+        return update(db, AKTOERID_TO_PERSONID)
+                .set("GJELDENE", 0)
+                .whereEquals("PERSONID", personId.toString())
+                .execute();
     }
 
     public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
@@ -159,7 +173,7 @@ public class BrukerRepository {
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke personid for fnr: {}", getCauseString(e)));
+        ).onFailure(e -> log.warn("Fant ikke personid for fnr: {}, {}", fnr, getCauseString(e)));
     }
 
     public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
@@ -168,7 +182,7 @@ public class BrukerRepository {
                         .column("FODSELSNR")
                         .where(WhereClause.equals("PERSON_ID", personId.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}", getCauseString(e)));
+        ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}, {}", personId, getCauseString(e)));
     }
 
     /**
