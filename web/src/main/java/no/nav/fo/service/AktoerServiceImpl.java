@@ -114,12 +114,14 @@ public class AktoerServiceImpl implements AktoerService {
         if (personId == null) {
             return;
         }
-        brukerRepository.setGjeldeneFlaggTilNull(personId);
 
         if (!aktoerId.equals(aktoerIdFraTPS)) {
             brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
+        } else {
+            brukerRepository.setGjeldeneFlaggTilNull(personId);
+            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
 
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerIdFraTPS, personId);
+
     }
 }
