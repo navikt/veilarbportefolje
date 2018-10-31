@@ -77,7 +77,7 @@ public class AktoerServiceImpl implements AktoerService {
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         return brukerRepository.retrievePersonid(aktoerId)
                 .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId)
-                .onFailure(e -> log.warn("Kunne ikke hente/mappe personId. {}", getCauseString(e)));
+                .onFailure(e -> log.warn("Kunne ikke hente/mappe personId for aktorid: {}: {}", aktoerId, getCauseString(e)));
     }
 
     private PersonId getPersonIdFromFnr(AktoerId aktoerId) {
