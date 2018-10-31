@@ -16,7 +16,7 @@ public class Filtervalg {
     public List<Kjonn> kjonn = new ArrayList<>();
     public List<String> fodselsdagIMnd = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
-    public List<Hovedmal> hovedmalListe = new ArrayList<>();
+    public List<Hovedmal> hovedmal = new ArrayList<>();
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
@@ -38,7 +38,7 @@ public class Filtervalg {
                 !veiledere.isEmpty() ||
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
-                !hovedmalListe.isEmpty() ||
+                !hovedmal.isEmpty() ||
                  harManuellBrukerStatus();
     }
 
