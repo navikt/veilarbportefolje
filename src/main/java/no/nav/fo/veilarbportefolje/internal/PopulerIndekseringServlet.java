@@ -2,9 +2,7 @@ package no.nav.fo.veilarbportefolje.internal;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.service.SolrService;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,10 +14,8 @@ public class PopulerIndekseringServlet extends HttpServlet {
 
     private SolrService solrService;
 
-    @Override
-    public void init() throws ServletException {
-        this.solrService = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean(SolrService.class);
-        super.init();
+    public PopulerIndekseringServlet(SolrService solrService) {
+        this.solrService = solrService;
     }
 
     @Override

@@ -4,9 +4,16 @@ import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
+import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
+import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
+import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
+import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
 import no.nav.fo.veilarbportefolje.internal.PingConfig;
+import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
+import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
+import no.nav.fo.veilarbportefolje.service.SolrService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -25,6 +32,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
+import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.*;
@@ -70,19 +78,35 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     @Inject
     private DataSource dataSource;
 
+    @Inject
+    private IndekseringScheduler hovedindekseringScheduler;
+
+    @Inject
+    private SolrService solrService;
+
+    @Inject
+    private TiltakHandler tiltakHandler;
+
+    @Inject
+    private KopierGR199FraArena kopierGR199FraArena;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
         Flyway flyway = new Flyway();
         flyway.setDataSource(dataSource);
         flyway.migrate();
+
+        leggTilServlet(servletContext, new TotalHovedindekseringServlet(hovedindekseringScheduler), "/internal/totalhovedindeksering");
+        leggTilServlet(servletContext, new PopulerIndekseringServlet(solrService), "/internal/populerindeks");
+        leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
+        leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
     }
 
     @Override
     public void configure(ApiAppConfigurator apiAppConfigurator) {
         apiAppConfigurator
                 .sts()
-//                .azureADB2CLogin()
                 .issoLogin()
         ;
     }
