@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.UUID;
 
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VIRKSOMHET_ENHET_V1_URL_PROPERTY;
+import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
 import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
@@ -39,14 +40,6 @@ public class VirksomhetEnhetEndpointConfig {
                 "Tjeneste for å hente ut enheter (NAV Kontor) som veieleder",
                 true
         );
-
-        return () -> {
-            try {
-                virksomhetEnhet.ping();
-                return Pingable.Ping.lyktes(metadata);
-            } catch (Exception e) {
-                return Pingable.Ping.feilet(metadata, e);
-            }
-        };
+        return () -> ping(virksomhetEnhet::ping, metadata);
     }
 }

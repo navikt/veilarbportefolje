@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.config;
 
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,8 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.UUID;
 
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY;
-import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
-import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
+import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
@@ -20,28 +20,21 @@ public class DigitalKontaktinformasjonConfig {
 
     @Bean
     public DigitalKontaktinformasjonV1 dkifV1() {
-        return factory();
+        return digitalKontaktinformasjon();
     }
 
     @Bean
     public Pingable dkifV1Ping() {
-        Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
+        PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
                 "DKIF_V1 via " + URL,
                 "Ping av DKIF_V1. Henter reservasjon fra KRR.",
                 false
         );
-        return () -> {
-            try {
-                factory().ping();
-                return lyktes(metadata);
-            } catch (Exception e) {
-                return feilet(metadata, e);
-            }
-        };
+        return () -> ping(() -> digitalKontaktinformasjon().ping(), metadata);
     }
 
-    private DigitalKontaktinformasjonV1 factory() {
+    private DigitalKontaktinformasjonV1 digitalKontaktinformasjon() {
         return new CXFClient<>(DigitalKontaktinformasjonV1.class)
                 .address(URL)
                 .configureStsForSystemUser()

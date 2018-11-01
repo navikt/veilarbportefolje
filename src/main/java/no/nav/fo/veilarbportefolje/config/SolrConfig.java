@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.config;
 
+import lombok.SneakyThrows;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.service.*;
@@ -34,6 +35,7 @@ import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
 import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY;
+import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
@@ -76,22 +78,18 @@ public class SolrConfig {
 
     @Bean
     public Pingable solrServerPing() {
-        SolrClient solrClient = solrClientSlave();
         PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
                 "HTTP via " + URL,
                 "Solr-indeks for portefolje",
                 true
         );
+        return () -> ping(this::doPing, metadata);
+    }
 
-        return () -> {
-            try {
-                solrClient.ping();
-                return Pingable.Ping.lyktes(metadata);
-            } catch (Exception e) {
-                return Pingable.Ping.feilet(metadata, e);
-            }
-        };
+    @SneakyThrows
+    private void doPing() {
+        solrClientSlave().ping();
     }
 
     private HttpClient createHttpClientForSolr() {
