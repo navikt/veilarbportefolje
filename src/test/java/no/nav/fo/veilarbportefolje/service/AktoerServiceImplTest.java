@@ -6,7 +6,6 @@ import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -77,7 +76,6 @@ public class AktoerServiceImplTest {
     }
 
     @Test
-    @Ignore
     public void skalSetteGamleAktorIdTilIkkeGjeldeOgSetteNyeAktoerIdTilGjeldene() {
 
         insert(db, "AKTOERID_TO_PERSONID")
@@ -102,8 +100,7 @@ public class AktoerServiceImplTest {
     }
 
     @Test
-    @Ignore
-    public void skalSetteGamleAktorIdTilIkkeGjeldeneOgSetteAktoerIdFraTPSTilGjeldene() {
+    public void skalSetteGamleAktorIdTilIkkeGjeldene() {
 
         AktoerId aktoerId = AktoerId.of("99999");
 
@@ -116,9 +113,6 @@ public class AktoerServiceImplTest {
 
         Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
         assertEquals(gamleAktorId.get(), aktoerId.toString());
-
-        Try<String> resultatNyAktoerId = getGjeldeneAktoerId(PERSON_ID);
-        assertEquals(resultatNyAktoerId.get(), nyAktoerId.toString());
     }
 
     private Try<String> getMappedPersonidFromDb(String aktoerID) {
