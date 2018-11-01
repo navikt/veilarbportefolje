@@ -100,7 +100,7 @@ public class AktoerServiceImplTest {
     }
 
     @Test
-    public void skalSetteGamleAktorIdTilIkkeGjeldeneOgSetteAktoerIdFraTPSTilGjeldene() {
+    public void skalSetteGamleAktorIdTilIkkeGjeldene() {
 
         AktoerId aktoerId = AktoerId.of("99999");
 
@@ -113,9 +113,6 @@ public class AktoerServiceImplTest {
 
         Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
         assertEquals(gamleAktorId.get(), aktoerId.toString());
-
-        Try<String> resultatNyAktoerId = getGjeldeneAktoerId(PERSON_ID);
-        assertEquals(resultatNyAktoerId.get(), nyAktoerId.toString());
     }
 
     private Try<String> getMappedPersonidFromDb(String aktoerID) {
