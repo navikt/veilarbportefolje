@@ -8,7 +8,7 @@ import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
-import no.nav.fo.veilarbportefolje.internal.PingConfig;
+import no.nav.fo.veilarbportefolje.internal.PepConfig;
 import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.PepClient;
@@ -50,7 +50,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         FilmottakConfig.class,
         MetricsConfig.class,
         CacheConfig.class,
-        PingConfig.class,
+        PepConfig.class,
         FeedConfig.class,
         RestConfig.class,
         AktorConfig.class,

@@ -18,7 +18,7 @@ import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.A
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
-public class PingConfig {
+public class PepConfig {
 
     @Inject
     private PepClient pep;
