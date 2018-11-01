@@ -20,13 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.getCauseString;
-
-import java.time.Instant;
+import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -75,7 +72,8 @@ public class AktoerServiceImpl implements AktoerService {
 
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         return brukerRepository.retrievePersonid(aktoerId)
-                .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId);
+                .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId)
+                .onFailure(e -> log.warn("Kunne ikke hente/mappe personId for aktorid: {}: {}", aktoerId, getCauseString(e)));
     }
 
     private PersonId getPersonIdFromFnr(AktoerId aktoerId) {
@@ -112,12 +110,14 @@ public class AktoerServiceImpl implements AktoerService {
         if (personId == null) {
             return;
         }
-        brukerRepository.setGjeldeneFlaggTilNull(personId);
 
         if (!aktoerId.equals(aktoerIdFraTPS)) {
             brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
+        } else {
+            brukerRepository.setGjeldeneFlaggTilNull(personId);
+            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
 
-        brukerRepository.insertAktoeridToPersonidMapping(aktoerIdFraTPS, personId);
+
     }
 }
