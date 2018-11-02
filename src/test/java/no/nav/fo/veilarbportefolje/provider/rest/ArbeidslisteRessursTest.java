@@ -1,29 +1,33 @@
 package no.nav.fo.veilarbportefolje.provider.rest;
 
-import com.squareup.okhttp.Response;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.common.auth.Subject;
-import no.nav.common.auth.SubjectHandler;
+import no.nav.fo.veilarbportefolje.config.ComponentTestConfig;
+import no.nav.fo.veilarbportefolje.domene.Arbeidsliste;
+import no.nav.fo.veilarbportefolje.domene.RestResponse;
 import no.nav.fo.veilarbportefolje.provider.rest.arbeidsliste.ArbeidslisteRequest;
-import no.nav.fo.veilarbportefolje.testutil.ComponentTest;
 import no.nav.fo.veilarbportefolje.util.DateUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
-import static no.nav.common.auth.SsoToken.Type.OIDC;
 import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbportefolje.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.veilarbportefolje.mock.AktoerServiceMock.*;
@@ -31,16 +35,21 @@ import static no.nav.fo.veilarbportefolje.mock.EnhetMock.NAV_SANDE_ID;
 import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.insert;
 import static org.junit.Assert.*;
 
-@Ignore
-public class ArbeidslisteRessursTest extends ComponentTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {ComponentTestConfig.class})
+public class ArbeidslisteRessursTest {
 
-    private static final JdbcTemplate DB = new JdbcTemplate(ds);
+    @Inject
+    private ArbeidsListeRessurs arbeidsListeRessurs;
+
+    @Inject
+    private JdbcTemplate DB;
 
     private static final String TEST_VEILEDERID = "testident";
     public static final String UNAUTHORIZED_NAV_KONTOR = "XOXOXO";
 
     @Rule
-    public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token")));
+    public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDERID, InternBruker, oidcToken("token")));
 
     @Before
     public void setUp() {
@@ -52,251 +61,187 @@ public class ArbeidslisteRessursTest extends ComponentTest {
     @Test
     public void skalOppretteOgSletteListe() throws Exception {
         skalOppretteArbeidsliste();
-        String path = "/api/arbeidsliste/delete";
         assertFalse(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
 
         List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
         arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
         arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
-        JSONArray json = new JSONArray(arbeidslisteRequests);
 
-        Response response = post(path, json.toString());
+        Response response = arbeidsListeRessurs.deleteArbeidslisteListe(arbeidslisteRequests);
 
-        assertEquals(200, response.code());
+        assertEquals(200, response.getStatus());
         assertTrue(DB.queryForList("select * from ARBEIDSLISTE").isEmpty());
     }
 
-    @Test
+    @Test(expected = BadRequestException.class)
     public void ugyldigFnrSkalGiBadRequest() {
-        String path = "/api/arbeidsliste/delete";
-        JSONArray json = new JSONArray(Arrays.asList(FNR, "UGYLDIG_FNR"));
-        Response response = post(path, json.toString());
-
-        assertEquals(400, response.code());
+        arbeidsListeRessurs.deleteArbeidsliste("UGYLDIG_FNR");
     }
 
     @Test
     public void responseSkalInneholdeListeMedFnr() throws Exception {
         skalOppretteArbeidsliste();
-        String path = "/api/arbeidsliste/delete";
         List<ArbeidslisteRequest> arbeidslisteRequests = new ArrayList<>();
         arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR));
         arbeidslisteRequests.add(new ArbeidslisteRequest().setFnr(FNR_2));
 
-        JSONArray json = new JSONArray(arbeidslisteRequests);
-        Response response = post(path, json.toString());
+        Response response = arbeidsListeRessurs.deleteArbeidslisteListe(arbeidslisteRequests);
 
-        JSONObject responseJSON = new JSONObject(response.body().string());
-
-        assertTrue(responseJSON.get("data").toString().contains(FNR));
-        assertTrue(responseJSON.get("data").toString().contains(FNR_2));
-
+        RestResponse<?> responseEntity = (RestResponse<?>) response.getEntity();
+        assertTrue(responseEntity.getData().containsAll(asList(FNR, FNR_2)));
     }
 
     @Test
-    public void skalOppretteArbeidsliste() throws Exception {
+    public void skalOppretteArbeidsliste() {
         insertSuccessfulBrukere();
-        long now = Instant.now().toEpochMilli();
-        long later = now + 100000000;
-        String time = DateUtils.toIsoUTC(new Timestamp(later).toLocalDateTime());
-        String path = "/api/arbeidsliste/";
+        String time = DateUtils.toIsoUTC(new Timestamp(Instant.now().plusSeconds(100000).toEpochMilli()).toLocalDateTime());
 
-        JSONObject bruker1 = new JSONObject()
-                .put("fnr", FNR)
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", time);
+        List<ArbeidslisteRequest> arbeidslisteRequests = asList(
+                new ArbeidslisteRequest().setFnr(FNR).setKommentar("Dette er en kommentar").setFrist(time),
+                new ArbeidslisteRequest().setFnr(FNR_2).setKommentar("Dette er en kommentar2").setFrist(time)
+        );
+        Response response = arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequests);
 
-        JSONObject bruker2 = new JSONObject()
-                .put("fnr", FNR_2)
-                .put("kommentar", "Dette er en kommentar2")
-                .put("frist", time);
-
-        JSONArray json = new JSONArray(Arrays.asList(bruker1, bruker2));
-
-        Response response = post(path, json.toString());
-        assertEquals(201, response.code());
+        assertEquals(201, response.getStatus());
 
     }
 
     @Test
-    public void skalIkkeHatilgang() throws Exception {
+    public void skalIkkeHatilgang() {
         insertSuccessfulBrukere();
         insertUnauthorizedBruker();
-        String path = "/api/arbeidsliste/";
 
-        JSONObject bruker = new JSONObject()
-                .put("fnr", FNR_UNAUTHORIZED)
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", "2017-10-10T00:00:00Z");
+        List<ArbeidslisteRequest> arbeidslisteRequests = asList(
+                new ArbeidslisteRequest().setFnr(FNR_UNAUTHORIZED).setKommentar("Dette er en kommentar").setFrist("2017-10-10T00:00:00Z"),
+                new ArbeidslisteRequest().setFnr(FNR_2).setKommentar("Dette er en kommentar2").setFrist("2017-10-10T00:00:00Z")
+        );
+        Response response = arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequests);
 
-        JSONObject bruker2 = new JSONObject()
-                .put("fnr", FNR_2)
-                .put("kommentar", "Dette er en kommentar2")
-                .put("frist", "2017-10-10T00:00:00Z");
-
-        JSONArray json = new JSONArray(Arrays.asList(bruker, bruker2));
-
-        Response response = post(path, json.toString());
-        assertEquals(403, response.code());
+        assertEquals(403, response.getStatus());
     }
 
     @Test
-    public void skalReturnereUtcStreng() throws Exception {
+    public void skalReturnereUtcStreng() {
         insertSuccessfulBrukere();
-        String path = "/api/arbeidsliste/" + FNR;
-
         String expectedUtcString = "2017-10-10T00:00:00Z";
-        JSONObject json = new JSONObject()
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", expectedUtcString);
 
-        int putStatus = post(path, json.toString()).code();
-        assertEquals(201, putStatus);
+        ArbeidslisteRequest arbeidslisteRequest = new ArbeidslisteRequest().setFnr(FNR).setKommentar("Dette er en kommentar").setFrist(expectedUtcString);
+        arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequest, FNR);
+        Arbeidsliste response = arbeidsListeRessurs.getArbeidsListe(FNR);
 
-        Response response = get(path);
-        JSONObject body = new JSONObject(response.body().string());
-        String actual = body.getString("frist");
-        assertEquals(expectedUtcString, actual);
-
+        assertEquals(expectedUtcString, response.getFrist().format(DateTimeFormatter.ISO_INSTANT));
     }
 
     @Test
-    public void skalReturnereOppfolgendeVeilederFlagg() throws Exception {
+    public void skalReturnereOppfolgendeVeilederFlagg() {
         insertSuccessfulBrukere();
-        String path = "/api/arbeidsliste/" + FNR;
-
         String expectedUtcString = "2017-10-10T00:00:00Z";
-        JSONObject json = new JSONObject()
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", expectedUtcString);
 
-        int putStatus = post(path, json.toString()).code();
-        assertEquals(201, putStatus);
+        ArbeidslisteRequest arbeidslisteRequest = new ArbeidslisteRequest().setFnr(FNR).setKommentar("Dette er en kommentar").setFrist(expectedUtcString);
+        arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequest, FNR);
 
-        Response response = get(path);
-        JSONObject body = new JSONObject(response.body().string());
-        boolean isOppfolgendeVeileder = body.getBoolean("isOppfolgendeVeileder");
-        assertTrue(isOppfolgendeVeileder);
+        Arbeidsliste response = arbeidsListeRessurs.getArbeidsListe(FNR);
+        assertTrue(response.getIsOppfolgendeVeileder());
     }
 
 
     @Test
-    public void skalReturnereTomArbeidslisteUthenting() throws Exception {
-        int expected = 200;
+    public void skalReturnereTomArbeidslisteUthenting() {
         insertSuccessfulBrukere();
-        Response resp = get("/api/arbeidsliste/" + FNR);
-        JSONObject json = new JSONObject(resp.body().string());
 
+        Arbeidsliste arbeidsListe = arbeidsListeRessurs.getArbeidsListe(FNR);
 
-        assertEquals(json.get("arbeidslisteAktiv").toString(), "null");
-        assertEquals(expected, resp.code());
+        assertNull(arbeidsListe.getArbeidslisteAktiv());
     }
 
     @Test
-    public void skalReturnereTomArbeidslisteSelvOmVeilederOgEllerEnhetMangler() throws Exception {
-        int actual = get("/api/arbeidsliste/" + FNR).code();
-        int expected = 200;
-        assertEquals(expected, actual);
+    public void skalReturnereTomArbeidslisteSelvOmVeilederOgEllerEnhetMangler() {
+        Arbeidsliste arbeidsListe = arbeidsListeRessurs.getArbeidsListe(FNR);
+
+        assertNull(arbeidsListe.getArbeidslisteAktiv());
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void skalIkkeGodtaUgyldigFnr() {
+        arbeidsListeRessurs.getArbeidsListe("123");
     }
 
     @Test
-    public void skalIkkeGodtaUgyldigFnr() throws Exception {
-        int expected = 400;
-        int actual = get("/api/arbeidsliste/123").code();
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void skalKunneOppretteSammeArbeidslisteToGanger() throws Exception {
+    public void skalKunneOppretteSammeArbeidslisteToGanger() {
         insertSuccessfulBrukere();
-        String path = "/api/arbeidsliste/" + FNR;
-        JSONObject json = new JSONObject()
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", "2017-10-10T00:00:00Z");
 
-        int putStatus1 = post(path, json.toString()).code();
-        assertEquals(201, putStatus1);
-        int putStatus2 = post(path, json.toString()).code();
-        assertEquals(201, putStatus2);
+        ArbeidslisteRequest arbeidslisteRequest = new ArbeidslisteRequest().setFnr(FNR).setKommentar("Dette er en kommentar").setFrist("2017-10-10T00:00:00Z");
+        Response response = arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequest, FNR);
+        Response response1 = arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequest, FNR);
+
+        assertEquals(201, response.getStatus());
+        assertEquals(201, response1.getStatus());
     }
 
-    @Test
-    public void skalHaTilgangsKontroll() throws Exception {
+    @Test(expected = ForbiddenException.class)
+    public void skalHaTilgangsKontrollOpprett() {
         insertUnauthorizedBruker();
-        String path = "/api/arbeidsliste/" + FNR_UNAUTHORIZED;
-        JSONObject json = new JSONObject()
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", "2017-10-10T00:00:00Z");
 
-        int expected = 403;
-        int expectedGet = 200;
+        ArbeidslisteRequest arbeidslisteRequest = new ArbeidslisteRequest().setFnr(FNR_UNAUTHORIZED).setKommentar("Dette er en kommentar").setFrist("2017-10-10T00:00:00Z");
+        arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequest, FNR_UNAUTHORIZED);
+    }
 
-        int actualPut = put(path, json.toString()).code();
-        assertEquals(expected, actualPut);
+    @Test(expected = ForbiddenException.class)
+    public void skalHaTilgangsKontrollOppdater() {
+        insertUnauthorizedBruker();
 
-        int actualDelete = delete(path, SubjectHandler.getSsoToken(OIDC).orElseThrow(IllegalArgumentException::new)).code();
-        assertEquals(expected, actualDelete);
+        ArbeidslisteRequest arbeidslisteRequest = new ArbeidslisteRequest().setFnr(FNR_UNAUTHORIZED).setKommentar("Dette er en kommentar").setFrist("2017-10-10T00:00:00Z");
+        arbeidsListeRessurs.oppdaterArbeidsListe(arbeidslisteRequest, FNR_UNAUTHORIZED);
+    }
 
-        int actualGet = get(path).code();
-        assertEquals(expectedGet, actualGet);
-        assertEquals(new JSONObject(get(path).body().string()).getBoolean("harVeilederTilgang"), false);
+    @Test(expected = ForbiddenException.class)
+    public void skalHaTilgangsKontrollSlett() {
+        insertUnauthorizedBruker();
 
-        int actualPost = post(path, json.toString()).code();
-        assertEquals(expected, actualPost);
+        arbeidsListeRessurs.deleteArbeidsliste(FNR_UNAUTHORIZED);
     }
 
     @Test
-    public void datoFeltSkalVaereValgfritt() throws Exception {
-        insertSuccessfulBrukere();
-        String path = "/api/arbeidsliste/";
+    public void skalHaTilgangsKontrollHent() {
+        insertUnauthorizedBruker();
 
-        JSONObject utenDato = new JSONObject()
-                .put("fnr", FNR_2)
-                .put("kommentar", "Dette er en kommentar");
-
-        JSONArray json = new JSONArray(singletonList(utenDato));
-
-        Response response = post(path, json.toString());
-        assertEquals(201, response.code());
+        Arbeidsliste arbeidsListe = arbeidsListeRessurs.getArbeidsListe(FNR_UNAUTHORIZED);
+        assertFalse(arbeidsListe.getHarVeilederTilgang());
     }
 
     @Test
-    public void datoSkalVaereFramITid() throws Exception {
+    public void datoFeltSkalVaereValgfritt() {
         insertSuccessfulBrukere();
-        String path = "/api/arbeidsliste/";
 
-        JSONObject utenDato = new JSONObject()
-                .put("fnr", FNR_2)
-                .put("kommentar", "Dette er en kommentar")
-                .put("frist", "1985-07-23T00:00:00Z");
+        ArbeidslisteRequest arbeidslisteRequest = new ArbeidslisteRequest().setFnr(FNR).setKommentar("Dette er en kommentar");
+        Response response = arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequest, FNR);
 
-        JSONArray json = new JSONArray(singletonList(utenDato));
-
-        Response response = post(path, json.toString());
-        assertEquals(400, response.code());
+        assertEquals(201, response.getStatus());
     }
 
     @Test
-    public void datoSkalKunneSettesTilbakeITidVedRedigering() throws Exception {
+    public void datoSkalVaereFramITid() {
         insertSuccessfulBrukere();
-        String path = "/api/arbeidsliste/";
 
-        // opprett
-        JSONObject utenDato = new JSONObject()
-                .put("fnr", FNR_2)
-                .put("frist", "2100-07-23T00:00:00Z")
-                .put("kommentar", "Dette er en kommentar");
-        JSONArray json = new JSONArray(singletonList(utenDato));
-        Response opprettResponse = post(path, json.toString());
-        assertEquals(201, opprettResponse.code());
+        List<ArbeidslisteRequest> arbeidslisteRequests = singletonList(new ArbeidslisteRequest().setFnr(FNR).setKommentar("Dette er en kommentar").setFrist("1985-07-23T00:00:00Z"));
+        Response response = arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequests);
 
-        // oppdater
-        utenDato.put("frist", "1985-07-23T00:00:00Z");
-        Response oppdaterResponse = put(path + FNR_2, utenDato.toString());
-        assertEquals(200, oppdaterResponse.code());
+        assertEquals(400, response.getStatus());
     }
 
-    private static void insertSuccessfulBrukere() {
+    @Test
+    public void datoSkalKunneSettesTilbakeITidVedRedigering() {
+        insertSuccessfulBrukere();
+
+        List<ArbeidslisteRequest> arbeidslisteRequests = singletonList(new ArbeidslisteRequest().setFnr(FNR_2).setKommentar("Dette er en kommentar").setFrist("2100-07-23T00:00:00Z"));
+        Response response = arbeidsListeRessurs.opprettArbeidsListe(arbeidslisteRequests);
+        assertEquals(201, response.getStatus());
+
+        ArbeidslisteRequest arbeidslisteRequest = new ArbeidslisteRequest().setFnr(FNR_2).setKommentar("Dette er en kommentar").setFrist("1985-07-23T00:00:00Z");
+        arbeidsListeRessurs.oppdaterArbeidsListe(arbeidslisteRequest, FNR_2);
+    }
+
+    private void insertSuccessfulBrukere() {
         int result = insert(DB, "OPPFOLGING_DATA")
                 .value("VEILEDERIDENT", TEST_VEILEDERID)
                 .value("AKTOERID", AKTOER_ID)
@@ -346,7 +291,7 @@ public class ArbeidslisteRessursTest extends ComponentTest {
 
     }
 
-    private static void insertUnauthorizedBruker() {
+    private void insertUnauthorizedBruker() {
         int result = insert(DB, "OPPFOLGINGSBRUKER")
                 .value("PERSON_ID", PERSON_ID_UNAUTHORIZED)
                 .value("FODSELSNR", FNR_UNAUTHORIZED)

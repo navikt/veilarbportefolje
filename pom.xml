@@ -26,7 +26,6 @@
 
         <!-- Tredjeparts -->
         <solr.version>6.4.2</solr.version>
-        <okhttp.version>2.7.5</okhttp.version>
     </properties>
 
     <dependencyManagement>
@@ -75,18 +74,6 @@
                 <groupId>org.apache.solr</groupId>
                 <artifactId>solr-solrj</artifactId>
                 <version>${solr.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>20.0-hal</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.okhttp</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${okhttp.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>jsch</groupId>
@@ -407,10 +394,6 @@
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>test-config</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp</groupId>
-            <artifactId>okhttp</artifactId>
         </dependency>
     </dependencies>
 </project>
