@@ -22,9 +22,9 @@ public class YtelserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
-            log.info("Manuell Indeksering: Starter oppdatering av ytelser");
+            log.info("Manuell Indeksering: Oppdatering av ytelser");
             runAsync(() -> kopierGR199FraArena.startOppdateringAvYtelser());
-            resp.getWriter().write("reindeksering startet");
+            resp.getWriter().write("Oppdatering av ytelser startet");
             resp.setStatus(200);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);

@@ -9,21 +9,20 @@ import java.util.Base64;
 import java.util.Objects;
 
 import static java.lang.System.getProperty;
+import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
+import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 
 @Slf4j
 public class AuthorizationUtils {
 
-    public static final String SYSTEMUSER_USERNAME = "no.nav.modig.security.systemuser.username";
-    public static final String SYSTEMUSER_PASSWORD = "no.nav.modig.security.systemuser.password";
-
-    public static final String AUTHENTICATE = "WWW-Authenticate";
-    public static final String BASIC_REALM = "BASIC realm=\"srvveilarbportefolje\"";
-    public static final String AUTHORIZATION = "Authorization";
+    private static final String AUTHENTICATE = "WWW-Authenticate";
+    private static final String BASIC_REALM = "BASIC realm=\"srvveilarbportefolje\"";
+    static final String AUTHORIZATION = "Authorization";
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
     public static boolean isBasicAuthAuthorized(HttpServletRequest request) {
         String auth = request.getHeader(AUTHORIZATION);
-        if(Objects.isNull(auth) || !auth.toLowerCase().startsWith("basic ")) {
+        if (Objects.isNull(auth) || !auth.toLowerCase().startsWith("basic ")) {
             return false;
         }
 

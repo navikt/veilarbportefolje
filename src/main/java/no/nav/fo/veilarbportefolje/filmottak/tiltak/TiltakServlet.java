@@ -23,8 +23,9 @@ public class TiltakServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             log.info("Manuell Indeksering: Oppdatering av tiltak");
-            resp.getWriter().write("Setter i gang oppdatering av tiltak");
             runAsync(() -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
+            resp.getWriter().write("Oppdatering av tiltak startet");
+            resp.setStatus(200);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }
