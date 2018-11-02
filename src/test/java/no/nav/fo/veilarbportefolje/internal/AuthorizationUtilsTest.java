@@ -4,12 +4,12 @@ package no.nav.fo.veilarbportefolje.internal;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Base64;
 
+import static java.lang.System.setProperty;
+import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
+import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 import static no.nav.fo.veilarbportefolje.internal.AuthorizationUtils.AUTHORIZATION;
-import static no.nav.fo.veilarbportefolje.internal.AuthorizationUtils.SYSTEMUSER_PASSWORD;
-import static no.nav.fo.veilarbportefolje.internal.AuthorizationUtils.SYSTEMUSER_USERNAME;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,8 +18,8 @@ public class AuthorizationUtilsTest {
 
     @Test
     public void skalIkkeGodtaRequest() {
-        System.setProperty(SYSTEMUSER_USERNAME, "dontcare");
-        System.setProperty(SYSTEMUSER_PASSWORD, "dontcare");
+        setProperty(SYSTEMUSER_USERNAME, "dontcare");
+        setProperty(SYSTEMUSER_PASSWORD, "dontcare");
 
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getHeader(AUTHORIZATION)).thenReturn("");
@@ -30,8 +30,8 @@ public class AuthorizationUtilsTest {
     public void skalGodtaRequest() {
         Base64.Encoder encoder = Base64.getEncoder();
 
-        System.setProperty(SYSTEMUSER_USERNAME, "brukernavn");
-        System.setProperty(SYSTEMUSER_PASSWORD, "passord");
+        setProperty(SYSTEMUSER_USERNAME, "brukernavn");
+        setProperty(SYSTEMUSER_PASSWORD, "passord");
 
         String basicAuth = "brukernavn:passord";
         String basicAuthDecoded = new String(encoder.encode(basicAuth.getBytes()));
