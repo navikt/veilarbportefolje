@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Matchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;

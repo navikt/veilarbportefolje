@@ -17,8 +17,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
@@ -30,8 +33,8 @@ public class AktivitetDAOTest {
 
     private void insertoppfolgingsbrukerTestData() {
         try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"), UTF_8)));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"), UTF_8)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,14 +60,14 @@ public class AktivitetDAOTest {
     @Test
     public void skalSetteInnAktivitet() throws Exception {
         AktivitetDataFraFeed aktivitet = new AktivitetDataFraFeed()
-            .setAktivitetId("aktivitetid")
-            .setAktivitetType("aktivitettype")
-            .setAktorId("aktoerid")
-            .setAvtalt(false)
-            .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-            .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-            .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("STATUS");
+                .setAktivitetId("aktivitetid")
+                .setAktivitetType("aktivitettype")
+                .setAktorId("aktoerid")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("STATUS");
 
         aktivitetDAO.upsertAktivitet(aktivitet);
 
@@ -76,24 +79,24 @@ public class AktivitetDAOTest {
     @Test
     public void skalOppdatereAktivitet() throws Exception {
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
-            .setAktivitetId("aktivitetid")
-            .setAktivitetType("aktivitettype")
-            .setAktorId("aktoerid")
-            .setAvtalt(false)
-            .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-            .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-            .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("IKKE STARTET");
+                .setAktivitetId("aktivitetid")
+                .setAktivitetType("aktivitettype")
+                .setAktorId("aktoerid")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("IKKE STARTET");
 
         AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
-            .setAktivitetId("aktivitetid")
-            .setAktivitetType("aktivitettype")
-            .setAktorId("aktoerid")
-            .setAvtalt(false)
-            .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-            .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-            .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("FERDIG");
+                .setAktivitetId("aktivitetid")
+                .setAktivitetType("aktivitettype")
+                .setAktorId("aktoerid")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("FERDIG");
 
         aktivitetDAO.upsertAktivitet(aktivitet1);
         aktivitetDAO.upsertAktivitet(aktivitet2);
@@ -109,20 +112,20 @@ public class AktivitetDAOTest {
     public void skalHenteDistinkteAktorider() {
 
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
-            .setAktivitetId("id1")
-            .setAktivitetType("dontcare")
-            .setAktorId("aktoerid")
-            .setAvtalt(true)
-            .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ikke startet");
+                .setAktivitetId("id1")
+                .setAktivitetType("dontcare")
+                .setAktorId("aktoerid")
+                .setAvtalt(true)
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikke startet");
 
         AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
-            .setAktivitetId("id2")
-            .setAktivitetType("dontcare")
-            .setAktorId("aktoerid")
-            .setAvtalt(true)
-            .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ikke startet");
+                .setAktivitetId("id2")
+                .setAktivitetType("dontcare")
+                .setAktorId("aktoerid")
+                .setAvtalt(true)
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikke startet");
 
         aktivitetDAO.upsertAktivitet(aktivitet1);
         aktivitetDAO.upsertAktivitet(aktivitet2);
@@ -135,34 +138,34 @@ public class AktivitetDAOTest {
         String aktivitettype = aktivitetTyperList.get(0).toString();
 
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed().setAktivitetId("id1").setAktivitetType(aktivitettype)
-            .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ikkeFullfortStatus1");
+                .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus1");
 
         AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed().setAktivitetId("id2").setAktivitetType(aktivitettype)
-            .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ikkeFullfortStatus1");
+                .setAktorId("aktoerid1").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus1");
 
         AktivitetDataFraFeed aktivitet3 = new AktivitetDataFraFeed().setAktivitetId("id3").setAktivitetType(aktivitettype)
-            .setAktorId("aktoerid2").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ikkeFullfortStatus2");
+                .setAktorId("aktoerid2").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus2");
 
         AktivitetDataFraFeed aktivitet4 = new AktivitetDataFraFeed().setAktivitetId("id4").setAktivitetType(aktivitettype)
-            .setAktorId("aktoerid2").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-            .setStatus("ikkeFullfortStatus2");
+                .setAktorId("aktoerid2").setAvtalt(true).setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("ikkeFullfortStatus2");
 
-        aktivitetDAO.upsertAktivitet(asList(aktivitet1,aktivitet2, aktivitet3, aktivitet4));
+        aktivitetDAO.upsertAktivitet(asList(aktivitet1, aktivitet2, aktivitet3, aktivitet4));
 
         List<AktoerAktiviteter> aktoerAktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(asList("aktoerid1", "aktoerid2"));
 
         assertThat(aktoerAktiviteter.size()).isEqualTo(2);
-        aktoerAktiviteter.forEach( aktoerAktivitet -> assertThat(asList("aktoerid1", "aktoerid2").contains(aktoerAktivitet.getAktoerid())));
+        aktoerAktiviteter.forEach(aktoerAktivitet -> assertThat(asList("aktoerid1", "aktoerid2").contains(aktoerAktivitet.getAktoerid())));
     }
 
     @Test
     public void skalInserteBatchAvAktivitetstatuser() {
         List<AktivitetStatus> statuser = new ArrayList<>();
-        statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"),"a1",true, new Timestamp(0)));
-        statuser.add(AktivitetStatus.of(PersonId.of("pid2"), AktoerId.of("aid2"),"a2",true, new Timestamp(0)));
+        statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"), "a1", true, new Timestamp(0)));
+        statuser.add(AktivitetStatus.of(PersonId.of("pid2"), AktoerId.of("aid2"), "a2", true, new Timestamp(0)));
 
         aktivitetDAO.insertAktivitetstatuser(statuser);
         assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER").size()).isEqualTo(2);

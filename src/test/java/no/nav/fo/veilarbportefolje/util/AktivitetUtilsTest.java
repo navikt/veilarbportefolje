@@ -28,8 +28,8 @@ import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivit
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperList;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -169,8 +169,8 @@ public class AktivitetUtilsTest {
         Timestamp nyesteUtlop = new Timestamp(0);
 
 
-        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1",true, nyesteUtlop);
-        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype2",false, nyesteUtlop);
+        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1", true, nyesteUtlop);
+        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype2", false, nyesteUtlop);
 
         Set<AktivitetStatus> aktivitetStatuses = new HashSet<>();
         aktivitetStatuses.add(a1);
@@ -222,7 +222,7 @@ public class AktivitetUtilsTest {
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t1);
         AktivitetDTO a2 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t2);
 
-        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1,a2),LocalDate.ofEpochDay(0), AktoerId.of("aktoerid"), PersonId.of("personid"));
+        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktoerId.of("aktoerid"), PersonId.of("personid"));
         assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
 
     }
@@ -235,7 +235,7 @@ public class AktivitetUtilsTest {
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS);
         AktivitetDTO a2 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t1);
 
-        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1,a2),LocalDate.ofEpochDay(0), AktoerId.of("aktoerid"), PersonId.of("personid"));
+        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktoerId.of("aktoerid"), PersonId.of("personid"));
         assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
     }
 
@@ -275,6 +275,7 @@ public class AktivitetUtilsTest {
 
         assertThat(solrInputDocument.getFieldValues("tiltak").size()).isEqualTo(2);
     }
+
     @Test
     public void skalIkkeFiltrereNarTilDatoErNull() {
         System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-01-19");

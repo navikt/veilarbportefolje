@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -89,7 +89,7 @@ public class AktivitetServiceTest {
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 
-        verify(persistentOppdatering, times((int) Math.ceil((float) antallPersoner/1000))).lagreBrukeroppdateringerIDB(captor.capture());
+        verify(persistentOppdatering, times((int) Math.ceil((float) antallPersoner / 1000))).lagreBrukeroppdateringerIDB(captor.capture());
 
         List<String> capturedAktoerids = captor.getAllValues()
                 .stream()

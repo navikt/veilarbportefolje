@@ -1,9 +1,13 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
+import io.vavr.control.Try;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.domene.AktivitetStatus;
+import no.nav.fo.veilarbportefolje.domene.AktoerId;
+import no.nav.fo.veilarbportefolje.domene.BrukerOppdatering;
+import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
@@ -17,16 +21,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import io.vavr.control.Try;
-
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
@@ -109,7 +114,7 @@ public class AktivitetFeedHandlerTest {
 
         aktivitetFeedHandler.behandleAktivitetdata(asList(AktoerId.of("a1"), AktoerId.of("a2")));
         verify(persistentOppdatering, times(1)).lagreBrukeroppdateringerIDBogIndekser(captor.capture());
-        captor.getValue().forEach( value -> {
+        captor.getValue().forEach(value -> {
             assertThat(value.getAktiviteter().stream()
                     .map(AktivitetStatus::getAktivitetType)
                     .collect(toList()).size()).isEqualTo(aktivitetTyperFraAktivitetsplanList.size());
