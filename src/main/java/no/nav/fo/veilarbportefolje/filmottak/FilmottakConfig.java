@@ -10,13 +10,11 @@ import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.service.LockService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.UriBuilder;
 import java.io.FileNotFoundException;
 import java.util.UUID;
@@ -30,8 +28,6 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 
 @Configuration
 public class FilmottakConfig {
-
-    private static final String VEILARBPORTEFOLJE_SFTP_SELFTEST = "veilarbportefolje.sftp.selftest";
 
     public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
             "filmottak",
@@ -47,9 +43,6 @@ public class FilmottakConfig {
             getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY),
             getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY));
 
-    @Inject
-    private UnleashService unleashService;
-
     @Bean
     public IndekserYtelserHandler indekserYtelserHandler() {
         return new IndekserYtelserHandler();
@@ -64,7 +57,6 @@ public class FilmottakConfig {
     public TiltakRepository tiltakRepository() {
         return new TiltakRepository();
     }
-
 
     @Bean
     public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
@@ -88,20 +80,10 @@ public class FilmottakConfig {
                 "Sjekker henting av fil over sftp",
                 true
         );
-        PingMetadata disabledMetadata = new PingMetadata(
-                UUID.randomUUID().toString(),
-                sftpConfig.getUrl(),
-                "Sjekker henting av fil over sftp (disabled by feature-toggle)",
-                true
-        );
 
         return () -> {
-            boolean enabled = !sftpConfig.equals(LOPENDEYTELSER_SFTP) || unleashService.isEnabled(VEILARBPORTEFOLJE_SFTP_SELFTEST);
-            if (!enabled) {
-                return lyktes(disabledMetadata);
-            }
             try {
-                FileObject fileObject = FilmottakFileUtils.hentFil(sftpConfig).get();
+                FileObject fileObject = FilmottakFileUtils.hentFilViaSftp(sftpConfig).get();
                 if (fileObject.exists()) {
                     return lyktes(metadata);
                 }

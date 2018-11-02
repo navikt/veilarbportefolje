@@ -20,18 +20,18 @@ import java.io.InputStream;
 public class FilmottakFileUtils {
 
     public static Try<FileObject> hentFil(SftpConfig sftpConfig) {
-        log.info("Starter henting av fil fra %s", sftpConfig.getUrl());
+        log.info("Starter henting av fil fra {}", sftpConfig.getUrl());
         try {
             return FilmottakFileUtils.hentFilViaSftp(sftpConfig);
         } catch (FileSystemException e) {
-            log.info("Henting av fil fra %s feilet", sftpConfig.getUrl());
+            log.info("Henting av fil fra {} feilet", sftpConfig.getUrl());
             return Try.failure(e);
         } finally {
-            log.info("Henting av fil fra %s ferdig!", sftpConfig.getUrl());
+            log.info("Henting av fil fra {} ferdig!", sftpConfig.getUrl());
         }
     }
 
-    private static Try<FileObject> hentFilViaSftp(SftpConfig sftpConfig) throws FileSystemException {
+    static Try<FileObject> hentFilViaSftp(SftpConfig sftpConfig) throws FileSystemException {
         FileSystemOptions fsOptions = new FileSystemOptions();
         SftpFileSystemConfigBuilder sftpFileSystemConfigBuilder = SftpFileSystemConfigBuilder.getInstance();
         sftpFileSystemConfigBuilder.setPreferredAuthentications(fsOptions, "password");
