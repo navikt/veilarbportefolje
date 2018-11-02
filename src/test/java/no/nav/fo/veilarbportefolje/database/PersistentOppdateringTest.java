@@ -19,7 +19,7 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.toSet;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
@@ -48,10 +48,10 @@ public class PersistentOppdateringTest {
         returnStatuser.put(personId, toSet(a1));
         when(aktivitetDAO.getAktivitetstatusForBrukere(any())).thenReturn(returnStatuser);
 
-        persistentOppdatering.lagreAktivitetstatuser(asList(a1,a2));
+        persistentOppdatering.lagreAktivitetstatuser(asList(a1, a2));
 
         ArgumentCaptor<List<AktivitetStatus>> statuserCaptor = ArgumentCaptor.forClass((Class) List.class);
-        ArgumentCaptor<List<Tuple2<PersonId,String>>> finnesIDbCaptor = ArgumentCaptor.forClass((Class) List.class);
+        ArgumentCaptor<List<Tuple2<PersonId, String>>> finnesIDbCaptor = ArgumentCaptor.forClass((Class) List.class);
 
         verify(aktivitetDAO, times(1)).insertOrUpdateAktivitetStatus(statuserCaptor.capture(), finnesIDbCaptor.capture());
         assertThat(finnesIDbCaptor.getValue()).isEqualTo(Collections.singletonList(Tuple.of(personId, "aktivitetstype1")));

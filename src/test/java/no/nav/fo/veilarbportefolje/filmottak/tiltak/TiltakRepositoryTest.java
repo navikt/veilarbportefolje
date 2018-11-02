@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -68,10 +69,10 @@ public class TiltakRepositoryTest {
         Tiltaksaktivitet tiltaksaktivitet1 = new Tiltaksaktivitet();
         tiltaksaktivitet1.setTiltakstype("A");
         Periode periode1 = new Periode();
-        periode1.setTom(XMLGregorianCalendarImpl.createDateTime(2000, 6, 4, 16, 16,16));
+        periode1.setTom(XMLGregorianCalendarImpl.createDateTime(2000, 6, 4, 16, 16, 16));
         tiltaksaktivitet1.setDeltakelsePeriode(periode1);
         when(bruker.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(
-            tiltaksaktivitet1
+                tiltaksaktivitet1
         ));
 
         tiltakRepository.lagreBrukertiltak(Brukertiltak.of(bruker));
@@ -90,8 +91,8 @@ public class TiltakRepositoryTest {
         tiltaksaktivitet2.setTiltakstype("B");
         tiltaksaktivitet2.setDeltakelsePeriode(new Periode());
         when(bruker.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(
-            tiltaksaktivitet1,
-            tiltaksaktivitet2
+                tiltaksaktivitet1,
+                tiltaksaktivitet2
         ));
 
         tiltakRepository.lagreBrukertiltak(Brukertiltak.of(bruker));
@@ -118,9 +119,9 @@ public class TiltakRepositoryTest {
     public void skalInserteEnhettiltak() {
         insertKodeverk();
         tiltakRepository.lagreEnhettiltak(Arrays.asList(
-            TiltakForEnhet.of("1234", "A"),
-            TiltakForEnhet.of("5678", "B"),
-            TiltakForEnhet.of("1234", "C")
+                TiltakForEnhet.of("1234", "A"),
+                TiltakForEnhet.of("5678", "B"),
+                TiltakForEnhet.of("1234", "C")
         ));
 
         assertThat(jdbcTemplate.queryForList("SELECT * FROM ENHETTILTAK").size()).isEqualTo(3);
@@ -140,11 +141,11 @@ public class TiltakRepositoryTest {
     @Test
     public void skalMappeDbRaderTilEnhetTilFnrs() {
         java.util.List<EnhetTilFnr> rader = List.of(
-            new EnhetTilFnr("0001", "11111111111"),
-            new EnhetTilFnr("0002", "22222222222"),
-            new EnhetTilFnr("0001", "22222222222"),
-            new EnhetTilFnr("0003", "22222222222"),
-            new EnhetTilFnr("0003", "11111111111")
+                new EnhetTilFnr("0001", "11111111111"),
+                new EnhetTilFnr("0002", "22222222222"),
+                new EnhetTilFnr("0001", "22222222222"),
+                new EnhetTilFnr("0003", "22222222222"),
+                new EnhetTilFnr("0003", "11111111111")
         ).toJavaList();
 
         Map<String, java.util.List<String>> mappedRader = tiltakRepository.mapEnhetTilFnrs(rader);
@@ -165,8 +166,8 @@ public class TiltakRepositoryTest {
 
     private void insertTestData() {
         try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"))));
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"))));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"), UTF_8)));
+            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8)));
         } catch (IOException e) {
             e.printStackTrace();
         }
