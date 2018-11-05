@@ -23,7 +23,7 @@ resources:
     memory: 2048Mi
   requests:
     cpu: 200m
-    memory: 768Mi
+    memory: 1024Mi
 fasitResources:
   used:
   - alias: loadbalancer:veilarbportefolje
