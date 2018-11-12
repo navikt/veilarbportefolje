@@ -12,7 +12,7 @@ healthcheck:
     path: veilarbportefolje/internal/isAlive
     initialDelay: 60
   readiness:
-    path: veilarbportefolje/internal/selftest
+    path: veilarbportefolje/internal/isReady
     initialDay: 60
 prometheus:
   enabled: true
@@ -22,7 +22,7 @@ resources:
     cpu: 6
     memory: 2048Mi
   requests:
-    cpu: 200m
+    cpu: 1
     memory: 1024Mi
 fasitResources:
   used:
