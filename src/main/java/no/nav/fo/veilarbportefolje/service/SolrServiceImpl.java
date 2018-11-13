@@ -32,6 +32,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -91,7 +92,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void hovedindeksering() {
         lockingTaskExecutor.executeWithLock(this::hovedindeksering,
-                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
+                new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
     }
 
     private void hovedindekseringWithLock() {
@@ -119,7 +120,7 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void deltaindeksering() {
         lockingTaskExecutor.executeWithLock(this::deltaindekseringWithLock,
-                new LockConfiguration(DatabaseConfig.DELTAINDEKSERING, DELTAINDEKSERING_LOCK_AT_MOST_UNTIL));
+                new LockConfiguration(DatabaseConfig.DELTAINDEKSERING, Instant.now().plusSeconds(50)));
     }
 
     private void deltaindekseringWithLock() {

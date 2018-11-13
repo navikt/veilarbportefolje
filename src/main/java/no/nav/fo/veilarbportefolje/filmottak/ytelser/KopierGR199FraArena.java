@@ -8,8 +8,9 @@ import no.nav.fo.veilarbportefolje.service.AktivitetService;
 
 import javax.inject.Inject;
 
+import java.time.Instant;
+
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING_LOCK_AT_MOST_UNTIL;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.LOPENDEYTELSER_SFTP;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.log;
@@ -31,7 +32,7 @@ public class KopierGR199FraArena {
 
     public void startOppdateringAvYtelser() {
         lockingTaskExecutor.executeWithLock(this::kopierOgIndekser,
-                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
+                new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
     }
 
     private void kopierOgIndekser() {

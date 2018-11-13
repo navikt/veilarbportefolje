@@ -17,6 +17,7 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivit
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
@@ -30,7 +31,6 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING_LOCK_AT_MOST_UNTIL;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakUtils.*;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
@@ -61,7 +61,7 @@ public class TiltakHandler {
 
     public void startOppdateringAvTiltakIDatabasen() {
         lockingTaskExecutor.executeWithLock(this::hentTiltakOgPopulerDatabaseWithLock,
-                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
+                new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
     }
 
     private void hentTiltakOgPopulerDatabaseWithLock() {

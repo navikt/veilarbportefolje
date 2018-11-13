@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING_LOCK_AT_MOST_UNTIL;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
@@ -44,7 +43,7 @@ public class KrrService {
 
     public void hentDigitalKontaktInformasjonBolk() {
         lockingTaskExecutor.executeWithLock(this::hentDigitalKontaktInformasjonBolkWithLock,
-                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
+                new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
     }
 
     private void hentDigitalKontaktInformasjonBolkWithLock() {
