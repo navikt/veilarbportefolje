@@ -1,12 +1,15 @@
 package no.nav.fo.veilarbportefolje.filmottak.ytelser;
 
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakFileUtils;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
-import no.nav.fo.veilarbportefolje.service.LockService;
 
 import javax.inject.Inject;
 
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING_LOCK_AT_MOST_UNTIL;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.LOPENDEYTELSER_SFTP;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.log;
@@ -18,7 +21,7 @@ public class KopierGR199FraArena {
     private AktivitetService aktivitetService;
 
     @Inject
-    private LockService lockService;
+    private LockingTaskExecutor lockingTaskExecutor;
 
     private IndekserYtelserHandler indekserHandler;
 
@@ -27,7 +30,8 @@ public class KopierGR199FraArena {
     }
 
     public void startOppdateringAvYtelser() {
-        lockService.runWithLock(this::kopierOgIndekser);
+        lockingTaskExecutor.executeWithLock(this::kopierOgIndekser,
+                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
     }
 
     private void kopierOgIndekser() {

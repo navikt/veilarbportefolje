@@ -1,9 +1,13 @@
 package no.nav.fo.veilarbportefolje.config;
 
 import lombok.SneakyThrows;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
-import no.nav.fo.veilarbportefolje.service.*;
+import no.nav.fo.veilarbportefolje.service.AktoerService;
+import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.service.SolrServiceImpl;
+import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.http.HttpException;
@@ -72,8 +76,8 @@ public class SolrConfig {
             AktoerService aktoerService,
             AktivitetDAO aktivitetDAO,
             VeilederService veilederService,
-            LockService lockService) {
-        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockService);
+            LockingTaskExecutor lockingTaskExecutor) {
+        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutor);
     }
 
     @Bean

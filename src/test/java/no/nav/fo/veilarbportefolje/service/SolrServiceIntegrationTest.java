@@ -1,8 +1,10 @@
 package no.nav.fo.veilarbportefolje.service;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
+import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
 import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -34,8 +36,7 @@ public class SolrServiceIntegrationTest {
     @Inject
     private BrukerRepository brukerRepository;
 
-    @Inject
-    private LockService lockServiceMock;
+    private LockingTaskExecutor lockingTaskExecutorMock = new LockingTaskExecutorMock();
 
     @Before
     public void deleteData() {
@@ -53,7 +54,7 @@ public class SolrServiceIntegrationTest {
         VeilederService veilederService = mock(VeilederService.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockServiceMock);
+        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutorMock);
 
 
         UpdateResponse response = new UpdateResponse();

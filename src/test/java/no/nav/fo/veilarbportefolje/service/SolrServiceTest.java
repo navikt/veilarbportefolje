@@ -6,7 +6,7 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
-import no.nav.fo.veilarbportefolje.mock.LockServiceMock;
+import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -56,7 +56,7 @@ public class SolrServiceTest {
 
     @Before
     public void setup() {
-        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, new LockServiceMock());
+        service = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, new LockingTaskExecutorMock());
     }
 
     @Test

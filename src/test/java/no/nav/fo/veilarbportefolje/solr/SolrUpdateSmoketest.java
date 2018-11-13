@@ -2,12 +2,16 @@ package no.nav.fo.veilarbportefolje.solr;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.service.*;
+import no.nav.fo.veilarbportefolje.service.AktoerService;
+import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.service.SolrServiceImpl;
+import no.nav.fo.veilarbportefolje.service.VeilederService;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -83,29 +87,29 @@ public class SolrUpdateSmoketest {
         setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig(VEILARBPORTEFOLJE));
         Properties properties = FasitUtils.getApplicationEnvironment(VEILARBPORTEFOLJE);
         solrClient = new HttpSolrClient.Builder()
-                    .withBaseSolrUrl(properties.getProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY))
-                    .withHttpClient(createHttpClientForSolr())
-                    .build();
+                .withBaseSolrUrl(properties.getProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY))
+                .withHttpClient(createHttpClientForSolr())
+                .build();
 
-        ds =  setupDataSourceWithCredentials(FasitUtils.getDbCredentials(VEILARBPORTEFOLJE));
+        ds = setupDataSourceWithCredentials(FasitUtils.getDbCredentials(VEILARBPORTEFOLJE));
         jdbcTemplate = new JdbcTemplate(ds);
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
         brukerRepository = new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
-        solrService = new SolrServiceImpl(solrClient, solrClient,brukerRepository,
-                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(LockService.class));
-        }
+        solrService = new SolrServiceImpl(solrClient, solrClient, brukerRepository,
+                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(LockingTaskExecutor.class));
+    }
 
     @Disabled //Kan ikke enable igjen før vi har åpning mot databasen i q6 fra byggserver!!
     @Test
     @SneakyThrows
     public void skalOppdatereSolrIndeksKorrekt() {
         SolrInputDocument solrInputDocument = brukerRepository.retrieveBrukeremedBrukerdata(asList(AREMARK_PERSON_ID)).get(0);
-        applyAktivitetstatusToDocument(solrInputDocument,getAktivitetStatusesWithOffset(0));
+        applyAktivitetstatusToDocument(solrInputDocument, getAktivitetStatusesWithOffset(0));
 
         solrClient.add(solrInputDocument);
         solrClient.commit();
 
-        SolrQuery solrQuery = new SolrQuery("person_id:"+AREMARK_PERSON_ID.toString());
+        SolrQuery solrQuery = new SolrQuery("person_id:" + AREMARK_PERSON_ID.toString());
         QueryResponse response = solrClient.query(solrQuery);
         SolrDocument solrDocument = response.getResults().get(0);
         Bruker bruker = Bruker.of(solrDocument);
@@ -137,8 +141,8 @@ public class SolrUpdateSmoketest {
         BrukereMedAntall brukereAscending = solrService.hentBrukere("testenhet", Optional.empty(), "ascending", "fodselsnummer", new Filtervalg(), null, null);
         List<LocalDateTime> ascending = brukereAscending.getBrukere().stream().map(Bruker::getFodselsdato).collect(Collectors.toList());
         List<LocalDateTime> descending = brukereDescending.getBrukere().stream().map(Bruker::getFodselsdato).collect(Collectors.toList());
-        assertThat(ascending).isEqualTo(asList(fodselsdato3.toLocalDateTime(), fodselsdato2.toLocalDateTime(),fodselsdato1.toLocalDateTime()));
-        assertThat(descending).isEqualTo(asList(fodselsdato1.toLocalDateTime(), fodselsdato2.toLocalDateTime(),fodselsdato3.toLocalDateTime()));
+        assertThat(ascending).isEqualTo(asList(fodselsdato3.toLocalDateTime(), fodselsdato2.toLocalDateTime(), fodselsdato1.toLocalDateTime()));
+        assertThat(descending).isEqualTo(asList(fodselsdato1.toLocalDateTime(), fodselsdato2.toLocalDateTime(), fodselsdato3.toLocalDateTime()));
         solrService.slettBruker(PersonId.of("1111"));
         solrService.slettBruker(PersonId.of("2222"));
         solrService.slettBruker(PersonId.of("3333"));
@@ -156,8 +160,8 @@ public class SolrUpdateSmoketest {
         solrClient.add(solrInputDocument1);
         solrClient.add(solrInputDocument2);
         solrClient.commit();
-        BrukereMedAntall brukereAscending = solrService.hentBrukere("testenhet",Optional.empty(), "ascending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
-        BrukereMedAntall brukereDescending = solrService.hentBrukere("testenhet",Optional.empty(), "descending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
+        BrukereMedAntall brukereAscending = solrService.hentBrukere("testenhet", Optional.empty(), "ascending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
+        BrukereMedAntall brukereDescending = solrService.hentBrukere("testenhet", Optional.empty(), "descending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
         List<Map<String, Timestamp>> aktiviteterAscending = brukereAscending.getBrukere().stream().map(Bruker::getAktiviteter).collect(Collectors.toList());
         List<Map<String, Timestamp>> aktiviteterDescending = brukereDescending.getBrukere().stream().map(Bruker::getAktiviteter).collect(Collectors.toList());
         Timestamp tiltakAscending = aktiviteterAscending.get(0).get("tiltak");
@@ -167,31 +171,31 @@ public class SolrUpdateSmoketest {
 
     private Set<AktivitetStatus> getAktivitetStatusesWithOffset(int offset) {
         Set<AktivitetStatus> statuser = new HashSet<>();
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"tiltak", true, timestampPlusYears(1+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"behandling", true, timestampPlusYears(2+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"sokeavtale", true, timestampPlusYears(3+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"stilling", true, timestampPlusYears(4+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"ijobb", true, timestampPlusYears(5+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"samtalereferat", true, timestampPlusYears(6+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"egen", true, timestampPlusYears(7+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"gruppeaktivitet", true, timestampPlusYears(8+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"mote", true, timestampPlusYears(9+offset)));
-        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID,AREMARK_AKTOER_ID,"utdanningaktivitet", true, timestampPlusYears(10+offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "tiltak", true, timestampPlusYears(1 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "behandling", true, timestampPlusYears(2 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "sokeavtale", true, timestampPlusYears(3 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "stilling", true, timestampPlusYears(4 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "ijobb", true, timestampPlusYears(5 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "samtalereferat", true, timestampPlusYears(6 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "egen", true, timestampPlusYears(7 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "gruppeaktivitet", true, timestampPlusYears(8 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "mote", true, timestampPlusYears(9 + offset)));
+        statuser.add(AktivitetStatus.of(AREMARK_PERSON_ID, AREMARK_AKTOER_ID, "utdanningaktivitet", true, timestampPlusYears(10 + offset)));
         return statuser;
     }
 
     private static Filtervalg filterMedAlleAktiviteter() {
         Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
-        aktivitetTyperList.forEach( type -> aktiviteter.put(type.name(), AktivitetFiltervalg.JA));
+        aktivitetTyperList.forEach(type -> aktiviteter.put(type.name(), AktivitetFiltervalg.JA));
         return new Filtervalg().setAktiviteter(aktiviteter);
     }
 
     private static Timestamp timestampPlusYears(int years) {
-        return  new Timestamp(LocalDateTime.now().plusYears(years).toInstant(ZoneOffset.UTC).toEpochMilli());
+        return new Timestamp(LocalDateTime.now().plusYears(years).toInstant(ZoneOffset.UTC).toEpochMilli());
     }
 
     private static Timestamp timestampMinusYears(int years) {
-        return  new Timestamp(LocalDateTime.now().minusYears(years).toInstant(ZoneOffset.UTC).toEpochMilli());
+        return new Timestamp(LocalDateTime.now().minusYears(years).toInstant(ZoneOffset.UTC).toEpochMilli());
     }
 
     private static SolrInputDocument getBaseDocument(String personid, Timestamp fodselsdato, String fnr) {
@@ -236,9 +240,9 @@ public class SolrUpdateSmoketest {
                 .setConnectionManager(
                         new PoolingHttpClientConnectionManager(
                                 RegistryBuilder.<ConnectionSocketFactory>create()
-                                .register("http", PlainConnectionSocketFactory.INSTANCE)
-                                .register("https", new SSLConnectionSocketFactory(unsafeSSLContext, NoopHostnameVerifier.INSTANCE))
-                                .build()
+                                        .register("http", PlainConnectionSocketFactory.INSTANCE)
+                                        .register("https", new SSLConnectionSocketFactory(unsafeSSLContext, NoopHostnameVerifier.INSTANCE))
+                                        .build()
                         )
                 )
                 .setDefaultCredentialsProvider(credentialsProvider)

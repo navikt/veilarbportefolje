@@ -3,7 +3,10 @@ package no.nav.fo.veilarbportefolje.service;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
+import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
@@ -40,6 +43,7 @@ import java.util.function.BiConsumer;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.veilarbportefolje.util.BatchConsumer.batchConsumer;
@@ -61,7 +65,7 @@ public class SolrServiceImpl implements SolrService {
     private AktoerService aktoerService;
     private VeilederService veilederService;
     private Executor executor;
-    private LockService lockService;
+    private LockingTaskExecutor lockingTaskExecutor;
 
     @Inject
     public SolrServiceImpl(
@@ -71,7 +75,7 @@ public class SolrServiceImpl implements SolrService {
             AktoerService aktoerService,
             VeilederService veilederService,
             AktivitetDAO aktivitetDAO,
-            LockService lockService) {
+            LockingTaskExecutor lockingTaskExecutor) {
 
         this.solrClientMaster = solrClientMaster;
         this.solrClientSlave = solrClientSlave;
@@ -80,13 +84,14 @@ public class SolrServiceImpl implements SolrService {
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
-        this.lockService = lockService;
+        this.lockingTaskExecutor = lockingTaskExecutor;
     }
 
     @Transactional
     @Override
     public void hovedindeksering() {
-        lockService.runWithLock(this::hovedindekseringWithLock);
+        lockingTaskExecutor.executeWithLock(this::hovedindeksering,
+                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
     }
 
     private void hovedindekseringWithLock() {
@@ -113,7 +118,8 @@ public class SolrServiceImpl implements SolrService {
     @Transactional
     @Override
     public void deltaindeksering() {
-        lockService.runWithLock(this::deltaindekseringWithLock);
+        lockingTaskExecutor.executeWithLock(this::deltaindekseringWithLock,
+                new LockConfiguration(DatabaseConfig.DELTAINDEKSERING, DELTAINDEKSERING_LOCK_AT_MOST_UNTIL));
     }
 
     private void deltaindekseringWithLock() {

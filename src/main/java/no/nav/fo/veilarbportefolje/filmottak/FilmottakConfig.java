@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.filmottak;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
@@ -7,7 +8,6 @@ import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakRepository;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.IndekserYtelserHandler;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
-import no.nav.fo.veilarbportefolje.service.LockService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.commons.vfs2.FileObject;
@@ -59,8 +59,8 @@ public class FilmottakConfig {
     }
 
     @Bean
-    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
-        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository, lockService);
+    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockingTaskExecutor lockingTaskExecutor) {
+        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository, lockingTaskExecutor);
     }
 
     @Bean

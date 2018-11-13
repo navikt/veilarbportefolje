@@ -20,6 +20,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.time.Instant;
 import java.util.UUID;
 
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -27,10 +28,13 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @Configuration
 public class DatabaseConfig {
 
-    public static final String JNDI_NAME = "java:/jboss/datasources/veilarbportefoljeDB";
     public static final String VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_URL";
     public static final String VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_USERNAME";
     public static final String VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_PASSWORD";
+    public static final String DELTAINDEKSERING = "deltaindeksering";
+    public static final Instant DELTAINDEKSERING_LOCK_AT_MOST_UNTIL = Instant.now().plusSeconds(50);
+    public static final String TOTALINDEKSERING = "totalindeksering";
+    public static final Instant TOTALINDEKSERING_LOCK_AT_MOST_UNTIL = Instant.now().plusSeconds(60 * 60 * 3);
 
     @Bean
     public DataSource dataSource() {

@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbportefolje.service;
 
 import io.vavr.control.Option;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.database.KrrRepository;
-import no.nav.fo.veilarbportefolje.mock.LockServiceMock;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +59,7 @@ public class KrrServiceTest {
     void skalIkkeKasteExceptionsVedFeilMotKRR() throws Exception {
         KrrRepository repo = mock(KrrRepository.class);
         DigitalKontaktinformasjonV1 dkif = mock(DigitalKontaktinformasjonV1.class);
-        KrrService service = new KrrService(repo, dkif, new LockServiceMock());
+        KrrService service = new KrrService(repo, dkif, mock(LockingTaskExecutor.class));
 
         when(dkif.hentDigitalKontaktinformasjonBolk(any())).thenThrow(SocketTimeoutException.class);
 

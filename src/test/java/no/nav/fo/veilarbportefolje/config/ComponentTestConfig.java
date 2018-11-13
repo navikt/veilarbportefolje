@@ -1,12 +1,12 @@
 package no.nav.fo.veilarbportefolje.config;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.apiapp.ApiApplication.NaisApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.mock.AktoerServiceMock;
 import no.nav.fo.veilarbportefolje.mock.EnhetMock;
-import no.nav.fo.veilarbportefolje.mock.LockServiceMock;
 import no.nav.fo.veilarbportefolje.mock.SolrServiceMock;
 import no.nav.fo.veilarbportefolje.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -85,8 +85,8 @@ public class ComponentTestConfig implements NaisApiApplication {
     }
 
     @Bean
-    public LockService lockService() {
-        return new LockServiceMock();
+    public LockingTaskExecutor lockingTaskExecutor() {
+        return mock(LockingTaskExecutor.class);
     }
 
     @Override

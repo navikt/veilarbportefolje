@@ -2,12 +2,13 @@ package no.nav.fo.veilarbportefolje.filmottak.tiltak;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakFileUtils;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
-import no.nav.fo.veilarbportefolje.service.LockService;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
 import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
@@ -28,6 +29,8 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING_LOCK_AT_MOST_UNTIL;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakUtils.*;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
@@ -41,15 +44,15 @@ public class TiltakHandler {
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
-    private final LockService lockService;
+    private final LockingTaskExecutor lockingTaskExecutor;
 
     @Inject
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockService lockService) {
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockingTaskExecutor lockingTaskExecutor) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
-        this.lockService = lockService;
+        this.lockingTaskExecutor = lockingTaskExecutor;
     }
 
     public static Timestamp getDatoFilter() {
@@ -57,7 +60,8 @@ public class TiltakHandler {
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
-        lockService.runWithLock(this::hentTiltakOgPopulerDatabaseWithLock);
+        lockingTaskExecutor.executeWithLock(this::hentTiltakOgPopulerDatabaseWithLock,
+                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
     }
 
     private void hentTiltakOgPopulerDatabaseWithLock() {

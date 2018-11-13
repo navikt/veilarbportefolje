@@ -4,6 +4,8 @@ import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.database.KrrRepository;
 import no.nav.fo.veilarbportefolje.domene.KrrDAO;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -22,6 +24,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING_LOCK_AT_MOST_UNTIL;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
@@ -29,17 +33,18 @@ public class KrrService {
 
     private KrrRepository krrRepository;
     private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
-    private LockService lockService;
+    private LockingTaskExecutor lockingTaskExecutor;
 
     @Inject
-    public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1, LockService lockService) {
+    public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1, LockingTaskExecutor lockingTaskExecutor) {
         this.krrRepository = krrRepository;
         this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
-        this.lockService = lockService;
+        this.lockingTaskExecutor = lockingTaskExecutor;
     }
 
     public void hentDigitalKontaktInformasjonBolk() {
-        lockService.runWithLock(this::hentDigitalKontaktInformasjonBolkWithLock);
+        lockingTaskExecutor.executeWithLock(this::hentDigitalKontaktInformasjonBolkWithLock,
+                new LockConfiguration(TOTALINDEKSERING, TOTALINDEKSERING_LOCK_AT_MOST_UNTIL));
     }
 
     private void hentDigitalKontaktInformasjonBolkWithLock() {

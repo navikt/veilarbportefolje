@@ -33,13 +33,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif, LockService lockService) {
-        return new KrrService(krrRepository, dkif, lockService);
-    }
-
-    @Bean
-    public LockService lockService(LockingTaskExecutor lockingTaskExecutor) {
-        return new LockServiceImpl(lockingTaskExecutor);
+    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif, LockingTaskExecutor lockingTaskExecutor) {
+        return new KrrService(krrRepository, dkif, lockingTaskExecutor);
     }
 
 }
