@@ -91,7 +91,7 @@ public class SolrServiceImpl implements SolrService {
     @Transactional
     @Override
     public void hovedindeksering() {
-        lockingTaskExecutor.executeWithLock(this::hovedindeksering,
+        lockingTaskExecutor.executeWithLock(this::hovedindekseringWithLock,
                 new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
     }
 
