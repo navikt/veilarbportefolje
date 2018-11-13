@@ -59,7 +59,12 @@ public class FilmottakConfig {
     }
 
     @Bean
-    public TiltakHandler tiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockingTaskExecutor lockingTaskExecutor) {
+    public TiltakHandler tiltakHandler(
+            TiltakRepository tiltakRepository,
+            AktivitetDAO aktivitetDAO,
+            AktoerService aktoerService,
+            BrukerRepository brukerRepository,
+            LockingTaskExecutor lockingTaskExecutor) {
         return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository, lockingTaskExecutor);
     }
 
