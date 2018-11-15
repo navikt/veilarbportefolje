@@ -1,11 +1,13 @@
 package no.nav.fo.veilarbportefolje.config;
 
+import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.fo.veilarbportefolje.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
+import no.nav.sbl.jdbc.Transactor;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
@@ -75,4 +77,21 @@ public class ApplicationConfigTest {
         return mock(LockingTaskExecutor.class);
     }
 
+    @Bean
+    public Transactor transactor() {
+        class TestTransactor extends Transactor {
+
+            public TestTransactor() {
+                super(null);
+            }
+
+            @Override
+            @SneakyThrows
+            public void inTransaction(InTransaction inTransaction) {
+                inTransaction.run();
+            }
+
+        }
+        return new TestTransactor();
+    }
 }

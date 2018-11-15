@@ -9,6 +9,7 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
+import no.nav.sbl.jdbc.Transactor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -38,6 +39,9 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Inject
     private LockingTaskExecutor taskExecutor;
+
+    @Inject
+    private Transactor transactor;
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM OPPFOLGING_DATA "
@@ -97,13 +101,11 @@ public class AktoerServiceImpl implements AktoerService {
         return typeMap;
     }
 
-
     private Try<Fnr> hentFnrViaSoap(AktoerId aktoerId) {
         return Try.of(() -> aktorService.getFnr(aktoerId.toString()).orElseThrow(IllegalStateException::new)).map(Fnr::of);
     }
 
-    @Transactional
-    public void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
+    private void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
         if (personId == null) {
             return;
         }
@@ -111,8 +113,10 @@ public class AktoerServiceImpl implements AktoerService {
         if (!aktoerId.equals(aktoerIdFraTPS)) {
             brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
         } else {
-            brukerRepository.setGjeldeneFlaggTilNull(personId);
-            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
+            transactor.inTransaction(() -> {
+                brukerRepository.setGjeldeneFlaggTilNull(personId);
+                brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
+            });
         }
 
 
