@@ -11,6 +11,7 @@ healthcheck:
   liveness:
     path: veilarbportefolje/internal/isAlive
     initialDelay: 60
+    timeout: 5
   readiness:
     path: veilarbportefolje/internal/isReady
     initialDay: 60
@@ -65,7 +66,7 @@ fasitResources:
 
   # ISSO
   - alias: isso-host
-    resourceType: baseurl
+    resourceType: baseurlnei 1
   - alias: isso-jwks
     resourceType: baseurl
   - alias: isso-issuer
