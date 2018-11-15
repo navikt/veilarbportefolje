@@ -54,24 +54,22 @@ public class SolrConfig {
 
     @Bean
     public SolrClient solrClientSlave() {
-        HttpSolrClient client = new HttpSolrClient.Builder()
+        return new HttpSolrClient.Builder()
                 .withBaseSolrUrl(URL)
+                .withConnectionTimeout(2000)
+                .withSocketTimeout(10000)
                 .withHttpClient(createHttpClientForSolr())
                 .build();
-        client.setConnectionTimeout(2000);
-        client.setSoTimeout(10000);
-        return client;
     }
 
     @Bean
     public SolrClient solrClientMaster() {
-        HttpSolrClient client = new HttpSolrClient.Builder()
+        return new HttpSolrClient.Builder()
                 .withBaseSolrUrl(getRequiredProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY))
+                .withConnectionTimeout(2000)
+                .withSocketTimeout(10000)
                 .withHttpClient(createHttpClientForSolr())
                 .build();
-        client.setConnectionTimeout(2000);
-        client.setSoTimeout(10000);
-        return client;
     }
 
     @Bean
