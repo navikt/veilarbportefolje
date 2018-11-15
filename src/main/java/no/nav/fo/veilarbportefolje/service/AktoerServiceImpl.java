@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.util.DbUtils.getCauseString;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
@@ -73,7 +72,7 @@ public class AktoerServiceImpl implements AktoerService {
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         return brukerRepository.retrievePersonid(aktoerId)
                 .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId)
-                .onFailure(e -> log.warn("Kunne ikke hente/mappe personId for aktorid: {}: {}", aktoerId, getCauseString(e)));
+                .onFailure(e -> log.warn("Kunne ikke hente/mappe personId for aktorid: " + aktoerId, e));
     }
 
     private PersonId getPersonIdFromFnr(AktoerId aktoerId) {
@@ -100,9 +99,7 @@ public class AktoerServiceImpl implements AktoerService {
 
 
     private Try<Fnr> hentFnrViaSoap(AktoerId aktoerId) {
-        return Try.of(() -> aktorService.getFnr(aktoerId.toString()).get())
-                .onFailure(e -> log.warn("Kunne ikke hente aktoerId for fnr : {}", getCauseString(e)))
-                .map(Fnr::of);
+        return Try.of(() -> aktorService.getFnr(aktoerId.toString()).orElseThrow(IllegalStateException::new)).map(Fnr::of);
     }
 
     @Transactional
