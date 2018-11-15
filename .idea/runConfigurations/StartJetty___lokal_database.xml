@@ -1,15 +1,22 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="StartJetty - lokal database" type="Application" factoryName="Application" singleton="true">
-    <option name="MAIN_CLASS_NAME" value="MainTest" />
-    <module name="veilarbportefolje" />
-    <option name="VM_PARAMETERS" value="-Dlokal.database=true" />
-    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-    <extension name="coverage">
+    <extension name="coverage" enabled="false" merge="false" runner="idea">
       <pattern>
         <option name="PATTERN" value=".*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
+    <option name="MAIN_CLASS_NAME" value="MainTest" />
+    <option name="VM_PARAMETERS" value="-Dlokal.database=true" />
+    <option name="PROGRAM_PARAMETERS" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="ENABLE_SWING_INSPECTOR" value="false" />
+    <option name="ENV_VARIABLES" />
+    <option name="PASS_PARENT_ENVS" value="true" />
+    <module name="veilarbportefolje" />
+    <envs />
     <method />
   </configuration>
 </component>
