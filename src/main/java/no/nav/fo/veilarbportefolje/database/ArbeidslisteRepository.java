@@ -68,7 +68,7 @@ public class ArbeidslisteRepository {
                             .execute();
                     return data.getAktoerId();
                 }
-        ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db: {}", getCauseString(e)));
+        ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db", e));
     }
 
 
@@ -85,7 +85,7 @@ public class ArbeidslisteRepository {
                             .execute();
                     return data.getAktoerId();
                 }
-        ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db: {}", getCauseString(e)));
+        ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
 
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
@@ -98,7 +98,7 @@ public class ArbeidslisteRepository {
                 }
         )
                 .onSuccess((aktoerid) -> log.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
-                .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db: {}", getCauseString(e)));
+                .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db", e));
     }
 
     public void deleteArbeidslisteForAktoerid(AktoerId aktoerId) {

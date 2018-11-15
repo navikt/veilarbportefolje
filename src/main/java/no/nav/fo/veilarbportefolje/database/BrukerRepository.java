@@ -164,7 +164,7 @@ public class BrukerRepository {
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke personid for aktoerid {}: {}", aktoerId, getCauseString(e)));
+        ).onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e));
     }
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
@@ -173,7 +173,7 @@ public class BrukerRepository {
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke personid for fnr: {}, {}", fnr, getCauseString(e)));
+        ).onFailure(e -> log.warn("Fant ikke personid for fnr: " + fnr, e));
     }
 
     public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
@@ -182,7 +182,7 @@ public class BrukerRepository {
                         .column("FODSELSNR")
                         .where(WhereClause.equals("PERSON_ID", personId.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke fnr for personid: {}, {}", personId, getCauseString(e)));
+        ).onFailure(e -> log.warn("Fant ikke fnr for personid: " + personId, e));
     }
 
     /**
