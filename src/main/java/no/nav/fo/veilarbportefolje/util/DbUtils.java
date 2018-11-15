@@ -144,14 +144,6 @@ public class DbUtils {
         return String.valueOf(bd.intValue());
     }
 
-    public static String getCauseString(Throwable e) {
-        if (e.getCause() == null) {
-            return e.getMessage();
-
-        }
-        return e.getCause().toString();
-    }
-
     public static <S> Set<S> toSet(S s) {
         Set<S> set = new HashSet<>();
         set.add(s);
