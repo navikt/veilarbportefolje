@@ -81,3 +81,6 @@ fasitResources:
   - alias: veilArbPortefoljeAPI
     resourceType: restservice
     path: /veilarbportefolje/api
+
+alertProfiles:
+  - common-java-modules
