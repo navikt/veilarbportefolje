@@ -11,10 +11,11 @@ healthcheck:
   liveness:
     path: veilarbportefolje/internal/isAlive
     initialDelay: 60
-    timeout: 5
+    timeout: 10
   readiness:
     path: veilarbportefolje/internal/isReady
     initialDay: 60
+    timeout: 10
 prometheus:
   enabled: true
   path: veilarbportefolje/internal/metrics
