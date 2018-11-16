@@ -408,32 +408,28 @@ public class SolrServiceImpl implements SolrService {
 
         StatusTall statusTall = new StatusTall();
         QueryResponse response;
-        try {
-            response = solrClientSlave.query(solrQuery);
-            long antallTotalt = response.getResults().getNumFound();
-            long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
-            long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
-            long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
-            long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
-            long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
-            long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
-            long antallIarbeidsliste = response.getFacetQuery().get(minArbeidsliste);
-            long antallNyeBrukerForVeileder = response.getFacetQuery().get(nyForVeileder);
-            long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
-            statusTall
-                    .setTotalt(antallTotalt)
-                    .setInaktiveBrukere(antallInaktiveBrukere)
-                    .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
-                    .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
-                    .setIavtaltAktivitet(antalliavtaltAktivitet)
-                    .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
-                    .setUtlopteAktiviteter(antallUtlopteAktiviteter)
-                    .setMinArbeidsliste(antallIarbeidsliste)
-                    .setNyeBrukereForVeileder(antallNyeBrukerForVeileder)
-                    .setTrengerVurdering(antallTrengerVurdering);
-        } catch (SolrServerException | IOException e) {
-            log.error("Henting av statustall for veilederportefølje feilet: " + solrQuery, e);
-        }
+        response = timed("solr.statustall.veileder", () -> getResponse(solrQuery));
+        long antallTotalt = response.getResults().getNumFound();
+        long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
+        long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
+        long antallVenterPaSvarFraBruker = response.getFacetQuery().get(venterPaSvarFraBruker);
+        long antalliavtaltAktivitet = response.getFacetQuery().get(iavtaltAktivitet);
+        long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
+        long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
+        long antallIarbeidsliste = response.getFacetQuery().get(minArbeidsliste);
+        long antallNyeBrukerForVeileder = response.getFacetQuery().get(nyForVeileder);
+        long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
+        statusTall
+                .setTotalt(antallTotalt)
+                .setInaktiveBrukere(antallInaktiveBrukere)
+                .setVenterPaSvarFraNAV(antallVenterPaSvarFraNAV)
+                .setVenterPaSvarFraBruker(antallVenterPaSvarFraBruker)
+                .setIavtaltAktivitet(antalliavtaltAktivitet)
+                .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
+                .setUtlopteAktiviteter(antallUtlopteAktiviteter)
+                .setMinArbeidsliste(antallIarbeidsliste)
+                .setNyeBrukereForVeileder(antallNyeBrukerForVeileder)
+                .setTrengerVurdering(antallTrengerVurdering);
 
         return statusTall;
     }
