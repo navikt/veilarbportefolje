@@ -27,11 +27,11 @@ public class SqlUtils {
         return new UpsertQuery(db, tableName);
     }
 
-    public static <T> SelectQuery<T> select(DataSource ds, String tableName, Function<ResultSet, T> mapper) {
-        return new SelectQuery<>(ds, tableName, mapper);
+    public static <T> SelectQuery<T> select(JdbcTemplate db, String tableName, Function<ResultSet, T> mapper) {
+        return new SelectQuery<>(db, tableName, mapper);
     }
 
-    public static DeleteQuery delete(DataSource ds, String tableName) {
-        return new DeleteQuery(ds, tableName);
+    public static DeleteQuery delete(JdbcTemplate db, String tableName) {
+        return new DeleteQuery(db, tableName);
     }
 }

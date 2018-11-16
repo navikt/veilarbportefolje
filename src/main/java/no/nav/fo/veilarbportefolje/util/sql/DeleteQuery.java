@@ -1,22 +1,20 @@
 package no.nav.fo.veilarbportefolje.util.sql;
 
 import lombok.SneakyThrows;
+import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
-import static no.nav.fo.veilarbportefolje.util.DbUtils.dbTimerNavn;
 import static no.nav.sbl.dialogarena.common.abac.pep.Utils.timed;
 
 public class DeleteQuery {
-    private final DataSource ds;
+    private final JdbcTemplate ds;
     private final String tableName;
     private WhereClause where;
 
-    DeleteQuery(DataSource ds, String tableName) {
+    DeleteQuery(JdbcTemplate ds, String tableName) {
         this.ds = ds;
         this.tableName = tableName;
     }
@@ -35,19 +33,13 @@ public class DeleteQuery {
             );
         }
 
-        int result;
         String sql = createDeleteStatement();
-        try (Connection conn = ds.getConnection()) {
 
-            PreparedStatement ps = timed(dbTimerNavn(sql),() ->conn.prepareStatement(sql));
-            where.applyTo(ps, 1);
-
-            result = ps.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new SqlUtilsException(e);
-        }
-        return result;
+        return timed(DbUtils.dbTimerNavn(sql), () -> ds.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            where.applyTo(preparedStatement, 1);
+            return preparedStatement;
+        }));
     }
 
     private String createDeleteStatement() {

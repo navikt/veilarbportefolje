@@ -23,7 +23,7 @@ public class PersonRepositoryTest {
     public void setup() {
         ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
-        personRepository = new PersonRepository(ds);
+        personRepository = new PersonRepository(db);
     }
 
     @Test

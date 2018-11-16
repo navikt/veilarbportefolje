@@ -73,7 +73,7 @@ public class AktivitetFeedHandlerTest {
     @Before
     public void resetMocks() {
         reset(brukerRepository, solrService, aktoerService, aktivitetDAOMock, persistentOppdatering, db, namedParameterJdbcTemplate, ds);
-        aktivitetDAO = new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
+        aktivitetDAO = new AktivitetDAO(db, namedParameterJdbcTemplate);
         aktivitetService = new AktivitetService(aktoerService, aktivitetDAO, persistentOppdatering);
         aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetServiceMock, aktivitetDAOMock);
     }

@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 
 public class SelectQueryTest {
 
-    private DataSource ds = mock(JdbcTemplate.class).getDataSource();
+    private JdbcTemplate ds = mock(JdbcTemplate.class);
 
     @Test
     public void shouldGenerateValidSelectQueryString() throws Exception {

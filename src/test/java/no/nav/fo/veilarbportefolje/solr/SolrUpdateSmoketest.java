@@ -94,7 +94,7 @@ public class SolrUpdateSmoketest {
         ds = setupDataSourceWithCredentials(FasitUtils.getDbCredentials(VEILARBPORTEFOLJE));
         jdbcTemplate = new JdbcTemplate(ds);
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
-        brukerRepository = new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
+        brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
         solrService = new SolrServiceImpl(solrClient, solrClient, brukerRepository,
                 mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(LockingTaskExecutor.class));
     }

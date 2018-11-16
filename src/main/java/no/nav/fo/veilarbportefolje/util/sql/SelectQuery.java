@@ -3,12 +3,10 @@ package no.nav.fo.veilarbportefolje.util.sql;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -17,13 +15,13 @@ import java.util.stream.Stream;
 import static no.nav.sbl.dialogarena.common.abac.pep.Utils.timed;
 
 public class SelectQuery<T> {
-    private DataSource ds;
+    private JdbcTemplate ds;
     private String tableName;
     private List<String> columnNames;
     private Function<ResultSet, T> mapper;
     private WhereClause where;
 
-    SelectQuery(DataSource ds, String tableName, Function<ResultSet, T> mapper) {
+    SelectQuery(JdbcTemplate ds, String tableName, Function<ResultSet, T> mapper) {
         this.ds = ds;
         this.tableName = tableName;
         this.columnNames = new ArrayList<>();
@@ -44,19 +42,17 @@ public class SelectQuery<T> {
     public T execute() {
         validate();
         String sql = createSelectStatement();
-        try (Connection conn = ds.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            where.applyTo(ps, 1);
-            ResultSet resultSet = timed(DbUtils.dbTimerNavn(sql), ps::executeQuery);
-            if(!resultSet.next()) {
+        return timed(DbUtils.dbTimerNavn(sql), () -> ds.query(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            where.applyTo(preparedStatement, 1);
+            return preparedStatement;
+        }, resultSet -> {
+            if (!resultSet.next()) {
                 return null;
             }
             return mapper.apply(resultSet);
-
-        } catch (SQLException e) {
-            throw new SqlUtilsException(e);
-        }
+        }));
     }
 
     private void validate() {

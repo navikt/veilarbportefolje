@@ -39,13 +39,11 @@ import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.*;
 public class BrukerRepository {
 
     JdbcTemplate db;
-    private DataSource ds;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Inject
-    public BrukerRepository(JdbcTemplate db, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
-        this.ds = ds;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
@@ -104,7 +102,7 @@ public class BrukerRepository {
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
                 () -> {
-                    return select(ds, "OPPFOLGING_DATA", this::mapToVeilederId)
+                    return select(db, "OPPFOLGING_DATA", this::mapToVeilederId)
                             .column("VEILEDERIDENT")
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                             .execute();
@@ -115,7 +113,7 @@ public class BrukerRepository {
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
                 () -> {
-                    return select(ds, "OPPFOLGINGSBRUKER", this::mapToEnhet)
+                    return select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
                             .column("NAV_KONTOR")
                             .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                             .execute();
@@ -126,7 +124,7 @@ public class BrukerRepository {
     public Try<String> retrieveEnhet(PersonId personId) {
         return Try.of(
                 () -> {
-                    return select(ds, "OPPFOLGINGSBRUKER", this::mapToEnhet)
+                    return select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
                             .column("NAV_KONTOR")
                             .where(WhereClause.equals("PERSON_ID", personId.toString()))
                             .execute();
@@ -160,7 +158,7 @@ public class BrukerRepository {
 
     public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
         return Try.of(
-                () -> select(db.getDataSource(), AKTOERID_TO_PERSONID, this::mapToPersonIdFromAktoerIdToPersonId)
+                () -> select(db, AKTOERID_TO_PERSONID, this::mapToPersonIdFromAktoerIdToPersonId)
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
@@ -169,7 +167,7 @@ public class BrukerRepository {
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
         return Try.of(() ->
-                select(db.getDataSource(), "OPPFOLGINGSBRUKER", this::mapPersonIdFromOppfolgingsbruker)
+                select(db, "OPPFOLGINGSBRUKER", this::mapPersonIdFromOppfolgingsbruker)
                         .column("PERSON_ID")
                         .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                         .execute()
@@ -178,7 +176,7 @@ public class BrukerRepository {
 
     public Try<Fnr> retrieveFnrFromPersonid(PersonId personId) {
         return Try.of(() ->
-                select(db.getDataSource(), "OPPFOLGINGSBRUKER", this::mapFnrFromOppfolgingsbruker)
+                select(db, "OPPFOLGINGSBRUKER", this::mapFnrFromOppfolgingsbruker)
                         .column("FODSELSNR")
                         .where(WhereClause.equals("PERSON_ID", personId.toString()))
                         .execute()

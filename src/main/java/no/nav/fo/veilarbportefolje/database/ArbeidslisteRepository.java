@@ -33,16 +33,13 @@ public class ArbeidslisteRepository {
     private JdbcTemplate db;
 
     @Inject
-    private DataSource ds;
-
-    @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public static final String ARBEIDSLISTE = "ARBEIDSLISTE";
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
-                () -> select(ds, ARBEIDSLISTE, ArbeidslisteRepository::arbeidslisteMapper)
+                () -> select(db, ARBEIDSLISTE, ArbeidslisteRepository::arbeidslisteMapper)
                         .column("*")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
@@ -91,7 +88,7 @@ public class ArbeidslisteRepository {
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
         return Try.of(
                 () -> {
-                    delete(ds, ARBEIDSLISTE)
+                    delete(db, ARBEIDSLISTE)
                             .where(WhereClause.equals("AKTOERID", aktoerID.toString()))
                             .execute();
                     return aktoerID;

@@ -39,12 +39,12 @@ public class DatabaseConfigTest {
 
     @Bean
     public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
     }
 
     @Bean
-    public PersonRepository personRepository(DataSource ds) {
-        return new PersonRepository(ds);
+    public PersonRepository personRepository(JdbcTemplate jdbcTemplate) {
+        return new PersonRepository(jdbcTemplate);
     }
 
     @Bean
@@ -57,8 +57,8 @@ public class DatabaseConfigTest {
     public TiltakRepository tiltakRepository() { return new TiltakRepository(); }
 
     @Bean
-    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
-        return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
+    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new AktivitetDAO(db, namedParameterJdbcTemplate);
     }
 
     @Bean

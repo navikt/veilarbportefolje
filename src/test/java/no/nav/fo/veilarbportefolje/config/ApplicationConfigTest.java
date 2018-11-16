@@ -38,8 +38,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
-        return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
+    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new AktivitetDAO(db, namedParameterJdbcTemplate);
     }
 
     @Bean

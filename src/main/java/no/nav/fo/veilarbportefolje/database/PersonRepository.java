@@ -5,6 +5,7 @@ import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.Personinfo;
 import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
 import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -18,9 +19,9 @@ public class PersonRepository {
     private static final String FODSELSNR = "FODSELSNR";
     private static final String J = "J";
 
-    private DataSource ds;
+    private JdbcTemplate ds;
 
-    public PersonRepository(DataSource ds) {
+    public PersonRepository(JdbcTemplate ds) {
         this.ds = ds;
     }
 

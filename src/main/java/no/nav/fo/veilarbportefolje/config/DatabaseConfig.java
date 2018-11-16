@@ -20,7 +20,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.time.Instant;
 import java.util.UUID;
 
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -55,12 +54,12 @@ public class DatabaseConfig {
 
     @Bean
     public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new BrukerRepository(jdbcTemplate, ds, namedParameterJdbcTemplate);
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
     }
 
     @Bean
-    public PersonRepository personRepository(DataSource ds) {
-        return new PersonRepository(ds);
+    public PersonRepository personRepository(JdbcTemplate jdbcTemplate) {
+        return new PersonRepository(jdbcTemplate);
     }
 
     @Bean
@@ -74,8 +73,8 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
-        return new AktivitetDAO(db, namedParameterJdbcTemplate, ds);
+    public AktivitetDAO aktivitetDAO(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new AktivitetDAO(jdbcTemplate, namedParameterJdbcTemplate);
     }
 
     @Bean

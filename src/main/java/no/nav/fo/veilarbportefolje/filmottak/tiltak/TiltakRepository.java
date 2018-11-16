@@ -7,10 +7,10 @@ import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Aktivitetstyper;
 import no.nav.metrics.MetricsFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -22,9 +22,6 @@ import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 
 @Slf4j
 public class TiltakRepository {
-
-    @Inject
-    private DataSource ds;
 
     @Inject
     private JdbcTemplate db;
@@ -80,16 +77,18 @@ public class TiltakRepository {
     }
 
     void lagreEnhettiltak(List<TiltakForEnhet> tiltakListe) {
-        String sql = "INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)";
-        try (final Connection dsConnection =  ds.getConnection()){
-            final PreparedStatement ps = dsConnection.prepareStatement(sql);
+        db.execute((ConnectionCallback<Object>) connection -> {
+            lagreEnhettiltak(tiltakListe, connection);
+            return null;
+        });
+    }
 
-            batchProcess(1, tiltakListe, timed(dbTimerNavn(sql), tiltakForEnhetBatch -> {
-                lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
-            }));
-        } catch (SQLException e) {
-            log.error("Kunne ikke koble til database for å lagre tiltaksaktivitet for enhet", e);
-        }
+    private void lagreEnhettiltak(List<TiltakForEnhet> tiltakListe, Connection connection) throws SQLException {
+        String sql = "INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        batchProcess(1, tiltakListe, timed(dbTimerNavn(sql), tiltakForEnhetBatch -> {
+            lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
+        }));
     }
 
     private void lagreTiltakForEnhetBatch(Collection<TiltakForEnhet> tiltakForEnhetBatch, PreparedStatement ps) {

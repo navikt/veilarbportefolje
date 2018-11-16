@@ -32,12 +32,10 @@ public class AktivitetDAO {
 
     private JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private DataSource ds;
 
-    public AktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, DataSource ds) {
+    public AktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.ds = ds;
     }
 
 
@@ -97,7 +95,7 @@ public class AktivitetDAO {
 
     public void deleteById(String aktivitetid) {
         log.info("Sletter alle aktiviteter med id {}", aktivitetid);
-        SqlUtils.delete(ds, AKTIVITETER)
+        SqlUtils.delete(db, AKTIVITETER)
                 .where(WhereClause.equals(AKTIVITETID, aktivitetid))
                 .execute();
     }

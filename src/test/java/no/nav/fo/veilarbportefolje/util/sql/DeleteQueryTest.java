@@ -4,6 +4,7 @@ import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -18,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class DeleteQueryTest {
 
     @Inject
-    private DataSource ds;
+    private JdbcTemplate ds;
 
     @Test
     public void skalGenereRiktigSqlStreng() throws Exception {
