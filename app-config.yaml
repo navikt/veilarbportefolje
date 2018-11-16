@@ -2,8 +2,8 @@
 image: docker.adeo.no:5000/fo/veilarbportefolje
 team: oppfolging
 replicas:
-  min: 3
-  max: 3
+  min: 6
+  max: 6
   cpuThresholdPercentage: 50
 port: 8080
 webproxy: true
