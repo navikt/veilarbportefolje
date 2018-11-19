@@ -7,15 +7,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import no.nav.sbl.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -33,7 +30,7 @@ import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
-import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.*;
+import static no.nav.sbl.sql.SqlUtils.*;
 
 @Slf4j
 public class BrukerRepository {
@@ -343,18 +340,18 @@ public class BrukerRepository {
     }
 
     public void slettYtelsesdata() {
-        SqlUtils.update(db, "bruker_data")
-                .set("ytelse", null)
-                .set("utlopsdato", null)
-                .set("utlopsdatoFasett", null)
-                .set("dagputlopuke", null)
-                .set("dagputlopukefasett", null)
-                .set("permutlopuke", null)
-                .set("permutlopukefasett", null)
-                .set("aapmaxtiduke", null)
-                .set("aapmaxtidukefasett", null)
-                .set("aapunntakdagerigjen", null)
-                .set("aapunntakukerigjenfasett", null)
+        update(db, "bruker_data")
+                .set("ytelse", (Object)null)
+                .set("utlopsdato", (Object)null)
+                .set("utlopsdatoFasett", (Object)null)
+                .set("dagputlopuke", (Object)null)
+                .set("dagputlopukefasett", (Object)null)
+                .set("permutlopuke", (Object)null)
+                .set("permutlopukefasett", (Object)null)
+                .set("aapmaxtiduke", (Object)null)
+                .set("aapmaxtidukefasett", (Object)null)
+                .set("aapunntakdagerigjen", (Object)null)
+                .set("aapunntakukerigjenfasett", (Object)null)
                 .execute();
     }
 

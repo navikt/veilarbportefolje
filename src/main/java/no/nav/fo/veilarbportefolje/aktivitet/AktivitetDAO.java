@@ -9,13 +9,12 @@ import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.veilarbportefolje.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.veilarbportefolje.util.DbUtils;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
-import no.nav.fo.veilarbportefolje.util.sql.UpsertQuery;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.UpsertQuery;
+import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.sql.DataSource;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -190,10 +189,10 @@ public class AktivitetDAO {
 
     public void slettAktivitetDatoer() {
         SqlUtils.update(db, "bruker_data")
-                .set("NYESTEUTLOPTEAKTIVITET", null)
-                .set("AKTIVITET_START", null)
-                .set("NESTE_AKTIVITET_START", null)
-                .set("FORRIGE_AKTIVITET_START", null)
+                .set("NYESTEUTLOPTEAKTIVITET", (Object)null)
+                .set("AKTIVITET_START", (Object)null)
+                .set("NESTE_AKTIVITET_START", (Object)null)
+                .set("FORRIGE_AKTIVITET_START", (Object)null)
                 .execute();
     }
 
