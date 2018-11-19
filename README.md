@@ -1,4 +1,4 @@
-#Portefølje-serverside
+# Portefølje-serverside
 
 Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering av indeks.
 
@@ -31,3 +31,8 @@ Les i jobbtabellen til oracle for å undersøke statusen på den automatisk refr
 ```
 SELECT * from dba_jobs;
 ```
+
+## Kontakt og spørsmål
+Opprett en issue i GitHub for eventuelle spørsmål.
+
+Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #teamoppfølging.
