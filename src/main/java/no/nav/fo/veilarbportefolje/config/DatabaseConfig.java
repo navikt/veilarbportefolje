@@ -39,6 +39,7 @@ public class DatabaseConfig {
                 .url(getRequiredProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME))
                 .username(getRequiredProperty(VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME))
                 .password(getRequiredProperty(VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME))
+                .maxPoolSize(300)
                 .build();
     }
 
