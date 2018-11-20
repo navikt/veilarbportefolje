@@ -26,6 +26,7 @@
 
         <!-- Tredjeparts -->
         <solr.version>7.3.1</solr.version>
+        <jsch.version>0.1.54</jsch.version>
     </properties>
 
     <dependencyManagement>
@@ -76,9 +77,9 @@
                 <version>${solr.version}</version>
             </dependency>
             <dependency>
-                <groupId>jsch</groupId>
+                <groupId>com.jcraft</groupId>
                 <artifactId>jsch</artifactId>
-                <version>0.1.44</version>
+                <version>${jsch.version}</version>
                 <scope>runtime</scope>
             </dependency>
         </dependencies>
@@ -249,8 +250,9 @@
 
         <!--Diverse-->
         <dependency>
-            <groupId>jsch</groupId>
+            <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
+            <version>${jsch.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
