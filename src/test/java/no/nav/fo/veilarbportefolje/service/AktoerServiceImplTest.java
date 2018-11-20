@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.inject.Inject;
 import java.util.Optional;
 
-import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.insert;
+import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;

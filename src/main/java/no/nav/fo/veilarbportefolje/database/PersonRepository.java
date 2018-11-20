@@ -3,11 +3,9 @@ package no.nav.fo.veilarbportefolje.database;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.Personinfo;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.sql.DataSource;
 
 import java.sql.ResultSet;
 import java.util.Objects;

@@ -30,7 +30,7 @@ import static no.nav.fo.veilarbportefolje.consumer.OppfolgingFeedHandler.OPPFOLG
 import static no.nav.fo.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
-import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.insert;
+import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

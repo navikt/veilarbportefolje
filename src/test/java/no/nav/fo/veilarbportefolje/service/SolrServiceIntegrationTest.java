@@ -5,7 +5,7 @@ import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
+import no.nav.sbl.sql.SqlUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.UpdateResponse;

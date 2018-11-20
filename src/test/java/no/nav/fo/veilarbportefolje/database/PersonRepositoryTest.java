@@ -2,13 +2,12 @@ package no.nav.fo.veilarbportefolje.database;
 
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.Personinfo;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
+import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-
 import java.util.Optional;
 
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;

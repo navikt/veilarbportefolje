@@ -2,15 +2,16 @@ package no.nav.fo.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
-import no.nav.fo.veilarbportefolje.util.sql.UpdateBatchQuery;
-import no.nav.fo.veilarbportefolje.util.sql.UpsertQuery;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import no.nav.sbl.sql.UpdateBatchQuery;
+import no.nav.sbl.sql.UpsertQuery;
+import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static no.nav.sbl.sql.SqlUtils.upsert;
 
 @Data
 @Accessors(chain = true)
@@ -34,7 +35,7 @@ public class Brukerdata {
     private Timestamp forrigeAktivitetStart;
 
     public UpsertQuery toUpsertQuery(JdbcTemplate db) {
-        return SqlUtils.upsert(db, "bruker_data")
+        return upsert(db, "bruker_data")
                 .where(WhereClause.equals("PERSONID", personid))
                 .set("AKTOERID", aktoerid)
                 .set("YTELSE", ytelse != null ? ytelse.toString() : null)
