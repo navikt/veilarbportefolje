@@ -135,7 +135,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.builder()
                 .applicationName(requireApplicationName())
-                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                .unleashApiUrl("https://unleash.nais.adeo.no/api/")
                 .build());
     }
 }
