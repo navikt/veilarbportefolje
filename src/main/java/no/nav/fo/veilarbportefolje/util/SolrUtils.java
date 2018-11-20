@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.util.SolrSortUtils.addSort;
@@ -33,6 +34,7 @@ public class SolrUtils {
         put(Brukerstatus.UTLOPTE_AKTIVITETER, "nyesteutlopteaktivitet:*");
         put(Brukerstatus.MIN_ARBEIDSLISTE, "arbeidsliste_aktiv:*");
         put(Brukerstatus.NYE_BRUKERE_FOR_VEILEDER, "ny_for_veileder:true");
+        put(Brukerstatus.ER_SYKMELDT_MED_ARBEIDSGIVER, formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver());
     }};
 
     private static Locale locale = new Locale("no", "NO");
@@ -86,6 +88,14 @@ public class SolrUtils {
             return "";
         }
         return filter.stream().map(mapper).collect(joining(" OR "));
+    }
+
+
+    public static String formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver() {
+        return "formidlingsgruppekode:IARBS AND !(" + asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG")
+                .stream()
+                .map(kvalifiseringsgruppeKode -> "kvalifiseringsgruppekode:" + kvalifiseringsgruppeKode)
+                .collect((Collectors.joining(" + "))) + ")";
     }
 
     private static Optional<String> getFiltrerBrukerStatement(Filtervalg filtervalg) {

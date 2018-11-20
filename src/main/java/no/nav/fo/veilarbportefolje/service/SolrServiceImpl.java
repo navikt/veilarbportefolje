@@ -326,6 +326,7 @@ public class SolrServiceImpl implements SolrService {
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
         String trengerVurdering = "trenger_vurdering:true";
+        String erSykmeldtMedArbeidsgiver  = SolrUtils.formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver();
 
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
@@ -339,6 +340,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
         solrQuery.addFacetQuery(trengerVurdering);
+        solrQuery.addFacetQuery(erSykmeldtMedArbeidsgiver );
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
@@ -356,6 +358,7 @@ public class SolrServiceImpl implements SolrService {
         long antallIkkeIAvtaltAktivitet = response.getFacetQuery().get(ikkeIAvtaltAktivitet);
         long antallUtlopteAktiviteter = response.getFacetQuery().get(utlopteAktiviteter);
         long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
+        long antallErSykmeldtMedArbeidsgiver = response.getFacetQuery().get(erSykmeldtMedArbeidsgiver);
 
 
         statusTall
@@ -368,7 +371,8 @@ public class SolrServiceImpl implements SolrService {
                 .setIavtaltAktivitet(antalliavtaltAktivitet)
                 .setIkkeIavtaltAktivitet(antallIkkeIAvtaltAktivitet)
                 .setUtlopteAktiviteter(antallUtlopteAktiviteter)
-                .setTrengerVurdering(antallTrengerVurdering);
+                .setTrengerVurdering(antallTrengerVurdering)
+                .setErSykmeldtMedArbeidsgiver(antallErSykmeldtMedArbeidsgiver);
 
         return statusTall;
     }
@@ -391,6 +395,7 @@ public class SolrServiceImpl implements SolrService {
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
         String minArbeidsliste = "arbeidsliste_aktiv:*";
+        String erSykmeldtMedArbeidsgiver  = SolrUtils.formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver() ;
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
@@ -403,6 +408,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
         solrQuery.addFacetQuery(minArbeidsliste);
+        solrQuery.addFacetQuery(erSykmeldtMedArbeidsgiver );
 
         solrQuery.setRows(0);
 
@@ -419,6 +425,7 @@ public class SolrServiceImpl implements SolrService {
         long antallIarbeidsliste = response.getFacetQuery().get(minArbeidsliste);
         long antallNyeBrukerForVeileder = response.getFacetQuery().get(nyForVeileder);
         long antallTrengerVurdering = response.getFacetQuery().get(trengerVurdering);
+        long antallErSykmeldtMedArbeidsgiver = response.getFacetQuery().get(erSykmeldtMedArbeidsgiver);
         statusTall
                 .setTotalt(antallTotalt)
                 .setInaktiveBrukere(antallInaktiveBrukere)
@@ -429,7 +436,8 @@ public class SolrServiceImpl implements SolrService {
                 .setUtlopteAktiviteter(antallUtlopteAktiviteter)
                 .setMinArbeidsliste(antallIarbeidsliste)
                 .setNyeBrukereForVeileder(antallNyeBrukerForVeileder)
-                .setTrengerVurdering(antallTrengerVurdering);
+                .setTrengerVurdering(antallTrengerVurdering)
+                .setErSykmeldtMedArbeidsgiver(antallErSykmeldtMedArbeidsgiver);
 
         return statusTall;
     }

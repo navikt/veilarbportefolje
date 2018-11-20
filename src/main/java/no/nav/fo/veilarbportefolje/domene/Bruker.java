@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarbportefolje.util.OppfolgingUtils;
 import org.apache.solr.common.SolrDocument;
 
 import java.sql.Timestamp;
@@ -60,6 +61,7 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
+    boolean erSykmeldtMedArbeidsgiver;
 
     @SuppressWarnings("unchecked")
     public static Bruker of(SolrDocument document) {
@@ -71,6 +73,7 @@ public class Bruker {
                 .setNyForEnhet(isNyForEnhet(document))
                 .setNyForVeileder(isNyForVeileder(document))
                 .setTrengerVurdering(defaultBool(document, "trenger_vurdering", false))
+                .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode,kvalifiseringsgruppekode))
                 .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))

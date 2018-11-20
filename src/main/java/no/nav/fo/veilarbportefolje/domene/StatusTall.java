@@ -18,4 +18,5 @@ public class StatusTall {
     private long ikkeIavtaltAktivitet;
     private long utlopteAktiviteter;
     private long minArbeidsliste;
+    private long erSykmeldtMedArbeidsgiver;
 }
