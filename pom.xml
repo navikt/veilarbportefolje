@@ -19,11 +19,7 @@
     </build>
 
     <properties>
-        <!-- Egenlagde -->
-        <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
-        <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
-
-        <!-- Tredjeparts -->
+        <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
         <solr.version>7.3.1</solr.version>
         <jsch.version>0.1.54</jsch.version>
     </properties>
@@ -40,26 +36,24 @@
 
             <!-- Virksomhetstjenester -->
             <dependency>
-                <groupId>no.nav.meldinger.virksomhet</groupId>
+                <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
-                <version>1.1.1</version>
-                <classifier>jaxb</classifier>
+                <version>${no.nav.tjenestespesifikasjoner.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.nav.meldinger.virksomhet</groupId>
+                <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
-                <version>1.0.0</version>
-                <classifier>jaxb</classifier>
+                <version>${no.nav.tjenestespesifikasjoner.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.nav.fo</groupId>
+                <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
-                <version>${enhet.tjenestespesifikasjon.versjon}</version>
+                <version>${no.nav.tjenestespesifikasjoner.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.nav.sbl</groupId>
+                <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>dkif-tjenestespesifikasjon</artifactId>
-                <version>${dkif-tjenestespesifikasjon.version}</version>
+                <version>${no.nav.tjenestespesifikasjoner.version}</version>
             </dependency>
 
             <!--Solr-->
@@ -96,19 +90,6 @@
             <groupId>no.nav.sbl</groupId>
             <artifactId>jdbc</artifactId>
         </dependency>
-
-        <!-- Virksomhetstjenester -->
-        <dependency>
-            <groupId>no.nav.meldinger.virksomhet</groupId>
-            <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
-            <classifier>jaxb</classifier>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.meldinger.virksomhet</groupId>
-            <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
-            <classifier>jaxb</classifier>
-        </dependency>
-
 
         <!--oidc-security-->
         <dependency>
@@ -307,14 +288,25 @@
             <groupId>no.nav.sbl</groupId>
             <artifactId>util</artifactId>
         </dependency>
+
+        <!-- Virksomhetstjenester -->
         <dependency>
-            <groupId>no.nav.fo</groupId>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
+            <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
+            <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.sbl</groupId>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>dkif-tjenestespesifikasjon</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
