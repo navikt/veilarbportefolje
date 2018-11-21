@@ -21,7 +21,6 @@
     <properties>
         <!-- Egenlagde -->
         <enhet.tjenestespesifikasjon.versjon>1.0.0</enhet.tjenestespesifikasjon.versjon>
-        <common-integrasjonsutils.version>0.0.11</common-integrasjonsutils.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
 
         <!-- Tredjeparts -->
@@ -61,13 +60,6 @@
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>dkif-tjenestespesifikasjon</artifactId>
                 <version>${dkif-tjenestespesifikasjon.version}</version>
-            </dependency>
-
-            <!--Dialogarena-->
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>common-integrasjonsutils</artifactId>
-                <version>${common-integrasjonsutils.version}</version>
             </dependency>
 
             <!--Solr-->
@@ -152,10 +144,6 @@
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>common-types</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>common-integrasjonsutils</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
