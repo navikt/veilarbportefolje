@@ -11,7 +11,6 @@ import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
-import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public class MainTest {
@@ -21,7 +20,6 @@ public class MainTest {
     private static final String SECURITY_TOKEN_SERVICE_ALIAS = "securityTokenService";
     private static final String AKTOER_V2_ALIAS = "Aktoer_v2";
     private static final String ABAC_PDP_ENDPOINT_ALIAS = "abac.pdp.endpoint";
-    private static final String UNLEASH_API_ALIAS = "unleash-api";
     private static final String VEILARBLOGIN_REDIRECT_URL_ALIAS = "veilarblogin.redirect-url";
     private static final String DIGITAL_KONTAKINFORMASJON_V1_ALIAS = "DigitalKontakinformasjon_v1";
     private static final String VIRKSOMHET_ENHET_V1_ALIAS = "virksomhet:Enhet_v1";
@@ -48,7 +46,6 @@ public class MainTest {
         setProperty(AKTOER_V2_URL_PROPERTY, getWebServiceEndpoint(AKTOER_V2_ALIAS).getUrl());
         setProperty(VIRKSOMHET_ENHET_V1_URL_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_ENHET_V1_ALIAS).getUrl());
         setProperty(DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY, getWebServiceEndpoint(DIGITAL_KONTAKINFORMASJON_V1_ALIAS).getUrl());
-        setProperty(UNLEASH_API_URL_PROPERTY_NAME, getRestService(UNLEASH_API_ALIAS, getDefaultEnvironment()).getUrl());
 
         setProperty(VEILARBDIALOG_URL_PROPERTY, "http://localhost:8080/veilarbdialog/api");
         setProperty(VEILARBOPPFOLGING_URL_PROPERTY, "http://localhost:8080/veilarboppfolging/api");

@@ -1,12 +1,11 @@
 package no.nav.fo.veilarbportefolje.feed;
 
-import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
+import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;

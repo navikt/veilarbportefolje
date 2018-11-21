@@ -3,7 +3,7 @@ package no.nav.fo.veilarbportefolje.database;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.KrrDAO;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
-import no.nav.fo.veilarbportefolje.util.sql.InsertBatchQuery;
+import no.nav.sbl.sql.InsertBatchQuery;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -48,9 +48,7 @@ public class KrrRepository {
     }
 
     public int[] lagreKRRInformasjon(List<KrrDAO> digitalKontaktinformasjonListe) {
-        InsertBatchQuery<KrrDAO> insertQuery = new InsertBatchQuery(db, "KRR");
-
-        return insertQuery
+        return new InsertBatchQuery<KrrDAO>(db, "KRR")
                 .add("fodselsnr", KrrDAO::getFnr, String.class)
                 .add("reservasjon", KrrDAO::getReservertIKrr, String.class)
                 .add("sisteverifisert", KrrDAO::getSistVerifisert, Timestamp.class)

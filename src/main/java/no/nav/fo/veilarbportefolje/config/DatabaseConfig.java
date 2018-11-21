@@ -6,8 +6,6 @@ import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.*;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
-import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
-import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.jdbc.DataSourceFactory;
@@ -104,7 +102,7 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public Pingable dbPinger(final DataSource ds) {
+    public Pingable dbPinger(final JdbcTemplate db) {
         PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
                 "N/A",
@@ -114,7 +112,7 @@ public class DatabaseConfig {
 
         return () -> {
             try {
-                SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
+                db.queryForList("select count(1) from dual");
                 return Pingable.Ping.lyktes(metadata);
             } catch (Exception e) {
                 return Pingable.Ping.feilet(metadata, e);

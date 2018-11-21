@@ -1,25 +1,21 @@
 package no.nav.fo.veilarbportefolje.database;
 
-import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.fo.veilarbportefolje.util.sql.SqlUtils;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
-
-import static java.lang.Boolean.TRUE;
-import static no.nav.fo.veilarbportefolje.util.DbUtils.parseJaNei;
-import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.update;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+
+import static java.lang.Boolean.TRUE;
+import static no.nav.fo.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
 public class OppfolgingFeedRepository {
@@ -71,7 +67,7 @@ public class OppfolgingFeedRepository {
 
     public void updateOppfolgingFeedId(BigDecimal id) {
         log.info("Oppdaterer feed_id for oppfølging: {}", id);
-        update(db, "METADATA").set("oppfolging_sist_oppdatert_id", id).execute();
+        SqlUtils.update(db, "METADATA").set("oppfolging_sist_oppdatert_id", id).execute();
     }
 
 

@@ -3,9 +3,9 @@ package no.nav.fo.veilarbportefolje.domene;
 import lombok.Value;
 import lombok.experimental.Wither;
 import no.nav.fo.veilarbportefolje.util.DbUtils;
-import no.nav.fo.veilarbportefolje.util.sql.InsertBatchQuery;
-import no.nav.fo.veilarbportefolje.util.sql.UpdateBatchQuery;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import no.nav.sbl.sql.InsertBatchQuery;
+import no.nav.sbl.sql.UpdateBatchQuery;
+import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.SQLIntegrityConstraintViolationException;

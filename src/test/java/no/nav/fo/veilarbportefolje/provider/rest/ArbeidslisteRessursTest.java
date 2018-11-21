@@ -32,7 +32,7 @@ import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbportefolje.database.ArbeidslisteRepository.ARBEIDSLISTE;
 import static no.nav.fo.veilarbportefolje.mock.AktoerServiceMock.*;
 import static no.nav.fo.veilarbportefolje.mock.EnhetMock.NAV_SANDE_ID;
-import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.insert;
+import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)

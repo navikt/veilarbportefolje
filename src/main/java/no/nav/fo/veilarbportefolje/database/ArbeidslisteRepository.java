@@ -8,21 +8,21 @@ import no.nav.fo.veilarbportefolje.domene.Arbeidsliste;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
 import no.nav.fo.veilarbportefolje.exception.FantIkkeAktoerIdException;
 import no.nav.fo.veilarbportefolje.provider.rest.arbeidsliste.ArbeidslisteData;
-import no.nav.fo.veilarbportefolje.util.sql.where.WhereClause;
+import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.Optional;
 
 import static no.nav.fo.veilarbportefolje.util.DateUtils.toZonedDateTime;
-import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
+import static no.nav.fo.veilarbportefolje.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
-import static no.nav.fo.veilarbportefolje.util.sql.SqlUtils.*;
+import static no.nav.sbl.sql.SqlUtils.*;
 
 @Slf4j
 public class ArbeidslisteRepository {
