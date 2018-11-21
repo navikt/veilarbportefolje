@@ -95,7 +95,7 @@ public class SolrUtils {
         return "formidlingsgruppekode:IARBS AND !(" + asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG")
                 .stream()
                 .map(kvalifiseringsgruppeKode -> "kvalifiseringsgruppekode:" + kvalifiseringsgruppeKode)
-                .collect((Collectors.joining(" + "))) + ")";
+                .collect(Collectors.joining(" + ")) + ")";
     }
 
     private static Optional<String> getFiltrerBrukerStatement(Filtervalg filtervalg) {
