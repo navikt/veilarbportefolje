@@ -97,6 +97,27 @@ public class SolrUtilsTest {
     }
 
     @Test
+    public void skalByggSolrQueryMedSykmeldteBrukere() throws Exception {
+        Filtervalg filtervalg = new Filtervalg();
+        filtervalg.ferdigfilterListe = asList(Brukerstatus.ER_SYKMELDT_MED_ARBEIDSGIVER);
+        String sykmeldteBrukerFilter = "(formidlingsgruppekode:IARBS AND " +
+                "!(kvalifiseringsgruppekode:BATT + " +
+                "kvalifiseringsgruppekode:BFORM + " +
+                "kvalifiseringsgruppekode:IKVAL + " +
+                "kvalifiseringsgruppekode:VURDU + " +
+                "kvalifiseringsgruppekode:OPPFI + " +
+                "kvalifiseringsgruppekode:VARIG))";
+
+        String enhetId = "0713";
+        String queryString = "enhet_id:" + enhetId;
+
+        SolrQuery query = SolrUtils.buildSolrQuery(queryString, false, new LinkedList<>(), "","", filtervalg);
+        assertThat(query.getFilterQueries()).contains("enhet_id:" + enhetId);
+        assertThat(query.getFilterQueries()).contains(sykmeldteBrukerFilter);
+
+    }
+
+    @Test
     public void skalByggSolrQueryMedNyeBrukere() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.ferdigfilterListe = asList(Brukerstatus.UFORDELTE_BRUKERE);

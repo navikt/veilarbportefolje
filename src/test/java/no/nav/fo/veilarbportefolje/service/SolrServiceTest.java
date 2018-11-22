@@ -7,6 +7,7 @@ import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
+import no.nav.fo.veilarbportefolje.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -89,7 +90,14 @@ public class SolrServiceTest {
     public void hentStatusTallForTomEnhet() throws Exception {
         ArgumentCaptor<SolrQuery> captor = ArgumentCaptor.forClass(SolrQuery.class);
         Map<String, Integer> facetResponse = Stream.of(new String[]{
-                "formidlingsgruppekode:ISERV", "venterpasvarfranav:*", "venterpasvarfrabruker:*", "aktiviteter:*", "-aktiviteter:*", "nyesteutlopteaktivitet:*", "trenger_vurdering:true"})
+                "formidlingsgruppekode:ISERV",
+                "venterpasvarfranav:*",
+                "venterpasvarfrabruker:*",
+                "aktiviteter:*",
+                "-aktiviteter:*",
+                "nyesteutlopteaktivitet:*",
+                "trenger_vurdering:true",
+                SolrUtils.formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver()})
                 .collect(Collectors.toMap(facetName -> facetName, facetValue -> 0));
         val queryResponse = mock(QueryResponse.class);
 
