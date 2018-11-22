@@ -23,10 +23,10 @@ public enum AAPUnntakUkerIgjenFasettMapping implements FasettMapping {
         int MAX_ANTALL_DAGER = 522;
 
         if (dager > MAX_ANTALL_DAGER) {
-            log.info("bruekr med % dager. max antall dager %", dager, MAX_ANTALL_DAGER);
+            log.info("bruker med {} dager. max antall dager {}", dager, MAX_ANTALL_DAGER);
             dager = MAX_ANTALL_DAGER;
         } else if (dager < 0) {
-            log.info("bruker emd mindre enn 0 dager, % ", dager);
+            log.info("bruker emd mindre enn 0 dager, {} ", dager);
             dager = 0;
         }
 
