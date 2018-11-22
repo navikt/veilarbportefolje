@@ -48,7 +48,7 @@ public class PactVeilederInfoConsumerTest {
         return builder
                 .given("a request for info about a veileder")
                 .uponReceiving("request about an existing veileder")
-                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/\\w{7,}", format("%s/%s", VEILARBVEILEDER_VEILEDER_API, VEILEDER_ID))
+                .matchPath(VEILARBVEILEDER_VEILEDER_API + "/[\\w \\-]{7,}", format("%s/%s", VEILARBVEILEDER_VEILEDER_API, VEILEDER_ID))
                 .method("GET")
                 .willRespondWith()
                 .status(200)
