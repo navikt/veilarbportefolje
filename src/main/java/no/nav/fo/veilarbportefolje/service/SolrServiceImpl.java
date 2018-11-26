@@ -11,6 +11,7 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.veilarbportefolje.util.BatchConsumer;
+import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.fo.veilarbportefolje.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -214,13 +215,7 @@ public class SolrServiceImpl implements SolrService {
         // ikke interessert i veiledere som ikke har tilordnede brukere
         solrQuery.setFacetMinCount(1);
 
-        QueryResponse response = new QueryResponse();
-        try {
-            response = solrClientSlave.query(solrQuery);
-        } catch (SolrServerException | IOException e) {
-            log.error("Spørring mot solrindeks feilet: " + solrQuery, e);
-        }
-
+        QueryResponse response = MetricsUtils.timed("solr.hentportefoljestorrelser", () -> getResponse(solrQuery));
         FacetField facetField = response.getFacetField(facetFieldString);
 
         return SolrUtils.mapFacetResults(facetField);
@@ -344,9 +339,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
-        QueryResponse response;
-
-        response = timed("solr.statustall.enhet", () -> getResponse(solrQuery));
+        QueryResponse response = timed("solr.statustall.enhet", () -> getResponse(solrQuery));
 
         long antallTotalt = response.getResults().getNumFound();
         long antallUfordelteBrukere = maybeUfordelteBrukere.map(ufordelteBrukere ->
@@ -413,8 +406,7 @@ public class SolrServiceImpl implements SolrService {
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
-        QueryResponse response;
-        response = timed("solr.statustall.veileder", () -> getResponse(solrQuery));
+        QueryResponse response = timed("solr.statustall.veileder", () -> getResponse(solrQuery));
         long antallTotalt = response.getResults().getNumFound();
         long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
         long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
@@ -443,15 +435,16 @@ public class SolrServiceImpl implements SolrService {
     }
 
     @Override
-    public Try<List<Bruker>> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
+    public List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
         SolrQuery solrQuery = new SolrQuery("*:*");
         solrQuery.addFilterQuery("veileder_id:" + veilederId.toString());
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("arbeidsliste_aktiv:true");
 
-        return Try.of(() -> solrClientSlave.query(solrQuery))
-                .map(res -> res.getResults().stream().map(Bruker::of).collect(toList()))
-                .onFailure(e -> log.warn("Henting av brukere med arbeidsliste feilet: {}", e.getMessage()));
+        QueryResponse response = timed("solr.hentarbeidsliste", () -> getResponse(solrQuery));
+        return response.getResults().stream()
+                .map(Bruker::of)
+                .collect(toList());
     }
 
 }
