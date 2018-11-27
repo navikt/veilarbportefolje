@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.mock;
 
-import io.vavr.control.Try;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.service.SolrService;
 
@@ -61,7 +60,7 @@ public class SolrServiceMock implements SolrService {
     }
 
     @Override
-    public Try<List<Bruker>> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
+    public List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
         return null;
     }
 

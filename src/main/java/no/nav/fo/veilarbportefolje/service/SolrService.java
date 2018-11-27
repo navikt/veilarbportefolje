@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.service;
 
-import io.vavr.control.Try;
 import no.nav.fo.veilarbportefolje.domene.*;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public interface SolrService {
 
     StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent);
 
-    Try<List<Bruker>> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet);
+    List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet);
 
     void indekserAsynkront(AktoerId aktoerId);
 
