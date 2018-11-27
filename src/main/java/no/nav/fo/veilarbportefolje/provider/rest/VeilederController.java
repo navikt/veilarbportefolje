@@ -102,9 +102,7 @@ public class VeilederController {
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            return solrService
-                    .hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet)
-                    .getOrElseThrow(() -> new NotFoundException("Kunne ikke finne noen brukere med arbeidsliste"));
+            return solrService.hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet);
         });
     }
 
