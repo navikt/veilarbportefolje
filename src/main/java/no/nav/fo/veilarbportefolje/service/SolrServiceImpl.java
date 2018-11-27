@@ -161,12 +161,8 @@ public class SolrServiceImpl implements SolrService {
 
     @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-        String queryString = byggQueryString(enhetId, veilederIdent);
-        boolean sorterNyeForVeileder = veilederIdent.map(StringUtils::isNotBlank).orElse(false);
-
         List<VeilederId> veiledere = veilederService.getIdenter(enhetId);
-
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery(queryString, sorterNyeForVeileder, veiledere, sortOrder, sortField, filtervalg);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery(enhetId, veilederIdent, veiledere, sortOrder, sortField, filtervalg);
         addPaging(solrQuery, fra, antall);
         QueryResponse response = timed("solr.hentbrukere", () -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
         SolrUtils.checkSolrResponseCode(response.getStatus());
@@ -178,13 +174,6 @@ public class SolrServiceImpl implements SolrService {
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         return hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, null, null);
-    }
-
-    String byggQueryString(String enhetId, Optional<String> veilederIdent) {
-        return veilederIdent
-                .map((ident) -> isBlank(ident) ? null : ident)
-                .map((ident) -> "veileder_id: " + ident + " AND enhet_id: " + enhetId)
-                .orElse("enhet_id: " + enhetId);
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
