@@ -142,9 +142,9 @@ public class SolrServiceTest {
 
     @Test
     public void byggQueryString() {
-        assertThat(service.byggQueryString("0100", Optional.empty())).isEqualTo("enhet_id: 0100");
-        assertThat(service.byggQueryString("0100", Optional.of(""))).isEqualTo("enhet_id: 0100");
-        assertThat(service.byggQueryString("0100", Optional.of("Z900000"))).isEqualTo("veileder_id: Z900000 AND enhet_id: 0100");
+        assertThat(SolrUtils.byggVeilederFilterQueryString("0100", Optional.empty())).isEqualTo("enhet_id: 0100");
+        assertThat(SolrUtils.byggVeilederFilterQueryString("0100", Optional.of(""))).isEqualTo("enhet_id: 0100");
+        assertThat(SolrUtils.byggVeilederFilterQueryString("0100", Optional.of("Z900000"))).isEqualTo("veileder_id: Z900000 AND enhet_id: 0100");
     }
 
     @Test
