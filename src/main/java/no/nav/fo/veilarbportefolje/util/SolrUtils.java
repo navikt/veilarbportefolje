@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.util;
 
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
@@ -17,6 +18,8 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.util.SolrSortUtils.addSort;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 public class SolrUtils {
@@ -63,15 +66,38 @@ public class SolrUtils {
         return solrQuery;
     }
 
+    public static String byggVeilederFilterQueryString(String enhetId, Optional<String> veilederIdent) {
+        return veilederIdent
+                .map((ident) -> isBlank(ident) ? null : ident)
+                .map((ident) -> "veileder_id: " + ident + " AND enhet_id: " + enhetId)
+                .orElse("enhet_id: " + enhetId);
+    }
 
-    public static SolrQuery buildSolrQuery(String queryString, boolean sorterNyeForVeileder, List<VeilederId> veiledereMedTilgang, String sortOrder, String sortField, Filtervalg filtervalg) {
+    public static SolrQuery byggHovedSolrQuery (Optional<String> veilederIdent, Filtervalg filtervalg) {
         SolrQuery solrQuery = new SolrQuery("*:*");
+
+        veilederIdent.ifPresent(veilderId -> {
+            if(isNotBlank(veilderId) && filtervalg.harNavnEllerFnrQuery()){
+                Try.of(()-> Integer.parseInt(filtervalg.navnEllerFnrQuery))
+                        .onSuccess((fnr) -> solrQuery.setQuery("fnr:" + filtervalg.navnEllerFnrQuery + "*"))
+                        .onFailure((stringValue) -> solrQuery.setQuery("navn_sok: " + filtervalg.navnEllerFnrQuery));
+            }
+        });
+
+        return solrQuery;
+    }
+
+    public static SolrQuery buildSolrQuery(String enhetId, Optional<String> veilederIdent, List<VeilederId> veiledereMedTilgang, String sortOrder, String sortField, Filtervalg filtervalg) {
+        boolean sorterNyeForVeileder = veilederIdent.map(StringUtils::isNotBlank).orElse(false);
+
+        SolrQuery solrQuery = byggHovedSolrQuery(veilederIdent, filtervalg);
+
         solrQuery.addField("*");
 
         Optional<String> medTilgangSubquery = harVeilederSubQuery(veiledereMedTilgang);
 
         medTilgangSubquery.ifPresent(subquery -> solrQuery.addField("har_veileder_fra_enhet:" + subquery));
-        solrQuery.addFilterQuery(queryString);
+        solrQuery.addFilterQuery(byggVeilederFilterQueryString(enhetId, veilederIdent));
         addSort(solrQuery, sorterNyeForVeileder, medTilgangSubquery, sortOrder, sortField, filtervalg);
         leggTilFiltervalg(solrQuery, filtervalg, veiledereMedTilgang);
         return solrQuery;

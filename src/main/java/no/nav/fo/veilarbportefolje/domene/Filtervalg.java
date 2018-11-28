@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.function.BinaryOperator;
@@ -24,6 +25,7 @@ public class Filtervalg {
     public Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
     public List<String> tiltakstyper = new ArrayList<>();
     public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
+    public String navnEllerFnrQuery;
 
     public boolean harAktiveFilter() {
          return harFerdigFilter() ||
@@ -39,7 +41,8 @@ public class Filtervalg {
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
                 !hovedmal.isEmpty() ||
-                 harManuellBrukerStatus();
+                 harManuellBrukerStatus() ||
+                 harNavnEllerFnrQuery();
     }
 
     private boolean harFerdigFilter() {
@@ -56,6 +59,10 @@ public class Filtervalg {
 
     public boolean harManuellBrukerStatus() {
         return manuellBrukerStatus != null && !manuellBrukerStatus.isEmpty();
+    }
+
+    public boolean harNavnEllerFnrQuery() {
+        return navnEllerFnrQuery !=null && StringUtils.isNotBlank(navnEllerFnrQuery);
     }
 
     public boolean valider() {
