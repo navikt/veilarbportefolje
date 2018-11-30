@@ -9,7 +9,7 @@ import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
 
@@ -45,7 +45,7 @@ public class OppfolgingFeedHandlerTest {
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
-    private SolrService solrService;
+    private IndekseringService indekseringService;
     private OppfolgingFeedRepository oppfolgingFeedRepository;
     private VeilederService veilederService;
 
@@ -57,14 +57,14 @@ public class OppfolgingFeedHandlerTest {
     public void resetMocks() {
         arbeidslisteService = mock(ArbeidslisteService.class);
         brukerRepository = mock(BrukerRepository.class);
-        solrService = mock(SolrService.class);
+        indekseringService = mock(IndekseringService.class);
         oppfolgingFeedRepository = mock(OppfolgingFeedRepository.class);
         veilederService = mock(VeilederService.class);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
-                solrService,
+                indekseringService,
                 oppfolgingFeedRepository,
                 veilederService,
                 new TestTransactor());
@@ -216,7 +216,7 @@ public class OppfolgingFeedHandlerTest {
     }
 
     private void thenOppfolgingDataErOppdatert() {
-        verify(solrService).indekserAsynkront(AKTOER_ID);
+        verify(indekseringService).indekserAsynkront(AKTOER_ID);
         verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
     }
 

@@ -1,12 +1,10 @@
-package no.nav.fo.veilarbportefolje.config;
+package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
-import no.nav.fo.veilarbportefolje.service.SolrService;
-import no.nav.fo.veilarbportefolje.service.SolrServiceImpl;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
@@ -43,7 +41,7 @@ import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
-public class SolrConfig {
+public class IndekseringConfig {
 
     private static final String URL = getRequiredProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY);
 
@@ -73,7 +71,7 @@ public class SolrConfig {
     }
 
     @Bean
-    public SolrService solrService(
+    public IndekseringService solrService(
             SolrClient solrClientMaster,
             SolrClient solrClientSlave,
             BrukerRepository brukerRepository,
@@ -81,7 +79,7 @@ public class SolrConfig {
             AktivitetDAO aktivitetDAO,
             VeilederService veilederService,
             LockingTaskExecutor lockingTaskExecutor) {
-        return new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutor);
+        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutor);
     }
 
     @Bean

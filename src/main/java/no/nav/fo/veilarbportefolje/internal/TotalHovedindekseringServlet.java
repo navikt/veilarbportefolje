@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbportefolje.internal;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.config.IndekseringScheduler;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;

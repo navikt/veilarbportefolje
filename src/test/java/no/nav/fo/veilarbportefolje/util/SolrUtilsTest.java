@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.util;
 
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.veilarbportefolje.indeksering.SolrUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Rule;
@@ -13,8 +14,8 @@ import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.veilarbportefolje.util.SolrUtils.TILTAK;
-import static no.nav.fo.veilarbportefolje.util.SolrUtils.orStatement;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.orStatement;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

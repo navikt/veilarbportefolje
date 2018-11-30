@@ -4,6 +4,8 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.indeksering.SolrService;
 import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
 import no.nav.sbl.sql.SqlUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -54,14 +56,14 @@ public class SolrServiceIntegrationTest {
         VeilederService veilederService = mock(VeilederService.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        SolrService solrService = new SolrServiceImpl(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutorMock);
+        IndekseringService indekseringService = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutorMock);
 
 
         UpdateResponse response = new UpdateResponse();
         response.setResponse(new NamedList<>());
         when(solrClientMaster.deleteByQuery(any())).thenReturn(response);
 
-        solrService.deltaindeksering();
+        indekseringService.deltaindeksering();
 
         verify(solrClientMaster, times(1)).deleteByQuery(captor.capture());
         verify(solrClientMaster, times(1)).commit();

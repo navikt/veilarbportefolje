@@ -4,7 +4,7 @@ import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.common.auth.Subject;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.service.PepClient;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.util.StepperUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -67,7 +67,7 @@ public class DiagramControllerTest {
     public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token")));
 
     @Mock
-    private SolrService solr;
+    private IndekseringService solr;
 
     @Mock
     private PepClient pepClient;

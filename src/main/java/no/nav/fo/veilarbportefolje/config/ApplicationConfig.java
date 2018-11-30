@@ -8,11 +8,13 @@ import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig;
 import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -45,7 +47,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
         ExternalServiceConfig.class,
-        SolrConfig.class,
+        IndekseringConfig.class,
         FilmottakConfig.class,
         MetricsConfig.class,
         CacheConfig.class,
@@ -80,7 +82,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     private IndekseringScheduler hovedindekseringScheduler;
 
     @Inject
-    private SolrService solrService;
+    private IndekseringService indekseringService;
 
     @Inject
     private TiltakHandler tiltakHandler;
@@ -96,7 +98,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
         flyway.migrate();
 
         leggTilServlet(servletContext, new TotalHovedindekseringServlet(hovedindekseringScheduler), "/internal/totalhovedindeksering");
-        leggTilServlet(servletContext, new PopulerIndekseringServlet(solrService), "/internal/populerindeks");
+        leggTilServlet(servletContext, new PopulerIndekseringServlet(indekseringService), "/internal/populerindeks");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
     }

@@ -14,7 +14,7 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
@@ -78,13 +78,13 @@ public class OppfolgingerfeedConfig {
     @Bean
     public FeedCallback<BrukerOppdatertInformasjon> oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                                                           BrukerRepository brukerRepository,
-                                                                          SolrService solrService,
+                                                                          IndekseringService indekseringService,
                                                                           OppfolgingFeedRepository oppfolgingFeedRepository,
                                                                           VeilederService veilederService,
                                                                           Transactor transactor) {
         return new OppfolgingFeedHandler(arbeidslisteService,
                 brukerRepository,
-                solrService,
+                indekseringService,
                 oppfolgingFeedRepository,
                 veilederService,
                 transactor);

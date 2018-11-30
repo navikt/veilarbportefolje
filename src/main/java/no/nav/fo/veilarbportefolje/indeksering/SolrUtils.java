@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbportefolje.util;
+package no.nav.fo.veilarbportefolje.indeksering;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
@@ -17,15 +17,15 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.util.SolrSortUtils.addSort;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrSortUtils.addSort;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 public class SolrUtils {
-    static String TILTAK = "TILTAK";
+    public static String TILTAK = "TILTAK";
 
-    static Map<Brukerstatus, String> ferdigfilterStatus = new HashMap<Brukerstatus, String>() {{
+    public static Map<Brukerstatus, String> ferdigfilterStatus = new HashMap<Brukerstatus, String>() {{
         put(Brukerstatus.NYE_BRUKERE, "ny_for_enhet:true");
         put(Brukerstatus.UFORDELTE_BRUKERE, "");
         put(Brukerstatus.TRENGER_VURDERING, "trenger_vurdering:true");
@@ -211,7 +211,7 @@ public class SolrUtils {
         return Collections.emptyList();
     }
 
-    static void leggTilAktivitetFiltervalg(List<String> filtrerBrukereStatements, String key, AktivitetFiltervalg value) {
+    public static void leggTilAktivitetFiltervalg(List<String> filtrerBrukereStatements, String key, AktivitetFiltervalg value) {
         if (AktivitetFiltervalg.JA.equals(value)) {
             filtrerBrukereStatements.add("aktiviteter:" + key.toLowerCase());
         }
@@ -220,7 +220,7 @@ public class SolrUtils {
         }
     }
 
-    static void leggTilTiltakJaNeiFilter(List<String> filtrerBrukereStatements, AktivitetFiltervalg value) {
+    public static void leggTilTiltakJaNeiFilter(List<String> filtrerBrukereStatements, AktivitetFiltervalg value) {
         if (AktivitetFiltervalg.JA.equals(value)) {
             filtrerBrukereStatements.add("tiltak:*");
         }
@@ -233,54 +233,54 @@ public class SolrUtils {
         return "ytelse:" + ytelse;
     }
 
-    static String kjonnFilter(Kjonn kjonn) {
+    public static String kjonnFilter(Kjonn kjonn) {
         return "kjonn:" + kjonn.toString();
     }
 
-    static String alderFilter(String alder) {
+    public static String alderFilter(String alder) {
         return "fodselsdato:" + FiltervalgMappers.alder.get(alder);
     }
 
-    static String fodselsdagIMndFilter(String fodselDato) {
+    public static String fodselsdagIMndFilter(String fodselDato) {
         return "fodselsdag_i_mnd:" + fodselDato;
     }
 
-    static String innsatsgruppeFilter(Innsatsgruppe innsatsgruppe) {
+    public static String innsatsgruppeFilter(Innsatsgruppe innsatsgruppe) {
         return "kvalifiseringsgruppekode:" + innsatsgruppe;
     }
 
-    static String formidlingsgruppeFilter(Formidlingsgruppe formidlingsgruppe) {
+    public static String formidlingsgruppeFilter(Formidlingsgruppe formidlingsgruppe) {
         return "formidlingsgruppekode:" + formidlingsgruppe;
     }
 
-    static String servicegruppeFilter(Servicegruppe servicegruppe) {
+    public static String servicegruppeFilter(Servicegruppe servicegruppe) {
         return "kvalifiseringsgruppekode:" + servicegruppe;
     }
 
-    static String rettighetsgruppeFilter(Rettighetsgruppe rettighetsgruppe) {
+    public static String rettighetsgruppeFilter(Rettighetsgruppe rettighetsgruppe) {
         return "rettighetsgruppekode:" + rettighetsgruppe;
     }
 
-    static String veilederFilter(String veileder) {
+    public static String veilederFilter(String veileder) {
         return "veileder_id:" + veileder;
     }
 
-    static String tiltakJaFilter(String tiltak) {
+    public static String tiltakJaFilter(String tiltak) {
         return "tiltak:" + tiltak;
     }
 
-    static Optional<String> harVeilederSubQuery(List<VeilederId> identer) {
+    public static Optional<String> harVeilederSubQuery(List<VeilederId> identer) {
         if (identer.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of("exists(query({!v='veileder_id:(" + spaceSeperated(identer) + " )'}))");
     }
 
-    static String manuellStatusFilter(ManuellBrukerStatus manuellBrukerStatus) {
+    public static String manuellStatusFilter(ManuellBrukerStatus manuellBrukerStatus) {
         return "manuell_bruker:" + manuellBrukerStatus.toString();
     }
 
-    static String hovedmalFilter(Hovedmal hovedmal) {
+    public static String hovedmalFilter(Hovedmal hovedmal) {
         return "hovedmaalkode:" + hovedmal;
     }
 }

@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbportefolje.util;
+package no.nav.fo.veilarbportefolje.indeksering;
 
 import no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
@@ -14,7 +14,7 @@ import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.addPrefixForAktivi
 public class SolrSortUtils {
 
 
-    static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, Optional<String> maybeVeilederMedTilgangQuery, String sortOrder, String sortField, Filtervalg filtervalg) {
+    public static SolrQuery addSort(SolrQuery solrQuery, boolean minoversikt, Optional<String> maybeVeilederMedTilgangQuery, String sortOrder, String sortField, Filtervalg filtervalg) {
 
         if(minoversikt){
             solrQuery.addSort("ny_for_veileder", SolrQuery.ORDER.desc);
@@ -54,20 +54,20 @@ public class SolrSortUtils {
         return solrQuery;
     }
 
-    static Map<String, AktivitetFiltervalg> mapMedAlleAktivitetstatuserSattTilJA() {
+    public static Map<String, AktivitetFiltervalg> mapMedAlleAktivitetstatuserSattTilJA() {
         Map<String, AktivitetFiltervalg> map = new HashMap<>();
         AktivitetData.aktivitetTyperList.forEach(type -> map.put(type.name(), AktivitetFiltervalg.JA));
         return map;
     }
 
-    static SolrQuery addAktiviteterSort(SolrQuery solrQuery, SolrQuery.ORDER sortOrder, Map<String, AktivitetFiltervalg> aktiviteter) {
+    public static SolrQuery addAktiviteterSort(SolrQuery solrQuery, SolrQuery.ORDER sortOrder, Map<String, AktivitetFiltervalg> aktiviteter) {
         List<String> aktiviteterSortFields = aktiveAktiviteter(aktiviteter);
         String sortString = getAktiviteterSortString(aktiviteterSortFields);
         solrQuery.addSort(sortString, sortOrder);
         return solrQuery;
     }
 
-    static List<String> aktiveAktiviteter(Map<String, AktivitetFiltervalg> aktiviteter) {
+    public static List<String> aktiveAktiviteter(Map<String, AktivitetFiltervalg> aktiviteter) {
         List<String> sortFields = new ArrayList<>();
         aktiviteter.forEach((key, value) -> {
             if(AktivitetFiltervalg.JA.equals(value)) {

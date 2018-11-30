@@ -5,6 +5,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.PersistentOppdatering;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.jdbc.Transactor;
@@ -15,8 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import javax.sql.DataSource;
 
 import static org.mockito.Mockito.mock;
 
@@ -48,8 +47,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public SolrService solrService() {
-        return mock(SolrService.class);
+    public IndekseringService solrService() {
+        return mock(IndekseringService.class);
     }
 
     @Bean
