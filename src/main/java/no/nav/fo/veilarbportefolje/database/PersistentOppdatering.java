@@ -7,7 +7,7 @@ import no.nav.fo.veilarbportefolje.domene.AktivitetStatus;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.fo.veilarbportefolje.domene.Brukerdata;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 
 import javax.inject.Inject;
@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toMap;
 public class PersistentOppdatering {
 
     @Inject
-    private SolrService solrService;
+    private IndekseringService indekseringService;
 
     @Inject
     private BrukerRepository brukerRepository;
@@ -32,7 +32,7 @@ public class PersistentOppdatering {
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
-        solrService.indekserBrukere(personIds);
+        indekseringService.indekserBrukere(personIds);
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {

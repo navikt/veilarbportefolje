@@ -3,7 +3,7 @@ package no.nav.fo.veilarbportefolje.provider.rest;
 import io.swagger.annotations.Api;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.service.PepClient;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.util.StepperUtils;
 import org.springframework.stereotype.Component;
 
@@ -30,12 +30,12 @@ import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.createResponse
 public class DiagramController {
 
     private PepClient pepClient;
-    private SolrService solrService;
+    private IndekseringService indekseringService;
 
     @Inject
-    public DiagramController(PepClient pepClient, SolrService solrService) {
+    public DiagramController(PepClient pepClient, IndekseringService indekseringService) {
         this.pepClient = pepClient;
-        this.solrService = solrService;
+        this.indekseringService = indekseringService;
     }
 
     @POST
@@ -54,10 +54,10 @@ public class DiagramController {
 
             Optional<StepperFacetConfig> stepperConfig = StepperFacetConfig.stepperFacetConfig(filtervalg.ytelse);
             if (stepperConfig.isPresent()) {
-                BrukereMedAntall brukere = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+                BrukereMedAntall brukere = indekseringService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
                 return StepperUtils.groupByStepping(stepperConfig.get(), brukere.getBrukere(), brukerUkeMapping(stepperConfig.get().getYtelse()));
             } else {
-                BrukereMedAntall brukereMedAntall = solrService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+                BrukereMedAntall brukereMedAntall = indekseringService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
 
                 Map<ManedFasettMapping, Long> grupperte = brukereMedAntall
                         .getBrukere()

@@ -5,6 +5,7 @@ import no.nav.apiapp.ApiApplication.NaisApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.mock.AktoerServiceMock;
 import no.nav.fo.veilarbportefolje.mock.EnhetMock;
 import no.nav.fo.veilarbportefolje.mock.SolrServiceMock;
@@ -60,7 +61,7 @@ public class ComponentTestConfig implements NaisApiApplication {
     }
 
     @Bean
-    public SolrService solrService() {
+    public IndekseringService solrService() {
         return new SolrServiceMock();
     }
 

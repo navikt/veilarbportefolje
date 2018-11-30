@@ -4,7 +4,7 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 
 public class DialogDataFeedHandlerTest {
 
-    private SolrService solrService;
+    private IndekseringService indekseringService;
     private DialogFeedRepository dialogFeedRepository;
     private BrukerRepository brukerRepository;
 
@@ -23,10 +23,10 @@ public class DialogDataFeedHandlerTest {
 
     @Before
     public void setUp() {
-        solrService = mock(SolrService.class);
+        indekseringService = mock(IndekseringService.class);
         dialogFeedRepository = mock(DialogFeedRepository.class);
         brukerRepository = mock(BrukerRepository.class);
-        dialogDataFeedHandler = new DialogDataFeedHandler(brukerRepository, solrService, dialogFeedRepository);
+        dialogDataFeedHandler = new DialogDataFeedHandler(brukerRepository, indekseringService, dialogFeedRepository);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class DialogDataFeedHandlerTest {
         dialogDataFeedHandler.call("1970-01-01T00:00:00Z", Collections.singletonList(dialogdata));
 
         verify(dialogFeedRepository, times(1)).oppdaterDialogInfoForBruker(dialogdata);
-        verify(solrService, times(1)).indekserAsynkront(aktoerId);
+        verify(indekseringService, times(1)).indekserAsynkront(aktoerId);
         verify(brukerRepository, times(1)).updateMetadata(eq(DIALOGAKTOR_SIST_OPPDATERT), any(Date.class));
     }
 }

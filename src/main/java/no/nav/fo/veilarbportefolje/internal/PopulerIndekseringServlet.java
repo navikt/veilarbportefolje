@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbportefolje.internal;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,17 +14,17 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 @Slf4j
 public class PopulerIndekseringServlet extends HttpServlet {
 
-    private SolrService solrService;
+    private IndekseringService indekseringService;
 
-    public PopulerIndekseringServlet(SolrService solrService) {
-        this.solrService = solrService;
+    public PopulerIndekseringServlet(IndekseringService indekseringService) {
+        this.indekseringService = indekseringService;
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             log.info("Manuell Indeksering: Hovedindeksering");
-            runAsync(() -> solrService.hovedindeksering());
+            runAsync(() -> indekseringService.hovedindeksering());
             resp.getWriter().write("Hovedindeksering startet");
             resp.setStatus(200);
         } else {

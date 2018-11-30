@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbportefolje.service;
+package no.nav.fo.veilarbportefolje.indeksering;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
@@ -10,13 +10,13 @@ import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.veilarbportefolje.service.AktoerService;
+import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.fo.veilarbportefolje.util.BatchConsumer;
 import no.nav.fo.veilarbportefolje.util.MetricsUtils;
-import no.nav.fo.veilarbportefolje.util.SolrUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -50,12 +50,11 @@ import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyAktivitetStat
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.veilarbportefolje.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
-import static no.nav.fo.veilarbportefolje.util.SolrSortUtils.addPaging;
-import static no.nav.fo.veilarbportefolje.util.SolrUtils.harIkkeVeilederFilter;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrSortUtils.addPaging;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.harIkkeVeilederFilter;
 
 @Slf4j
-public class SolrServiceImpl implements SolrService {
+public class SolrService implements IndekseringService {
 
     private static final String HOVEDINDEKSERING = "Hovedindeksering";
     private static final String DELTAINDEKSERING = "Deltaindeksering";
@@ -70,7 +69,7 @@ public class SolrServiceImpl implements SolrService {
     private LockingTaskExecutor lockingTaskExecutor;
 
     @Inject
-    public SolrServiceImpl(
+    public SolrService(
             @Named("solrClientMaster") SolrClient solrClientMaster,
             @Named("solrClientSlave") SolrClient solrClientSlave,
             BrukerRepository brukerRepository,

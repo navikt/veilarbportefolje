@@ -1,11 +1,11 @@
-package no.nav.fo.veilarbportefolje.service;
+package no.nav.fo.veilarbportefolje.indeksering;
 
 import no.nav.fo.veilarbportefolje.domene.*;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface SolrService {
+public interface IndekseringService {
     void hovedindeksering();
 
     void deltaindeksering();

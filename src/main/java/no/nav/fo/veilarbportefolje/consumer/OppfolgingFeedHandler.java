@@ -8,7 +8,7 @@ import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
@@ -33,7 +33,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
-    private SolrService solrService;
+    private IndekseringService indekseringService;
     private OppfolgingFeedRepository oppfolgingFeedRepository;
     private VeilederService veilederService;
     private Transactor transactor;
@@ -41,13 +41,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     @Inject
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
-                                 SolrService solrService,
+                                 IndekseringService indekseringService,
                                  OppfolgingFeedRepository oppfolgingFeedRepository,
                                  VeilederService veilederService,
                                  Transactor transactor) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
-        this.solrService = solrService;
+        this.indekseringService = indekseringService;
         this.oppfolgingFeedRepository = oppfolgingFeedRepository;
         this.veilederService = veilederService;
         this.transactor = transactor;
@@ -62,7 +62,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
                         data.forEach(info -> {
                             oppdaterOppfolgingData(info);
-                            solrService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+                            indekseringService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
                         });
                         parseLastEntryIdToDate(lastEntryId).ifPresent(id -> brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, id));
                         finnMaxFeedId(data).ifPresent(id ->  oppfolgingFeedRepository.updateOppfolgingFeedId(id));

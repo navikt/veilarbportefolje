@@ -11,7 +11,7 @@ import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
-import no.nav.fo.veilarbportefolje.service.SolrService;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,7 +63,7 @@ public class AktivitetFeedHandlerTest {
     private AktivitetDAO aktivitetDAOMock;
 
     @Mock
-    private SolrService solrService;
+    private IndekseringService indekseringService;
 
     @Mock
     private AktoerService aktoerService;
@@ -72,7 +72,7 @@ public class AktivitetFeedHandlerTest {
 
     @Before
     public void resetMocks() {
-        reset(brukerRepository, solrService, aktoerService, aktivitetDAOMock, persistentOppdatering, db, namedParameterJdbcTemplate, ds);
+        reset(brukerRepository, indekseringService, aktoerService, aktivitetDAOMock, persistentOppdatering, db, namedParameterJdbcTemplate, ds);
         aktivitetDAO = new AktivitetDAO(db, namedParameterJdbcTemplate);
         aktivitetService = new AktivitetService(aktoerService, aktivitetDAO, persistentOppdatering);
         aktivitetFeedHandler = new AktivitetFeedHandler(brukerRepository, aktivitetServiceMock, aktivitetDAOMock);
