@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Slf4j
-class RestUtils {
+public class RestUtils {
     static Response createResponse(Supplier<Object> supplier) {
         return Try.ofSupplier(supplier)
                 .toEither()
@@ -29,7 +29,7 @@ class RestUtils {
                 );
     }
 
-    static String getSsoToken() {
+    public static String getSsoToken() {
         Subject subject = SubjectHandler.getSubject().orElseThrow(IllegalStateException::new);
         return subject.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
     }

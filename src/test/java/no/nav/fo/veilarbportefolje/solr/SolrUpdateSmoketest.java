@@ -11,6 +11,7 @@ import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.indeksering.SolrService;
+import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -96,7 +97,7 @@ public class SolrUpdateSmoketest {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
         brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
         indekseringService = new SolrService(solrClient, solrClient, brukerRepository,
-                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(LockingTaskExecutor.class));
+                mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(LockingTaskExecutor.class), mock(PepClient.class));
     }
 
     @Disabled //Kan ikke enable igjen før vi har åpning mot databasen i q6 fra byggserver!!

@@ -4,6 +4,8 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
+import no.nav.fo.veilarbportefolje.service.PepClient;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -18,6 +20,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrSortUtils.addSort;
+import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.getSsoToken;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -73,25 +76,45 @@ public class SolrUtils {
                 .orElse("enhet_id: " + enhetId);
     }
 
-    public static SolrQuery byggHovedSolrQuery (Optional<String> veilederIdent, Filtervalg filtervalg) {
-        SolrQuery solrQuery = new SolrQuery("*:*");
+    public static void leggTilNavnEllerFnrQuery (SolrQuery solrQuery, Filtervalg filtervalg) {
+        Try.of(()-> Integer.parseInt(filtervalg.navnEllerFnrQuery))
+                .onSuccess((fnr) -> solrQuery.setQuery("fnr:" + filtervalg.navnEllerFnrQuery + "*"))
+                .onFailure((stringValue) -> solrQuery.setQuery("navn_sok: " + filtervalg.navnEllerFnrQuery));
 
-        veilederIdent.ifPresent(veilderId -> {
-            if(isNotBlank(veilderId) && filtervalg.harNavnEllerFnrQuery()){
-                Try.of(()-> Integer.parseInt(filtervalg.navnEllerFnrQuery))
-                        .onSuccess((fnr) -> solrQuery.setQuery("fnr:" + filtervalg.navnEllerFnrQuery + "*"))
-                        .onFailure((stringValue) -> solrQuery.setQuery("navn_sok: " + filtervalg.navnEllerFnrQuery));
-            }
-        });
-
-        return solrQuery;
     }
 
-    public static SolrQuery buildSolrQuery(String enhetId, Optional<String> veilederIdent, List<VeilederId> veiledereMedTilgang, String sortOrder, String sortField, Filtervalg filtervalg) {
+    public static void leggTilSensureringsFilter(SolrQuery solrQuery, PepClient pepClient) {
+        boolean harTilgangTilKode7 = pepClient.isSubjectAuthorizedToSeeKode7(getSsoToken());
+        boolean harTilgangTilKode6 = pepClient.isSubjectAuthorizedToSeeKode6(getSsoToken());
+        boolean harTilgangTilEgenAnsatt = pepClient.isSubjectAuthorizedToSeeEgenAnsatt(getSsoToken());
+
+        if(!harTilgangTilEgenAnsatt){
+            solrQuery.addFilterQuery("egen_ansatt:false");
+        }
+        if(!harTilgangTilKode6 && !harTilgangTilKode7){
+            solrQuery.addFilterQuery("-diskresjonskode:*");
+        }
+
+        if(!harTilgangTilKode6){
+            solrQuery.addFilterQuery("-diskresjonskode:6");
+        }
+
+        if(!harTilgangTilKode7){
+            solrQuery.addFilterQuery("-diskresjonskode:7");
+        }
+
+    }
+
+    public static SolrQuery buildSolrQuery(String enhetId, Optional<String> veilederIdent, List<VeilederId> veiledereMedTilgang,
+                                           String sortOrder, String sortField, Filtervalg filtervalg, PepClient pepClient) {
         boolean sorterNyeForVeileder = veilederIdent.map(StringUtils::isNotBlank).orElse(false);
 
-        SolrQuery solrQuery = byggHovedSolrQuery(veilederIdent, filtervalg);
+        SolrQuery solrQuery = new SolrQuery("*:*");
 
+        if(filtervalg.harNavnEllerFnrQuery()) {
+            leggTilNavnEllerFnrQuery(solrQuery, filtervalg);
+            leggTilSensureringsFilter(solrQuery, pepClient);
+        }
         solrQuery.addField("*");
 
         Optional<String> medTilgangSubquery = harVeilederSubQuery(veiledereMedTilgang);

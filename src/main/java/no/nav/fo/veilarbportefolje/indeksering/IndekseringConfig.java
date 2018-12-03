@@ -5,6 +5,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
+import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
@@ -78,8 +79,9 @@ public class IndekseringConfig {
             AktoerService aktoerService,
             AktivitetDAO aktivitetDAO,
             VeilederService veilederService,
-            LockingTaskExecutor lockingTaskExecutor) {
-        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutor);
+            LockingTaskExecutor lockingTaskExecutor,
+            PepClient pepClient) {
+        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutor, pepClient);
     }
 
     @Bean

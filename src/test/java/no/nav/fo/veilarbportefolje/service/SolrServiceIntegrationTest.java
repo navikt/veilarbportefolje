@@ -7,6 +7,7 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.indeksering.SolrService;
 import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.sql.SqlUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -38,6 +39,9 @@ public class SolrServiceIntegrationTest {
     @Inject
     private BrukerRepository brukerRepository;
 
+    @Inject
+    private PepClient pepClient;
+
     private LockingTaskExecutor lockingTaskExecutorMock = new LockingTaskExecutorMock();
 
     @Before
@@ -56,7 +60,7 @@ public class SolrServiceIntegrationTest {
         VeilederService veilederService = mock(VeilederService.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        IndekseringService indekseringService = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutorMock);
+        IndekseringService indekseringService = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutorMock, pepClient);
 
 
         UpdateResponse response = new UpdateResponse();

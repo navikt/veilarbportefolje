@@ -53,12 +53,14 @@ public class SolrServiceTest {
     private AktoerService aktoerService;
     @Mock
     private VeilederService veilederService;
+    @Mock
+    private PepClient pepClient;
 
     private SolrService service;
 
     @Before
     public void setup() {
-        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, new LockingTaskExecutorMock());
+        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, new LockingTaskExecutorMock(), pepClient);
     }
 
     @Test
