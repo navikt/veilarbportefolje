@@ -1,25 +1,35 @@
 package no.nav.fo.veilarbportefolje.util;
 
+import no.nav.brukerdialog.security.context.SubjectRule;
+import no.nav.common.auth.Subject;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.veilarbportefolje.indeksering.SolrUtils;
+import no.nav.fo.veilarbportefolje.service.PepClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
+import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.orStatement;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class SolrUtilsTest {
 
     static String[] alderList = new String[]{
@@ -33,9 +43,16 @@ public class SolrUtilsTest {
             "67-70"
     };
 
+    private Subject subject = new Subject("testident", InternBruker, oidcToken("token"));
+
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule(subject);
+
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
+    @Mock
+    private PepClient pepClient;
 
     @Test
     public void skalGjoreMappingFraFacetFieldTilFacetResultsKorrekt() {
@@ -91,7 +108,7 @@ public class SolrUtilsTest {
         String enhetId = "0713";
         String queryString = "enhet_id:" + enhetId;
 
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(query.getFilterQueries()).contains("enhet_id: " + enhetId);
         assertThat(query.getFilterQueries()).contains(inaktiveBrukereFilter);
 
@@ -111,7 +128,7 @@ public class SolrUtilsTest {
 
         String enhetId = "0713";
 
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(query.getFilterQueries()).contains("enhet_id: " + enhetId);
         assertThat(query.getFilterQueries()).contains(sykmeldteBrukerFilter);
 
@@ -126,7 +143,7 @@ public class SolrUtilsTest {
 
         LinkedList<VeilederId> ider = crateVeilederIds();
 
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, Optional.empty(), ider, "","", filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery(enhetId, Optional.empty(), ider, "","", filtervalg, pepClient);
         assertThat(query.getFilterQueries()).contains("enhet_id: " + enhetId);
         assertThat(query.getFilterQueries()).contains(ufordeltBrukerFilter);
     }
@@ -137,12 +154,12 @@ public class SolrUtilsTest {
         filtervalg.ferdigfilterListe = asList(Brukerstatus.INAKTIVE_BRUKERE, Brukerstatus.UFORDELTE_BRUKERE);
         String forventetFilter = "(formidlingsgruppekode:ISERV AND -veileder_id:(a b c d))";
         String enhetId = "0713";
-        String queryString = "enhet_id:" + enhetId;
+        String queryString = "enhet_id: " + enhetId;
 
         LinkedList<VeilederId> ider = crateVeilederIds();
 
-        SolrQuery query = SolrUtils.buildSolrQuery(enhetId,  Optional.empty(), ider, "","", filtervalg);
-        assertThat(query.getFilterQueries()).contains("enhet_id: " + enhetId);
+        SolrQuery query = SolrUtils.buildSolrQuery(enhetId,  Optional.empty(), ider, "","", filtervalg, pepClient);
+        assertThat(query.getFilterQueries()).contains(queryString);
         assertThat(query.getFilterQueries()).contains(forventetFilter);
     }
 
@@ -158,7 +175,7 @@ public class SolrUtilsTest {
     @Test
     public void skalBygeSorterPaVeileder() throws Exception {
         Filtervalg filtervalg = new Filtervalg();
-        SolrQuery query = SolrUtils.buildSolrQuery("", Optional.of("1234"), new LinkedList<>(), "","", filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery("", Optional.of("1234"), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(query.getSortField()).contains("ny_for_veileder desc");
     }
 
@@ -192,23 +209,23 @@ public class SolrUtilsTest {
         Filtervalg filtervalg = new Filtervalg();
         SolrQuery solrQuery;
         filtervalg.kjonn = singletonList(Kjonn.M);
-        solrQuery = SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
 
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:M)");
 
         filtervalg.kjonn = singletonList(Kjonn.K);
-        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(solrQuery.getFilterQueries()).contains("(kjonn:K)");
 
         filtervalg = new Filtervalg();
-        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(solrQuery.getFilterQueries()).containsOnly("enhet_id: ");
     }
 
     @Test
     public void skalIkkeLeggePaaFilterQueryHvisIngenFiltervalgErSatt() {
         Filtervalg filtervalg = new Filtervalg();
-        SolrQuery query = SolrUtils.buildSolrQuery("0104",Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        SolrQuery query = SolrUtils.buildSolrQuery("0104",Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         filtervalg.harAktiveFilter();
         assertThat(query.getFilterQueries()).containsOnly("enhet_id: 0104");
     }
@@ -219,31 +236,52 @@ public class SolrUtilsTest {
         filter.ytelse = YtelseFilter.DAGPENGER_MED_PERMITTERING;
 
         assertThat(filter.harAktiveFilter()).isTrue();
-        assertThat(SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filter).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
+        assertThat(SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filter, pepClient).getFilterQueries()).contains("(ytelse:DAGPENGER_MED_PERMITTERING)");
     }
 
     @Test
-    public void skalIkkeLeggeTilNavnOgFnrQueryHvisVeilederIdErSatt() {
+    public void skalSesureraQuerynHvisIkkeTillgang() {
         Filtervalg filter = new Filtervalg();
         filter.navnEllerFnrQuery = "Test Person";
         assertThat(SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
-                "", filter).getQuery()).isEqualTo("*:*");
+                "", filter, pepClient).getQuery()).isEqualTo("navn_sok: Test Person");
+        assertThat(SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
+                "", filter, pepClient).getFilterQueries()).contains("-diskresjonskode:*");
+        assertThat(SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
+                "", filter, pepClient).getFilterQueries()).contains("egen_ansatt:false");
     }
 
     @Test
-    public void skalLeggeTilNavnOgFnrQueryHvisVeilederIdErSatt() {
+    public void skalIkkeSensueraHvisTillgang() {
         Filtervalg filter = new Filtervalg();
         filter.navnEllerFnrQuery = "Test Person";
-        assertThat(SolrUtils.buildSolrQuery("", Optional.of("1234"), new LinkedList<>(), "",
-                "", filter).getQuery()).isEqualTo("navn_sok: " + filter.navnEllerFnrQuery);
+        when(pepClient.isSubjectAuthorizedToSeeKode7(subject.getSsoToken().getToken())).thenReturn(true);
+        when(pepClient.isSubjectAuthorizedToSeeKode6(subject.getSsoToken().getToken())).thenReturn(true);
+        when(pepClient.isSubjectAuthorizedToSeeEgenAnsatt(subject.getSsoToken().getToken())).thenReturn(true);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
+                "", filter, pepClient);
+        assertThat(solrQuery.getQuery()).isEqualTo("navn_sok: " + filter.navnEllerFnrQuery);
+        assertThat(solrQuery.getFilterQueries()).containsOnly("enhet_id: ");
     }
+
+    @Test
+    public void skalIkkeSensueraKode6HvisTillgang() {
+        Filtervalg filter = new Filtervalg();
+        filter.navnEllerFnrQuery = "Test Person";
+        when(pepClient.isSubjectAuthorizedToSeeKode6(subject.getSsoToken().getToken())).thenReturn(true);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
+                "", filter, pepClient);
+        assertThat(solrQuery.getQuery()).isEqualTo("navn_sok: " + filter.navnEllerFnrQuery);
+        assertThat(solrQuery.getFilterQueries()).containsOnly("egen_ansatt:false", "-diskresjonskode:7", "enhet_id: ");
+    }
+
 
     @Test
     public void skalIkkeLeggeTilNavnOgFnrQueryHvisNavnEllerFnrErIkkeSatt() {
         Filtervalg filter = new Filtervalg();
         filter.navnEllerFnrQuery = "";
         assertThat(SolrUtils.buildSolrQuery("", Optional.of("1234"), new LinkedList<>(), "",
-                "", filter).getQuery()).isEqualTo("*:*");
+                "", filter, pepClient).getQuery()).isEqualTo("*:*");
     }
 
     @Test
@@ -257,7 +295,8 @@ public class SolrUtilsTest {
                 new LinkedList<>(),
                 "",
                 "",
-                filter).getFilterQueries()).contains(
+                filter,
+                pepClient).getFilterQueries()).contains(
                 "(ytelse:ORDINARE_DAGPENGER OR " +
                 "ytelse:DAGPENGER_MED_PERMITTERING OR " +
                 "ytelse:DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI OR " +
@@ -293,7 +332,7 @@ public class SolrUtilsTest {
 
         Filtervalg filtervalg = new Filtervalg().setTiltakstyper(tiltakstyper);
 
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(solrQuery.getFilterQueries()).contains("(tiltak:tiltak1 OR tiltak:tiltak2)");
     }
 
@@ -301,7 +340,7 @@ public class SolrUtilsTest {
     public void skalLeggeTilTiltakJa() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.JA);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg), pepClient);
 
         assertThat(solrQuery.getFilterQueries()).contains("(tiltak:*)");
     }
@@ -310,7 +349,7 @@ public class SolrUtilsTest {
     public void skalLeggeTilTiltakNei() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NEI);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg), pepClient);
 
         assertThat(solrQuery.getFilterQueries()).contains("(*:* AND -tiltak:*)");
     }
@@ -319,7 +358,7 @@ public class SolrUtilsTest {
     public void skalIkkeLeggeTilTiltakJaEllerNei() {
         Map<String, AktivitetFiltervalg> aktivitetFiltervalg = new HashMap<>();
         aktivitetFiltervalg.put(TILTAK, AktivitetFiltervalg.NA);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg), pepClient);
 
         asList(solrQuery.getFilterQueries()).forEach( (filter) -> assertThat(filter).doesNotContain("tiltak"));
     }
@@ -330,7 +369,7 @@ public class SolrUtilsTest {
         aktivitetFiltervalg.put("aktivitet1", AktivitetFiltervalg.JA);
         aktivitetFiltervalg.put("aktivitet2", AktivitetFiltervalg.NEI);
 
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg));
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", new Filtervalg().setAktiviteter(aktivitetFiltervalg), pepClient);
 
         assertThat(solrQuery.getFilterQueries()).contains("(aktiviteter:aktivitet1) AND (*:* AND -aktiviteter:aktivitet2)");
     }
@@ -340,16 +379,16 @@ public class SolrUtilsTest {
         Filtervalg filtervalg = new Filtervalg();
         SolrQuery solrQuery;
         filtervalg.manuellBrukerStatus = singletonList(ManuellBrukerStatus.MANUELL);
-        solrQuery = SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
 
         assertThat(solrQuery.getFilterQueries()).contains("(manuell_bruker:MANUELL)");
 
         filtervalg.manuellBrukerStatus = singletonList(ManuellBrukerStatus.KRR);
-        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(solrQuery.getFilterQueries()).contains("(manuell_bruker:KRR)");
 
         filtervalg = new Filtervalg();
-        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg);
+        solrQuery = SolrUtils.buildSolrQuery("",Optional.empty(), new LinkedList<>(), "","", filtervalg, pepClient);
         assertThat(solrQuery.getFilterQueries()).containsOnly("enhet_id: ");
     }
 

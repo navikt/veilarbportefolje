@@ -11,6 +11,7 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
+import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.fo.veilarbportefolje.util.BatchConsumer;
 import no.nav.fo.veilarbportefolje.util.MetricsUtils;
@@ -67,6 +68,7 @@ public class SolrService implements IndekseringService {
     private VeilederService veilederService;
     private Executor executor;
     private LockingTaskExecutor lockingTaskExecutor;
+    private PepClient pepClient;
 
     @Inject
     public SolrService(
@@ -76,7 +78,8 @@ public class SolrService implements IndekseringService {
             AktoerService aktoerService,
             VeilederService veilederService,
             AktivitetDAO aktivitetDAO,
-            LockingTaskExecutor lockingTaskExecutor) {
+            LockingTaskExecutor lockingTaskExecutor,
+            PepClient pepClient) {
 
         this.solrClientMaster = solrClientMaster;
         this.solrClientSlave = solrClientSlave;
@@ -86,6 +89,7 @@ public class SolrService implements IndekseringService {
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
         this.lockingTaskExecutor = lockingTaskExecutor;
+        this.pepClient = pepClient;
     }
 
     @Transactional
@@ -162,7 +166,7 @@ public class SolrService implements IndekseringService {
     @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         List<VeilederId> veiledere = veilederService.getIdenter(enhetId);
-        SolrQuery solrQuery = SolrUtils.buildSolrQuery(enhetId, veilederIdent, veiledere, sortOrder, sortField, filtervalg);
+        SolrQuery solrQuery = SolrUtils.buildSolrQuery(enhetId, veilederIdent, veiledere, sortOrder, sortField, filtervalg, pepClient);
         addPaging(solrQuery, fra, antall);
         QueryResponse response = timed("solr.hentbrukere", () -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
         SolrUtils.checkSolrResponseCode(response.getStatus());
