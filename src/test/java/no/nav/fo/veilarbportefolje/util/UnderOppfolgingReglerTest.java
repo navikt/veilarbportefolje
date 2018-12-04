@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.util;
 
+import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -13,6 +14,32 @@ public class UnderOppfolgingReglerTest {
 
     private static final Set<String> KVALIFISERINGSGRUPPEKODER = new HashSet<>(
             asList("BATT", "KAP11", "IKVAL", "IVURD", "VURDU", "VURDI", "VARIG", "OPPFI", "BKART", "BFORM"));
+
+
+    @Test
+    public void skal_vaere_under_oppfolging() {
+        BrukerDTO bruker = BrukerDTO.builder()
+                .formidlingsgruppekode("foo")
+                .kvalifiseringsgruppekode("bar")
+                .oppfolging(true)
+                .build();
+
+        boolean result = UnderOppfolgingRegler.erUnderOppfolging(bruker);
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void skal_ikke_vaere_under_oppfolging() {
+        BrukerDTO bruker = BrukerDTO.builder()
+                .formidlingsgruppekode("foo")
+                .kvalifiseringsgruppekode("bar")
+                .oppfolging(false)
+                .build();
+
+        boolean result = UnderOppfolgingRegler.erUnderOppfolging(bruker);
+        assertThat(result).isFalse();
+    }
+
 
     @Test
     public void skalVareOppfolgningsbrukerPgaArenaStatus() throws Exception {

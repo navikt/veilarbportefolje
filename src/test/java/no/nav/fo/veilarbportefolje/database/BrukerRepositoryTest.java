@@ -4,17 +4,20 @@ import com.google.common.base.Joiner;
 import io.vavr.control.Try;
 import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -54,6 +57,9 @@ public class BrukerRepositoryTest {
     @Inject
     private BrukerRepository brukerRepository;
 
+    private int ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA = 51;
+    private int ANTALL_OPPDATERTE_OPPFOLGINGSBRUKERE_I_TESTDATA = 2;
+
     public void insertoppfolgingsbrukerTestData() {
         try {
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8)));
@@ -69,6 +75,56 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
         insertoppfolgingsbrukerTestData();
+    }
+
+    @Test
+    public void skal_returnere_riktig_antall_brukere_under_oppfolging() {
+        List<BrukerDTO> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging();
+        assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
+    }
+
+    @Test
+    public void skal_returnere_riktig_antall_oppdaterte_brukere_under_oppfolging() {
+        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
+        List<BrukerDTO> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
+        assertThat(oppdaterteBrukere.size()).isEqualTo(ANTALL_OPPDATERTE_OPPFOLGINGSBRUKERE_I_TESTDATA);
+    }
+
+    @Test
+    public void skal_returnere_true_for_bruker_som_har_oppfolgingsflagg_satt() throws Exception {
+        ResultSet rsMock = Mockito.mock(ResultSet.class);
+        Mockito.when(rsMock.getString("formidlingsgruppekode")).thenReturn("foo");
+        Mockito.when(rsMock.getString("kvalifiseringsgruppekode")).thenReturn("bar");
+        Mockito.when(rsMock.getString("OPPFOLGING")).thenReturn("J");
+
+        boolean result = brukerRepository.erUnderOppfolging(rsMock);
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void skal_returnere_false_for_bruker_som_ikke_har_oppfolgingsflagg_satt() throws Exception {
+        ResultSet rsMock = Mockito.mock(ResultSet.class);
+        Mockito.when(rsMock.getString("formidlingsgruppekode")).thenReturn("foo");
+        Mockito.when(rsMock.getString("kvalifiseringsgruppekode")).thenReturn("bar");
+        Mockito.when(rsMock.getString("OPPFOLGING")).thenReturn("N");
+
+        boolean result = brukerRepository.erUnderOppfolging(rsMock);
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    public void skal_returnere_riktig_antall_brukere_under_oppfolging_gammel_metode() {
+        ArrayList<SolrInputDocument> brukereUnderOppfolging = new ArrayList<>();
+        brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, brukereUnderOppfolging::add);
+        assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
+    }
+
+    @Test
+    public void skal_returnere_riktig_antall_oppdaterte_brukere_under_oppfolging_gammel_metode() {
+        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
+        List<SolrInputDocument> brukere = brukerRepository.retrieveOppdaterteBrukere();
+        long result = brukere.stream().filter(BrukerRepository::erOppfolgingsBruker).count();
+        assertThat(result).isEqualTo(ANTALL_OPPDATERTE_OPPFOLGINGSBRUKERE_I_TESTDATA);
     }
 
     @Test

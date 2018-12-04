@@ -6,7 +6,10 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
+import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
+import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,13 +27,15 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static no.nav.fo.veilarbportefolje.database.Tabell.AKTOERID_TO_PERSONID;
+import static no.nav.fo.veilarbportefolje.database.Tabell.METADATA;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
+import static no.nav.sbl.sql.where.WhereClause.gt;
 
 @Slf4j
 public class BrukerRepository {
@@ -44,8 +49,60 @@ public class BrukerRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-    private static final String AKTOERID_TO_PERSONID = "AKTOERID_TO_PERSONID";
-    private static final String METADATA = "METADATA";
+    public List<BrukerDTO> hentAlleBrukereUnderOppfolging() {
+        db.setFetchSize(1000);
+
+        return SqlUtils
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilBrukerDTO(rs) : null)
+                .column("*")
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
+    public List<BrukerDTO> hentOppdaterteBrukereUnderOppfolging() {
+
+        db.setFetchSize(1000);
+
+        Timestamp sistIndeksert = SqlUtils
+                .select(db, Tabell.METADATA, rs -> rs.getTimestamp("SIST_INDEKSERT"))
+                .column("SIST_INDEKSERT")
+                .execute();
+
+        return SqlUtils
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilBrukerDTO(rs) : null)
+                .column("*")
+                .where(gt("TIDSSTEMPEL", sistIndeksert))
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
+    public BrukerDTO hentBruker(AktoerId aktoerId) {
+        return SqlUtils
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilBrukerDTO)
+                .column("*")
+                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                .execute();
+    }
+
+    public boolean erUnderOppfolging(ResultSet rs) {
+        return harOppfolgingsFlaggSatt(rs) || erUnderOppfolgingIArena(rs);
+    }
+
+    @SneakyThrows
+    private static boolean erUnderOppfolgingIArena(ResultSet rs) {
+        String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
+        String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
+        return UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, kvalifiseringsgruppekode);
+    }
+
+    @SneakyThrows
+    private static boolean harOppfolgingsFlaggSatt(ResultSet rs) {
+        return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
+    }
 
     static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO =
             "SELECT " +
@@ -92,6 +149,7 @@ public class BrukerRepository {
                     "FROM " +
                     "vw_portefolje_info";
 
+
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
     }
@@ -129,7 +187,7 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
-    public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId){
+    public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
         return insert(db, AKTOERID_TO_PERSONID)
                 .value("AKTOERID", aktoerId.toString())
                 .value("PERSONID", personId.toString())
@@ -341,17 +399,17 @@ public class BrukerRepository {
 
     public void slettYtelsesdata() {
         update(db, "bruker_data")
-                .set("ytelse", (Object)null)
-                .set("utlopsdato", (Object)null)
-                .set("utlopsdatoFasett", (Object)null)
-                .set("dagputlopuke", (Object)null)
-                .set("dagputlopukefasett", (Object)null)
-                .set("permutlopuke", (Object)null)
-                .set("permutlopukefasett", (Object)null)
-                .set("aapmaxtiduke", (Object)null)
-                .set("aapmaxtidukefasett", (Object)null)
-                .set("aapunntakdagerigjen", (Object)null)
-                .set("aapunntakukerigjenfasett", (Object)null)
+                .set("ytelse", (Object) null)
+                .set("utlopsdato", (Object) null)
+                .set("utlopsdatoFasett", (Object) null)
+                .set("dagputlopuke", (Object) null)
+                .set("dagputlopukefasett", (Object) null)
+                .set("permutlopuke", (Object) null)
+                .set("permutlopukefasett", (Object) null)
+                .set("aapmaxtiduke", (Object) null)
+                .set("aapmaxtidukefasett", (Object) null)
+                .set("aapunntakdagerigjen", (Object) null)
+                .set("aapunntakukerigjenfasett", (Object) null)
                 .execute();
     }
 

@@ -209,7 +209,7 @@ public class AktivitetUtils {
         return aktiviteter;
     }
 
-    private static String statusToIsoUtcString(AktivitetStatus status) {
+    public static String statusToIsoUtcString(AktivitetStatus status) {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getSolrMaxAsIsoUtc());
     }
 
@@ -238,7 +238,7 @@ public class AktivitetUtils {
         return null;
     }
 
-    private static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
+    public static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
         return brukertiltak
             .stream()
             .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
