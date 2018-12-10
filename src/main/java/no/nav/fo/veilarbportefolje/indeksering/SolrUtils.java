@@ -77,7 +77,7 @@ public class SolrUtils {
     }
 
     public static void leggTilNavnEllerFnrQuery (SolrQuery solrQuery, Filtervalg filtervalg) {
-        Try.of(()-> Integer.parseInt(filtervalg.navnEllerFnrQuery))
+        Try.of(()-> Long.parseLong(filtervalg.navnEllerFnrQuery))
                 .onSuccess((fnr) -> solrQuery.setQuery("fnr:" + filtervalg.navnEllerFnrQuery + "*"))
                 .onFailure((stringValue) -> solrQuery.setQuery("navn_sok: " + filtervalg.navnEllerFnrQuery));
 
