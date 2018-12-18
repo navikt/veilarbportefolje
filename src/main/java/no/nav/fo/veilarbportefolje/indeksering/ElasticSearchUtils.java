@@ -22,14 +22,14 @@ public class ElasticSearchUtils {
 
     static BrukerDTO finnBruker(List<BrukerDTO> brukere, Fnr fnr) {
         return brukere.stream()
-                .filter(x -> x.getFnr().equals(fnr.toString()))
+                .filter(bruker -> bruker.getFnr().equals(fnr.toString()))
                 .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }
 
     static BrukerDTO finnBruker(List<BrukerDTO> brukere, PersonId personId) {
         return brukere.stream()
-                .filter(b -> b.getPerson_id().equals(personId.toString()))
+                .filter(bruker -> bruker.getPerson_id().equals(personId.toString()))
                 .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }
