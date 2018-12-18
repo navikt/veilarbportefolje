@@ -37,6 +37,7 @@ import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_TOTALINDEKSER
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticSearchUtils.finnBruker;
 import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.ALIAS;
 import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE;
+import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE_LIMIT;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -253,8 +254,8 @@ public class ElasticSearchService implements IndekseringService {
     }
 
     private void validateBatchSize(List<BrukerDTO> brukere) {
-        if (brukere.size() > BATCH_SIZE) {
-            throw new IllegalStateException("Kan ikke prossessere flere enn 1000 brukere av gangen pga begrensninger i Oracle DB samt minnebruk!");
+        if (brukere.size() > BATCH_SIZE_LIMIT) {
+            throw new IllegalStateException(String.format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
         }
     }
 
