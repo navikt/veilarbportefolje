@@ -64,7 +64,6 @@ public class IndekseringConfig {
 
     @Bean
     public RestHighLevelClient restHighLevelClient() {
-
         return new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost(getElasticUrl(), -1, "https")
