@@ -9,7 +9,6 @@ import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.indeksering.SolrService;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
@@ -81,7 +80,7 @@ public class SolrUpdateSmoketest {
     private static JdbcTemplate jdbcTemplate;
     private static NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private static BrukerRepository brukerRepository;
-    private static IndekseringService indekseringService;
+    private static SolrService solrService;
 
     @BeforeEach
     public void setup() {
@@ -96,7 +95,7 @@ public class SolrUpdateSmoketest {
         jdbcTemplate = new JdbcTemplate(ds);
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
         brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
-        indekseringService = new SolrService(solrClient, solrClient, brukerRepository,
+        solrService = new SolrService(solrClient, solrClient, brukerRepository,
                 mock(AktoerService.class), mock(VeilederService.class), mock(AktivitetDAO.class), mock(LockingTaskExecutor.class), mock(PepClient.class));
     }
 
@@ -116,8 +115,8 @@ public class SolrUpdateSmoketest {
         Bruker bruker = Bruker.of(solrDocument);
         assertThat(solrDocument.getFieldNames()).containsAll(solrDocument.getFieldNames());
         assertThat(bruker.getAktiviteter().size()).isEqualTo(10);
-        indekseringService.slettBruker(AREMARK_PERSON_ID);
-        indekseringService.commit();
+        solrService.slettBruker(AREMARK_PERSON_ID);
+        solrService.commit();
         QueryResponse responseSlettet = solrClient.query(solrQuery);
         assertThat(responseSlettet.getResults()).isEmpty();
     }
@@ -138,15 +137,15 @@ public class SolrUpdateSmoketest {
         solrClient.add(solrInputDocument2);
         solrClient.add(solrInputDocument3);
         solrClient.commit();
-        BrukereMedAntall brukereDescending = indekseringService.hentBrukere("testenhet", Optional.empty(), "descending", "fodselsnummer", new Filtervalg(), null, null);
-        BrukereMedAntall brukereAscending = indekseringService.hentBrukere("testenhet", Optional.empty(), "ascending", "fodselsnummer", new Filtervalg(), null, null);
+        BrukereMedAntall brukereDescending = solrService.hentBrukere("testenhet", Optional.empty(), "descending", "fodselsnummer", new Filtervalg(), null, null);
+        BrukereMedAntall brukereAscending = solrService.hentBrukere("testenhet", Optional.empty(), "ascending", "fodselsnummer", new Filtervalg(), null, null);
         List<LocalDateTime> ascending = brukereAscending.getBrukere().stream().map(Bruker::getFodselsdato).collect(Collectors.toList());
         List<LocalDateTime> descending = brukereDescending.getBrukere().stream().map(Bruker::getFodselsdato).collect(Collectors.toList());
         assertThat(ascending).isEqualTo(asList(fodselsdato3.toLocalDateTime(), fodselsdato2.toLocalDateTime(), fodselsdato1.toLocalDateTime()));
         assertThat(descending).isEqualTo(asList(fodselsdato1.toLocalDateTime(), fodselsdato2.toLocalDateTime(), fodselsdato3.toLocalDateTime()));
-        indekseringService.slettBruker(PersonId.of("1111"));
-        indekseringService.slettBruker(PersonId.of("2222"));
-        indekseringService.slettBruker(PersonId.of("3333"));
+        solrService.slettBruker(PersonId.of("1111"));
+        solrService.slettBruker(PersonId.of("2222"));
+        solrService.slettBruker(PersonId.of("3333"));
     }
 
     @Test
@@ -161,8 +160,8 @@ public class SolrUpdateSmoketest {
         solrClient.add(solrInputDocument1);
         solrClient.add(solrInputDocument2);
         solrClient.commit();
-        BrukereMedAntall brukereAscending = indekseringService.hentBrukere("testenhet", Optional.empty(), "ascending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
-        BrukereMedAntall brukereDescending = indekseringService.hentBrukere("testenhet", Optional.empty(), "descending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
+        BrukereMedAntall brukereAscending = solrService.hentBrukere("testenhet", Optional.empty(), "ascending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
+        BrukereMedAntall brukereDescending = solrService.hentBrukere("testenhet", Optional.empty(), "descending", "valgteaktiviteter", filterMedAlleAktiviteter(), null, null);
         List<Map<String, Timestamp>> aktiviteterAscending = brukereAscending.getBrukere().stream().map(Bruker::getAktiviteter).collect(Collectors.toList());
         List<Map<String, Timestamp>> aktiviteterDescending = brukereDescending.getBrukere().stream().map(Bruker::getAktiviteter).collect(Collectors.toList());
         Timestamp tiltakAscending = aktiviteterAscending.get(0).get("tiltak");

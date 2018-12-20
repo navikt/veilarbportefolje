@@ -148,11 +148,6 @@ public class ElasticSearchService implements IndekseringService {
     }
 
     @Override
-    public void slettBruker(PersonId personid) {
-        throw new IllegalStateException();
-    }
-
-    @Override
     public void indekserBrukerdata(PersonId personId) {
         throw new IllegalStateException();
     }
@@ -322,11 +317,6 @@ public class ElasticSearchService implements IndekseringService {
 
     @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
-        throw new IllegalStateException();
-    }
-
-    @Override
-    public void commit() {
         throw new IllegalStateException();
     }
 

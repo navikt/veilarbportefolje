@@ -61,18 +61,8 @@ public class IndekseringServiceProxy implements IndekseringService {
     }
 
     @Override
-    public void slettBruker(PersonId personid) {
-        solrService.slettBruker(personid);
-    }
-
-    @Override
     public void indekserBrukerdata(PersonId personId) {
         solrService.indekserBrukerdata(personId);
-    }
-
-    @Override
-    public void commit() {
-        solrService.commit();
     }
 
     @Override

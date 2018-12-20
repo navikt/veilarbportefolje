@@ -192,7 +192,7 @@ public class SolrService implements IndekseringService {
         deleteDocuments("fnr:" + fnr);
     }
 
-    @Override
+
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:" + personid.toString());
     }
@@ -248,7 +248,6 @@ public class SolrService implements IndekseringService {
         CompletableFuture.runAsync(() -> indekserBrukerdata(aktoerId), executor);
     }
 
-    @Override
     public void commit() {
         String feilmeldingsTekst = "Kunne ikke gjennomføre commit til solrindeksen.";
         Try.of(() -> solrClientMaster.commit())

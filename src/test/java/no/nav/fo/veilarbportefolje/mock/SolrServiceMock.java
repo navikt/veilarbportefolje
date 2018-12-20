@@ -35,11 +35,6 @@ public class SolrServiceMock implements IndekseringService {
     }
 
     @Override
-    public void slettBruker(PersonId personid) {
-
-    }
-
-    @Override
     public void indekserBrukerdata(PersonId personId) {
 
     }
