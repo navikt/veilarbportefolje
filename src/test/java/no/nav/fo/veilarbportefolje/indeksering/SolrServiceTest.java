@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbportefolje.service;
+package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.val;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
@@ -6,9 +6,10 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
-import no.nav.fo.veilarbportefolje.indeksering.SolrService;
 import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
-import no.nav.fo.veilarbportefolje.indeksering.SolrUtils;
+import no.nav.fo.veilarbportefolje.service.AktoerService;
+import no.nav.fo.veilarbportefolje.service.PepClient;
+import no.nav.fo.veilarbportefolje.service.VeilederService;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;

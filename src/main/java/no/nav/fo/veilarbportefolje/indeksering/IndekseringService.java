@@ -16,8 +16,6 @@ public interface IndekseringService {
 
     void slettBruker(String fnr);
 
-    void indekserBrukerdata(PersonId personId);
-
     StatusTall hentStatusTallForPortefolje(String enhet);
 
     FacetResults hentPortefoljestorrelser(String enhetId);

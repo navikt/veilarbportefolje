@@ -7,8 +7,10 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.util.Utils;
 import no.nav.json.JsonUtils;
+import no.nav.sbl.util.ListUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -35,9 +37,7 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_DELTAINDEKSERING;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_TOTALINDEKSERING;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticSearchUtils.finnBruker;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.ALIAS;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE_LIMIT;
+import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.*;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -147,10 +147,6 @@ public class ElasticSearchService implements IndekseringService {
         }
     }
 
-    @Override
-    public void indekserBrukerdata(PersonId personId) {
-        throw new IllegalStateException();
-    }
 
     @Override
     public void indekserAsynkront(AktoerId aktoerId) {
@@ -170,7 +166,12 @@ public class ElasticSearchService implements IndekseringService {
 
     @Override
     public void indekserBrukere(List<PersonId> personIds) {
-        throw new IllegalStateException();
+        Utils.splittOppListe(personIds, BATCH_SIZE).forEach(batch -> {
+            List<BrukerDTO> brukere = brukerRepository.hentBrukere(batch);
+            leggTilAktiviteter(brukere);
+            leggTilTiltak(brukere);
+            skrivTilIndeks(ALIAS, brukere);
+        });
     }
 
     @SneakyThrows

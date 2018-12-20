@@ -213,8 +213,7 @@ public class SolrService implements IndekseringService {
         return SolrUtils.mapFacetResults(facetField);
     }
 
-    @Override
-    public void indekserBrukerdata(PersonId personId) {
+    void indekserBrukerdata(PersonId personId) {
         SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
         if (!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
             log.info("Sletter bruker med personId {} fra indeksen ", personId);

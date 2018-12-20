@@ -88,6 +88,18 @@ public class BrukerRepository {
                 .execute();
     }
 
+    public List<BrukerDTO> hentBrukere(List<PersonId> personIds) {
+        db.setFetchSize(1000);
+        return SqlUtils
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilBrukerDTO(rs) : null)
+                .column("*")
+                .where(WhereClause.in("PERSON_ID", personIds))
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
     public boolean erUnderOppfolging(ResultSet rs) {
         return harOppfolgingsFlaggSatt(rs) || erUnderOppfolgingIArena(rs);
     }

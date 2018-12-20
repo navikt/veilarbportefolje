@@ -61,11 +61,6 @@ public class IndekseringServiceProxy implements IndekseringService {
     }
 
     @Override
-    public void indekserBrukerdata(PersonId personId) {
-        solrService.indekserBrukerdata(personId);
-    }
-
-    @Override
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         return solrService.hentStatusTallForPortefolje(enhet);
     }
@@ -97,6 +92,10 @@ public class IndekseringServiceProxy implements IndekseringService {
     @Override
     public void indekserBrukere(List<PersonId> personIds) {
         solrService.indekserBrukere(personIds);
+
+        if (elasticSearchIsEnabled()) {
+            elasticSearchService.indekserBrukere(personIds);
+        }
     }
 
     private boolean elasticSearchIsEnabled() {
