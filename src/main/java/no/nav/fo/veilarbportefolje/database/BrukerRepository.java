@@ -90,10 +90,12 @@ public class BrukerRepository {
 
     public List<BrukerDTO> hentBrukere(List<PersonId> personIds) {
         db.setFetchSize(1000);
+        List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
+
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilBrukerDTO(rs) : null)
                 .column("*")
-                .where(WhereClause.in("PERSON_ID", personIds))
+                .where(WhereClause.in("PERSON_ID", ids))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
