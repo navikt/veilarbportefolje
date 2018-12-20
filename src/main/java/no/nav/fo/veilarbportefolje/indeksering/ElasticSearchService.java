@@ -188,7 +188,7 @@ public class ElasticSearchService implements IndekseringService {
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(action);
 
-        AcknowledgedResponse addAliasResponse = client.indices().updateAliases(request);
+        AcknowledgedResponse addAliasResponse = client.indices().updateAliases(request, DEFAULT);
         if (!addAliasResponse.isAcknowledged()) {
             throw new RuntimeException(String.format("Kunne ikke oppdatere ALIAS: %s", ALIAS));
         }
@@ -204,7 +204,7 @@ public class ElasticSearchService implements IndekseringService {
         IndicesAliasesRequest request = new IndicesAliasesRequest()
                 .addAliasAction(removeAliasAction);
 
-        AcknowledgedResponse addAliasResponse = client.indices().updateAliases(request);
+        AcknowledgedResponse addAliasResponse = client.indices().updateAliases(request, DEFAULT);
         if (!addAliasResponse.isAcknowledged()) {
             throw new RuntimeException(String.format("Kunne ikke oppdatere ALIAS: %s", ALIAS));
         }
@@ -214,7 +214,7 @@ public class ElasticSearchService implements IndekseringService {
     private void slettGammelIndeks(String gammelIndeks) {
         AcknowledgedResponse response = client
                 .indices()
-                .delete(new DeleteIndexRequest(gammelIndeks));
+                .delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
 
         if (!response.isAcknowledged()) {
             throw new RuntimeException(String.format("Kunne ikke slette gammel indeks %s", gammelIndeks));
@@ -229,7 +229,7 @@ public class ElasticSearchService implements IndekseringService {
                 .map(json -> new IndexRequest(indeksNavn, "_doc").source(json, XContentType.JSON))
                 .forEach(bulk::add);
 
-        BulkResponse response = client.bulk(bulk);
+        BulkResponse response = client.bulk(bulk, DEFAULT);
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());
         }
@@ -244,7 +244,7 @@ public class ElasticSearchService implements IndekseringService {
         String indexName = ElasticSearchUtils.createIndexName(ALIAS);
         CreateIndexRequest request = new CreateIndexRequest(indexName)
                 .mapping("_doc", mappingJson, XContentType.JSON);
-        client.indices().create(request);
+        client.indices().create(request, DEFAULT);
         return indexName;
     }
 
