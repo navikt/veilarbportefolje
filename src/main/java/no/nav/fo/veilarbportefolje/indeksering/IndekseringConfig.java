@@ -47,7 +47,7 @@ import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY;
 import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
-import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
+import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.Q;
 import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentClass;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
@@ -66,16 +66,16 @@ public class IndekseringConfig {
     public RestHighLevelClient restHighLevelClient() {
         return new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost(getElasticUrl(), -1, "https")
+                        new HttpHost(getElasticHostname(), -1, "https")
                 ).setHttpClientConfigCallback(getHttpClientConfigCallback())
         );
     }
 
-    public static String getElasticUrl() {
-        if (getEnvironmentClass() == P) {
-            return "tpa-veilarbelastic-elasticsearch.nais.adeo.no";
-        } else {
+    public static String getElasticHostname() {
+        if (getEnvironmentClass() == Q) {
             return "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
+        } else {
+            return "tpa-veilarbelastic-elasticsearch.nais.adeo.no";
         }
     }
 
