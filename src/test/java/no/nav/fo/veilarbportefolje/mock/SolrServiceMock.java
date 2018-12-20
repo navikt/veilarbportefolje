@@ -67,8 +67,4 @@ public class SolrServiceMock implements IndekseringService {
     public void indekserBrukere(List<PersonId> personIds) {
     }
 
-    @Override
-    public void commit() {
-    }
-
 }
