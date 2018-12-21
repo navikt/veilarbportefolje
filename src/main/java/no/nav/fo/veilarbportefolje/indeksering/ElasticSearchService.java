@@ -9,6 +9,8 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.util.Utils;
 import no.nav.json.JsonUtils;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -26,7 +28,9 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.lang.String.format;
@@ -107,6 +111,7 @@ public class ElasticSearchService implements IndekseringService {
     private void startIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
         long t0 = System.currentTimeMillis();
+        Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
 
         String nyIndeks = opprettNyIndeks();
         log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
@@ -135,6 +140,7 @@ public class ElasticSearchService implements IndekseringService {
         long t1 = System.currentTimeMillis();
         long time = t1 - t0;
 
+        brukerRepository.oppdaterSistIndeksertElastic(tidsstempel);
         log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
     }
 
@@ -147,6 +153,8 @@ public class ElasticSearchService implements IndekseringService {
 
             log.info("Deltaindeksering: Hentet ut {} oppdaterte brukere i Elasticsearch", brukere.size());
 
+            Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+
             Utils.splittOppListe(brukere, BATCH_SIZE).forEach(brukerBatch -> {
                 leggTilAktiviteter(brukere);
                 leggTilTiltak(brukere);
@@ -154,6 +162,13 @@ public class ElasticSearchService implements IndekseringService {
             });
 
             log.info("Deltaindeksering: Deltaindeksering for {} brukere er utført", brukere.size());
+
+            brukerRepository.oppdaterSistIndeksertElastic(timestamp);
+
+            int antall = brukere.size();
+            Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
+            event.addFieldToReport("es.antall.oppdateringer", antall);
+            event.report();
 
         }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50)));
     }
