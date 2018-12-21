@@ -79,7 +79,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     private DataSource dataSource;
 
     @Inject
-    private IndekseringScheduler hovedindekseringScheduler;
+    private IndekseringScheduler indekseringScheduler;
 
     @Inject
     private IndekseringService indekseringService;
@@ -97,7 +97,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
         flyway.setDataSource(dataSource);
         flyway.migrate();
 
-        leggTilServlet(servletContext, new TotalHovedindekseringServlet(hovedindekseringScheduler), "/internal/totalhovedindeksering");
+        leggTilServlet(servletContext, new TotalHovedindekseringServlet(indekseringScheduler), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new PopulerIndekseringServlet(indekseringService), "/internal/populerindeks");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
@@ -127,7 +127,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     }
 
     @Bean
-    public IndekseringScheduler hovedindekseringScheduler() {
+    public IndekseringScheduler indekseringScheduler() {
         return new IndekseringScheduler();
     }
 
