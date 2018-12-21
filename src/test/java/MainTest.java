@@ -36,7 +36,7 @@ public class MainTest {
         setProperty(SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(SYSTEMUSER_PASSWORD, serviceUser.getPassword());
 
-        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleashproxy.nais.oera.no/api/");
+        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleashproxy.nais.adeo.no/api/");
 
         // TODO: Støtte inMemoryDb eller lokal hsqldb ala jdbc:hsqldb:hsql://localhost/portefolje;ifexists=true
         DbCredentials dbCredentials = getDbCredentials(APPLICATION_NAME);
