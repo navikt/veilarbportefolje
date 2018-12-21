@@ -54,6 +54,8 @@ public class ElasticSearchService implements IndekseringService {
 
     private LockingTaskExecutor shedlock;
 
+    private Exception indekseringFeilet;
+
     static String mappingJson = "{\n" +
             "  \"properties\": {\n" +
             "    \"veileder_id\": {\n" +
@@ -76,15 +78,19 @@ public class ElasticSearchService implements IndekseringService {
         this.shedlock = shedlock;
     }
 
+    public Exception hentIndekseringFeiletStatus() {
+        return indekseringFeilet;
+    }
+
     @Override
     public void hovedindeksering() {
         shedlock.executeWithLock(() -> {
                     try {
                         startIndeksering();
-                        HovedIndekseringHelsesjekk.setIndekseringVellykket();
+                        indekseringFeilet = null;
                     } catch (Exception e) {
                         log.error("Hovedindeksering: indeksering feilet {}", e.getMessage());
-                        HovedIndekseringHelsesjekk.setIndekseringFeilet(e);
+                        indekseringFeilet = e;
                     }
                 },
                 new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3))
@@ -357,6 +363,4 @@ public class ElasticSearchService implements IndekseringService {
     public List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
         throw new IllegalStateException();
     }
-
-
 }

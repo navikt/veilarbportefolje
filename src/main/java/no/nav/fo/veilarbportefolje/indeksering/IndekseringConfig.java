@@ -85,8 +85,8 @@ public class IndekseringConfig {
     }
 
     @Bean
-    public HovedIndekseringHelsesjekk hovedIndekseringHelsesjekk() {
-        return new HovedIndekseringHelsesjekk();
+    public HovedIndekseringHelsesjekk hovedIndekseringHelsesjekk(ElasticSearchService elasticSearchService) {
+        return new HovedIndekseringHelsesjekk(elasticSearchService);
     }
 
     @Bean

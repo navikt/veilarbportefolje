@@ -7,10 +7,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class HovedIndekseringHelsesjekk implements Helsesjekk {
 
-    private static Exception indekseringFeilet;
+    private ElasticSearchService elasticSearchService;
+
+    public HovedIndekseringHelsesjekk(ElasticSearchService elasticSearchService) {
+        this.elasticSearchService = elasticSearchService;
+    }
 
     @Override
     public void helsesjekk() {
+        Exception indekseringFeilet = elasticSearchService.hentIndekseringFeiletStatus();
         if (indekseringFeilet != null) {
             throw new RuntimeException(indekseringFeilet);
         }
@@ -24,13 +29,5 @@ public class HovedIndekseringHelsesjekk implements Helsesjekk {
                 "Sjekker om forrige hovedindeksering var vellykket",
                 true
         );
-    }
-
-    public static void setIndekseringFeilet(Exception e) {
-        indekseringFeilet = e;
-    }
-
-    public static void setIndekseringVellykket() {
-        indekseringFeilet = null;
     }
 }
