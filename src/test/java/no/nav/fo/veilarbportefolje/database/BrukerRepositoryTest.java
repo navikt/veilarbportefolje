@@ -85,7 +85,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skal_returnere_riktig_antall_oppdaterte_brukere_under_oppfolging() {
-        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
+        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT_ES = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
         List<BrukerDTO> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
         assertThat(oppdaterteBrukere.size()).isEqualTo(ANTALL_OPPDATERTE_OPPFOLGINGSBRUKERE_I_TESTDATA);
     }
