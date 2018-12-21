@@ -66,9 +66,15 @@ public class ElasticSearchService implements IndekseringService {
             "    },\n" +
             "    \"person_id\": {\n" +
             "      \"type\": \"keyword\"\n" +
+            "    },\n" +
+            "    \"etternavn\": {\n" +
+            "      \"type\" : \"keyword\"\n" +
+            "    },\n" +
+            "    \"fnr\": {\n" +
+            "      \"type\" : \"keyword\"\n" +
             "    }\n" +
             "  }\n" +
-            "}";
+            "}\n";
 
     @Inject
     public ElasticSearchService(RestHighLevelClient client, AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock) {
