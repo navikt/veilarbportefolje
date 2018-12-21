@@ -29,6 +29,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.*;
 import static no.nav.fo.veilarbportefolje.database.Tabell.AKTOERID_TO_PERSONID;
+import static no.nav.fo.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.fo.veilarbportefolje.database.Tabell.METADATA;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
@@ -40,6 +41,7 @@ import static no.nav.sbl.sql.where.WhereClause.gt;
 @Slf4j
 public class BrukerRepository {
 
+
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -47,6 +49,12 @@ public class BrukerRepository {
     public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
+
+    public int oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
+        return SqlUtils.update(db, Tabell.METADATA)
+                .set(SIST_INDEKSERT_ES, tidsstempel)
+                .execute();
     }
 
     public List<BrukerDTO> hentAlleBrukereUnderOppfolging() {
@@ -66,8 +74,8 @@ public class BrukerRepository {
         db.setFetchSize(1000);
 
         Timestamp sistIndeksert = SqlUtils
-                .select(db, Tabell.METADATA, rs -> rs.getTimestamp("SIST_INDEKSERT"))
-                .column("SIST_INDEKSERT")
+                .select(db, Tabell.METADATA, rs -> rs.getTimestamp(SIST_INDEKSERT_ES))
+                .column(SIST_INDEKSERT_ES)
                 .execute();
 
         return SqlUtils
