@@ -31,7 +31,7 @@ fasitResources:
   - alias: veilarbelastic_user
     resourceType: credential
     propertyMap:
-      username: VEILARBELASTIC_USER
+      username: VEILARBELASTIC_USERNAME
       password: VEILARBELASTIC_PASSWORD
   - alias: loadbalancer:veilarbportefolje
     resourceType: loadbalancerconfig
