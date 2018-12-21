@@ -85,6 +85,11 @@ public class IndekseringConfig {
     }
 
     @Bean
+    public HovedIndekseringHelsesjekk hovedIndekseringHelsesjekk() {
+        return new HovedIndekseringHelsesjekk();
+    }
+
+    @Bean
     public MetricsReporter metricsReporter() {
         return new MetricsReporter(restHighLevelClient());
     }

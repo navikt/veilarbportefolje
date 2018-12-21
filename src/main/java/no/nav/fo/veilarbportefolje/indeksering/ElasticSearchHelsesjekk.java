@@ -30,10 +30,10 @@ public class ElasticSearchHelsesjekk implements Helsesjekk {
     @Override
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
-                "elasticsearch",
+                "elasticsearch helsesjekk",
                 String.format("https://%s/%s", IndekseringConfig.getElasticHostname(), IndekseringConfig.ALIAS),
-                "Pinger ElasticSearch-cluster",
-                false
+                "Sjekker helsestatus til Elasticsearch-clusteret",
+                true
         );
     }
 }

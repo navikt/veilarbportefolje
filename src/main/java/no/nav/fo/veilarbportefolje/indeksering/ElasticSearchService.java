@@ -78,40 +78,52 @@ public class ElasticSearchService implements IndekseringService {
 
     @Override
     public void hovedindeksering() {
-
         shedlock.executeWithLock(() -> {
-                    log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
-                    long t0 = System.currentTimeMillis();
-
-                    String nyIndeks = opprettNyIndeks();
-                    log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
-
-                    List<BrukerDTO> brukere = brukerRepository.hentAlleBrukereUnderOppfolging();
-                    log.info("Hovedindeksering: Hentet {} oppfølgingsbrukere fra databasen", brukere.size());
-
-                    log.info("Hovedindeksering: Batcher opp uthenting av aktiviteter og tiltak samt skriveoperasjon til indeks (BATCH_SIZE={})", BATCH_SIZE);
-                    Utils.splittOppListe(brukere, BATCH_SIZE).forEach(brukerBatch -> {
-                        leggTilAktiviteter(brukerBatch);
-                        leggTilTiltak(brukerBatch);
-                        skrivTilIndeks(nyIndeks, brukerBatch);
-                    });
-
-                    Optional<String> gammelIndeks = hentGammeltIndeksNavn();
-                    if (gammelIndeks.isPresent()) {
-                        log.info("Hovedindeksering: Peker alias mot ny indeks og sletter den gamle");
-                        flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
-                        slettGammelIndeks(gammelIndeks.get());
-                    } else {
-                        log.info("Hovedindeksering: Lager alias til ny indeks");
-                        leggTilAliasTilIndeks(nyIndeks);
+                    try {
+                        startIndeksering();
+                        HovedIndekseringHelsesjekk.setIndekseringVellykket();
+                    } catch (Exception e) {
+                        log.error("Hovedindeksering: indeksering feilet {}", e.getMessage());
+                        HovedIndekseringHelsesjekk.setIndekseringFeilet(e);
                     }
-
-                    long t1 = System.currentTimeMillis();
-                    long time = t1 - t0;
-
-                    log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
                 },
-                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
+                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3))
+        );
+    }
+
+    @SneakyThrows
+    private void startIndeksering() {
+        log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
+        long t0 = System.currentTimeMillis();
+
+        String nyIndeks = opprettNyIndeks();
+        log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
+
+
+        List<BrukerDTO> brukere = brukerRepository.hentAlleBrukereUnderOppfolging();
+        log.info("Hovedindeksering: Hentet {} oppfølgingsbrukere fra databasen", brukere.size());
+
+        log.info("Hovedindeksering: Batcher opp uthenting av aktiviteter og tiltak samt skriveoperasjon til indeks (BATCH_SIZE={})", BATCH_SIZE);
+        Utils.splittOppListe(brukere, BATCH_SIZE).forEach(brukerBatch -> {
+            leggTilAktiviteter(brukerBatch);
+            leggTilTiltak(brukerBatch);
+            skrivTilIndeks(nyIndeks, brukerBatch);
+        });
+
+        Optional<String> gammelIndeks = hentGammeltIndeksNavn();
+        if (gammelIndeks.isPresent()) {
+            log.info("Hovedindeksering: Peker alias mot ny indeks og sletter den gamle");
+            flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
+            slettGammelIndeks(gammelIndeks.get());
+        } else {
+            log.info("Hovedindeksering: Lager alias til ny indeks");
+            leggTilAliasTilIndeks(nyIndeks);
+        }
+
+        long t1 = System.currentTimeMillis();
+        long time = t1 - t0;
+
+        log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
     }
 
     @Override
