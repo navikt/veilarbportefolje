@@ -2,8 +2,11 @@
 
 Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering av indeks.
 
-## Avhengigheter til andre tjenester
-- veilarbportefoljeindeks
+## Kjør Elastic Search lokalt
+```
+1. docker network create esnet
+2. docker run -d --name elasticsearch --net esnet -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:6.5.2
+```
 
 ## For å bygge
 `mvn clean install`

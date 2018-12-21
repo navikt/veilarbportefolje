@@ -192,7 +192,7 @@ public class SolrService implements IndekseringService {
         deleteDocuments("fnr:" + fnr);
     }
 
-    @Override
+
     public void slettBruker(PersonId personid) {
         deleteDocuments("person_id:" + personid.toString());
     }
@@ -213,8 +213,7 @@ public class SolrService implements IndekseringService {
         return SolrUtils.mapFacetResults(facetField);
     }
 
-    @Override
-    public void indekserBrukerdata(PersonId personId) {
+    void indekserBrukerdata(PersonId personId) {
         SolrInputDocument brukerDokument = brukerRepository.retrieveBrukermedBrukerdata(personId.toString());
         if (!BrukerRepository.erOppfolgingsBruker(brukerDokument)) {
             log.info("Sletter bruker med personId {} fra indeksen ", personId);
@@ -248,7 +247,6 @@ public class SolrService implements IndekseringService {
         CompletableFuture.runAsync(() -> indekserBrukerdata(aktoerId), executor);
     }
 
-    @Override
     public void commit() {
         String feilmeldingsTekst = "Kunne ikke gjennomføre commit til solrindeksen.";
         Try.of(() -> solrClientMaster.commit())

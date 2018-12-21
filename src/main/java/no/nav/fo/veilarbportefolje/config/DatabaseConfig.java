@@ -30,6 +30,8 @@ public class DatabaseConfig {
     public static final String VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_PASSWORD";
     public static final String DELTAINDEKSERING = "deltaindeksering";
     public static final String TOTALINDEKSERING = "totalindeksering";
+    public static final String ES_TOTALINDEKSERING = "es_totalindeksering";
+    public static final String ES_DELTAINDEKSERING = "es_deltaindeksering";
 
     @Bean
     public DataSource dataSource() {

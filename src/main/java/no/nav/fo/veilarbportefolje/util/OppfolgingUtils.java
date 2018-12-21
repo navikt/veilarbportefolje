@@ -3,9 +3,7 @@ package no.nav.fo.veilarbportefolje.util;
 
 import no.nav.fo.veilarbportefolje.domene.VurderingsBehov;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static java.util.Arrays.asList;
 

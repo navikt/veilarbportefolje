@@ -9,6 +9,8 @@ import static no.nav.dialogarena.config.fasit.FasitUtils.*;
 import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
+import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_PASSWORD;
+import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_USERNAME;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
@@ -71,6 +73,10 @@ public class MainTest {
         setProperty(ISSO_ISSUER_URL_PROPERTY_NAME, getBaseUrl("isso-issuer"));
         setProperty(ISSO_ISALIVE_URL_PROPERTY_NAME, getBaseUrl("isso.isalive", Zone.FSS));
         setProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY, loginUrl);
+
+        ServiceUser elasticUser = getServiceUser("veilarbelastic_user", APPLICATION_NAME, getDefaultEnvironment());
+        setProperty(VEILARBELASTIC_USERNAME, elasticUser.getUsername());
+        setProperty(VEILARBELASTIC_PASSWORD, elasticUser.getPassword());
 
         Main.main(PORT);
     }

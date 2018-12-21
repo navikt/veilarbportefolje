@@ -1,7 +1,9 @@
 package no.nav.fo.veilarbportefolje.util;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -27,6 +29,70 @@ public class DbUtils {
             log.error("Feil ved mapping fra resultset fra db til SolrInputDocument", e);
             return null;
         }
+    }
+
+    @SneakyThrows
+    public static BrukerDTO mapTilBrukerDTO(ResultSet rs) {
+
+        String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
+        String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
+
+        BrukerDTO.BrukerDTOBuilder bruker = BrukerDTO.builder()
+                .person_id(numberToString(rs.getBigDecimal("person_id")))
+                .fnr(rs.getString("fodselsnr"))
+                .fornavn(kapitaliser(rs.getString("fornavn")))
+                .etternavn(kapitaliser(rs.getString("etternavn")))
+                .enhet_id(rs.getString("nav_kontor"))
+                .formidlingsgruppekode(rs.getString("nav_kontor"))
+                .enhet_id(rs.getString("nav_kontor"))
+                .formidlingsgruppekode(formidlingsgruppekode)
+                .iserv_fra_dato(toIsoUTC(rs.getTimestamp("iserv_fra_dato")))
+                .kvalifiseringsgruppekode(kvalifiseringsgruppekode)
+                .rettighetsgruppekode(rs.getString("rettighetsgruppekode"))
+                .hovedmaalkode(rs.getString("hovedmaalkode"))
+                .sikkerhetstiltak(rs.getString("sikkerhetstiltak_type_kode"))
+                .diskresjonskode(rs.getString("fr_kode"))
+                .egen_ansatt(parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"))
+                .er_doed(parseJaNei(rs.getString("er_doed"), "er_doed"))
+                .doed_fra_dato(toIsoUTC(rs.getTimestamp("doed_fra_dato")))
+                .veileder_id(rs.getString("veilederident"))
+                .fodselsdag_i_mnd(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")))
+                .fodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")))
+                .kjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))
+                .ytelse(rs.getString("ytelse"))
+                .utlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
+                .utlopsdatofasett(rs.getString("utlopsdatofasett"))
+                .dagputlopuke(parseInt(rs.getString("dagputlopuke")))
+                .dagputlopukefasett(rs.getString("dagputlopukefasett"))
+                .permutlopuke(parseInt(rs.getString("permutlopuke")))
+                .aapmaxtiduke(parseInt(rs.getString("aapmaxtiduke")))
+                .aapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
+                .aapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"))
+                .oppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
+                .ny_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
+                .ny_for_enhet(isNyForEnhet(rs.getString("veilederident")))
+                .trenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .venterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
+                .venterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
+                .nyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
+                .aktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
+                .neste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
+                .forrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
+                .manuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
+
+        boolean arbeidslisteAktiv = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
+
+        if(arbeidslisteAktiv) {
+            bruker
+                    .arbeidsliste_aktiv(true)
+                    .arbeidsliste_sist_endret_av_veilederid(rs.getString("ARBEIDSLISTE_ENDRET_AV"))
+                    .arbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
+                    .arbeidsliste_kommentar(rs.getString("ARBEIDSLISTE_KOMMENTAR"))
+                    .arbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
+                    .arbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getSolrMaxAsIsoUtc()));
+        }
+
+        return bruker.build();
     }
 
     private static SolrInputDocument mapTilDokument(ResultSet rs) throws SQLException {

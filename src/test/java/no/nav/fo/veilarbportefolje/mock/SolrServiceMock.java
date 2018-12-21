@@ -35,16 +35,6 @@ public class SolrServiceMock implements IndekseringService {
     }
 
     @Override
-    public void slettBruker(PersonId personid) {
-
-    }
-
-    @Override
-    public void indekserBrukerdata(PersonId personId) {
-
-    }
-
-    @Override
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         return null;
     }
@@ -70,10 +60,6 @@ public class SolrServiceMock implements IndekseringService {
 
     @Override
     public void indekserBrukere(List<PersonId> personIds) {
-    }
-
-    @Override
-    public void commit() {
     }
 
 }

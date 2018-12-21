@@ -3,12 +3,15 @@ package no.nav.fo.veilarbportefolje.indeksering;
 import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
+import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.util.EnvironmentUtils;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -23,12 +26,17 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.io.IOException;
@@ -39,12 +47,74 @@ import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY;
 import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
+import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.Q;
+import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentClass;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
+@Import({DatabaseConfig.class})
 public class IndekseringConfig {
 
     private static final String URL = getRequiredProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY);
+    public static int BATCH_SIZE = 1000;
+    public final static int BATCH_SIZE_LIMIT = 1000;
+    public static String ALIAS = "brukerindeks";
+    public static String VEILARBELASTIC_USERNAME = "VEILARBELASTIC_USERNAME";
+    public static String VEILARBELASTIC_PASSWORD = "VEILARBELASTIC_PASSWORD";
+
+    @Bean
+    public RestHighLevelClient restHighLevelClient() {
+        return new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost(getElasticHostname(), -1, "https")
+                ).setHttpClientConfigCallback(getHttpClientConfigCallback())
+        );
+    }
+
+    public static String getElasticHostname() {
+        if (getEnvironmentClass() == Q) {
+            return "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
+        } else {
+            return "tpa-veilarbelastic-elasticsearch.nais.adeo.no";
+        }
+    }
+
+    @Bean
+    public ElasticSearchHelsesjekk elasticSearchHelsesjekk() {
+        return new ElasticSearchHelsesjekk(restHighLevelClient());
+    }
+
+    @Bean
+    public HovedIndekseringHelsesjekk hovedIndekseringHelsesjekk(ElasticSearchService elasticSearchService) {
+        return new HovedIndekseringHelsesjekk(elasticSearchService);
+    }
+
+    @Bean
+    public MetricsReporter metricsReporter() {
+        return new MetricsReporter(restHighLevelClient());
+    }
+
+    private RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback() {
+
+        return new RestClientBuilder.HttpClientConfigCallback() {
+            @Override
+            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                return httpClientBuilder.setDefaultCredentialsProvider(createCredentialsProvider());
+            }
+
+            private CredentialsProvider createCredentialsProvider() {
+                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
+                        EnvironmentUtils.getRequiredProperty(VEILARBELASTIC_USERNAME),
+                        EnvironmentUtils.getRequiredProperty(VEILARBELASTIC_PASSWORD)
+                );
+
+                BasicCredentialsProvider provider = new BasicCredentialsProvider();
+                provider.setCredentials(AuthScope.ANY, credentials);
+                return provider;
+            }
+
+        };
+    }
 
     @Bean
     public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -72,7 +142,7 @@ public class IndekseringConfig {
     }
 
     @Bean
-    public IndekseringService solrService(
+    public SolrService solrService(
             SolrClient solrClientMaster,
             SolrClient solrClientSlave,
             BrukerRepository brukerRepository,
@@ -83,6 +153,17 @@ public class IndekseringConfig {
             PepClient pepClient) {
         return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutor, pepClient);
     }
+
+    @Bean
+    public ElasticSearchService elasticSearchService(RestHighLevelClient client, AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock) {
+        return new ElasticSearchService(client, aktivitetDAO, brukerRepository, shedlock);
+    }
+
+    @Bean
+    public IndekseringService indekseringService(SolrService solrService, ElasticSearchService elasticSearchService, UnleashService unleashService) {
+        return new IndekseringServiceProxy(solrService, elasticSearchService, unleashService);
+    }
+
 
     @Bean
     public Pingable solrServerPing() {

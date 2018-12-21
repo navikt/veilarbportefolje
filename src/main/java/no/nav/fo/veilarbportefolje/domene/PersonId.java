@@ -14,4 +14,8 @@ public class PersonId {
     public String toString() {
         return personId;
     }
+
+    public int toInteger() {
+        return Integer.parseInt(personId);
+    }
 }

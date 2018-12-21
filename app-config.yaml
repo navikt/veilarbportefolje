@@ -28,6 +28,11 @@ resources:
     memory: 1536Mi
 fasitResources:
   used:
+  - alias: veilarbelastic_user
+    resourceType: credential
+    propertyMap:
+      username: VEILARBELASTIC_USER
+      password: VEILARBELASTIC_PASSWORD
   - alias: loadbalancer:veilarbportefolje
     resourceType: loadbalancerconfig
   - alias: veilarbportefoljeDB
