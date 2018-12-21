@@ -7,10 +7,8 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.util.Utils;
 import no.nav.json.JsonUtils;
-import no.nav.sbl.util.ListUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -31,6 +29,7 @@ import javax.inject.Inject;
 import java.time.Instant;
 import java.util.*;
 
+import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -81,7 +80,7 @@ public class ElasticSearchService implements IndekseringService {
     public void hovedindeksering() {
 
         shedlock.executeWithLock(() -> {
-                    log.info("Hovedindeksering: Starter hovedindeksering i Elastic Search");
+                    log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
                     long t0 = System.currentTimeMillis();
 
                     String nyIndeks = opprettNyIndeks();
@@ -97,14 +96,15 @@ public class ElasticSearchService implements IndekseringService {
                         skrivTilIndeks(nyIndeks, brukerBatch);
                     });
 
-                    log.info("Hovedindeksering: Peker alias mot ny indeks og sletter den gamle");
                     Optional<String> gammelIndeks = hentGammeltIndeksNavn();
-                    gammelIndeks.ifPresent(navn -> {
-                        fjernAliasFraGammelIndeks(navn);
-                        slettGammelIndeks(navn);
-                    });
-
-                    opprettNyIndeks(nyIndeks);
+                    if (gammelIndeks.isPresent()) {
+                        log.info("Hovedindeksering: Peker alias mot ny indeks og sletter den gamle");
+                        flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
+                        slettGammelIndeks(gammelIndeks.get());
+                    } else {
+                        log.info("Hovedindeksering: Lager alias til ny indeks");
+                        leggTilAliasTilIndeks(nyIndeks);
+                    }
 
                     long t1 = System.currentTimeMillis();
                     long time = t1 - t0;
@@ -118,10 +118,10 @@ public class ElasticSearchService implements IndekseringService {
     public void deltaindeksering() {
         shedlock.executeWithLock(() -> {
 
-            log.info("Deltaindeksering: Starter deltaindeksering i Elastic Search");
+            log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
             List<BrukerDTO> brukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
 
-            log.info("Deltaindeksering: Hentet ut {} oppdaterte brukere i Elastic Search", brukere.size());
+            log.info("Deltaindeksering: Hentet ut {} oppdaterte brukere i Elasticsearch", brukere.size());
 
             Utils.splittOppListe(brukere, BATCH_SIZE).forEach(brukerBatch -> {
                 leggTilAktiviteter(brukere);
@@ -143,7 +143,7 @@ public class ElasticSearchService implements IndekseringService {
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() != 1) {
-            throw new RuntimeException("Feil under sletting av bruker i indeks");
+            log.error("Feil ved sletting av bruker i indeks {}", response.toString());
         }
     }
 
@@ -182,32 +182,37 @@ public class ElasticSearchService implements IndekseringService {
     }
 
     @SneakyThrows
-    private void opprettNyIndeks(String nyIndeks) {
-        AliasActions action = new AliasActions(ADD)
-                .index(nyIndeks)
+    private void leggTilAliasTilIndeks(String indeks) {
+        AliasActions addAliasAction = new AliasActions(ADD)
+                .index(indeks)
                 .alias(ALIAS);
 
-        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(action);
+        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
 
         AcknowledgedResponse addAliasResponse = client.indices().updateAliases(request, DEFAULT);
         if (!addAliasResponse.isAcknowledged()) {
-            throw new RuntimeException(String.format("Kunne ikke oppdatere ALIAS: %s", ALIAS));
+            log.error("Kunne ikke legge til alias {}", ALIAS);
         }
-
     }
 
     @SneakyThrows
-    private void fjernAliasFraGammelIndeks(String gammelIndeks) {
+    private void flyttAliasTilNyIndeks(String gammelIndeks, String nyIndeks) {
+        AliasActions addAliasAction = new AliasActions(ADD)
+                .index(nyIndeks)
+                .alias(ALIAS);
+
         AliasActions removeAliasAction = new AliasActions(REMOVE)
                 .index(gammelIndeks)
                 .alias(ALIAS);
 
         IndicesAliasesRequest request = new IndicesAliasesRequest()
-                .addAliasAction(removeAliasAction);
+                .addAliasAction(removeAliasAction)
+                .addAliasAction(addAliasAction);
 
-        AcknowledgedResponse addAliasResponse = client.indices().updateAliases(request, DEFAULT);
-        if (!addAliasResponse.isAcknowledged()) {
-            throw new RuntimeException(String.format("Kunne ikke oppdatere ALIAS: %s", ALIAS));
+        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
+
+        if (!response.isAcknowledged()) {
+            log.error("Kunne ikke oppdatere alias {}", ALIAS);
         }
     }
 
@@ -218,7 +223,7 @@ public class ElasticSearchService implements IndekseringService {
                 .delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
 
         if (!response.isAcknowledged()) {
-            throw new RuntimeException(String.format("Kunne ikke slette gammel indeks %s", gammelIndeks));
+            log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
         }
     }
 
@@ -251,7 +256,7 @@ public class ElasticSearchService implements IndekseringService {
 
     private void validateBatchSize(List<BrukerDTO> brukere) {
         if (brukere.size() > BATCH_SIZE_LIMIT) {
-            throw new IllegalStateException(String.format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
+            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
         }
     }
 
