@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.domene;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import no.nav.fo.veilarbportefolje.exception.UgyldigFnrException;
@@ -8,7 +7,6 @@ import no.nav.fo.veilarbportefolje.exception.UgyldigFnrException;
 import static lombok.AccessLevel.PRIVATE;
 
 @Value
-@EqualsAndHashCode
 @Getter(value = PRIVATE)
 public class Fnr {
     String fnr;
