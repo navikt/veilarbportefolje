@@ -111,6 +111,7 @@ public class ElasticSearchService implements IndekseringService {
     private void startIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
         long t0 = System.currentTimeMillis();
+        Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
 
         String nyIndeks = opprettNyIndeks();
         log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
@@ -139,6 +140,7 @@ public class ElasticSearchService implements IndekseringService {
         long t1 = System.currentTimeMillis();
         long time = t1 - t0;
 
+        brukerRepository.oppdaterSistIndeksertElastic(tidsstempel);
         log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
     }
 
