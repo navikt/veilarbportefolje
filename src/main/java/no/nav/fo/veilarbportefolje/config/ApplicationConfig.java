@@ -19,6 +19,7 @@ import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
+import no.nav.sbl.util.EnvironmentUtils;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,6 +75,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME";
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
+    public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
 
     @Inject
     private DataSource dataSource;
@@ -93,14 +95,23 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.migrate();
+
+        if(!skipDbMigration()){
+            Flyway flyway = new Flyway();
+            flyway.setDataSource(dataSource);
+            flyway.migrate();
+        }
 
         leggTilServlet(servletContext, new TotalHovedindekseringServlet(indekseringScheduler), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new PopulerIndekseringServlet(indekseringService), "/internal/populerindeks");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
+    }
+
+    private Boolean skipDbMigration() {
+        return getOptionalProperty(SKIP_DB_MIGRATION_PROPERTY)
+                .map(Boolean::parseBoolean)
+                .orElse(false);
     }
 
     @Override

@@ -11,8 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class LocalJndiContextConfig {
-    private static int databaseCounter;
-    private static final String HSQL_URL = "jdbc:hsqldb:mem:portefolje-" + databaseCounter++;
+    public static final String HSQL_URL = "jdbc:hsqldb:mem:portefolje";
 
     public static SingleConnectionDataSource setupDataSourceWithCredentials(DbCredentials dbCredentials) {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
