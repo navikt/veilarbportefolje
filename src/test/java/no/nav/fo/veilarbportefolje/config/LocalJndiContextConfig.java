@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbportefolje.config;
 
 import no.nav.dialogarena.config.fasit.DbCredentials;
-import no.nav.dialogarena.config.fasit.ServiceUser;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -11,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class LocalJndiContextConfig {
+
     public static final String HSQL_URL = "jdbc:hsqldb:mem:portefolje";
 
     public static SingleConnectionDataSource setupDataSourceWithCredentials(DbCredentials dbCredentials) {

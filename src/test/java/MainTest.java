@@ -41,7 +41,6 @@ public class MainTest {
 
         setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleashproxy.nais.adeo.no/api/");
 
-        // TODO: Støtte inMemoryDb eller lokal hsqldb ala jdbc:hsqldb:hsql://localhost/portefolje;ifexists=true
         DbCredentials dbCredentials = resolveDbCredentials();
         setProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME, dbCredentials.getUrl());
         setProperty(VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME, dbCredentials.getUsername());
