@@ -34,10 +34,10 @@ public class IndekseringServiceProxy implements IndekseringService {
 
     @Override
     public void deltaindeksering() {
-        solrService.deltaindeksering();
+        MetricsUtils.timed("solr.deltaindeksering", solrService::deltaindeksering);
 
         if (elasticSearchIsEnabled()) {
-            elasticSearchService.deltaindeksering();
+            MetricsUtils.timed("es.deltaindeksering", elasticSearchService::deltaindeksering);
         }
     }
 
