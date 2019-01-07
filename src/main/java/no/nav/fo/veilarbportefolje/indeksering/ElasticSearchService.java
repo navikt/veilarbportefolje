@@ -7,6 +7,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.fo.veilarbportefolje.util.Utils;
 import no.nav.json.JsonUtils;
 import no.nav.metrics.Event;
@@ -32,6 +33,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
@@ -156,9 +158,17 @@ public class ElasticSearchService implements IndekseringService {
             Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
 
             Utils.splittOppListe(brukere, BATCH_SIZE).forEach(brukerBatch -> {
-                leggTilAktiviteter(brukere);
-                leggTilTiltak(brukere);
-                skrivTilIndeks(ALIAS, brukere);
+
+                List<BrukerDTO> brukereFortsattUnderOppfolging = brukerBatch.stream()
+                        .filter(UnderOppfolgingRegler::erUnderOppfolging)
+                        .collect(Collectors.toList());
+
+                leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                leggTilTiltak(brukereFortsattUnderOppfolging);
+                skrivTilIndeks(ALIAS, brukereFortsattUnderOppfolging);
+
+                slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
+
             });
 
             log.info("Deltaindeksering: Deltaindeksering for {} brukere er utført", brukere.size());
@@ -171,6 +181,12 @@ public class ElasticSearchService implements IndekseringService {
             event.report();
 
         }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50)));
+    }
+
+    private void slettBrukereIkkeLengerUnderOppfolging(List<BrukerDTO> brukerBatch) {
+        brukerBatch.stream()
+                .filter(bruker -> !erUnderOppfolging(bruker))
+                .forEach(bruker -> slettBruker(bruker.fnr));
     }
 
     @Override
