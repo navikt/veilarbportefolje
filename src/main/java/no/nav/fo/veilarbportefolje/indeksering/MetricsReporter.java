@@ -35,7 +35,6 @@ public class MetricsReporter {
         scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
 
         Gauge.builder("veilarbelastic_number_of_docs", this::getNumberOfDocs)
-                .tag("env", EnvironmentUtils.requireEnvironmentName())
                 .register(MetricsFactory.getMeterRegistry());
     }
 
