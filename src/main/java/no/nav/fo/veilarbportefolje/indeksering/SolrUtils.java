@@ -91,9 +91,6 @@ public class SolrUtils {
         if(!harTilgangTilEgenAnsatt){
             solrQuery.addFilterQuery("egen_ansatt:false");
         }
-        if(!harTilgangTilKode6 && !harTilgangTilKode7){
-            solrQuery.addFilterQuery("-diskresjonskode:*");
-        }
 
         if(!harTilgangTilKode6){
             solrQuery.addFilterQuery("-diskresjonskode:6");
