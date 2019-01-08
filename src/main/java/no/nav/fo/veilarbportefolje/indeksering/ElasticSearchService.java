@@ -73,6 +73,9 @@ public class ElasticSearchService implements IndekseringService {
             "    \"person_id\": {\n" +
             "      \"type\": \"keyword\"\n" +
             "    },\n" +
+            "    \"aktoer_id\": {\n" +
+            "      \"type\": \"keyword\"\n" +
+            "    },\n" +
             "    \"etternavn\": {\n" +
             "      \"type\" : \"keyword\"\n" +
             "    },\n" +
@@ -153,8 +156,6 @@ public class ElasticSearchService implements IndekseringService {
             log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
             List<BrukerDTO> brukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
 
-            log.info("Deltaindeksering: Hentet ut {} oppdaterte brukere i Elasticsearch", brukere.size());
-
             Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
 
             Utils.splittOppListe(brukere, BATCH_SIZE).forEach(brukerBatch -> {
@@ -186,7 +187,12 @@ public class ElasticSearchService implements IndekseringService {
     private void slettBrukereIkkeLengerUnderOppfolging(List<BrukerDTO> brukerBatch) {
         brukerBatch.stream()
                 .filter(bruker -> !erUnderOppfolging(bruker))
-                .forEach(bruker -> slettBruker(bruker.fnr));
+                .forEach(this::slettBruker);
+    }
+
+    public void slettBruker(BrukerDTO bruker) {
+        slettBruker(bruker.fnr);
+        log.info("Slettet bruker med aktørId {}", bruker.aktoer_id);
     }
 
     @Override

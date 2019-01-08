@@ -39,6 +39,7 @@ public class DbUtils {
 
         BrukerDTO.BrukerDTOBuilder bruker = BrukerDTO.builder()
                 .person_id(numberToString(rs.getBigDecimal("person_id")))
+                .aktoer_id(rs.getString("aktoerid"))
                 .fnr(rs.getString("fodselsnr"))
                 .fornavn(kapitaliser(rs.getString("fornavn")))
                 .etternavn(kapitaliser(rs.getString("etternavn")))
