@@ -9,7 +9,6 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.fo.veilarbportefolje.util.Utils;
-import no.nav.json.JsonUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -298,8 +297,8 @@ public class ElasticSearchService implements IndekseringService {
     private void skrivTilIndeks(String indeksNavn, List<BrukerDTO> oppfolgingsBrukere) {
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
-                .map(JsonUtils::toJson)
-                .map(json -> new IndexRequest(indeksNavn, "_doc").source(json, XContentType.JSON))
+                .map(DokumentDTO::new)
+                .map(dokument -> new IndexRequest(indeksNavn, "_doc", dokument.getId()).source(dokument.getJson(), XContentType.JSON))
                 .forEach(bulk::add);
 
         BulkResponse response = client.bulk(bulk, DEFAULT);
