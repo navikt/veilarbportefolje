@@ -156,6 +156,11 @@ public class ElasticSearchService implements IndekseringService {
             log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
             List<BrukerDTO> brukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
 
+            if (brukere.isEmpty()) {
+                log.info("Deltaindeksering: Fullført (Ingen oppdaterte brukere ble funnet)");
+                return;
+            }
+
             Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
 
             Utils.splittOppListe(brukere, BATCH_SIZE).forEach(brukerBatch -> {
@@ -172,7 +177,8 @@ public class ElasticSearchService implements IndekseringService {
 
             });
 
-            log.info("Deltaindeksering: Deltaindeksering for {} brukere er utført", brukere.size());
+            List<String> aktoerIder = brukere.stream().map(BrukerDTO::getAktoer_id).collect(Collectors.toList());
+            log.info("Deltaindeksering: Fullført ( {} brukere med aktoerId {} ble oppdatert)", brukere.size(), aktoerIder);
 
             brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
