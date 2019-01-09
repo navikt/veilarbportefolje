@@ -2,7 +2,6 @@
   <configuration default="false" name="MainTest - lokal database" type="Application" factoryName="Application" singleton="true">
     <option name="MAIN_CLASS_NAME" value="MainTest" />
     <module name="veilarbportefolje" />
-    <option name="VM_PARAMETERS" value="-Dlokal.database=true" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value=".*" />

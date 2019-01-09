@@ -19,6 +19,8 @@ import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_
 import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
+import java.util.Optional;
+
 public class MainTest {
 
     private static final String PORT = "9595";
@@ -84,15 +86,16 @@ public class MainTest {
     }
 
     private static DbCredentials resolveDbCredentials() {
-        if (getOptionalProperty("lokal.database").isPresent()) {
+        Optional<String> miljoDatabaseProperty = getOptionalProperty("miljo.database");
+        if (miljoDatabaseProperty.isPresent() && "true".equals(miljoDatabaseProperty.get())) {
+            return getDbCredentials(APPLICATION_NAME);
+        } else {
             DbCredentials dbCredentials = new DbCredentials().setUrl(HSQL_URL)
                     .setUsername("sa")
                     .setPassword("pw");
             setupDataSourceWithCredentials(dbCredentials);
             setProperty(SKIP_DB_MIGRATION_PROPERTY, "true");
             return dbCredentials;
-        } else {
-            return getDbCredentials(APPLICATION_NAME);
         }
     }
 }
