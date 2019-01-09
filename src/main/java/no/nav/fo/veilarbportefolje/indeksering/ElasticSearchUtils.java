@@ -5,7 +5,6 @@ import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
-import no.nav.sbl.util.EnvironmentUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,10 +13,9 @@ import java.util.List;
 public class ElasticSearchUtils {
 
     static String createIndexName(String alias) {
-        String env = EnvironmentUtils.getEnvironmentName().orElseThrow(IllegalStateException::new);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         String timestamp = LocalDateTime.now().format(formatter);
-        return String.format("%s_%s_%s", alias, env, timestamp);
+        return String.format("%s_%s", alias, timestamp);
     }
 
     static BrukerDTO finnBruker(List<BrukerDTO> brukere, Fnr fnr) {
