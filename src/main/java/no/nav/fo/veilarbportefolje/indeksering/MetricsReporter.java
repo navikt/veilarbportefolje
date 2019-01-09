@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
-import no.nav.sbl.util.EnvironmentUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -19,7 +18,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.ALIAS;
 
 @Component
 @Slf4j
@@ -55,7 +53,7 @@ public class MetricsReporter {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         searchSourceBuilder.size(0);
-        searchRequest.indices(ALIAS);
+        searchRequest.indices(IndekseringConfig.getAlias());
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse response = elastic.search(searchRequest, RequestOptions.DEFAULT);

@@ -58,9 +58,12 @@ public class IndekseringConfig {
     private static final String URL = getRequiredProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY);
     public static int BATCH_SIZE = 1000;
     public final static int BATCH_SIZE_LIMIT = 1000;
-    public static String ALIAS = "brukerindeks";
     public static String VEILARBELASTIC_USERNAME = "VEILARBELASTIC_USERNAME";
     public static String VEILARBELASTIC_PASSWORD = "VEILARBELASTIC_PASSWORD";
+
+    public static String getAlias() {
+        return String.format("brukerindeks_%s", EnvironmentUtils.requireEnvironmentName());
+    }
 
     @Bean
     public RestHighLevelClient restHighLevelClient() {

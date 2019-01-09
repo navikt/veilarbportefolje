@@ -31,7 +31,7 @@ public class ElasticSearchHelsesjekk implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
                 "elasticsearch helsesjekk",
-                String.format("https://%s/%s", IndekseringConfig.getElasticHostname(), IndekseringConfig.ALIAS),
+                String.format("https://%s/%s", IndekseringConfig.getElasticHostname(), IndekseringConfig.getAlias()),
                 "Sjekker helsestatus til Elasticsearch-clusteret",
                 true
         );

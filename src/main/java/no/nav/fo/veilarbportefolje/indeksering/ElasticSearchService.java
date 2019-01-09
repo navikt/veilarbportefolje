@@ -41,7 +41,8 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_DELTAINDEKSERING;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_TOTALINDEKSERING;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticSearchUtils.finnBruker;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.*;
+import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE;
+import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE_LIMIT;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -170,7 +171,7 @@ public class ElasticSearchService implements IndekseringService {
 
                 leggTilAktiviteter(brukereFortsattUnderOppfolging);
                 leggTilTiltak(brukereFortsattUnderOppfolging);
-                skrivTilIndeks(ALIAS, brukereFortsattUnderOppfolging);
+                skrivTilIndeks(IndekseringConfig.getAlias(), brukereFortsattUnderOppfolging);
 
                 slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
 
@@ -222,7 +223,7 @@ public class ElasticSearchService implements IndekseringService {
             if (erUnderOppfolging(bruker)) {
                 leggTilAktiviteter(bruker);
                 leggTilTiltak(bruker);
-                skrivTilIndeks(ALIAS, bruker);
+                skrivTilIndeks(IndekseringConfig.getAlias(), bruker);
             } else {
                 slettBruker(bruker.fnr);
             }
@@ -236,13 +237,13 @@ public class ElasticSearchService implements IndekseringService {
             List<BrukerDTO> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
-            skrivTilIndeks(ALIAS, brukere);
+            skrivTilIndeks(IndekseringConfig.getAlias(), brukere);
         });
     }
 
     @SneakyThrows
     private Optional<String> hentGammeltIndeksNavn() {
-        GetAliasesRequest getAliasRequest = new GetAliasesRequest(ALIAS);
+        GetAliasesRequest getAliasRequest = new GetAliasesRequest(IndekseringConfig.getAlias());
         GetAliasesResponse aliasResponse = client.indices().getAlias(getAliasRequest, DEFAULT);
         return aliasResponse.getAliases().keySet().stream().findFirst();
     }
@@ -251,13 +252,13 @@ public class ElasticSearchService implements IndekseringService {
     private void leggTilAliasTilIndeks(String indeks) {
         AliasActions addAliasAction = new AliasActions(ADD)
                 .index(indeks)
-                .alias(ALIAS);
+                .alias(IndekseringConfig.getAlias());
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
 
         AcknowledgedResponse addAliasResponse = client.indices().updateAliases(request, DEFAULT);
         if (!addAliasResponse.isAcknowledged()) {
-            log.error("Kunne ikke legge til alias {}", ALIAS);
+            log.error("Kunne ikke legge til alias {}", IndekseringConfig.getAlias());
         }
     }
 
@@ -265,11 +266,11 @@ public class ElasticSearchService implements IndekseringService {
     private void flyttAliasTilNyIndeks(String gammelIndeks, String nyIndeks) {
         AliasActions addAliasAction = new AliasActions(ADD)
                 .index(nyIndeks)
-                .alias(ALIAS);
+                .alias(IndekseringConfig.getAlias());
 
         AliasActions removeAliasAction = new AliasActions(REMOVE)
                 .index(gammelIndeks)
-                .alias(ALIAS);
+                .alias(IndekseringConfig.getAlias());
 
         IndicesAliasesRequest request = new IndicesAliasesRequest()
                 .addAliasAction(removeAliasAction)
@@ -278,7 +279,7 @@ public class ElasticSearchService implements IndekseringService {
         AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
-            log.error("Kunne ikke oppdatere alias {}", ALIAS);
+            log.error("Kunne ikke oppdatere alias {}", IndekseringConfig.getAlias());
         }
     }
 
@@ -313,7 +314,7 @@ public class ElasticSearchService implements IndekseringService {
 
     @SneakyThrows
     private String opprettNyIndeks() {
-        String indexName = ElasticSearchUtils.createIndexName(ALIAS);
+        String indexName = ElasticSearchUtils.createIndexName(IndekseringConfig.getAlias());
         CreateIndexRequest request = new CreateIndexRequest(indexName)
                 .mapping("_doc", mappingJson, XContentType.JSON);
         client.indices().create(request, DEFAULT);
