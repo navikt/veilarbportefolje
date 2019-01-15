@@ -16,6 +16,12 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
     private String veileder;
     private Boolean oppfolging;
     private Boolean nyForVeileder;
+
+    @Override
+    public String toString() {
+        return aktoerid;
+    }
+
     private Timestamp endretTimestamp;
     private Boolean manuell;
     private BigDecimal feedId;

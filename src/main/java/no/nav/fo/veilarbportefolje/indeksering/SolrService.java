@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import io.micrometer.core.instrument.LongTaskTimer;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,6 @@ import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.fo.veilarbportefolje.util.BatchConsumer;
-import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
@@ -50,9 +50,9 @@ import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.veilarbportefolje.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrSortUtils.addPaging;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.harIkkeVeilederFilter;
+import static no.nav.metrics.utils.MetricsUtils.timed;
 
 @Slf4j
 public class SolrService implements IndekseringService {
@@ -69,6 +69,7 @@ public class SolrService implements IndekseringService {
     private Executor executor;
     private LockingTaskExecutor lockingTaskExecutor;
     private PepClient pepClient;
+    private final LongTaskTimer timer;
 
     @Inject
     public SolrService(
@@ -90,6 +91,10 @@ public class SolrService implements IndekseringService {
         this.executor = Executors.newFixedThreadPool(5);
         this.lockingTaskExecutor = lockingTaskExecutor;
         this.pepClient = pepClient;
+
+        timer = LongTaskTimer
+                .builder("solr_hentbrukere")
+                .register(MetricsFactory.getMeterRegistry());
     }
 
     @Transactional
@@ -164,11 +169,16 @@ public class SolrService implements IndekseringService {
     }
 
     @Override
+    @SneakyThrows
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         List<VeilederId> veiledere = veilederService.getIdenter(enhetId);
         SolrQuery solrQuery = SolrUtils.buildSolrQuery(enhetId, veilederIdent, veiledere, sortOrder, sortField, filtervalg, pepClient);
         addPaging(solrQuery, fra, antall);
-        QueryResponse response = timed("solr.hentbrukere", () -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
+
+        LongTaskTimer.Sample sample = timer.start();
+        QueryResponse response = solrClientSlave.query(solrQuery);
+        sample.stop();
+
         SolrUtils.checkSolrResponseCode(response.getStatus());
         SolrDocumentList results = response.getResults();
         List<Bruker> brukere = results.stream().map(Bruker::of).collect(toList());
@@ -207,7 +217,7 @@ public class SolrService implements IndekseringService {
         // ikke interessert i veiledere som ikke har tilordnede brukere
         solrQuery.setFacetMinCount(1);
 
-        QueryResponse response = MetricsUtils.timed("solr.hentportefoljestorrelser", () -> getResponse(solrQuery));
+        QueryResponse response = getResponse(solrQuery);
         FacetField facetField = response.getFacetField(facetFieldString);
 
         return SolrUtils.mapFacetResults(facetField);
@@ -261,19 +271,17 @@ public class SolrService implements IndekseringService {
 
     private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {
         // javaslang.collection-API brukes her pga sliding-metoden
-        return timed("indeksering.adddocumentstoindex", () -> {
-            io.vavr.collection.List.ofAll(dokumenter)
-                    .sliding(10000, 10000)
-                    .forEach(docs -> {
-                        try {
-                            solrClientMaster.add(docs.toJavaList());
-                            log.info(format("Legger til %d dokumenter i indeksen", docs.length()));
-                        } catch (SolrServerException | IOException e) {
-                            log.error("Legge til solrdokumenter før commit feilet.", e);
-                        }
-                    });
-            return dokumenter;
-        });
+        io.vavr.collection.List.ofAll(dokumenter)
+                .sliding(10000, 10000)
+                .forEach(docs -> {
+                    try {
+                        solrClientMaster.add(docs.toJavaList());
+                        log.info(format("Legger til %d dokumenter i indeksen", docs.length()));
+                    } catch (SolrServerException | IOException e) {
+                        log.error("Legge til solrdokumenter før commit feilet.", e);
+                    }
+                });
+        return dokumenter;
     }
 
     private void deleteAllDocuments() {

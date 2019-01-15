@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static no.nav.fo.veilarbportefolje.util.DateUtils.toZonedDateTime;
-import static no.nav.fo.veilarbportefolje.util.DbUtils.dbTimerNavn;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.sbl.sql.SqlUtils.*;
 
 @Slf4j
@@ -99,9 +97,7 @@ public class ArbeidslisteRepository {
     }
 
     public void deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
-        timed(dbTimerNavn(
-                DELETE_FROM_ARBEIDSLISTE_SQL),
-                ()-> namedParameterJdbcTemplate.update(DELETE_FROM_ARBEIDSLISTE_SQL, Collections.singletonMap("aktoerid", aktoerId.toString())));
+        namedParameterJdbcTemplate.update(DELETE_FROM_ARBEIDSLISTE_SQL, Collections.singletonMap("aktoerid", aktoerId.toString()));
     }
 
     @SneakyThrows

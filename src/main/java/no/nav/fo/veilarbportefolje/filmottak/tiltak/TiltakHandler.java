@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.filmottak.tiltak;
 
+import io.micrometer.core.instrument.LongTaskTimer;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -10,10 +11,10 @@ import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakFileUtils;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
-import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
+import no.nav.metrics.MetricsFactory;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -33,7 +34,6 @@ import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVIT
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakUtils.*;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.log;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
@@ -45,6 +45,7 @@ public class TiltakHandler {
     private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
     private final LockingTaskExecutor lockingTaskExecutor;
+    private final LongTaskTimer timer;
 
     @Inject
     public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockingTaskExecutor lockingTaskExecutor) {
@@ -53,6 +54,9 @@ public class TiltakHandler {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.lockingTaskExecutor = lockingTaskExecutor;
+
+        this.timer = LongTaskTimer.builder("portefolje_tiltak")
+                .register(MetricsFactory.getMeterRegistry());
     }
 
     public static Timestamp getDatoFilter() {
@@ -66,11 +70,11 @@ public class TiltakHandler {
 
     private void hentTiltakOgPopulerDatabaseWithLock() {
         log.info("Indeksering: Starter oppdatering av tiltak fra Arena...");
-        timed("indexering.GR202.hentfil", () -> FilmottakFileUtils.hentFil(AKTIVITETER_SFTP))
+        FilmottakFileUtils.hentFil(AKTIVITETER_SFTP)
                 .onFailure(log(log, "Kunne ikke hente tiltaksfil"))
-                .flatMap(timed("indexering.GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
+                .flatMap(FilmottakFileUtils::unmarshallTiltakFil)
                 .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen"))
-                .andThen(timed("indexering.GR202.populatedb", this::populerDatabase))
+                .andThen(this::populerDatabase)
                 .onFailure(log(log, "Kunne ikke populere database"));
         log.info("Indeksering: Fullført oppdatering av tiltak fra Arena");
     }
@@ -79,6 +83,8 @@ public class TiltakHandler {
 
         log.info("Starter populering av database for tiltaksfil med uttrekkstidspunkt [{}]",
                 tiltakOgAktiviteterForBrukere.getUttrekkstidspunkt());
+
+        LongTaskTimer.Sample sample = timer.start();
 
         tiltakrepository.slettBrukertiltak();
         tiltakrepository.slettEnhettiltak();
@@ -93,35 +99,24 @@ public class TiltakHandler {
 
         tiltakrepository.lagreTiltakskoder(tiltakkoder);
 
-        MetricsUtils.timed("tiltak.indert.nyesteutlopte", () -> {
-            utledOgLagreBrukerData(tiltakOgAktiviteterForBrukere.getBrukerListe());
-        });
+        utledOgLagreBrukerData(tiltakOgAktiviteterForBrukere.getBrukerListe());
 
-        MetricsUtils.timed("tiltak.insert.brukertiltak", () -> {
-            List<Brukertiltak> brukertiltak = tiltakOgAktiviteterForBrukere.getBrukerListe().stream()
-                    .map(Brukertiltak::of)
-                    .flatMap(Collection::stream)
-                    .collect(toList());
+        List<Brukertiltak> brukertiltak = tiltakOgAktiviteterForBrukere.getBrukerListe().stream()
+                .map(Brukertiltak::of)
+                .flatMap(Collection::stream)
+                .collect(toList());
 
-            tiltakrepository.lagreBrukertiltak(brukertiltak);
-        });
+        tiltakrepository.lagreBrukertiltak(brukertiltak);
 
-        MetricsUtils.timed("tiltak.insert.as.aktivitet", () -> {
-            utledOgLagreAktivitetstatusForTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
-        });
+        utledOgLagreAktivitetstatusForTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
 
-        MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
-            utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
-        });
+        utledOgLagreGruppeaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
 
-        MetricsUtils.timed("tiltak.insert.gruppeaktiviteter", () -> {
-            utledOgLagreUtdanningsaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
-        });
+        utledOgLagreUtdanningsaktiviteter(tiltakOgAktiviteterForBrukere.getBrukerListe());
 
-        MetricsUtils.timed("tiltak.insert.enhettiltak", () -> {
-            utledOgLagreEnhetTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
-        });
+        utledOgLagreEnhetTiltak(tiltakOgAktiviteterForBrukere.getBrukerListe());
 
+        sample.stop();
         log.info("Ferdige med å populere database");
     }
 

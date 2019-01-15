@@ -1,11 +1,12 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
-import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.metrics.MetricsFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.Date;
 import java.time.ZonedDateTime;
-import java.util.*;
-
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
+import java.util.List;
 
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
@@ -24,6 +23,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     private final BrukerRepository brukerRepository;
     private final IndekseringService indekseringService;
     private final DialogFeedRepository dialogFeedRepository;
+    private final Counter counter;
 
     @Inject
     public DialogDataFeedHandler(BrukerRepository brukerRepository,
@@ -32,6 +32,8 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         this.brukerRepository = brukerRepository;
         this.indekseringService = indekseringService;
         this.dialogFeedRepository = dialogFeedRepository;
+
+        this.counter = Counter.builder("portefolje_feed_dialoger").register(MetricsFactory.getMeterRegistry());
     }
 
     @Override
@@ -39,20 +41,16 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
 
         try {
-            timed("feed.dialog.objekt",
-                    () -> {
-                        data.forEach(info -> {
-                            dialogFeedRepository.oppdaterDialogInfoForBruker(info);
-                            indekseringService.indekserAsynkront(AktoerId.of(info.getAktorId()));
-                        });
-                    },
-                    (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size()))
-            );
+            data.forEach(info -> {
+                dialogFeedRepository.oppdaterDialogInfoForBruker(info);
+                indekseringService.indekserAsynkront(AktoerId.of(info.getAktorId()));
+            });
             brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
         } catch(Exception e) {
             log.error("Feil ved behandling av dialogdata fra feed for liste med brukere.", e);
+            throw e;
         }
 
-        MetricsFactory.createEvent("datamotattfrafeed").report();
+        counter.increment();
     }
 }

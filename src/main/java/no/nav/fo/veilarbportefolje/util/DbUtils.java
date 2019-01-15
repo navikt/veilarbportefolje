@@ -220,8 +220,4 @@ public class DbUtils {
     public static <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);
     }
-
-    public static String dbTimerNavn(String sql) {
-        return (sql + ".db").replaceAll("[^\\w]","-");
-    }
 }

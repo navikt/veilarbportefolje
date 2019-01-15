@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbportefolje.service;
 
 
+import io.micrometer.core.instrument.LongTaskTimer;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.PersistentOppdatering;
@@ -9,18 +10,17 @@ import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetBrukerOppdatering;
 import no.nav.fo.veilarbportefolje.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
 import no.nav.fo.veilarbportefolje.util.BatchConsumer;
+import no.nav.metrics.MetricsFactory;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Objects;
 
-import static io.vavr.control.Try.run;
 import static no.nav.fo.veilarbportefolje.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetService {
 
+    private final LongTaskTimer timer;
     private AktoerService aktoerService;
     private AktivitetDAO aktivitetDAO;
     private PersistentOppdatering persistentOppdatering;
@@ -30,13 +30,13 @@ public class AktivitetService {
         this.aktivitetDAO = aktivitetDAO;
         this.aktoerService = aktoerService;
         this.persistentOppdatering = persistentOppdatering;
+
+        this.timer = LongTaskTimer.builder("portefolje_utled_og_lagre_aktivitetinfo").register(MetricsFactory.getMeterRegistry());
     }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
         aktivitetDAO.slettAktivitetDatoer();
-        run(
-                () -> timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
-        ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
+        timer.record(this::utledOgLagreAlleAktivitetstatuser);
     }
 
     void utledOgLagreAlleAktivitetstatuser() {
@@ -52,23 +52,13 @@ public class AktivitetService {
     }
 
     private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
-
-        timed(
-                "aktiviteter.utled.statuser",
-                () -> {
-                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", () -> aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerider));
-                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
-                            timed("aktiviteter.konverter.til.brukeroppdatering", () -> AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
-
-                    timed("aktiviteter.persistent.lagring", () -> persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer));
-                },
-                (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
-        );
-
+        List<AktoerAktiviteter> aktoerAktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerider);
+        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService);
+        persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(List<AktoerId> aktoerIds) {
-        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds,aktoerService,aktivitetDAO);
+        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds, aktoerService, aktivitetDAO);
         persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);
     }
 }

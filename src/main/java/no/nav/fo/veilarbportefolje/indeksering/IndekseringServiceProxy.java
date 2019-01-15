@@ -1,7 +1,8 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import io.micrometer.core.instrument.LongTaskTimer;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.util.MetricsUtils;
+import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
 import javax.inject.Inject;
@@ -9,6 +10,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class IndekseringServiceProxy implements IndekseringService {
+
+    private final LongTaskTimer solrTimerHoved;
+    private final LongTaskTimer solrTimerDelta;
+
+    private final LongTaskTimer esTimerHoved;
+    private final LongTaskTimer esTimerDelta;
 
     private SolrService solrService;
 
@@ -21,23 +28,30 @@ public class IndekseringServiceProxy implements IndekseringService {
         this.solrService = solrService;
         this.elasticSearchService = elasticSearchService;
         this.featureToggle = featureToggle;
+
+        solrTimerHoved = LongTaskTimer.builder("solr_hovedindeksering").register(MetricsFactory.getMeterRegistry());
+        solrTimerDelta = LongTaskTimer.builder("solr_deltaindeksering").register(MetricsFactory.getMeterRegistry());
+
+        esTimerHoved = LongTaskTimer.builder("es_hovedindeksering").register(MetricsFactory.getMeterRegistry());
+        esTimerDelta = LongTaskTimer.builder("es_deltaindeksering").register(MetricsFactory.getMeterRegistry());
     }
 
     @Override
     public void hovedindeksering() {
-        MetricsUtils.timed("solr.hovedindeksering", solrService::hovedindeksering);
+
+        solrTimerHoved.record(solrService::hovedindeksering);
 
         if (elasticSearchIsEnabled()) {
-            MetricsUtils.timed("es.hovedindeksering", elasticSearchService::hovedindeksering);
+            esTimerHoved.record(elasticSearchService::hovedindeksering);
         }
     }
 
     @Override
     public void deltaindeksering() {
-        MetricsUtils.timed("solr.deltaindeksering", solrService::deltaindeksering);
+        solrTimerDelta.record(solrService::deltaindeksering);
 
         if (elasticSearchIsEnabled()) {
-            MetricsUtils.timed("es.deltaindeksering", elasticSearchService::deltaindeksering);
+            esTimerDelta.record(elasticSearchService::deltaindeksering);
         }
     }
 

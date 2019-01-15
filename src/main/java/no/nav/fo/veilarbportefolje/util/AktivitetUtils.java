@@ -19,7 +19,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.getSolrMaxAsIsoUtc;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetUtils {
@@ -158,21 +157,19 @@ public class AktivitetUtils {
     }
 
     public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, AktivitetDAO aktivitetDAO) {
+
         io.vavr.collection.List.ofAll(dokumenter)
                 .sliding(1000, 1000)
                 .forEach((dokumenterBatch) -> {
-                    timed("indeksering.applyaktiviteter1000", () -> {
-                        List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
-                                .map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
+                    List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
+                            .map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
 
-                        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = aktivitetDAO.getAktivitetstatusForBrukere(personIds);
+                    Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = aktivitetDAO.getAktivitetstatusForBrukere(personIds);
 
-                        dokumenterBatch.forEach((dokument) -> {
-                            PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
-                            applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
-                        });
-                    },
-                            (timer, success) -> timer.addTagToReport("batch", dokumenter.size() > 1 ? "true" : "false"));
+                    dokumenterBatch.forEach((dokument) -> {
+                        PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
+                        applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
+                    });
                 });
     }
 

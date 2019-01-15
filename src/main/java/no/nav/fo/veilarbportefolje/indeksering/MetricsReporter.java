@@ -30,21 +30,10 @@ public class MetricsReporter {
         this.elastic = elastic;
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-        scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
+        scheduler.scheduleAtFixedRate(this::getNumberOfDocs, 1, 1, MINUTES);
 
         Gauge.builder("veilarbelastic_number_of_docs", this::getNumberOfDocs)
                 .register(MetricsFactory.getMeterRegistry());
-    }
-
-    class ReportNumberOfDocuments implements Runnable {
-
-        @Override
-        public void run() {
-            long numberOfDocs = getNumberOfDocs();
-            Event event = MetricsFactory.createEvent("veilarbelastic.numberofdocs");
-            event.addFieldToReport("value", numberOfDocs);
-            event.report();
-        }
     }
 
     @SneakyThrows

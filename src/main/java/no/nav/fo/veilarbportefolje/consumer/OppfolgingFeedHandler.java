@@ -1,22 +1,21 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
+import io.micrometer.core.instrument.Counter;
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
-import no.nav.fo.feed.consumer.FeedCallback;
-import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
-
-import io.vavr.control.Try;
-
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.ZonedDateTime;
@@ -24,12 +23,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Comparator.naturalOrder;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
     public static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
+    private final Counter counter;
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
@@ -51,28 +50,28 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.oppfolgingFeedRepository = oppfolgingFeedRepository;
         this.veilederService = veilederService;
         this.transactor = transactor;
+
+        this.counter = Counter.builder("portefolje_feed_oppfolgingsbrukere").register(MetricsFactory.getMeterRegistry());
+
     }
 
     @Override
-    public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
+    public void call(String lastEntryId, List<BrukerOppdatertInformasjon> brukerInfo) {
 
         try {
-            timed("feed.oppfolging.objekt", () -> {
-                        log.info("OppfolgingerfeedDebug data: {}", data);
+            brukerInfo.forEach(info -> {
+                oppdaterOppfolgingData(info);
+                indekseringService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+            });
+            parseLastEntryIdToDate(lastEntryId).ifPresent(id -> brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, id));
+            finnMaxFeedId(brukerInfo).ifPresent(id -> oppfolgingFeedRepository.updateOppfolgingFeedId(id));
 
-                        data.forEach(info -> {
-                            oppdaterOppfolgingData(info);
-                            indekseringService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
-                        });
-                        parseLastEntryIdToDate(lastEntryId).ifPresent(id -> brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, id));
-                        finnMaxFeedId(data).ifPresent(id ->  oppfolgingFeedRepository.updateOppfolgingFeedId(id));
-                    },
-                    (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size())));
         } catch (Exception e) {
-            log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.", e);
+            log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for {}",brukerInfo, e);
+            throw e;
         }
 
-        MetricsFactory.createEvent("datamotattfrafeed").report();
+        counter.increment();
     }
 
     static Optional<java.util.Date> parseLastEntryIdToDate(String lastEntryId) {
@@ -87,11 +86,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         boolean slettes = !info.getOppfolging() ||
                 !bytterTilVeilederPaSammeEnhet(AktoerId.of(info.getAktoerid()));
 
+        log.info("Oppdaterer oppfolgingsdata for bruker med aktoerid {}", info.getAktoerid());
+
         transactor.inTransaction(() -> {
             if (slettes) {
                 arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
             }
-            timed("oppdater.oppfolgingsinformasjon", () -> oppfolgingFeedRepository.oppdaterOppfolgingData(info));
+            oppfolgingFeedRepository.oppdaterOppfolgingData(info);
         });
 
     }
