@@ -60,7 +60,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class
 })
-public class ApplicationConfig implements ApiApplication.NaisApiApplication {
+public class ApplicationConfig implements ApiApplication {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
     public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
