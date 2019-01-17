@@ -16,6 +16,7 @@ import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasA
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -41,8 +42,7 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_DELTAINDEKSERING;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_TOTALINDEKSERING;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticSearchUtils.finnBruker;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.BATCH_SIZE_LIMIT;
+import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.*;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -153,7 +153,10 @@ public class ElasticSearchService implements IndekseringService {
     public void deltaindeksering() {
         shedlock.executeWithLock(() -> {
 
+            sjekkAtIndeksenFinnes();
+
             log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
+
             List<BrukerDTO> brukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
 
             if (brukere.isEmpty()) {
@@ -188,6 +191,16 @@ public class ElasticSearchService implements IndekseringService {
             event.report();
 
         }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50)));
+    }
+
+    @SneakyThrows
+    private void sjekkAtIndeksenFinnes() {
+        GetIndexRequest request = new GetIndexRequest();
+        request.indices(getAlias());
+        boolean indexExists = client.indices().exists(request, DEFAULT);
+        if (!indexExists) {
+            log.error("Finner ingen index for alias {}", getAlias());
+        }
     }
 
     private void slettBrukereIkkeLengerUnderOppfolging(List<BrukerDTO> brukerBatch) {
