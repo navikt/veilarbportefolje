@@ -153,7 +153,10 @@ public class ElasticSearchService implements IndekseringService {
     public void deltaindeksering() {
         shedlock.executeWithLock(() -> {
 
-            sjekkAtIndeksenFinnes();
+            if (indeksenIkkeFinnes()) {
+                log.error("Deltaindeksering: finner ingen indeks med alias {}", getAlias());
+                return;
+            }
 
             log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
 
@@ -194,13 +197,10 @@ public class ElasticSearchService implements IndekseringService {
     }
 
     @SneakyThrows
-    private void sjekkAtIndeksenFinnes() {
+    private boolean indeksenIkkeFinnes() {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(getAlias());
-        boolean indexExists = client.indices().exists(request, DEFAULT);
-        if (!indexExists) {
-            log.error("Finner ingen index for alias {}", getAlias());
-        }
+        return !client.indices().exists(request, DEFAULT);
     }
 
     private void slettBrukereIkkeLengerUnderOppfolging(List<BrukerDTO> brukerBatch) {
