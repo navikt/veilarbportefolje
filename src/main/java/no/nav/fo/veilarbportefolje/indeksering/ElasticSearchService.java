@@ -160,7 +160,7 @@ public class ElasticSearchService implements IndekseringService {
 
             log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
 
-            List<BrukerDTO> brukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
+            List<BrukerDTO> brukere = brukerRepository.hentOppdaterteBrukere();
 
             if (brukere.isEmpty()) {
                 log.info("Deltaindeksering: Fullført (Ingen oppdaterte brukere ble funnet)");

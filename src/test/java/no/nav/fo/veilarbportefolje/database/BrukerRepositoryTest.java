@@ -58,7 +58,7 @@ public class BrukerRepositoryTest {
     private BrukerRepository brukerRepository;
 
     private int ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA = 51;
-    private int ANTALL_OPPDATERTE_OPPFOLGINGSBRUKERE_I_TESTDATA = 2;
+    private int ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA = 4;
 
     public void insertoppfolgingsbrukerTestData() {
         try {
@@ -84,10 +84,10 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skal_returnere_riktig_antall_oppdaterte_brukere_under_oppfolging() {
+    public void skal_returnere_riktig_antall_oppdaterte_brukere() {
         jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT_ES = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-        List<BrukerDTO> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukereUnderOppfolging();
-        assertThat(oppdaterteBrukere.size()).isEqualTo(ANTALL_OPPDATERTE_OPPFOLGINGSBRUKERE_I_TESTDATA);
+        List<BrukerDTO> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukere();
+        assertThat(oppdaterteBrukere.size()).isEqualTo(ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA);
     }
 
     @Test
@@ -123,8 +123,8 @@ public class BrukerRepositoryTest {
     public void skal_returnere_riktig_antall_oppdaterte_brukere_under_oppfolging_gammel_metode() {
         jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
         List<SolrInputDocument> brukere = brukerRepository.retrieveOppdaterteBrukere();
-        long result = brukere.stream().filter(BrukerRepository::erOppfolgingsBruker).count();
-        assertThat(result).isEqualTo(ANTALL_OPPDATERTE_OPPFOLGINGSBRUKERE_I_TESTDATA);
+        long result = brukere.size();
+        assertThat(result).isEqualTo(ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA);
     }
 
     @Test
