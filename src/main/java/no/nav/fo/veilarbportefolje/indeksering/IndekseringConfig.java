@@ -26,14 +26,10 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -65,15 +61,6 @@ public class IndekseringConfig {
         return String.format("brukerindeks_%s", EnvironmentUtils.requireEnvironmentName());
     }
 
-    @Bean
-    public RestHighLevelClient restHighLevelClient() {
-        return new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost(getElasticHostname(), -1, "https")
-                ).setHttpClientConfigCallback(getHttpClientConfigCallback())
-        );
-    }
-
     public static String getElasticHostname() {
         if (getEnvironmentClass() == Q) {
             return "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
@@ -84,7 +71,7 @@ public class IndekseringConfig {
 
     @Bean
     public ElasticSearchHelsesjekk elasticSearchHelsesjekk() {
-        return new ElasticSearchHelsesjekk(restHighLevelClient());
+        return new ElasticSearchHelsesjekk();
     }
 
     @Bean
@@ -94,30 +81,9 @@ public class IndekseringConfig {
 
     @Bean
     public MetricsReporter metricsReporter(UnleashService unleashService) {
-        return new MetricsReporter(restHighLevelClient(), unleashService);
+        return new MetricsReporter(unleashService);
     }
 
-    private RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback() {
-
-        return new RestClientBuilder.HttpClientConfigCallback() {
-            @Override
-            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                return httpClientBuilder.setDefaultCredentialsProvider(createCredentialsProvider());
-            }
-
-            private CredentialsProvider createCredentialsProvider() {
-                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                        EnvironmentUtils.getRequiredProperty(VEILARBELASTIC_USERNAME),
-                        EnvironmentUtils.getRequiredProperty(VEILARBELASTIC_PASSWORD)
-                );
-
-                BasicCredentialsProvider provider = new BasicCredentialsProvider();
-                provider.setCredentials(AuthScope.ANY, credentials);
-                return provider;
-            }
-
-        };
-    }
 
     @Bean
     public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -158,8 +124,8 @@ public class IndekseringConfig {
     }
 
     @Bean
-    public ElasticSearchService elasticSearchService(RestHighLevelClient client, AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock) {
-        return new ElasticSearchService(client, aktivitetDAO, brukerRepository, shedlock);
+    public ElasticSearchService elasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock) {
+        return new ElasticSearchService(aktivitetDAO, brukerRepository, shedlock);
     }
 
     @Bean
