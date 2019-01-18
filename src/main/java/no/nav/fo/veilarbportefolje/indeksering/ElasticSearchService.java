@@ -218,7 +218,7 @@ public class ElasticSearchService implements IndekseringService {
     @SneakyThrows
     public void slettBruker(String fnr) {
 
-        DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest()
+        DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
                 .setQuery(new TermQueryBuilder("fnr", fnr));
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
