@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -23,11 +24,13 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 @Slf4j
 public class MetricsReporter {
 
-    protected RestHighLevelClient elastic;
+    private UnleashService unleash;
+    private RestHighLevelClient elastic;
 
     @Inject
-    public MetricsReporter(RestHighLevelClient elastic) {
+    public MetricsReporter(RestHighLevelClient elastic, UnleashService unleash) {
         this.elastic = elastic;
+        this.unleash = unleash;
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
         scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
@@ -40,10 +43,14 @@ public class MetricsReporter {
 
         @Override
         public void run() {
-            long numberOfDocs = getNumberOfDocs();
-            Event event = MetricsFactory.createEvent("veilarbelastic.numberofdocs");
-            event.addFieldToReport("value", numberOfDocs);
-            event.report();
+            if (unleash.isEnabled("veilarbportefolje.elasticsearch")) {
+                long numberOfDocs = getNumberOfDocs();
+                Event event = MetricsFactory.createEvent("veilarbelastic.numberofdocs");
+                event.addFieldToReport("value", numberOfDocs);
+                event.report();
+            } else {
+                log.info("Unleash disabled, not reporting veilarbelastic_number_of_docs");
+            }
         }
     }
 

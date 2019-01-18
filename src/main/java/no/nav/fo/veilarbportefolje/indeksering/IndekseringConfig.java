@@ -93,8 +93,8 @@ public class IndekseringConfig {
     }
 
     @Bean
-    public MetricsReporter metricsReporter() {
-        return new MetricsReporter(restHighLevelClient());
+    public MetricsReporter metricsReporter(UnleashService unleashService) {
+        return new MetricsReporter(restHighLevelClient(), unleashService);
     }
 
     private RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback() {
