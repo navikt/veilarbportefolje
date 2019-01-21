@@ -9,7 +9,6 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Component;
@@ -25,11 +24,9 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 public class MetricsReporter {
 
     private UnleashService unleash;
-    private RestHighLevelClient elastic;
 
     @Inject
-    public MetricsReporter(RestHighLevelClient elastic, UnleashService unleash) {
-        this.elastic = elastic;
+    public MetricsReporter(UnleashService unleash) {
         this.unleash = unleash;
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
@@ -63,7 +60,9 @@ public class MetricsReporter {
         searchRequest.indices(IndekseringConfig.getAlias());
         searchRequest.source(searchSourceBuilder);
 
-        SearchResponse response = elastic.search(searchRequest, RequestOptions.DEFAULT);
+        SearchResponse response = ElasticUtils.withClient(client -> {
+            return client.search(searchRequest, RequestOptions.DEFAULT);
+        });
         return response.getHits().totalHits;
     }
 }
