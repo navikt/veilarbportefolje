@@ -60,6 +60,15 @@ public class ElasticUtils {
     }
 
     @SneakyThrows
+    public static <T> T withLowLevelClient(CheckedFunction<RestClient, T, Exception> function) {
+        T response;
+        try (RestClient client = createClient(DEFAULT_CONFIG).getLowLevelClient()) {
+            response = function.apply(client);
+        }
+        return response;
+    }
+
+    @SneakyThrows
     public static <T> T withClient(CheckedFunction<RestHighLevelClient, T, Exception> function) {
 
         T response;
