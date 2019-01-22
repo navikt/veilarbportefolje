@@ -15,7 +15,7 @@ public class UtilsTest {
         ArrayList<Object> list = new ArrayList<>(size);
         IntStream.range(0, size).forEach(list::add);
 
-        List<List<Object>> partitionedList = Utils.splittOppListe(list, 100);
+        List<List<Object>> partitionedList = CollectionUtils.partition(list, 100);
         assertThat(partitionedList.size()).isEqualTo(11);
     }
 }
