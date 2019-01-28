@@ -8,9 +8,11 @@ import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticSearchService;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.internal.PopulerElasticServlet;
 import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.PepClient;
@@ -59,7 +61,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class
 })
-public class ApplicationConfig implements ApiApplication.NaisApiApplication {
+public class ApplicationConfig implements ApiApplication {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
     public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
@@ -92,6 +94,9 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     @Inject
     private KopierGR199FraArena kopierGR199FraArena;
 
+    @Inject
+    private ElasticSearchService elasticSearchService;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -106,6 +111,7 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
         leggTilServlet(servletContext, new PopulerIndekseringServlet(indekseringService), "/internal/populerindeks");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
+        leggTilServlet(servletContext, new PopulerElasticServlet(elasticSearchService), "/internal/populeres");
     }
 
     private Boolean skipDbMigration() {

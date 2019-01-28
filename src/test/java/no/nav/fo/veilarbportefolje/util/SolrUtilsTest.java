@@ -246,7 +246,9 @@ public class SolrUtilsTest {
         assertThat(SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
                 "", filter, pepClient).getQuery()).isEqualTo("navn_sok: Test Person");
         assertThat(SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
-                "", filter, pepClient).getFilterQueries()).contains("-diskresjonskode:*");
+                "", filter, pepClient).getFilterQueries()).contains("-diskresjonskode:6");
+        assertThat(SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
+                "", filter, pepClient).getFilterQueries()).contains("-diskresjonskode:7");
         assertThat(SolrUtils.buildSolrQuery("", Optional.empty(), new LinkedList<>(), "",
                 "", filter, pepClient).getFilterQueries()).contains("egen_ansatt:false");
     }

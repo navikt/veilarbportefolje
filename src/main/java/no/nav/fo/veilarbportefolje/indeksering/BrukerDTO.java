@@ -19,6 +19,9 @@ public class BrukerDTO {
     String fnr;
 
     @NotEmpty
+    String aktoer_id;
+
+    @NotEmpty
     String fornavn;
 
     @NotEmpty
