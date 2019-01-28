@@ -221,7 +221,7 @@ public class ElasticSearchService implements IndekseringService {
 
         BulkByScrollResponse response = ElasticUtils.withClient(client -> {
 
-            DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest()
+            DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
                     .setQuery(new TermQueryBuilder("fnr", fnr));
 
             return client.deleteByQuery(deleteQuery, DEFAULT);
