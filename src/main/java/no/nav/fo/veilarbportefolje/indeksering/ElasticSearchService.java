@@ -229,7 +229,7 @@ public class ElasticSearchService implements IndekseringService {
         });
 
         if (response.getDeleted() != 1) {
-            log.error("Feil ved sletting av bruker i indeks {}", response.toString());
+            log.warn("Feil ved sletting av bruker i indeks {}", response.toString());
         }
     }
 

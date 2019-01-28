@@ -21,13 +21,14 @@ import javax.validation.constraints.NotEmpty;
 
 import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_PASSWORD;
 import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_USERNAME;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 public class ElasticUtils {
 
     public static final ClientConfig DEFAULT_CONFIG = ClientConfig.builder()
             .hostname(IndekseringConfig.getElasticHostname())
-            .username(VEILARBELASTIC_USERNAME)
-            .password(VEILARBELASTIC_PASSWORD)
+            .username(getRequiredProperty(VEILARBELASTIC_USERNAME))
+            .password(getRequiredProperty(VEILARBELASTIC_PASSWORD))
             .build();
 
     public static RestHighLevelClient createClient(ClientConfig config) {
