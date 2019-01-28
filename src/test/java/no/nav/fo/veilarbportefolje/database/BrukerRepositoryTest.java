@@ -29,7 +29,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.consumer.OppfolgingFeedHandler.OPPFOLGING_SIST_OPPDATERT;
+import static no.nav.fo.veilarbportefolje.consumer.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static no.nav.fo.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
@@ -464,11 +464,13 @@ public class BrukerRepositoryTest {
     public void skalOppdatereMetadata() throws Exception {
         Date date = new Date();
 
-        brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, date);
+        brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, date);
 
-        Date upDated = (Date) brukerRepository.db.queryForList("SELECT oppfolging_sist_oppdatert from METADATA")
+        Date upDated = (Date) brukerRepository.db.queryForList("SELECT "
+                + DIALOGAKTOR_SIST_OPPDATERT
+                + " from METADATA")
                 .get(0)
-                .get("oppfolging_sist_oppdatert");
+                .get(DIALOGAKTOR_SIST_OPPDATERT);
         assertEquals(date, upDated);
     }
 

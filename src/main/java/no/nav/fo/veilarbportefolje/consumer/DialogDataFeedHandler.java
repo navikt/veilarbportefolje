@@ -20,7 +20,7 @@ import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
-    static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
+    public static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
     private final IndekseringService indekseringService;
     private final DialogFeedRepository dialogFeedRepository;

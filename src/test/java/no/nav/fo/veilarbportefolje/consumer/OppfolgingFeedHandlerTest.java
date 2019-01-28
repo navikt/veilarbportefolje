@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
@@ -150,24 +149,6 @@ public class OppfolgingFeedHandlerTest {
     public void skalHandtereTomListeForFeedId() {
         Optional<BigDecimal> maxId = OppfolgingFeedHandler.finnMaxFeedId(new ArrayList<>());
         assertThat(maxId.isPresent(), is(false));
-    }
-
-    @Test
-    public void skalParseFeedIdTilDato() {
-        Optional<Date> dato = OppfolgingFeedHandler.parseLastEntryIdToDate("2018-10-05T18:35:08.921Z");
-        assertThat(dato.isPresent(), is(true));
-    }
-
-    @Test
-    public void skalHandtereAtLastEntryIdIkkeErDato() {
-        Optional<Date> dato = OppfolgingFeedHandler.parseLastEntryIdToDate("2");
-        assertThat(dato.isPresent(), is(false));
-    }
-
-    @Test
-    public void skalHandtereAtLastEntryIdIkkeFinnes() {
-        Optional<Date> dato = OppfolgingFeedHandler.parseLastEntryIdToDate(null);
-        assertThat(dato.isPresent(), is(false));
     }
 
     private void givenBrukerIkkeHarNoeOppfolgingsData() {
