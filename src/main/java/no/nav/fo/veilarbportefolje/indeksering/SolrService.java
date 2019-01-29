@@ -187,7 +187,6 @@ public class SolrService implements IndekseringService {
         timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO), tagsAppeder);
     }
 
-    @Override
     public void slettBruker(String fnr) {
         deleteDocuments("fnr:" + fnr);
     }

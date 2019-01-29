@@ -101,7 +101,7 @@ public class ElasticSearchService implements IndekseringService {
                         startIndeksering();
                         indekseringFeilet = null;
                     } catch (Exception e) {
-                        log.error("Hovedindeksering: indeksering feilet {}", e.getMessage());
+                        log.error("Hovedindeksering: indeksering feilet {}", e);
                         indekseringFeilet = e;
                     }
                 },
@@ -210,26 +210,21 @@ public class ElasticSearchService implements IndekseringService {
                 .forEach(this::slettBruker);
     }
 
-    public void slettBruker(BrukerDTO bruker) {
-        slettBruker(bruker.fnr);
-        log.info("Slettet bruker med aktørId {}", bruker.aktoer_id);
-    }
-
-    @Override
     @SneakyThrows
-    public void slettBruker(String fnr) {
+    public void slettBruker(BrukerDTO bruker) {
 
+        log.info("Sletter bruker med aktørId {}", bruker.aktoer_id);
         BulkByScrollResponse response = ElasticUtils.withClient(client -> {
 
             DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
-                    .setQuery(new TermQueryBuilder("fnr", fnr));
+                    .setQuery(new TermQueryBuilder("fnr", bruker.fnr));
 
             return client.deleteByQuery(deleteQuery, DEFAULT);
 
         });
 
         if (response.getDeleted() != 1) {
-            log.warn("Feil ved sletting av bruker i indeks {}", response.toString());
+            log.warn("Feil ved sletting av bruker med aktoerId {} i indeks {}", bruker.aktoer_id, response.toString());
         }
     }
 
@@ -244,7 +239,7 @@ public class ElasticSearchService implements IndekseringService {
                 leggTilTiltak(bruker);
                 skrivTilIndeks(IndekseringConfig.getAlias(), bruker);
             } else {
-                slettBruker(bruker.fnr);
+                slettBruker(bruker);
             }
 
         });
