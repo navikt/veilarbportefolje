@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 
+import static java.math.BigDecimal.valueOf;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBOPPFOLGING_URL_PROPERTY;
@@ -80,7 +81,11 @@ public class OppfolgingerfeedConfig {
                 transactor);
     }
 
-    private static String sisteId(JdbcTemplate db) {
-        return ((BigDecimal) db.queryForList(SELECT_OPPFOLGING_SIST_OPPDATERT_ID_FROM_METADATA).get(0).get("oppfolging_sist_oppdatert_id")).toPlainString();
+    static String sisteId(JdbcTemplate db) {
+        return ((BigDecimal) db.queryForList(SELECT_OPPFOLGING_SIST_OPPDATERT_ID_FROM_METADATA).stream()
+                .findFirst()
+                .map(m -> m.get("oppfolging_sist_oppdatert_id"))
+                .orElse(valueOf(0)))
+                .toPlainString();
     }
 }
