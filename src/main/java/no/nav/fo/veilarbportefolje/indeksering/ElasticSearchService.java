@@ -172,12 +172,13 @@ public class ElasticSearchService implements IndekseringService {
                         .filter(UnderOppfolgingRegler::erUnderOppfolging)
                         .collect(Collectors.toList());
 
-                leggTilAktiviteter(brukereFortsattUnderOppfolging);
-                leggTilTiltak(brukereFortsattUnderOppfolging);
-                skrivTilIndeks(IndekseringConfig.getAlias(), brukereFortsattUnderOppfolging);
+                if (!brukereFortsattUnderOppfolging.isEmpty()) {
+                    leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                    leggTilTiltak(brukereFortsattUnderOppfolging);
+                    skrivTilIndeks(IndekseringConfig.getAlias(), brukereFortsattUnderOppfolging);
+                }
 
                 slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
-
             });
 
             List<String> aktoerIder = brukere.stream().map(BrukerDTO::getAktoer_id).collect(Collectors.toList());
