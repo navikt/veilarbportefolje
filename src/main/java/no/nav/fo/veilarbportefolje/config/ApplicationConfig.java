@@ -28,7 +28,9 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.inject.Inject;
@@ -143,5 +145,12 @@ public class ApplicationConfig implements ApiApplication {
                 .applicationName(requireApplicationName())
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
+    }
+
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
+        scheduler.setErrorHandler(new ScheduledErrorHandler());
+        return scheduler;
     }
 }
