@@ -33,10 +33,20 @@ public class ElasticUtils {
 
     public static RestHighLevelClient createClient(ClientConfig config) {
         return new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost(config.getHostname(), config.getPort(), config.getScheme())
-                ).setHttpClientConfigCallback(getHttpClientConfigCallback(config))
+                RestClient.builder(new HttpHost(
+                        config.getHostname(),
+                        config.getPort(),
+                        config.getScheme())
+                )
+                        .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
+                        .setRequestConfigCallback(getRequestConfigCallback())
         );
+    }
+
+    private static RestClientBuilder.RequestConfigCallback getRequestConfigCallback() {
+        return requestConfigBuilder -> requestConfigBuilder
+                .setConnectTimeout(10)
+                .setSocketTimeout(120_000);
     }
 
     private static RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback(ClientConfig config) {
