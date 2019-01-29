@@ -50,7 +50,7 @@ public class OppfolgingerfeedConfig {
             FeedCallback<BrukerOppdatertInformasjon> callback) {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
-                () -> sisteId(db),
+                () -> nesteId(db),
                 getRequiredProperty(VEILARBOPPFOLGING_URL_PROPERTY),
                 BrukerOppdatertInformasjon.FEED_NAME
         );
@@ -81,11 +81,12 @@ public class OppfolgingerfeedConfig {
                 transactor);
     }
 
-    static String sisteId(JdbcTemplate db) {
+    static String nesteId(JdbcTemplate db) {
         return ((BigDecimal) db.queryForList(SELECT_OPPFOLGING_SIST_OPPDATERT_ID_FROM_METADATA).stream()
                 .findFirst()
                 .map(m -> m.get("oppfolging_sist_oppdatert_id"))
                 .orElse(valueOf(0)))
+                .add(valueOf(1))
                 .toPlainString();
     }
 }
