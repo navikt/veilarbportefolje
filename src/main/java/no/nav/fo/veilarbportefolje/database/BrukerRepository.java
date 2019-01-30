@@ -27,7 +27,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.database.Tabell.AKTOERID_TO_PERSONID;
 import static no.nav.fo.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.fo.veilarbportefolje.database.Tabell.METADATA;
@@ -68,7 +69,7 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public List<BrukerDTO> hentOppdaterteBrukereUnderOppfolging() {
+    public List<BrukerDTO> hentOppdaterteBrukere() {
 
         db.setFetchSize(1000);
 
@@ -78,13 +79,10 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilBrukerDTO(rs) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilBrukerDTO)
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
-                .executeToList()
-                .stream()
-                .filter(Objects::nonNull)
-                .collect(toList());
+                .executeToList();
     }
 
     public BrukerDTO hentBruker(AktoerId aktoerId) {

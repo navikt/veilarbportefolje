@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -23,10 +24,13 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 @Slf4j
 public class MetricsReporter {
 
-    protected RestHighLevelClient elastic;
+    private UnleashService unleash;
+
+    private RestHighLevelClient elastic;
 
     @Inject
-    public MetricsReporter(RestHighLevelClient elastic) {
+    public MetricsReporter(UnleashService unleash, RestHighLevelClient elastic) {
+        this.unleash = unleash;
         this.elastic = elastic;
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);

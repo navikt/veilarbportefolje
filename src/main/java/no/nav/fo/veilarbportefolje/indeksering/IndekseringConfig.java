@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import lombok.Builder;
 import lombok.SneakyThrows;
+import lombok.Value;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
@@ -39,16 +41,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
+import javax.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.util.UUID;
 
 import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
 import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY;
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
-import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.Q;
-import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentClass;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
@@ -58,28 +58,65 @@ public class IndekseringConfig {
     private static final String URL = getRequiredProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY);
     public static int BATCH_SIZE = 1000;
     public final static int BATCH_SIZE_LIMIT = 1000;
-    public static String VEILARBELASTIC_USERNAME = "VEILARBELASTIC_USERNAME";
-    public static String VEILARBELASTIC_PASSWORD = "VEILARBELASTIC_PASSWORD";
+    public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
+    public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
 
     public static String getAlias() {
         return String.format("brukerindeks_%s", EnvironmentUtils.requireEnvironmentName());
     }
 
-    @Bean
-    public RestHighLevelClient restHighLevelClient() {
+    public static String getElasticUrl() {
+        return "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
+    }
+
+    private static final ClientConfig DEFAULT_CONFIG = ClientConfig.builder()
+            .hostname(IndekseringConfig.getElasticUrl())
+            .username(VEILARBELASTIC_USERNAME)
+            .password(VEILARBELASTIC_PASSWORD)
+            .build();
+
+    private static RestHighLevelClient createClient(ClientConfig config) {
         return new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost(getElasticHostname(), -1, "https")
-                ).setHttpClientConfigCallback(getHttpClientConfigCallback())
+                RestClient.builder(new HttpHost(
+                        config.getHostname(),
+                        config.getPort(),
+                        config.getScheme())
+                )
+                        .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
+                        .setRequestConfigCallback(getRequestConfigCallback())
         );
     }
 
-    public static String getElasticHostname() {
-        if (getEnvironmentClass() == Q) {
-            return "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
-        } else {
-            return "tpa-veilarbelastic-elasticsearch.nais.adeo.no";
-        }
+    private static RestClientBuilder.RequestConfigCallback getRequestConfigCallback() {
+        return requestConfigBuilder -> requestConfigBuilder
+                .setConnectTimeout(10)
+                .setSocketTimeout(120_000);
+    }
+
+    private static RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback(ClientConfig config) {
+
+        return new RestClientBuilder.HttpClientConfigCallback() {
+            @Override
+            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                return httpClientBuilder.setDefaultCredentialsProvider(createCredentialsProvider());
+            }
+
+            private CredentialsProvider createCredentialsProvider() {
+                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
+                        config.getUsername(),
+                        config.getPassword()
+                );
+
+                BasicCredentialsProvider provider = new BasicCredentialsProvider();
+                provider.setCredentials(AuthScope.ANY, credentials);
+                return provider;
+            }
+        };
+    }
+
+    @Bean
+    public RestHighLevelClient restHighLevelClient() {
+        return createClient(DEFAULT_CONFIG);
     }
 
     @Bean
@@ -93,31 +130,29 @@ public class IndekseringConfig {
     }
 
     @Bean
-    public MetricsReporter metricsReporter() {
-        return new MetricsReporter(restHighLevelClient());
+    public MetricsReporter metricsReporter(UnleashService unleashService) {
+        return new MetricsReporter(unleashService, restHighLevelClient());
     }
 
-    private RestClientBuilder.HttpClientConfigCallback getHttpClientConfigCallback() {
+    @Value
+    @Builder
+    public static class ClientConfig {
+        @NotEmpty
+        private String username;
 
-        return new RestClientBuilder.HttpClientConfigCallback() {
-            @Override
-            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                return httpClientBuilder.setDefaultCredentialsProvider(createCredentialsProvider());
-            }
+        @NotEmpty
+        private String password;
 
-            private CredentialsProvider createCredentialsProvider() {
-                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                        EnvironmentUtils.getRequiredProperty(VEILARBELASTIC_USERNAME),
-                        EnvironmentUtils.getRequiredProperty(VEILARBELASTIC_PASSWORD)
-                );
+        @NotEmpty
+        private String hostname;
 
-                BasicCredentialsProvider provider = new BasicCredentialsProvider();
-                provider.setCredentials(AuthScope.ANY, credentials);
-                return provider;
-            }
+        @Builder.Default
+        private int port = 9200;
 
-        };
+        @Builder.Default
+        private String scheme = "http";
     }
+
 
     @Bean
     public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -158,8 +193,8 @@ public class IndekseringConfig {
     }
 
     @Bean
-    public ElasticSearchService elasticSearchService(RestHighLevelClient client, AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock) {
-        return new ElasticSearchService(client, aktivitetDAO, brukerRepository, shedlock);
+    public ElasticSearchService elasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock) {
+        return new ElasticSearchService(aktivitetDAO, brukerRepository, shedlock, restHighLevelClient());
     }
 
     @Bean

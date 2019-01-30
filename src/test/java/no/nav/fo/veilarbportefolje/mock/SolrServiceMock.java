@@ -30,11 +30,6 @@ public class SolrServiceMock implements IndekseringService {
     }
 
     @Override
-    public void slettBruker(String fnr) {
-
-    }
-
-    @Override
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         return null;
     }

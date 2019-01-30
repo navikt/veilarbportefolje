@@ -1,27 +1,32 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import lombok.SneakyThrows;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Component;
 
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
+import javax.inject.Inject;
+
 import static org.elasticsearch.cluster.health.ClusterHealthStatus.GREEN;
 
 @Component
 public class ElasticSearchHelsesjekk implements Helsesjekk {
 
-    private RestHighLevelClient elastic;
+    RestHighLevelClient client;
 
-    public ElasticSearchHelsesjekk(RestHighLevelClient elastic) {
-        this.elastic = elastic;
+    @Inject
+    public ElasticSearchHelsesjekk(RestHighLevelClient client) {
+        this.client = client;
     }
 
     @Override
-    public void helsesjekk() throws Throwable {
-        ClusterHealthResponse health = elastic.cluster().health(new ClusterHealthRequest(), DEFAULT);
+    @SneakyThrows
+    public void helsesjekk() {
+        ClusterHealthResponse health = client.cluster().health(new ClusterHealthRequest(), RequestOptions.DEFAULT);
         if (health.getStatus() != GREEN) {
             throw new RuntimeException(health.toString());
         }
@@ -31,7 +36,7 @@ public class ElasticSearchHelsesjekk implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
                 "elasticsearch helsesjekk",
-                String.format("https://%s/%s", IndekseringConfig.getElasticHostname(), IndekseringConfig.getAlias()),
+                String.format("http://%s/%s", IndekseringConfig.getElasticUrl(), IndekseringConfig.getAlias()),
                 "Sjekker helsestatus til Elasticsearch-clusteret",
                 true
         );

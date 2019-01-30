@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbportefolje.config;
 
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import no.nav.apiapp.ApiApplication.NaisApiApplication;
+import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
         ServiceConfig.class,
         RestConfig.class
 })
-public class ComponentTestConfig implements NaisApiApplication {
+public class ComponentTestConfig implements ApiApplication {
 
     @Bean
     public AktoerService aktoerService() {

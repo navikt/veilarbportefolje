@@ -28,7 +28,9 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.inject.Inject;
@@ -60,7 +62,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class
 })
-public class ApplicationConfig implements ApiApplication.NaisApiApplication {
+public class ApplicationConfig implements ApiApplication {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
     public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
@@ -76,6 +78,8 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME";
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
+    public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
+    public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
 
     @Inject
     private DataSource dataSource;
@@ -143,5 +147,12 @@ public class ApplicationConfig implements ApiApplication.NaisApiApplication {
                 .applicationName(requireApplicationName())
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
+    }
+
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
+        scheduler.setErrorHandler(new ScheduledErrorHandler());
+        return scheduler;
     }
 }
