@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-import java.io.IOException;
-
 import static org.elasticsearch.cluster.health.ClusterHealthStatus.GREEN;
 
 @Component
@@ -38,7 +36,7 @@ public class ElasticSearchHelsesjekk implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
                 "elasticsearch helsesjekk",
-                String.format("https://%s/%s", IndekseringConfig.getElasticHostname(), IndekseringConfig.getAlias()),
+                String.format("http://%s/%s", IndekseringConfig.getElasticUrl(), IndekseringConfig.getAlias()),
                 "Sjekker helsestatus til Elasticsearch-clusteret",
                 true
         );

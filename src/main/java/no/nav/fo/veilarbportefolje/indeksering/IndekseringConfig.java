@@ -49,8 +49,6 @@ import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
 import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.util.PingUtils.ping;
-import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.Q;
-import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentClass;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
@@ -67,16 +65,12 @@ public class IndekseringConfig {
         return String.format("brukerindeks_%s", EnvironmentUtils.requireEnvironmentName());
     }
 
-    public static String getElasticHostname() {
-        if (getEnvironmentClass() == Q) {
-            return "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
-        } else {
-            return "tpa-veilarbelastic-elasticsearch.nais.adeo.no";
-        }
+    public static String getElasticUrl() {
+        return "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local:9200";
     }
 
     private static final ClientConfig DEFAULT_CONFIG = ClientConfig.builder()
-            .hostname(IndekseringConfig.getElasticHostname())
+            .hostname(IndekseringConfig.getElasticUrl())
             .username(VEILARBELASTIC_USERNAME)
             .password(VEILARBELASTIC_PASSWORD)
             .build();
@@ -156,7 +150,7 @@ public class IndekseringConfig {
         private int port = -1;
 
         @Builder.Default
-        private String scheme = "https";
+        private String scheme = "http";
     }
 
 
