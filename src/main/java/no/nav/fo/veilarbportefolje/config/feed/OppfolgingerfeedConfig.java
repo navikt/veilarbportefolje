@@ -7,7 +7,6 @@ import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
-import no.nav.fo.veilarbportefolje.consumer.DedupeFeedHandler;
 import no.nav.fo.veilarbportefolje.consumer.OppfolgingFeedHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
@@ -50,7 +49,7 @@ public class OppfolgingerfeedConfig {
             FeedCallback<BrukerOppdatertInformasjon> callback) {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
-                () -> sisteId(db),
+                () -> nesteId(db),
                 getRequiredProperty(VEILARBOPPFOLGING_URL_PROPERTY),
                 BrukerOppdatertInformasjon.FEED_NAME
         );
@@ -58,7 +57,7 @@ public class OppfolgingerfeedConfig {
         SimpleWebhookPollingConfig webhookPollingConfig = new SimpleWebhookPollingConfig(10, FEED_API_ROOT);
 
         FeedConsumerConfig<BrukerOppdatertInformasjon> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(FEED_POLLING_INTERVAL_IN_SECONDS), webhookPollingConfig)
-                .callback(DedupeFeedHandler.of(FEED_PAGE_SIZE, callback))
+                .callback(callback)
                 .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider(dataSource), 10000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()))
@@ -81,11 +80,12 @@ public class OppfolgingerfeedConfig {
                 transactor);
     }
 
-    static String sisteId(JdbcTemplate db) {
+    static String nesteId(JdbcTemplate db) {
         return ((BigDecimal) db.queryForList(SELECT_OPPFOLGING_SIST_OPPDATERT_ID_FROM_METADATA).stream()
                 .findFirst()
                 .map(m -> m.get("oppfolging_sist_oppdatert_id"))
                 .orElse(valueOf(0)))
+                .add(valueOf(1))
                 .toPlainString();
     }
 }
