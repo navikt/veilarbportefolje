@@ -64,8 +64,8 @@ public class MainTest {
         setProperty(VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY, "http://localhost:8080/veilarbportefoljeindeks/brukercore");
 
         ServiceUser tiltakSftpUser = getServiceUser(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_ALIAS, APPLICATION_NAME);
-        setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY, tiltakSftpUser.getUsername());
         setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY, tiltakSftpUser.getPassword());
+        setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY, tiltakSftpUser.getUsername());
 
         ServiceUser isso_rp_user = getServiceUser("isso-rp-user", APPLICATION_NAME);
         String loginUrl = getRestService(VEILARBLOGIN_REDIRECT_URL_ALIAS, getDefaultEnvironment()).getUrl();
@@ -79,8 +79,8 @@ public class MainTest {
         setProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY, loginUrl);
 
         ServiceUser elasticUser = getServiceUser("veilarbelastic_user", APPLICATION_NAME, getDefaultEnvironment());
-        setProperty(VEILARBELASTIC_USERNAME, elasticUser.getUsername());
-        setProperty(VEILARBELASTIC_PASSWORD, elasticUser.getPassword());
+        setProperty(ELASTICSEARCH_USERNAME_PROPERTY, elasticUser.getUsername());
+        setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, elasticUser.getPassword());
 
         Main.main(PORT);
     }

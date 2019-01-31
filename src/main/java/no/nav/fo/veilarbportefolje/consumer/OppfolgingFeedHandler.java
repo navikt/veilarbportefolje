@@ -15,11 +15,7 @@ import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 
-import io.vavr.control.Try;
-
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +24,6 @@ import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
-
-    public static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
@@ -64,7 +58,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                             oppdaterOppfolgingData(info);
                             indekseringService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
                         });
-                        parseLastEntryIdToDate(lastEntryId).ifPresent(id -> brukerRepository.updateMetadata(OPPFOLGING_SIST_OPPDATERT, id));
                         finnMaxFeedId(data).ifPresent(id ->  oppfolgingFeedRepository.updateOppfolgingFeedId(id));
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size())));
@@ -73,10 +66,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         }
 
         MetricsFactory.createEvent("datamotattfrafeed").report();
-    }
-
-    static Optional<java.util.Date> parseLastEntryIdToDate(String lastEntryId) {
-        return Try.of(() -> Date.from(ZonedDateTime.parse(lastEntryId).toInstant())).toJavaOptional();
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {

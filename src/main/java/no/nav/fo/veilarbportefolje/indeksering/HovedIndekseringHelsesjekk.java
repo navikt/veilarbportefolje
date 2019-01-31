@@ -25,7 +25,7 @@ public class HovedIndekseringHelsesjekk implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
                 "hovedindeksering",
-                String.format("https://%s/%s", IndekseringConfig.getElasticHostname(), IndekseringConfig.getAlias()),
+                String.format("https://%s/%s", IndekseringConfig.getElasticUrl(), IndekseringConfig.getAlias()),
                 "Sjekker om forrige hovedindeksering var vellykket",
                 true
         );

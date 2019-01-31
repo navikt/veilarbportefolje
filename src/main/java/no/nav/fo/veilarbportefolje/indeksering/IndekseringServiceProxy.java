@@ -52,15 +52,6 @@ public class IndekseringServiceProxy implements IndekseringService {
     }
 
     @Override
-    public void slettBruker(String fnr) {
-        solrService.slettBruker(fnr);
-
-        if (elasticSearchIsEnabled()) {
-            elasticSearchService.slettBruker(fnr);
-        }
-    }
-
-    @Override
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         return solrService.hentStatusTallForPortefolje(enhet);
     }

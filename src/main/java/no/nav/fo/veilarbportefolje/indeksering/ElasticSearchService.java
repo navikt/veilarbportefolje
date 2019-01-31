@@ -23,6 +23,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -51,6 +52,8 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
 public class ElasticSearchService implements IndekseringService {
+
+    private RestHighLevelClient client;
 
     private AktivitetDAO aktivitetDAO;
 
@@ -84,10 +87,16 @@ public class ElasticSearchService implements IndekseringService {
             "}\n";
 
     @Inject
-    public ElasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock) {
+    public ElasticSearchService(
+            AktivitetDAO aktivitetDAO,
+            BrukerRepository brukerRepository,
+            LockingTaskExecutor shedlock,
+            RestHighLevelClient client
+    ) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.shedlock = shedlock;
+        this.client = client;
     }
 
     public Exception hentIndekseringFeiletStatus() {
@@ -101,11 +110,11 @@ public class ElasticSearchService implements IndekseringService {
                         startIndeksering();
                         indekseringFeilet = null;
                     } catch (Exception e) {
-                        log.error("Hovedindeksering: indeksering feilet {}", e.getMessage());
+                        log.error("Hovedindeksering: indeksering feilet {}", e);
                         indekseringFeilet = e;
                     }
                 },
-                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3))
+                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3), Instant.now().plusSeconds(60 * 10))
         );
     }
 
@@ -172,12 +181,13 @@ public class ElasticSearchService implements IndekseringService {
                         .filter(UnderOppfolgingRegler::erUnderOppfolging)
                         .collect(Collectors.toList());
 
-                leggTilAktiviteter(brukereFortsattUnderOppfolging);
-                leggTilTiltak(brukereFortsattUnderOppfolging);
-                skrivTilIndeks(IndekseringConfig.getAlias(), brukereFortsattUnderOppfolging);
+                if (!brukereFortsattUnderOppfolging.isEmpty()) {
+                    leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                    leggTilTiltak(brukereFortsattUnderOppfolging);
+                    skrivTilIndeks(IndekseringConfig.getAlias(), brukereFortsattUnderOppfolging);
+                }
 
                 slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
-
             });
 
             List<String> aktoerIder = brukere.stream().map(BrukerDTO::getAktoer_id).collect(Collectors.toList());
@@ -190,17 +200,15 @@ public class ElasticSearchService implements IndekseringService {
             event.addFieldToReport("es.antall.oppdateringer", antall);
             event.report();
 
-        }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50)));
+        }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50), Instant.now().plusSeconds(10)));
     }
 
+    @SneakyThrows
     private boolean indeksenIkkeFinnes() {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(getAlias());
 
-        Boolean exists = ElasticUtils.withClient(client -> {
-            return client.indices().exists(request, DEFAULT);
-        });
-
+        boolean exists = client.indices().exists(request, DEFAULT);
         return !exists;
     }
 
@@ -210,26 +218,16 @@ public class ElasticSearchService implements IndekseringService {
                 .forEach(this::slettBruker);
     }
 
-    public void slettBruker(BrukerDTO bruker) {
-        slettBruker(bruker.fnr);
-        log.info("Slettet bruker med aktørId {}", bruker.aktoer_id);
-    }
-
-    @Override
     @SneakyThrows
-    public void slettBruker(String fnr) {
+    public void slettBruker(BrukerDTO bruker) {
 
-        BulkByScrollResponse response = ElasticUtils.withClient(client -> {
+        log.info("Sletter bruker med aktørId {}", bruker.aktoer_id);
+        DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
+                .setQuery(new TermQueryBuilder("fnr", bruker.fnr));
 
-            DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest()
-                    .setQuery(new TermQueryBuilder("fnr", fnr));
-
-            return client.deleteByQuery(deleteQuery, DEFAULT);
-
-        });
-
+        BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() != 1) {
-            log.warn("Feil ved sletting av bruker i indeks {}", response.toString());
+            log.warn("Feil ved sletting av bruker med aktoerId {} i indeks {}", bruker.aktoer_id, response.toString());
         }
     }
 
@@ -244,7 +242,7 @@ public class ElasticSearchService implements IndekseringService {
                 leggTilTiltak(bruker);
                 skrivTilIndeks(IndekseringConfig.getAlias(), bruker);
             } else {
-                slettBruker(bruker.fnr);
+                slettBruker(bruker);
             }
 
         });
@@ -262,10 +260,8 @@ public class ElasticSearchService implements IndekseringService {
 
     @SneakyThrows
     private Optional<String> hentGammeltIndeksNavn() {
-        GetAliasesResponse response = ElasticUtils.withClient(client -> {
-            GetAliasesRequest getAliasRequest = new GetAliasesRequest(IndekseringConfig.getAlias());
-            return client.indices().getAlias(getAliasRequest, DEFAULT);
-        });
+        GetAliasesRequest getAliasRequest = new GetAliasesRequest(IndekseringConfig.getAlias());
+        GetAliasesResponse response = client.indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
     }
 
@@ -275,10 +271,8 @@ public class ElasticSearchService implements IndekseringService {
                 .index(indeks)
                 .alias(IndekseringConfig.getAlias());
 
-        AcknowledgedResponse response = ElasticUtils.withClient(client -> {
-            IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
-            return client.indices().updateAliases(request, DEFAULT);
-        });
+        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
+        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke legge til alias {}", IndekseringConfig.getAlias());
@@ -289,22 +283,19 @@ public class ElasticSearchService implements IndekseringService {
     @SneakyThrows
     private void flyttAliasTilNyIndeks(String gammelIndeks, String nyIndeks) {
 
-        AcknowledgedResponse response = ElasticUtils.withClient(client -> {
+        AliasActions addAliasAction = new AliasActions(ADD)
+                .index(nyIndeks)
+                .alias(IndekseringConfig.getAlias());
 
-            AliasActions addAliasAction = new AliasActions(ADD)
-                    .index(nyIndeks)
-                    .alias(IndekseringConfig.getAlias());
+        AliasActions removeAliasAction = new AliasActions(REMOVE)
+                .index(gammelIndeks)
+                .alias(IndekseringConfig.getAlias());
 
-            AliasActions removeAliasAction = new AliasActions(REMOVE)
-                    .index(gammelIndeks)
-                    .alias(IndekseringConfig.getAlias());
+        IndicesAliasesRequest request = new IndicesAliasesRequest()
+                .addAliasAction(removeAliasAction)
+                .addAliasAction(addAliasAction);
 
-            IndicesAliasesRequest request = new IndicesAliasesRequest()
-                    .addAliasAction(removeAliasAction)
-                    .addAliasAction(addAliasAction);
-
-            return client.indices().updateAliases(request, DEFAULT);
-        });
+        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke oppdatere alias {}", IndekseringConfig.getAlias());
@@ -313,13 +304,7 @@ public class ElasticSearchService implements IndekseringService {
 
     @SneakyThrows
     private void slettGammelIndeks(String gammelIndeks) {
-
-        AcknowledgedResponse response = ElasticUtils.withClient(client -> {
-            return client
-                    .indices()
-                    .delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
-        });
-
+        AcknowledgedResponse response = client.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
         if (!response.isAcknowledged()) {
             log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
         }
@@ -328,16 +313,13 @@ public class ElasticSearchService implements IndekseringService {
     @SneakyThrows
     private void skrivTilIndeks(String indeksNavn, List<BrukerDTO> oppfolgingsBrukere) {
 
-        BulkResponse response = ElasticUtils.withClient(client -> {
+        BulkRequest bulk = new BulkRequest();
+        oppfolgingsBrukere.stream()
+                .map(DokumentDTO::new)
+                .map(dokument -> new IndexRequest(indeksNavn, "_doc", dokument.getId()).source(dokument.getJson(), XContentType.JSON))
+                .forEach(bulk::add);
 
-            BulkRequest bulk = new BulkRequest();
-            oppfolgingsBrukere.stream()
-                    .map(DokumentDTO::new)
-                    .map(dokument -> new IndexRequest(indeksNavn, "_doc", dokument.getId()).source(dokument.getJson(), XContentType.JSON))
-                    .forEach(bulk::add);
-
-            return client.bulk(bulk, DEFAULT);
-        });
+        BulkResponse response = client.bulk(bulk, DEFAULT);
 
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());
@@ -352,12 +334,10 @@ public class ElasticSearchService implements IndekseringService {
     private String opprettNyIndeks() {
 
         String indexName = IndekseringUtils.createIndexName(IndekseringConfig.getAlias());
-        CreateIndexResponse response = ElasticUtils.withClient(client -> {
-            CreateIndexRequest request = new CreateIndexRequest(indexName)
-                    .mapping("_doc", mappingJson, XContentType.JSON);
-            return client.indices().create(request, DEFAULT);
-        });
+        CreateIndexRequest request = new CreateIndexRequest(indexName)
+                .mapping("_doc", mappingJson, XContentType.JSON);
 
+        CreateIndexResponse response = client.indices().create(request, DEFAULT);
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", indexName);
             throw new RuntimeException();

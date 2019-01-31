@@ -14,8 +14,6 @@ public interface IndekseringService {
 
     BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg);
 
-    void slettBruker(String fnr);
-
     StatusTall hentStatusTallForPortefolje(String enhet);
 
     FacetResults hentPortefoljestorrelser(String enhetId);
