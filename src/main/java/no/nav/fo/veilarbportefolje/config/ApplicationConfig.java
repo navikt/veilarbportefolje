@@ -78,6 +78,9 @@ public class ApplicationConfig implements ApiApplication {
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME";
     public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
+    public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
+    public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
+    public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
 
     @Inject
     private DataSource dataSource;
@@ -100,15 +103,24 @@ public class ApplicationConfig implements ApiApplication {
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.migrate();
+
+        if(!skipDbMigration()){
+            Flyway flyway = new Flyway();
+            flyway.setDataSource(dataSource);
+            flyway.migrate();
+        }
 
         leggTilServlet(servletContext, new TotalHovedindekseringServlet(indekseringScheduler), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new PopulerIndekseringServlet(indekseringService), "/internal/populerindeks");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticSearchService), "/internal/populeres");
+    }
+
+    private Boolean skipDbMigration() {
+        return getOptionalProperty(SKIP_DB_MIGRATION_PROPERTY)
+                .map(Boolean::parseBoolean)
+                .orElse(false);
     }
 
     @Override
