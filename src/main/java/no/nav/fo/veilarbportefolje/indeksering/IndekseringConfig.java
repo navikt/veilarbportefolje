@@ -66,7 +66,7 @@ public class IndekseringConfig {
     }
 
     public static String getElasticUrl() {
-        return "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local:9200";
+        return "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
     }
 
     private static final ClientConfig DEFAULT_CONFIG = ClientConfig.builder()
@@ -147,7 +147,7 @@ public class IndekseringConfig {
         private String hostname;
 
         @Builder.Default
-        private int port = -1;
+        private int port = 9200;
 
         @Builder.Default
         private String scheme = "http";
