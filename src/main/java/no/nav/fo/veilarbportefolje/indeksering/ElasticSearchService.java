@@ -114,7 +114,7 @@ public class ElasticSearchService implements IndekseringService {
                         indekseringFeilet = e;
                     }
                 },
-                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3))
+                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3), Instant.now().plusSeconds(60 * 10))
         );
     }
 
@@ -200,7 +200,7 @@ public class ElasticSearchService implements IndekseringService {
             event.addFieldToReport("es.antall.oppdateringer", antall);
             event.report();
 
-        }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50)));
+        }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50), Instant.now().plusSeconds(10)));
     }
 
     @SneakyThrows
