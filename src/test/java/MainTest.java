@@ -9,12 +9,17 @@ import static no.nav.dialogarena.config.fasit.FasitUtils.*;
 import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
+import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
+import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
 import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_PASSWORD;
 import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_USERNAME;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
+
+import java.util.Optional;
 
 public class MainTest {
 
@@ -38,8 +43,7 @@ public class MainTest {
 
         setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleashproxy.nais.adeo.no/api/");
 
-        // TODO: Støtte inMemoryDb eller lokal hsqldb ala jdbc:hsqldb:hsql://localhost/portefolje;ifexists=true
-        DbCredentials dbCredentials = getDbCredentials(APPLICATION_NAME);
+        DbCredentials dbCredentials = resolveDbCredentials();
         setProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME, dbCredentials.getUrl());
         setProperty(VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME, dbCredentials.getUsername());
         setProperty(VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME, dbCredentials.getPassword());
@@ -79,5 +83,19 @@ public class MainTest {
         setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, elasticUser.getPassword());
 
         Main.main(PORT);
+    }
+
+    private static DbCredentials resolveDbCredentials() {
+        Optional<String> miljoDatabaseProperty = getOptionalProperty("miljo.database");
+        if (miljoDatabaseProperty.isPresent() && "true".equals(miljoDatabaseProperty.get())) {
+            return getDbCredentials(APPLICATION_NAME);
+        } else {
+            DbCredentials dbCredentials = new DbCredentials().setUrl(HSQL_URL)
+                    .setUsername("sa")
+                    .setPassword("pw");
+            setupDataSourceWithCredentials(dbCredentials);
+            setProperty(SKIP_DB_MIGRATION_PROPERTY, "true");
+            return dbCredentials;
+        }
     }
 }
