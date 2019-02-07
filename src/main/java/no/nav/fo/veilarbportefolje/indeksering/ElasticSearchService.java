@@ -80,6 +80,9 @@ public class ElasticSearchService implements IndekseringService {
             "    \"etternavn\": {\n" +
             "      \"type\" : \"keyword\"\n" +
             "    },\n" +
+            "    \"fornavn\": {\n" +
+            "      \"type\" : \"keyword\"\n" +
+            "    },\n" +
             "    \"fnr\": {\n" +
             "      \"type\" : \"keyword\"\n" +
             "    }\n" +
