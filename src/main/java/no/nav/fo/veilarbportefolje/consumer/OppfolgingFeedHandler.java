@@ -17,8 +17,6 @@ import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +27,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     public static final String OPPFOLGING_SIST_OPPDATERT = "oppfolging_sist_oppdatert";
     private final Counter counter;
-
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private IndekseringService indekseringService;
@@ -70,12 +67,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for {}",brukerInfo, e);
             throw e;
         }
-
         counter.increment();
-    }
-
-    static Optional<java.util.Date> parseLastEntryIdToDate(String lastEntryId) {
-        return Try.of(() -> Date.from(ZonedDateTime.parse(lastEntryId).toInstant())).toJavaOptional();
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {

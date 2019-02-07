@@ -114,7 +114,7 @@ public class ElasticSearchService implements IndekseringService {
                         indekseringFeilet = e;
                     }
                 },
-                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3))
+                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3), Instant.now().plusSeconds(60 * 10))
         );
     }
 
@@ -200,7 +200,7 @@ public class ElasticSearchService implements IndekseringService {
             event.addFieldToReport("es.antall.oppdateringer", antall);
             event.report();
 
-        }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50)));
+        }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50), Instant.now().plusSeconds(10)));
     }
 
     @SneakyThrows
@@ -221,13 +221,14 @@ public class ElasticSearchService implements IndekseringService {
     @SneakyThrows
     public void slettBruker(BrukerDTO bruker) {
 
-        log.info("Sletter bruker med aktørId {}", bruker.aktoer_id);
         DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
                 .setQuery(new TermQueryBuilder("fnr", bruker.fnr));
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
-        if (response.getDeleted() != 1) {
-            log.warn("Feil ved sletting av bruker med aktoerId {} i indeks {}", bruker.aktoer_id, response.toString());
+        if (response.getDeleted() == 1) {
+            log.info("Slettet bruker med aktorId {} fra indeks {}", bruker.aktoer_id, getAlias());
+        } else {
+            log.warn("Feil ved sletting av bruker med aktoerId {} i indeks {}: {}", bruker.aktoer_id, getAlias(), response.toString());
         }
     }
 
