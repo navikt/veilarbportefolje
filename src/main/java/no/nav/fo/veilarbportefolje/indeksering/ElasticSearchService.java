@@ -80,6 +80,9 @@ public class ElasticSearchService implements IndekseringService {
             "    \"etternavn\": {\n" +
             "      \"type\" : \"keyword\"\n" +
             "    },\n" +
+            "    \"fornavn\": {\n" +
+            "      \"type\" : \"keyword\"\n" +
+            "    },\n" +
             "    \"fnr\": {\n" +
             "      \"type\" : \"keyword\"\n" +
             "    }\n" +
@@ -221,13 +224,14 @@ public class ElasticSearchService implements IndekseringService {
     @SneakyThrows
     public void slettBruker(BrukerDTO bruker) {
 
-        log.info("Sletter bruker med aktørId {}", bruker.aktoer_id);
         DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
                 .setQuery(new TermQueryBuilder("fnr", bruker.fnr));
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
-        if (response.getDeleted() != 1) {
-            log.warn("Feil ved sletting av bruker med aktoerId {} i indeks {}", bruker.aktoer_id, response.toString());
+        if (response.getDeleted() == 1) {
+            log.info("Slettet bruker med aktorId {} fra indeks {}", bruker.aktoer_id, getAlias());
+        } else {
+            log.warn("Feil ved sletting av bruker med aktoerId {} i indeks {}: {}", bruker.aktoer_id, getAlias(), response.toString());
         }
     }
 
