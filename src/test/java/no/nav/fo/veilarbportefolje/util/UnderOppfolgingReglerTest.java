@@ -64,16 +64,6 @@ public class UnderOppfolgingReglerTest {
     }
 
     @Test
-    public void erUnderOppfolging_PARBS_true() {
-        alleKombinasjonerErTrue("PARBS");
-    }
-
-    @Test
-    public void erUnderOppfolging_RARBS_true() {
-        alleKombinasjonerErTrue("RARBS");
-    }
-
-    @Test
     public void erUnderOppfolging_ISERV_false() {
         assertThat(erUnderOppfolging("ISERV", null)).isFalse();
         for (String kgKode : KVALIFISERINGSGRUPPEKODER) {

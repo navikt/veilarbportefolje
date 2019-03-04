@@ -9,7 +9,7 @@ import static java.util.Arrays.asList;
 
 public class UnderOppfolgingRegler {
 
-    static final Set<String> ARBEIDSOKERKODER = new HashSet<>(asList("ARBS", "RARBS", "PARBS"));
+    static final String ARBEIDSOKER = "ARBS";
     static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     static final String IKKE_ARBEIDSSOKER = "IARBS";
 
@@ -26,7 +26,7 @@ public class UnderOppfolgingRegler {
     }
 
     private static boolean erArbeidssoker(String formidlingsgruppeKode) {
-        return ARBEIDSOKERKODER.contains(formidlingsgruppeKode);
+        return ARBEIDSOKER.equals(formidlingsgruppeKode);
     }
 
     private static boolean erIArbeidOgHarInnsatsbehov(String formidlingsgruppeKode, String servicegruppeKode) {
