@@ -46,6 +46,12 @@ Selve clusteret er basert på følgende koderepo:
 
 https://www.github.com/navikt/pam-elasticsearch
 
+Innstillinger i clusteret er definert i filen:
+
+```
+elastic_settings.json
+```
+
 
 ## URL-er å utføre full hovedindeksering, populering av indeks, oppdatering av ytelser og tiltak
 ```
