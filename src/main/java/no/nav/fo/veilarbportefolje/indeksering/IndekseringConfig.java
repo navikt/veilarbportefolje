@@ -54,7 +54,6 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 public class IndekseringConfig {
 
     private static final String URL = getRequiredProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY);
-    public static int BATCH_SIZE = 1000;
 
 
     @Bean
