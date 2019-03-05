@@ -321,7 +321,7 @@ public class ElasticIndexer implements IndekseringService {
     @SneakyThrows
     public String opprettNyIndeks(String navn) {
 
-        String json = IOUtils.toString(getClass().getResource("/elastic.json"), Charset.forName("UTF-8"));
+        String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
 

@@ -151,8 +151,8 @@ public class DbUtils {
                     .setArbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getSolrMaxAsIsoUtc()));
         }
-        return bruker;
 
+        return bruker;
     }
 
     public static Integer konverterDagerTilUker(String antallDagerFraDB) {
