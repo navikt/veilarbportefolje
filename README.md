@@ -9,11 +9,43 @@ Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering 
 
 Denne applikasjonen går mot et elasticsearch-cluster for indeksering av data om oppfølgingsbrukere.
 
+##### Oppsett av Postman
+Importer denne filen i Postman:
+```
+elastic_postman.json
+``` 
+Dette gir deg en samling av endepunkter man kan bruke i testing og feilsøk av
+Elasticsearch. 
 
-### Integrasjonstester
+Noen av disse requestene benytter seg av Postman-miljøvariabler, importer disse ved å trykke på tannhjulet øverst til
+høyre i Postman og velg `Import`. Importer disse filene:
+```
+preprod.postman_environment
+prod.postman_environment
+``` 
 
-For å kjøre integrasjonstester mot en lokal instans av elasticsearch må man sette elasticOnLocalhost=true i `ElasticServiceIntegrationTest.kt`
-og kjøre `docker-compose up` i terminalen.
+Disse environment-ene inneholder en auth-variabel. For å sette denne må du hente oidc-token i Fasit. Last ned filen du finner under enten `veilarbsecret_preprod` eller
+`veilarbsecret_prod` og bruk tokenet som ligger i følgende del av fila:
+
+```
+stringData:
+    client_pwd: <token>
+```
+
+##### Integrasjonstester
+Integrasjonstestene vil kjøre mot preprod i utviklerimage og på byggserver. Om man vil kjøre de på egen laptop kjør:
+```.env
+docker-compose up
+```
+##### Oppsett av Elastic
+Elastic er satt opp via et "Infrastructure as code"-repo (IAC) for tredjepartsapplikasjoner på NAIS:
+
+https://github.com/navikt/nais-tpa/
+
+Selve clusteret er basert på følgende koderepo:
+
+https://www.github.com/navikt/pam-elasticsearch
+
 
 ## URL-er å utføre full hovedindeksering, populering av indeks, oppdatering av ytelser og tiltak
 ```
