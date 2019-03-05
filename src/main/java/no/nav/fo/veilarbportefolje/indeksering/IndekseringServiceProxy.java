@@ -116,12 +116,10 @@ public class IndekseringServiceProxy implements IndekseringService {
     }
 
     private boolean skrivDataTilElasticsearchIsEnabled() {
-        return true;
-//        return featureToggle.isEnabled("veilarbportefolje.elasticsearch");
+        return featureToggle.isEnabled("veilarbportefolje.elasticsearch");
     }
     private boolean hentDataFraElasticSearchIsEnabled() {
-        return true;
-//        return featureToggle.isEnabled("veilarbportefolje.hent_data_fra_es");
+        return featureToggle.isEnabled("veilarbportefolje.hent_data_fra_es");
     }
 
 }
