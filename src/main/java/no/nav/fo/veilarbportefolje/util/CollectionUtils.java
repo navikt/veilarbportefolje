@@ -53,4 +53,10 @@ public class CollectionUtils {
     }
 
 
+    public static<T> List<T> toList(Set<T> set) {
+        if (set == null) {
+            return null;
+        }
+        return new ArrayList<>(set);
+    }
 }

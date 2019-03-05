@@ -18,6 +18,7 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.fo.veilarbportefolje.util.CollectionUtils.toList;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.*;
 import static no.nav.fo.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -161,7 +162,7 @@ public class Bruker {
                 .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
                 .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
-                .setBrukertiltak(setToList(bruker.getTiltak()))
+                .setBrukertiltak(toList(bruker.getTiltak()))
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
@@ -173,13 +174,6 @@ public class Bruker {
                 .addAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
 
-    }
-
-    private static List<String> setToList(Set<String> set) {
-        if (set == null) {
-            return null;
-        }
-        return new ArrayList<>(set);
     }
 
     private static LocalDateTime toLocalDateTimeOrNull(String date) {
