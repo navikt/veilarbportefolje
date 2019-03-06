@@ -9,6 +9,14 @@ Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering 
 
 Denne applikasjonen går mot et elasticsearch-cluster for indeksering av data om oppfølgingsbrukere.
 
+Koden for indeksering og søk i elastic ligger bak to funksjonsbrytere:
+
+```
+veilarbportefolje.elasticsearch  //skriv til elastic i tillegg til solr
+veilarbportefolje.hent_data_fra_es //hent ut data fra elastic i stedet for solr
+
+```
+
 ##### Oppsett av Postman
 Importer denne filen i Postman:
 ```
