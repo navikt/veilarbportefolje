@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Import;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getElasticHostname;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.onDevillo;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
