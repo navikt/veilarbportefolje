@@ -21,6 +21,8 @@ import no.nav.fo.veilarbportefolje.service.PepClientImpl;
 import no.nav.json.JsonProvider;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,9 +40,9 @@ import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
+import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.*;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
-import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
-import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
 @EnableScheduling
 @EnableAspectJAutoProxy
@@ -104,7 +106,7 @@ public class ApplicationConfig implements ApiApplication {
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
 
-        if(!skipDbMigration()){
+        if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
             flyway.setDataSource(dataSource);
             flyway.migrate();
@@ -129,6 +131,14 @@ public class ApplicationConfig implements ApiApplication {
         apiAppConfigurator
                 .sts()
                 .issoLogin();
+    }
+
+    @Bean
+    public UnleashService unleashService() {
+        return new UnleashService(UnleashServiceConfig.builder()
+                .applicationName(APPLICATION_NAME)
+                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                .build());
     }
 
     @Bean(name = "transactionManager")
