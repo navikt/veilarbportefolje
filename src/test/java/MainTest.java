@@ -39,8 +39,6 @@ public class MainTest {
         setProperty(SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(SYSTEMUSER_PASSWORD, serviceUser.getPassword());
 
-        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleash.nais.adeo.no/api/");
-
         DbCredentials dbCredentials = resolveDbCredentials();
         setProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME, dbCredentials.getUrl());
         setProperty(VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME, dbCredentials.getUsername());
