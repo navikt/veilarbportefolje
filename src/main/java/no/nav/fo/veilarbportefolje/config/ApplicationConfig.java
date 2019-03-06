@@ -18,6 +18,7 @@ import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
+import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.json.JsonProvider;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
@@ -38,6 +39,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
+import javax.ws.rs.client.Client;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
@@ -139,6 +141,12 @@ public class ApplicationConfig implements ApiApplication {
                 .applicationName(APPLICATION_NAME)
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
+    }
+
+
+    @Bean
+    public VeilederService veilederservice(Client restClient) {
+        return new VeilederService(restClient);
     }
 
     @Bean(name = "transactionManager")
