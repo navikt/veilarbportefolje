@@ -9,8 +9,6 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinf
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.ws.rs.client.Client;
-
 @Configuration
 public class ServiceConfig {
 
@@ -37,11 +35,6 @@ public class ServiceConfig {
     @Bean
     public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif, LockingTaskExecutor lockingTaskExecutor) {
         return new KrrService(krrRepository, dkif, lockingTaskExecutor);
-    }
-
-    @Bean
-    public VeilederService veilederservice(Client restClient) {
-        return new VeilederService(restClient);
     }
 
 }
