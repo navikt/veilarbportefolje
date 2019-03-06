@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.client.Client;
 
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
-import static no.nav.sbl.util.EnvironmentUtils.requireApplicationName;
 
 @Configuration
 public class ServiceConfig {
@@ -48,7 +48,7 @@ public class ServiceConfig {
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.builder()
-                .applicationName(requireApplicationName())
+                .applicationName(APPLICATION_NAME)
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
     }
