@@ -7,15 +7,19 @@ import static no.nav.sbl.util.EnvironmentUtils.resolveHostName;
 
 @Slf4j
 public class ElasticUtils {
+
+    public static final String PREPROD_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
+    public static final String PROD_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
+
     static String getAlias() {
         return String.format("brukerindeks_%s", EnvironmentUtils.requireEnvironmentName());
     }
 
     static String getElasticHostname() {
         if (onDevillo()) {
-            return "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
+            return PREPROD_HOSTNAME;
         } else {
-            return "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
+            return PROD_HOSTNAME;
         }
     }
 

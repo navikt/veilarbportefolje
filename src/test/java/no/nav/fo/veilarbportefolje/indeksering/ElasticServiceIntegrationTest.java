@@ -18,7 +18,6 @@ import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.fo.veilarbportefolje.util.Pair;
-import no.nav.sbl.util.EnvironmentUtils;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -26,13 +25,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.Brukerstatus.*;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.PREPROD_HOSTNAME;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.onDevillo;
 import static no.nav.fo.veilarbportefolje.util.CollectionUtils.*;
 import static no.nav.fo.veilarbportefolje.util.TestDataUtils.randomFnr;
@@ -76,7 +77,15 @@ public class ElasticServiceIntegrationTest {
         RestHighLevelClient restClient;
 
         if (onDevillo() || onJenkins()) {
-            restClient = ElasticConfig.restHighLevelClient();
+            restClient = ElasticConfig.createClient(
+                    ElasticClientConfig.builder()
+                            .username(user.username)
+                            .password(user.password)
+                            .hostname(PREPROD_HOSTNAME)
+                            .port(-1)
+                            .scheme("https")
+                            .build()
+            );
         } else {
             restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
                     .username("")
