@@ -20,8 +20,8 @@ public class ElasticUtils {
     }
 
     public static boolean onDevillo() {
-        boolean onDevillo = resolveHostName().contains("devillo.no");
-        log.info("Kjører på devillo.no-domene = {}", onDevillo);
-        return onDevillo;
+        String hostname = resolveHostName();
+        log.info("Kjører på hostname {}", hostname);
+        return hostname.contains("devillo.no");
     }
 }
