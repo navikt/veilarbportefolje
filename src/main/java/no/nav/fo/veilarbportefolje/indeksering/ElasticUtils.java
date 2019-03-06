@@ -10,14 +10,14 @@ public class ElasticUtils {
     }
 
     static String getElasticHostname() {
-        if (onDevilloOrAdeo()) {
+        if (onDevillo()) {
             return "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
         } else {
             return "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
         }
     }
 
-    public static boolean onDevilloOrAdeo() {
-        return resolveHostName().contains("devillo.no") || resolveHostName().contains("adeo.no");
+    public static boolean onDevillo() {
+        return resolveHostName().contains("devillo.no");
     }
 }

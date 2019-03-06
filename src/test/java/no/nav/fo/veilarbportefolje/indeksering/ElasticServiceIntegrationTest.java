@@ -32,7 +32,7 @@ import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.Brukerstatus.*;
-import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.onDevilloOrAdeo;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.onDevillo;
 import static no.nav.fo.veilarbportefolje.util.CollectionUtils.*;
 import static no.nav.fo.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,7 +73,7 @@ public class ElasticServiceIntegrationTest {
 
         RestHighLevelClient restClient;
 
-        if (onDevilloOrAdeo()) {
+        if (onDevillo()) {
             restClient = ElasticConfig.restHighLevelClient();
         } else {
             restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
