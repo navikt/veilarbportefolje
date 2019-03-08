@@ -33,11 +33,8 @@ import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.Brukerstatus.*;
-import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.PREPROD_HOSTNAME;
-import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.onDevillo;
 import static no.nav.fo.veilarbportefolje.util.CollectionUtils.*;
 import static no.nav.fo.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -74,29 +71,14 @@ public class ElasticServiceIntegrationTest {
         VeilederService veilederServiceMock = mock(VeilederService.class);
         when(veilederServiceMock.getIdenter(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER)));
 
-        RestHighLevelClient restClient;
-
-        if (onDevillo() || onJenkins()) {
-            restClient = ElasticConfig.createClient(
-                    ElasticClientConfig.builder()
-                            .username(user.username)
-                            .password(user.password)
-                            .hostname(PREPROD_HOSTNAME)
-                            .port(-1)
-                            .scheme("https")
-                            .build()
-            );
-        } else {
-            restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
-                    .username("")
-                    .password("")
-                    .hostname("localhost")
-                    .port(9200)
-                    .scheme("http")
-                    .build()
-            );
-        }
-
+        RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
+                .username("")
+                .password("")
+                .hostname("localhost")
+                .port(9200)
+                .scheme("http")
+                .build()
+        );
 
         elasticService = new ElasticService(restClient, pepMock, veilederServiceMock);
 
@@ -713,12 +695,6 @@ public class ElasticServiceIntegrationTest {
     private static void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
         indexer.skrivTilIndeks(TEST_INDEX, listOf(brukere));
         Thread.sleep(1000); // Gi elastic litt tid på å indeksere dataene
-    }
-
-    private static boolean onJenkins() {
-        boolean onJenkins = getOptionalProperty("CI_ADEO").isPresent();
-        log.info("Running on Jenkins = {}", onJenkins);
-        return onJenkins;
     }
 
 }
