@@ -30,7 +30,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.common.auth.SsoToken.oidcToken;
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.fo.veilarbportefolje.util.CollectionUtils.*;
@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 @Slf4j
 public class ElasticServiceIntegrationTest {
 
@@ -56,8 +57,8 @@ public class ElasticServiceIntegrationTest {
     public static void beforeClass() {
 
         ServiceUser user = FasitUtils.getServiceUser("veilarbelastic_user", APPLICATION_NAME);
-        System.setProperty(ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY, user.username);
-        System.setProperty(ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY, user.password);
+        System.setProperty(ELASTICSEARCH_USERNAME_PROPERTY, user.username);
+        System.setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, user.password);
         System.setProperty("FASIT_ENVIRONMENT_NAME", FasitUtils.getDefaultEnvironment());
 
         PepClient pepMock = mock(PepClient.class);
