@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Integer.decode;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
@@ -25,6 +26,8 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.rettighetsgruppeFilter;
+import static no.nav.fo.veilarbportefolje.util.CollectionUtils.listOf;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
@@ -157,12 +160,7 @@ public class ElasticQueryBuilder {
     }
 
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
-
-        String veiledere = veilederePaaEnhet.stream()
-                .map(id -> format("\"%s\"", id))
-                .collect(joining(","));
-
-        Script script = new Script(format("%s.contains(doc.veileder_id.value)", veiledere));
+        Script script = new Script(byggVeilederPaaEnhetScript(veilederePaaEnhet));
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
         builder.sort(scriptBuilder);
         return builder;
@@ -427,6 +425,15 @@ public class ElasticQueryBuilder {
                         .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
                         .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"))
         );
+    }
+
+    public static String byggVeilederPaaEnhetScript(List<String> veilederePaaEnhet) {
+        String veiledere = veilederePaaEnhet.stream()
+                .map(id -> format("\"%s\"", id))
+                .collect(joining(","));
+
+        String medKlammer = format("%s%s%s", "[", veiledere, "]");
+        return format("%s.contains(doc.veileder_id.value)", medKlammer);
     }
 }
 
