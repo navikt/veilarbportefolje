@@ -45,7 +45,7 @@ public class ElasticConfig {
             .password(VEILARBELASTIC_PASSWORD)
             .hostname(getElasticHostname())
             .port(9200)
-            .scheme("https")
+            .scheme("http")
             .build();
 
     @Bean
