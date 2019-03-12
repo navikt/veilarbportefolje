@@ -4,6 +4,7 @@ import no.nav.fo.veilarbportefolje.domene.AktivitetStatus;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
 
 import java.time.LocalDateTime;
@@ -18,21 +19,21 @@ public class IndekseringUtils {
         return String.format("%s_%s", alias, timestamp);
     }
 
-    static BrukerDTO finnBruker(List<BrukerDTO> brukere, Fnr fnr) {
+    static OppfolgingsBruker finnBruker(List<OppfolgingsBruker> brukere, Fnr fnr) {
         return brukere.stream()
                 .filter(bruker -> bruker.getFnr().equals(fnr.toString()))
                 .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }
 
-    static BrukerDTO finnBruker(List<BrukerDTO> brukere, PersonId personId) {
+    static OppfolgingsBruker finnBruker(List<OppfolgingsBruker> brukere, PersonId personId) {
         return brukere.stream()
                 .filter(bruker -> bruker.getPerson_id().equals(personId.toString()))
                 .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }
 
-    static void leggTilUtlopsDato(BrukerDTO bruker, AktivitetStatus status) {
+    static void leggTilUtlopsDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String utlop = AktivitetUtils.statusToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
 

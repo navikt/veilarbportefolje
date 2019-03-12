@@ -6,8 +6,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import org.apache.solr.common.SolrDocument;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
@@ -42,12 +45,38 @@ public class Arbeidsliste {
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 
+    public static Arbeidsliste of(OppfolgingsBruker bruker) {
+        Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
+        VeilederId sistEndretAv = VeilederId.of(bruker.getArbeidsliste_sist_endret_av_veilederid());
+
+        ZonedDateTime endringstidspunkt = null;
+        if (bruker.getArbeidsliste_endringstidspunkt() != null) {
+            Instant instant = Instant.parse(bruker.getArbeidsliste_endringstidspunkt());
+            endringstidspunkt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+        }
+
+        String overskrift = bruker.getArbeidsliste_overskrift();
+        String kommentar = bruker.getArbeidsliste_kommentar();
+
+        ZonedDateTime frist = null;
+        if (bruker.getArbeidsliste_frist() != null) {
+            frist = toZonedDateTime(dateIfNotSolrMax(Instant.parse(bruker.getArbeidsliste_frist())));
+        }
+
+        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist)
+                .setArbeidslisteAktiv(arbeidslisteAktiv);
+    }
+
     private static Date dateIfNotSolrMax(Date date) {
         return isRandomFutureDate(date) ? null : date;
     }
 
+    private static Date dateIfNotSolrMax(Instant instant) {
+        return isRandomFutureDate(instant) ? null : Date.from(instant);
+    }
+
     @JsonCreator
-    public Arbeidsliste(@JsonProperty("sistEndretAv") VeilederId  sistEndretAv,
+    public Arbeidsliste(@JsonProperty("sistEndretAv") VeilederId sistEndretAv,
                         @JsonProperty("endringstidspunkt") ZonedDateTime endringstidspunkt,
                         @JsonProperty("overskrift") String overskrift,
                         @JsonProperty("kommentar") String kommentar,

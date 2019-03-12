@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
 
 @Component
 @Slf4j
@@ -61,7 +62,7 @@ public class MetricsReporter {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         searchSourceBuilder.size(0);
-        searchRequest.indices(IndekseringConfig.getAlias());
+        searchRequest.indices(getAlias());
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse response = elastic.search(searchRequest, RequestOptions.DEFAULT);

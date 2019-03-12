@@ -2,8 +2,7 @@ package no.nav.fo.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -25,75 +24,10 @@ public class DbUtils {
     public static SolrInputDocument mapResultSetTilDokument(ResultSet rs) {
         try {
             return mapTilDokument(rs);
-        }catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("Feil ved mapping fra resultset fra db til SolrInputDocument", e);
             return null;
         }
-    }
-
-    @SneakyThrows
-    public static BrukerDTO mapTilBrukerDTO(ResultSet rs) {
-
-        String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
-        String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
-
-        BrukerDTO.BrukerDTOBuilder bruker = BrukerDTO.builder()
-                .person_id(numberToString(rs.getBigDecimal("person_id")))
-                .aktoer_id(rs.getString("aktoerid"))
-                .fnr(rs.getString("fodselsnr"))
-                .fornavn(kapitaliser(rs.getString("fornavn")))
-                .etternavn(kapitaliser(rs.getString("etternavn")))
-                .enhet_id(rs.getString("nav_kontor"))
-                .formidlingsgruppekode(rs.getString("nav_kontor"))
-                .enhet_id(rs.getString("nav_kontor"))
-                .formidlingsgruppekode(formidlingsgruppekode)
-                .iserv_fra_dato(toIsoUTC(rs.getTimestamp("iserv_fra_dato")))
-                .kvalifiseringsgruppekode(kvalifiseringsgruppekode)
-                .rettighetsgruppekode(rs.getString("rettighetsgruppekode"))
-                .hovedmaalkode(rs.getString("hovedmaalkode"))
-                .sikkerhetstiltak(rs.getString("sikkerhetstiltak_type_kode"))
-                .diskresjonskode(rs.getString("fr_kode"))
-                .egen_ansatt(parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"))
-                .er_doed(parseJaNei(rs.getString("er_doed"), "er_doed"))
-                .doed_fra_dato(toIsoUTC(rs.getTimestamp("doed_fra_dato")))
-                .veileder_id(rs.getString("veilederident"))
-                .fodselsdag_i_mnd(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")))
-                .fodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")))
-                .kjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))
-                .ytelse(rs.getString("ytelse"))
-                .utlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
-                .utlopsdatofasett(rs.getString("utlopsdatofasett"))
-                .dagputlopuke(parseInt(rs.getString("dagputlopuke")))
-                .dagputlopukefasett(rs.getString("dagputlopukefasett"))
-                .permutlopuke(parseInt(rs.getString("permutlopuke")))
-                .aapmaxtiduke(parseInt(rs.getString("aapmaxtiduke")))
-                .aapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
-                .aapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"))
-                .oppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
-                .ny_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
-                .ny_for_enhet(isNyForEnhet(rs.getString("veilederident")))
-                .trenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
-                .venterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
-                .venterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
-                .nyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
-                .aktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
-                .neste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
-                .forrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
-                .manuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
-
-        boolean arbeidslisteAktiv = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
-
-        if(arbeidslisteAktiv) {
-            bruker
-                    .arbeidsliste_aktiv(true)
-                    .arbeidsliste_sist_endret_av_veilederid(rs.getString("ARBEIDSLISTE_ENDRET_AV"))
-                    .arbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
-                    .arbeidsliste_kommentar(rs.getString("ARBEIDSLISTE_KOMMENTAR"))
-                    .arbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
-                    .arbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getSolrMaxAsIsoUtc()));
-        }
-
-        return bruker.build();
     }
 
     private static SolrInputDocument mapTilDokument(ResultSet rs) throws SQLException {
@@ -103,7 +37,7 @@ public class DbUtils {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("person_id", numberToString(rs.getBigDecimal("person_id")));
         document.addField("fnr", rs.getString("fodselsnr"));
-        document.addField("fornavn", kapitaliser( rs.getString( "fornavn")));
+        document.addField("fornavn", kapitaliser(rs.getString("fornavn")));
         document.addField("etternavn", kapitaliser(rs.getString("etternavn")));
         document.addField("enhet_id", rs.getString("nav_kontor"));
         document.addField("formidlingsgruppekode", formidlingsgruppekode);
@@ -141,9 +75,9 @@ public class DbUtils {
         document.addField("aktivitet_start", toIsoUTC(rs.getTimestamp("aktivitet_start")));
         document.addField("neste_aktivitet_start", toIsoUTC(rs.getTimestamp("neste_aktivitet_start")));
         document.addField("forrige_aktivitet_start", toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")));
-        document.addField("manuell_bruker", identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"),rs.getString("MANUELL")));
+        document.addField("manuell_bruker", identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
         boolean arbeidslisteAktiv = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
-        if(arbeidslisteAktiv) {
+        if (arbeidslisteAktiv) {
             document.setField("arbeidsliste_aktiv", true);
             document.setField("arbeidsliste_sist_endret_av_veilederid", rs.getString("ARBEIDSLISTE_ENDRET_AV"));
             document.setField("arbeidsliste_endringstidspunkt", toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")));
@@ -154,7 +88,74 @@ public class DbUtils {
         return document;
     }
 
-    private static Integer konverterDagerTilUker(String antallDagerFraDB) {
+    @SneakyThrows
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+        String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
+        String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
+
+        String fornavn = kapitaliser(rs.getString("fornavn"));
+        String etternavn = kapitaliser(rs.getString("etternavn"));
+
+        OppfolgingsBruker bruker = new OppfolgingsBruker()
+                .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
+                .setAktoer_id(rs.getString("aktoerid"))
+                .setFnr(rs.getString("fodselsnr"))
+                .setFornavn(fornavn)
+                .setEtternavn(etternavn)
+                .setFullt_navn("$etternavn, $fornavn")
+                .setEnhet_id(rs.getString("nav_kontor"))
+                .setFormidlingsgruppekode(formidlingsgruppekode)
+                .setIserv_fra_dato(toIsoUTC(rs.getTimestamp("iserv_fra_dato")))
+                .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
+                .setRettighetsgruppekode(rs.getString("rettighetsgruppekode"))
+                .setHovedmaalkode(rs.getString("hovedmaalkode"))
+                .setSikkerhetstiltak(rs.getString("sikkerhetstiltak_type_kode"))
+                .setDiskresjonskode(rs.getString("fr_kode"))
+                .setEgen_ansatt(parseJaNei(rs.getString("sperret_ansatt"), "sperret_ansatt"))
+                .setEr_doed(parseJaNei(rs.getString("er_doed"), "er_doed"))
+                .setDoed_fra_dato(toIsoUTC(rs.getTimestamp("doed_fra_dato")))
+                .setVeileder_id(rs.getString("veilederident"))
+                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr"))))
+                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")))
+                .setKjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))
+                .setYtelse(rs.getString("ytelse"))
+                .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
+                .setUtlopsdatofasett(rs.getString("utlopsdatofasett"))
+                .setDagputlopuke(parseInt(rs.getString("dagputlopuke")))
+                .setDagputlopukefasett(rs.getString("dagputlopukefasett"))
+                .setPermutlopuke(parseInt(rs.getString("permutlopuke")))
+                .setAapmaxtiduke(parseInt(rs.getString("aapmaxtiduke")))
+                .setAapmaxtidukefasett(rs.getString("aapmaxtidukefasett"))
+                .setAapunntakukerigjen(konverterDagerTilUker(rs.getString("aapunntakdagerigjen")))
+                .setAapunntakukerigjenfasett(rs.getString("aapunntakukerigjenfasett"))
+                .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
+                .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
+                .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
+                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
+                .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
+                .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
+                .setAktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
+                .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
+                .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
+                .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
+
+        boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
+
+        if (brukerHarArbeidsliste) {
+            bruker
+                    .setArbeidsliste_aktiv(true)
+                    .setArbeidsliste_sist_endret_av_veilederid(rs.getString("ARBEIDSLISTE_ENDRET_AV"))
+                    .setArbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
+                    .setArbeidsliste_kommentar(rs.getString("ARBEIDSLISTE_KOMMENTAR"))
+                    .setArbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
+                    .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getSolrMaxAsIsoUtc()));
+        }
+
+        return bruker;
+    }
+
+    public static Integer konverterDagerTilUker(String antallDagerFraDB) {
         Integer antallDager = parseInt(antallDagerFraDB);
         return antallDager == null ? 0 : (antallDager / 5);
     }
@@ -163,7 +164,7 @@ public class DbUtils {
         return WordUtils.capitalizeFully(s, ' ', '\'', '-');
     }
 
-    public static String identifiserManuellEllerKRRBruker(String krrJaNei, String manuellJaNei){
+    public static String identifiserManuellEllerKRRBruker(String krrJaNei, String manuellJaNei) {
         if ("J".equals(krrJaNei)) {
             return "KRR";
         } else if ("J".equals(manuellJaNei)) {
@@ -173,7 +174,7 @@ public class DbUtils {
     }
 
     public static boolean parseJaNei(Object janei, String name) {
-        boolean defaultValue  = false;
+        boolean defaultValue = false;
         if (janei == null) {
             log.debug(String.format("%s er ikke satt i databasen, defaulter til %b", name, defaultValue));
             return defaultValue;
@@ -197,7 +198,7 @@ public class DbUtils {
     }
 
     public static Boolean parse0OR1(String value) {
-        if(value == null) {
+        if (value == null) {
             return null;
         }
         return "1".equals(value);
@@ -217,11 +218,12 @@ public class DbUtils {
         return set;
     }
 
+
     public static <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);
     }
 
     public static String dbTimerNavn(String sql) {
-        return (sql + ".db").replaceAll("[^\\w]","-");
+        return (sql + ".db").replaceAll("[^\\w]", "-");
     }
 }

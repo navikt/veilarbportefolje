@@ -1,0 +1,26 @@
+{
+  "portefoljestorrelser": {
+    "filter": {
+      "term": {
+        "enhet_id": {
+          "value": "0000",
+          "boost": 1.0
+        }
+      }
+    },
+    "aggregations": {
+      "portefoljestorrelser": {
+        "terms": {
+          "field": "veileder_id",
+          "size": 9999,
+          "min_doc_count": 1,
+          "shard_min_doc_count": 0,
+          "show_term_doc_count_error": false,
+          "order": {
+            "_key": "asc"
+          }
+        }
+      }
+    }
+  }
+}

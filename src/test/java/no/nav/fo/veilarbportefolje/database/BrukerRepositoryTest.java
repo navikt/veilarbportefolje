@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import io.vavr.control.Try;
 import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
@@ -79,14 +79,14 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skal_returnere_riktig_antall_brukere_under_oppfolging() {
-        List<BrukerDTO> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging();
+        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging();
         assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
     }
 
     @Test
     public void skal_returnere_riktig_antall_oppdaterte_brukere() {
         jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT_ES = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-        List<BrukerDTO> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukere();
+        List<OppfolgingsBruker> oppdaterteBrukere = brukerRepository.hentOppdaterteBrukere();
         assertThat(oppdaterteBrukere.size()).isEqualTo(ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA);
     }
 
