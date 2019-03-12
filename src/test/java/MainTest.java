@@ -11,8 +11,6 @@ import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_PASSWORD;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_USERNAME;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
@@ -40,8 +38,6 @@ public class MainTest {
         ServiceUser serviceUser = getServiceUser(SERVICE_USER_ALIAS, APPLICATION_NAME);
         setProperty(SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(SYSTEMUSER_PASSWORD, serviceUser.getPassword());
-
-        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleashproxy.nais.adeo.no/api/");
 
         DbCredentials dbCredentials = resolveDbCredentials();
         setProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME, dbCredentials.getUrl());

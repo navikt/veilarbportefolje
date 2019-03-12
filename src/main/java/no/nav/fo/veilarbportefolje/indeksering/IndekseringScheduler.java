@@ -27,7 +27,7 @@ public class IndekseringScheduler {
 
     @Scheduled(cron = "0 0 4 * * ?")
     public void totalIndexering() {
-        timed("indeksering.total", () -> {
+        timed("indeksering.totalHits", () -> {
             kopierGR199FraArena.startOppdateringAvYtelser();
             tiltakHandler.startOppdateringAvTiltakIDatabasen();
             krrService.hentDigitalKontaktInformasjonBolk();

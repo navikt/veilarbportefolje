@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2019.01.11.21.36</version>
+        <version>2019.01.21.11.42</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -30,7 +30,7 @@
             <dependency>
                 <groupId>no.nav.common</groupId>
                 <artifactId>bom</artifactId>
-                <version>2019.01.11.21.36</version>
+                <version>2019.01.21.11.42</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -210,6 +210,7 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
 
+        <!--Elasticsearch-->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>

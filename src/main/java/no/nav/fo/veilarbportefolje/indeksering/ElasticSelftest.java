@@ -11,15 +11,17 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getElasticHostname;
 import static org.elasticsearch.cluster.health.ClusterHealthStatus.GREEN;
 
 @Component
-public class ElasticSearchHelsesjekk implements Helsesjekk {
+public class ElasticSelftest implements Helsesjekk {
 
     RestHighLevelClient client;
 
     @Inject
-    public ElasticSearchHelsesjekk(RestHighLevelClient client) {
+    public ElasticSelftest(RestHighLevelClient client) {
         this.client = client;
     }
 
@@ -36,7 +38,7 @@ public class ElasticSearchHelsesjekk implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
                 "elasticsearch helsesjekk",
-                String.format("http://%s/%s", IndekseringConfig.getElasticUrl(), IndekseringConfig.getAlias()),
+                String.format("http://%s/%s", getElasticHostname(), getAlias()),
                 "Sjekker helsestatus til Elasticsearch-clusteret",
                 true
         );
