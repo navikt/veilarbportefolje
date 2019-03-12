@@ -5,7 +5,6 @@ import no.nav.fo.veilarbportefolje.domene.Brukerstatus;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
 import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.provider.rest.ValideringsRegler;
-import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.Script;
@@ -18,7 +17,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -27,7 +25,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
@@ -279,7 +276,7 @@ public class ElasticQueryBuilder {
 //
     static void byggAlderQuery(String alder, BoolQueryBuilder queryBuilder) {
 
-        if (alder == "19-og-under") {
+        if ("19-og-under".equals(alder)) {
             queryBuilder.must(
                     rangeQuery("fodselsdato")
                             .lte("now")
@@ -344,96 +341,92 @@ public class ElasticQueryBuilder {
                 .aggregation(
                         filters(
                                 "statustall",
-                                new KeyedFilter(
-                                        "erSykmeldtMedArbeidsgiver",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(matchQuery("formidlingsgruppekode", "IARBS"))
-                                                .mustNot(matchQuery("kvalifiseringsgruppekode", "BATT"))
-                                                .mustNot(matchQuery("kvalifiseringsgruppekode", "BFORM"))
-                                                .mustNot(matchQuery("kvalifiseringsgruppekode", "IKVAL"))
-                                                .mustNot(matchQuery("kvalifiseringsgruppekode", "VURDU"))
-                                                .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
-                                                .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"))
-                                ),
-                                new KeyedFilter(
-                                        "iavtaltAktivitet",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(existsQuery("aktiviteter"))
-                                ),
-                                new KeyedFilter(
-                                        "ikkeIavtaltAktivitet",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .mustNot(existsQuery("aktiviteter"))
-
-                                ),
-                                new KeyedFilter(
-                                        "inaktiveBrukere",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(matchQuery("formidlingsgruppekode", "ISERV"))
-
-                                ),
-                                new KeyedFilter(
-                                        "minArbeidsliste",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(termQuery("arbeidsliste_aktiv", true))
-
-                                ),
-                                new KeyedFilter(
-                                        "nyeBrukere",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(termQuery("ny_for_enhet", true))
-
-                                ),
-                                new KeyedFilter(
-                                        "nyeBrukereForVeileder",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(termQuery("ny_for_veileder", true))
-
-                                ),
-                                new KeyedFilter(
-                                        "totalt",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                ),
-                                new KeyedFilter(
-                                        "trengerVurdering",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(termQuery("trenger_vurdering", true))
-                                ),
-                                new KeyedFilter(
-                                        "venterPaSvarFraNAV",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(existsQuery("venterpasvarfranav"))
-                                ),
-                                new KeyedFilter(
-                                        "venterPaSvarFraBruker",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(existsQuery("venterpasvarfrabruker"))
-                                ),
-                                new KeyedFilter(
-                                        "ufordelteBrukere",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .should(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
-                                                .should(boolQuery().mustNot(existsQuery("veileder_id")))
-                                ),
-                                new KeyedFilter(
-                                        "utlopteAktiviteter",
-                                        boolQuery()
-                                                .must(filtrereVeilederOgEnhet)
-                                                .must(existsQuery("nyesteutlopteaktivitet"))
-                                )
+                                erSykmeldtMedArbeidsgiver(filtrereVeilederOgEnhet),
+                                mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
+                                ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
+                                inaktiveBrukere(filtrereVeilederOgEnhet),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukere", "ny_for_enhet"),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukereForVeileder", "ny_for_veileder"),
+                                totalt(filtrereVeilederOgEnhet),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "trengerVurdering", "trenger_vurdering"),
+                                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
+                                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
+                                ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
+                                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet")
                         ));
+    }
+
+    private static KeyedFilter ufordelteBrukere(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
+        return new KeyedFilter(
+                "ufordelteBrukere",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .should(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
+                        .should(boolQuery().mustNot(existsQuery("veileder_id")))
+        );
+    }
+
+    private static KeyedFilter totalt(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter(
+                "totalt",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+        );
+    }
+
+    private static KeyedFilter mustBeTrueFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String minArbeidsliste, String arbeidsliste_aktiv) {
+        return new KeyedFilter(
+                minArbeidsliste,
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .must(termQuery(arbeidsliste_aktiv, true))
+
+        );
+    }
+
+    private static KeyedFilter inaktiveBrukere(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter(
+                "inaktiveBrukere",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .must(matchQuery("formidlingsgruppekode", "ISERV"))
+
+        );
+    }
+
+    private static KeyedFilter ikkeIavtaltAktivitet(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter(
+                "ikkeIavtaltAktivitet",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .mustNot(existsQuery("aktiviteter"))
+
+        );
+    }
+
+    private static KeyedFilter mustExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
+        return new KeyedFilter(
+                key,
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .must(existsQuery(value))
+        );
+    }
+
+    private static KeyedFilter erSykmeldtMedArbeidsgiver(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter(
+                "erSykmeldtMedArbeidsgiver",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .must(matchQuery("formidlingsgruppekode", "IARBS"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BATT"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BFORM"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "IKVAL"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VURDU"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"))
+        );
     }
 }
 
