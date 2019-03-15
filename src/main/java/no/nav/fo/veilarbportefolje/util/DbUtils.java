@@ -95,7 +95,6 @@ public class DbUtils {
 
         String fornavn = kapitaliser(rs.getString("fornavn"));
         String etternavn = kapitaliser(rs.getString("etternavn"));
-        String fulltNavn = String.format("%s, %s", etternavn, fornavn);
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
@@ -103,7 +102,7 @@ public class DbUtils {
                 .setFnr(rs.getString("fodselsnr"))
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
-                .setFullt_navn(fulltNavn)
+                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
                 .setEnhet_id(rs.getString("nav_kontor"))
                 .setFormidlingsgruppekode(formidlingsgruppekode)
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp("iserv_fra_dato")))
