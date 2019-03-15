@@ -31,10 +31,10 @@ public class ElasticQueryBuilderTest {
 
 
     @Test
-    public void skal_sortere_etternavn_paa_fullt_navn_feltet() {
+    public void skal_sortere_etternavn_paa_etternavn_feltet() {
         val searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg());
         val fieldName = searchSourceBuilder.sorts().get(0).toString();
-        assertThat(fieldName).contains("fullt_navn.raw");
+        assertThat(fieldName).contains("etternavn");
     }
 
     @Test

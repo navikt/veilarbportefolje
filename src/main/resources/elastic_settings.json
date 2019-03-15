@@ -51,6 +51,9 @@
         "aktoer_id": {
           "type": "keyword"
         },
+        "etternavn": {
+          "type": "keyword"
+        },
         "fullt_navn": {
           "type": "text",
           "analyzer": "fullt_navn_sok",
