@@ -29,6 +29,14 @@ public class ElasticQueryBuilderTest {
     @Rule
     public SystemPropertiesRule rule = new SystemPropertiesRule().setProperty("FASIT_ENVIRONMENT_NAME", "test");
 
+
+    @Test
+    public void skal_sortere_etternavn_paa_fullt_navn_feltet() {
+        val searchSourceBuilder = sorterQueryParametere("asc", "etternavn", new SearchSourceBuilder(), new Filtervalg());
+        val fieldName = searchSourceBuilder.sorts().get(0).toString();
+        assertThat(fieldName).contains("fullt_navn.raw");
+    }
+
     @Test
     public void skal_bygge_riktig_filtrer_paa_veileder_script() {
         String actualScript = byggVeilederPaaEnhetScript(listOf("Z000000", "Z000001", "Z000002"));

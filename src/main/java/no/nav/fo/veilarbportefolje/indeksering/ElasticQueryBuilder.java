@@ -120,16 +120,12 @@ public class ElasticQueryBuilder {
                 ).collect(toList());
     }
 
-    static void sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg) {
+    static SearchSourceBuilder sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg) {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
 
         if ("ikke_satt".equals(sortField)) {
             searchSourceBuilder.sort("person_id", SortOrder.ASC);
-            return;
-        }
-
-        if (ValideringsRegler.sortFields.contains(sortField)) {
-            searchSourceBuilder.sort(sortField, order);
+            return searchSourceBuilder;
         }
 
         switch (sortField) {
@@ -155,7 +151,16 @@ public class ElasticQueryBuilder {
                 sorterAapRettighetsPeriode(searchSourceBuilder, order);
                 break;
             default:
-                throw new IllegalStateException();
+                defaultSort(sortField, searchSourceBuilder, order);
+        }
+        return searchSourceBuilder;
+    }
+
+    private static void defaultSort(String sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
+        if (ValideringsRegler.sortFields.contains(sortField)) {
+            searchSourceBuilder.sort(sortField, order);
+        } else {
+            throw new IllegalStateException();
         }
     }
 
