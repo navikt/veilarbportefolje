@@ -141,9 +141,6 @@ public class ElasticQueryBuilder {
             case "utlopteaktiviteter":
                 searchSourceBuilder.sort("nyesteutlopteaktivitet", order);
                 break;
-            case "etternavn":
-                searchSourceBuilder.sort("fullt_navn.raw", order);
-                break;
             case "arbeidslistefrist":
                 searchSourceBuilder.sort("arbeidsliste_frist", order);
                 break;
