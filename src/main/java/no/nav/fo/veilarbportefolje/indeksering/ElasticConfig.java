@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Import;
 
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
-import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getElasticHostname;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.*;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
@@ -44,8 +44,8 @@ public class ElasticConfig {
             .username(VEILARBELASTIC_USERNAME)
             .password(VEILARBELASTIC_PASSWORD)
             .hostname(getElasticHostname())
-            .port(9200)
-            .scheme("http")
+            .port(getElasticPort())
+            .scheme(getElasticScheme())
             .build();
 
     @Bean

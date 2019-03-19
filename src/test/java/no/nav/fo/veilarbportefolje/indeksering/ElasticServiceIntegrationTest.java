@@ -23,6 +23,7 @@ import org.junit.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Filter;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -105,6 +106,35 @@ public class ElasticServiceIntegrationTest {
 
     @Rule
     public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
+
+    @Test
+    public void skal_hente_riktig_antall_ufordelte_brukere() {
+
+        List<OppfolgingsBruker> brukere = listOf(
+
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setVeileder_id(null),
+
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setVeileder_id(TEST_VEILEDER),
+
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setVeileder_id(null)
+        );
+
+        skrivBrukereTilTestindeks(brukere);
+
+        val filtervalg = new Filtervalg().setFerdigfilterListe(listOf(UFORDELTE_BRUKERE));
+        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+
+        assertThat(response.getAntall()).isEqualTo(2);
+    }
 
     @Test
     public void skal_hente_riktige_antall_brukere_per_veileder() {
