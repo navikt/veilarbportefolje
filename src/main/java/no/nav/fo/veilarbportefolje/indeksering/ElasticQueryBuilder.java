@@ -249,7 +249,7 @@ public class ElasticQueryBuilder {
         return queryBuilder;
     }
 
-    // Brukere med veiledere uten tilgang til denne enheten ansees som ufordelte brukere
+    // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     static BoolQueryBuilder byggUfordeltBrukereQuery(List<String> veiledereMedTilgangTilEnhet) {
         BoolQueryBuilder boolQuery = boolQuery();
         veiledereMedTilgangTilEnhet.forEach(id -> boolQuery.mustNot(matchQuery("veileder_id", id)));
@@ -336,6 +336,8 @@ public class ElasticQueryBuilder {
     }
 
     private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
+
+
         return new SearchSourceBuilder()
                 .size(0)
                 .aggregation(

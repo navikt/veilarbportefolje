@@ -2,10 +2,14 @@ package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.indeksering.domene.*;
+import no.nav.fo.veilarbportefolje.indeksering.domene.Bucket;
+import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticSearchResponse;
+import no.nav.fo.veilarbportefolje.indeksering.domene.PortefoljestorrelserResponse;
+import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse;
 import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
+import no.nav.fo.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.json.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -17,7 +21,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,19 +56,6 @@ public class ElasticService {
 
         if (veilederIdent.isPresent()) {
             boolQuery.filter(termQuery("veileder_id", veilederIdent.get()));
-        }
-
-        //TODO: kalle veilarbabac?
-        String ssoToken = getSsoToken();
-
-        if (!pepClient.isSubjectAuthorizedToSeeEgenAnsatt(ssoToken)) {
-            boolQuery.filter(termQuery("egen_ansatt", false));
-        }
-        if (!pepClient.isSubjectAuthorizedToSeeKode6(ssoToken)) {
-            boolQuery.filter(boolQuery().mustNot(termQuery("diskresjonskode", 6)));
-        }
-        if (!pepClient.isSubjectAuthorizedToSeeKode7(ssoToken)) {
-            boolQuery.filter(boolQuery().mustNot(termQuery("diskresjonskode", 7)));
         }
 
         List<String> veiledereMedTilgangTilEnhet = veilederService.getIdenter(enhetId).stream()

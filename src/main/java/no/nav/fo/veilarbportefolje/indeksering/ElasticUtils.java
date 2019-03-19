@@ -15,6 +15,22 @@ public class ElasticUtils {
         return String.format("brukerindeks_%s", EnvironmentUtils.requireEnvironmentName());
     }
 
+    static String getElasticScheme() {
+        if (onDevillo()) {
+            return "https";
+        } else {
+            return "http";
+        }
+    }
+
+    static int getElasticPort() {
+        if (onDevillo()) {
+            return -1;
+        } else {
+            return 9200;
+        }
+    }
+
     static String getElasticHostname() {
         if (onDevillo()) {
             return PREPROD_HOSTNAME;
