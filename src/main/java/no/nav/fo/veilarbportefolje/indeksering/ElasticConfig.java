@@ -37,8 +37,8 @@ public class ElasticConfig {
     static int BATCH_SIZE = 1000;
     static int BATCH_SIZE_LIMIT = 1000;
 
-    private static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
-    private static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
+    public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
+    public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
 
     private static ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
             .username(VEILARBELASTIC_USERNAME)
@@ -55,7 +55,7 @@ public class ElasticConfig {
 
     @Bean
     public MetricsReporter metricsReporter(UnleashService unleashService) {
-        return new MetricsReporter(unleashService, restHighLevelClient());
+        return new MetricsReporter(unleashService);
     }
 
     @Bean
