@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static no.nav.common.leaderelection.LeaderElection.isLeader;
 
 @Component
 @Slf4j
@@ -25,11 +26,14 @@ public class MetricsReporter {
     public MetricsReporter(UnleashService unleash) {
         this.unleash = unleash;
 
-//        if (isLeader()) {
-//            log.info("logger metrikker for antall dokumenter i elastic");
+        String electorPath = System.getenv("ELECTOR_PATH");
+        System.setProperty("ELECTOR_PATH", electorPath);
+
+        if (isLeader()) {
+            log.info("logger metrikker for antall dokumenter i elastic");
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
             scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
-//        }
+        }
 
     }
 
