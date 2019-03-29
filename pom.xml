@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2019.01.21.11.42</version>
+        <version>2019.03.29.14.24</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -30,7 +30,7 @@
             <dependency>
                 <groupId>no.nav.common</groupId>
                 <artifactId>bom</artifactId>
-                <version>2019.01.21.11.42</version>
+                <version>2019.03.29.14.24</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -316,6 +316,10 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>leader-election</artifactId>
         </dependency>
 
         <!-- Virksomhetstjenester -->

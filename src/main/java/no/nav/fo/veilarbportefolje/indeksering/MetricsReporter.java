@@ -7,7 +7,6 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.rest.RestUtils;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -15,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static no.nav.common.leaderelection.LeaderElection.isLeader;
 
 @Component
 @Slf4j
@@ -26,8 +26,11 @@ public class MetricsReporter {
     public MetricsReporter(UnleashService unleash) {
         this.unleash = unleash;
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-        scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
+        if (isLeader()) {
+            log.info("logger metrikker for antall dokumenter i elastic");
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
+            scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
+        }
 
     }
 
