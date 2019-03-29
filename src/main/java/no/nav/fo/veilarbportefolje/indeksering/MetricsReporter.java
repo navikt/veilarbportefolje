@@ -1,17 +1,13 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
-import io.micrometer.core.instrument.Gauge;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarbportefolje.indeksering.domene.CountResponse;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
+import no.nav.sbl.rest.RestUtils;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -19,7 +15,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
 
 @Component
 @Slf4j
@@ -27,18 +22,13 @@ public class MetricsReporter {
 
     private UnleashService unleash;
 
-    private RestHighLevelClient elastic;
-
     @Inject
-    public MetricsReporter(UnleashService unleash, RestHighLevelClient elastic) {
+    public MetricsReporter(UnleashService unleash) {
         this.unleash = unleash;
-        this.elastic = elastic;
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
         scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
 
-        Gauge.builder("veilarbelastic_number_of_docs", this::getNumberOfDocs)
-                .register(MetricsFactory.getMeterRegistry());
     }
 
     class ReportNumberOfDocuments implements Runnable {
@@ -57,15 +47,16 @@ public class MetricsReporter {
     }
 
     @SneakyThrows
-    private long getNumberOfDocs() {
-        SearchRequest searchRequest = new SearchRequest();
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        searchSourceBuilder.size(0);
-        searchRequest.indices(getAlias());
-        searchRequest.source(searchSourceBuilder);
+    private static long getNumberOfDocs() {
+        String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
 
-        SearchResponse response = elastic.search(searchRequest, RequestOptions.DEFAULT);
-        return response.getHits().totalHits;
+        return RestUtils.withClient(client ->
+                client
+                        .target(url)
+                        .request()
+                        .header("Authorization", ElasticUtils.getAuthHeaderValue())
+                        .get(CountResponse.class)
+                        .getCount()
+        );
     }
 }

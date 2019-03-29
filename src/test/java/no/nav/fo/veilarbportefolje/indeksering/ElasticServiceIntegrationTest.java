@@ -9,7 +9,6 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.dialogarena.config.fasit.ServiceUser;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
-import no.nav.fo.veilarbportefolje.config.ApplicationConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticClientConfig;
@@ -23,7 +22,6 @@ import org.junit.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Filter;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
