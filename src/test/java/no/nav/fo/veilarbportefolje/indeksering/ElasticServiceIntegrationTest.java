@@ -13,7 +13,6 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticClientConfig;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
-import no.nav.fo.veilarbportefolje.mock.LockingTaskExecutorMock;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.fo.veilarbportefolje.util.Pair;
@@ -85,7 +84,6 @@ public class ElasticServiceIntegrationTest {
         indexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
-                new LockingTaskExecutorMock(),
                 restClient,
                 elasticService
         );
