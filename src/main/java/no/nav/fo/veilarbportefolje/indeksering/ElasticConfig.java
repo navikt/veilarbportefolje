@@ -54,8 +54,8 @@ public class ElasticConfig {
     }
 
     @Bean
-    public MetricsReporter metricsReporter(UnleashService unleashService) {
-        return new MetricsReporter(unleashService);
+    public ElasticMetricsReporter metricsReporter(UnleashService unleashService) {
+        return new ElasticMetricsReporter(unleashService);
     }
 
     @Bean
