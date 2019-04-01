@@ -18,16 +18,13 @@ import static no.nav.common.leaderelection.LeaderElection.isLeader;
 
 @Component
 @Slf4j
-public class MetricsReporter {
+public class ElasticMetricsReporter {
 
     private UnleashService unleash;
 
     @Inject
-    public MetricsReporter(UnleashService unleash) {
+    public ElasticMetricsReporter(UnleashService unleash) {
         this.unleash = unleash;
-
-        String electorPath = System.getenv("ELECTOR_PATH");
-        System.setProperty("ELECTOR_PATH", electorPath);
 
         if (isLeader()) {
             log.info("logger metrikker for antall dokumenter i elastic");
