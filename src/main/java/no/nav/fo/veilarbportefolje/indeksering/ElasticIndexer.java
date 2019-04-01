@@ -2,8 +2,6 @@ package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
@@ -34,7 +32,6 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import javax.inject.Inject;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,8 +40,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_DELTAINDEKSERING;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.ES_TOTALINDEKSERING;
+import static no.nav.common.leaderelection.LeaderElection.isLeader;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
@@ -59,7 +55,7 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 @Slf4j
 public class ElasticIndexer implements IndekseringService {
 
-    private final ElasticService elasticServiceKt;
+    private final ElasticService elasticService;
 
     private RestHighLevelClient client;
 
@@ -67,23 +63,19 @@ public class ElasticIndexer implements IndekseringService {
 
     private BrukerRepository brukerRepository;
 
-    private LockingTaskExecutor shedlock;
-
     private Exception indekseringFeilet;
 
     @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
-            LockingTaskExecutor shedlock,
             RestHighLevelClient client,
-            ElasticService elasticServiceKt
+            ElasticService elasticService
     ) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
-        this.shedlock = shedlock;
         this.client = client;
-        this.elasticServiceKt = elasticServiceKt;
+        this.elasticService = elasticService;
     }
 
     public Exception hentIndekseringFeiletStatus() {
@@ -92,17 +84,17 @@ public class ElasticIndexer implements IndekseringService {
 
     @Override
     public void hovedindeksering() {
-        shedlock.executeWithLock(() -> {
-                    try {
-                        startIndeksering();
-                        indekseringFeilet = null;
-                    } catch (Exception e) {
-                        indekseringFeilet = e;
-                        throw e;
-                    }
-                },
-                new LockConfiguration(ES_TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3), Instant.now().plusSeconds(60 * 10))
-        );
+        if (!isLeader()) {
+            return;
+        }
+
+        try {
+            startIndeksering();
+            indekseringFeilet = null;
+        } catch (Exception e) {
+            indekseringFeilet = e;
+            throw e;
+        }
     }
 
     @SneakyThrows
@@ -144,51 +136,51 @@ public class ElasticIndexer implements IndekseringService {
 
     @Override
     public void deltaindeksering() {
-        shedlock.executeWithLock(() -> {
+        if (!isLeader()) {
+            return;
+        }
 
-            if (indeksenIkkeFinnes()) {
-                log.error("Deltaindeksering: finner ingen indeks med alias {}", getAlias());
-                return;
+        if (indeksenIkkeFinnes()) {
+            log.error("Deltaindeksering: finner ingen indeks med alias {}", getAlias());
+            return;
+        }
+
+        log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
+
+        List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
+
+        if (brukere.isEmpty()) {
+            log.info("Deltaindeksering: Fullført (Ingen oppdaterte brukere ble funnet)");
+            return;
+        }
+
+        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+
+        CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
+
+            List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
+                    .filter(UnderOppfolgingRegler::erUnderOppfolging)
+                    .collect(Collectors.toList());
+
+            if (!brukereFortsattUnderOppfolging.isEmpty()) {
+                leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                leggTilTiltak(brukereFortsattUnderOppfolging);
+                skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
             }
 
-            log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
+            slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
 
-            List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
+        });
 
-            if (brukere.isEmpty()) {
-                log.info("Deltaindeksering: Fullført (Ingen oppdaterte brukere ble funnet)");
-                return;
-            }
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+        log.info("Deltaindeksering: Fullført ( {} brukere med aktoerId {} ble oppdatert)", brukere.size(), aktoerIder);
 
-            Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
-            CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
-
-                List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
-                        .filter(UnderOppfolgingRegler::erUnderOppfolging)
-                        .collect(Collectors.toList());
-
-                if (!brukereFortsattUnderOppfolging.isEmpty()) {
-                    leggTilAktiviteter(brukereFortsattUnderOppfolging);
-                    leggTilTiltak(brukereFortsattUnderOppfolging);
-                    skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
-                }
-
-                slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
-
-            });
-
-            List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
-            log.info("Deltaindeksering: Fullført ( {} brukere med aktoerId {} ble oppdatert)", brukere.size(), aktoerIder);
-
-            brukerRepository.oppdaterSistIndeksertElastic(timestamp);
-
-            int antall = brukere.size();
-            Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-            event.addFieldToReport("es.antall.oppdateringer", antall);
-            event.report();
-
-        }, new LockConfiguration(ES_DELTAINDEKSERING, Instant.now().plusSeconds(50), Instant.now().plusSeconds(10)));
+        int antall = brukere.size();
+        Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
+        event.addFieldToReport("es.antall.oppdateringer", antall);
+        event.report();
     }
 
     @SneakyThrows
@@ -398,31 +390,31 @@ public class ElasticIndexer implements IndekseringService {
 
     @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-        return elasticServiceKt.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, fra, antall, getAlias());
+        return elasticService.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, fra, antall, getAlias());
     }
 
     @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
-        return elasticServiceKt.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, null, null, getAlias());
+        return elasticService.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, null, null, getAlias());
     }
 
     @Override
     public StatusTall hentStatusTallForPortefolje(String enhet) {
-        return elasticServiceKt.hentStatusTallForEnhet(enhet, getAlias());
+        return elasticService.hentStatusTallForEnhet(enhet, getAlias());
     }
 
     @Override
     public FacetResults hentPortefoljestorrelser(String enhetId) {
-        return elasticServiceKt.hentPortefoljestorrelser(enhetId, getAlias());
+        return elasticService.hentPortefoljestorrelser(enhetId, getAlias());
     }
 
     @Override
     public StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent) {
-        return elasticServiceKt.hentStatusTallForVeileder(veilederIdent, enhet, getAlias());
+        return elasticService.hentStatusTallForVeileder(veilederIdent, enhet, getAlias());
     }
 
     @Override
     public List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
-        return elasticServiceKt.hentBrukereMedArbeidsliste(veilederId.getVeilederId(), enhet, getAlias());
+        return elasticService.hentBrukereMedArbeidsliste(veilederId.getVeilederId(), enhet, getAlias());
     }
 }

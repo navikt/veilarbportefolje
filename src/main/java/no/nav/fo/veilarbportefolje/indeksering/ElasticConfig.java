@@ -66,7 +66,7 @@ public class ElasticConfig {
     @Bean
     public ElasticIndexer elasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock, PepClient pepClient, VeilederService veilederService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), pepClient, veilederService);
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, shedlock, restHighLevelClient(), elasticService);
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService);
     }
 
     public static RestHighLevelClient createClient(ElasticClientConfig config) {
