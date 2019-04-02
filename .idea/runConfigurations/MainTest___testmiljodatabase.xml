@@ -1,5 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MainTest - testmiljodatabase" type="Application" factoryName="Application" singleton="true">
+    <envs>
+      <env name="ELECTOR_PATH" value="localhost:4040" />
+    </envs>
     <option name="MAIN_CLASS_NAME" value="MainTest" />
     <module name="veilarbportefolje" />
     <option name="VM_PARAMETERS" value="-Dmiljo.database=true" />
