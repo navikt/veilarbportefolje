@@ -54,11 +54,6 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticMetricsReporter metricsReporter(UnleashService unleashService) {
-        return new ElasticMetricsReporter(unleashService);
-    }
-
-    @Bean
     public ElasticSelftest elasticSearchHelsesjekk() {
         return new ElasticSelftest(restHighLevelClient());
     }

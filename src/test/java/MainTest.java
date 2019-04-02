@@ -1,5 +1,7 @@
 import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
+import no.nav.common.leaderelection.ElectorMock;
+import no.nav.common.leaderelection.LeaderElection;
 import no.nav.fasit.DbCredentials;
 import no.nav.fasit.ServiceUser;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
@@ -81,23 +83,8 @@ public class MainTest {
         setProperty(ELASTICSEARCH_USERNAME_PROPERTY, elasticUser.getUsername());
         setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, elasticUser.getPassword());
 
-        WireMockServer electorServer = new WireMockServer(4040);
-        electorServer.stubFor(get(
-                urlEqualTo("/"))
-                .willReturn(
-                        aResponse()
-                                .withHeader("Content-Type", "text/plain; charset=utf-8")
-                                .withBody(String.format("{\"name:\" : \"%s\"}", getHostName()))
-                ));
-
-        electorServer.start();
-
+        ElectorMock.start();
         Main.main(PORT);
-    }
-
-    @SneakyThrows
-    private static String getHostName() {
-        return InetAddress.getLocalHost().getHostName();
     }
 
     private static DbCredentials resolveDbCredentials() {

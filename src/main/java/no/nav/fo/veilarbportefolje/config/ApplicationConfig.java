@@ -9,10 +9,7 @@ import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
-import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.indeksering.*;
 import no.nav.fo.veilarbportefolje.internal.PopulerElasticServlet;
 import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
@@ -119,8 +116,14 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
-    }
 
+        new ElasticMetricsReporter(
+                new UnleashService(UnleashServiceConfig.builder()
+                        .applicationName(APPLICATION_NAME)
+                        .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                        .build())
+        );
+    }
 
     private Boolean skipDbMigration() {
         return getOptionalProperty(SKIP_DB_MIGRATION_PROPERTY)

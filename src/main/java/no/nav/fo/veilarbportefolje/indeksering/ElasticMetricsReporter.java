@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static no.nav.common.leaderelection.LeaderElection.isLeader;
+import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Component
@@ -28,7 +29,7 @@ public class ElasticMetricsReporter {
     public ElasticMetricsReporter(UnleashService unleash) {
         this.unleashService = unleash;
 
-        if (!isLeader()) {
+        if (isNotLeader()) {
             return;
         }
 
@@ -39,7 +40,6 @@ public class ElasticMetricsReporter {
 
         log.info("logger metrikker for antall dokumenter i elastic");
         Gauge.builder("veilarbelastic_number_of_docs", this::getCount).register(getMeterRegistry());
-
     }
 
     private long getCount() {

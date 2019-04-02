@@ -41,6 +41,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.leaderelection.LeaderElection.isLeader;
+import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
@@ -84,7 +85,7 @@ public class ElasticIndexer implements IndekseringService {
 
     @Override
     public void hovedindeksering() {
-        if (!isLeader()) {
+        if (isNotLeader()) {
             return;
         }
 
@@ -136,7 +137,7 @@ public class ElasticIndexer implements IndekseringService {
 
     @Override
     public void deltaindeksering() {
-        if (!isLeader()) {
+        if (isNotLeader()) {
             return;
         }
 
