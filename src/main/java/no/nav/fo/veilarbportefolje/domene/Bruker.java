@@ -18,7 +18,7 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.fo.veilarbportefolje.util.CollectionUtils.toList;
+import static no.nav.common.utils.CollectionUtils.toList;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.*;
 import static no.nav.fo.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
