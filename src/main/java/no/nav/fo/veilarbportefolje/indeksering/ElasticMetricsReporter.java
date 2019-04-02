@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import io.micrometer.core.instrument.Gauge;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.indeksering.domene.CountResponse;
@@ -27,22 +28,10 @@ public class ElasticMetricsReporter {
         this.unleash = unleash;
 
         if (isLeader()) {
-            log.info("logger metrikker for antall dokumenter i elastic");
-            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-            scheduler.scheduleAtFixedRate(new ReportNumberOfDocuments(), 1, 1, MINUTES);
-        }
-
-    }
-
-    class ReportNumberOfDocuments implements Runnable {
-
-        @Override
-        public void run() {
             if (unleash.isEnabled("veilarbportefolje.elasticsearch")) {
-                long numberOfDocs = getNumberOfDocs();
-                Event event = MetricsFactory.createEvent("veilarbelastic.numberofdocs");
-                event.addFieldToReport("value", numberOfDocs);
-                event.report();
+                log.info("logger metrikker for antall dokumenter i elastic");
+                Gauge.builder("veilarbelastic_number_of_docs", this::getNumberOfDocs)
+                        .register(MetricsFactory.getMeterRegistry());
             } else {
                 log.info("Unleash disabled, not reporting veilarbelastic_number_of_docs");
             }
@@ -50,7 +39,7 @@ public class ElasticMetricsReporter {
     }
 
     @SneakyThrows
-    private static long getNumberOfDocs() {
+    private long getNumberOfDocs() {
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
 
         return RestUtils.withClient(client ->
