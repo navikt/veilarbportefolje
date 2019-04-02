@@ -1,10 +1,10 @@
 package no.nav.fo.veilarbportefolje.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
+import no.nav.fo.veilarbportefolje.filmottak.FilmottakHelsesjekk;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
@@ -16,7 +16,6 @@ import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
-import no.nav.json.JsonProvider;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -40,8 +39,8 @@ import javax.ws.rs.client.Client;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
-import static no.nav.sbl.util.EnvironmentUtils.*;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.*;
 
 @EnableScheduling
 @EnableAspectJAutoProxy
@@ -61,7 +60,8 @@ import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
         AktorConfig.class,
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class,
-        ScheduledErrorHandler.class
+        ScheduledErrorHandler.class,
+        FilmottakHelsesjekk.class
 })
 public class ApplicationConfig implements ApiApplication {
 
