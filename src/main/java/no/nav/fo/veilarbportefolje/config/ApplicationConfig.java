@@ -116,13 +116,6 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
-
-        new ElasticMetricsReporter(
-                new UnleashService(UnleashServiceConfig.builder()
-                        .applicationName(APPLICATION_NAME)
-                        .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
-                        .build())
-        );
     }
 
     private Boolean skipDbMigration() {
@@ -146,6 +139,10 @@ public class ApplicationConfig implements ApiApplication {
                 .build());
     }
 
+    @Bean
+    public ElasticMetricsReporter elasticMetricsReporter() {
+        return new ElasticMetricsReporter(unleashService());
+    }
 
     @Bean
     public VeilederService veilederservice(Client restClient) {
