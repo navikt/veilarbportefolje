@@ -9,7 +9,6 @@ import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse;
 import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
-import no.nav.fo.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.json.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -27,7 +26,6 @@ import java.util.Optional;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticQueryBuilder.*;
-import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.getSsoToken;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Component

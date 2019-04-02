@@ -1,14 +1,17 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MainTest - lokal database" type="Application" factoryName="Application" singleton="true">
+    <envs>
+      <env name="ELECTOR_PATH" value="localhost:4040" />
+    </envs>
     <option name="MAIN_CLASS_NAME" value="MainTest" />
     <module name="veilarbportefolje" />
+    <shortenClasspath name="MANIFEST" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value=".*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
-    <shortenClasspath name="MANIFEST" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

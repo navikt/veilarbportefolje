@@ -16,30 +16,33 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static no.nav.common.leaderelection.LeaderElection.isLeader;
+import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Component
 @Slf4j
 public class ElasticMetricsReporter {
 
-    private UnleashService unleash;
+    private UnleashService unleashService;
 
     @Inject
     public ElasticMetricsReporter(UnleashService unleash) {
-        this.unleash = unleash;
+        this.unleashService = unleash;
 
-        if (isLeader()) {
-            if (unleash.isEnabled("veilarbportefolje.elasticsearch")) {
-                log.info("logger metrikker for antall dokumenter i elastic");
-                Gauge.builder("veilarbelastic_number_of_docs", this::getNumberOfDocs)
-                        .register(MetricsFactory.getMeterRegistry());
-            } else {
-                log.info("Unleash disabled, not reporting veilarbelastic_number_of_docs");
-            }
+        if (isNotLeader()) {
+            return;
         }
+
+        if (!unleashService.isEnabled("veilarbportefolje.elasticsearch")) {
+            log.info("Unleash disabled, not reporting veilarbelastic_number_of_docs");
+            return;
+        }
+
+        log.info("logger metrikker for antall dokumenter i elastic");
+        Gauge.builder("veilarbelastic_number_of_docs", this::getCount).register(getMeterRegistry());
     }
 
-    @SneakyThrows
-    private long getNumberOfDocs() {
+    private long getCount() {
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
 
         return RestUtils.withClient(client ->
