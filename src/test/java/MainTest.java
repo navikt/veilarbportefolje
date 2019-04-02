@@ -1,16 +1,11 @@
-import com.github.tomakehurst.wiremock.WireMockServer;
-import lombok.SneakyThrows;
 import no.nav.common.leaderelection.ElectorMock;
-import no.nav.common.leaderelection.LeaderElection;
 import no.nav.fasit.DbCredentials;
 import no.nav.fasit.ServiceUser;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.testconfig.ApiAppTest;
 
-import java.net.InetAddress;
 import java.util.Optional;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
 import static no.nav.fasit.FasitUtils.*;
