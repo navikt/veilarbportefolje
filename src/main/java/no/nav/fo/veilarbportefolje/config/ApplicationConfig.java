@@ -4,7 +4,7 @@ import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
-import no.nav.fo.veilarbportefolje.filmottak.FilmottakHelsesjekk;
+import no.nav.fo.veilarbportefolje.filmottak.ArenaYtleserHelsesjekk;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
@@ -61,7 +61,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
-        FilmottakHelsesjekk.class
+        ArenaYtleserHelsesjekk.class
 })
 public class ApplicationConfig implements ApiApplication {
 
