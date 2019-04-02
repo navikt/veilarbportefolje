@@ -1,8 +1,14 @@
+import com.github.tomakehurst.wiremock.WireMockServer;
+import lombok.SneakyThrows;
 import no.nav.fasit.DbCredentials;
 import no.nav.fasit.ServiceUser;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.testconfig.ApiAppTest;
 
+import java.net.InetAddress;
+import java.util.Optional;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
 import static no.nav.fasit.FasitUtils.*;
@@ -15,8 +21,6 @@ import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.A
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
-
-import java.util.Optional;
 
 public class MainTest {
 
@@ -77,7 +81,23 @@ public class MainTest {
         setProperty(ELASTICSEARCH_USERNAME_PROPERTY, elasticUser.getUsername());
         setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, elasticUser.getPassword());
 
+        WireMockServer electorServer = new WireMockServer(4040);
+        electorServer.stubFor(get(
+                urlEqualTo("/"))
+                .willReturn(
+                        aResponse()
+                                .withHeader("Content-Type", "text/plain; charset=utf-8")
+                                .withBody(String.format("{\"name:\" : \"%s\"}", getHostName()))
+                ));
+
+        electorServer.start();
+
         Main.main(PORT);
+    }
+
+    @SneakyThrows
+    private static String getHostName() {
+        return InetAddress.getLocalHost().getHostName();
     }
 
     private static DbCredentials resolveDbCredentials() {

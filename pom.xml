@@ -392,6 +392,11 @@
 
         <!--TEST-->
         <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.22.0</version>
+        </dependency>
+        <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>auth</artifactId>
             <type>test-jar</type>
