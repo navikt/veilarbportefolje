@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.util;
 
 import no.nav.fo.veilarbportefolje.domene.Bruker;
 import no.nav.fo.veilarbportefolje.domene.Portefolje;
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 
 import java.util.List;

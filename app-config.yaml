@@ -7,6 +7,7 @@ replicas:
   cpuThresholdPercentage: 50
 port: 8080
 webproxy: true
+leaderElection: true
 healthcheck:
   liveness:
     path: veilarbportefolje/internal/isAlive

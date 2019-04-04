@@ -6,7 +6,7 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
@@ -58,11 +58,11 @@ public class BrukerRepository {
                 .execute();
     }
 
-    public List<BrukerDTO> hentAlleBrukereUnderOppfolging() {
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(1000);
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilBrukerDTO(rs) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -70,7 +70,7 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public List<BrukerDTO> hentOppdaterteBrukere() {
+    public List<OppfolgingsBruker> hentOppdaterteBrukere() {
 
         db.setFetchSize(1000);
 
@@ -80,26 +80,26 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilBrukerDTO)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
     }
 
-    public BrukerDTO hentBruker(AktoerId aktoerId) {
+    public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilBrukerDTO)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
     }
 
-    public List<BrukerDTO> hentBrukere(List<PersonId> personIds) {
+    public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilBrukerDTO(rs) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .where(WhereClause.in("PERSON_ID", ids))
                 .executeToList()

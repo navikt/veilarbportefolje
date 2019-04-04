@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbportefolje.util;
 
-import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
+
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +20,7 @@ public class UnderOppfolgingRegler {
         return erArbeidssoker(formidlingsgruppeKode) || erIArbeidOgHarInnsatsbehov(formidlingsgruppeKode, servicegruppeKode);
     }
 
-    public static boolean erUnderOppfolging(BrukerDTO bruker) {
+    public static boolean erUnderOppfolging(OppfolgingsBruker bruker) {
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String servicegruppeKode = bruker.getKvalifiseringsgruppekode();
         return erUnderOppfolging(formidlingsgruppekode, servicegruppeKode) || oppfolgingsFlaggErSatt(bruker);
@@ -33,7 +34,7 @@ public class UnderOppfolgingRegler {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGINGKODER.contains(servicegruppeKode);
     }
 
-    private static boolean oppfolgingsFlaggErSatt(BrukerDTO brukerDTO) {
-        return brukerDTO.getOppfolging();
+    private static boolean oppfolgingsFlaggErSatt(OppfolgingsBruker bruker) {
+        return bruker.isOppfolging();
     }
 }
