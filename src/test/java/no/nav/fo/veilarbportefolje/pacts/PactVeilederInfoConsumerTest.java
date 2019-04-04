@@ -8,7 +8,7 @@ import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.model.RequestResponsePact;
-import no.nav.dialogarena.config.fasit.FasitUtils;
+import no.nav.fasit.FasitUtils;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.rest.RestUtils;

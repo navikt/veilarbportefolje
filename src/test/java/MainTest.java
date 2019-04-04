@@ -1,25 +1,23 @@
-import no.nav.dialogarena.config.fasit.DbCredentials;
-import no.nav.dialogarena.config.fasit.ServiceUser;
+import no.nav.common.leaderelection.ElectorMock;
+import no.nav.fasit.DbCredentials;
+import no.nav.fasit.ServiceUser;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.testconfig.ApiAppTest;
 
+import java.util.Optional;
+
 import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
-import static no.nav.dialogarena.config.fasit.FasitUtils.*;
-import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
+import static no.nav.fasit.FasitUtils.*;
+import static no.nav.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_PASSWORD;
-import static no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig.VEILARBELASTIC_USERNAME;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
-import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
-
-import java.util.Optional;
 
 public class MainTest {
 
@@ -40,8 +38,6 @@ public class MainTest {
         ServiceUser serviceUser = getServiceUser(SERVICE_USER_ALIAS, APPLICATION_NAME);
         setProperty(SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(SYSTEMUSER_PASSWORD, serviceUser.getPassword());
-
-        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleashproxy.nais.adeo.no/api/");
 
         DbCredentials dbCredentials = resolveDbCredentials();
         setProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME, dbCredentials.getUrl());
@@ -82,6 +78,7 @@ public class MainTest {
         setProperty(ELASTICSEARCH_USERNAME_PROPERTY, elasticUser.getUsername());
         setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, elasticUser.getPassword());
 
+        ElectorMock.start();
         Main.main(PORT);
     }
 

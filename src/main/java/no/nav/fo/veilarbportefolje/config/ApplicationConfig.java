@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
@@ -8,15 +9,14 @@ import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
-import no.nav.fo.veilarbportefolje.indeksering.ElasticSearchService;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringConfig;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.indeksering.*;
 import no.nav.fo.veilarbportefolje.internal.PopulerElasticServlet;
 import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
+import no.nav.fo.veilarbportefolje.service.VeilederService;
+import no.nav.json.JsonProvider;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -36,11 +36,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
+import javax.ws.rs.client.Client;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
-import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.*;
+import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 
 @EnableScheduling
 @EnableAspectJAutoProxy
@@ -58,9 +59,9 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         FeedConfig.class,
         RestConfig.class,
         AktorConfig.class,
-        VeilederServiceConfig.class,
         ClientConfig.class,
-        DigitalKontaktinformasjonConfig.class
+        DigitalKontaktinformasjonConfig.class,
+        ScheduledErrorHandler.class
 })
 public class ApplicationConfig implements ApiApplication {
 
@@ -98,13 +99,13 @@ public class ApplicationConfig implements ApiApplication {
     private KopierGR199FraArena kopierGR199FraArena;
 
     @Inject
-    private ElasticSearchService elasticSearchService;
+    private ElasticIndexer elasticIndexer;
 
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
 
-        if(!skipDbMigration()){
+        if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
             flyway.setDataSource(dataSource);
             flyway.migrate();
@@ -114,7 +115,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new PopulerIndekseringServlet(indekseringService), "/internal/populerindeks");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
-        leggTilServlet(servletContext, new PopulerElasticServlet(elasticSearchService), "/internal/populeres");
+        leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
     }
 
     private Boolean skipDbMigration() {
@@ -127,8 +128,25 @@ public class ApplicationConfig implements ApiApplication {
     public void configure(ApiAppConfigurator apiAppConfigurator) {
         apiAppConfigurator
                 .sts()
-                .issoLogin()
-        ;
+                .issoLogin();
+    }
+
+    @Bean
+    public UnleashService unleashService() {
+        return new UnleashService(UnleashServiceConfig.builder()
+                .applicationName(APPLICATION_NAME)
+                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                .build());
+    }
+
+    @Bean
+    public ElasticMetricsReporter elasticMetricsReporter() {
+        return new ElasticMetricsReporter(unleashService());
+    }
+
+    @Bean
+    public VeilederService veilederservice(Client restClient) {
+        return new VeilederService(restClient);
     }
 
     @Bean(name = "transactionManager")
@@ -149,14 +167,6 @@ public class ApplicationConfig implements ApiApplication {
     @Bean
     public IndekseringScheduler indekseringScheduler() {
         return new IndekseringScheduler();
-    }
-
-    @Bean
-    public UnleashService unleashService() {
-        return new UnleashService(UnleashServiceConfig.builder()
-                .applicationName(requireApplicationName())
-                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
-                .build());
     }
 
     @Bean

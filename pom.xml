@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2019.01.11.21.36</version>
+        <version>2019.04.02.14.44</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -30,7 +30,7 @@
             <dependency>
                 <groupId>no.nav.common</groupId>
                 <artifactId>bom</artifactId>
-                <version>2019.01.11.21.36</version>
+                <version>2019.04.02.14.44</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -210,6 +210,7 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
 
+        <!--Elasticsearch-->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
@@ -316,6 +317,10 @@
             <groupId>no.nav.common</groupId>
             <artifactId>util</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>leader-election</artifactId>
+        </dependency>
 
         <!-- Virksomhetstjenester -->
         <dependency>
@@ -386,6 +391,11 @@
         </dependency>
 
         <!--TEST-->
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.22.0</version>
+        </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>auth</artifactId>

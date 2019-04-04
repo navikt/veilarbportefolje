@@ -1,0 +1,78 @@
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "spesialtegnfolding": {
+          "type": "asciifolding",
+          "preserve_original": true
+        }
+      },
+      "analyzer": {
+        "fullt_navn_sok": {
+          "tokenizer": "fullt_navn_sok_tokenizer",
+          "filter": [
+            "lowercase",
+            "spesialtegnfolding"
+          ]
+        },
+        "fnr_sok": {
+          "tokenizer": "fnr_sok_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "fullt_navn_sok_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        },
+        "fnr_sok_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 12,
+          "token_chars": [
+            "digit"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "veileder_id": {
+          "type": "keyword"
+        },
+        "enhet_id": {
+          "type": "keyword"
+        },
+        "person_id": {
+          "type": "keyword"
+        },
+        "aktoer_id": {
+          "type": "keyword"
+        },
+        "etternavn": {
+          "type": "keyword"
+        },
+        "fullt_navn": {
+          "type": "text",
+          "analyzer": "fullt_navn_sok",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "fnr": {
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          },
+          "analyzer": "fnr_sok"
+        }
+      }
+    }
+  }
+}

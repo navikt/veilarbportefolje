@@ -46,13 +46,13 @@ import java.util.function.BiConsumer;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
+import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrSortUtils.addPaging;
+import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.harIkkeVeilederFilter;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.veilarbportefolje.util.BatchConsumer.batchConsumer;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
-import static no.nav.fo.veilarbportefolje.indeksering.SolrSortUtils.addPaging;
-import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.harIkkeVeilederFilter;
 
 @Slf4j
 public class SolrService implements IndekseringService {
@@ -158,7 +158,7 @@ public class SolrService implements IndekseringService {
         logFerdig(t0, antall, DELTAINDEKSERING);
     }
 
-    private void indekserDokumenter(List<SolrInputDocument> dokumenter) {
+    public void indekserDokumenter(List<SolrInputDocument> dokumenter) {
         leggDataTilSolrDocument(dokumenter);
         addDocumentsToIndex(dokumenter);
     }
