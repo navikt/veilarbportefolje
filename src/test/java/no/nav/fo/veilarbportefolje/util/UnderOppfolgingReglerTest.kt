@@ -61,16 +61,6 @@ class UnderOppfolgingReglerTest {
     }
 
     @Test
-    fun erUnderOppfolging_PARBS_true() {
-        alleKombinasjonerErTrue("PARBS")
-    }
-
-    @Test
-    fun erUnderOppfolging_RARBS_true() {
-        alleKombinasjonerErTrue("RARBS")
-    }
-
-    @Test
     fun erUnderOppfolging_ISERV_false() {
         assertThat(erUnderOppfolging("ISERV", null)).isFalse()
         for (kgKode in KVALIFISERINGSGRUPPEKODER) {
