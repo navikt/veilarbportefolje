@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Component
@@ -21,10 +20,6 @@ public class ElasticMetricsReporter {
     @Inject
     public ElasticMetricsReporter(UnleashService unleash) {
         this.unleashService = unleash;
-
-        if (isNotLeader()) {
-            return;
-        }
 
         if (!unleashService.isEnabled("veilarbportefolje.elasticsearch")) {
             log.info("Unleash disabled, not reporting veilarbelastic_number_of_docs");
