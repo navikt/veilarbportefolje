@@ -1,49 +1,35 @@
-package no.nav.fo.veilarbportefolje.indeksering;
+package no.nav.fo.veilarbportefolje.indeksering.domene;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotEmpty;
-import java.util.HashSet;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.getSolrMaxAsIsoUtc;
 
 @Data
-@Builder
-public class BrukerDTO {
-    @NotEmpty
+@Accessors(chain = true)
+public class OppfolgingsBruker {
     String person_id;
-
-    @NotEmpty
     String fnr;
-
-    @NotEmpty
     String aktoer_id;
-
-    @NotEmpty
     String fornavn;
-
-    @NotEmpty
     String etternavn;
-
-    @NotEmpty
+    String fullt_navn;
     String enhet_id;
-
-    @NotEmpty
     String formidlingsgruppekode;
-
     String iserv_fra_dato;
     String kvalifiseringsgruppekode;
     String rettighetsgruppekode;
     String hovedmaalkode;
     String sikkerhetstiltak;
     String diskresjonskode;
-    Boolean egen_ansatt;
-    Boolean er_doed;
+    boolean egen_ansatt;
+    boolean er_doed;
     String doed_fra_dato;
     String veileder_id;
-    String fodselsdag_i_mnd;
+    int fodselsdag_i_mnd;
     String fodselsdato;
     String kjonn;
     String ytelse;
@@ -57,10 +43,10 @@ public class BrukerDTO {
     String aapmaxtidukefasett;
     Integer aapunntakukerigjen;
     String aapunntakukerigjenfasett;
-    Boolean oppfolging;
-    Boolean ny_for_veileder;
-    Boolean ny_for_enhet;
-    Boolean trenger_vurdering;
+    boolean oppfolging;
+    boolean ny_for_veileder;
+    boolean ny_for_enhet;
+    boolean trenger_vurdering;
     String venterpasvarfrabruker;
     String venterpasvarfranav;
     String nyesteutlopteaktivitet;
@@ -68,42 +54,22 @@ public class BrukerDTO {
     String neste_aktivitet_start;
     String forrige_aktivitet_start;
     String manuell_bruker;
-
-    @Builder.Default
     String aktivitet_mote_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_stilling_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_egen_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_behandling_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_ijobb_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_sokeavtale_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_tiltak_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_utdanningaktivitet_utlopsdato = getSolrMaxAsIsoUtc();
-
-    @Builder.Default
     String aktivitet_gruppeaktivitet_utlopsdato = getSolrMaxAsIsoUtc();
-
-    //arbeidsliste
-    Boolean arbeidsliste_aktiv;
+    boolean arbeidsliste_aktiv;
     String arbeidsliste_sist_endret_av_veilederid;
     String arbeidsliste_endringstidspunkt;
     String arbeidsliste_kommentar;
     String arbeidsliste_overskrift;
     String arbeidsliste_frist;
-
-    Set<String> aktiviteter;
-    Set<String> tiltak;
+    Set<String> aktiviteter = emptySet();
+    Set<String> tiltak = emptySet();
+    boolean har_veileder_fra_enhet;
 }

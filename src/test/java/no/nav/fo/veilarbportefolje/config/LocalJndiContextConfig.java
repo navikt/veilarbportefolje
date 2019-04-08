@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbportefolje.config;
 
-import no.nav.dialogarena.config.fasit.DbCredentials;
+import no.nav.fasit.DbCredentials;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;

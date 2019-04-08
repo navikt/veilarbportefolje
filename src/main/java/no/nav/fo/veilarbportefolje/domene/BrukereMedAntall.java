@@ -10,4 +10,9 @@ import java.util.List;
 public class BrukereMedAntall {
     private final int antall;
     private final List<Bruker> brukere;
+
+    public BrukereMedAntall(int antall, List<Bruker> brukere) {
+        this.antall = antall;
+        this.brukere = brukere;
+    }
 }
