@@ -46,7 +46,8 @@ public class ElasticServiceIntegrationTest {
 
     private static String TEST_INDEX = IndekseringUtils.createIndexName("testindeks");
     private static String TEST_ENHET = "0000";
-    private static String TEST_VEILEDER = "Z000000";
+    private static String TEST_VEILEDER_0 = "Z000000";
+    private static String TEST_VEILEDER_1 = "Z000001";
     private static String LITE_PRIVILEGERT_VEILEDER = "Z000001";
     private static String UNPRIVILEGED_TOKEN = "unprivileged-test-token";
     private static String PRIVILEGED_TOKEN = "test-token";
@@ -68,7 +69,7 @@ public class ElasticServiceIntegrationTest {
         when(pepMock.isSubjectAuthorizedToSeeKode7(PRIVILEGED_TOKEN)).thenReturn(true);
 
         VeilederService veilederServiceMock = mock(VeilederService.class);
-        when(veilederServiceMock.getIdenter(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER)));
+        when(veilederServiceMock.getIdenter(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
 
         RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
                 .username("")
@@ -101,7 +102,40 @@ public class ElasticServiceIntegrationTest {
     }
 
     @Rule
-    public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
+    public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER_0, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
+
+
+    @Test
+    public void skal_hente_ut_brukere_ved_soek_paa_flere_veiledere() {
+        List<OppfolgingsBruker> brukere = listOf(
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setVeileder_id(TEST_VEILEDER_0),
+
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setVeileder_id(TEST_VEILEDER_1),
+
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setVeileder_id(null)
+
+        );
+
+        skrivBrukereTilTestindeks(brukere);
+
+        val filtervalg = new Filtervalg()
+                .setFerdigfilterListe(listOf(UFORDELTE_BRUKERE))
+                .setVeiledere(listOf(TEST_VEILEDER_0, TEST_VEILEDER_1));
+
+        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+
+        assertThat(response.getAntall()).isEqualTo(2);
+
+    }
 
     @Test
     public void skal_hente_riktig_antall_ufordelte_brukere() {
@@ -116,7 +150,7 @@ public class ElasticServiceIntegrationTest {
                 new OppfolgingsBruker()
                         .setFnr(randomFnr())
                         .setEnhet_id(TEST_ENHET)
-                        .setVeileder_id(TEST_VEILEDER),
+                        .setVeileder_id(TEST_VEILEDER_0),
 
                 new OppfolgingsBruker()
                         .setFnr(randomFnr())
@@ -173,7 +207,7 @@ public class ElasticServiceIntegrationTest {
         val brukerMedArbeidsliste =
                 new OppfolgingsBruker()
                         .setFnr(randomFnr())
-                        .setVeileder_id(TEST_VEILEDER)
+                        .setVeileder_id(TEST_VEILEDER_0)
                         .setEnhet_id(TEST_ENHET)
                         .setArbeidsliste_aktiv(true);
 
@@ -181,13 +215,13 @@ public class ElasticServiceIntegrationTest {
         val brukerUtenArbeidsliste =
                 new OppfolgingsBruker()
                         .setFnr(randomFnr())
-                        .setVeileder_id(TEST_VEILEDER)
+                        .setVeileder_id(TEST_VEILEDER_0)
                         .setEnhet_id(TEST_ENHET)
                         .setArbeidsliste_aktiv(false);
 
         skrivBrukereTilTestindeks(brukerMedArbeidsliste, brukerUtenArbeidsliste);
 
-        List<Bruker> brukereMedArbeidsliste = elasticService.hentBrukereMedArbeidsliste(TEST_VEILEDER, TEST_ENHET, TEST_INDEX);
+        List<Bruker> brukereMedArbeidsliste = elasticService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET, TEST_INDEX);
         assertThat(brukereMedArbeidsliste.size()).isEqualTo(1);
     }
 
@@ -197,12 +231,12 @@ public class ElasticServiceIntegrationTest {
         val testBruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER);
+                .setVeileder_id(TEST_VEILEDER_0);
 
         val testBruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setFormidlingsgruppekode("IARBS")
                 .setKvalifiseringsgruppekode("BATT")
                 .setAktiviteter(setOf("egen"))
@@ -216,13 +250,13 @@ public class ElasticServiceIntegrationTest {
         val inaktivBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setFormidlingsgruppekode("ISERV");
 
 
         skrivBrukereTilTestindeks(testBruker1, testBruker2, inaktivBruker);
 
-        val statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER, TEST_ENHET, TEST_INDEX);
+        val statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET, TEST_INDEX);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1);
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2);
@@ -245,7 +279,7 @@ public class ElasticServiceIntegrationTest {
         val brukerMedVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER);
+                .setVeileder_id(TEST_VEILEDER_0);
 
         skrivBrukereTilTestindeks(brukerMedVeileder, brukerUtenVeileder);
 
@@ -259,14 +293,14 @@ public class ElasticServiceIntegrationTest {
         val nyForEnhet = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_enhet(true)
                 .setTrenger_vurdering(true);
 
         val ikkeNyForEnhet = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_enhet(true)
                 .setTrenger_vurdering(false);
 
@@ -279,7 +313,7 @@ public class ElasticServiceIntegrationTest {
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
-                Optional.of(TEST_VEILEDER),
+                Optional.of(TEST_VEILEDER_0),
                 "asc",
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
@@ -298,7 +332,7 @@ public class ElasticServiceIntegrationTest {
         val brukerVeilederHarTilgangTil = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER);
+                .setVeileder_id(TEST_VEILEDER_0);
 
         val brukerVeilederIkkeHarTilgangTil = new OppfolgingsBruker()
                 .setFnr(randomFnr())
@@ -313,7 +347,7 @@ public class ElasticServiceIntegrationTest {
                 unprivelegedSubject,
                 () -> elasticService.hentBrukere(
                         TEST_ENHET,
-                        Optional.of(TEST_VEILEDER),
+                        Optional.of(TEST_VEILEDER_0),
                         "asc",
                         "ikke_satt",
                         new Filtervalg(),
@@ -340,7 +374,7 @@ public class ElasticServiceIntegrationTest {
         val brukerMedFordeltStatus = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_enhet(false);
 
 
@@ -370,13 +404,13 @@ public class ElasticServiceIntegrationTest {
                 .setFnr(randomFnr())
                 .setFodselsdag_i_mnd(7)
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER);
+                .setVeileder_id(TEST_VEILEDER_0);
 
         val testBruker2 = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setFodselsdag_i_mnd(8)
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER);
+                .setVeileder_id(TEST_VEILEDER_0);
 
         skrivBrukereTilTestindeks(testBruker1, testBruker2);
 
@@ -386,7 +420,7 @@ public class ElasticServiceIntegrationTest {
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
-                Optional.of(TEST_VEILEDER),
+                Optional.of(TEST_VEILEDER_0),
                 "asc",
                 "ikke_satt",
                 filterValg,
@@ -404,13 +438,13 @@ public class ElasticServiceIntegrationTest {
         val mann = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setKjonn("M");
 
         val kvinne = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setKjonn("K");
 
         skrivBrukereTilTestindeks(mann, kvinne);
@@ -421,7 +455,7 @@ public class ElasticServiceIntegrationTest {
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
-                Optional.of(TEST_VEILEDER),
+                Optional.of(TEST_VEILEDER_0),
                 "asc",
                 "ikke_satt",
                 filterValg,
@@ -439,13 +473,13 @@ public class ElasticServiceIntegrationTest {
         val brukerMedAAP = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name());
 
         val brukerUtenAAP = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name());
 
         skrivBrukereTilTestindeks(brukerMedAAP, brukerUtenAAP);
@@ -456,7 +490,7 @@ public class ElasticServiceIntegrationTest {
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
-                Optional.of(TEST_VEILEDER),
+                Optional.of(TEST_VEILEDER_0),
                 "asc",
                 "ikke_satt",
                 filterValg,
@@ -477,7 +511,7 @@ public class ElasticServiceIntegrationTest {
         val brukerMedDagpengerMedPermittering = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name())
                 .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING.name());
 
@@ -485,14 +519,14 @@ public class ElasticServiceIntegrationTest {
         val brukerMedPermitteringFiskeindustri = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name())
                 .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name());
 
         val brukerMedAAP = new OppfolgingsBruker()
                 .setFnr(randomFnr())
                 .setEnhet_id(TEST_ENHET)
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name())
                 .setYtelse(YtelseMapping.AAP_MAXTID.name());
 
@@ -516,7 +550,7 @@ public class ElasticServiceIntegrationTest {
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
-                Optional.of(TEST_VEILEDER),
+                Optional.of(TEST_VEILEDER_0),
                 "asc",
                 "ikke_satt",
                 filterValg,
@@ -535,19 +569,19 @@ public class ElasticServiceIntegrationTest {
     public void skal_hente_ut_brukere_som_har_avtale_om_å_søke_jobber() {
         val brukerMedSokeAvtale = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("sokeavtale"));
 
         val brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("behandling"));
 
         val brukerMedUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
         skrivBrukereTilTestindeks(brukerMedSokeAvtale, brukerMedBehandling, brukerMedUtenAktiviteter);
@@ -576,19 +610,19 @@ public class ElasticServiceIntegrationTest {
 
         val brukerMedSokeAvtale = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("sokeavtale"));
 
         val brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("behandling"));
 
         val brukerMedUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
         skrivBrukereTilTestindeks(brukerMedSokeAvtale, brukerMedBehandling, brukerMedUtenAktiviteter);
@@ -619,19 +653,19 @@ public class ElasticServiceIntegrationTest {
 
         val brukerMedTiltak = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("tiltak"));
 
         val brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("behandling"));
 
         val brukerUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
         skrivBrukereTilTestindeks(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
@@ -661,20 +695,20 @@ public class ElasticServiceIntegrationTest {
     public void skal_hente_ut_alle_brukere_som_ikke_har_tiltak() {
         val brukerMedTiltak = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("tiltak"))
                 .setTiltak(setOf("VASV"));
 
         val brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(setOf("behandling"));
 
         val brukerUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr())
-                .setVeileder_id(TEST_VEILEDER)
+                .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
         skrivBrukereTilTestindeks(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);

@@ -62,7 +62,7 @@ public class ElasticQueryBuilder {
                 servicegruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", servicegruppe))
         );
 
-        filtervalg.veiledere.forEach(veileder -> queryBuilder.filter(matchQuery("veileder_id", veileder)));
+        filtervalg.veiledere.forEach(veileder -> queryBuilder.should(matchQuery("veileder_id", veileder)));
 
         filtervalg.manuellBrukerStatus.forEach(
                 status -> queryBuilder.filter(matchQuery("manuell_bruker", status))
