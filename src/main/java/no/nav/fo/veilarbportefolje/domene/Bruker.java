@@ -6,15 +6,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.util.OppfolgingUtils;
 import org.apache.solr.common.SolrDocument;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static no.nav.common.utils.CollectionUtils.toList;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.*;
 import static no.nav.fo.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -73,7 +77,7 @@ public class Bruker {
                 .setNyForEnhet(isNyForEnhet(document))
                 .setNyForVeileder(isNyForVeileder(document))
                 .setTrengerVurdering(defaultBool(document, "trenger_vurdering", false))
-                .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode,kvalifiseringsgruppekode))
+                .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setFornavn((String) document.get("fornavn"))
                 .setEtternavn((String) document.get("etternavn"))
@@ -117,6 +121,68 @@ public class Bruker {
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp((Date) document.get("aktivitet_utdanningaktivitet_utlopsdato")));
     }
 
+    public static Bruker of(OppfolgingsBruker bruker) {
+
+        String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
+        String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
+        String sikkerhetstiltak = bruker.getSikkerhetstiltak();
+
+        return new Bruker()
+                .setFnr(bruker.getFnr())
+                .setNyForEnhet(bruker.isNy_for_enhet())
+                .setNyForVeileder(bruker.isNy_for_veileder())
+                .setTrengerVurdering(bruker.isTrenger_vurdering())
+                .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .setFornavn(bruker.getFornavn())
+                .setEtternavn(bruker.getEtternavn())
+                .setVeilederId(bruker.getVeileder_id())
+                .setDiskresjonskode(bruker.getDiskresjonskode())
+                .setEgenAnsatt(bruker.isEgen_ansatt())
+                .setErDoed(bruker.isEr_doed())
+                .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
+                .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
+                .setFodselsdato(toLocalDateTimeOrNull(bruker.getFodselsdato()))
+                .setKjonn(bruker.getKjonn())
+                .setYtelse(YtelseMapping.of(bruker.getYtelse()))
+                .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
+                .setUtlopsdatoFasett(ManedFasettMapping.of(bruker.getUtlopsdatofasett()))
+                .setDagputlopUke(bruker.getDagputlopuke())
+                .setDagputlopUkeFasett(DagpengerUkeFasettMapping.of(bruker.getDagputlopukefasett()))
+                .setPermutlopUke(bruker.getPermutlopuke())
+                .setPermutlopUkeFasett(DagpengerUkeFasettMapping.of(bruker.getPermutlopukefasett()))
+                .setAapmaxtidUke(bruker.getAapmaxtiduke())
+                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.of(bruker.getAapmaxtidukefasett()))
+                .setAapUnntakUkerIgjen(bruker.getAapunntakukerigjen())
+                .setAapUnntakUkerIgjenFasett(AAPUnntakUkerIgjenFasettMapping.of(bruker.getAapunntakukerigjenfasett()))
+                .setArbeidsliste(Arbeidsliste.of(bruker))
+                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(bruker.getVenterpasvarfranav()))
+                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(bruker.getVenterpasvarfrabruker()))
+                .setNyesteUtlopteAktivitet(toLocalDateTimeOrNull(bruker.getNyesteutlopteaktivitet()))
+                .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
+                .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
+                .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
+                .setBrukertiltak(toList(bruker.getTiltak()))
+                .setManuellBrukerStatus(bruker.getManuell_bruker())
+                .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
+                .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
+                .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
+                .addAktivitetUtlopsdato("stilling", dateToTimestamp(bruker.getAktivitet_stilling_utlopsdato()))
+                .addAktivitetUtlopsdato("ijobb", dateToTimestamp(bruker.getAktivitet_ijobb_utlopsdato()))
+                .addAktivitetUtlopsdato("egen", dateToTimestamp(bruker.getAktivitet_egen_utlopsdato()))
+                .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
+                .addAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
+                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
+
+    }
+
+    private static LocalDateTime toLocalDateTimeOrNull(String date) {
+        if (date == null) {
+            return null;
+        }
+        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
+    }
+
     private static boolean isNyForEnhet(SolrDocument document) {
         return Optional. //FO-610 rydde
                 ofNullable((Boolean) document.get("har_veileder_fra_enhet"))
@@ -138,7 +204,7 @@ public class Bruker {
     }
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
-        if(Objects.isNull(utlopsdato) || isRandomFutureDate(utlopsdato)) {
+        if (Objects.isNull(utlopsdato) || isRandomFutureDate(utlopsdato)) {
             return this;
         }
         aktiviteter.put(type, utlopsdato);

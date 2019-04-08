@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbportefolje.util;
 
-import no.nav.fo.veilarbportefolje.indeksering.BrukerDTO;
+
+import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -9,7 +10,7 @@ import static java.util.Arrays.asList;
 
 public class UnderOppfolgingRegler {
 
-    static final Set<String> ARBEIDSOKERKODER = new HashSet<>(asList("ARBS", "RARBS", "PARBS"));
+    static final String ARBEIDSOKER = "ARBS";
     static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     static final String IKKE_ARBEIDSSOKER = "IARBS";
 
@@ -19,21 +20,21 @@ public class UnderOppfolgingRegler {
         return erArbeidssoker(formidlingsgruppeKode) || erIArbeidOgHarInnsatsbehov(formidlingsgruppeKode, servicegruppeKode);
     }
 
-    public static boolean erUnderOppfolging(BrukerDTO bruker) {
+    public static boolean erUnderOppfolging(OppfolgingsBruker bruker) {
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String servicegruppeKode = bruker.getKvalifiseringsgruppekode();
         return erUnderOppfolging(formidlingsgruppekode, servicegruppeKode) || oppfolgingsFlaggErSatt(bruker);
     }
 
     private static boolean erArbeidssoker(String formidlingsgruppeKode) {
-        return ARBEIDSOKERKODER.contains(formidlingsgruppeKode);
+        return ARBEIDSOKER.equals(formidlingsgruppeKode);
     }
 
     private static boolean erIArbeidOgHarInnsatsbehov(String formidlingsgruppeKode, String servicegruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGINGKODER.contains(servicegruppeKode);
     }
 
-    private static boolean oppfolgingsFlaggErSatt(BrukerDTO brukerDTO) {
-        return brukerDTO.getOppfolging();
+    private static boolean oppfolgingsFlaggErSatt(OppfolgingsBruker bruker) {
+        return bruker.isOppfolging();
     }
 }

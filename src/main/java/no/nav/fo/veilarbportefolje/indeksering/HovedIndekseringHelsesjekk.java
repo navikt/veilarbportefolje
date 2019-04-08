@@ -4,18 +4,22 @@ import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import org.springframework.stereotype.Component;
 
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getElasticHostname;
+
+
 @Component
 public class HovedIndekseringHelsesjekk implements Helsesjekk {
 
-    private ElasticSearchService elasticSearchService;
+    private ElasticIndexer elasticIndexer;
 
-    public HovedIndekseringHelsesjekk(ElasticSearchService elasticSearchService) {
-        this.elasticSearchService = elasticSearchService;
+    public HovedIndekseringHelsesjekk(ElasticIndexer elasticIndexer) {
+        this.elasticIndexer = elasticIndexer;
     }
 
     @Override
     public void helsesjekk() {
-        Exception indekseringFeilet = elasticSearchService.hentIndekseringFeiletStatus();
+        Exception indekseringFeilet = elasticIndexer.hentIndekseringFeiletStatus();
         if (indekseringFeilet != null) {
             throw new RuntimeException(indekseringFeilet);
         }
@@ -25,7 +29,7 @@ public class HovedIndekseringHelsesjekk implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
                 "hovedindeksering",
-                String.format("https://%s/%s", IndekseringConfig.getElasticUrl(), IndekseringConfig.getAlias()),
+                String.format("https://%s/%s", getElasticHostname(), getAlias()),
                 "Sjekker om forrige hovedindeksering var vellykket",
                 true
         );

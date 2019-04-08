@@ -15,6 +15,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Slf4j
 public class FilmottakFileUtils {
@@ -62,5 +64,18 @@ public class FilmottakFileUtils {
             log.info("Unmarshalling av %s ferdig!", declaredType.getName());
             return jaxbElement.getValue();
         });
+    }
+
+    static Try<Long> getLastModifiedTimeInMillis(SftpConfig sftpConfig) {
+        return Try.of(
+                () -> hentFil(sftpConfig)
+                        .get()
+                        .getContent()
+                        .getLastModifiedTime())
+                .onFailure(e -> log.warn(String.format("Kunne ikke hente ut fil via nfs: %s", sftpConfig.getUrl())));
+    }
+
+    static long hoursSinceLastChanged(LocalDateTime lastChanged) {
+        return ChronoUnit.HOURS.between(lastChanged, LocalDateTime.now());
     }
 }

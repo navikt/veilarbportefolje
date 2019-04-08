@@ -1,5 +1,7 @@
 package no.nav.fo.veilarbportefolje.util;
 
+import io.swagger.models.auth.In;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -74,8 +76,16 @@ public class DateUtils {
         return Optional.ofNullable(date).map(Date::toInstant).map(Timestamp::from).orElse(null);
     }
 
+    public static Timestamp dateToTimestamp(String date) {
+        return Optional.ofNullable(date).map(Instant::parse).map(Timestamp::from).orElse(null);
+    }
+
     public static boolean isRandomFutureDate(Timestamp utlopsdato) {
         return timestampFromISO8601(RANDOM_FUTURE_DATE).equals(utlopsdato);
+    }
+
+    public static boolean isRandomFutureDate(Instant instant) {
+        return isRandomFutureDate(Optional.ofNullable(instant).map(Instant::toEpochMilli).map(Timestamp::new).orElse(null));
     }
 
     public static boolean isRandomFutureDate(Date date) {
