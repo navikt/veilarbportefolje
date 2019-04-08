@@ -126,6 +126,7 @@ public class Bruker {
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
         String sikkerhetstiltak = bruker.getSikkerhetstiltak();
+        String diskresjonskode = bruker.getDiskresjonskode();
 
         return new Bruker()
                 .setFnr(bruker.getFnr())
@@ -137,7 +138,7 @@ public class Bruker {
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
                 .setVeilederId(bruker.getVeileder_id())
-                .setDiskresjonskode(bruker.getDiskresjonskode())
+                .setDiskresjonskode((diskresjonskode.equals("7") || diskresjonskode.equals("6")) ? diskresjonskode : null)
                 .setEgenAnsatt(bruker.isEgen_ansatt())
                 .setErDoed(bruker.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
