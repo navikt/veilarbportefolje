@@ -40,6 +40,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static no.nav.common.leaderelection.LeaderElection.isLeader;
 import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE_LIMIT;
@@ -63,8 +64,6 @@ public class ElasticIndexer implements IndekseringService {
 
     private BrukerRepository brukerRepository;
 
-    private Exception indekseringFeilet;
-
     @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
@@ -78,22 +77,10 @@ public class ElasticIndexer implements IndekseringService {
         this.elasticService = elasticService;
     }
 
-    public Exception hentIndekseringFeiletStatus() {
-        return indekseringFeilet;
-    }
-
     @Override
     public void hovedindeksering() {
-        if (isNotLeader()) {
-            return;
-        }
-
-        try {
+        if (isLeader()) {
             startIndeksering();
-            indekseringFeilet = null;
-        } catch (Exception e) {
-            indekseringFeilet = e;
-            throw e;
         }
     }
 
