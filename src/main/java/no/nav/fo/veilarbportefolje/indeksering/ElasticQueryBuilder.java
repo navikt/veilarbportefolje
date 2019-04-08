@@ -62,7 +62,12 @@ public class ElasticQueryBuilder {
                 servicegruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", servicegruppe))
         );
 
-        filtervalg.veiledere.forEach(veileder -> queryBuilder.should(matchQuery("veileder_id", veileder)));
+        if (!filtervalg.veiledere.isEmpty()) {
+            BoolQueryBuilder veilederQuery = new BoolQueryBuilder();
+            filtervalg.veiledere.forEach(veileder -> veilederQuery.should(matchQuery("veileder_id", veileder)));
+            queryBuilder.filter(veilederQuery);
+        }
+
 
         filtervalg.manuellBrukerStatus.forEach(
                 status -> queryBuilder.filter(matchQuery("manuell_bruker", status))

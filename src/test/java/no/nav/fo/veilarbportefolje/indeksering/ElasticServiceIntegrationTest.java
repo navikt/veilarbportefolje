@@ -19,6 +19,7 @@ import no.nav.fo.veilarbportefolje.service.VeilederService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -107,20 +108,24 @@ public class ElasticServiceIntegrationTest {
 
     @Test
     public void skal_hente_ut_brukere_ved_soek_paa_flere_veiledere() {
+        String now = Instant.now().toString();
         List<OppfolgingsBruker> brukere = listOf(
                 new OppfolgingsBruker()
                         .setFnr(randomFnr())
                         .setEnhet_id(TEST_ENHET)
+                        .setNyesteutlopteaktivitet(now)
                         .setVeileder_id(TEST_VEILEDER_0),
 
                 new OppfolgingsBruker()
                         .setFnr(randomFnr())
                         .setEnhet_id(TEST_ENHET)
+                        .setNyesteutlopteaktivitet(now)
                         .setVeileder_id(TEST_VEILEDER_1),
 
                 new OppfolgingsBruker()
                         .setFnr(randomFnr())
                         .setEnhet_id(TEST_ENHET)
+                        .setNyesteutlopteaktivitet(now)
                         .setVeileder_id(null)
 
         );
@@ -128,7 +133,7 @@ public class ElasticServiceIntegrationTest {
         skrivBrukereTilTestindeks(brukere);
 
         val filtervalg = new Filtervalg()
-                .setFerdigfilterListe(listOf(UFORDELTE_BRUKERE))
+                .setFerdigfilterListe(listOf(UTLOPTE_AKTIVITETER))
                 .setVeiledere(listOf(TEST_VEILEDER_0, TEST_VEILEDER_1));
 
         val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
