@@ -55,12 +55,6 @@ public class IndekseringConfig {
 
     private static final String URL = getRequiredProperty(VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY);
 
-
-    @Bean
-    public HovedIndekseringHelsesjekk hovedIndekseringHelsesjekk(ElasticIndexer elasticIndexer) {
-        return new HovedIndekseringHelsesjekk(elasticIndexer);
-    }
-
     @Bean
     public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();

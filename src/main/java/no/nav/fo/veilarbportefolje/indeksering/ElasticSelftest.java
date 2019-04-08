@@ -20,7 +20,10 @@ public class ElasticSelftest implements Helsesjekk {
 
     RestHighLevelClient client;
 
+    private static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 300_000;
+
     @Inject
+
     public ElasticSelftest(RestHighLevelClient client) {
         this.client = client;
     }
@@ -28,10 +31,13 @@ public class ElasticSelftest implements Helsesjekk {
     @Override
     @SneakyThrows
     public void helsesjekk() {
-        ClusterHealthResponse health = client.cluster().health(new ClusterHealthRequest(), RequestOptions.DEFAULT);
-        if (health.getStatus() != GREEN) {
-            throw new RuntimeException(health.toString());
+        long antallDokumenter = ElasticUtils.getCount();
+        if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {
+            String feilmelding = String.format("Antall dokumenter i elastic (%s) er mindre enn forventet antall (%s)", antallDokumenter, FORVENTET_MINIMUM_ANTALL_DOKUMENTER);
+            throw new RuntimeException(feilmelding);
         }
+
+
     }
 
     @Override
@@ -39,8 +45,8 @@ public class ElasticSelftest implements Helsesjekk {
         return new HelsesjekkMetadata(
                 "elasticsearch helsesjekk",
                 String.format("http://%s/%s", getElasticHostname(), getAlias()),
-                "Sjekker helsestatus til Elasticsearch-clusteret",
-                true
+                String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), true
         );
     }
+
 }

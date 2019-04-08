@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarbportefolje.indeksering.domene.CountResponse;
+import no.nav.sbl.rest.RestUtils;
 import no.nav.sbl.util.EnvironmentUtils;
 
 import java.util.Base64;
@@ -14,6 +16,20 @@ public class ElasticUtils {
 
     public static final String PREPROD_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
     public static final String PROD_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
+
+    public static long getCount() {
+        String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
+
+        return RestUtils.withClient(client ->
+                client
+                        .target(url)
+                        .request()
+                        .header("Authorization", ElasticUtils.getAuthHeaderValue())
+                        .get(CountResponse.class)
+                        .getCount()
+        );
+    }
+
 
     static String getAbsoluteUrl() {
         return String.format(

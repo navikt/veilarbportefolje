@@ -2,9 +2,7 @@ package no.nav.fo.veilarbportefolje.indeksering;
 
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.indeksering.domene.CountResponse;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import no.nav.sbl.rest.RestUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -27,19 +25,7 @@ public class ElasticMetricsReporter {
         }
 
         log.info("logger metrikker for antall dokumenter i elastic");
-        Gauge.builder("veilarbelastic_number_of_docs", this::getCount).register(getMeterRegistry());
+        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
     }
 
-    private long getCount() {
-        String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
-
-        return RestUtils.withClient(client ->
-                client
-                        .target(url)
-                        .request()
-                        .header("Authorization", ElasticUtils.getAuthHeaderValue())
-                        .get(CountResponse.class)
-                        .getCount()
-        );
-    }
 }
