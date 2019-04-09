@@ -75,7 +75,8 @@ public class ElasticConfig {
                 .setRequestConfigCallback(
                         requestConfig -> {
                             requestConfig.setConnectTimeout(10);
-                            requestConfig.setSocketTimeout(120000);
+                            requestConfig.setSocketTimeout(120_000);
+                            requestConfig.setConnectionRequestTimeout(0); // http://www.github.com/elastic/elasticsearch/issues/24069
                             return requestConfig;
                         }
                 ));
