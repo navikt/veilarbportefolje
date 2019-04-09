@@ -138,7 +138,7 @@ public class Bruker {
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
                 .setVeilederId(bruker.getVeileder_id())
-                .setDiskresjonskode((diskresjonskode.equals("7") || diskresjonskode.equals("6")) ? diskresjonskode : null)
+                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
                 .setEgenAnsatt(bruker.isEgen_ansatt())
                 .setErDoed(bruker.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
