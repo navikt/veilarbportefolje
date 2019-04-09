@@ -1,6 +1,6 @@
 # ref https://raw.githubusercontent.com/nais/naisd/master/nais_example.yaml
 image: docker.adeo.no:5000/fo/veilarbportefolje
-team: oppfolging
+team: biff
 replicas:
   min: 3
   max: 3
