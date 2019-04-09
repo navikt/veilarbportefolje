@@ -228,7 +228,7 @@ public class ElasticQueryBuilder {
                 queryBuilder = existsQuery("nyesteutlopteaktivitet");
                 break;
             case MIN_ARBEIDSLISTE:
-                queryBuilder = existsQuery("arbeidsliste_aktiv");
+                queryBuilder = matchQuery("arbeidsliste_aktiv", true);
                 break;
             case NYE_BRUKERE_FOR_VEILEDER:
                 queryBuilder = matchQuery("ny_for_veileder", true);
