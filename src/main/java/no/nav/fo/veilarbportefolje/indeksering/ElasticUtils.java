@@ -14,8 +14,8 @@ import static no.nav.sbl.util.EnvironmentUtils.resolveHostName;
 @Slf4j
 public class ElasticUtils {
 
-    public static final String PREPROD_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
-    public static final String PROD_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
+    public static final String NAIS_LOADBALANCED_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
+    public static final String NAIS_INTERNAL_CLUSTER_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
 
     public static long getCount() {
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
@@ -68,9 +68,9 @@ public class ElasticUtils {
 
     static String getElasticHostname() {
         if (onDevillo()) {
-            return PREPROD_HOSTNAME;
+            return NAIS_LOADBALANCED_HOSTNAME;
         } else {
-            return PROD_HOSTNAME;
+            return NAIS_INTERNAL_CLUSTER_HOSTNAME;
         }
     }
 
