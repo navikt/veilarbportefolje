@@ -129,6 +129,10 @@ public class AktivitetDAO {
 
     public Map<PersonId, Set<AktivitetStatus>> getAktivitetstatusForBrukere(Collection<PersonId> personIds) {
 
+        if (personIds == null || personIds.isEmpty()) {
+            throw new IllegalArgumentException("Trenger person-ider for å hente ut aktivitetsstatuser");
+        }
+
         Map<String, Object> params = new HashMap<>();
         params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
 
