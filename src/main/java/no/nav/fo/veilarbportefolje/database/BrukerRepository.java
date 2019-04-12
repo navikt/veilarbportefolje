@@ -52,10 +52,14 @@ public class BrukerRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-    public int oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
-        return SqlUtils.update(db, Tabell.METADATA)
+    public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
+        Integer oppdaterteRader = update(db, METADATA)
                 .set(SIST_INDEKSERT_ES, tidsstempel)
                 .execute();
+
+        if (oppdaterteRader != 1) {
+            throw new RuntimeException("Klarte ikke å oppdaterer tidsstempel for sist indeksert i elastic");
+        }
     }
 
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
