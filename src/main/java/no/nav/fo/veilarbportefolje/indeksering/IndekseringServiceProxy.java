@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import io.prometheus.client.Histogram;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
 import javax.inject.Inject;
@@ -25,19 +25,31 @@ public class IndekseringServiceProxy implements IndekseringService {
 
     @Override
     public void hovedindeksering() {
-        MetricsUtils.timed("solr.hovedindeksering", solrService::hovedindeksering);
+
+        Histogram solrTimer = Histogram.build()
+                .name("portefolje_solr_hovedindeksering_timer")
+                .help("Tidtaker for hovedindeksering i solr")
+                .register();
+
+        Histogram elasticTimer = Histogram.build()
+                .name("portefolje_es_hovedindeksering_timer")
+                .help("Tidtaker for hovedindeksering i elastic")
+                .register();
+
+        solrTimer.time(solrService::hovedindeksering);
 
         if (skrivDataTilElasticsearchIsEnabled()) {
-            MetricsUtils.timed("es.hovedindeksering", elasticIndexer::hovedindeksering);
+            elasticTimer.time(elasticIndexer::hovedindeksering);
         }
     }
 
     @Override
     public void deltaindeksering() {
-        MetricsUtils.timed("solr.deltaindeksering", solrService::deltaindeksering);
+
+        solrService.deltaindeksering();
 
         if (skrivDataTilElasticsearchIsEnabled()) {
-            MetricsUtils.timed("es.deltaindeksering", elasticIndexer::deltaindeksering);
+            elasticIndexer.deltaindeksering();
         }
     }
 

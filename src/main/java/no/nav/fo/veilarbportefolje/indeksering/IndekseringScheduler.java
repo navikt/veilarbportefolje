@@ -8,8 +8,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
-
 @Slf4j
 public class IndekseringScheduler {
 
@@ -27,12 +25,12 @@ public class IndekseringScheduler {
 
     @Scheduled(cron = "0 0 4 * * ?")
     public void totalIndexering() {
-        timed("indeksering.totalHits", () -> {
-            kopierGR199FraArena.startOppdateringAvYtelser();
-            tiltakHandler.startOppdateringAvTiltakIDatabasen();
-            krrService.hentDigitalKontaktInformasjonBolk();
-            indekseringService.hovedindeksering();
-        });
+        log.info("Total indeksering: startet");
+        kopierGR199FraArena.startOppdateringAvYtelser();
+        tiltakHandler.startOppdateringAvTiltakIDatabasen();
+        krrService.hentDigitalKontaktInformasjonBolk();
+        indekseringService.hovedindeksering();
+        log.info("Total indeksering: fullført");
     }
 
     @Scheduled(cron = "0 * * * * *")

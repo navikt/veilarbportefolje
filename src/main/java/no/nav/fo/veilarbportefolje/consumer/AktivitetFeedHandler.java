@@ -1,19 +1,17 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.feed.AktivitetDataFraFeed;
-import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.inject.Inject;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {

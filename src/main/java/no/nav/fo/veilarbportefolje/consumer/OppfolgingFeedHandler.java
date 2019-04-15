@@ -10,7 +10,6 @@ import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
-import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Comparator.naturalOrder;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
@@ -49,23 +47,11 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
-
-        try {
-            timed("feed.oppfolging.objekt", () -> {
-                        log.info("OppfolgingerfeedDebug data: {}", data);
-
-                        data.forEach(info -> {
-                            oppdaterOppfolgingData(info);
-                            indekseringService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
-                        });
-                        finnMaxFeedId(data).ifPresent(id ->  oppfolgingFeedRepository.updateOppfolgingFeedId(id));
-                    },
-                    (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size())));
-        } catch (Exception e) {
-            log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.", e);
-        }
-
-        MetricsFactory.createEvent("datamotattfrafeed").report();
+        data.forEach(info -> {
+            oppdaterOppfolgingData(info);
+            indekseringService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+        });
+        finnMaxFeedId(data).ifPresent(id -> oppfolgingFeedRepository.updateOppfolgingFeedId(id));
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {
@@ -80,7 +66,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             if (slettes) {
                 arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
             }
-            timed("oppdater.oppfolgingsinformasjon", () -> oppfolgingFeedRepository.oppdaterOppfolgingData(info));
+            oppfolgingFeedRepository.oppdaterOppfolgingData(info);
         });
 
     }

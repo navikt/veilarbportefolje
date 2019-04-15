@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.service;
 
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class KrrService {
@@ -53,18 +53,15 @@ public class KrrService {
         log.info("Indeksering: Fullført henting av KRR informasjon");
     }
 
+    @SneakyThrows
     void hentDigitalKontaktInformasjon(List<String> fnrListe) {
-        timed("indeksering.oppdatering.krr.bolk",
-                (error) -> log.error("Feil ved henting fra KRR", error),
-                () -> {
-                    val req = new WSHentDigitalKontaktinformasjonBolkRequest().withPersonidentListe(fnrListe);
-                    val resp = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req);
+        val req = new WSHentDigitalKontaktinformasjonBolkRequest().withPersonidentListe(fnrListe);
+        val resp = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req);
 
-                    krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(
-                            resp.getDigitalKontaktinformasjonListe(),
-                            resp.getForretningsmessigUnntakListe()
-                    ));
-                });
+        krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(
+                resp.getDigitalKontaktinformasjonListe(),
+                resp.getForretningsmessigUnntakListe()
+        ));
     }
 
     private List<KrrDAO> mapDigitalKontaktInformasjon(

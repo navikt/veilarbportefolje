@@ -223,7 +223,4 @@ public class DbUtils {
         return (T t) -> !predicate.test(t);
     }
 
-    public static String dbTimerNavn(String sql) {
-        return (sql + ".db").replaceAll("[^\\w]", "-");
-    }
 }
