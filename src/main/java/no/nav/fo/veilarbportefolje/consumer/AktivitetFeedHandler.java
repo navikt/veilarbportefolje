@@ -51,41 +51,17 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
-        try {
-            timed(
-                    "feed.aktivitet.objekt",
-                    () -> {
-                        if (aktivitet.isHistorisk()) {
-                            aktivitetDAO.deleteById(aktivitet.getAktivitetId());
-                        } else {
-                            aktivitetDAO.upsertAktivitet(aktivitet);
-                        }
-                    },
-                    (timer, hasFailed) -> {
-                        if (hasFailed) {
-                            timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase());
-                        }
-                    }
-            );
-        } catch (Exception e) {
-            log.error("Kunne ikke lagre aktivitetdata fra feed for aktivitetid {}.", aktivitet.getAktivitetId(), e);
+        if (aktivitet.isHistorisk()) {
+            aktivitetDAO.deleteById(aktivitet.getAktivitetId());
+        } else {
+            aktivitetDAO.upsertAktivitet(aktivitet);
         }
     }
 
     void behandleAktivitetdata(List<AktoerId> aktoerids) {
-        try {
-            timed(
-                    "feed.aktivitet.indekseraktivitet",
-                    () -> {
-                        if (aktoerids.isEmpty()) {
-                            return;
-                        }
-                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerids);
-                    }, (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
-
-            );
-        } catch (Exception e) {
-            log.error("Feil ved behandling av aktivitetdata fra feed", e);
+        if (aktoerids.isEmpty()) {
+            return;
         }
+        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerids);
     }
 }
