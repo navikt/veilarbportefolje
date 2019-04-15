@@ -12,7 +12,6 @@ import java.time.Instant;
 
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.LOPENDEYTELSER_SFTP;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j
@@ -38,11 +37,11 @@ public class KopierGR199FraArena {
     private void kopierOgIndekser() {
         log.info("Indeksering: Starter oppdatering av ytelser...");
         aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
-        timed("GR199.hentfil", () -> FilmottakFileUtils.hentFil(LOPENDEYTELSER_SFTP))
+        FilmottakFileUtils.hentFil(LOPENDEYTELSER_SFTP)
                 .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs"))
-                .flatMap(timed("indexering.GR199.unmarshall", FilmottakFileUtils::unmarshallLoependeYtelserFil))
+                .flatMap(FilmottakFileUtils::unmarshallLoependeYtelserFil)
                 .onFailure(log(log, "Unmarshalling av ytelsesfil feilet"))
-                .andThen(timed("indexering.GR199.lagreYtelser", indekserHandler::lagreYtelser))
+                .andThen(indekserHandler::lagreYtelser)
                 .onFailure(log(log, "Hovedindeksering feilet"));
         log.info("Indeksering: Fullført oppdatering av ytelser");
     }

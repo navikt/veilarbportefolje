@@ -14,10 +14,8 @@ import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.fo.veilarbportefolje.util.BatchConsumer;
-import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
-import no.nav.metrics.Timer;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -41,7 +39,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.BiConsumer;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -52,7 +49,6 @@ import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.harIkkeVeilederF
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyAktivitetStatuser;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyTiltak;
 import static no.nav.fo.veilarbportefolje.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class SolrService implements IndekseringService {
@@ -168,7 +164,7 @@ public class SolrService implements IndekseringService {
         List<VeilederId> veiledere = veilederService.getIdenter(enhetId);
         SolrQuery solrQuery = SolrUtils.buildSolrQuery(enhetId, veilederIdent, veiledere, sortOrder, sortField, filtervalg, pepClient);
         addPaging(solrQuery, fra, antall);
-        QueryResponse response = timed("solr.hentbrukere", () -> Try.of(() -> solrClientSlave.query(solrQuery)).get());
+        QueryResponse response = Try.of(() -> solrClientSlave.query(solrQuery)).get();
         SolrUtils.checkSolrResponseCode(response.getStatus());
         SolrDocumentList results = response.getResults();
         List<Bruker> brukere = results.stream().map(Bruker::of).collect(toList());
@@ -181,10 +177,8 @@ public class SolrService implements IndekseringService {
     }
 
     private void leggDataTilSolrDocument(List<SolrInputDocument> dokumenter) {
-        Boolean batch = dokumenter.size() > 1;
-        BiConsumer<Timer, Boolean> tagsAppeder = (timer, success) -> timer.addTagToReport("batch", batch.toString());
-        timed("indeksering.applyaktiviteter", () -> applyAktivitetStatuser(dokumenter, aktivitetDAO), tagsAppeder);
-        timed("indeksering.applytiltak", () -> applyTiltak(dokumenter, aktivitetDAO), tagsAppeder);
+        applyAktivitetStatuser(dokumenter, aktivitetDAO);
+        applyTiltak(dokumenter, aktivitetDAO);
     }
 
     public void slettBruker(String fnr) {
@@ -206,7 +200,7 @@ public class SolrService implements IndekseringService {
         // ikke interessert i veiledere som ikke har tilordnede brukere
         solrQuery.setFacetMinCount(1);
 
-        QueryResponse response = MetricsUtils.timed("solr.hentportefoljestorrelser", () -> getResponse(solrQuery));
+        QueryResponse response = getResponse(solrQuery);
         FacetField facetField = response.getFacetField(facetFieldString);
 
         return SolrUtils.mapFacetResults(facetField);
@@ -260,19 +254,17 @@ public class SolrService implements IndekseringService {
 
     private List<SolrInputDocument> addDocumentsToIndex(List<SolrInputDocument> dokumenter) {
         // javaslang.collection-API brukes her pga sliding-metoden
-        return timed("indeksering.adddocumentstoindex", () -> {
-            io.vavr.collection.List.ofAll(dokumenter)
-                    .sliding(10000, 10000)
-                    .forEach(docs -> {
-                        try {
-                            solrClientMaster.add(docs.toJavaList());
-                            log.info(format("Legger til %d dokumenter i indeksen", docs.length()));
-                        } catch (SolrServerException | IOException e) {
-                            log.error("Legge til solrdokumenter før commit feilet.", e);
-                        }
-                    });
-            return dokumenter;
-        });
+        io.vavr.collection.List.ofAll(dokumenter)
+                .sliding(10000, 10000)
+                .forEach(docs -> {
+                    try {
+                        solrClientMaster.add(docs.toJavaList());
+                        log.info(format("Legger til %d dokumenter i indeksen", docs.length()));
+                    } catch (SolrServerException | IOException e) {
+                        log.error("Legge til solrdokumenter før commit feilet.", e);
+                    }
+                });
+        return dokumenter;
     }
 
     private void deleteAllDocuments() {
@@ -310,7 +302,7 @@ public class SolrService implements IndekseringService {
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
         String trengerVurdering = "trenger_vurdering:true";
-        String erSykmeldtMedArbeidsgiver  = SolrUtils.formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver();
+        String erSykmeldtMedArbeidsgiver = SolrUtils.formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver();
 
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
@@ -324,11 +316,11 @@ public class SolrService implements IndekseringService {
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
         solrQuery.addFacetQuery(trengerVurdering);
-        solrQuery.addFacetQuery(erSykmeldtMedArbeidsgiver );
+        solrQuery.addFacetQuery(erSykmeldtMedArbeidsgiver);
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
-        QueryResponse response = timed("solr.statustall.enhet", () -> getResponse(solrQuery));
+        QueryResponse response = getResponse(solrQuery);
 
         long antallTotalt = response.getResults().getNumFound();
         long antallUfordelteBrukere = maybeUfordelteBrukere.map(ufordelteBrukere ->
@@ -377,7 +369,7 @@ public class SolrService implements IndekseringService {
         String ikkeIAvtaltAktivitet = "-aktiviteter:*";
         String utlopteAktiviteter = "nyesteutlopteaktivitet:*";
         String minArbeidsliste = "arbeidsliste_aktiv:*";
-        String erSykmeldtMedArbeidsgiver  = SolrUtils.formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver() ;
+        String erSykmeldtMedArbeidsgiver = SolrUtils.formidlingsgruppekodeOgKvalifiseringsgruppeKoderErSykmeldtMedArbeidsgiver();
 
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("veileder_id:" + veilederIdent);
@@ -390,12 +382,12 @@ public class SolrService implements IndekseringService {
         solrQuery.addFacetQuery(ikkeIAvtaltAktivitet);
         solrQuery.addFacetQuery(utlopteAktiviteter);
         solrQuery.addFacetQuery(minArbeidsliste);
-        solrQuery.addFacetQuery(erSykmeldtMedArbeidsgiver );
+        solrQuery.addFacetQuery(erSykmeldtMedArbeidsgiver);
 
         solrQuery.setRows(0);
 
         StatusTall statusTall = new StatusTall();
-        QueryResponse response = timed("solr.statustall.veileder", () -> getResponse(solrQuery));
+        QueryResponse response = getResponse(solrQuery);
         long antallTotalt = response.getResults().getNumFound();
         long antallInaktiveBrukere = response.getFacetQuery().get(inaktiveBrukere);
         long antallVenterPaSvarFraNAV = response.getFacetQuery().get(venterPaSvarFraNAV);
@@ -430,7 +422,7 @@ public class SolrService implements IndekseringService {
         solrQuery.addFilterQuery("enhet_id:" + enhet);
         solrQuery.addFilterQuery("arbeidsliste_aktiv:true");
 
-        QueryResponse response = timed("solr.hentarbeidsliste", () -> getResponse(solrQuery));
+        QueryResponse response = getResponse(solrQuery);
         return response.getResults().stream()
                 .map(Bruker::of)
                 .collect(toList());

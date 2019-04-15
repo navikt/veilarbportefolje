@@ -13,7 +13,6 @@ import no.nav.sbl.jdbc.Transactor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.time.Instant;
@@ -23,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -64,13 +62,10 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     void mapAktorId() {
-        timed("map.aktorid", () -> {
-            log.debug("Starter mapping av aktørid");
-            List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (RowMapper<String>) (rs, rowNum) -> rs.getString("AKTOERID"));
+            List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (rs, rowNum) -> rs.getString("AKTOERID"));
             log.info("Aktørider som skal mappes " + aktoerIder);
             aktoerIder.forEach((id) -> hentPersonidFraAktoerid(AktoerId.of(id)));
             log.info("Ferdig med mapping av [" + aktoerIder.size() + "] aktørider");
-        });
     }
 
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {

@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static no.nav.fo.veilarbportefolje.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.parseJaNei;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class KrrRepository {
@@ -31,7 +29,7 @@ public class KrrRepository {
     public void iterateFnrsUnderOppfolging(int fetchSize, Consumer<List<String>> fnrConsumer) {
         String sql = "SELECT AKTOERID, FODSELSNR, KVALIFISERINGSGRUPPEKODE, FORMIDLINGSGRUPPEKODE, OPPFOLGING FROM VW_PORTEFOLJE_INFO";
         List<String> fnrListe = new ArrayList<>();
-        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
+        db.query(sql, rs -> {
             String formidlingsgruppeKode = rs.getString("FORMIDLINGSGRUPPEKODE");
             String servicegruppeKode = rs.getString("KVALIFISERINGSGRUPPEKODE");
             boolean underOppfolging = parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
@@ -43,7 +41,7 @@ public class KrrRepository {
                     fnrListe.clear();
                 }
             }
-        }));
+        });
         fnrConsumer.accept(fnrListe);
     }
 
