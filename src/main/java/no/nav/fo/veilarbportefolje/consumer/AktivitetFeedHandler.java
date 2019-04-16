@@ -10,8 +10,11 @@ import no.nav.fo.veilarbportefolje.service.AktivitetService;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarbportefolje.consumer.AsyncAwaitUtils.async;
+import static no.nav.fo.veilarbportefolje.consumer.AsyncAwaitUtils.await;
 
 @Slf4j
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
@@ -36,7 +39,12 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                 .filter(AktivitetDataFraFeed::isAvtalt)
                 .collect(toList());
 
-        avtalteAktiviteter.forEach(this::lagreAktivitetData);
+        List<Runnable> jobs = avtalteAktiviteter.stream()
+                .map(this::toRunnable)
+                .collect(toList());
+
+        CompletableFuture future = async(jobs);
+        await(future);
 
         behandleAktivitetdata(avtalteAktiviteter
                 .stream().map(AktivitetDataFraFeed::getAktorId)
@@ -44,46 +52,23 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                 .map(AktoerId::of)
                 .collect(toList()));
 
-
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
     }
 
-    private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
-        try {
-            timed(
-                    "feed.aktivitet.objekt",
-                    () -> {
-                        if (aktivitet.isHistorisk()) {
-                            aktivitetDAO.deleteById(aktivitet.getAktivitetId());
-                        } else {
-                            aktivitetDAO.upsertAktivitet(aktivitet);
-                        }
-                    },
-                    (timer, hasFailed) -> {
-                        if (hasFailed) {
-                            timer.addTagToReport("aktoerhash", DigestUtils.md5Hex(aktivitet.getAktorId()).toUpperCase());
-                        }
-                    }
-            );
-        } catch (Exception e) {
-            log.error("Kunne ikke lagre aktivitetdata fra feed for aktivitetid {}.", aktivitet.getAktivitetId(), e);
-        }
+    private Runnable toRunnable(AktivitetDataFraFeed aktivitet) {
+        return () -> {
+            if (aktivitet.isHistorisk()) {
+                aktivitetDAO.deleteById(aktivitet.getAktivitetId());
+            } else {
+                aktivitetDAO.upsertAktivitet(aktivitet);
+            }
+        };
     }
 
     void behandleAktivitetdata(List<AktoerId> aktoerids) {
-        try {
-            timed(
-                    "feed.aktivitet.indekseraktivitet",
-                    () -> {
-                        if (aktoerids.isEmpty()) {
-                            return;
-                        }
-                        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerids);
-                    }, (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(aktoerids.size()))
-
-            );
-        } catch (Exception e) {
-            log.error("Feil ved behandling av aktivitetdata fra feed", e);
+        if (aktoerids.isEmpty()) {
+            return;
         }
+        aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerids);
     }
 }

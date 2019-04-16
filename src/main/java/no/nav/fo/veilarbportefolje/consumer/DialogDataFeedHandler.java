@@ -13,6 +13,11 @@ import javax.inject.Inject;
 import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarbportefolje.consumer.AsyncAwaitUtils.async;
+import static no.nav.fo.veilarbportefolje.consumer.AsyncAwaitUtils.await;
 
 
 @Slf4j
@@ -35,10 +40,21 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     @Override
     @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
-        data.forEach(info -> {
+
+        List<Runnable> jobs = data.stream()
+                .map(this::toRunnable)
+                .collect(toList());
+
+        CompletableFuture future = async(jobs);
+        await(future);
+
+        brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+    }
+
+    private Runnable toRunnable(DialogDataFraFeed info) {
+        return () -> {
             dialogFeedRepository.oppdaterDialogInfoForBruker(info);
             indekseringService.indekserAsynkront(AktoerId.of(info.getAktorId()));
-        });
-        brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+        };
     }
 }
