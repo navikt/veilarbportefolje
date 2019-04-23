@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.config;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
@@ -46,6 +47,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 @EnableScheduling
 @EnableAspectJAutoProxy
 @Configuration
+@Slf4j
 @Import({
         AbacContext.class,
         DatabaseConfig.class,
@@ -106,6 +108,8 @@ public class ApplicationConfig implements ApiApplication {
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
+
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error(e.getMessage(), e));
 
         if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
