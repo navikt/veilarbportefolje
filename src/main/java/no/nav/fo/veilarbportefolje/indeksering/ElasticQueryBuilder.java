@@ -41,25 +41,25 @@ public class ElasticQueryBuilder {
         );
 
         filtervalg.kjonn.forEach(
-                kjonn -> queryBuilder.filter(matchQuery("kjonn", kjonn.name()))
+                kjonn -> queryBuilder.should(matchQuery("kjonn", kjonn.name()))
         );
 
         filtervalg.fodselsdagIMnd.stream()
                 .map(Integer::parseInt)
-                .forEach(fodselsdagIMnd -> queryBuilder.filter(termQuery("fodselsdag_i_mnd", fodselsdagIMnd)));
+                .forEach(fodselsdagIMnd -> queryBuilder.should(termQuery("fodselsdag_i_mnd", fodselsdagIMnd)));
 
         filtervalg.innsatsgruppe.forEach(
-                innsatsgruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", innsatsgruppe))
+                innsatsgruppe -> queryBuilder.should(matchQuery("kvalifiseringsgruppekode", innsatsgruppe))
         );
 
-        filtervalg.hovedmal.forEach(hovedmal -> queryBuilder.filter(matchQuery("hovedmaalkode", hovedmal)));
+        filtervalg.hovedmal.forEach(hovedmal -> queryBuilder.should(matchQuery("hovedmaalkode", hovedmal)));
 
         filtervalg.formidlingsgruppe.forEach(
-                formidlingsgruppe -> queryBuilder.filter(matchQuery("formidlingsgruppekode", formidlingsgruppe))
+                formidlingsgruppe -> queryBuilder.should(matchQuery("formidlingsgruppekode", formidlingsgruppe))
         );
 
         filtervalg.servicegruppe.forEach(
-                servicegruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", servicegruppe))
+                servicegruppe -> queryBuilder.should(matchQuery("kvalifiseringsgruppekode", servicegruppe))
         );
 
         if (!filtervalg.veiledere.isEmpty()) {
@@ -70,13 +70,13 @@ public class ElasticQueryBuilder {
 
 
         filtervalg.manuellBrukerStatus.forEach(
-                status -> queryBuilder.filter(matchQuery("manuell_bruker", status))
+                status -> queryBuilder.should(matchQuery("manuell_bruker", status))
         );
 
-        filtervalg.tiltakstyper.forEach(tiltak -> queryBuilder.filter(matchQuery("tiltak", tiltak)));
+        filtervalg.tiltakstyper.forEach(tiltak -> queryBuilder.should(matchQuery("tiltak", tiltak)));
 
         filtervalg.rettighetsgruppe.forEach(
-                rettighetsgruppe -> queryBuilder.filter(matchQuery("rettighetsgruppekode", rettighetsgruppe.name()))
+                rettighetsgruppe -> queryBuilder.should(matchQuery("rettighetsgruppekode", rettighetsgruppe.name()))
         );
 
         if (filtervalg.harYtelsefilter()) {
