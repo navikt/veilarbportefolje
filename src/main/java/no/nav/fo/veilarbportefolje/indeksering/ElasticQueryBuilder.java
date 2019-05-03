@@ -40,44 +40,25 @@ public class ElasticQueryBuilder {
                 alder -> byggAlderQuery(alder, queryBuilder)
         );
 
-        filtervalg.kjonn.forEach(
-                kjonn -> queryBuilder.filter(matchQuery("kjonn", kjonn.name()))
-        );
+        byggManuellFilter(filtervalg.kjonn, queryBuilder, "veileder_id");
 
-        filtervalg.fodselsdagIMnd.stream()
-                .map(Integer::parseInt)
-                .forEach(fodselsdagIMnd -> queryBuilder.filter(termQuery("fodselsdag_i_mnd", fodselsdagIMnd)));
 
-        filtervalg.innsatsgruppe.forEach(
-                innsatsgruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", innsatsgruppe))
-        );
-
-        filtervalg.hovedmal.forEach(hovedmal -> queryBuilder.filter(matchQuery("hovedmaalkode", hovedmal)));
-
-        filtervalg.formidlingsgruppe.forEach(
-                formidlingsgruppe -> queryBuilder.filter(matchQuery("formidlingsgruppekode", formidlingsgruppe))
-        );
-
-        filtervalg.servicegruppe.forEach(
-                servicegruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", servicegruppe))
-        );
-
-        if (!filtervalg.veiledere.isEmpty()) {
-            BoolQueryBuilder veilederQuery = new BoolQueryBuilder();
-            filtervalg.veiledere.forEach(veileder -> veilederQuery.should(matchQuery("veileder_id", veileder)));
-            queryBuilder.filter(veilederQuery);
+        if (!filtervalg.fodselsdagIMnd.isEmpty()) {
+            BoolQueryBuilder fodselsdagIMndQuery = new BoolQueryBuilder();
+            filtervalg.fodselsdagIMnd.stream()
+                    .map(Integer::parseInt)
+                    .forEach(fodselsdagIMnd -> fodselsdagIMndQuery.should(termQuery("fodselsdag_i_mnd", fodselsdagIMnd)));
+            queryBuilder.filter(fodselsdagIMndQuery);
         }
 
-
-        filtervalg.manuellBrukerStatus.forEach(
-                status -> queryBuilder.filter(matchQuery("manuell_bruker", status))
-        );
-
-        filtervalg.tiltakstyper.forEach(tiltak -> queryBuilder.filter(matchQuery("tiltak", tiltak)));
-
-        filtervalg.rettighetsgruppe.forEach(
-                rettighetsgruppe -> queryBuilder.filter(matchQuery("rettighetsgruppekode", rettighetsgruppe.name()))
-        );
+        byggManuellFilter(filtervalg.innsatsgruppe, queryBuilder, "kvalifiseringsgruppekode");
+        byggManuellFilter(filtervalg.hovedmal, queryBuilder, "hovedmaalkode");
+        byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, "formidlingsgruppekode");
+        byggManuellFilter(filtervalg.servicegruppe, queryBuilder, "kvalifiseringsgruppekode");
+        byggManuellFilter(filtervalg.veiledere, queryBuilder, "veileder_id");
+        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
+        byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
+        byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
 
         if (filtervalg.harYtelsefilter()) {
 
@@ -256,6 +237,16 @@ public class ElasticQueryBuilder {
         BoolQueryBuilder boolQuery = boolQuery();
         veiledereMedTilgangTilEnhet.forEach(id -> boolQuery.mustNot(matchQuery("veileder_id", id)));
         return boolQuery;
+    }
+
+    static<T> BoolQueryBuilder byggManuellFilter (List<T> filtervalgsListe, BoolQueryBuilder queryBuilder, String matchQueryString) {
+        if (!filtervalgsListe.isEmpty()) {
+            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            filtervalgsListe.forEach(filtervalg -> boolQueryBuilder.should(matchQuery(matchQueryString, filtervalg)));
+            return queryBuilder.filter(boolQueryBuilder);
+        }
+
+        return queryBuilder;
     }
 
     //
