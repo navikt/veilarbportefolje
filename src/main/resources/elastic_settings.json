@@ -54,6 +54,9 @@
         "etternavn": {
           "type": "keyword"
         },
+        "arbeidsliste_overskrift": {
+          "type": "keyword"
+        },
         "fullt_navn": {
           "type": "text",
           "analyzer": "fullt_navn_sok",
