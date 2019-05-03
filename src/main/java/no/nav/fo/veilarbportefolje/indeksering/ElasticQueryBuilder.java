@@ -36,21 +36,16 @@ public class ElasticQueryBuilder {
 
     static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
 
-        filtervalg.alder.forEach(
-                alder -> byggAlderQuery(alder, queryBuilder)
-        );
-
-        byggManuellFilter(filtervalg.kjonn, queryBuilder, "kjonn");
-
-
-        if (!filtervalg.fodselsdagIMnd.isEmpty()) {
-            BoolQueryBuilder fodselsdagIMndQuery = new BoolQueryBuilder();
-            filtervalg.fodselsdagIMnd.stream()
-                    .map(Integer::parseInt)
-                    .forEach(fodselsdagIMnd -> fodselsdagIMndQuery.should(termQuery("fodselsdag_i_mnd", fodselsdagIMnd)));
-            queryBuilder.filter(fodselsdagIMndQuery);
+        if (!filtervalg.alder.isEmpty()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.alder.forEach(alder -> byggAlderQuery(alder, subQuery));
+            queryBuilder.filter(subQuery);
         }
 
+        List<Integer> fodseldagIMndQuery = filtervalg.fodselsdagIMnd.stream().map(Integer::parseInt).collect(toList());
+
+        byggManuellFilter(fodseldagIMndQuery, queryBuilder, "fodselsdag_i_mnd");
+        byggManuellFilter(filtervalg.kjonn, queryBuilder, "kjonn");
         byggManuellFilter(filtervalg.innsatsgruppe, queryBuilder, "kvalifiseringsgruppekode");
         byggManuellFilter(filtervalg.hovedmal, queryBuilder, "hovedmaalkode");
         byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, "formidlingsgruppekode");
@@ -270,7 +265,7 @@ public class ElasticQueryBuilder {
     static void byggAlderQuery(String alder, BoolQueryBuilder queryBuilder) {
 
         if ("19-og-under".equals(alder)) {
-            queryBuilder.must(
+            queryBuilder.should(
                     rangeQuery("fodselsdato")
                             .lte("now")
                             .gt("now-20y-1d")
@@ -281,7 +276,7 @@ public class ElasticQueryBuilder {
             int fraAlder = parseInt(fraTilAlder[0]);
             int tilAlder = parseInt(fraTilAlder[1]);
 
-            queryBuilder.must(
+            queryBuilder.should(
                     rangeQuery("fodselsdato")
                             .lte(format("now-%sy/d", fraAlder))
                             .gt(format("now-%sy-1d", tilAlder + 1))
