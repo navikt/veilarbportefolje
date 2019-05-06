@@ -39,7 +39,7 @@ public class ElasticQueryBuilder {
         if (!filtervalg.alder.isEmpty()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.alder.forEach(alder -> byggAlderQuery(alder, subQuery));
-            queryBuilder.filter(subQuery);
+            queryBuilder.must(subQuery);
         }
 
         List<Integer> fodseldagIMndQuery = filtervalg.fodselsdagIMnd.stream().map(Integer::parseInt).collect(toList());
