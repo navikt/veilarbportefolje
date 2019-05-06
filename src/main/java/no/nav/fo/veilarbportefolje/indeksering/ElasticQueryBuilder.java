@@ -36,48 +36,24 @@ public class ElasticQueryBuilder {
 
     static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
 
-        filtervalg.alder.forEach(
-                alder -> byggAlderQuery(alder, queryBuilder)
-        );
-
-        filtervalg.kjonn.forEach(
-                kjonn -> queryBuilder.filter(matchQuery("kjonn", kjonn.name()))
-        );
-
-        filtervalg.fodselsdagIMnd.stream()
-                .map(Integer::parseInt)
-                .forEach(fodselsdagIMnd -> queryBuilder.filter(termQuery("fodselsdag_i_mnd", fodselsdagIMnd)));
-
-        filtervalg.innsatsgruppe.forEach(
-                innsatsgruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", innsatsgruppe))
-        );
-
-        filtervalg.hovedmal.forEach(hovedmal -> queryBuilder.filter(matchQuery("hovedmaalkode", hovedmal)));
-
-        filtervalg.formidlingsgruppe.forEach(
-                formidlingsgruppe -> queryBuilder.filter(matchQuery("formidlingsgruppekode", formidlingsgruppe))
-        );
-
-        filtervalg.servicegruppe.forEach(
-                servicegruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", servicegruppe))
-        );
-
-        if (!filtervalg.veiledere.isEmpty()) {
-            BoolQueryBuilder veilederQuery = new BoolQueryBuilder();
-            filtervalg.veiledere.forEach(veileder -> veilederQuery.should(matchQuery("veileder_id", veileder)));
-            queryBuilder.filter(veilederQuery);
+        if (!filtervalg.alder.isEmpty()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.alder.forEach(alder -> byggAlderQuery(alder, subQuery));
+            queryBuilder.must(subQuery);
         }
 
+        List<Integer> fodseldagIMndQuery = filtervalg.fodselsdagIMnd.stream().map(Integer::parseInt).collect(toList());
 
-        filtervalg.manuellBrukerStatus.forEach(
-                status -> queryBuilder.filter(matchQuery("manuell_bruker", status))
-        );
-
-        filtervalg.tiltakstyper.forEach(tiltak -> queryBuilder.filter(matchQuery("tiltak", tiltak)));
-
-        filtervalg.rettighetsgruppe.forEach(
-                rettighetsgruppe -> queryBuilder.filter(matchQuery("rettighetsgruppekode", rettighetsgruppe.name()))
-        );
+        byggManuellFilter(fodseldagIMndQuery, queryBuilder, "fodselsdag_i_mnd");
+        byggManuellFilter(filtervalg.kjonn, queryBuilder, "kjonn");
+        byggManuellFilter(filtervalg.innsatsgruppe, queryBuilder, "kvalifiseringsgruppekode");
+        byggManuellFilter(filtervalg.hovedmal, queryBuilder, "hovedmaalkode");
+        byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, "formidlingsgruppekode");
+        byggManuellFilter(filtervalg.servicegruppe, queryBuilder, "kvalifiseringsgruppekode");
+        byggManuellFilter(filtervalg.veiledere, queryBuilder, "veileder_id");
+        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
+        byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
+        byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
 
         if (filtervalg.harYtelsefilter()) {
 
@@ -258,6 +234,16 @@ public class ElasticQueryBuilder {
         return boolQuery;
     }
 
+    static<T> BoolQueryBuilder byggManuellFilter (List<T> filtervalgsListe, BoolQueryBuilder queryBuilder, String matchQueryString) {
+        if (!filtervalgsListe.isEmpty()) {
+            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            filtervalgsListe.forEach(filtervalg -> boolQueryBuilder.should(matchQuery(matchQueryString, filtervalg)));
+            return queryBuilder.filter(boolQueryBuilder);
+        }
+
+        return queryBuilder;
+    }
+
     //
 //  Eksempel:
 //
@@ -279,7 +265,7 @@ public class ElasticQueryBuilder {
     static void byggAlderQuery(String alder, BoolQueryBuilder queryBuilder) {
 
         if ("19-og-under".equals(alder)) {
-            queryBuilder.must(
+            queryBuilder.should(
                     rangeQuery("fodselsdato")
                             .lte("now")
                             .gt("now-20y-1d")
@@ -290,7 +276,7 @@ public class ElasticQueryBuilder {
             int fraAlder = parseInt(fraTilAlder[0]);
             int tilAlder = parseInt(fraTilAlder[1]);
 
-            queryBuilder.must(
+            queryBuilder.should(
                     rangeQuery("fodselsdato")
                             .lte(format("now-%sy/d", fraAlder))
                             .gt(format("now-%sy-1d", tilAlder + 1))
