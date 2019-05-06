@@ -1,6 +1,6 @@
 {
   "bool": {
-    "must": [
+    "should": [
       {
         "range": {
           "fodselsdato": {
