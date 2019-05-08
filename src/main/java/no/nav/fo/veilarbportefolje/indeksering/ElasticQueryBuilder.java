@@ -73,7 +73,7 @@ public class ElasticQueryBuilder {
             if (isNumeric(query)) {
                 queryBuilder.must(termQuery("fnr", query));
             } else {
-                queryBuilder.must(termQuery("fullt_navn", query));
+                queryBuilder.must(matchQuery("fullt_navn", query));
             }
         }
     }
