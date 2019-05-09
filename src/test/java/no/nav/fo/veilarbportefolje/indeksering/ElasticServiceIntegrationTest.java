@@ -105,6 +105,37 @@ public class ElasticServiceIntegrationTest {
     @Rule
     public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER_0, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
 
+    @Test
+    public void skal_sette_brukere_med_veileder_fra_annen_enhet_til_ufordelt() {
+        List<OppfolgingsBruker> brukere = listOf(
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("foo"))
+                        .setVeileder_id(TEST_VEILEDER_0),
+
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("foo"))
+                        .setVeileder_id(TEST_VEILEDER_1)
+        );
+
+        skrivBrukereTilTestindeks(brukere);
+
+        val filtervalg = new Filtervalg()
+                .setFerdigfilterListe(listOf(I_AVTALT_AKTIVITET));
+
+        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+
+        assertThat(response.getAntall()).isEqualTo(2);
+
+        Bruker ufordeltBruker = response.getBrukere().stream()
+                .filter(b -> TEST_VEILEDER_1.equals(b.getVeilederId()))
+                .collect(toList()).get(0);
+
+        assertThat(ufordeltBruker.isNyForEnhet()).isTrue();
+    }
 
     @Test
     public void skal_hente_ut_brukere_ved_soek_paa_flere_veiledere() {
