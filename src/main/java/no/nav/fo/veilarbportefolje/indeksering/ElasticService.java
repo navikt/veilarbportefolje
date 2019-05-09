@@ -2,10 +2,7 @@ package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.indeksering.domene.Bucket;
-import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticSearchResponse;
-import no.nav.fo.veilarbportefolje.indeksering.domene.PortefoljestorrelserResponse;
-import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse;
+import no.nav.fo.veilarbportefolje.indeksering.domene.*;
 import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
@@ -24,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -52,7 +50,8 @@ public class ElasticService {
         BoolQueryBuilder boolQuery = boolQuery();
         boolQuery.must(matchQuery("enhet_id", enhetId));
 
-        if (veilederIdent.isPresent()) {
+        boolean kallesFraMinOversikt = veilederIdent.isPresent() && StringUtils.isNotBlank(veilederIdent.get());
+        if (kallesFraMinOversikt) {
             boolQuery.filter(termQuery("veileder_id", veilederIdent.get()));
         }
 
@@ -71,7 +70,6 @@ public class ElasticService {
 
         searchSourceBuilder.query(boolQuery);
 
-        boolean kallesFraMinOversikt = veilederIdent.isPresent() && StringUtils.isNotBlank(veilederIdent.get());
         if (kallesFraMinOversikt) {
             searchSourceBuilder.sort("ny_for_veileder", SortOrder.ASC);
         } else {
@@ -84,7 +82,9 @@ public class ElasticService {
         int totalHits = response.getHits().getTotal();
 
         List<Bruker> brukere = response.getHits().getHits().stream()
-                .map(hit -> Bruker.of(hit.get_source()))
+                .map(Hit::get_source)
+                .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
+                .map(Bruker::of)
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -134,4 +134,8 @@ public class ElasticService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
+    private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
+        boolean harVeilederPaaSammeEnhet = veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
+        return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
+    }
 }
