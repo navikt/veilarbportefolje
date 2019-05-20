@@ -3,7 +3,6 @@ package no.nav.fo.veilarbportefolje.indeksering;
 import no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.fo.veilarbportefolje.domene.Brukerstatus;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
-import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.provider.rest.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -11,10 +10,11 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +30,9 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
+import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.NUMBER;
 import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
+import static org.elasticsearch.search.sort.SortMode.MIN;
 
 public class ElasticQueryBuilder {
 
@@ -78,24 +80,25 @@ public class ElasticQueryBuilder {
         }
     }
 
-    static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
-        return filtervalg.aktiviteter.entrySet().stream()
-                .map(
-                        entry -> {
-                            String navnPaaAktivitet = entry.getKey();
-                            AktivitetFiltervalg valg = entry.getValue();
+    static BoolQueryBuilder byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
 
-                            if (JA.equals(valg)) {
-                                return queryBuilder.filter(matchQuery("aktiviteter", navnPaaAktivitet));
-                            } else if (NEI.equals(valg) && TILTAK.equals(navnPaaAktivitet)) {
-                                return queryBuilder.filter(boolQuery().mustNot(existsQuery("tiltak")));
-                            } else if (NEI.equals(valg)) {
-                                return queryBuilder.filter(boolQuery().mustNot(matchQuery("aktiviteter", navnPaaAktivitet)));
-                            } else {
-                                return queryBuilder;
-                            }
-                        }
-                ).collect(toList());
+        List<String> aktiviteterJa = new ArrayList<>();
+        List<String> aktiviteterNei = new ArrayList<>();
+
+        filtervalg.getAktiviteter().forEach((navnPaaAktivitet, valg) -> {
+            if (JA.equals(valg)) {
+                aktiviteterJa.add(navnPaaAktivitet.toLowerCase());
+            } else if (NEI.equals(valg)) {
+                aktiviteterNei.add(navnPaaAktivitet.toLowerCase());
+            }
+        });
+
+        String matchQueryValue = "[" + String.join(",", aktiviteterJa) + "]";
+        String notMatchQueryValue = "[" + String.join(",", aktiviteterNei) + "]";
+
+        queryBuilder.must(matchQuery("aktiviteter", matchQueryValue));
+        queryBuilder.mustNot(matchQuery("aktiviteter", notMatchQueryValue));
+        return queryBuilder;
     }
 
     static SearchSourceBuilder sorterQueryParametere(String sortOrder, String sortField, SearchSourceBuilder searchSourceBuilder, Filtervalg filtervalg) {
@@ -111,7 +114,11 @@ public class ElasticQueryBuilder {
                 sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
                 break;
             case "iavtaltaktivitet":
-                sorterIAvtaltAktiviteter(searchSourceBuilder, order);
+                FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
+                        .order(order)
+                        .sortMode(MIN);
+
+                searchSourceBuilder.sort(builder);
                 break;
             case "fodselsnummer":
                 searchSourceBuilder.sort("fnr.raw", order);
@@ -148,27 +155,25 @@ public class ElasticQueryBuilder {
 
     static SearchSourceBuilder sorterAapRettighetsPeriode(SearchSourceBuilder builder, SortOrder order) {
         Script script = new Script("Math.max(doc.aapmaxtiduke.value, doc.aapunntakukerigjen.value)");
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
         return builder;
     }
 
-    static SearchSourceBuilder sorterIAvtaltAktiviteter(SearchSourceBuilder builder, SortOrder order) {
-        Arrays.stream(AktivitetTyper.values())
-                .map(aktivitet -> String.format("aktivitet_%s_utlopsdato", aktivitet))
-                .forEach(aktivitet -> builder.sort(aktivitet, order));
-
-        return builder;
-    }
-
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
-        filtervalg.aktiviteter.entrySet().stream()
+
+        String datoFelter = filtervalg.aktiviteter.entrySet().stream()
                 .filter(entry -> JA.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
-                .map(aktivitet -> format("aktivitet_%s_utlopsdato", aktivitet.toLowerCase()))
-                .forEach(aktivitet -> builder.sort(aktivitet, order));
+                .map(aktivitet -> format("doc.aktivitet_%s_utlopsdato.date.getMillisOfDay()", aktivitet.toLowerCase()))
+                .collect(joining(","));
 
+        Script script = new Script(format("[%s].stream().mapToInt(Integer::intValue).min().orElse(Integer.MAX_VALUE)", datoFelter));
+
+        ScriptSortBuilder scriptSortBuilder = new ScriptSortBuilder(script, NUMBER);
+        scriptSortBuilder.order(order);
+        builder.sort(scriptSortBuilder);
         return builder;
     }
 

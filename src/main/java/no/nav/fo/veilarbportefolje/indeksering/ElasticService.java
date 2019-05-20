@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
