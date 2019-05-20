@@ -11,7 +11,9 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
+import org.elasticsearch.search.sort.SortMode;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.Arrays;
@@ -31,6 +33,7 @@ import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
 import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
+import static org.elasticsearch.search.sort.SortMode.MIN;
 
 public class ElasticQueryBuilder {
 
@@ -111,7 +114,11 @@ public class ElasticQueryBuilder {
                 sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
                 break;
             case "iavtaltaktivitet":
-                sorterIAvtaltAktiviteter(searchSourceBuilder, order);
+                FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
+                        .order(order)
+                        .sortMode(MIN);
+
+                searchSourceBuilder.sort(builder);
                 break;
             case "fodselsnummer":
                 searchSourceBuilder.sort("fnr.raw", order);
@@ -154,19 +161,11 @@ public class ElasticQueryBuilder {
         return builder;
     }
 
-    static SearchSourceBuilder sorterIAvtaltAktiviteter(SearchSourceBuilder builder, SortOrder order) {
-        Arrays.stream(AktivitetTyper.values())
-                .map(aktivitet -> String.format("aktivitet_%s_utlopsdato", aktivitet))
-                .forEach(aktivitet -> builder.sort(aktivitet, order));
-
-        return builder;
-    }
-
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
         filtervalg.aktiviteter.entrySet().stream()
                 .filter(entry -> JA.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
-                .map(aktivitet -> format("aktivitet_%s_utlopsdato", aktivitet.toLowerCase()))
+                .map(aktivitet -> format("aktivitet_3_utlopsdato", aktivitet.toLowerCase()))
                 .forEach(aktivitet -> builder.sort(aktivitet, order));
 
         return builder;

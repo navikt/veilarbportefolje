@@ -19,9 +19,12 @@ import no.nav.fo.veilarbportefolje.service.VeilederService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -106,6 +109,66 @@ public class ElasticServiceIntegrationTest {
     public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER_0, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
 
     @Test
+    public void skal_ikke_sortere_paa_aktivitetstype() {
+
+        Instant now = Instant.now();
+
+        String first= now.minusSeconds(240).toString();
+        String second = now.minusSeconds(120).toString();
+        String last = now.toString();
+
+        String firstUserFnr = randomFnr();
+        String secondFnr = randomFnr();
+        String lastUserFnr = randomFnr();
+
+        List<OppfolgingsBruker> brukere = listOf(
+                new OppfolgingsBruker()
+                        .setFnr(secondFnr)
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("egen"))
+                        .setAktivitet_egen_utlopsdato(second)
+                        .setVeileder_id(TEST_VEILEDER_0),
+
+                new OppfolgingsBruker()
+                        .setFnr(firstUserFnr)
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("behandling, stilling"))
+                        .setAktivitet_behandling_utlopsdato(first)
+                        .setAktivitet_stilling_utlopsdato(last)
+                        .setVeileder_id(TEST_VEILEDER_0),
+
+                new OppfolgingsBruker()
+                        .setFnr(lastUserFnr)
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("stilling"))
+                        .setAktivitet_stilling_utlopsdato(last)
+                        .setVeileder_id(TEST_VEILEDER_0)
+
+        );
+
+        skrivBrukereTilTestindeks(brukere);
+
+        val filtervalg = new Filtervalg()
+                .setFerdigfilterListe(listOf(I_AVTALT_AKTIVITET));
+
+        val ascendingSortResponse = elasticService.hentBrukere(TEST_ENHET, Optional.of(TEST_VEILEDER_0), "ascending", "iavtaltaktivitet", filtervalg, null, null, TEST_INDEX);
+
+        assertThat(ascendingSortResponse.getAntall()).isEqualTo(3);
+
+        assertThat(ascendingSortResponse.getBrukere().get(0).getFnr()).isEqualTo(firstUserFnr);
+        assertThat(ascendingSortResponse.getBrukere().get(1).getFnr()).isEqualTo(secondFnr);
+        assertThat(ascendingSortResponse.getBrukere().get(2).getFnr()).isEqualTo(lastUserFnr);
+
+        val descendingSortResponse = elasticService.hentBrukere(TEST_ENHET, Optional.of(TEST_VEILEDER_0), "descending", "iavtaltaktivitet", filtervalg, null, null, TEST_INDEX);
+
+        assertThat(descendingSortResponse.getAntall()).isEqualTo(3);
+        assertThat(descendingSortResponse.getBrukere().get(2).getFnr()).isEqualTo(firstUserFnr);
+        assertThat(descendingSortResponse.getBrukere().get(1).getFnr()).isEqualTo(secondFnr);
+        assertThat(descendingSortResponse.getBrukere().get(0).getFnr()).isEqualTo(lastUserFnr);
+
+    }
+
+    @Test
     public void skal_sette_brukere_med_veileder_fra_annen_enhet_til_ufordelt() {
         List<OppfolgingsBruker> brukere = listOf(
                 new OppfolgingsBruker()
@@ -126,7 +189,7 @@ public class ElasticServiceIntegrationTest {
         val filtervalg = new Filtervalg()
                 .setFerdigfilterListe(listOf(I_AVTALT_AKTIVITET));
 
-        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "ascending", "ikke_satt", filtervalg, null, null, TEST_INDEX);
 
         assertThat(response.getAntall()).isEqualTo(2);
 
@@ -167,7 +230,7 @@ public class ElasticServiceIntegrationTest {
                 .setFerdigfilterListe(listOf(UTLOPTE_AKTIVITETER))
                 .setVeiledere(listOf(TEST_VEILEDER_0, TEST_VEILEDER_1));
 
-        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "ascending", "ikke_satt", filtervalg, null, null, TEST_INDEX);
 
         assertThat(response.getAntall()).isEqualTo(2);
 
@@ -197,7 +260,7 @@ public class ElasticServiceIntegrationTest {
         skrivBrukereTilTestindeks(brukere);
 
         val filtervalg = new Filtervalg().setFerdigfilterListe(listOf(UFORDELTE_BRUKERE));
-        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+        val response = elasticService.hentBrukere(TEST_ENHET, Optional.empty(), "ascending", "ikke_satt", filtervalg, null, null, TEST_INDEX);
 
         assertThat(response.getAntall()).isEqualTo(2);
     }
@@ -350,7 +413,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
                 null,
@@ -384,7 +447,7 @@ public class ElasticServiceIntegrationTest {
                 () -> elasticService.hentBrukere(
                         TEST_ENHET,
                         Optional.of(TEST_VEILEDER_0),
-                        "asc",
+                        "ascending",
                         "ikke_satt",
                         new Filtervalg(),
                         null,
@@ -419,7 +482,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(LITE_PRIVILEGERT_VEILEDER),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(listOf(UFORDELTE_BRUKERE)),
                 null,
@@ -457,7 +520,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
@@ -492,7 +555,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
@@ -527,7 +590,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
@@ -587,7 +650,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
@@ -629,7 +692,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
@@ -670,7 +733,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
@@ -713,7 +776,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
@@ -756,7 +819,7 @@ public class ElasticServiceIntegrationTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 Optional.empty(),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,
