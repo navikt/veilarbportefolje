@@ -74,6 +74,45 @@
             }
           },
           "analyzer": "fnr_sok"
+        },
+        "aktivitet_utlopsdatoer": {
+          "type": "date"
+        },
+        "aktivitet_mote_utlopsdato":  {
+          "type": "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_stilling_utlopsdato": {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_egen_utlopsdato":  {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_behandling_utlopsdato": {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_ijobb_utlopsdato":  {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_sokeavtale_utlopsdato": {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_tiltak_utlopsdato":  {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_utdanningaktivitet_utlopsdato": {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
+        },
+        "aktivitet_gruppeaktivitet_utlopsdato": {
+          "type":  "date",
+          "copy_to": "aktivitet_utlopsdatoer"
         }
       }
     }
