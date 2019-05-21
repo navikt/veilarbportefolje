@@ -14,7 +14,9 @@ import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
 import no.nav.fo.veilarbportefolje.indeksering.*;
 import no.nav.fo.veilarbportefolje.internal.PopulerElasticServlet;
 import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
+import no.nav.fo.veilarbportefolje.internal.PopulerKrrServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
+import no.nav.fo.veilarbportefolje.service.KrrService;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
@@ -105,6 +107,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private ElasticIndexer elasticIndexer;
 
+    @Inject
+    private KrrService krrService;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -122,6 +127,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
+        leggTilServlet(servletContext, new PopulerKrrServlet(krrService), "/internal/populer_krr");
     }
 
     private Boolean skipDbMigration() {

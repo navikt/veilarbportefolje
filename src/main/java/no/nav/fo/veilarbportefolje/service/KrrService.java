@@ -49,7 +49,7 @@ public class KrrService {
     private void hentDigitalKontaktInformasjonBolkWithLock() {
         log.info("Indeksering: Starter henting av KRR informasjon...");
         krrRepository.slettKrrInformasjon();
-        krrRepository.iterateFnrsUnderOppfolging(1000, this::hentDigitalKontaktInformasjon);
+        krrRepository.iterateFnrsUnderOppfolging(50, this::hentDigitalKontaktInformasjon);
         log.info("Indeksering: Fullført henting av KRR informasjon");
     }
 
