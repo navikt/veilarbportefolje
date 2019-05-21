@@ -2,9 +2,9 @@ package no.nav.fo.veilarbportefolje.service;
 
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.database.KrrRepository;
 import no.nav.fo.veilarbportefolje.domene.KrrDAO;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -16,6 +16,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentD
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
@@ -38,8 +39,11 @@ public class KrrService {
         this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
     }
 
+    @SneakyThrows
     public void hentDigitalKontaktInformasjonBolk() {
+        String hostName = InetAddress.getLocalHost().getHostName();
         if (isNotLeader()) {
+            log.info("{} er ikke leder, returnerer...", hostName);
             return;
         }
         log.info("Indeksering: Starter henting av KRR informasjon...");
