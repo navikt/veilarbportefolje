@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.config;
 
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.KrrRepository;
 import no.nav.fo.veilarbportefolje.database.PersistentOppdatering;
@@ -33,8 +32,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif, LockingTaskExecutor lockingTaskExecutor) {
-        return new KrrService(krrRepository, dkif, lockingTaskExecutor);
+    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif) {
+        return new KrrService(krrRepository, dkif);
     }
 
 }
