@@ -24,7 +24,7 @@ public class PopulerKrrServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             runAsync(() -> krrService.hentDigitalKontaktInformasjonBolk());
-            resp.getWriter().write("Startet populering av KRR-register");
+            resp.getWriter().write("Startet henting av reservesjonsdata fra krr (via dkif)");
             resp.setStatus(SC_OK);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
