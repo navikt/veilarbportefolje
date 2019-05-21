@@ -59,7 +59,7 @@ public class KrrServiceTest {
     void skalIkkeKasteExceptionsVedFeilMotKRR() throws Exception {
         KrrRepository repo = mock(KrrRepository.class);
         DigitalKontaktinformasjonV1 dkif = mock(DigitalKontaktinformasjonV1.class);
-        KrrService service = new KrrService(repo, dkif, mock(LockingTaskExecutor.class));
+        KrrService service = new KrrService(repo, dkif);
 
         when(dkif.hentDigitalKontaktinformasjonBolk(any())).thenThrow(SocketTimeoutException.class);
 

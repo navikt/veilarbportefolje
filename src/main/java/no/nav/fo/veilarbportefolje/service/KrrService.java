@@ -4,7 +4,6 @@ import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.database.KrrRepository;
 import no.nav.fo.veilarbportefolje.domene.KrrDAO;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
+import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
@@ -32,21 +31,17 @@ public class KrrService {
 
     private KrrRepository krrRepository;
     private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
-    private LockingTaskExecutor lockingTaskExecutor;
 
     @Inject
-    public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1, LockingTaskExecutor lockingTaskExecutor) {
+    public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1) {
         this.krrRepository = krrRepository;
         this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
-        this.lockingTaskExecutor = lockingTaskExecutor;
     }
 
     public void hentDigitalKontaktInformasjonBolk() {
-        lockingTaskExecutor.executeWithLock(this::hentDigitalKontaktInformasjonBolkWithLock,
-                new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
-    }
-
-    private void hentDigitalKontaktInformasjonBolkWithLock() {
+        if (isNotLeader()) {
+            return;
+        }
         log.info("Indeksering: Starter henting av KRR informasjon...");
         krrRepository.slettKrrInformasjon();
         krrRepository.iterateFnrsUnderOppfolging(50, this::hentDigitalKontaktInformasjon);
