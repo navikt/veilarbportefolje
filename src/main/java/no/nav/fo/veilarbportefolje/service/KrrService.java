@@ -13,14 +13,15 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSFor
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSMobiltelefonnummer;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonBolkRequest;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
@@ -41,15 +42,21 @@ public class KrrService {
 
     @SneakyThrows
     public void hentDigitalKontaktInformasjonBolk() {
-        String hostName = InetAddress.getLocalHost().getHostName();
         if (isNotLeader()) {
-            log.info("{} er ikke leder, returnerer...", hostName);
+            log.info("Jeg er ikke leder, returnerer...");
             return;
         }
+
+        UUID uuid = UUID.randomUUID();
+        String id = Long.toHexString(uuid.getMostSignificantBits()) + Long.toHexString(uuid.getLeastSignificantBits());
+        MDC.put("jobId", id);
+
         log.info("Indeksering: Starter henting av KRR informasjon...");
         krrRepository.slettKrrInformasjon();
         krrRepository.iterateFnrsUnderOppfolging(50, this::hentDigitalKontaktInformasjon);
         log.info("Indeksering: Fullført henting av KRR informasjon");
+
+        MDC.remove("jobId");
     }
 
     void hentDigitalKontaktInformasjon(List<String> fnrListe) {
