@@ -71,7 +71,7 @@ public class ElasticService {
         searchSourceBuilder.query(boolQuery);
 
         if (kallesFraMinOversikt) {
-            searchSourceBuilder.sort("ny_for_veileder", SortOrder.ASC);
+            searchSourceBuilder.sort("ny_for_veileder", SortOrder.DESC);
         } else {
             sorterPaaNyForEnhet(searchSourceBuilder, veiledereMedTilgangTilEnhet);
         }
