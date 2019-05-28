@@ -108,12 +108,64 @@ public class ElasticServiceIntegrationTest {
     @Rule
     public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER_0, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
 
+
+    @Test
+    public void skal_sortere_paa_valgte_aktiviteter() {
+        Instant now = Instant.now();
+
+        String first = now.minusSeconds(240).toString();
+        String second = now.minusSeconds(120).toString();
+        String last = now.toString();
+
+        String firstUserFnr = randomFnr();
+        String secondFnr = randomFnr();
+        String lastUserFnr = randomFnr();
+
+        List<OppfolgingsBruker> brukere = listOf(
+                new OppfolgingsBruker()
+                        .setFnr(secondFnr)
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("egen"))
+                        .setAktivitet_egen_utlopsdato(second)
+                        .setVeileder_id(TEST_VEILEDER_0),
+
+                new OppfolgingsBruker()
+                        .setFnr(firstUserFnr)
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("behandling, stilling"))
+                        .setAktivitet_behandling_utlopsdato(first)
+                        .setAktivitet_stilling_utlopsdato(last)
+                        .setVeileder_id(TEST_VEILEDER_0),
+
+                new OppfolgingsBruker()
+                        .setFnr(lastUserFnr)
+                        .setEnhet_id(TEST_ENHET)
+                        .setAktiviteter(setOf("stilling"))
+                        .setAktivitet_stilling_utlopsdato(last)
+                        .setVeileder_id(TEST_VEILEDER_0)
+        );
+
+        skrivBrukereTilTestindeks(brukere);
+
+        val filtervalg = new Filtervalg()
+                .setFerdigfilterListe(listOf(I_AVTALT_AKTIVITET))
+                .setAktiviteter(mapOf(
+                        Pair.of("STILLING", JA),
+                        Pair.of("EGEN", JA)
+                ));
+
+        val ascendingSortResponse = elasticService.hentBrukere(TEST_ENHET, Optional.of(TEST_VEILEDER_0), "ascending", "valgteaktiviteter", filtervalg, null, null, TEST_INDEX);
+
+        System.out.println(ascendingSortResponse);
+
+    }
+
     @Test
     public void skal_ikke_sortere_paa_aktivitetstype() {
 
         Instant now = Instant.now();
 
-        String first= now.minusSeconds(240).toString();
+        String first = now.minusSeconds(240).toString();
         String second = now.minusSeconds(120).toString();
         String last = now.toString();
 

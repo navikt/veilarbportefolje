@@ -3,7 +3,6 @@ package no.nav.fo.veilarbportefolje.indeksering;
 import no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.fo.veilarbportefolje.domene.Brukerstatus;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
-import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.provider.rest.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -13,19 +12,15 @@ import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
-import org.elasticsearch.search.sort.SortMode;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.utils.CollectionUtils.listOf;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
@@ -172,7 +167,7 @@ public class ElasticQueryBuilder {
                 .map(aktivitet -> format("doc.aktivitet_%s_utlopsdato.date.getMillisOfDay()", aktivitet.toLowerCase()))
                 .collect(joining(","));
 
-        Script script = new Script(format("IntStream.of([%s]).min().orElse(Integer.MAX_VALUE)", datoFelter));
+        Script script = new Script(format("[%s].stream().mapToInt(Integer::intValue).min().orElse(Integer.MAX_VALUE)", datoFelter));
 
         ScriptSortBuilder scriptSortBuilder = new ScriptSortBuilder(script, NUMBER);
         scriptSortBuilder.order(order);
