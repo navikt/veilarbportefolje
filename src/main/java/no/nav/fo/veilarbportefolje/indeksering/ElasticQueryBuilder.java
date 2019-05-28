@@ -25,6 +25,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.utils.CollectionUtils.listOf;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
@@ -169,9 +170,9 @@ public class ElasticQueryBuilder {
                 .filter(entry -> JA.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
                 .map(aktivitet -> format("doc.aktivitet_%s_utlopsdato.date.getMillisOfDay()", aktivitet.toLowerCase()))
-                .collect(joining());
+                .collect(joining(","));
 
-        Script script = new Script(format("Math.min(%s)", datoFelter));
+        Script script = new Script(format("IntStream.of(%s).min().orElse(Integer.MAX_VALUE)", datoFelter));
 
         ScriptSortBuilder scriptSortBuilder = new ScriptSortBuilder(script, NUMBER);
         scriptSortBuilder.order(order);
