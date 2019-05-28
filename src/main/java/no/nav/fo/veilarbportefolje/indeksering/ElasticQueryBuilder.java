@@ -19,6 +19,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -32,6 +33,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
+import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.NUMBER;
 import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
 import static org.elasticsearch.search.sort.SortMode.MIN;
 
@@ -155,19 +157,25 @@ public class ElasticQueryBuilder {
 
     static SearchSourceBuilder sorterAapRettighetsPeriode(SearchSourceBuilder builder, SortOrder order) {
         Script script = new Script("Math.max(doc.aapmaxtiduke.value, doc.aapunntakukerigjen.value)");
-        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
         return builder;
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
-        filtervalg.aktiviteter.entrySet().stream()
+
+        String datoFelter = filtervalg.aktiviteter.entrySet().stream()
                 .filter(entry -> JA.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
-                .map(aktivitet -> format("aktivitet_3_utlopsdato", aktivitet.toLowerCase()))
-                .forEach(aktivitet -> builder.sort(aktivitet, order));
+                .map(aktivitet -> format("doc.aktivitet_%s_utlopsdato.date.getMillisOfDay()", aktivitet.toLowerCase()))
+                .collect(joining());
 
+        Script script = new Script(format("Math.min(%s)", datoFelter));
+
+        ScriptSortBuilder scriptSortBuilder = new ScriptSortBuilder(script, NUMBER);
+        scriptSortBuilder.order(order);
+        builder.sort(scriptSortBuilder);
         return builder;
     }
 
