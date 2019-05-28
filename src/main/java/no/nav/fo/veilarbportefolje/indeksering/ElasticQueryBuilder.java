@@ -172,7 +172,7 @@ public class ElasticQueryBuilder {
                 .map(aktivitet -> format("doc.aktivitet_%s_utlopsdato.date.getMillisOfDay()", aktivitet.toLowerCase()))
                 .collect(joining(","));
 
-        Script script = new Script(format("IntStream.of(%s).min().orElse(Integer.MAX_VALUE)", datoFelter));
+        Script script = new Script(format("IntStream.of([%s]).min().orElse(Integer.MAX_VALUE)", datoFelter));
 
         ScriptSortBuilder scriptSortBuilder = new ScriptSortBuilder(script, NUMBER);
         scriptSortBuilder.order(order);
