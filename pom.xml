@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1.2019.04.25-14.42-bcd4c46ea649</version>
+        <version>1.2019.06.04-14.32-a6339c54f6f3</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -120,13 +120,14 @@
             <artifactId>vavr</artifactId>
         </dependency>
 
-        <!--ABAC-->
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>batch</artifactId>
+        </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>
         </dependency>
-
-        <!--Dialogarena-->
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>rest</artifactId>
