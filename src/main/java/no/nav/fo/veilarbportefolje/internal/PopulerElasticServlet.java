@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.internal;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.batch.BatchJob;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
@@ -23,15 +24,16 @@ public class PopulerElasticServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             Optional<String> maybeJobId = BatchJob.runAsync(() -> elasticIndexer.hovedindeksering());
-
-            if (maybeJobId.isPresent()) {
-                resp.getWriter().write("Hovedindeksering i ElasticSearch startet med jobId: {}");
-                resp.setStatus(200);
-            }
-
+            maybeJobId.ifPresent(id -> setResponse(resp, id));
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }
+    }
+
+    @SneakyThrows
+    private static void setResponse(HttpServletResponse resp, String id) {
+        resp.getWriter().write(String.format("Hovedindeksering i ElasticSearch startet med jobId: %s", id));
+        resp.setStatus(200);
     }
 
 }

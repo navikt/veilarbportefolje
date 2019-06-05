@@ -195,7 +195,7 @@ public class ElasticIndexer implements IndekseringService {
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} fra indeks {}", bruker.getAktoer_id(), getAlias());
         } else {
-            String message = String.format("Feil ved sletting av bruker med aktoerId %s i indeks %s", bruker.getAktoer_id(), getAlias());
+            String message = String.format("Feil ved sletting av bruker med aktoerId %s og personId %s i indeks %s", bruker.getAktoer_id(), bruker.getPerson_id( getAlias());
             throw new RuntimeException(message);
         }
     }
