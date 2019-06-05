@@ -21,7 +21,7 @@ public class PopulerElasticServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
-            String jobId = BatchJob.runAsync(() -> elasticIndexer.hovedindeksering());
+            String jobId = BatchJob.runAsync(() -> elasticIndexer.startIndeksering());
             resp.getWriter().write(String.format("Hovedindeksering i ElasticSearch startet med jobId: %s", jobId));
             resp.setStatus(200);
         } else {

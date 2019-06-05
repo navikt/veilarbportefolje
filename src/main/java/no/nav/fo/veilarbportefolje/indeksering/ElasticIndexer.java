@@ -85,7 +85,7 @@ public class ElasticIndexer implements IndekseringService {
     }
 
     @SneakyThrows
-    private void startIndeksering() {
+    public void startIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
