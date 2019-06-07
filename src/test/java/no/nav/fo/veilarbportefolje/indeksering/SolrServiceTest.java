@@ -61,7 +61,7 @@ public class SolrServiceTest {
 
     @Before
     public void setup() {
-        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, new LockingTaskExecutorMock(), pepClient);
+        service = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, pepClient);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.filmottak;
 
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
@@ -63,9 +62,8 @@ public class FilmottakConfig {
             TiltakRepository tiltakRepository,
             AktivitetDAO aktivitetDAO,
             AktoerService aktoerService,
-            BrukerRepository brukerRepository,
-            LockingTaskExecutor lockingTaskExecutor) {
-        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository, lockingTaskExecutor);
+            BrukerRepository brukerRepository) {
+        return new TiltakHandler(tiltakRepository, aktivitetDAO, aktoerService, brukerRepository);
     }
 
     @Bean

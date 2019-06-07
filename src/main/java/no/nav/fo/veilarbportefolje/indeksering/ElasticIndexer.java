@@ -123,10 +123,6 @@ public class ElasticIndexer implements IndekseringService {
 
     @Override
     public void deltaindeksering() {
-        if (isNotLeader()) {
-            return;
-        }
-
         if (indeksenIkkeFinnes()) {
             log.error("Deltaindeksering: finner ingen indeks med alias {}", getAlias());
             return;
