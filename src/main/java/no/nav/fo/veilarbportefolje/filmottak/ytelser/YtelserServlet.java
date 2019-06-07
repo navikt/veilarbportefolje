@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
+import static no.nav.batch.BatchJob.runAsyncOnLeader;
 
 @Slf4j
 public class YtelserServlet extends HttpServlet {
@@ -23,7 +23,7 @@ public class YtelserServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             log.info("Manuell Indeksering: Oppdatering av ytelser");
-            runAsync(() -> kopierGR199FraArena.startOppdateringAvYtelser());
+            runAsyncOnLeader(() -> kopierGR199FraArena.startOppdateringAvYtelser());
             resp.getWriter().write("Oppdatering av ytelser startet");
             resp.setStatus(200);
         } else {

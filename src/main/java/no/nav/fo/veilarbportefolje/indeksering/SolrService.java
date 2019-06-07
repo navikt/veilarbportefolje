@@ -3,10 +3,7 @@ package no.nav.fo.veilarbportefolje.indeksering;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
-import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.SolrUpdateResponseCodeException;
@@ -34,7 +31,6 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +42,6 @@ import java.util.function.BiConsumer;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrSortUtils.addPaging;
 import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.harIkkeVeilederFilter;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.applyAktivitetStatuser;
@@ -67,7 +62,6 @@ public class SolrService implements IndekseringService {
     private AktoerService aktoerService;
     private VeilederService veilederService;
     private Executor executor;
-    private LockingTaskExecutor lockingTaskExecutor;
     private PepClient pepClient;
 
     @Inject
@@ -78,7 +72,6 @@ public class SolrService implements IndekseringService {
             AktoerService aktoerService,
             VeilederService veilederService,
             AktivitetDAO aktivitetDAO,
-            LockingTaskExecutor lockingTaskExecutor,
             PepClient pepClient) {
 
         this.solrClientMaster = solrClientMaster;
@@ -88,18 +81,12 @@ public class SolrService implements IndekseringService {
         this.aktoerService = aktoerService;
         this.veilederService = veilederService;
         this.executor = Executors.newFixedThreadPool(5);
-        this.lockingTaskExecutor = lockingTaskExecutor;
         this.pepClient = pepClient;
     }
 
     @Transactional
     @Override
     public void hovedindeksering() {
-        lockingTaskExecutor.executeWithLock(this::hovedindekseringWithLock,
-                new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
-    }
-
-    private void hovedindekseringWithLock() {
         log.info("Indeksering: Starter hovedindeksering...");
         LocalDateTime t0 = LocalDateTime.now();
 
@@ -123,11 +110,6 @@ public class SolrService implements IndekseringService {
     @Transactional
     @Override
     public void deltaindeksering() {
-        lockingTaskExecutor.executeWithLock(this::deltaindekseringWithLock,
-                new LockConfiguration(DatabaseConfig.DELTAINDEKSERING, Instant.now().plusSeconds(50)));
-    }
-
-    private void deltaindekseringWithLock() {
         log.info("Indeksering: Starter deltaindeksering");
         LocalDateTime t0 = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(t0);

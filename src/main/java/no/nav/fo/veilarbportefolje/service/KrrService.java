@@ -25,7 +25,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
-import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
@@ -42,11 +41,6 @@ public class KrrService {
 
     @SneakyThrows
     public void hentDigitalKontaktInformasjonBolk() {
-        if (isNotLeader()) {
-            log.info("Jeg er ikke leder, returnerer...");
-            return;
-        }
-
         UUID uuid = UUID.randomUUID();
         String id = Long.toHexString(uuid.getMostSignificantBits()) + Long.toHexString(uuid.getLeastSignificantBits());
         MDC.put("jobId", id);

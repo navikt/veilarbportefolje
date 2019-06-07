@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.SneakyThrows;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.config.ServiceConfig;
@@ -88,9 +87,8 @@ public class IndekseringConfig {
             AktoerService aktoerService,
             AktivitetDAO aktivitetDAO,
             VeilederService veilederService,
-            LockingTaskExecutor lockingTaskExecutor,
             PepClient pepClient) {
-        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutor, pepClient);
+        return new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, pepClient);
     }
 
     @Bean
