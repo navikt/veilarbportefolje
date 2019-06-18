@@ -60,7 +60,7 @@ public class SolrServiceIntegrationTest {
         VeilederService veilederService = mock(VeilederService.class);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        IndekseringService indekseringService = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, lockingTaskExecutorMock, pepClient);
+        IndekseringService indekseringService = new SolrService(solrClientMaster, solrClientSlave, brukerRepository, aktoerService, veilederService, aktivitetDAO, pepClient);
 
 
         UpdateResponse response = new UpdateResponse();
