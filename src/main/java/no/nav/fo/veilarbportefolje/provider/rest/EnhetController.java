@@ -3,8 +3,8 @@ package no.nav.fo.veilarbportefolje.provider.rest;
 import io.swagger.annotations.Api;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.PepClient;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.TiltakService;
 import no.nav.fo.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.metrics.Event;
@@ -28,16 +28,16 @@ import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.getSsoToken;
 @Produces(APPLICATION_JSON)
 public class EnhetController {
 
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
     private PepClient pepClient;
     private TiltakService tiltakService;
 
     @Inject
     public EnhetController(
-            IndekseringService indekseringService,
+            ElasticIndexer indekseringService,
             PepClient pepClient,
             TiltakService tiltakService) {
-        this.indekseringService = indekseringService;
+        this.elasticIndexer = indekseringService;
         this.tiltakService = tiltakService;
         this.pepClient = pepClient;
     }
@@ -63,7 +63,7 @@ public class EnhetController {
             String ident = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-            BrukereMedAntall brukereMedAntall = indekseringService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+            BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
             List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getSsoToken(), pepClient);
 
             Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -87,7 +87,7 @@ public class EnhetController {
             ValideringsRegler.sjekkEnhet(enhet);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            return indekseringService.hentPortefoljestorrelser(enhet);
+            return elasticIndexer.hentPortefoljestorrelser(enhet);
         });
     }
 
@@ -98,7 +98,7 @@ public class EnhetController {
             ValideringsRegler.sjekkEnhet(enhet);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            return indekseringService.hentStatusTallForPortefolje(enhet);
+            return elasticIndexer.hentStatusTallForPortefolje(enhet);
         });
     }
 

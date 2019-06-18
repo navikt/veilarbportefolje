@@ -7,7 +7,7 @@ import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.Arbeidsliste;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.provider.rest.arbeidsliste.ArbeidslisteData;
 
 import javax.inject.Inject;
@@ -26,7 +26,7 @@ public class ArbeidslisteService {
     private BrukerRepository brukerRepository;
 
     @Inject
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
         return hentAktoerId(fnr).map(this::getArbeidsliste).get();
@@ -48,7 +48,7 @@ public class ArbeidslisteService {
         data.setAktoerId(aktoerId.get());
         return arbeidslisteRepository
                 .insertArbeidsliste(data)
-                .onSuccess(indekseringService::indekserAsynkront);
+                .onSuccess(elasticIndexer::indekserAsynkront);
     }
 
     public Try<AktoerId> updateArbeidsliste(ArbeidslisteData data) {
@@ -59,7 +59,7 @@ public class ArbeidslisteService {
 
         return arbeidslisteRepository
                 .updateArbeidsliste(data.setAktoerId(aktoerId.get()))
-                .onSuccess(indekseringService::indekserAsynkront);
+                .onSuccess(elasticIndexer::indekserAsynkront);
     }
 
     public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
@@ -69,7 +69,7 @@ public class ArbeidslisteService {
         }
         return arbeidslisteRepository
                 .deleteArbeidsliste(aktoerId.get())
-                .onSuccess(indekseringService::indekserAsynkront);
+                .onSuccess(elasticIndexer::indekserAsynkront);
     }
 
     public Try<String> hentEnhet(Fnr fnr) {

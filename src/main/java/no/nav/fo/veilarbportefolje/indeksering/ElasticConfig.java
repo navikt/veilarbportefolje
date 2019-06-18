@@ -57,7 +57,7 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticIndexer elasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService) {
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), pepClient, veilederService);
         return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService);
     }

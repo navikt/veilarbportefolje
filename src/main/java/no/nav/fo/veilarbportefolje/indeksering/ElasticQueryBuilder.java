@@ -3,7 +3,6 @@ package no.nav.fo.veilarbportefolje.indeksering;
 import no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.fo.veilarbportefolje.domene.Brukerstatus;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
-import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.provider.rest.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -15,7 +14,6 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +23,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
-import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
@@ -89,7 +86,7 @@ public class ElasticQueryBuilder {
 
                             if (JA.equals(valg)) {
                                 return queryBuilder.filter(matchQuery("aktiviteter", navnPaaAktivitet));
-                            } else if (NEI.equals(valg) && TILTAK.equals(navnPaaAktivitet)) {
+                            } else if (NEI.equals(valg) && "TILTAK".equals(navnPaaAktivitet)) {
                                 return queryBuilder.filter(boolQuery().mustNot(existsQuery("tiltak")));
                             } else if (NEI.equals(valg)) {
                                 return queryBuilder.filter(boolQuery().mustNot(matchQuery("aktiviteter", navnPaaAktivitet)));

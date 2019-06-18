@@ -14,7 +14,7 @@ import static no.nav.batch.BatchJob.runAsyncOnLeader;
 public class IndekseringScheduler {
 
     @Inject
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
 
     @Inject
     private TiltakHandler tiltakHandler;
@@ -32,14 +32,14 @@ public class IndekseringScheduler {
                     kopierGR199FraArena.startOppdateringAvYtelser();
                     tiltakHandler.startOppdateringAvTiltakIDatabasen();
                     krrService.hentDigitalKontaktInformasjonBolk();
-                    indekseringService.hovedindeksering();
+                    elasticIndexer.hovedindeksering();
                 }
         );
     }
 
     @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
-        runAsyncOnLeader(() -> indekseringService.deltaindeksering());
+        runAsyncOnLeader(() -> elasticIndexer.deltaindeksering());
     }
 
 }

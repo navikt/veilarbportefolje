@@ -11,7 +11,6 @@ import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.apache.solr.common.SolrInputDocument;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -21,8 +20,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -290,57 +287,6 @@ public class BrukerRepository {
         return Fnr.of(resultSet.getString("FODSELSNR"));
     }
 
-    public void prosesserBrukere(Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
-        prosesserBrukere(10000, filter, prosess);
-    }
-
-    void prosesserBrukere(int fetchSize, Predicate<SolrInputDocument> filter, Consumer<SolrInputDocument> prosess) {
-        db.setFetchSize(fetchSize);
-        String sql = SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO;
-        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
-            SolrInputDocument brukerDokument = mapResultSetTilDokument(rs);
-            if (filter.test(brukerDokument)) {
-                prosess.accept(brukerDokument);
-            }
-        }));
-    }
-
-
-    public List<SolrInputDocument> retrieveOppdaterteBrukere() {
-        List<SolrInputDocument> brukere = new ArrayList<>();
-        db.setFetchSize(10000);
-        String sql = retrieveOppdaterteBrukereSQL();
-        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
-            brukere.add(mapResultSetTilDokument(rs));
-        }));
-        return brukere;
-    }
-
-    public List<SolrInputDocument> retrieveBrukeremedBrukerdata(List<PersonId> personIds) {
-        List<SolrInputDocument> dokumenter = new ArrayList<>(personIds.size());
-        io.vavr.collection.List.ofAll(personIds).sliding(1000, 1000)
-                .forEach(personIdsBatch -> {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("personids", personIdsBatch.toJavaStream().map(PersonId::toString).collect(toList()));
-                    String sql = retrieveBrukereMedBrukerdataSQL();
-                    timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.query(sql, params, rs -> {
-                        dokumenter.add(mapResultSetTilDokument(rs));
-                    }));
-                });
-        return dokumenter;
-    }
-
-    public SolrInputDocument retrieveBrukermedBrukerdata(String personId) {
-        String[] args = new String[]{personId};
-        String sql = retrieveBrukerMedBrukerdataSQL();
-        return timed(dbTimerNavn(sql), () -> db.query(sql, args, (rs) -> {
-            if (rs.isBeforeFirst()) {
-                rs.next();
-            }
-            return mapResultSetTilDokument(rs);
-        }));
-    }
-
     public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
         Map<String, Object> params = new HashMap<>();
         params.put("fnrs", personIds);
@@ -479,20 +425,6 @@ public class BrukerRepository {
 
     private String retrieveBrukerdataSQL() {
         return "SELECT * FROM BRUKER_DATA WHERE PERSONID in (:fnrs)";
-    }
-
-    public static boolean erOppfolgingsBruker(SolrInputDocument bruker) {
-        return oppfolgingsFlaggSatt(bruker) || erOppfolgingsBrukerIarena(bruker);
-    }
-
-    private static boolean erOppfolgingsBrukerIarena(SolrInputDocument bruker) {
-        String servicegruppekode = (String) bruker.get("kvalifiseringsgruppekode").getValue();
-        String formidlingsgruppekode = (String) bruker.get("formidlingsgruppekode").getValue();
-        return UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);
-    }
-
-    static boolean oppfolgingsFlaggSatt(SolrInputDocument bruker) {
-        return (Boolean) bruker.get("oppfolging").getValue();
     }
 
     private static Integer intValue(Object value) {
