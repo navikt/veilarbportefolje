@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.config.ServiceConfig;
@@ -8,7 +7,6 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticClientConfig;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -59,7 +57,7 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticIndexer elasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock, PepClient pepClient, VeilederService veilederService) {
+    public ElasticIndexer elasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), pepClient, veilederService);
         return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService);
     }

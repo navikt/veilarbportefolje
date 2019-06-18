@@ -1,8 +1,5 @@
 package no.nav.fo.veilarbportefolje.config;
 
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.*;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
@@ -120,11 +117,6 @@ public class DatabaseConfig {
                 return Pingable.Ping.feilet(metadata, e);
             }
         };
-    }
-
-    @Bean
-    public LockingTaskExecutor taskExecutor(DataSource ds) {
-        return new DefaultLockingTaskExecutor(new JdbcLockProvider(ds));
     }
 
 }

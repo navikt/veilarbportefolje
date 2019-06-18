@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import no.nav.batch.BatchJob;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
@@ -23,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
+import static no.nav.batch.BatchJob.runAsyncOnLeader;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -38,9 +39,6 @@ public class AktoerServiceImpl implements AktoerService {
     private BrukerRepository brukerRepository;
 
     @Inject
-    private LockingTaskExecutor taskExecutor;
-
-    @Inject
     private Transactor transactor;
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
@@ -52,25 +50,14 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Scheduled(cron = "0 0/5 * * * *")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
-        mapAktorIdWithLock();
-    }
-
-    private void mapAktorIdWithLock() {
-        Instant lockAtMostUntil = Instant.now().plusSeconds(3600);
-        Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
-        taskExecutor.executeWithLock(
-                () -> mapAktorId(),
-                new LockConfiguration("oppdaterAktoerTilPersonIdMapping", lockAtMostUntil, lockAtLeastUntil));
+        runAsyncOnLeader(this::mapAktorId);
     }
 
     void mapAktorId() {
-        timed("map.aktorid", () -> {
-            log.debug("Starter mapping av aktørid");
-            List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (RowMapper<String>) (rs, rowNum) -> rs.getString("AKTOERID"));
-            log.info("Aktørider som skal mappes " + aktoerIder);
-            aktoerIder.forEach((id) -> hentPersonidFraAktoerid(AktoerId.of(id)));
-            log.info("Ferdig med mapping av [" + aktoerIder.size() + "] aktørider");
-        });
+        List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (rs, rowNum) -> rs.getString("AKTOERID"));
+        log.info("Aktørider som skal mappes " + aktoerIder);
+        aktoerIder.forEach((id) -> hentPersonidFraAktoerid(AktoerId.of(id)));
+        log.info("Ferdig med mapping av [" + aktoerIder.size() + "] aktørider");
     }
 
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
