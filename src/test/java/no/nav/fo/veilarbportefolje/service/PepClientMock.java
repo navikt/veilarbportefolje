@@ -2,8 +2,6 @@ package no.nav.fo.veilarbportefolje.service;
 
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 
-import static no.nav.fo.veilarbportefolje.provider.rest.ArbeidslisteRessursTest.UNAUTHORIZED_NAV_KONTOR;
-
 public class PepClientMock implements PepClient {
 
     @Override
@@ -33,7 +31,7 @@ public class PepClientMock implements PepClient {
 
     @Override
     public boolean tilgangTilEnhet(String ident, String enhet) {
-        return !enhet.equals(UNAUTHORIZED_NAV_KONTOR);
+        return !enhet.equals("XOXOXO");
     }
 
     @Override

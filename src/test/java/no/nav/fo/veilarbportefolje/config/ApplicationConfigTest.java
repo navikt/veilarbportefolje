@@ -5,12 +5,10 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.*;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.jdbc.Transactor;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -25,6 +23,11 @@ import static org.mockito.Mockito.mock;
         DatabaseConfigTest.class
 })
 public class ApplicationConfigTest {
+
+    @Bean
+    public ElasticIndexer elasticIndexer() {
+        return mock(ElasticIndexer.class);
+    }
 
     @Bean
     public AktoerService aktoerService() {
@@ -44,16 +47,6 @@ public class ApplicationConfigTest {
     @Bean
     public PersistentOppdatering persistentOppdatering() {
         return new PersistentOppdatering();
-    }
-
-    @Bean
-    public IndekseringService solrService() {
-        return mock(IndekseringService.class);
-    }
-
-    @Bean
-    public SolrClient solrClient() {
-        return mock(HttpSolrClient.class);
     }
 
     @Bean

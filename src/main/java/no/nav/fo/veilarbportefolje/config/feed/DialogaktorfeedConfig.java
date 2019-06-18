@@ -11,8 +11,8 @@ import no.nav.fo.veilarbportefolje.consumer.DialogDataFeedHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -66,8 +66,8 @@ public class DialogaktorfeedConfig {
     @Bean
     public FeedCallback<DialogDataFraFeed> dialogDataFeedHandler(AktoerService aktoerService,
                                                                  BrukerRepository brukerRepository,
-                                                                 IndekseringService indekseringService,
+                                                                 ElasticIndexer elasticIndexer,
                                                                  DialogFeedRepository dialogFeedRepository) {
-        return new DialogDataFeedHandler(brukerRepository, indekseringService, dialogFeedRepository);
+        return new DialogDataFeedHandler(brukerRepository, elasticIndexer, dialogFeedRepository);
     }
 }

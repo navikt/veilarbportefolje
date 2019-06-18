@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
-import static no.nav.fo.veilarbportefolje.util.DateUtils.getSolrMaxAsIsoUtc;
+import static no.nav.fo.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 
 @Data
 @Accessors(chain = true)
@@ -54,15 +54,15 @@ public class OppfolgingsBruker {
     String neste_aktivitet_start;
     String forrige_aktivitet_start;
     String manuell_bruker;
-    String aktivitet_mote_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_stilling_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_egen_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_behandling_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_ijobb_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_sokeavtale_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_tiltak_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_utdanningaktivitet_utlopsdato = getSolrMaxAsIsoUtc();
-    String aktivitet_gruppeaktivitet_utlopsdato = getSolrMaxAsIsoUtc();
+    String aktivitet_mote_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_stilling_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_egen_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_behandling_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_ijobb_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_sokeavtale_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_tiltak_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_utdanningaktivitet_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_gruppeaktivitet_utlopsdato = getFarInTheFutureDate();
     boolean arbeidsliste_aktiv;
     String arbeidsliste_sist_endret_av_veilederid;
     String arbeidsliste_endringstidspunkt;

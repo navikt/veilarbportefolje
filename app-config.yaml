@@ -58,8 +58,6 @@ fasitResources:
   - alias: virksomhet:Enhet_v1
     resourceType: webserviceendpoint
 
-  - alias: veilarbportefolje.solr.brukercore
-    resourceType: restservice
   - alias: veilArbOppfolgingAPI
     resourceType: restservice
   - alias: veilArbAktivitetAPI

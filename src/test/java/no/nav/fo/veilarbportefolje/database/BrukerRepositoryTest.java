@@ -6,7 +6,6 @@ import no.nav.fo.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import org.apache.commons.io.IOUtils;
-import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,14 +20,15 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.consumer.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static no.nav.fo.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.fo.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
@@ -112,20 +112,6 @@ public class BrukerRepositoryTest {
         assertThat(result).isFalse();
     }
 
-    @Test
-    public void skal_returnere_riktig_antall_brukere_under_oppfolging_gammel_metode() {
-        ArrayList<SolrInputDocument> brukereUnderOppfolging = new ArrayList<>();
-        brukerRepository.prosesserBrukere(BrukerRepository::erOppfolgingsBruker, brukereUnderOppfolging::add);
-        assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
-    }
-
-    @Test
-    public void skal_returnere_riktig_antall_oppdaterte_brukere_under_oppfolging_gammel_metode() {
-        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-        List<SolrInputDocument> brukere = brukerRepository.retrieveOppdaterteBrukere();
-        long result = brukere.size();
-        assertThat(result).isEqualTo(ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA);
-    }
 
     @Test
     public void skalHenteUtAlleBrukereFraDatabasen() {
@@ -221,41 +207,6 @@ public class BrukerRepositoryTest {
         assertThatBrukerdataIsEqual(brukerdata, brukerdataFromDb);
     }
 
-    @Test
-    public void skalVareOppfolgningsbrukerPgaArenaStatus() throws Exception {
-        SolrInputDocument document = new SolrInputDocument();
-        document.addField("kvalifiseringsgruppekode", "BATT");
-        document.addField("formidlingsgruppekode", "IARBS");
-        document.addField("oppfolging", false);
-
-        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
-    }
-
-    @Test
-    public void skalIkkeVareOppfolgningsbrukerPgaFeilArenaStatusOgManglendeOppfolgingsflagg() throws Exception {
-        SolrInputDocument document = new SolrInputDocument();
-        document.addField("kvalifiseringsgruppekode", "XXX");
-        document.addField("formidlingsgruppekode", "ISERV");
-        document.addField("oppfolging", false);
-
-        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isFalse();
-    }
-
-    @Test
-    public void skalFiltrereBrukere() {
-        List<SolrInputDocument> aktiveBrukere = new ArrayList<>();
-        brukerRepository.prosesserBrukere(3, BrukerRepository::erOppfolgingsBruker, aktiveBrukere::add);
-
-        assertThat(aktiveBrukere.size()).isEqualTo(51);
-    }
-
-    @Test
-    public void skalVareOppfolgningsbrukerPgaOppfolgingsflagg() throws Exception {
-        SolrInputDocument document = new SolrInputDocument();
-        document.addField("oppfolging", true);
-
-        assertThat(BrukerRepository.erOppfolgingsBruker(document)).isTrue();
-    }
 
     private Brukerdata brukerdata(
             String aktoerid,
@@ -306,54 +257,6 @@ public class BrukerRepositoryTest {
         assertThat(b1.getAapUnntakDagerIgjen()).isEqualTo(b2.getAapUnntakDagerIgjen());
         assertThat(b1.getAapunntakUkerIgjenFasett()).isEqualTo(b2.getAapunntakUkerIgjenFasett());
         assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
-    }
-
-    @Test
-    public void skalKonvertereDokumentFeltTilBoolean() throws Exception {
-        SolrInputDocument inputDocumentTrue = new SolrInputDocument();
-        inputDocumentTrue.addField("oppfolging", true);
-
-        SolrInputDocument inputDocumentFalse = new SolrInputDocument();
-        inputDocumentFalse.addField("oppfolging", false);
-
-        boolean shouldBeTrue = BrukerRepository.oppfolgingsFlaggSatt(inputDocumentTrue);
-        boolean shouldBeFalse = BrukerRepository.oppfolgingsFlaggSatt(inputDocumentFalse);
-        assertThat(shouldBeTrue).isTrue();
-        assertThat(shouldBeFalse).isFalse();
-    }
-
-    @Test
-    public void aktivitetdataSkalVaereNull() {
-        Brukerdata brukerdata = new Brukerdata().setPersonid("123456");
-        brukerRepository.upsertBrukerdata(brukerdata);
-        jdbcTemplate.update("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) VALUES (123456, '1234567890')");
-
-        SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
-
-        assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isNull();
-        assertThat(bruker.get("aktivitet_start").getValue()).isNull();
-        assertThat(bruker.get("neste_aktivitet_start").getValue()).isNull();
-        assertThat(bruker.get("forrige_aktivitet_start").getValue()).isNull();
-    }
-
-    @Test
-    public void skalHenteUtAktivitetInfo() {
-
-        Brukerdata brukerdata = new Brukerdata()
-                .setPersonid("123456")
-                .setNyesteUtlopteAktivitet(timestampFromISO8601("2017-01-01T13:00:00+01:00"))
-                .setAktivitetStart(timestampFromISO8601("2017-01-01T14:00:00+01:00"))
-                .setNesteAktivitetStart(timestampFromISO8601("2017-01-01T15:00:00+01:00"))
-                .setForrigeAktivitetStart(timestampFromISO8601("2017-01-01T16:00:00+01:00"));
-
-        brukerRepository.upsertBrukerdata(brukerdata);
-        jdbcTemplate.update("INSERT INTO OPPFOLGINGSBRUKER (PERSON_ID, FODSELSNR) VALUES (123456, '1234567890')");
-
-        SolrInputDocument bruker = brukerRepository.retrieveBrukermedBrukerdata("123456");
-        assertThat(bruker.get("nyesteutlopteaktivitet").getValue()).isEqualTo("2017-01-01T12:00:00Z");
-        assertThat(bruker.get("aktivitet_start").getValue()).isEqualTo("2017-01-01T13:00:00Z");
-        assertThat(bruker.get("neste_aktivitet_start").getValue()).isEqualTo("2017-01-01T14:00:00Z");
-        assertThat(bruker.get("forrige_aktivitet_start").getValue()).isEqualTo("2017-01-01T15:00:00Z");
     }
 
     @Test
@@ -473,14 +376,4 @@ public class BrukerRepositoryTest {
                 .get(DIALOGAKTOR_SIST_OPPDATERT);
         assertEquals(date, upDated);
     }
-
-    @Test
-    public void skalHenteBrukereMedBrukerdata() {
-        List<PersonId> personIds = Stream.of("4120339", "4120327", "1033279", "4024027", "183651")
-                .map(PersonId::of).collect(toList());
-
-        List<SolrInputDocument> dokumenter = brukerRepository.retrieveBrukeremedBrukerdata(personIds);
-        assertThat(dokumenter.size()).isEqualTo(5);
-    }
-
 }
