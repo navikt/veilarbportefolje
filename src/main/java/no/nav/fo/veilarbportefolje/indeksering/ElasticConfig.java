@@ -46,6 +46,9 @@ public class ElasticConfig {
             .scheme(getElasticScheme())
             .build();
 
+    private static int SOCKET_TIMEOUT = 120_000;
+    private static int CONNECT_TIMEOUT = 60_000;
+
     @Bean
     public static RestHighLevelClient restHighLevelClient() {
         return createClient(defaultConfig);
@@ -70,10 +73,11 @@ public class ElasticConfig {
 
         return new RestHighLevelClient(RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
+                .setMaxRetryTimeoutMillis(SOCKET_TIMEOUT)
                 .setRequestConfigCallback(
                         requestConfig -> {
-                            requestConfig.setConnectTimeout(10);
-                            requestConfig.setSocketTimeout(120_000);
+                            requestConfig.setConnectTimeout(CONNECT_TIMEOUT);
+                            requestConfig.setSocketTimeout(SOCKET_TIMEOUT);
                             requestConfig.setConnectionRequestTimeout(0); // http://www.github.com/elastic/elasticsearch/issues/24069
                             return requestConfig;
                         }
