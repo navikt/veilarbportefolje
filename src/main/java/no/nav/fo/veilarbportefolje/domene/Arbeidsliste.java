@@ -7,14 +7,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
-import org.apache.solr.common.SolrDocument;
+import no.nav.fo.veilarbportefolje.util.DateUtils;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import static no.nav.fo.veilarbportefolje.util.DateUtils.isRandomFutureDate;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 
@@ -32,19 +31,6 @@ public class Arbeidsliste {
     Boolean arbeidslisteAktiv;
     Boolean harVeilederTilgang;
 
-    public static Arbeidsliste of(SolrDocument brukerDokument) {
-
-        Boolean arbeidslisteAktiv = (Boolean) brukerDokument.get("arbeidsliste_aktiv");
-        VeilederId sistEndretAv = VeilederId.of((String) brukerDokument.get("arbeidsliste_sist_endret_av_veilederid"));
-        ZonedDateTime endringstidspunkt = toZonedDateTime((Date) brukerDokument.get("arbeidsliste_endringstidspunkt"));
-        String overskrift = (String) brukerDokument.get("arbeidsliste_overskrift");
-        String kommentar = (String) brukerDokument.get("arbeidsliste_kommentar");
-        ZonedDateTime frist = toZonedDateTime(dateIfNotSolrMax((Date) brukerDokument.get("arbeidsliste_frist")));
-
-        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist)
-                .setArbeidslisteAktiv(arbeidslisteAktiv);
-    }
-
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
         VeilederId sistEndretAv = VeilederId.of(bruker.getArbeidsliste_sist_endret_av_veilederid());
@@ -60,19 +46,15 @@ public class Arbeidsliste {
 
         ZonedDateTime frist = null;
         if (bruker.getArbeidsliste_frist() != null) {
-            frist = toZonedDateTime(dateIfNotSolrMax(Instant.parse(bruker.getArbeidsliste_frist())));
+            frist = toZonedDateTime(dateIfNotFarInTheFutureDate(Instant.parse(bruker.getArbeidsliste_frist())));
         }
 
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist)
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 
-    private static Date dateIfNotSolrMax(Date date) {
-        return isRandomFutureDate(date) ? null : date;
-    }
-
-    private static Date dateIfNotSolrMax(Instant instant) {
-        return isRandomFutureDate(instant) ? null : Date.from(instant);
+    private static Date dateIfNotFarInTheFutureDate(Instant instant) {
+        return DateUtils.isFarInTheFutureDate(instant) ? null : Date.from(instant);
     }
 
     @JsonCreator

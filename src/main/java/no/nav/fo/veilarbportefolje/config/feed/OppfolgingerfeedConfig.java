@@ -11,8 +11,8 @@ import no.nav.fo.veilarbportefolje.consumer.OppfolgingFeedHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
@@ -68,13 +68,13 @@ public class OppfolgingerfeedConfig {
     @Bean
     public FeedCallback<BrukerOppdatertInformasjon> oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                                                           BrukerRepository brukerRepository,
-                                                                          IndekseringService indekseringService,
+                                                                          ElasticIndexer elasticIndexer,
                                                                           OppfolgingFeedRepository oppfolgingFeedRepository,
                                                                           VeilederService veilederService,
                                                                           Transactor transactor) {
         return new OppfolgingFeedHandler(arbeidslisteService,
                 brukerRepository,
-                indekseringService,
+                elasticIndexer,
                 oppfolgingFeedRepository,
                 veilederService,
                 transactor);

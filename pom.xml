@@ -20,7 +20,6 @@
 
     <properties>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
-        <solr.version>7.3.1</solr.version>
         <jsch.version>0.1.54</jsch.version>
         <elastic.version>6.5.2</elastic.version>
     </properties>
@@ -67,19 +66,6 @@
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
                 <version>${elastic.version}</version>
-            </dependency>
-
-            <!--Solr-->
-            <dependency>
-                <groupId>org.apache.solr</groupId>
-                <artifactId>solr-solrj</artifactId>
-                <version>${solr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jcraft</groupId>
-                <artifactId>jsch</artifactId>
-                <version>${jsch.version}</version>
-                <scope>runtime</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -225,26 +211,6 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-        </dependency>
-
-        <!--Solr-->
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.codehaus.woodstox</groupId>
-                    <artifactId>wstx-asl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.woodstox</groupId>
-                    <artifactId>stax2-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.woodstox</groupId>
-                    <artifactId>woodstox-core-asl</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!--Diverse-->
