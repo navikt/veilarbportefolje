@@ -11,6 +11,7 @@ import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticConfig;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticMetricsReporter;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
@@ -67,7 +68,8 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
         ArenaYtleserHelsesjekk.class,
-        ArenaAktiviteterHelsesjekk.class
+        ArenaAktiviteterHelsesjekk.class,
+        ElasticConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
 
@@ -171,8 +173,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public IndekseringScheduler indekseringScheduler() {
-        return new IndekseringScheduler();
+    public IndekseringScheduler indekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
+        return new IndekseringScheduler(elasticIndexer, tiltakHandler, kopierGR199FraArena, krrService);
     }
 
     @Bean

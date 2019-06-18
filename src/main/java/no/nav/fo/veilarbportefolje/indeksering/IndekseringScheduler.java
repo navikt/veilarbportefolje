@@ -13,17 +13,22 @@ import static no.nav.batch.BatchJob.runAsyncOnLeader;
 @Slf4j
 public class IndekseringScheduler {
 
-    @Inject
     private ElasticIndexer elasticIndexer;
 
-    @Inject
     private TiltakHandler tiltakHandler;
 
-    @Inject
     private KopierGR199FraArena kopierGR199FraArena;
 
-    @Inject
     private KrrService krrService;
+
+
+    @Inject
+    public IndekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
+        this.elasticIndexer = elasticIndexer;
+        this.tiltakHandler = tiltakHandler;
+        this.kopierGR199FraArena = kopierGR199FraArena;
+        this.krrService = krrService;
+    }
 
     @Scheduled(cron = "0 0 4 * * ?")
     public void totalIndexering() {
