@@ -2,8 +2,8 @@ package no.nav.fo.veilarbportefolje.provider.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.PepClient;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.util.StepperUtils;
 import org.springframework.stereotype.Component;
 
@@ -30,12 +30,12 @@ import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.createResponse
 public class DiagramController {
 
     private PepClient pepClient;
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
 
     @Inject
-    public DiagramController(PepClient pepClient, IndekseringService indekseringService) {
+    public DiagramController(PepClient pepClient, ElasticIndexer indekseringService) {
         this.pepClient = pepClient;
-        this.indekseringService = indekseringService;
+        this.elasticIndexer = indekseringService;
     }
 
     @POST
@@ -54,10 +54,10 @@ public class DiagramController {
 
             Optional<StepperFacetConfig> stepperConfig = StepperFacetConfig.stepperFacetConfig(filtervalg.ytelse);
             if (stepperConfig.isPresent()) {
-                BrukereMedAntall brukere = indekseringService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+                BrukereMedAntall brukere = elasticIndexer.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
                 return StepperUtils.groupByStepping(stepperConfig.get(), brukere.getBrukere(), brukerUkeMapping(stepperConfig.get().getYtelse()));
             } else {
-                BrukereMedAntall brukereMedAntall = indekseringService.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+                BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
 
                 Map<ManedFasettMapping, Long> grupperte = brukereMedAntall
                         .getBrukere()

@@ -3,8 +3,8 @@ package no.nav.fo.veilarbportefolje.provider.rest;
 import io.swagger.annotations.Api;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.domene.*;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.PepClient;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -27,16 +27,16 @@ import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.getSsoToken;
 @Produces(APPLICATION_JSON)
 public class VeilederController {
 
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
     private PepClient pepClient;
 
     @Inject
     public VeilederController(
-            IndekseringService indekseringService,
+            ElasticIndexer elasticIndexer,
             PepClient pepClient
     ) {
 
-        this.indekseringService = indekseringService;
+        this.elasticIndexer = elasticIndexer;
         this.pepClient = pepClient;
     }
 
@@ -62,7 +62,7 @@ public class VeilederController {
             String ident = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-            BrukereMedAntall brukereMedAntall = indekseringService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
+            BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
             List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getSsoToken(), pepClient);
 
             Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -88,7 +88,7 @@ public class VeilederController {
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            return indekseringService.hentStatusTallForVeileder(enhet, veilederIdent);
+            return elasticIndexer.hentStatusTallForVeileder(enhet, veilederIdent);
         });
     }
 
@@ -102,7 +102,7 @@ public class VeilederController {
             ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
             TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
 
-            return indekseringService.hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet);
+            return elasticIndexer.hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet);
         });
     }
 

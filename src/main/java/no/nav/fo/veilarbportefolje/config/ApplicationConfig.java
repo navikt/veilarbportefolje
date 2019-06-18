@@ -5,15 +5,16 @@ import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaAktiviteterHelsesjekk;
-import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaYtleserHelsesjekk;
+import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
-import no.nav.fo.veilarbportefolje.indeksering.*;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticMetricsReporter;
+import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
 import no.nav.fo.veilarbportefolje.internal.PopulerElasticServlet;
-import no.nav.fo.veilarbportefolje.internal.PopulerIndekseringServlet;
 import no.nav.fo.veilarbportefolje.internal.PopulerKrrServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.KrrService;
@@ -56,7 +57,6 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
         ExternalServiceConfig.class,
-        IndekseringConfig.class,
         FilmottakConfig.class,
         MetricsConfig.class,
         CacheConfig.class,
@@ -75,8 +75,6 @@ public class ApplicationConfig implements ApiApplication {
     public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
     public static final String DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY = "VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL";
     public static final String VIRKSOMHET_ENHET_V1_URL_PROPERTY = "VIRKSOMHET_ENHET_V1_ENDPOINTURL";
-    public static final String VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL_PROPERTY = "VEILARBPORTEFOLJE_SOLR_BRUKERCORE_URL";
-    public static final String VEILARBPORTEFOLJE_SOLR_MASTERNODE_PROPERTY = "VEILARBPORTEFOLJE_SOLR_MASTERNODE";
     public static final String VEILARBOPPFOLGING_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
     public static final String VEILARBAKTIVITET_URL_PROPERTY = "VEILARBAKTIVITETAPI_URL";
     public static final String VEILARBDIALOG_URL_PROPERTY = "VEILARBDIALOGAPI_URL";
@@ -94,9 +92,6 @@ public class ApplicationConfig implements ApiApplication {
 
     @Inject
     private IndekseringScheduler indekseringScheduler;
-
-    @Inject
-    private IndekseringService indekseringService;
 
     @Inject
     private TiltakHandler tiltakHandler;
@@ -123,7 +118,6 @@ public class ApplicationConfig implements ApiApplication {
         }
 
         leggTilServlet(servletContext, new TotalHovedindekseringServlet(indekseringScheduler), "/internal/totalhovedindeksering");
-        leggTilServlet(servletContext, new PopulerIndekseringServlet(indekseringService), "/internal/populerindeks");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
