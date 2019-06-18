@@ -152,8 +152,7 @@ public class ElasticIndexer {
 
         });
 
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
-        log.info("Deltaindeksering: Fullført ( {} brukere med aktoerId {} ble oppdatert)", brukere.size(), aktoerIder);
+        logAktorIder(brukere);
 
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
@@ -161,6 +160,12 @@ public class ElasticIndexer {
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
         event.addFieldToReport("es.antall.oppdateringer", antall);
         event.report();
+    }
+
+    private void logAktorIder(List<OppfolgingsBruker> brukere) {
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+        List<String> personIder = brukere.stream().map(OppfolgingsBruker::getPerson_id).collect(Collectors.toList());
+        log.info("Indeks oppdatert for {} brukere med aktoerId {} og personId {})", brukere.size(), aktoerIder, personIder);
     }
 
     @SneakyThrows
@@ -283,6 +288,8 @@ public class ElasticIndexer {
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());
         }
+
+        logAktorIder(oppfolgingsBrukere);
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
