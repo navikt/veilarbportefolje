@@ -3,6 +3,7 @@ package no.nav.fo.veilarbportefolje.indeksering.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
@@ -55,14 +56,23 @@ public class OppfolgingsBruker {
     String forrige_aktivitet_start;
     String manuell_bruker;
     String aktivitet_mote_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_mote_startdato;
     String aktivitet_stilling_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_stilling_startdato;
     String aktivitet_egen_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_egen_startdato;
     String aktivitet_behandling_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_behandling_startdato;
     String aktivitet_ijobb_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_ijobb_startdato;
     String aktivitet_sokeavtale_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_sokeavtale_startdato;
     String aktivitet_tiltak_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_tiltak_startdato;
     String aktivitet_utdanningaktivitet_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_utdanningaktivitet_startdato;
     String aktivitet_gruppeaktivitet_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_gruppeaktivitet_startdato;
     boolean arbeidsliste_aktiv;
     String arbeidsliste_sist_endret_av_veilederid;
     String arbeidsliste_endringstidspunkt;

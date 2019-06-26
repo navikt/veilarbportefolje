@@ -33,13 +33,15 @@ public class IndekseringUtils {
                 .orElseThrow(IllegalStateException::new);
     }
 
-    static void leggTilUtlopsDato(OppfolgingsBruker bruker, AktivitetStatus status) {
+    static void leggTilUtlopsOgStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String utlop = AktivitetUtils.statusToIsoUtcString(status);
+        String start = AktivitetUtils.statusToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
 
         switch (type) {
             case egen:
                 bruker.setAktivitet_egen_utlopsdato(utlop);
+                bruker.setAktivitet_egen_startdato(utlop);
                 break;
             case stilling:
                 bruker.setAktivitet_stilling_utlopsdato(utlop);
@@ -55,6 +57,7 @@ public class IndekseringUtils {
                 break;
             case mote:
                 bruker.setAktivitet_mote_utlopsdato(utlop);
+                bruker.setAktivitet_mote_startdato(utlop);
                 break;
             case tiltak:
                 bruker.setAktivitet_tiltak_utlopsdato(utlop);

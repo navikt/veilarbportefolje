@@ -144,7 +144,8 @@ public class AktivitetDAO {
                 AktoerId.of((String) row.get("AKTOERID")),
                 (String) row.get("AKTIVITETTYPE"),
                 parse0OR1((String) row.get("STATUS")),
-                (Timestamp) row.get("NESTE_UTLOPSDATO"))
+                (Timestamp) row.get("NESTE_UTLOPSDATO"),
+                (Timestamp) row.get("NESTE_STARTDATO"))
             )
             .filter(aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType()))
             .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
@@ -231,6 +232,7 @@ public class AktivitetDAO {
                 "AKTIVITETTYPE, " +
                 "STATUS, " +
                 "NESTE_UTLOPSDATO " +
+                "NESTE_STARTDATO " +
                 "FROM " +
                 "BRUKERSTATUS_AKTIVITETER " +
                 "WHERE " +

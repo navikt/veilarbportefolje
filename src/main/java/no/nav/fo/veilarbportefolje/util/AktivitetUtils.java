@@ -141,6 +141,16 @@ public class AktivitetUtils {
                             .findFirst()
                             .orElse(null);
 
+                    Timestamp datoForNesteStart = aktiviteterMedAktivtStatus
+                            .stream()
+                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
+                            .map(AktivitetDTO::getFraDato)
+                            .filter(Objects::nonNull)
+                            .sorted()
+                            .findFirst()
+                            .orElse(null);
+
+
                     boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
 
                     aktiveAktiviteter.add(
@@ -149,7 +159,8 @@ public class AktivitetUtils {
                                     aktoerId,
                                     aktivitetsype,
                                     aktivitetErIkkeFullfort,
-                                    datoForNesteUtlop
+                                    datoForNesteUtlop,
+                                    datoForNesteStart
                             )
                     );
                 });

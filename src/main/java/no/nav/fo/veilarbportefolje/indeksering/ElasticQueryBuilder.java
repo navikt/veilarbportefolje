@@ -204,6 +204,9 @@ public class ElasticQueryBuilder {
             case NYE_BRUKERE_FOR_VEILEDER:
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
+            case MOTER_IDAG:
+                queryBuilder = existsQuery("aktivitet_mote_startdato");
+                break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = boolQuery()
                         .must(matchQuery("formidlingsgruppekode", "IARBS"))

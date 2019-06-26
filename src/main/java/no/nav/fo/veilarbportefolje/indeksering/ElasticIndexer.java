@@ -358,7 +358,7 @@ public class ElasticIndexer {
 
             OppfolgingsBruker bruker = finnBruker(brukere, personId);
 
-            statuserForBruker.forEach(status -> IndekseringUtils.leggTilUtlopsDato(bruker, status));
+            statuserForBruker.forEach(status -> IndekseringUtils.leggTilUtlopsOgStartDato(bruker, status));
 
             Set<String> aktiviteterSomErAktive = statuserForBruker.stream()
                     .filter(AktivitetStatus::isAktiv)
