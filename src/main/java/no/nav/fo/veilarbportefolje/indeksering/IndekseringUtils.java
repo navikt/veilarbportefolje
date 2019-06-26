@@ -36,7 +36,6 @@ public class IndekseringUtils {
     static void leggTilUtlopsDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String utlop = AktivitetUtils.statusToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
-
         switch (type) {
             case egen:
                 bruker.setAktivitet_egen_utlopsdato(utlop);
@@ -67,6 +66,18 @@ public class IndekseringUtils {
                 break;
             default:
                 throw new IllegalStateException("Fant ikke riktig aktivitetstype");
+        }
+    }
+
+    static void leggTilStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
+        String start = AktivitetUtils.startDatoToIsoUtcString(status);
+        AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
+        switch (type) {
+            case mote:
+                bruker.setAktivitet_mote_startdato(start);
+                break;
+            default:
+                return;
         }
     }
 }
