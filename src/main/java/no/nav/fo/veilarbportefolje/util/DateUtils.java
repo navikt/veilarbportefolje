@@ -13,6 +13,7 @@ import java.util.Optional;
 public class DateUtils {
 
     private static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
+    private static final String EPOCH_0 = "1970-01-01T00:00:00Z";
 
     public static Timestamp timestampFromISO8601(String date) {
         Instant instant =  ZonedDateTime.parse(date).toInstant();
@@ -36,7 +37,7 @@ public class DateUtils {
     }
 
     public static boolean isEpoch0(Timestamp timestamp) {
-        return "1970-01-01T00:00:00Z".equals(toIsoUTC(timestamp));
+        return EPOCH_0.equals(toIsoUTC(timestamp));
     }
 
     public static ZonedDateTime toZonedDateTime(Date date) {
@@ -94,7 +95,15 @@ public class DateUtils {
         return timestampFromISO8601(FAR_IN_THE_FUTURE_DATE);
     }
 
+    private static Timestamp getEpoch0Timestamp() {
+        return timestampFromISO8601(EPOCH_0);
+    }
+
     public static String getFarInTheFutureDate() {
         return toIsoUTC(getFarInTheFutureTimestamp());
+    }
+
+    public static String getEpoch0Date() {
+        return toIsoUTC(getEpoch0Timestamp());
     }
 }

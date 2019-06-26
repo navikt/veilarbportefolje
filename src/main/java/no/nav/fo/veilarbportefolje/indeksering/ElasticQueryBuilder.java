@@ -27,6 +27,7 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
+import static org.elasticsearch.search.aggregations.AggregationBuilders.range;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
 import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
 import static org.elasticsearch.search.sort.SortMode.MIN;
@@ -204,6 +205,9 @@ public class ElasticQueryBuilder {
             case NYE_BRUKERE_FOR_VEILEDER:
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
+            case MOTER_IDAG:
+                queryBuilder = rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d");
+                break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = boolQuery()
                         .must(matchQuery("formidlingsgruppekode", "IARBS"))
@@ -338,8 +342,18 @@ public class ElasticQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet")
+                                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
+                                moterMedNavIdag(filtrereVeilederOgEnhet)
                         ));
+    }
+
+    private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter(
+                "moterMedNAVIdag",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .should(rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d"))
+        );
     }
 
     private static KeyedFilter ufordelteBrukere(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {

@@ -3,6 +3,7 @@ package no.nav.fo.veilarbportefolje.indeksering.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
@@ -55,6 +56,7 @@ public class OppfolgingsBruker {
     String forrige_aktivitet_start;
     String manuell_bruker;
     String aktivitet_mote_utlopsdato = getFarInTheFutureDate();
+    String aktivitet_mote_startdato;
     String aktivitet_stilling_utlopsdato = getFarInTheFutureDate();
     String aktivitet_egen_utlopsdato = getFarInTheFutureDate();
     String aktivitet_behandling_utlopsdato = getFarInTheFutureDate();
