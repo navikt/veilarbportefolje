@@ -62,6 +62,7 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
+    Map<String, Timestamp> aktiviteterStartDato = new HashMap<>();
     boolean erSykmeldtMedArbeidsgiver;
 
     public static Bruker of(OppfolgingsBruker bruker) {
@@ -116,7 +117,8 @@ public class Bruker {
                 .addAktivitetUtlopsdato("egen", dateToTimestamp(bruker.getAktivitet_egen_utlopsdato()))
                 .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
                 .addAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
-                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
+                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()))
+                .addAktivitetStartdato("mote_startdato", dateToTimestamp(bruker.getAktivitet_mote_startdato()));
 
     }
 
@@ -133,6 +135,14 @@ public class Bruker {
             return this;
         }
         aktiviteter.put(type, utlopsdato);
+        return this;
+    }
+
+    private Bruker addAktivitetStartdato(String type, Timestamp startDato) {
+        if (Objects.isNull(startDato) || isFarInTheFutureDate(startDato)) {
+            return this;
+        }
+        aktiviteterStartDato.put(type, startDato);
         return this;
     }
 

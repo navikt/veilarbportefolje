@@ -21,6 +21,7 @@ public class AktivitetStatus {
     private String aktivitetType;
     private boolean aktiv;
     private Timestamp nesteUtlop;
+    private Timestamp nesteStart;
 
     @Override
     public boolean equals(Object o) {
@@ -42,6 +43,7 @@ public class AktivitetStatus {
 
         return updateQuery
                 .add("NESTE_UTLOPSDATO", AktivitetStatus::getNesteUtlop, Timestamp.class)
+                .add("NESTE_STARTDATO", AktivitetStatus::getNesteStart, Timestamp.class)
                 .add("STATUS", (a) -> DbUtils.boolTo0OR1(a.isAktiv()), String.class)
                 .addWhereClause(
                         (status) -> WhereClause.equals("PERSONID", status.getPersonid().toString())
@@ -58,6 +60,7 @@ public class AktivitetStatus {
                 .add("AKTIVITETTYPE", AktivitetStatus::getAktivitetType, String.class)
                 .add("STATUS", (a) -> DbUtils.boolTo0OR1(a.isAktiv()), String.class)
                 .add("NESTE_UTLOPSDATO", AktivitetStatus::getNesteUtlop, Timestamp.class)
+                .add("NESTE_STARTDATO", AktivitetStatus::getNesteStart, Timestamp.class)
                 .execute(data);
     }
 

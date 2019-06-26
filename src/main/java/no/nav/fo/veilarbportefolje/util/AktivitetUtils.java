@@ -141,6 +141,16 @@ public class AktivitetUtils {
                             .findFirst()
                             .orElse(null);
 
+                    Timestamp datoForNesteStart = aktiviteterMedAktivtStatus
+                            .stream()
+                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
+                            .map(AktivitetDTO::getFraDato)
+                            .filter(Objects::nonNull)
+                            .sorted()
+                            .findFirst()
+                            .orElse(null);
+
+
                     boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
 
                     aktiveAktiviteter.add(
@@ -149,7 +159,8 @@ public class AktivitetUtils {
                                     aktoerId,
                                     aktivitetsype,
                                     aktivitetErIkkeFullfort,
-                                    datoForNesteUtlop
+                                    datoForNesteUtlop,
+                                    datoForNesteStart
                             )
                     );
                 });
@@ -159,6 +170,10 @@ public class AktivitetUtils {
 
     public static String statusToIsoUtcString(AktivitetStatus status) {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getFarInTheFutureDate());
+    }
+
+    public static String startDatoToIsoUtcString(AktivitetStatus status) {
+        return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(DateUtils.getEpoch0Date());
     }
 
     public static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
