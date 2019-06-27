@@ -149,7 +149,7 @@ public class ApplicationConfig implements ApiApplication {
 
     @Bean
     public ElasticMetricsReporter elasticMetricsReporter() {
-        return new ElasticMetricsReporter(unleashService());
+        return new ElasticMetricsReporter();
     }
 
     @Bean
