@@ -10,6 +10,7 @@ import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 public class IndekseringUtils {
 
@@ -33,11 +34,9 @@ public class IndekseringUtils {
                 .orElseThrow(IllegalStateException::new);
     }
 
-    static void leggTilUtlopsOgStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
+    static void leggTilUtlopsDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String utlop = AktivitetUtils.statusToIsoUtcString(status);
-        String start = AktivitetUtils.statusToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
-
         switch (type) {
             case egen:
                 bruker.setAktivitet_egen_utlopsdato(utlop);
@@ -57,7 +56,6 @@ public class IndekseringUtils {
                 break;
             case mote:
                 bruker.setAktivitet_mote_utlopsdato(utlop);
-                bruker.setAktivitet_mote_startdato(utlop);
                 break;
             case tiltak:
                 bruker.setAktivitet_tiltak_utlopsdato(utlop);
@@ -67,6 +65,42 @@ public class IndekseringUtils {
                 break;
             case utdanningaktivitet:
                 bruker.setAktivitet_utdanningaktivitet_utlopsdato(utlop);
+                break;
+            default:
+                throw new IllegalStateException("Fant ikke riktig aktivitetstype");
+        }
+    }
+
+    static void leggTilStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
+        String start = AktivitetUtils.startDatoToIsoUtcString(status);
+        AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
+        switch (type) {
+            case egen:
+                bruker.setAktivitet_egen_startdato(start);
+                break;
+            case stilling:
+                bruker.setAktivitet_stilling_startdato(start);
+                break;
+            case sokeavtale:
+                bruker.setAktivitet_sokeavtale_startdato(start);
+                break;
+            case behandling:
+                bruker.setAktivitet_behandling_startdato(start);
+                break;
+            case ijobb:
+                bruker.setAktivitet_ijobb_startdato(start);
+                break;
+            case mote:
+                bruker.setAktivitet_mote_startdato(start);
+                break;
+            case tiltak:
+                bruker.setAktivitet_tiltak_startdato(start);
+                break;
+            case gruppeaktivitet:
+                bruker.setAktivitet_gruppeaktivitet_startdato(start);
+                break;
+            case utdanningaktivitet:
+                bruker.setAktivitet_utdanningaktivitet_startdato(start);
                 break;
             default:
                 throw new IllegalStateException("Fant ikke riktig aktivitetstype");

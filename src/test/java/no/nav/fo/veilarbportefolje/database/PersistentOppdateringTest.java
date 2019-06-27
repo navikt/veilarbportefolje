@@ -40,8 +40,8 @@ public class PersistentOppdateringTest {
         PersonId personId = PersonId.of("111111");
         AktoerId aktoerId = AktoerId.of("222222");
 
-        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1", true, new Timestamp(0));
-        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1", false, new Timestamp(0));
+        AktivitetStatus a1 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1", true, new Timestamp(0), new Timestamp(0));
+        AktivitetStatus a2 = AktivitetStatus.of(personId, aktoerId, "aktivitetstype1", false, new Timestamp(0), new Timestamp(0));
 
 
         Map<PersonId, Set<AktivitetStatus>> returnStatuser = new HashMap<>();

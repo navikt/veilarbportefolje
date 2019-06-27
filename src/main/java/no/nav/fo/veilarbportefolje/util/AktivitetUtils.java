@@ -172,6 +172,10 @@ public class AktivitetUtils {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getFarInTheFutureDate());
     }
 
+    public static String startDatoToIsoUtcString(AktivitetStatus status) {
+        return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(DateUtils.getEpoch0Date());
+    }
+
     public static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
         return brukertiltak
             .stream()

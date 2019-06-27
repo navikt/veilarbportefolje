@@ -205,7 +205,7 @@ public class ElasticQueryBuilder {
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
             case MOTER_IDAG:
-                queryBuilder = existsQuery("aktivitet_mote_startdato");
+                queryBuilder = rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d");
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = boolQuery()
