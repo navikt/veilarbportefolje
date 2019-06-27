@@ -44,7 +44,14 @@ public class TiltakUtils {
                 .collect(toList()))
                 .orElse(null);
 
-        return AktivitetStatus.of(personId, AktoerId.of(null), TILTAK, true, nesteUtlopsdato);
+        Timestamp nesteStartDato = finnNesteDatoFraOgMedGardagens(tiltaksAktiviteterEtterDatoFilter
+                .stream()
+                .map(TiltakUtils::hentStartdatoForTiltak)
+                .filter(Objects::nonNull)
+                .collect(toList()))
+                .orElse(null);
+
+        return AktivitetStatus.of(personId, AktoerId.of(null), TILTAK, true, nesteUtlopsdato, nesteStartDato);
     }
 
     static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId) {
@@ -62,8 +69,8 @@ public class TiltakUtils {
         }
 
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoForMoteplan(gruppeAktiviteterEtterDatoFilter).orElse(null);
-
-        return AktivitetStatus.of(personId, AktoerId.of(null), GRUPPEAKTIVITET, true, nesteUtlopsdato);
+        Timestamp nesteStartDato = finnNesteStartdatoForMoteplan(gruppeAktiviteterEtterDatoFilter).orElse(null);
+        return AktivitetStatus.of(personId, AktoerId.of(null), GRUPPEAKTIVITET, true, nesteUtlopsdato, nesteStartDato);
     }
 
     static AktivitetStatus utledUtdanningsaktivitetstatus(Bruker bruker, PersonId personId) {
@@ -78,8 +85,8 @@ public class TiltakUtils {
         }
 
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato).orElse(null);
-
-        return AktivitetStatus.of(personId, AktoerId.of(null), UTDANNINGAKTIVITET, true, nesteUtlopsdato);
+        Timestamp nesteStartDato = finnNesteStartDatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato).orElse(null);
+        return AktivitetStatus.of(personId, AktoerId.of(null), UTDANNINGAKTIVITET, true, nesteUtlopsdato, nesteStartDato);
 
     }
 
@@ -93,11 +100,30 @@ public class TiltakUtils {
                 .collect(toList()));
     }
 
+    private static Optional<Timestamp> finnNesteStartDatoUtdanningsaktiviteter(List<Utdanningsaktivitet> utdanningaktiviteter) {
+        return finnNesteDatoFraOgMedGardagens(utdanningaktiviteter
+                .stream()
+                .filter(Objects::nonNull)
+                .map(Utdanningsaktivitet::getAktivitetPeriode)
+                .map(Periode::getFom)
+                .map(TiltakUtils::tilTimestamp)
+                .collect(toList()));
+    }
+
     public static Optional<Timestamp> finnNesteUtlopsdatoForMoteplan(List<Moeteplan> moteplan) {
         return finnNesteDatoFraOgMedDagens(moteplan
                 .stream()
                 .filter(Objects::nonNull)
                 .map(Moeteplan::getSluttDato)
+                .map(TiltakUtils::tilTimestamp)
+                .collect(toList()));
+    }
+
+    public static Optional<Timestamp> finnNesteStartdatoForMoteplan(List<Moeteplan> moteplan) {
+        return finnNesteDatoFraOgMedGardagens(moteplan
+                .stream()
+                .filter(Objects::nonNull)
+                .map(Moeteplan::getStartDato)
                 .map(TiltakUtils::tilTimestamp)
                 .collect(toList()));
     }
@@ -109,12 +135,27 @@ public class TiltakUtils {
                 .findFirst();
     }
 
+    private static Optional<Timestamp> finnNesteDatoFraOgMedGardagens(List<Timestamp> timestamps) {
+        return timestamps.stream()
+                .filter(TiltakUtils::fraOgMedGardagensDato)
+                .sorted()
+                .findFirst();
+    }
+
+    private static boolean fraOgMedGardagensDato(Timestamp timestamp) {
+        return fraOgMedGardagensDato(timestamp.toLocalDateTime().toLocalDate());
+    }
+
     private static boolean fraOgMedDagensDato(Timestamp timestamp) {
         return fraOgMedDagensDato(timestamp.toLocalDateTime().toLocalDate());
     }
 
     private static boolean fraOgMedDagensDato(LocalDate localDate) {
         return LocalDate.now().isBefore(localDate.plusDays(1));
+    }
+
+    private static boolean fraOgMedGardagensDato(LocalDate localDate) {
+        return LocalDate.now().isBefore(localDate.minusDays(1));
     }
 
     private static Timestamp tilTimestamp(XMLGregorianCalendar calendar) {
@@ -143,6 +184,14 @@ public class TiltakUtils {
         return Optional.of(tiltaksaktivitet)
                 .map(Tiltaksaktivitet::getDeltakelsePeriode)
                 .map(Periode::getTom)
+                .map(TiltakUtils::tilTimestamp)
+                .orElse(null);
+    }
+
+    private static Timestamp hentStartdatoForTiltak(Tiltaksaktivitet tiltaksaktivitet) {
+        return Optional.of(tiltaksaktivitet)
+                .map(Tiltaksaktivitet::getDeltakelsePeriode)
+                .map(Periode::getFom)
                 .map(TiltakUtils::tilTimestamp)
                 .orElse(null);
     }

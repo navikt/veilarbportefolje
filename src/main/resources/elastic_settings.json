@@ -78,6 +78,9 @@
         "aktivitet_utlopsdatoer": {
           "type": "date"
         },
+        "aktivitet_mote_startdato": {
+          "type": "date"
+        },
         "aktivitet_mote_utlopsdato":  {
           "type": "date",
           "copy_to": "aktivitet_utlopsdatoer"
