@@ -352,7 +352,7 @@ public class ElasticQueryBuilder {
                 "moterMedNAVIdag",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .should(rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d"))
+                        .must(rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d"))
         );
     }
 
