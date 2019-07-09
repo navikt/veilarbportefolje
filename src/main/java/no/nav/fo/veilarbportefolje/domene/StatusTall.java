@@ -20,6 +20,7 @@ public class StatusTall {
     public long utlopteAktiviteter;
     public long minArbeidsliste;
     public long erSykmeldtMedArbeidsgiver;
+    public long moterMedNAVIdag;
 
     public StatusTall() {
     }
@@ -38,5 +39,6 @@ public class StatusTall {
         this.utlopteAktiviteter = buckets.getUtlopteAktiviteter().getDoc_count();
         this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();
         this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
+        this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
     }
 }
