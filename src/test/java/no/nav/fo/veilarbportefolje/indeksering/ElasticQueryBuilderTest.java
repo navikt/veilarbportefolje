@@ -8,6 +8,7 @@ import no.nav.fo.veilarbportefolje.domene.Filtervalg;
 import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.joda.time.LocalDate;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -143,7 +144,10 @@ public class ElasticQueryBuilderTest {
         val builder = byggStatusTallForVeilederQuery("0000", "Z000000", listOf("Z00001"));
 
         val actualJson = builder.aggregations().toString();
-        val expectedJson = readFileAsJsonString("/statustall_for_veileder.json");
+        String expectedJson = readFileAsJsonString("/statustall_for_veileder.json");
+        LocalDate localDate = new LocalDate();
+        expectedJson = expectedJson.replaceAll("fromDate", localDate.toDateTimeAtStartOfDay().toString());
+        expectedJson = expectedJson.replaceAll("toDate", localDate.plusDays(1).toDateTimeAtStartOfDay().toString());
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
@@ -153,8 +157,11 @@ public class ElasticQueryBuilderTest {
         val builder = byggStatusTallForEnhetQuery("0000", listOf("Z00001"));
 
         val actualJson = builder.aggregations().toString();
-        val expectedJson = readFileAsJsonString("/statustall_for_enhet.json");
+        String expectedJson = readFileAsJsonString("/statustall_for_enhet.json");
 
+        LocalDate localDate = new LocalDate();
+        expectedJson = expectedJson.replaceAll("fromDate", localDate.toDateTimeAtStartOfDay().toString());
+        expectedJson = expectedJson.replaceAll("toDate", localDate.plusDays(1).toDateTimeAtStartOfDay().toString());
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 

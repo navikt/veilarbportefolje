@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.AktivitetStatus;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Slf4j
 public class IndekseringUtils {
 
     static String createIndexName(String alias) {
@@ -72,6 +74,7 @@ public class IndekseringUtils {
     static void leggTilStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String start = AktivitetUtils.startDatoToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
+        log.info("Aktivitet statDato: " +  start);
         switch (type) {
             case mote:
                 bruker.setAktivitet_mote_startdato(start);
