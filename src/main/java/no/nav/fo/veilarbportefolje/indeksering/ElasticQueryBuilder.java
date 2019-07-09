@@ -13,6 +13,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.joda.time.LocalDate;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
-import static org.elasticsearch.search.aggregations.AggregationBuilders.range;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
 import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
 import static org.elasticsearch.search.sort.SortMode.MIN;
@@ -110,12 +110,15 @@ public class ElasticQueryBuilder {
             case "valgteaktiviteter":
                 sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
                 break;
+            case "moterMedNAVIdag":
+                searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+                break;
             case "iavtaltaktivitet":
                 FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
                         .order(order)
                         .sortMode(MIN);
 
-                searchSourceBuilder.sort(builder);;
+                searchSourceBuilder.sort(builder);
                 break;
             case "fodselsnummer":
                 searchSourceBuilder.sort("fnr.raw", order);
@@ -169,7 +172,7 @@ public class ElasticQueryBuilder {
     }
 
     static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet) {
-
+        LocalDate localDate = new LocalDate();
         QueryBuilder queryBuilder;
         switch (brukerStatus) {
             case NYE_BRUKERE:
@@ -206,7 +209,9 @@ public class ElasticQueryBuilder {
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
             case MOTER_IDAG:
-                queryBuilder = rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d");
+                queryBuilder = rangeQuery("aktivitet_mote_startdato")
+                        .gte(localDate.toDateTimeAtStartOfDay().toString())
+                        .lt(localDate.plusDays(1).toDateTimeAtStartOfDay().toString());
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = boolQuery()
@@ -348,11 +353,14 @@ public class ElasticQueryBuilder {
     }
 
     private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        LocalDate localDate = new LocalDate();
         return new KeyedFilter(
                 "moterMedNAVIdag",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .must(rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d"))
+                        .should(rangeQuery("aktivitet_mote_startdato")
+                                .gte(localDate.toDateTimeAtStartOfDay().toString())
+                                .lt(localDate.plusDays(1).toDateTimeAtStartOfDay().toString()))
         );
     }
 
