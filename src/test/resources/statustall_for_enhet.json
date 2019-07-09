@@ -284,12 +284,14 @@
                   "adjust_pure_negative" : true,
                   "boost" : 1.0
                 }
-              },
+              }
+            ],
+            "should" : [
               {
                 "range" : {
                   "aktivitet_mote_startdato" : {
-                    "from" : "now-1d/d",
-                    "to" : "now/d",
+                    "from" : "fromDate",
+                    "to" : "toDate",
                     "include_lower" : true,
                     "include_upper" : false,
                     "boost" : 1.0
