@@ -359,6 +359,7 @@ public class ElasticIndexer {
             OppfolgingsBruker bruker = finnBruker(brukere, personId);
 
             statuserForBruker.forEach(status -> {
+                log.warn("Aktivitetstatus {} , {} , {} ", status.getNesteStart(), status.getNesteUtlop(), status.getAktivitetType());
                 IndekseringUtils.leggTilUtlopsDato(bruker, status);
                 IndekseringUtils.leggTilStartDato(bruker, status);
             });
