@@ -38,6 +38,7 @@ public class MainTest {
         ServiceUser serviceUser = getServiceUser(SERVICE_USER_ALIAS, APPLICATION_NAME);
         setProperty(SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(SYSTEMUSER_PASSWORD, serviceUser.getPassword());
+        setProperty("miljo.database", "true");
 
         DbCredentials dbCredentials = resolveDbCredentials();
         setProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME, dbCredentials.getUrl());
@@ -50,7 +51,7 @@ public class MainTest {
         setProperty(CredentialConstants.SYSTEMUSER_PASSWORD, serviceUser.getPassword());
         setProperty(AKTOER_V2_URL_PROPERTY, getWebServiceEndpoint(AKTOER_V2_ALIAS).getUrl());
         setProperty(VIRKSOMHET_ENHET_V1_URL_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_ENHET_V1_ALIAS).getUrl());
-        setProperty(DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY, getWebServiceEndpoint(DIGITAL_KONTAKINFORMASJON_V1_ALIAS, "q2").getUrl());
+        setProperty(DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY, getWebServiceEndpoint(DIGITAL_KONTAKINFORMASJON_V1_ALIAS).getUrl());
 
         setProperty(VEILARBDIALOG_URL_PROPERTY, "http://localhost:8080/veilarbdialog/api");
         setProperty(VEILARBOPPFOLGING_URL_PROPERTY, "http://localhost:8080/veilarboppfolging/api");

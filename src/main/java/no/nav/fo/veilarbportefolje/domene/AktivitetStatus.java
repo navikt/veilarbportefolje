@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbportefolje.domene;
 
-import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.InsertBatchQuery;
 import no.nav.sbl.sql.UpdateBatchQuery;
@@ -13,15 +13,15 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
-@Value(staticConstructor = "of")
-@Wither
+@Data
+@Accessors(chain = true)
 public class AktivitetStatus {
-    private PersonId personid;
-    private AktoerId aktoerid;
-    private String aktivitetType;
-    private boolean aktiv;
-    private Timestamp nesteUtlop;
-    private Timestamp nesteStart;
+    PersonId personid;
+    AktoerId aktoerid;
+    String aktivitetType;
+    boolean aktiv;
+    Timestamp nesteUtlop;
+    Timestamp nesteStart;
 
     @Override
     public boolean equals(Object o) {
