@@ -164,8 +164,22 @@ public class AktivitetDAOTest {
     @Test
     public void skalInserteBatchAvAktivitetstatuser() {
         List<AktivitetStatus> statuser = new ArrayList<>();
-        statuser.add(AktivitetStatus.of(PersonId.of("pid1"), AktoerId.of("aid1"), "a1", true, new Timestamp(0), new Timestamp(0)));
-        statuser.add(AktivitetStatus.of(PersonId.of("pid2"), AktoerId.of("aid2"), "a2", true, new Timestamp(0), new Timestamp(0)));
+
+        statuser.add(new AktivitetStatus()
+                .setPersonid(PersonId.of("pid1"))
+                .setAktoerid( AktoerId.of("aid1"))
+                .setAktivitetType("a1")
+                .setAktiv(true)
+                .setNesteStart(new Timestamp(0))
+                .setNesteUtlop( new Timestamp(0)));
+
+        statuser.add(new AktivitetStatus()
+                .setPersonid(PersonId.of("pid2"))
+                .setAktoerid( AktoerId.of("aid2"))
+                .setAktivitetType("a2")
+                .setAktiv(true)
+                .setNesteStart(new Timestamp(0))
+                .setNesteUtlop( new Timestamp(0)));
 
         aktivitetDAO.insertAktivitetstatuser(statuser);
         assertThat(jdbcTemplate.queryForList("SELECT * FROM BRUKERSTATUS_AKTIVITETER").size()).isEqualTo(2);
