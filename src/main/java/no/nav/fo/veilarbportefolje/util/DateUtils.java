@@ -95,15 +95,7 @@ public class DateUtils {
         return timestampFromISO8601(FAR_IN_THE_FUTURE_DATE);
     }
 
-    private static Timestamp getEpoch0Timestamp() {
-        return timestampFromISO8601(EPOCH_0);
-    }
-
     public static String getFarInTheFutureDate() {
         return toIsoUTC(getFarInTheFutureTimestamp());
-    }
-
-    public static String getEpoch0Date() {
-        return toIsoUTC(getEpoch0Timestamp());
     }
 }

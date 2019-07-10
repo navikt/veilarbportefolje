@@ -51,7 +51,13 @@ public class TiltakUtils {
                 .collect(toList()))
                 .orElse(null);
 
-        return AktivitetStatus.of(personId, AktoerId.of(null), TILTAK, true, nesteUtlopsdato, nesteStartDato);
+        return new AktivitetStatus()
+                .setPersonid(personId)
+                .setAktoerid(AktoerId.of(null))
+                .setAktivitetType(TILTAK)
+                .setAktiv(true)
+                .setNesteStart(nesteStartDato)
+                .setNesteUtlop(nesteUtlopsdato);
     }
 
     static AktivitetStatus utledGruppeaktivitetstatus(Bruker bruker, PersonId personId) {
@@ -70,7 +76,14 @@ public class TiltakUtils {
 
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoForMoteplan(gruppeAktiviteterEtterDatoFilter).orElse(null);
         Timestamp nesteStartDato = finnNesteStartdatoForMoteplan(gruppeAktiviteterEtterDatoFilter).orElse(null);
-        return AktivitetStatus.of(personId, AktoerId.of(null), GRUPPEAKTIVITET, true, nesteUtlopsdato, nesteStartDato);
+
+        return new AktivitetStatus()
+                .setPersonid(personId)
+                .setAktoerid(AktoerId.of(null))
+                .setAktivitetType(GRUPPEAKTIVITET)
+                .setAktiv(true)
+                .setNesteStart(nesteStartDato)
+                .setNesteUtlop(nesteUtlopsdato);
     }
 
     static AktivitetStatus utledUtdanningsaktivitetstatus(Bruker bruker, PersonId personId) {
@@ -86,7 +99,14 @@ public class TiltakUtils {
 
         Timestamp nesteUtlopsdato = finnNesteUtlopsdatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato).orElse(null);
         Timestamp nesteStartDato = finnNesteStartDatoUtdanningsaktiviteter(utdanningsaktiviteterEtterDato).orElse(null);
-        return AktivitetStatus.of(personId, AktoerId.of(null), UTDANNINGAKTIVITET, true, nesteUtlopsdato, nesteStartDato);
+
+        return new AktivitetStatus()
+                .setPersonid(personId)
+                .setAktoerid(AktoerId.of(null))
+                .setAktivitetType(UTDANNINGAKTIVITET)
+                .setAktiv(true)
+                .setNesteStart(nesteStartDato)
+                .setNesteUtlop(nesteUtlopsdato);
 
     }
 
@@ -286,13 +306,13 @@ public class TiltakUtils {
 
     private static Timestamp finnNyesteUtlopsdato(List<TiltakDatoer> tiltakDatoer) {
         return tiltakDatoer
-                    .stream()
-                    .map(tiltak -> tiltak.getSluttDato().orElse(null))
-                    .filter(Objects::nonNull)
-                    .filter(not(TiltakUtils::fraOgMedDagensDato))
-                    .sorted(Comparator.reverseOrder())
-                    .findFirst()
-                    .orElse(null);
+                .stream()
+                .map(tiltak -> tiltak.getSluttDato().orElse(null))
+                .filter(Objects::nonNull)
+                .filter(not(TiltakUtils::fraOgMedDagensDato))
+                .sorted(Comparator.reverseOrder())
+                .findFirst()
+                .orElse(null);
     }
 
     private static TiltakDatoer mapTiltakOppdateringer(Tiltaksaktivitet tiltak) {
