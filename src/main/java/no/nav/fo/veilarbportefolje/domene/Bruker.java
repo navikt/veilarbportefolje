@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.util.OppfolgingUtils;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -62,7 +63,8 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
-    Map<String, Timestamp> aktiviteterStartDato = new HashMap<>();
+    LocalDateTime moteStartTid;
+    LocalDateTime moteSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
 
     public static Bruker of(OppfolgingsBruker bruker) {
@@ -109,6 +111,8 @@ public class Bruker {
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
                 .setBrukertiltak(toList(bruker.getTiltak()))
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
+                .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
+                .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
@@ -117,8 +121,7 @@ public class Bruker {
                 .addAktivitetUtlopsdato("egen", dateToTimestamp(bruker.getAktivitet_egen_utlopsdato()))
                 .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
                 .addAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
-                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()))
-                .addAktivitetStartdato("mote_startdato", dateToTimestamp(bruker.getAktivitet_mote_startdato()));
+                .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
 
     }
 
@@ -135,14 +138,6 @@ public class Bruker {
             return this;
         }
         aktiviteter.put(type, utlopsdato);
-        return this;
-    }
-
-    private Bruker addAktivitetStartdato(String type, Timestamp startDato) {
-        if (Objects.isNull(startDato) || isFarInTheFutureDate(startDato)) {
-            return this;
-        }
-        aktiviteterStartDato.put(type, startDato);
         return this;
     }
 

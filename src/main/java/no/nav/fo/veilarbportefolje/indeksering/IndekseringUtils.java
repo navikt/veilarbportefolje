@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper.mote;
+
 @Slf4j
 public class IndekseringUtils {
 
@@ -74,13 +76,8 @@ public class IndekseringUtils {
     static void leggTilStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String start = AktivitetUtils.startDatoToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
-        log.info("Aktivitet statDato: " +  start);
-        switch (type) {
-            case mote:
-                bruker.setAktivitet_mote_startdato(start);
-                break;
-            default:
-                return;
+        if (type.equals(mote)) {
+            bruker.setAktivitet_mote_startdato(start);
         }
     }
 }
