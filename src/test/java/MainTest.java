@@ -38,6 +38,7 @@ public class MainTest {
         ServiceUser serviceUser = getServiceUser(SERVICE_USER_ALIAS, APPLICATION_NAME);
         setProperty(SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(SYSTEMUSER_PASSWORD, serviceUser.getPassword());
+        setProperty("miljo.database", "true");
 
         DbCredentials dbCredentials = resolveDbCredentials();
         setProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME, dbCredentials.getUrl());
