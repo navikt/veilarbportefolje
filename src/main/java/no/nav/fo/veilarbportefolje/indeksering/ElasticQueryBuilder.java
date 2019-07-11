@@ -13,8 +13,11 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.joda.time.LocalDate;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +27,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
+import static no.nav.fo.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
@@ -172,7 +176,8 @@ public class ElasticQueryBuilder {
     }
 
     static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet) {
-        LocalDate localDate = new LocalDate();
+        LocalDate localDate = LocalDate.now();
+
         QueryBuilder queryBuilder;
         switch (brukerStatus) {
             case NYE_BRUKERE:
@@ -210,8 +215,8 @@ public class ElasticQueryBuilder {
                 break;
             case MOTER_IDAG:
                 queryBuilder = rangeQuery("aktivitet_mote_startdato")
-                        .gte(localDate.toDateTimeAtStartOfDay().toString())
-                        .lt(localDate.plusDays(1).toDateTimeAtStartOfDay().toString());
+                        .gte(toIsoUTC(localDate.atStartOfDay()))
+                        .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = boolQuery()
@@ -353,14 +358,14 @@ public class ElasticQueryBuilder {
     }
 
     private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        LocalDate localDate = new LocalDate();
+        LocalDate localDate = LocalDate.now();
         return new KeyedFilter(
                 "moterMedNAVIdag",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .should(rangeQuery("aktivitet_mote_startdato")
-                                .gte(localDate.toDateTimeAtStartOfDay().toString())
-                                .lt(localDate.plusDays(1).toDateTimeAtStartOfDay().toString()))
+                                .gte(toIsoUTC(localDate.atStartOfDay()))
+                                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay())))
         );
     }
 
