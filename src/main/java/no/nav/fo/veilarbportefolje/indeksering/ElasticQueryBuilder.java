@@ -353,14 +353,11 @@ public class ElasticQueryBuilder {
     }
 
     private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        LocalDate localDate = new LocalDate();
         return new KeyedFilter(
                 "moterMedNAVIdag",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .should(rangeQuery("aktivitet_mote_startdato")
-                                .gte(localDate.toDateTimeAtStartOfDay().toString())
-                                .lt(localDate.plusDays(1).toDateTimeAtStartOfDay().toString()))
+                        .should(rangeQuery("aktivitet_mote_startdato").gte("now-1d/d").lt("now/d"))
         );
     }
 

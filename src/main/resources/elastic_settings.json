@@ -79,7 +79,7 @@
           "type": "date"
         },
         "aktivitet_mote_startdato": {
-          "type": "date"
+          "type": "timestamp"
         },
         "aktivitet_mote_utlopsdato":  {
           "type": "date",
