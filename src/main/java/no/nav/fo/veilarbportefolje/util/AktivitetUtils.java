@@ -124,11 +124,11 @@ public class AktivitetUtils {
         aktivitetTyperFraAktivitetsplanList
                 .stream()
                 .map(Objects::toString)
-                .forEach(aktivitetsype -> {
+                .forEach(aktivitetstype -> {
 
                     List<AktivitetDTO> aktiviteterMedAktivtStatus = aktiviteter
                             .stream()
-                            .filter(aktivitet -> aktivitetsype.equals(aktivitet.getAktivitetType()))
+                            .filter(aktivitet -> aktivitetstype.equals(aktivitet.getAktivitetType()))
                             .filter(AktivitetUtils::harIkkeStatusFullfort)
                             .collect(toList());
 
@@ -141,17 +141,27 @@ public class AktivitetUtils {
                             .findFirst()
                             .orElse(null);
 
+                    Timestamp datoForNesteStart = aktiviteterMedAktivtStatus
+                            .stream()
+                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
+                            .map(AktivitetDTO::getFraDato)
+                            .filter(Objects::nonNull)
+                            .sorted()
+                            .findFirst()
+                            .orElse(null);
+
+
                     boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
 
                     aktiveAktiviteter.add(
-                            AktivitetStatus.of(
-                                    personId,
-                                    aktoerId,
-                                    aktivitetsype,
-                                    aktivitetErIkkeFullfort,
-                                    datoForNesteUtlop
-                            )
-                    );
+                            new AktivitetStatus()
+                                    .setPersonid(personId)
+                                    .setAktoerid(aktoerId)
+                                    .setAktivitetType(aktivitetstype)
+                                    .setAktiv(aktivitetErIkkeFullfort)
+                                    .setNesteStart(datoForNesteStart)
+                                    .setNesteUtlop(datoForNesteUtlop));
+
                 });
 
         return aktiveAktiviteter;
@@ -161,16 +171,20 @@ public class AktivitetUtils {
         return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getFarInTheFutureDate());
     }
 
+    public static String startDatoToIsoUtcString(AktivitetStatus status) {
+        return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(null);
+    }
+
     public static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
         return brukertiltak
-            .stream()
-            .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
-            .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
+                .stream()
+                .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
+                .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
                         (oldValue, newValue) -> {
                             oldValue.addAll(newValue);
                             return oldValue;
                         }
-            ));
+                ));
     }
 
 

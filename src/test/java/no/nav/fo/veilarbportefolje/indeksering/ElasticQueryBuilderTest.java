@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.common.utils.CollectionUtils.listOf;
@@ -20,6 +22,7 @@ import static no.nav.common.utils.CollectionUtils.mapOf;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticQueryBuilder.*;
+import static no.nav.fo.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.search.sort.SortOrder.ASC;
@@ -143,7 +146,10 @@ public class ElasticQueryBuilderTest {
         val builder = byggStatusTallForVeilederQuery("0000", "Z000000", listOf("Z00001"));
 
         val actualJson = builder.aggregations().toString();
-        val expectedJson = readFileAsJsonString("/statustall_for_veileder.json");
+        String expectedJson = readFileAsJsonString("/statustall_for_veileder.json");
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        expectedJson = expectedJson.replaceAll("fromDate", toIsoUTC(startOfDay));
+        expectedJson = expectedJson.replaceAll("toDate", toIsoUTC(startOfDay.plusDays(1)));
 
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
@@ -153,8 +159,11 @@ public class ElasticQueryBuilderTest {
         val builder = byggStatusTallForEnhetQuery("0000", listOf("Z00001"));
 
         val actualJson = builder.aggregations().toString();
-        val expectedJson = readFileAsJsonString("/statustall_for_enhet.json");
+        String expectedJson = readFileAsJsonString("/statustall_for_enhet.json");
 
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        expectedJson = expectedJson.replaceAll("fromDate", toIsoUTC(startOfDay));
+        expectedJson = expectedJson.replaceAll("toDate", toIsoUTC(startOfDay.plusDays(1)));
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 
