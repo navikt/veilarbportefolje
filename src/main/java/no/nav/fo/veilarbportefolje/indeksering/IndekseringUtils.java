@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.AktivitetStatus;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
@@ -11,6 +12,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper.mote;
+
+@Slf4j
 public class IndekseringUtils {
 
     static String createIndexName(String alias) {
@@ -36,7 +40,6 @@ public class IndekseringUtils {
     static void leggTilUtlopsDato(OppfolgingsBruker bruker, AktivitetStatus status) {
         String utlop = AktivitetUtils.statusToIsoUtcString(status);
         AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
-
         switch (type) {
             case egen:
                 bruker.setAktivitet_egen_utlopsdato(utlop);
@@ -67,6 +70,14 @@ public class IndekseringUtils {
                 break;
             default:
                 throw new IllegalStateException("Fant ikke riktig aktivitetstype");
+        }
+    }
+
+    static void leggTilStartDato(OppfolgingsBruker bruker, AktivitetStatus status) {
+        String start = AktivitetUtils.startDatoToIsoUtcString(status);
+        AktivitetTyper type = AktivitetTyper.valueOf(status.getAktivitetType());
+        if (type.equals(mote)) {
+            bruker.setAktivitet_mote_startdato(start);
         }
     }
 }

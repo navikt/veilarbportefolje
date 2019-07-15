@@ -266,6 +266,43 @@
             "boost": 1.0
           }
         },
+        "moterMedNAVIdag" : {
+          "bool" : {
+            "must" : [
+              {
+                "bool" : {
+                  "must" : [
+                    {
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              }
+            ],
+            "should" : [
+              {
+                "range" : {
+                  "aktivitet_mote_startdato" : {
+                    "from" : "fromDate",
+                    "to" : "toDate",
+                    "include_lower" : true,
+                    "include_upper" : false,
+                    "boost" : 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
+          }
+        },
         "nyeBrukere": {
           "bool": {
             "must": [
