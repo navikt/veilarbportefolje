@@ -1,0 +1,10 @@
+version: 2.1
+orbs:
+  pus: navikt/pus-orb@0.0.5
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - pus/test-backend:
+          context: pus
