@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/navikt/veilarbportefolje.svg?style=svg)](https://circleci.com/gh/navikt/veilarbportefolje)
+
 # Portefølje-serverside
 
 Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering av søkeindeks.
