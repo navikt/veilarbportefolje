@@ -18,6 +18,20 @@
         <finalName>veilarbportefolje</finalName>
     </build>
 
+    <profiles>
+        <profile>
+            <id>circleci</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle.jdbc</groupId>
+                    <artifactId>ojdbc6</artifactId>
+                    <scope>test</scope>
+                    <version>11.2.0.4</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <properties>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
         <jsch.version>0.1.54</jsch.version>
@@ -67,6 +81,7 @@
                 <artifactId>elasticsearch</artifactId>
                 <version>${elastic.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -161,11 +176,6 @@
             <artifactId>spring-jdbc</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <scope>runtime</scope>
-        </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
