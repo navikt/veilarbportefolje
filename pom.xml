@@ -87,6 +87,11 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.oracle.jdbc</groupId>
+            <artifactId>ojdbc6</artifactId>
+        </dependency>
+
         <!--FELLESBIBLIOTEKER-->
         <dependency>
             <groupId>no.nav.common</groupId>
