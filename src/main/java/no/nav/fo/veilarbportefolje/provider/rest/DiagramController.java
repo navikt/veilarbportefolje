@@ -54,10 +54,10 @@ public class DiagramController {
 
             Optional<StepperFacetConfig> stepperConfig = StepperFacetConfig.stepperFacetConfig(filtervalg.ytelse);
             if (stepperConfig.isPresent()) {
-                BrukereMedAntall brukere = elasticIndexer.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+                BrukereMedAntall brukere = elasticIndexer.hentBrukere(enhet, ofNullable(veilederIdent), "ikke_satt", "ikke_satt", filtervalg);
                 return StepperUtils.groupByStepping(stepperConfig.get(), brukere.getBrukere(), brukerUkeMapping(stepperConfig.get().getYtelse()));
             } else {
-                BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, ofNullable(veilederIdent), null, null, filtervalg);
+                BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, ofNullable(veilederIdent), "ikke_satt", "ikke_satt", filtervalg);
 
                 Map<ManedFasettMapping, Long> grupperte = brukereMedAntall
                         .getBrukere()
