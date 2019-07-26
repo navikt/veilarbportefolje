@@ -20,6 +20,19 @@
 
     <profiles>
         <profile>
+            <id>jenkins</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>ojdbc6</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>circleci</id>
             <dependencies>
                 <dependency>
@@ -86,12 +99,6 @@
     </dependencyManagement>
 
     <dependencies>
-
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <scope>runtime</scope>
-        </dependency>
 
         <!--FELLESBIBLIOTEKER-->
         <dependency>
