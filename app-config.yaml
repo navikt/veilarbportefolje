@@ -2,8 +2,8 @@
 image: docker.adeo.no:5000/fo/veilarbportefolje
 team: voff
 replicas:
-  min: 3
-  max: 3
+  min: 0
+  max: 0
   cpuThresholdPercentage: 50
 port: 8080
 webproxy: true
