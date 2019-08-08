@@ -16,7 +16,7 @@ public class ElasticSelftest implements Helsesjekk {
 
     RestHighLevelClient client;
 
-    private static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 300_000;
+    private static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
 
     @Inject
 
