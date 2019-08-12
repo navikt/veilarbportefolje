@@ -1,0 +1,39 @@
+# ref https://raw.githubusercontent.com/nais/naiserator/master/examples/nais-max.yaml
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: veilarbportefolje
+  namespace: {{namespace}}
+  labels:
+    team: voff
+spec:
+  image: navikt/veilarbportefolje:{{version}}
+  replicas:
+    min: 2
+    max: 4
+    cpuThresholdPercentage: 50
+  port: 8080
+  ingresses:
+    - https://veilarbportefolje-{{namespace}}.nais.preprod.local
+    - https://app-{{namespace}}.adeo.no/veilarbportefolje
+  webproxy: true
+  healthcheck:
+    liveness:
+      path: veilarbportefolje/internal/isAlive
+      initialDelay: 60
+      timeout: 10
+    readiness:
+      path: veilarbportefolje/internal/isReady
+      initialDelay: 60
+      timeout: 10
+  prometheus:
+    enabled: true
+    path: veilarbportefolje/internal/metrics
+  resources:
+    limits:
+      cpu: "6"
+      memory: 3Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+
