@@ -1,10 +1,14 @@
 version: 2.1
 orbs:
-  pus: navikt/pus-orb@0.0.14
+  pus: navikt/pus-orb@0.0.16
 
 workflows:
   version: 2
   commit:
     jobs:
-      - pus/test-backend:
+      - pus/deploy-backend:
           context: pus
+          cluster: dev-fss
+          filters:
+            branches:
+              only: master

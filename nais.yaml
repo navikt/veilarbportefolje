@@ -1,0 +1,65 @@
+# ref https://raw.githubusercontent.com/nais/naiserator/master/examples/nais-max.yaml
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: veilarbportefolje
+  namespace: default
+  labels:
+    team: pto
+spec:
+  image: navikt/veilarbportefolje:{{version}}
+  replicas:
+    min: 2
+    max: 4
+    cpuThresholdPercentage: 50
+  port: 8080
+  ingresses:
+    - https://veilarbportefolje.nais.adeo.no
+    - https://app.adeo.no/veilarbportefolje
+  webproxy: true
+  vault:
+    enabled: true
+  healthcheck:
+    liveness:
+      path: veilarbportefolje/internal/isAlive
+      initialDelay: 60
+      timeout: 10
+    readiness:
+      path: veilarbportefolje/internal/isReady
+      initialDelay: 60
+      timeout: 10
+  prometheus:
+    enabled: true
+    path: veilarbportefolje/internal/metrics
+  resources:
+    limits:
+      cpu: "6"
+      memory: 3Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+  env:
+    - ABAC_PDP_ENDPOINT_DESCRIPTION
+    - ABAC_PDP_ENDPOINT_URL
+    - AKTOER_V2_ENDPOINTURL
+    - AKTOER_V2_SECURITYTOKEN
+    - AKTOER_V2_WSDLURL
+    - APPDYNAMICS_CONTROLLER_HOST_NAME
+    - ISSO_HOST_URL
+    - ISSO_ISALIVE_URL
+    - ISSO_ISSUER_URL
+    - ISSO_JWKS_URL
+    - SECURITYTOKENSERVICE_URL
+    - UNLEASH_API_URL
+    - VEILARBAKTIVITETAPI_URL
+    - VEILARBDIALOGAPI_URL
+    - VEILARBLOGIN_REDIRECT_URL_DESCRIPTION
+    - VEILARBLOGIN_REDIRECT_URL_URL
+    - VEILARBOPPFOLGINGAPI_URL
+    - VEILARBVEILEDERAPI_URL
+    - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL
+    - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_SECURITYTOKEN
+    - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_WSDLURL
+    - VIRKSOMHET_ENHET_V1_ENDPOINTURL
+    - VIRKSOMHET_ENHET_V1_SECURITYTOKEN
+    - VIRKSOMHET_ENHET_V1_WSDLURL
