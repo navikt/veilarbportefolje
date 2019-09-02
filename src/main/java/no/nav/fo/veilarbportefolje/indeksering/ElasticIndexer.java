@@ -41,7 +41,6 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.leaderelection.LeaderElection.isLeader;
-import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
@@ -54,7 +53,7 @@ import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
-public class ElasticIndexer implements IndekseringService {
+public class ElasticIndexer {
 
     private final ElasticService elasticService;
 
@@ -77,7 +76,6 @@ public class ElasticIndexer implements IndekseringService {
         this.elasticService = elasticService;
     }
 
-    @Override
     public void hovedindeksering() {
         if (isLeader()) {
             startIndeksering();
@@ -85,7 +83,7 @@ public class ElasticIndexer implements IndekseringService {
     }
 
     @SneakyThrows
-    private void startIndeksering() {
+    public void startIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
@@ -121,12 +119,7 @@ public class ElasticIndexer implements IndekseringService {
         log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
     }
 
-    @Override
     public void deltaindeksering() {
-        if (isNotLeader()) {
-            return;
-        }
-
         if (indeksenIkkeFinnes()) {
             log.error("Deltaindeksering: finner ingen indeks med alias {}", getAlias());
             return;
@@ -159,8 +152,7 @@ public class ElasticIndexer implements IndekseringService {
 
         });
 
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
-        log.info("Deltaindeksering: Fullført ( {} brukere med aktoerId {} ble oppdatert)", brukere.size(), aktoerIder);
+        logAktorIder(brukere);
 
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
@@ -168,6 +160,12 @@ public class ElasticIndexer implements IndekseringService {
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
         event.addFieldToReport("es.antall.oppdateringer", antall);
         event.report();
+    }
+
+    private void logAktorIder(List<OppfolgingsBruker> brukere) {
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+        List<String> personIder = brukere.stream().map(OppfolgingsBruker::getPerson_id).collect(Collectors.toList());
+        log.info("Indeks oppdatert for {} brukere med aktoerId {} og personId {})", brukere.size(), aktoerIder, personIder);
     }
 
     @SneakyThrows
@@ -193,15 +191,14 @@ public class ElasticIndexer implements IndekseringService {
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() == 1) {
-            log.info("Slettet bruker med aktorId {} fra indeks {}", bruker.getAktoer_id(), getAlias());
+            log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
         } else {
-            String message = String.format("Feil ved sletting av bruker med aktoerId %s i indeks %s", bruker.getAktoer_id(), getAlias());
+            String message = String.format("Feil ved sletting av bruker med aktoerId %s og personId %s i indeks %s", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
             throw new RuntimeException(message);
         }
     }
 
 
-    @Override
     public void indekserAsynkront(AktoerId aktoerId) {
         runAsync(() -> {
             OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
@@ -217,7 +214,6 @@ public class ElasticIndexer implements IndekseringService {
         });
     }
 
-    @Override
     public void indekserBrukere(List<PersonId> personIds) {
         CollectionUtils.partition(personIds, BATCH_SIZE).forEach(batch -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
@@ -292,6 +288,8 @@ public class ElasticIndexer implements IndekseringService {
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());
         }
+
+        logAktorIder(oppfolgingsBrukere);
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
@@ -360,7 +358,10 @@ public class ElasticIndexer implements IndekseringService {
 
             OppfolgingsBruker bruker = finnBruker(brukere, personId);
 
-            statuserForBruker.forEach(status -> IndekseringUtils.leggTilUtlopsDato(bruker, status));
+            statuserForBruker.forEach(status -> {
+                IndekseringUtils.leggTilUtlopsDato(bruker, status);
+                IndekseringUtils.leggTilStartDato(bruker, status);
+            });
 
             Set<String> aktiviteterSomErAktive = statuserForBruker.stream()
                     .filter(AktivitetStatus::isAktiv)
@@ -376,32 +377,26 @@ public class ElasticIndexer implements IndekseringService {
     }
 
 
-    @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
         return elasticService.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, fra, antall, getAlias());
     }
 
-    @Override
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
         return elasticService.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, null, null, getAlias());
     }
 
-    @Override
     public StatusTall hentStatusTallForPortefolje(String enhet) {
         return elasticService.hentStatusTallForEnhet(enhet, getAlias());
     }
 
-    @Override
     public FacetResults hentPortefoljestorrelser(String enhetId) {
         return elasticService.hentPortefoljestorrelser(enhetId, getAlias());
     }
 
-    @Override
     public StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent) {
         return elasticService.hentStatusTallForVeileder(veilederIdent, enhet, getAlias());
     }
 
-    @Override
     public List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
         return elasticService.hentBrukereMedArbeidsliste(veilederId.getVeilederId(), enhet, getAlias());
     }

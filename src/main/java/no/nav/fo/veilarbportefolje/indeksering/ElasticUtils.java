@@ -76,7 +76,6 @@ public class ElasticUtils {
 
     public static boolean onDevillo() {
         String hostname = resolveHostName();
-        log.info("Kjører på hostname {}", hostname);
         return hostname.contains("devillo.no");
     }
 }

@@ -3,7 +3,6 @@ package no.nav.fo.veilarbportefolje.indeksering;
 import no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.fo.veilarbportefolje.domene.Brukerstatus;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
-import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.provider.rest.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -11,10 +10,14 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -24,60 +27,37 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
-import static no.nav.fo.veilarbportefolje.indeksering.SolrUtils.TILTAK;
+import static no.nav.fo.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
 import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType.STRING;
+import static org.elasticsearch.search.sort.SortMode.MIN;
 
 public class ElasticQueryBuilder {
 
     static void leggTilManuelleFilter(BoolQueryBuilder queryBuilder, Filtervalg filtervalg) {
 
-        filtervalg.alder.forEach(
-                alder -> byggAlderQuery(alder, queryBuilder)
-        );
-
-        filtervalg.kjonn.forEach(
-                kjonn -> queryBuilder.filter(matchQuery("kjonn", kjonn.name()))
-        );
-
-        filtervalg.fodselsdagIMnd.stream()
-                .map(Integer::parseInt)
-                .forEach(fodselsdagIMnd -> queryBuilder.filter(termQuery("fodselsdag_i_mnd", fodselsdagIMnd)));
-
-        filtervalg.innsatsgruppe.forEach(
-                innsatsgruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", innsatsgruppe))
-        );
-
-        filtervalg.hovedmal.forEach(hovedmal -> queryBuilder.filter(matchQuery("hovedmaalkode", hovedmal)));
-
-        filtervalg.formidlingsgruppe.forEach(
-                formidlingsgruppe -> queryBuilder.filter(matchQuery("formidlingsgruppekode", formidlingsgruppe))
-        );
-
-        filtervalg.servicegruppe.forEach(
-                servicegruppe -> queryBuilder.filter(matchQuery("kvalifiseringsgruppekode", servicegruppe))
-        );
-
-        if (!filtervalg.veiledere.isEmpty()) {
-            BoolQueryBuilder veilederQuery = new BoolQueryBuilder();
-            filtervalg.veiledere.forEach(veileder -> veilederQuery.should(matchQuery("veileder_id", veileder)));
-            queryBuilder.filter(veilederQuery);
+        if (!filtervalg.alder.isEmpty()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.alder.forEach(alder -> byggAlderQuery(alder, subQuery));
+            queryBuilder.must(subQuery);
         }
 
+        List<Integer> fodseldagIMndQuery = filtervalg.fodselsdagIMnd.stream().map(Integer::parseInt).collect(toList());
 
-        filtervalg.manuellBrukerStatus.forEach(
-                status -> queryBuilder.filter(matchQuery("manuell_bruker", status))
-        );
-
-        filtervalg.tiltakstyper.forEach(tiltak -> queryBuilder.filter(matchQuery("tiltak", tiltak)));
-
-        filtervalg.rettighetsgruppe.forEach(
-                rettighetsgruppe -> queryBuilder.filter(matchQuery("rettighetsgruppekode", rettighetsgruppe.name()))
-        );
+        byggManuellFilter(fodseldagIMndQuery, queryBuilder, "fodselsdag_i_mnd");
+        byggManuellFilter(filtervalg.kjonn, queryBuilder, "kjonn");
+        byggManuellFilter(filtervalg.innsatsgruppe, queryBuilder, "kvalifiseringsgruppekode");
+        byggManuellFilter(filtervalg.hovedmal, queryBuilder, "hovedmaalkode");
+        byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, "formidlingsgruppekode");
+        byggManuellFilter(filtervalg.servicegruppe, queryBuilder, "kvalifiseringsgruppekode");
+        byggManuellFilter(filtervalg.veiledere, queryBuilder, "veileder_id");
+        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
+        byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
+        byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
 
         if (filtervalg.harYtelsefilter()) {
 
@@ -111,7 +91,7 @@ public class ElasticQueryBuilder {
 
                             if (JA.equals(valg)) {
                                 return queryBuilder.filter(matchQuery("aktiviteter", navnPaaAktivitet));
-                            } else if (NEI.equals(valg) && TILTAK.equals(navnPaaAktivitet)) {
+                            } else if (NEI.equals(valg) && "TILTAK".equals(navnPaaAktivitet)) {
                                 return queryBuilder.filter(boolQuery().mustNot(existsQuery("tiltak")));
                             } else if (NEI.equals(valg)) {
                                 return queryBuilder.filter(boolQuery().mustNot(matchQuery("aktiviteter", navnPaaAktivitet)));
@@ -134,8 +114,15 @@ public class ElasticQueryBuilder {
             case "valgteaktiviteter":
                 sorterValgteAktiviteter(filtervalg, searchSourceBuilder, order);
                 break;
+            case "moterMedNAVIdag":
+                searchSourceBuilder.sort("aktivitet_mote_startdato", order);
+                break;
             case "iavtaltaktivitet":
-                sorterIAvtaltAktiviteter(searchSourceBuilder, order);
+                FieldSortBuilder builder = new FieldSortBuilder("aktivitet_utlopsdatoer")
+                        .order(order)
+                        .sortMode(MIN);
+
+                searchSourceBuilder.sort(builder);
                 break;
             case "fodselsnummer":
                 searchSourceBuilder.sort("fnr.raw", order);
@@ -178,14 +165,6 @@ public class ElasticQueryBuilder {
         return builder;
     }
 
-    static SearchSourceBuilder sorterIAvtaltAktiviteter(SearchSourceBuilder builder, SortOrder order) {
-        Arrays.stream(AktivitetTyper.values())
-                .map(aktivitet -> String.format("aktivitet_%s_utlopsdato", aktivitet))
-                .forEach(aktivitet -> builder.sort(aktivitet, order));
-
-        return builder;
-    }
-
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
         filtervalg.aktiviteter.entrySet().stream()
                 .filter(entry -> JA.equals(entry.getValue()))
@@ -197,6 +176,7 @@ public class ElasticQueryBuilder {
     }
 
     static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet) {
+        LocalDate localDate = LocalDate.now();
 
         QueryBuilder queryBuilder;
         switch (brukerStatus) {
@@ -233,6 +213,11 @@ public class ElasticQueryBuilder {
             case NYE_BRUKERE_FOR_VEILEDER:
                 queryBuilder = matchQuery("ny_for_veileder", true);
                 break;
+            case MOTER_IDAG:
+                queryBuilder = rangeQuery("aktivitet_mote_startdato")
+                        .gte(toIsoUTC(localDate.atStartOfDay()))
+                        .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
+                break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 queryBuilder = boolQuery()
                         .must(matchQuery("formidlingsgruppekode", "IARBS"))
@@ -258,6 +243,16 @@ public class ElasticQueryBuilder {
         return boolQuery;
     }
 
+    static<T> BoolQueryBuilder byggManuellFilter (List<T> filtervalgsListe, BoolQueryBuilder queryBuilder, String matchQueryString) {
+        if (!filtervalgsListe.isEmpty()) {
+            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            filtervalgsListe.forEach(filtervalg -> boolQueryBuilder.should(matchQuery(matchQueryString, filtervalg)));
+            return queryBuilder.filter(boolQueryBuilder);
+        }
+
+        return queryBuilder;
+    }
+
     //
 //  Eksempel:
 //
@@ -279,7 +274,7 @@ public class ElasticQueryBuilder {
     static void byggAlderQuery(String alder, BoolQueryBuilder queryBuilder) {
 
         if ("19-og-under".equals(alder)) {
-            queryBuilder.must(
+            queryBuilder.should(
                     rangeQuery("fodselsdato")
                             .lte("now")
                             .gt("now-20y-1d")
@@ -290,7 +285,7 @@ public class ElasticQueryBuilder {
             int fraAlder = parseInt(fraTilAlder[0]);
             int tilAlder = parseInt(fraTilAlder[1]);
 
-            queryBuilder.must(
+            queryBuilder.should(
                     rangeQuery("fodselsdato")
                             .lte(format("now-%sy/d", fraAlder))
                             .gt(format("now-%sy-1d", tilAlder + 1))
@@ -357,8 +352,21 @@ public class ElasticQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet")
+                                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
+                                moterMedNavIdag(filtrereVeilederOgEnhet)
                         ));
+    }
+
+    private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        LocalDate localDate = LocalDate.now();
+        return new KeyedFilter(
+                "moterMedNAVIdag",
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .should(rangeQuery("aktivitet_mote_startdato")
+                                .gte(toIsoUTC(localDate.atStartOfDay()))
+                                .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay())))
+        );
     }
 
     private static KeyedFilter ufordelteBrukere(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {

@@ -52,7 +52,8 @@ public class ElasticService {
         BoolQueryBuilder boolQuery = boolQuery();
         boolQuery.must(matchQuery("enhet_id", enhetId));
 
-        if (veilederIdent.isPresent()) {
+        boolean kallesFraMinOversikt = veilederIdent.isPresent() && StringUtils.isNotBlank(veilederIdent.get());
+        if (kallesFraMinOversikt) {
             boolQuery.filter(termQuery("veileder_id", veilederIdent.get()));
         }
 
@@ -71,9 +72,8 @@ public class ElasticService {
 
         searchSourceBuilder.query(boolQuery);
 
-        boolean kallesFraMinOversikt = veilederIdent.isPresent() && StringUtils.isNotBlank(veilederIdent.get());
         if (kallesFraMinOversikt) {
-            searchSourceBuilder.sort("ny_for_veileder", SortOrder.ASC);
+            searchSourceBuilder.sort("ny_for_veileder", SortOrder.DESC);
         } else {
             sorterPaaNyForEnhet(searchSourceBuilder, veiledereMedTilgangTilEnhet);
         }
@@ -84,7 +84,9 @@ public class ElasticService {
         int totalHits = response.getHits().getTotal();
 
         List<Bruker> brukere = response.getHits().getHits().stream()
-                .map(hit -> Bruker.of(hit.get_source()))
+                .map(Hit::get_source)
+                .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
+                .map(Bruker::of)
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -134,4 +136,8 @@ public class ElasticService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
+    private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
+        boolean harVeilederPaaSammeEnhet = veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
+        return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
+    }
 }

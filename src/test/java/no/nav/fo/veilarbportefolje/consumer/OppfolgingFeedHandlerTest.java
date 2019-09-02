@@ -8,8 +8,8 @@ import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
 
@@ -44,7 +44,7 @@ public class OppfolgingFeedHandlerTest {
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
     private OppfolgingFeedRepository oppfolgingFeedRepository;
     private VeilederService veilederService;
 
@@ -56,14 +56,14 @@ public class OppfolgingFeedHandlerTest {
     public void resetMocks() {
         arbeidslisteService = mock(ArbeidslisteService.class);
         brukerRepository = mock(BrukerRepository.class);
-        indekseringService = mock(IndekseringService.class);
+        elasticIndexer = mock(ElasticIndexer.class);
         oppfolgingFeedRepository = mock(OppfolgingFeedRepository.class);
         veilederService = mock(VeilederService.class);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
-                indekseringService,
+                elasticIndexer,
                 oppfolgingFeedRepository,
                 veilederService,
                 new TestTransactor());
@@ -197,7 +197,7 @@ public class OppfolgingFeedHandlerTest {
     }
 
     private void thenOppfolgingDataErOppdatert() {
-        verify(indekseringService).indekserAsynkront(AKTOER_ID);
+        verify(elasticIndexer).indekserAsynkront(AKTOER_ID);
         verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
     }
 

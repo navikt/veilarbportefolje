@@ -8,36 +8,43 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
+import static no.nav.batch.BatchJob.runAsyncOnLeader;
 
 @Slf4j
 public class IndekseringScheduler {
 
-    @Inject
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
 
-    @Inject
     private TiltakHandler tiltakHandler;
 
-    @Inject
     private KopierGR199FraArena kopierGR199FraArena;
 
-    @Inject
     private KrrService krrService;
+
+
+    @Inject
+    public IndekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
+        this.elasticIndexer = elasticIndexer;
+        this.tiltakHandler = tiltakHandler;
+        this.kopierGR199FraArena = kopierGR199FraArena;
+        this.krrService = krrService;
+    }
 
     @Scheduled(cron = "0 0 4 * * ?")
     public void totalIndexering() {
-        timed("indeksering.totalHits", () -> {
-            kopierGR199FraArena.startOppdateringAvYtelser();
-            tiltakHandler.startOppdateringAvTiltakIDatabasen();
-            krrService.hentDigitalKontaktInformasjonBolk();
-            indekseringService.hovedindeksering();
-        });
+        runAsyncOnLeader(
+                () -> {
+                    kopierGR199FraArena.startOppdateringAvYtelser();
+                    tiltakHandler.startOppdateringAvTiltakIDatabasen();
+                    krrService.hentDigitalKontaktInformasjonBolk();
+                    elasticIndexer.hovedindeksering();
+                }
+        );
     }
 
     @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
-        indekseringService.deltaindeksering();
+        runAsyncOnLeader(() -> elasticIndexer.deltaindeksering());
     }
 
 }

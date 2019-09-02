@@ -6,7 +6,7 @@ import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
 import no.nav.fo.feed.consumer.FeedCallback;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.metrics.MetricsFactory;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +22,15 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
     public static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
-    private final IndekseringService indekseringService;
+    private final ElasticIndexer elasticIndexer;
     private final DialogFeedRepository dialogFeedRepository;
 
     @Inject
     public DialogDataFeedHandler(BrukerRepository brukerRepository,
-                                 IndekseringService indekseringService,
+                                 ElasticIndexer elasticIndexer,
                                  DialogFeedRepository dialogFeedRepository) {
         this.brukerRepository = brukerRepository;
-        this.indekseringService = indekseringService;
+        this.elasticIndexer = elasticIndexer;
         this.dialogFeedRepository = dialogFeedRepository;
     }
 
@@ -43,7 +43,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                     () -> {
                         data.forEach(info -> {
                             dialogFeedRepository.oppdaterDialogInfoForBruker(info);
-                            indekseringService.indekserAsynkront(AktoerId.of(info.getAktorId()));
+                            elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktorId()));
                         });
                     },
                     (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size()))

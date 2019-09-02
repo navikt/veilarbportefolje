@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.config.ServiceConfig;
@@ -8,7 +7,6 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticClientConfig;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -48,6 +46,9 @@ public class ElasticConfig {
             .scheme(getElasticScheme())
             .build();
 
+    private static int SOCKET_TIMEOUT = 120_000;
+    private static int CONNECT_TIMEOUT = 60_000;
+
     @Bean
     public static RestHighLevelClient restHighLevelClient() {
         return createClient(defaultConfig);
@@ -59,7 +60,7 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticIndexer elasticSearchService(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, LockingTaskExecutor shedlock, PepClient pepClient, VeilederService veilederService) {
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), pepClient, veilederService);
         return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService);
     }
@@ -72,10 +73,11 @@ public class ElasticConfig {
 
         return new RestHighLevelClient(RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
+                .setMaxRetryTimeoutMillis(SOCKET_TIMEOUT)
                 .setRequestConfigCallback(
                         requestConfig -> {
-                            requestConfig.setConnectTimeout(10);
-                            requestConfig.setSocketTimeout(120_000);
+                            requestConfig.setConnectTimeout(CONNECT_TIMEOUT);
+                            requestConfig.setSocketTimeout(SOCKET_TIMEOUT);
                             requestConfig.setConnectionRequestTimeout(0); // http://www.github.com/elastic/elasticsearch/issues/24069
                             return requestConfig;
                         }

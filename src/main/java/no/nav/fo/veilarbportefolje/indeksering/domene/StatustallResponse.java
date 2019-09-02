@@ -32,6 +32,7 @@ public class StatustallResponse {
                 Bucket utlopteAktiviteter;
                 Bucket minArbeidsliste;
                 Bucket erSykmeldtMedArbeidsgiver;
+                Bucket moterMedNAVIdag;
             }
         }
     }

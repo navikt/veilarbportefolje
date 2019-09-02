@@ -3,9 +3,6 @@ package no.nav.fo.veilarbportefolje.indeksering;
 import lombok.SneakyThrows;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Component;
 
@@ -13,14 +10,13 @@ import javax.inject.Inject;
 
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getElasticHostname;
-import static org.elasticsearch.cluster.health.ClusterHealthStatus.GREEN;
 
 @Component
 public class ElasticSelftest implements Helsesjekk {
 
     RestHighLevelClient client;
 
-    private static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 300_000;
+    private static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
 
     @Inject
 

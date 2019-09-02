@@ -2,8 +2,6 @@ package no.nav.fo.veilarbportefolje.filmottak.tiltak;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.*;
@@ -17,7 +15,6 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivit
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
@@ -30,7 +27,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.TOTALINDEKSERING;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakUtils.*;
 import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
@@ -44,15 +40,13 @@ public class TiltakHandler {
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
-    private final LockingTaskExecutor lockingTaskExecutor;
 
     @Inject
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository, LockingTaskExecutor lockingTaskExecutor) {
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
-        this.lockingTaskExecutor = lockingTaskExecutor;
     }
 
     public static Timestamp getDatoFilter() {
@@ -60,18 +54,15 @@ public class TiltakHandler {
     }
 
     public void startOppdateringAvTiltakIDatabasen() {
-        lockingTaskExecutor.executeWithLock(this::hentTiltakOgPopulerDatabaseWithLock,
-                new LockConfiguration(TOTALINDEKSERING, Instant.now().plusSeconds(60 * 60 * 3)));
-    }
-
-    private void hentTiltakOgPopulerDatabaseWithLock() {
         log.info("Indeksering: Starter oppdatering av tiltak fra Arena...");
-        timed("indexering.GR202.hentfil", () -> FilmottakFileUtils.hentFil(AKTIVITETER_SFTP))
+
+        FilmottakFileUtils.hentFil(AKTIVITETER_SFTP)
                 .onFailure(log(log, "Kunne ikke hente tiltaksfil"))
                 .flatMap(timed("indexering.GR202.unmarshall", FilmottakFileUtils::unmarshallTiltakFil))
                 .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen"))
                 .andThen(timed("indexering.GR202.populatedb", this::populerDatabase))
                 .onFailure(log(log, "Kunne ikke populere database"));
+
         log.info("Indeksering: Fullført oppdatering av tiltak fra Arena");
     }
 

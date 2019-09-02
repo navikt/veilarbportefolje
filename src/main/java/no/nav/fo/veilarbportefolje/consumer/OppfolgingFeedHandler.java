@@ -7,8 +7,8 @@ import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
@@ -27,7 +27,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
     private OppfolgingFeedRepository oppfolgingFeedRepository;
     private VeilederService veilederService;
     private Transactor transactor;
@@ -35,13 +35,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     @Inject
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
-                                 IndekseringService indekseringService,
+                                 ElasticIndexer elasticIndexer,
                                  OppfolgingFeedRepository oppfolgingFeedRepository,
                                  VeilederService veilederService,
                                  Transactor transactor) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
-        this.indekseringService = indekseringService;
+        this.elasticIndexer = elasticIndexer;
         this.oppfolgingFeedRepository = oppfolgingFeedRepository;
         this.veilederService = veilederService;
         this.transactor = transactor;
@@ -56,7 +56,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
                         data.forEach(info -> {
                             oppdaterOppfolgingData(info);
-                            indekseringService.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+                            elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
                         });
                         finnMaxFeedId(data).ifPresent(id ->  oppfolgingFeedRepository.updateOppfolgingFeedId(id));
                     },

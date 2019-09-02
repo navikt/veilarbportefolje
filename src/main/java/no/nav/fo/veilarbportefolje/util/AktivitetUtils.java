@@ -4,10 +4,12 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.domene.aktivitet.*;
+import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetBrukerOppdatering;
+import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetDTO;
+import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetIkkeAktivStatuser;
+import no.nav.fo.veilarbportefolje.domene.aktivitet.AktoerAktiviteter;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.service.AktoerService;
-import org.apache.solr.common.SolrInputDocument;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -18,8 +20,6 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetData.aktivitetTyperFraAktivitetsplanList;
-import static no.nav.fo.veilarbportefolje.util.DateUtils.getSolrMaxAsIsoUtc;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetUtils {
@@ -124,11 +124,11 @@ public class AktivitetUtils {
         aktivitetTyperFraAktivitetsplanList
                 .stream()
                 .map(Objects::toString)
-                .forEach(aktivitetsype -> {
+                .forEach(aktivitetstype -> {
 
                     List<AktivitetDTO> aktiviteterMedAktivtStatus = aktiviteter
                             .stream()
-                            .filter(aktivitet -> aktivitetsype.equals(aktivitet.getAktivitetType()))
+                            .filter(aktivitet -> aktivitetstype.equals(aktivitet.getAktivitetType()))
                             .filter(AktivitetUtils::harIkkeStatusFullfort)
                             .collect(toList());
 
@@ -141,113 +141,50 @@ public class AktivitetUtils {
                             .findFirst()
                             .orElse(null);
 
+                    Timestamp datoForNesteStart = aktiviteterMedAktivtStatus
+                            .stream()
+                            .filter(aktivitet -> erAktivitetIPeriode(aktivitet, today))
+                            .map(AktivitetDTO::getFraDato)
+                            .filter(Objects::nonNull)
+                            .sorted()
+                            .findFirst()
+                            .orElse(null);
+
+
                     boolean aktivitetErIkkeFullfort = !aktiviteterMedAktivtStatus.isEmpty();
 
                     aktiveAktiviteter.add(
-                            AktivitetStatus.of(
-                                    personId,
-                                    aktoerId,
-                                    aktivitetsype,
-                                    aktivitetErIkkeFullfort,
-                                    datoForNesteUtlop
-                            )
-                    );
+                            new AktivitetStatus()
+                                    .setPersonid(personId)
+                                    .setAktoerid(aktoerId)
+                                    .setAktivitetType(aktivitetstype)
+                                    .setAktiv(aktivitetErIkkeFullfort)
+                                    .setNesteStart(datoForNesteStart)
+                                    .setNesteUtlop(datoForNesteUtlop));
+
                 });
 
         return aktiveAktiviteter;
     }
 
-    public static void applyAktivitetStatuser(List<SolrInputDocument> dokumenter, AktivitetDAO aktivitetDAO) {
-        io.vavr.collection.List.ofAll(dokumenter)
-                .sliding(1000, 1000)
-                .forEach((dokumenterBatch) -> {
-                    timed("indeksering.applyaktiviteter1000", () -> {
-                        List<PersonId> personIds = dokumenterBatch.toJavaList().stream()
-                                .map((dokument) -> PersonId.of((String) dokument.get("person_id").getValue())).collect(toList());
-
-                        Map<PersonId, Set<AktivitetStatus>> aktivitetStatuser = aktivitetDAO.getAktivitetstatusForBrukere(personIds);
-
-                        dokumenterBatch.forEach((dokument) -> {
-                            PersonId personId = PersonId.of((String) dokument.get("person_id").getValue());
-                            applyAktivitetstatusToDocument(dokument, aktivitetStatuser.get(personId));
-                        });
-                    },
-                            (timer, success) -> timer.addTagToReport("batch", dokumenter.size() > 1 ? "true" : "false"));
-                });
-    }
-
-    public static void applyAktivitetstatusToDocument(SolrInputDocument document, Set<AktivitetStatus> aktivitetStatuser) {
-        if (aktivitetStatuser == null) {
-            return;
-        }
-        List<String> aktiveAktiviteter = aktivitetStatuser
-                .stream()
-                .filter(AktivitetStatus::isAktiv)
-                .map(AktivitetStatus::getAktivitetType)
-                .collect(toList());
-
-        Map<String, String> eksisterendeAktiviteterTilUtlopsdato = aktivitetStatuser
-                .stream()
-                .collect(toMap(status -> status.getAktivitetType().toLowerCase(),
-                        AktivitetUtils::statusToIsoUtcString,
-        (v1, v2) -> v2));
-
-        Map<String, String> alleAktiviteterTilUtlopsdato = leggTilSolrMaxOmAktivitetIkkeEksisterer(eksisterendeAktiviteterTilUtlopsdato);
-
-        alleAktiviteterTilUtlopsdato.forEach((key, value) -> document.addField(addPrefixForAktivitetUtlopsdato(key), value));
-
-        document.addField("aktiviteter", aktiveAktiviteter);
-    }
-
-
-    private static Map<String, String> leggTilSolrMaxOmAktivitetIkkeEksisterer(Map<String, String> aktiviteter) {
-        AktivitetData.aktivitetTyperList.stream().map(Enum::name).forEach(aktivitet -> {
-            if(!aktiviteter.containsKey(aktivitet)) {
-                aktiviteter.put(aktivitet, getSolrMaxAsIsoUtc());
-            }
-        });
-        return aktiviteter;
-    }
-
     public static String statusToIsoUtcString(AktivitetStatus status) {
-        return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getSolrMaxAsIsoUtc());
+        return Optional.ofNullable(status).map(AktivitetStatus::getNesteUtlop).map(DateUtils::toIsoUTC).orElse(DateUtils.getFarInTheFutureDate());
     }
 
-    public static String addPrefixForAktivitetUtlopsdato(String aktivitet) {
-        return Optional.ofNullable(aktivitet).map( s -> "aktivitet_"+s+"_utlopsdato").orElse(null);
-    }
-
-    public static Object applyTiltak(List<SolrInputDocument> dokumenter, AktivitetDAO aktivitetDAO) {
-        io.vavr.collection.List.ofAll(dokumenter)
-                .sliding(1000,1000)
-                .forEach((dokumenterSubSet) -> {
-                    List<SolrInputDocument> dokumenterSubSetListe = dokumenterSubSet.toJavaList();
-                    List<Fnr> fnrs = dokumenterSubSetListe.stream()
-                            .map((dokument) -> Fnr.of((String) dokument.get("fnr").getValue()))
-                            .collect(toList());
-                    Map<Fnr, Set<Brukertiltak>> tiltak = filtrerBrukertiltak(aktivitetDAO.hentBrukertiltak(fnrs));
-                    dokumenterSubSetListe.forEach(document -> {
-                        Fnr fnr = Fnr.of((String) document.get("fnr").getValue());
-                        Optional<Set<Brukertiltak>> brukertiltak = Optional.ofNullable(tiltak.get(fnr));
-                        if(brukertiltak.isPresent()) {
-                            List<String> tiltakliste = brukertiltak.get().stream().map(Brukertiltak::getTiltak).collect(toList());
-                            document.addField("tiltak", tiltakliste);
-                        }
-                });
-        });
-        return null;
+    public static String startDatoToIsoUtcString(AktivitetStatus status) {
+        return Optional.ofNullable(status).map(AktivitetStatus::getNesteStart).map(DateUtils::toIsoUTC).orElse(null);
     }
 
     public static Map<Fnr, Set<Brukertiltak>> filtrerBrukertiltak(List<Brukertiltak> brukertiltak) {
         return brukertiltak
-            .stream()
-            .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
-            .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
+                .stream()
+                .filter(tiltak -> etterFilterDato(tiltak.getTildato()))
+                .collect(toMap(Brukertiltak::getFnr, DbUtils::toSet,
                         (oldValue, newValue) -> {
                             oldValue.addAll(newValue);
                             return oldValue;
                         }
-            ));
+                ));
     }
 
 

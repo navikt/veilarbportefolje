@@ -139,13 +139,7 @@ public class AktivitetDAO {
         return namedParameterJdbcTemplate
             .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
             .stream()
-            .map(row -> AktivitetStatus.of(
-                PersonId.of((String) row.get("PERSONID")),
-                AktoerId.of((String) row.get("AKTOERID")),
-                (String) row.get("AKTIVITETTYPE"),
-                parse0OR1((String) row.get("STATUS")),
-                (Timestamp) row.get("NESTE_UTLOPSDATO"))
-            )
+            .map(AktivitetDAO::mapAktivitetStatus)
             .filter(aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType()))
             .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
                 (oldValue, newValue) -> {
@@ -230,10 +224,21 @@ public class AktivitetDAO {
                 "AKTOERID, " +
                 "AKTIVITETTYPE, " +
                 "STATUS, " +
-                "NESTE_UTLOPSDATO " +
+                "NESTE_UTLOPSDATO, " +
+                "NESTE_STARTDATO " +
                 "FROM " +
                 "BRUKERSTATUS_AKTIVITETER " +
                 "WHERE " +
                 "PERSONID in (:personids)";
+    }
+
+    public static AktivitetStatus mapAktivitetStatus (Map<String, Object> row) {
+      return new AktivitetStatus()
+                .setPersonid(PersonId.of((String) row.get("PERSONID")))
+                .setAktoerid(AktoerId.of((String) row.get("AKTOERID")))
+                .setAktivitetType((String) row.get("AKTIVITETTYPE"))
+                .setAktiv(parse0OR1((String) row.get("STATUS")))
+                .setNesteStart((Timestamp) row.get("NESTE_STARTDATO"))
+                .setNesteUtlop((Timestamp) row.get("NESTE_UTLOPSDATO"));
     }
 }

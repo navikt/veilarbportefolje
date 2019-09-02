@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/navikt/veilarbportefolje.svg?style=svg)](https://circleci.com/gh/navikt/veilarbportefolje)
+
 # Portefølje-serverside
 
 Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering av søkeindeks.
@@ -9,18 +11,10 @@ Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering 
 
 Denne applikasjonen går mot et elasticsearch-cluster for indeksering av data om oppfølgingsbrukere.
 
-Koden for indeksering og søk i elastic ligger bak to funksjonsbrytere:
-
-```
-veilarbportefolje.elasticsearch  //skriv til elastic i tillegg til solr
-veilarbportefolje.hent_data_fra_es //hent ut data fra elastic i stedet for solr
-
-```
-
 ##### Oppsett av Postman
 Importer denne filen i Postman:
 ```
-elastic_postman.json
+postman/config.json
 ``` 
 Dette gir deg en samling av endepunkter man kan bruke i testing og feilsøk av
 Elasticsearch. 
@@ -28,8 +22,8 @@ Elasticsearch.
 Noen av disse requestene benytter seg av Postman-miljøvariabler, importer disse ved å trykke på tannhjulet øverst til
 høyre i Postman og velg `Import`. Importer disse filene:
 ```
-preprod.postman_environment
-prod.postman_environment
+postman/preprod_environment
+postmane/prod_environment
 ``` 
 
 Disse environment-ene inneholder en auth-variabel. For å sette denne må du hente oidc-token i Fasit. Last ned filen du finner under enten `veilarbsecret_preprod` eller

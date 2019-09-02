@@ -4,8 +4,8 @@ package no.nav.fo.veilarbportefolje.provider.rest;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.common.auth.Subject;
 import no.nav.fo.veilarbportefolje.domene.Filtervalg;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.PepClient;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +24,7 @@ public class EnhetControllerTest {
     public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token")));
 
     @Mock
-    private IndekseringService indekseringService;
+    private ElasticIndexer elasticIndexer;
 
     @Mock
     private PepClient pepClient;
@@ -39,7 +39,7 @@ public class EnhetControllerTest {
 
         enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
 
-        verify(indekseringService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
+        verify(elasticIndexer, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -49,7 +49,7 @@ public class EnhetControllerTest {
 
         enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg());
 
-        verify(indekseringService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), isNull());
+        verify(elasticIndexer, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), isNull());
     }
 
     @Test
@@ -59,6 +59,6 @@ public class EnhetControllerTest {
 
         enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg());
 
-        verify(indekseringService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
+        verify(elasticIndexer, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
     }
 }

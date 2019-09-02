@@ -1,6 +1,6 @@
 # ref https://raw.githubusercontent.com/nais/naisd/master/nais_example.yaml
 image: docker.adeo.no:5000/fo/veilarbportefolje
-team: biff
+team: voff
 replicas:
   min: 3
   max: 3
@@ -58,8 +58,6 @@ fasitResources:
   - alias: virksomhet:Enhet_v1
     resourceType: webserviceendpoint
 
-  - alias: veilarbportefolje.solr.brukercore
-    resourceType: restservice
   - alias: veilArbOppfolgingAPI
     resourceType: restservice
   - alias: veilArbAktivitetAPI

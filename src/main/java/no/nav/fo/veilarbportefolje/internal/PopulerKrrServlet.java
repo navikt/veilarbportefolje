@@ -1,32 +1,31 @@
 package no.nav.fo.veilarbportefolje.internal;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.indeksering.IndekseringService;
+import no.nav.fo.veilarbportefolje.service.KrrService;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 @Slf4j
-public class PopulerIndekseringServlet extends HttpServlet {
+public class PopulerKrrServlet extends HttpServlet {
 
-    private IndekseringService indekseringService;
+    private KrrService krrService;
 
-    public PopulerIndekseringServlet(IndekseringService indekseringService) {
-        this.indekseringService = indekseringService;
+    public PopulerKrrServlet(KrrService krrService) {
+        this.krrService = krrService;
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
-            log.info("Manuell Indeksering: Hovedindeksering");
-            runAsync(() -> indekseringService.hovedindeksering());
-            resp.getWriter().write("Hovedindeksering startet");
-            resp.setStatus(200);
+            runAsync(() -> krrService.hentDigitalKontaktInformasjonBolk());
+            resp.getWriter().write("Startet henting av reservesjonsdata fra krr (via dkif)");
+            resp.setStatus(SC_OK);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }
