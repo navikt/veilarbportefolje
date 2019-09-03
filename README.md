@@ -14,7 +14,7 @@ Denne applikasjonen går mot et elasticsearch-cluster for indeksering av data om
 ##### Oppsett av Postman
 Importer denne filen i Postman:
 ```
-elastic_postman.json
+postman/config.json
 ``` 
 Dette gir deg en samling av endepunkter man kan bruke i testing og feilsøk av
 Elasticsearch. 
@@ -22,8 +22,8 @@ Elasticsearch.
 Noen av disse requestene benytter seg av Postman-miljøvariabler, importer disse ved å trykke på tannhjulet øverst til
 høyre i Postman og velg `Import`. Importer disse filene:
 ```
-preprod.postman_environment
-prod.postman_environment
+postman/preprod_environment
+postmane/prod_environment
 ``` 
 
 Disse environment-ene inneholder en auth-variabel. For å sette denne må du hente oidc-token i Fasit. Last ned filen du finner under enten `veilarbsecret_preprod` eller
