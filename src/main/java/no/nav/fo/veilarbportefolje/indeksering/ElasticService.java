@@ -2,10 +2,7 @@ package no.nav.fo.veilarbportefolje.indeksering;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbportefolje.domene.*;
-import no.nav.fo.veilarbportefolje.indeksering.domene.Bucket;
-import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticSearchResponse;
-import no.nav.fo.veilarbportefolje.indeksering.domene.PortefoljestorrelserResponse;
-import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse;
+import no.nav.fo.veilarbportefolje.indeksering.domene.*;
 import no.nav.fo.veilarbportefolje.indeksering.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
