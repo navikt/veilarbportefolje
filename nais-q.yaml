@@ -7,7 +7,7 @@ metadata:
   labels:
     team: pto
 spec:
-  image: navikt/veilarbportefolje:{{version}}
+  image: docker.pkg.github.com/navikt/veilarbportefolje/veilarbportefolje:{{version}}
   replicas:
     min: 2
     max: 4
