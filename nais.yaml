@@ -19,6 +19,7 @@ spec:
   webproxy: true
   vault:
     enabled: true
+  leaderElection: true
   healthcheck:
     liveness:
       path: veilarbportefolje/internal/isAlive
