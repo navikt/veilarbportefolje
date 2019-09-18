@@ -200,18 +200,19 @@ public class ElasticIndexer {
 
 
     public void indekserAsynkront(AktoerId aktoerId) {
-        runAsync(() -> {
-            OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
+        runAsync(() -> indekser(aktoerId));
+    }
 
-            if (erUnderOppfolging(bruker)) {
-                leggTilAktiviteter(bruker);
-                leggTilTiltak(bruker);
-                skrivTilIndeks(getAlias(), bruker);
-            } else {
-                slettBruker(bruker);
-            }
+    public void indekser(AktoerId aktoerId) {
+        OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
 
-        });
+        if (erUnderOppfolging(bruker)) {
+            leggTilAktiviteter(bruker);
+            leggTilTiltak(bruker);
+            skrivTilIndeks(getAlias(), bruker);
+        } else {
+            slettBruker(bruker);
+        }
     }
 
     public void indekserBrukere(List<PersonId> personIds) {
