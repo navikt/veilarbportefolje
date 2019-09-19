@@ -9,8 +9,8 @@ metadata:
 spec:
   image: docker.pkg.github.com/navikt/veilarbportefolje/veilarbportefolje:{{version}}
   replicas:
-    min: 3
-    max: 3
+    min: 2
+    max: 4
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
