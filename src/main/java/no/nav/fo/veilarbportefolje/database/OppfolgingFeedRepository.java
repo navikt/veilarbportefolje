@@ -36,6 +36,7 @@ public class OppfolgingFeedRepository {
             .set("NY_FOR_VEILEDER", safeToJaNei(info.getNyForVeileder()))
             .set("MANUELL", safeToJaNei(info.getManuell()))
             .set("AKTOERID", info.getAktoerid())
+            .set("STARTDATO", info.getStartDato())
             .set("FEED_ID", info.getFeedId())
             .where(WhereClause.equals("AKTOERID", info.getAktoerid()))
             .execute();
@@ -62,7 +63,8 @@ public class OppfolgingFeedRepository {
                 .setNyForVeileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setVeileder(rs.getString("VEILEDERIDENT"))
-                .setManuell(parseJaNei(rs.getString("MANUELL"), "MANUELL"));
+                .setManuell(parseJaNei(rs.getString("MANUELL"), "MANUELL"))
+                .setStartDato(rs.getTimestamp("STARTDATO"));
     }
 
     public void updateOppfolgingFeedId(BigDecimal id) {
