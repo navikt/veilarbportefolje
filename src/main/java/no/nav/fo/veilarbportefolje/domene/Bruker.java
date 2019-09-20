@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.util.OppfolgingUtils;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -61,6 +60,7 @@ public class Bruker {
     LocalDateTime aktivitetStart;
     LocalDateTime nesteAktivitetStart;
     LocalDateTime forrigeAktivitetStart;
+    LocalDateTime oppfolgingStartdato;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
@@ -113,6 +113,7 @@ public class Bruker {
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
+                .setOppfolgingStartdato(toLocalDateTimeOrNull(bruker.getOppfolging_startdato()))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
