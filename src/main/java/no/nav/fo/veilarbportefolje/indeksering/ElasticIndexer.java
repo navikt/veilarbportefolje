@@ -159,8 +159,8 @@ public class ElasticIndexer {
 
         int antall = brukere.size();
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-        event.addFieldToReport("es.antall.oppdateringer", antall);
-        event.report();
+            event.addFieldToReport("es.antall.oppdateringer", antall);
+            event.report();
     }
 
     private void logAktorIder(List<OppfolgingsBruker> brukere) {
