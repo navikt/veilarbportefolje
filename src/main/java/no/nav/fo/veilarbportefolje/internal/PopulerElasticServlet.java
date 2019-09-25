@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import static no.nav.common.utils.IdUtils.generateId;
 
@@ -27,15 +28,20 @@ public class PopulerElasticServlet extends HttpServlet {
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
+
             String jobId = generateId();
-            log.info("Running job with jobId {}", jobId);
+
+            CompletableFuture<Void> indeksering = CompletableFuture.runAsync(() -> {
+                log.info("Running job with jobId {}", jobId);
+                MDC.put(MDC_JOB_ID, jobId);
+                elasticIndexer.startIndeksering();
+                MDC.remove(MDC_JOB_ID);
+            });
 
             resp.getWriter().write(String.format("Hovedindeksering i ElasticSearch startet med jobId: %s", jobId));
             resp.setStatus(200);
 
-            MDC.put(MDC_JOB_ID, jobId);
-            elasticIndexer.startIndeksering();
-            MDC.remove(MDC_JOB_ID);
+            indeksering.get();
 
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
