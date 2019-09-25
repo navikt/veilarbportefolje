@@ -8,7 +8,6 @@ import org.slf4j.MDC;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
@@ -27,7 +26,7 @@ public class PopulerElasticServlet extends HttpServlet {
 
     @Override
     @SneakyThrows
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
 
             String jobId = generateId();
@@ -39,9 +38,9 @@ public class PopulerElasticServlet extends HttpServlet {
                 MDC.remove(MDC_JOB_ID);
             });
 
-            indeksering.exceptionally(e -> {
+            indeksering.exceptionally((Throwable e) -> {
                 log.error("Hovedindeksering feilet");
-                throw e;
+                throw new RuntimeException(e);
             });
 
             resp.getWriter().write(String.format("Hovedindeksering i ElasticSearch startet med jobId: %s", jobId));
