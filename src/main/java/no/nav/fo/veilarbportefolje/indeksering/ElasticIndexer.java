@@ -153,7 +153,7 @@ public class ElasticIndexer {
 
         });
 
-        logAktorIder(brukere);
+        log.info("Indeks oppdatert for {} brukere", brukere.size());
 
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
