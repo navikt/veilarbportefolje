@@ -42,7 +42,7 @@ public class TotalHovedindekseringServlet extends HttpServlet {
                         kopierGR199FraArena.startOppdateringAvYtelser();
                         tiltakHandler.startOppdateringAvTiltakIDatabasen();
                         krrService.hentDigitalKontaktInformasjonBolk();
-                        elasticIndexer.hovedindeksering();
+                        elasticIndexer.startIndeksering();
                     }
                     , "totalIndexering"
             );

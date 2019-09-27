@@ -41,16 +41,10 @@ public class KrrService {
 
     @SneakyThrows
     public void hentDigitalKontaktInformasjonBolk() {
-        UUID uuid = UUID.randomUUID();
-        String id = Long.toHexString(uuid.getMostSignificantBits()) + Long.toHexString(uuid.getLeastSignificantBits());
-        MDC.put("jobId", id);
-
         log.info("Indeksering: Starter henting av KRR informasjon...");
         krrRepository.slettKrrInformasjon();
         krrRepository.iterateFnrsUnderOppfolging(50, this::hentDigitalKontaktInformasjon);
         log.info("Indeksering: Fullført henting av KRR informasjon");
-
-        MDC.remove("jobId");
     }
 
     void hentDigitalKontaktInformasjon(List<String> fnrListe) {

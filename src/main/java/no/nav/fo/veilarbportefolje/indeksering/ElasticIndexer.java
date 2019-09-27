@@ -78,12 +78,6 @@ public class ElasticIndexer {
         this.elasticService = elasticService;
     }
 
-    public void hovedindeksering() {
-        if (isLeader()) {
-            startIndeksering();
-        }
-    }
-
     @SneakyThrows
     public void startIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");

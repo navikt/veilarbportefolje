@@ -38,7 +38,7 @@ public class IndekseringScheduler {
                     kopierGR199FraArena.startOppdateringAvYtelser();
                     tiltakHandler.startOppdateringAvTiltakIDatabasen();
                     krrService.hentDigitalKontaktInformasjonBolk();
-                    elasticIndexer.hovedindeksering();
+                    elasticIndexer.startIndeksering();
                 }
                 ,"totalIndexering"
         );
