@@ -120,10 +120,6 @@
 
         <dependency>
             <groupId>no.nav.common</groupId>
-            <artifactId>batch</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>
         </dependency>
         <dependency>

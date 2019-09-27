@@ -5,6 +5,8 @@ import no.nav.fo.veilarbportefolje.indeksering.domene.CountResponse;
 import no.nav.sbl.rest.RestUtils;
 import no.nav.sbl.util.EnvironmentUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.VEILARBELASTIC_PASSWORD;
@@ -17,6 +19,13 @@ public class ElasticUtils {
     public static final String NAIS_LOADBALANCED_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
     public static final String NAIS_INTERNAL_CLUSTER_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
 
+    public static String createIndexName(String alias) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
+        String timestamp = LocalDateTime.now().format(formatter);
+        return String.format("%s_%s", alias, timestamp);
+    }
+
+
     public static long getCount() {
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
 
@@ -24,12 +33,11 @@ public class ElasticUtils {
                 client
                         .target(url)
                         .request()
-                        .header("Authorization", ElasticUtils.getAuthHeaderValue())
+                        .header("Authorization", getAuthHeaderValue())
                         .get(CountResponse.class)
                         .getCount()
         );
     }
-
 
     static String getAbsoluteUrl() {
         return String.format(

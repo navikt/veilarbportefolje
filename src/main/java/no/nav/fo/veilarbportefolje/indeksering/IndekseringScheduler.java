@@ -8,7 +8,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 
-import static no.nav.batch.BatchJob.runAsyncOnLeader;
+import static no.nav.fo.veilarbportefolje.batchjob.BatchJob.runAsyncJobOnLeader;
+
 
 @Slf4j
 public class IndekseringScheduler {
@@ -32,19 +33,20 @@ public class IndekseringScheduler {
 
     @Scheduled(cron = "0 0 4 * * ?")
     public void totalIndexering() {
-        runAsyncOnLeader(
+        runAsyncJobOnLeader(
                 () -> {
                     kopierGR199FraArena.startOppdateringAvYtelser();
                     tiltakHandler.startOppdateringAvTiltakIDatabasen();
                     krrService.hentDigitalKontaktInformasjonBolk();
                     elasticIndexer.hovedindeksering();
                 }
+                ,"totalIndexering"
         );
     }
 
     @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
-        runAsyncOnLeader(() -> elasticIndexer.deltaindeksering());
+        runAsyncJobOnLeader(elasticIndexer::deltaindeksering, "deltaindeksering");
     }
 
 }
