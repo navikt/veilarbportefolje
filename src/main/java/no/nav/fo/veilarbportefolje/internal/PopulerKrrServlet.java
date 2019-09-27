@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -23,7 +24,12 @@ public class PopulerKrrServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
-            runAsync(() -> krrService.hentDigitalKontaktInformasjonBolk());
+
+            CompletableFuture<Void> future = runAsync(() -> krrService.hentDigitalKontaktInformasjonBolk());
+            future.exceptionally(e -> {
+                throw new RuntimeException(e);
+            });
+
             resp.getWriter().write("Startet henting av reservesjonsdata fra krr (via dkif)");
             resp.setStatus(SC_OK);
         } else {

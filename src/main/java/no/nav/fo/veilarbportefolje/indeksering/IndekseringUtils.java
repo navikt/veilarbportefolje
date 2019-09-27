@@ -8,20 +8,12 @@ import no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.util.AktivitetUtils;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static no.nav.fo.veilarbportefolje.domene.aktivitet.AktivitetTyper.mote;
 
 @Slf4j
 public class IndekseringUtils {
-
-    static String createIndexName(String alias) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
-        String timestamp = LocalDateTime.now().format(formatter);
-        return String.format("%s_%s", alias, timestamp);
-    }
 
     static OppfolgingsBruker finnBruker(List<OppfolgingsBruker> brukere, Fnr fnr) {
         return brukere.stream()
