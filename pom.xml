@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1.2019.06.04-16.43-997f5fbf8a9d</version>
+        <version>1.2019.07.09-10.47-e136333280c1</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -17,33 +17,6 @@
     <build>
         <finalName>veilarbportefolje</finalName>
     </build>
-
-    <profiles>
-        <profile>
-            <id>jenkins</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.oracle</groupId>
-                    <artifactId>ojdbc6</artifactId>
-                    <scope>runtime</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>circleci</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.oracle.jdbc</groupId>
-                    <artifactId>ojdbc6</artifactId>
-                    <scope>test</scope>
-                    <version>11.2.0.4</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 
     <properties>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
@@ -95,10 +68,21 @@
                 <version>${elastic.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.oracle.ojdbc</groupId>
+                <artifactId>ojdbc8</artifactId>
+                <version>19.3.0.0</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.oracle.ojdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+        </dependency>
 
         <!--FELLESBIBLIOTEKER-->
         <dependency>
@@ -134,10 +118,6 @@
             <artifactId>vavr</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>batch</artifactId>
-        </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>

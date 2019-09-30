@@ -33,6 +33,7 @@ import static no.nav.common.utils.CollectionUtils.*;
 import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.fo.veilarbportefolje.domene.Brukerstatus.*;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.createIndexName;
 import static no.nav.fo.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -45,7 +46,7 @@ public class ElasticServiceIntegrationTest {
     private static ElasticService elasticService;
     private static ElasticIndexer indexer;
 
-    private static String TEST_INDEX = IndekseringUtils.createIndexName("testindeks");
+    private static String TEST_INDEX = createIndexName("testindeks");
     private static String TEST_ENHET = "0000";
     private static String TEST_VEILEDER_0 = "Z000000";
     private static String TEST_VEILEDER_1 = "Z000001";

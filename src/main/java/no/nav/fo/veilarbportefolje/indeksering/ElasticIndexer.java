@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -43,6 +44,7 @@ import static java.util.stream.Collectors.toSet;
 import static no.nav.common.leaderelection.LeaderElection.isLeader;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE_LIMIT;
+import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.createIndexName;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.getAlias;
 import static no.nav.fo.veilarbportefolje.indeksering.IndekseringUtils.finnBruker;
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.filtrerBrukertiltak;
@@ -76,19 +78,13 @@ public class ElasticIndexer {
         this.elasticService = elasticService;
     }
 
-    public void hovedindeksering() {
-        if (isLeader()) {
-            startIndeksering();
-        }
-    }
-
     @SneakyThrows
     public void startIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
 
-        String nyIndeks = opprettNyIndeks(IndekseringUtils.createIndexName(getAlias()));
+        String nyIndeks = opprettNyIndeks(createIndexName(getAlias()));
         log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
 
 
@@ -152,20 +148,17 @@ public class ElasticIndexer {
 
         });
 
-        logAktorIder(brukere);
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+        List<String> personIder = brukere.stream().map(OppfolgingsBruker::getPerson_id).collect(Collectors.toList());
+        log.info("DELTAINDEKSERING: Indeks oppdatert for {} brukere med aktoerId {} og personId {})", brukere.size(), aktoerIder, personIder);
 
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
         int antall = brukere.size();
-        Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-        event.addFieldToReport("es.antall.oppdateringer", antall);
-        event.report();
-    }
 
-    private void logAktorIder(List<OppfolgingsBruker> brukere) {
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
-        List<String> personIder = brukere.stream().map(OppfolgingsBruker::getPerson_id).collect(Collectors.toList());
-        log.info("Indeks oppdatert for {} brukere med aktoerId {} og personId {})", brukere.size(), aktoerIder, personIder);
+        Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
+            event.addFieldToReport("es.antall.oppdateringer", antall);
+            event.report();
     }
 
     @SneakyThrows
@@ -200,18 +193,22 @@ public class ElasticIndexer {
 
 
     public void indekserAsynkront(AktoerId aktoerId) {
-        runAsync(() -> {
-            OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
-
-            if (erUnderOppfolging(bruker)) {
-                leggTilAktiviteter(bruker);
-                leggTilTiltak(bruker);
-                skrivTilIndeks(getAlias(), bruker);
-            } else {
-                slettBruker(bruker);
-            }
-
+        CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
+        future.exceptionally(e -> {
+            throw new RuntimeException(e);
         });
+    }
+
+    public void indekser(AktoerId aktoerId) {
+        OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
+
+        if (erUnderOppfolging(bruker)) {
+            leggTilAktiviteter(bruker);
+            leggTilTiltak(bruker);
+            skrivTilIndeks(getAlias(), bruker);
+        } else {
+            slettBruker(bruker);
+        }
     }
 
     public void indekserBrukere(List<PersonId> personIds) {
@@ -224,7 +221,7 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    private Optional<String> hentGammeltIndeksNavn() {
+    public Optional<String> hentGammeltIndeksNavn() {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(getAlias());
         GetAliasesResponse response = client.indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
@@ -288,8 +285,7 @@ public class ElasticIndexer {
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());
         }
-
-        logAktorIder(oppfolgingsBrukere);
+        log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {

@@ -2,9 +2,6 @@ package no.nav.fo.veilarbportefolje.service;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import no.nav.batch.BatchJob;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
@@ -12,19 +9,16 @@ import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.PersonId;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.batch.BatchJob.runAsyncOnLeader;
+import static no.nav.fo.veilarbportefolje.batchjob.BatchJob.runAsyncJobOnLeader;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -50,7 +44,7 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Scheduled(cron = "0 0/5 * * * *")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
-        runAsyncOnLeader(this::mapAktorId);
+        runAsyncJobOnLeader(this::mapAktorId, "aktoerTilPersonIdMapping");
     }
 
     void mapAktorId() {

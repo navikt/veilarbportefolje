@@ -1,10 +1,35 @@
 version: 2.1
 orbs:
-  pus: navikt/pus-orb@0.0.8
-
+  pus: navikt/pus-orb@0.0.25
 workflows:
   version: 2
   commit:
     jobs:
       - pus/test-backend:
           context: pus
+          filters:
+            branches:
+              ignore: master
+      - pus/bygg-og-deploy-backend:
+          context: pus
+          cluster: dev-fss
+          filepath: ./nais-q.yaml
+          filters:
+            branches:
+              only: master
+      - prodsett:
+          requires:
+            - pus/bygg-og-deploy-backend
+          type: approval
+          filters:
+            branches:
+              only: master
+      - pus/deploy-latest:
+          requires:
+            - prodsett
+          context: pus
+          cluster: prod-fss
+          filepath: ./nais.yaml
+          filters:
+            branches:
+              only: master

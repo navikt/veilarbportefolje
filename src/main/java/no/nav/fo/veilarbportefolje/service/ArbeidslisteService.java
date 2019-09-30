@@ -48,7 +48,7 @@ public class ArbeidslisteService {
         data.setAktoerId(aktoerId.get());
         return arbeidslisteRepository
                 .insertArbeidsliste(data)
-                .onSuccess(elasticIndexer::indekserAsynkront);
+                .onSuccess(elasticIndexer::indekser);
     }
 
     public Try<AktoerId> updateArbeidsliste(ArbeidslisteData data) {
@@ -59,7 +59,7 @@ public class ArbeidslisteService {
 
         return arbeidslisteRepository
                 .updateArbeidsliste(data.setAktoerId(aktoerId.get()))
-                .onSuccess(elasticIndexer::indekserAsynkront);
+                .onSuccess(elasticIndexer::indekser);
     }
 
     public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
@@ -69,7 +69,7 @@ public class ArbeidslisteService {
         }
         return arbeidslisteRepository
                 .deleteArbeidsliste(aktoerId.get())
-                .onSuccess(elasticIndexer::indekserAsynkront);
+                .onSuccess(elasticIndexer::indekser);
     }
 
     public Try<String> hentEnhet(Fnr fnr) {

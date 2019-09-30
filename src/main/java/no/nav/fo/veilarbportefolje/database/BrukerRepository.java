@@ -60,7 +60,7 @@ public class BrukerRepository {
     }
 
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
-        db.setFetchSize(1000);
+        db.setFetchSize(10_000);
 
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)

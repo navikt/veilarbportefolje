@@ -29,6 +29,7 @@ public class DbUtils {
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
+                .setOppfolging_startdato(toIsoUTC(rs.getTimestamp("oppfolging_startdato")))
                 .setAktoer_id(rs.getString("aktoerid"))
                 .setFnr(rs.getString("fodselsnr"))
                 .setFornavn(fornavn)
