@@ -34,8 +34,8 @@ public class IndekseringScheduler {
         this.tiltakHandler = tiltakHandler;
         this.kopierGR199FraArena = kopierGR199FraArena;
         this.krrService = krrService;
-        this.totalIndekseringCounter = Counter.builder("poretefolje_totalindeksering_feilet").register(getMeterRegistry());
-        this.deltaIndekseringCounter = Counter.builder("poretefolje_deltaindeksering_feilet").register(getMeterRegistry());
+        this.totalIndekseringCounter = Counter.builder("portefolje_totalindeksering_feilet").register(getMeterRegistry());
+        this.deltaIndekseringCounter = Counter.builder("portefolje_deltaindeksering_feilet").register(getMeterRegistry());
     }
 
     @Scheduled(cron = "0 0 4 * * ?")
