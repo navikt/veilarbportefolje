@@ -348,6 +348,8 @@ public class ElasticIndexer {
                 .map(PersonId::of)
                 .collect(toList());
 
+        log.info("legger til aktiviteter for {} brukere med {} person-ider", brukere.size(), personIder.size());
+
         Map<PersonId, Set<AktivitetStatus>> alleAktiviteterForBrukere = aktivitetDAO.getAktivitetstatusForBrukere(personIder);
 
         alleAktiviteterForBrukere.forEach((personId, statuserForBruker) -> {
