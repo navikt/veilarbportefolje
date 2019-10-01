@@ -117,8 +117,8 @@ public class ElasticIndexer {
 
     public void deltaindeksering() {
         if (indeksenIkkeFinnes()) {
-            log.error("Deltaindeksering: finner ingen indeks med alias {}", getAlias());
-            return;
+            String message = format("Deltaindeksering: finner ingen indeks med alias %s", getAlias());
+            throw new IllegalStateException(message);
         }
 
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
@@ -340,6 +340,9 @@ public class ElasticIndexer {
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
+        if (brukere == null || brukere.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
 
         validateBatchSize(brukere);
 
@@ -347,8 +350,6 @@ public class ElasticIndexer {
                 .map(OppfolgingsBruker::getPerson_id)
                 .map(PersonId::of)
                 .collect(toList());
-
-        log.info("legger til aktiviteter for {} brukere med {} person-ider", brukere.size(), personIder.size());
 
         Map<PersonId, Set<AktivitetStatus>> alleAktiviteterForBrukere = aktivitetDAO.getAktivitetstatusForBrukere(personIder);
 
