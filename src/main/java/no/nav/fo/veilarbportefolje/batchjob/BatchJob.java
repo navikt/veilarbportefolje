@@ -19,17 +19,17 @@ import static no.nav.common.utils.IdUtils.generateId;
 public class BatchJob {
     private static String MDC_JOB_ID = "jobId";
 
-    public static Optional<RunningJob> runAsyncJobOnLeader(Runnable runnable, String jobName) {
+    public static Optional<RunningJob> runAsyncJobOnLeader(Runnable runnable, Counter counter) {
         if (isNotLeader()) {
             return Optional.empty();
         }
-        RunningJob job = runAsyncJob(runnable, jobName);
+        RunningJob job = runAsyncJob(runnable, counter);
         return Optional.of(job);
     }
 
 
     @SneakyThrows
-    public static RunningJob runAsyncJob(Runnable runnable, String jobName) {
+    public static RunningJob runAsyncJob(Runnable runnable, Counter counter) {
 
         String jobId = generateId();
 
@@ -42,8 +42,7 @@ public class BatchJob {
         });
 
         future.exceptionally(e -> {
-            String name = "portefolje_" + jobName + "_feilet";
-            Counter.builder(name).register(MetricsFactory.getMeterRegistry()).increment();
+            counter.increment();
             throw new RuntimeException(e);
         });
 
