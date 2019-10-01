@@ -8,7 +8,6 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.exception.FantIngenYtelseMappingException;
-import no.nav.fo.veilarbportefolje.util.MetricsUtils;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 
@@ -22,7 +21,6 @@ import java.util.function.Supplier;
 import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.*;
 import static no.nav.fo.veilarbportefolje.domene.Utlopsdato.utlopsdato;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 
 @Slf4j
@@ -57,21 +55,20 @@ public class IndekserYtelserHandler {
 
     public synchronized void lagreYtelser(LoependeYtelser ytelser) {
         log.info("Sletter ytelsesdata fra DB");
-        MetricsUtils.timed("GR199.slettytelser", () -> brukerRepository.slettYtelsesdata());
+        brukerRepository.slettYtelsesdata();
 
         batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtakListe) -> {
             LocalDateTime now = now();
 
             Map<String, Optional<String>> brukererIDB = brukererIDB(vedtakListe);
 
-            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleOppdateringer = timed("GR199.lagoppdatering", () -> vedtakListe
+            Map<Boolean, List<Try<BrukerinformasjonFraFil>>> alleOppdateringer = vedtakListe
                     .stream()
                     .map((vedtak) -> brukererIDB.get(vedtak.getPersonident()).map((personId) -> Tuple.of(personId, vedtak)))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .map(this.lagBrukeroppdatering(now))
-                    .collect(partitioningBy(Try::isSuccess))
-            );
+                    .collect(partitioningBy(Try::isSuccess));
 
             alleOppdateringer
                     .get(false)
@@ -84,20 +81,18 @@ public class IndekserYtelserHandler {
                     .collect(toList());
 
             log.info("Brukeroppdateringer laget. {} vellykkede, {} feilet", alleOppdateringer.get(true).size(), alleOppdateringer.get(false).size());
-            timed("GR199.lagreOppdateringer", () -> persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter));
+            persistentOppdatering.lagreBrukeroppdateringerIDB(dokumenter);
         });
         log.info("Lagring av ytelser ferdig!");
     }
 
-    private Map<String, Optional<String>> brukererIDB(Collection<LoependeVedtak> vedtaks) {
-        Supplier<Map<String, Optional<String>>> personIdSupplier = () -> brukerRepository
-                .retrievePersonidFromFnrs(vedtaks
-                        .stream()
-                        .map(LoependeVedtak::getPersonident)
-                        .collect(toSet())
-                );
+    private Map<String, Optional<String>> brukererIDB(Collection<LoependeVedtak> loependeVedtak) {
+        Set<String> personIdenter = loependeVedtak
+                .stream()
+                .map(LoependeVedtak::getPersonident)
+                .collect(toSet());
 
-        return timed("GR199.brukersjekk", personIdSupplier);
+        return brukerRepository.retrievePersonidFromFnrs(personIdenter);
     }
 
     private Function<Tuple2<String, LoependeVedtak>, Try<BrukerinformasjonFraFil>> lagBrukeroppdatering(LocalDateTime now) {

@@ -1,10 +1,8 @@
 package no.nav.fo.veilarbportefolje.batchjob;
 
-import com.codahale.metrics.Metric;
 import io.micrometer.core.instrument.Counter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.slf4j.MDC;
 

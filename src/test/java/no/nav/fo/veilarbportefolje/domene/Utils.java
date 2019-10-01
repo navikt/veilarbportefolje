@@ -2,6 +2,8 @@ package no.nav.fo.veilarbportefolje.domene;
 
 import no.nav.virksomhet.organisering.enhetogressurs.v1.Ressurs;
 
+import java.util.function.Consumer;
+
 public class Utils {
 
     public static Ressurs createRessurs() {
