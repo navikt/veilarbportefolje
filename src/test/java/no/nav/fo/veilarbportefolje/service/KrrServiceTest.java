@@ -1,21 +1,13 @@
 package no.nav.fo.veilarbportefolje.service;
 
 import io.vavr.control.Option;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import no.nav.fo.veilarbportefolje.database.KrrRepository;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.junit.jupiter.api.Test;
 
-import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 
 import static no.nav.fo.veilarbportefolje.service.KrrService.nyesteAv;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 public class KrrServiceTest {
 
@@ -53,22 +45,5 @@ public class KrrServiceTest {
     void nyesteAvHvisEpostOgMobilErNull() {
         Timestamp nyesteAvHvisEpostOgMobilErNull = nyesteAv(Option.none(), Option.none());
         assertThat(nyesteAvHvisEpostOgMobilErNull).isEqualTo(null);
-    }
-
-    @Test
-    void skalIkkeKasteExceptionsVedFeilMotKRR() throws Exception {
-        KrrRepository repo = mock(KrrRepository.class);
-        DigitalKontaktinformasjonV1 dkif = mock(DigitalKontaktinformasjonV1.class);
-        KrrService service = new KrrService(repo, dkif);
-
-        when(dkif.hentDigitalKontaktinformasjonBolk(any())).thenThrow(SocketTimeoutException.class);
-
-        try {
-            service.hentDigitalKontaktInformasjon(new ArrayList<>());
-        } catch (Exception e) {
-            fail(e.getMessage(), e);
-        }
-
-        verify(repo, never()).lagreKRRInformasjon(any());
     }
 }

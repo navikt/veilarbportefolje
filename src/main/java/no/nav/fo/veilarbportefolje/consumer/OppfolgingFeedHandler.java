@@ -17,10 +17,10 @@ import javax.inject.Inject;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Comparator.naturalOrder;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
@@ -49,27 +49,25 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
-
         try {
-            timed("feed.oppfolging.objekt", () -> {
-                        log.info("OppfolgingerfeedDebug data: {}", data);
 
-                        data.forEach(info -> {
-                            oppdaterOppfolgingData(info);
-                            elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
-                        });
-                        finnMaxFeedId(data).ifPresent(id ->  oppfolgingFeedRepository.updateOppfolgingFeedId(id));
-                    },
-                    (timer, hasFailed) -> timer.addTagToReport("antall", Integer.toString(data.size())));
+            log.info("OppfolgingerfeedDebug data: {}", data);
+
+            data.forEach(info -> {
+                oppdaterOppfolgingData(info);
+                elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+            });
+
+            finnMaxFeedId(data).ifPresent(id -> oppfolgingFeedRepository.updateOppfolgingFeedId(id));
+
         } catch (Exception e) {
-            log.error("Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.", e);
+            String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
+            throw new RuntimeException(message, e);
         }
-
-        MetricsFactory.createEvent("datamotattfrafeed").report();
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {
-        return data.stream().map(BrukerOppdatertInformasjon::getFeedId).filter(i -> i != null).max(naturalOrder());
+        return data.stream().map(BrukerOppdatertInformasjon::getFeedId).filter(Objects::nonNull).max(naturalOrder());
     }
 
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon info) {
@@ -80,7 +78,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             if (slettes) {
                 arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
             }
-            timed("oppdater.oppfolgingsinformasjon", () -> oppfolgingFeedRepository.oppdaterOppfolgingData(info));
+            oppfolgingFeedRepository.oppdaterOppfolgingData(info);
         });
 
     }

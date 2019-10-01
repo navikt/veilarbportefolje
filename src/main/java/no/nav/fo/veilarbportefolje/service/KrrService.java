@@ -4,16 +4,15 @@ import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.fo.veilarbportefolje.database.KrrRepository;
-import no.nav.fo.veilarbportefolje.domene.KrrDAO;
+import no.nav.fo.veilarbportefolje.domene.KrrDTO;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSEpostadresse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSForretningsmessigUnntakForBolk;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSMobiltelefonnummer;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonBolkRequest;
-import org.slf4j.MDC;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonBolkResponse;
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -21,11 +20,9 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class KrrService {
@@ -47,38 +44,38 @@ public class KrrService {
         log.info("Indeksering: Fullført henting av KRR informasjon");
     }
 
+    @SneakyThrows
     void hentDigitalKontaktInformasjon(List<String> fnrListe) {
-        timed("indeksering.oppdatering.krr.bolk",
-                (error) -> log.error("Feil ved henting fra KRR", error),
-                () -> {
-                    val req = new WSHentDigitalKontaktinformasjonBolkRequest().withPersonidentListe(fnrListe);
-                    val resp = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req);
 
-                    krrRepository.lagreKRRInformasjon(mapDigitalKontaktInformasjon(
-                            resp.getDigitalKontaktinformasjonListe(),
-                            resp.getForretningsmessigUnntakListe()
-                    ));
-                });
+        WSHentDigitalKontaktinformasjonBolkRequest req = new WSHentDigitalKontaktinformasjonBolkRequest().withPersonidentListe(fnrListe);
+        WSHentDigitalKontaktinformasjonBolkResponse res = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjonBolk(req);
+
+        List<KrrDTO> Kfoo = mapDigitalKontaktInformasjon(
+                res.getDigitalKontaktinformasjonListe(),
+                res.getForretningsmessigUnntakListe()
+        );
+
+        krrRepository.lagreKRRInformasjon(Kfoo);
     }
 
-    private List<KrrDAO> mapDigitalKontaktInformasjon(
+    private List<KrrDTO> mapDigitalKontaktInformasjon(
             List<WSKontaktinformasjon> digitalKontaktinformasjonListe,
             List<WSForretningsmessigUnntakForBolk> kontaktInformasjonIkkeFunnetListe) {
 
-        List<KrrDAO> digitalKontaktInformasjonListe = digitalKontaktinformasjonListe
+        List<KrrDTO> digitalKontaktInformasjonListe = digitalKontaktinformasjonListe
                 .stream()
                 .map((krrInformasjon) ->
-                        new KrrDAO()
+                        new KrrDTO()
                                 .setFnr(krrInformasjon.getPersonident())
                                 .setReservertIKrr(safeToJaNei(Boolean.valueOf(krrInformasjon.getReservasjon())))
                                 .setSistVerifisert(hentNyesteSisteVerifisert(krrInformasjon))
                                 .setLagtTilIDB(Timestamp.from(Instant.now())))
                 .collect(Collectors.toList());
 
-        List<KrrDAO> digitalKontaktInformasjonIkkeFunnet = kontaktInformasjonIkkeFunnetListe
+        List<KrrDTO> digitalKontaktInformasjonIkkeFunnet = kontaktInformasjonIkkeFunnetListe
                 .stream()
                 .map((krrInformasjon) ->
-                        new KrrDAO()
+                        new KrrDTO()
                                 .setFnr(krrInformasjon.getPersonident())
                                 .setReservertIKrr(safeToJaNei(Boolean.valueOf("true")))
                                 .setSistVerifisert(null)

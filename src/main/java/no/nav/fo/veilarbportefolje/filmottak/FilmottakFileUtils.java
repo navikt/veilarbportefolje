@@ -55,13 +55,11 @@ public class FilmottakFileUtils {
     }
 
     static <T> Try<T> unmarshallFile(InputStream is, Class<T> declaredType) {
-        log.info("Starter unmarshalling av %s", declaredType.getName());
         return Try.of(() -> {
             JAXBContext jaxb = JAXBContext.newInstance(declaredType.getPackage().getName());
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
             StreamSource source = new StreamSource(is);
             JAXBElement<T> jaxbElement = unmarshaller.unmarshal(source, declaredType);
-            log.info("Unmarshalling av %s ferdig!", declaredType.getName());
             return jaxbElement.getValue();
         });
     }

@@ -31,7 +31,6 @@ import static no.nav.fo.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSER
 import static no.nav.fo.veilarbportefolje.database.Tabell.METADATA;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
 import static no.nav.sbl.sql.where.WhereClause.gt;
@@ -291,7 +290,7 @@ public class BrukerRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("fnrs", personIds);
         String sql = retrieveBrukerdataSQL();
-        return timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(sql, params))
+        return namedParameterJdbcTemplate.queryForList(sql, params)
                 .stream()
                 .map(data -> new Brukerdata()
                         .setAktoerid((String) data.get("AKTOERID"))
@@ -314,21 +313,14 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public int updateIndeksertTidsstempel(Timestamp tidsstempel) {
-        String sql = updateSistIndeksertSQL();
-        return timed(dbTimerNavn(sql), () -> db.update(sql, tidsstempel));
-    }
-
     public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
         Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
 
-        batchProcess(1000, fnrs, timed("GR199.brukersjekk.batch", (fnrBatch) -> {
+        batchProcess(1000, fnrs, (fnrBatch) -> {
             Map<String, Object> params = new HashMap<>();
             params.put("fnrs", fnrBatch);
             String sql = getPersonIdsFromFnrsSQL();
-            Map<String, Optional<String>> fnrPersonIdMap = timed(dbTimerNavn(sql), () -> namedParameterJdbcTemplate.queryForList(
-                    sql,
-                    params))
+            Map<String, Optional<String>> fnrPersonIdMap = namedParameterJdbcTemplate.queryForList(sql, params)
                     .stream()
                     .map((rs) -> Tuple.of(
                             (String) rs.get("FODSELSNR"),
@@ -337,7 +329,7 @@ public class BrukerRepository {
                     .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
 
             brukere.putAll(fnrPersonIdMap);
-        }));
+        });
 
         fnrs.stream()
                 .filter(not(brukere::containsKey))
@@ -348,7 +340,7 @@ public class BrukerRepository {
 
     public void setAktiviteterSistOppdatert(String sistOppdatert) {
         String sql = "UPDATE METADATA SET aktiviteter_sist_oppdatert = ?";
-        timed(dbTimerNavn(sql), () -> db.update(sql, timestampFromISO8601(sistOppdatert)));
+        db.update(sql, timestampFromISO8601(sistOppdatert));
     }
 
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
@@ -381,20 +373,6 @@ public class BrukerRepository {
                 .set("aapunntakdagerigjen", (Object) null)
                 .set("aapunntakukerigjenfasett", (Object) null)
                 .execute();
-    }
-
-    private String retrieveBrukerMedBrukerdataSQL() {
-        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " +
-                "WHERE " +
-                "person_id = ?";
-    }
-
-    private String retrieveBrukereMedBrukerdataSQL() {
-        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " +
-                "WHERE " +
-                "person_id in (:personids)";
     }
 
     String retrieveOppdaterteBrukereSQL() {

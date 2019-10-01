@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbportefolje.database;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.domene.KrrDAO;
+import no.nav.fo.veilarbportefolje.domene.KrrDTO;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.InsertBatchQuery;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static no.nav.fo.veilarbportefolje.util.DbUtils.dbTimerNavn;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.parseJaNei;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class KrrRepository {
@@ -31,7 +29,7 @@ public class KrrRepository {
     public void iterateFnrsUnderOppfolging(int fetchSize, Consumer<List<String>> fnrConsumer) {
         String sql = "SELECT AKTOERID, FODSELSNR, KVALIFISERINGSGRUPPEKODE, FORMIDLINGSGRUPPEKODE, OPPFOLGING FROM VW_PORTEFOLJE_INFO";
         List<String> fnrListe = new ArrayList<>();
-        timed(dbTimerNavn(sql), () -> db.query(sql, rs -> {
+        db.query(sql, rs -> {
             String formidlingsgruppeKode = rs.getString("FORMIDLINGSGRUPPEKODE");
             String servicegruppeKode = rs.getString("KVALIFISERINGSGRUPPEKODE");
             boolean underOppfolging = parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
@@ -43,16 +41,17 @@ public class KrrRepository {
                     fnrListe.clear();
                 }
             }
-        }));
+        });
+
         fnrConsumer.accept(fnrListe);
     }
 
-    public int[] lagreKRRInformasjon(List<KrrDAO> digitalKontaktinformasjonListe) {
-        return new InsertBatchQuery<KrrDAO>(db, "KRR")
-                .add("fodselsnr", KrrDAO::getFnr, String.class)
-                .add("reservasjon", KrrDAO::getReservertIKrr, String.class)
-                .add("sisteverifisert", KrrDAO::getSistVerifisert, Timestamp.class)
-                .add("lagttilidb", KrrDAO::getLagtTilIDB, Timestamp.class)
+    public int[] lagreKRRInformasjon(List<KrrDTO> digitalKontaktinformasjonListe) {
+        return new InsertBatchQuery<KrrDTO>(db, "KRR")
+                .add("fodselsnr", KrrDTO::getFnr, String.class)
+                .add("reservasjon", KrrDTO::getReservertIKrr, String.class)
+                .add("sisteverifisert", KrrDTO::getSistVerifisert, Timestamp.class)
+                .add("lagttilidb", KrrDTO::getLagtTilIDB, Timestamp.class)
                 .execute(digitalKontaktinformasjonListe);
     }
 }
