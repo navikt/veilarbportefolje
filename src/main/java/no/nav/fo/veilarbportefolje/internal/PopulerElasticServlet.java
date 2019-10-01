@@ -2,7 +2,7 @@ package no.nav.fo.veilarbportefolje.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.batchjob.Job;
+import no.nav.fo.veilarbportefolje.batchjob.RunningJob;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.batchjob.BatchJob;
 
@@ -25,8 +25,8 @@ public class PopulerElasticServlet extends HttpServlet {
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         if (isBasicAuthAuthorized(req)) {
-            Job job = BatchJob.runAsyncJob(elasticIndexer::startIndeksering, "populerElastic");
-            resp.getWriter().write(String.format("Hovedindeksering i ElasticSearch startet med jobId: %s på pod %s", job.getJobId(), job.getPodName()));
+            RunningJob runningJob = BatchJob.runAsyncJob(elasticIndexer::startIndeksering, "populer_elastic");
+            resp.getWriter().write(String.format("Hovedindeksering i ElasticSearch startet med jobId: %s på pod %s", runningJob.getJobId(), runningJob.getPodName()));
             resp.setStatus(200);
 
         } else {

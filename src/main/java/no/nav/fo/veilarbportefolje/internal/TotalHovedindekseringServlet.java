@@ -2,7 +2,7 @@ package no.nav.fo.veilarbportefolje.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.batchjob.Job;
+import no.nav.fo.veilarbportefolje.batchjob.RunningJob;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
@@ -37,17 +37,17 @@ public class TotalHovedindekseringServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
 
-            Job job = runAsyncJob(
+            RunningJob runningJob = runAsyncJob(
                     () -> {
                         kopierGR199FraArena.startOppdateringAvYtelser();
                         tiltakHandler.startOppdateringAvTiltakIDatabasen();
                         krrService.hentDigitalKontaktInformasjonBolk();
                         elasticIndexer.startIndeksering();
                     }
-                    , "totalIndexering"
+                    , "totalhovedindeksering"
             );
 
-            resp.getWriter().write(String.format("Total indeksering startet med jobId %s på pod %s", job.getJobId(), job.getPodName()));
+            resp.getWriter().write(String.format("Total indeksering startet med jobId %s på pod %s", runningJob.getJobId(), runningJob.getPodName()));
             resp.setStatus(200);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);

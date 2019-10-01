@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbportefolje.filmottak.tiltak;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarbportefolje.batchjob.Job;
+import no.nav.fo.veilarbportefolje.batchjob.RunningJob;
 import no.nav.fo.veilarbportefolje.internal.AuthorizationUtils;
 
 import javax.servlet.http.HttpServlet;
@@ -24,8 +24,8 @@ public class TiltakServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
-            Job job = runAsyncJob(tiltakHandler::startOppdateringAvTiltakIDatabasen, "startOppdateringAvTiltakIDatabasen");
-            resp.getWriter().write(String.format("Oppdatering av tiltak startet med jobId %s på pod %s", job.getJobId(), job.getPodName()));
+            RunningJob runningJob = runAsyncJob(tiltakHandler::startOppdateringAvTiltakIDatabasen, "oppdatertiltak");
+            resp.getWriter().write(String.format("Oppdatering av tiltak startet med jobId %s på pod %s", runningJob.getJobId(), runningJob.getPodName()));
 
             resp.setStatus(200);
         } else {

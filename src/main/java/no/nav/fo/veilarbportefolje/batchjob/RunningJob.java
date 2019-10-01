@@ -1,10 +1,10 @@
 package no.nav.fo.veilarbportefolje.batchjob;
 
-public class Job {
+public class RunningJob {
     private String jobId;
     private String podName;
 
-    Job(String jobId, String podName) {
+    RunningJob(String jobId, String podName) {
         this.jobId = jobId;
         this.podName = podName;
     }

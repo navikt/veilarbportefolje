@@ -1,5 +1,7 @@
 package no.nav.fo.veilarbportefolje.batchjob;
 
+import com.codahale.metrics.Metric;
+import io.micrometer.core.instrument.Counter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.Event;
@@ -17,17 +19,17 @@ import static no.nav.common.utils.IdUtils.generateId;
 public class BatchJob {
     private static String MDC_JOB_ID = "jobId";
 
-    public static Optional<Job> runAsyncJobOnLeader(Runnable runnable, String jobName) {
+    public static Optional<RunningJob> runAsyncJobOnLeader(Runnable runnable, String jobName) {
         if (isNotLeader()) {
             return Optional.empty();
         }
-        Job job = runAsyncJob(runnable, jobName);
+        RunningJob job = runAsyncJob(runnable, jobName);
         return Optional.of(job);
     }
 
 
     @SneakyThrows
-    public static Job runAsyncJob(Runnable runnable, String jobName) {
+    public static RunningJob runAsyncJob(Runnable runnable, String jobName) {
 
         String jobId = generateId();
 
@@ -40,15 +42,13 @@ public class BatchJob {
         });
 
         future.exceptionally(e -> {
-            String name = jobName + ".jobb.feilet";
-            Event event = MetricsFactory.createEvent(name);
-            event.report();
-
+            String name = "portefolje_" + jobName + "_feilet";
+            Counter.builder(name).register(MetricsFactory.getMeterRegistry()).increment();
             throw new RuntimeException(e);
         });
 
         String podName = getLocalHost().getHostName();
-        return new Job(jobId, podName);
+        return new RunningJob(jobId, podName);
     }
 
 }
