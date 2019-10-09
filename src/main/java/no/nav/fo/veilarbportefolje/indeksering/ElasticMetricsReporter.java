@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static java.util.Arrays.asList;
@@ -29,7 +28,7 @@ public class ElasticMetricsReporter {
         log.info("logger metrikker for antall dokumenter i elastic");
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
 
-        ScheduledFuture<?> future = new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkAlderPaaIndeks, 10, 10, MINUTES);
+        new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkAlderPaaIndeks, 10, 10, MINUTES);
 
     }
 
