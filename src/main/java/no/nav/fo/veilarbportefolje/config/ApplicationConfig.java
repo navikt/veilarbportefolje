@@ -148,8 +148,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public ElasticMetricsReporter elasticMetricsReporter() {
-        return new ElasticMetricsReporter();
+    public ElasticMetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
+        return new ElasticMetricsReporter(elasticIndexer);
     }
 
     @Bean

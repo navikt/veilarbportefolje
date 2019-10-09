@@ -41,7 +41,6 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static no.nav.common.leaderelection.LeaderElection.isLeader;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.createIndexName;
