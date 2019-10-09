@@ -35,8 +35,8 @@ public class ElasticMetricsReporter {
 
     private void sjekkAlderPaaIndeks() {
         String indeksNavn = elasticIndexer.hentGammeltIndeksNavn().orElseThrow(IllegalStateException::new);
+        Event event = MetricsFactory.createEvent("portefolje.indeks.gammel");
         if (erOver26TimerGammel(indeksNavn)) {
-            Event event = MetricsFactory.createEvent("portefolje.indeks.gammel");
             event.report();
         }
     }
