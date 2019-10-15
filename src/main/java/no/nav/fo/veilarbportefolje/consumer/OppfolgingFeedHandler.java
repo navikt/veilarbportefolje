@@ -1,20 +1,19 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.domene.VeilederId;
-import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
-import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +30,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private OppfolgingFeedRepository oppfolgingFeedRepository;
     private VeilederService veilederService;
     private Transactor transactor;
+    private UnleashService unleashService;
 
     @Inject
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
@@ -38,13 +38,14 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                                  ElasticIndexer elasticIndexer,
                                  OppfolgingFeedRepository oppfolgingFeedRepository,
                                  VeilederService veilederService,
-                                 Transactor transactor) {
+                                 Transactor transactor, UnleashService unleashService) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
         this.oppfolgingFeedRepository = oppfolgingFeedRepository;
         this.veilederService = veilederService;
         this.transactor = transactor;
+        this.unleashService = unleashService;
     }
 
     @Override
@@ -76,7 +77,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
         transactor.inTransaction(() -> {
             if (slettes) {
-                arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
+
+                if (unleashService.isEnabled("portefolje.slaa_av_sletting_av_arbeidsliste")) {
+                    log.info("Sletting av arbeidsliste er slått av. Beholder arbeidsliste for bruker med aktørId {}", info.getAktoerid());
+                } else {
+                    arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
+                }
+
             }
             oppfolgingFeedRepository.oppdaterOppfolgingData(info);
         });
