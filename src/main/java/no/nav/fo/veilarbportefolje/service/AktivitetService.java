@@ -16,7 +16,6 @@ import java.util.Objects;
 
 import static io.vavr.control.Try.run;
 import static no.nav.fo.veilarbportefolje.util.BatchConsumer.batchConsumer;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 
 @Slf4j
 public class AktivitetService {
@@ -33,10 +32,11 @@ public class AktivitetService {
     }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
+        utledOgLagreAlleAktivitetstatuser();
         aktivitetDAO.slettAktivitetDatoer();
-        run(
-                () -> timed("aktiviteter.utled.alle.statuser", this::utledOgLagreAlleAktivitetstatuser)
-        ).onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
+
+        run(this::utledOgLagreAlleAktivitetstatuser)
+                .onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
     }
 
     void utledOgLagreAlleAktivitetstatuser() {
@@ -52,23 +52,13 @@ public class AktivitetService {
     }
 
     private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
-
-        timed(
-                "aktiviteter.utled.statuser",
-                () -> {
-                    List<AktoerAktiviteter> aktoerAktiviteter = timed("aktiviteter.hent.for.liste", () -> aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerider));
-                    List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer =
-                            timed("aktiviteter.konverter.til.brukeroppdatering", () -> AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService));
-
-                    timed("aktiviteter.persistent.lagring", () -> persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer));
-                },
-                (timer, success) -> timer.addTagToReport("antallAktiviteter", Objects.toString(aktoerider.size()))
-        );
-
+        List<AktoerAktiviteter> aktoerAktiviteter = aktivitetDAO.getAktiviteterForListOfAktoerid(aktoerider);
+        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, aktoerService);
+        persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(List<AktoerId> aktoerIds) {
-        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds,aktoerService,aktivitetDAO);
+        List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds, aktoerService, aktivitetDAO);
         persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);
     }
 }

@@ -44,6 +44,7 @@ public class ValideringsRegler {
             "iavtaltaktivitet",
             "aaprettighetsperiode",
             "moterMedNAVIdag",
+            "oppfolgingstartet",
             "veileder_id");
 
     static void sjekkEnhet(String enhet) {

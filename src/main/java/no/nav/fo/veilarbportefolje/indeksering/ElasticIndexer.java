@@ -41,7 +41,6 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static no.nav.common.leaderelection.LeaderElection.isLeader;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.fo.veilarbportefolje.indeksering.ElasticUtils.createIndexName;
@@ -117,8 +116,8 @@ public class ElasticIndexer {
 
     public void deltaindeksering() {
         if (indeksenIkkeFinnes()) {
-            log.error("Deltaindeksering: finner ingen indeks med alias {}", getAlias());
-            return;
+            String message = format("Deltaindeksering: finner ingen indeks med alias %s", getAlias());
+            throw new IllegalStateException(message);
         }
 
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
@@ -340,6 +339,9 @@ public class ElasticIndexer {
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
+        if (brukere == null || brukere.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
 
         validateBatchSize(brukere);
 

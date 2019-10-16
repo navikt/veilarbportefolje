@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static no.nav.fo.veilarbportefolje.util.DbUtils.dbTimerNavn;
-import static no.nav.fo.veilarbportefolje.util.MetricsUtils.timed;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 
 @Slf4j
@@ -39,12 +38,12 @@ public class TiltakRepository {
     }
 
     void lagreBrukertiltak(List<Brukertiltak> brukertiltak) {
-        io.vavr.collection.List.ofAll(brukertiltak).sliding(1000,1000)
-                .forEach(brukertiltakBatch -> Brukertiltak.batchInsert(db,brukertiltakBatch.toJavaList()));
+        io.vavr.collection.List.ofAll(brukertiltak).sliding(1000, 1000)
+                .forEach(brukertiltakBatch -> Brukertiltak.batchInsert(db, brukertiltakBatch.toJavaList()));
     }
 
     void lagreTiltakskoder(List<Tiltakkodeverk> tiltakskoder) {
-        Tiltakkodeverk.batchInsert(db,tiltakskoder);
+        Tiltakkodeverk.batchInsert(db, tiltakskoder);
     }
 
     void lagreAktivitetskoder(Aktivitetstyper aktivitetstyper) {
@@ -56,10 +55,10 @@ public class TiltakRepository {
 
     Map<String, List<String>> hentEnhetTilFodselsnummereMap() {
         String sql = "SELECT FODSELSNR AS FNR, NAV_KONTOR AS ENHETID FROM OPPFOLGINGSBRUKER WHERE NAV_KONTOR IS NOT NULL";
-        List<EnhetTilFnr> enhetTilFnrList = timed(dbTimerNavn(sql), ()-> db.query(
-            sql,
-            new BeanPropertyRowMapper<>(EnhetTilFnr.class)
-        ));
+        List<EnhetTilFnr> enhetTilFnrList = db.query(
+                sql,
+                new BeanPropertyRowMapper<>(EnhetTilFnr.class)
+        );
         return mapEnhetTilFnrs(enhetTilFnrList);
     }
 
@@ -86,9 +85,7 @@ public class TiltakRepository {
     private void lagreEnhettiltak(List<TiltakForEnhet> tiltakListe, Connection connection) throws SQLException {
         String sql = "INSERT INTO ENHETTILTAK (ENHETID, TILTAKSKODE) VALUES (?, ?)";
         PreparedStatement ps = connection.prepareStatement(sql);
-        batchProcess(1, tiltakListe, timed(dbTimerNavn(sql), tiltakForEnhetBatch -> {
-            lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps);
-        }));
+        batchProcess(1, tiltakListe, tiltakForEnhetBatch -> lagreTiltakForEnhetBatch(tiltakForEnhetBatch, ps));
     }
 
     private void lagreTiltakForEnhetBatch(Collection<TiltakForEnhet> tiltakForEnhetBatch, PreparedStatement ps) {

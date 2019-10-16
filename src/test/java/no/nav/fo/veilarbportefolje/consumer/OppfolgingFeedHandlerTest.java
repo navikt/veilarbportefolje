@@ -11,6 +11,7 @@ import no.nav.fo.veilarbportefolje.domene.VeilederId;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 
 import org.junit.Before;
@@ -59,6 +60,7 @@ public class OppfolgingFeedHandlerTest {
         elasticIndexer = mock(ElasticIndexer.class);
         oppfolgingFeedRepository = mock(OppfolgingFeedRepository.class);
         veilederService = mock(VeilederService.class);
+        UnleashService unleashService = mock(UnleashService.class);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
@@ -66,7 +68,9 @@ public class OppfolgingFeedHandlerTest {
                 elasticIndexer,
                 oppfolgingFeedRepository,
                 veilederService,
-                new TestTransactor());
+                new TestTransactor(),
+                unleashService
+        );
     }
 
     private BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
