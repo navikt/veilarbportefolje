@@ -49,8 +49,8 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.veilederService = veilederService;
         this.transactor = transactor;
 
-        antallTotaltMetrikk = Counter.builder("portefolje_feed_oppfolging").register(getMeterRegistry());
-        antallFeiletMetrikk = Counter.builder("portefolje_feed_oppfolging_feilet").register(getMeterRegistry());
+        antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "oppfolging").register(getMeterRegistry());
+        antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "oppfolging").register(getMeterRegistry());
     }
 
     @Override
