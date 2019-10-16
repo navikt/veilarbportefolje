@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
@@ -14,9 +15,14 @@ import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
+
 
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
+
+    private final Counter antallTotaltMetrikk;
+    private final Counter antallFeiletMetrikk;
 
     public static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
@@ -30,6 +36,9 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
         this.dialogFeedRepository = dialogFeedRepository;
+
+        antallTotaltMetrikk = Counter.builder("portefolje_feed_dialog_totalt").register(getMeterRegistry());
+        antallFeiletMetrikk = Counter.builder("portefolje_feed_dialog_feilet").register(getMeterRegistry());
     }
 
     @Override
@@ -39,9 +48,11 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
             data.forEach(info -> {
                 dialogFeedRepository.oppdaterDialogInfoForBruker(info);
                 elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktorId()));
+                antallTotaltMetrikk.increment();
             });
             brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
         } catch (Exception e) {
+            antallFeiletMetrikk.increment();
             String message = "Feil ved behandling av dialogdata fra feed for liste med brukere.";
             log.error(message, e);
         }

@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
@@ -12,9 +13,13 @@ import javax.inject.Inject;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
+
+    private final Counter antallTotaltMetrikk;
+    private final Counter antallFeiletMetrikk;
 
     private BrukerRepository brukerRepository;
     private AktivitetService aktivitetService;
@@ -27,6 +32,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         this.brukerRepository = brukerRepository;
         this.aktivitetService = aktivitetService;
         this.aktivitetDAO = aktivitetDAO;
+
+        antallTotaltMetrikk = Counter.builder("portefolje_feed_aktivitet_totalt").register(getMeterRegistry());
+        antallFeiletMetrikk = Counter.builder("portefolje_feed_aktivitet_feilet").register(getMeterRegistry());
     }
 
     @Override
@@ -49,6 +57,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
+        antallTotaltMetrikk.count();
         try {
             if (aktivitet.isHistorisk()) {
                 aktivitetDAO.deleteById(aktivitet.getAktivitetId());
@@ -58,6 +67,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         } catch (Exception e) {
             String message = String.format("Kunne ikke lagre aktivitetdata fra feed for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);
+            antallFeiletMetrikk.count();
         }
     }
 
