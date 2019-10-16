@@ -33,7 +33,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         this.aktivitetService = aktivitetService;
         this.aktivitetDAO = aktivitetDAO;
 
-        antallTotaltMetrikk = Counter.builder("portefolje_feed_aktivitet_totalt").register(getMeterRegistry());
+        antallTotaltMetrikk = Counter.builder("portefolje_feed_aktivitet").register(getMeterRegistry());
         antallFeiletMetrikk = Counter.builder("portefolje_feed_aktivitet_feilet").register(getMeterRegistry());
     }
 

@@ -37,7 +37,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         this.elasticIndexer = elasticIndexer;
         this.dialogFeedRepository = dialogFeedRepository;
 
-        antallTotaltMetrikk = Counter.builder("portefolje_feed_dialog_totalt").register(getMeterRegistry());
+        antallTotaltMetrikk = Counter.builder("portefolje_feed_dialog").register(getMeterRegistry());
         antallFeiletMetrikk = Counter.builder("portefolje_feed_dialog_feilet").register(getMeterRegistry());
     }
 
