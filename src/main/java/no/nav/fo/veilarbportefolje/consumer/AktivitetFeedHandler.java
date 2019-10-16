@@ -57,7 +57,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             }
         } catch (Exception e) {
             String message = String.format("Kunne ikke lagre aktivitetdata fra feed for aktivitetid %s", aktivitet.getAktivitetId());
-            throw new RuntimeException(message, e);
+            log.error(message, e);
         }
     }
 
@@ -69,7 +69,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerids);
         } catch (Exception e) {
             String message = "Feil ved behandling av aktivitetdata fra feed";
-            throw new RuntimeException(message, e);
+            log.error(message, e);
         }
     }
 }

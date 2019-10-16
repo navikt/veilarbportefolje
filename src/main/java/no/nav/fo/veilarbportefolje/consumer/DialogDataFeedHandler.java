@@ -43,7 +43,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
             brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
         } catch (Exception e) {
             String message = "Feil ved behandling av dialogdata fra feed for liste med brukere.";
-            throw new RuntimeException(message, e);
+            log.error(message, e);
         }
     }
 }

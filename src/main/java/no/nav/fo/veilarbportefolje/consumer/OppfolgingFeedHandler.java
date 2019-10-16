@@ -62,7 +62,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
         } catch (Exception e) {
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
-            throw new RuntimeException(message, e);
+            log.error(message, e);
         }
     }
 
