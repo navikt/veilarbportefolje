@@ -14,12 +14,9 @@ import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -35,9 +32,6 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 
 @Configuration
-@Import({
-        UnleashServiceConfig.class
-})
 public class OppfolgingerfeedConfig {
 
     static final String SELECT_OPPFOLGING_SIST_OPPDATERT_ID_FROM_METADATA = "SELECT oppfolging_sist_oppdatert_id FROM METADATA";
@@ -77,17 +71,13 @@ public class OppfolgingerfeedConfig {
                                                                           ElasticIndexer elasticIndexer,
                                                                           OppfolgingFeedRepository oppfolgingFeedRepository,
                                                                           VeilederService veilederService,
-                                                                          Transactor transactor,
-                                                                          UnleashService unleashService) {
-        return new OppfolgingFeedHandler(
-                arbeidslisteService,
+                                                                          Transactor transactor) {
+        return new OppfolgingFeedHandler(arbeidslisteService,
                 brukerRepository,
                 elasticIndexer,
                 oppfolgingFeedRepository,
                 veilederService,
-                transactor,
-                unleashService
-        );
+                transactor);
     }
 
     static String nesteId(JdbcTemplate db) {
