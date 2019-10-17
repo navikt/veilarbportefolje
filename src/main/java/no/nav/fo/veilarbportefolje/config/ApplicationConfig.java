@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaAktiviteterHelsesjekk;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaYtleserHelsesjekk;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
@@ -17,6 +18,7 @@ import no.nav.fo.veilarbportefolje.indeksering.ElasticMetricsReporter;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
 import no.nav.fo.veilarbportefolje.internal.PopulerElasticServlet;
 import no.nav.fo.veilarbportefolje.internal.PopulerKrrServlet;
+import no.nav.fo.veilarbportefolje.internal.ResetFeedServlet;
 import no.nav.fo.veilarbportefolje.internal.TotalHovedindekseringServlet;
 import no.nav.fo.veilarbportefolje.service.KrrService;
 import no.nav.fo.veilarbportefolje.service.PepClient;
@@ -107,6 +109,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private KrrService krrService;
 
+    @Inject
+    private OppfolgingFeedRepository oppfolgingFeedRepository;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -124,6 +129,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdatertiltak");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
         leggTilServlet(servletContext, new PopulerKrrServlet(krrService), "/internal/populer_krr");
+        leggTilServlet(servletContext, new ResetFeedServlet(oppfolgingFeedRepository), "/internal/reset_feed_oppfolging");
     }
 
     private Boolean skipDbMigration() {
