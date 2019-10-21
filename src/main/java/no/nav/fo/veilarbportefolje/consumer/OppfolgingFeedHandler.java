@@ -17,6 +17,7 @@ import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -71,7 +72,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
             finnMaxFeedId(data).ifPresent(id -> oppfolgingFeedRepository.updateOppfolgingFeedId(id));
 
-            sistOppdatertMetrikk.addFieldToReport("timestamp", lastEntryId);
+            sistOppdatertMetrikk.addFieldToReport("timestamp", LocalDateTime.now().toString());
             sistOppdatertMetrikk.report();
 
         } catch (Exception e) {

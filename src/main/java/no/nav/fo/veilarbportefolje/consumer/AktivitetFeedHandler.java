@@ -12,6 +12,7 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 
 import javax.inject.Inject;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -60,7 +61,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
-        sistOppdatert.addFieldToReport("timestamp", lastEntry);
+        sistOppdatert.addFieldToReport("timestamp", LocalDateTime.now().toString());
         sistOppdatert.report();
     }
 
