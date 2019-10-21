@@ -51,6 +51,11 @@ public class DatabaseConfig {
     }
 
     @Bean
+    public MetadataRepository metadataRepository(JdbcTemplate jdbcTemplate) {
+        return new MetadataRepository(jdbcTemplate);
+    }
+
+    @Bean
     public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
     }

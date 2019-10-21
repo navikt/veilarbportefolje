@@ -2,11 +2,13 @@ package no.nav.fo.veilarbportefolje.indeksering;
 
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarbportefolje.database.MetadataRepository;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -20,34 +22,55 @@ import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 public class ElasticMetricsReporter {
 
     private ElasticIndexer elasticIndexer;
+    private MetadataRepository metadataRepository;
 
     @Inject
-    public ElasticMetricsReporter(ElasticIndexer elasticIndexer) {
+    public ElasticMetricsReporter(ElasticIndexer elasticIndexer, MetadataRepository metadataRepository) {
         this.elasticIndexer = elasticIndexer;
+        this.metadataRepository = metadataRepository;
 
-        log.info("logger metrikker for antall dokumenter i elastic");
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
 
-        new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkAlderPaaIndeks, 10, 10, MINUTES);
-
+        new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkIndeksSistOpprettet, 10, 10, MINUTES);
+        new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkAktiviteterSistOppdatert, 10, 10, MINUTES);
+        new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkDialogerSistOppdatert, 10, 10, MINUTES);
+        new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkOppfolgingstatusSistOppdatert, 10, 10, MINUTES);
     }
 
-    private void sjekkAlderPaaIndeks() {
+    private void sjekkAktiviteterSistOppdatert() {
+        Timestamp aktiviteterSistOppdatert = metadataRepository.hentAktiviteterSistOppdatert();
+        Event event = MetricsFactory.createEvent("portefolje.aktiviteter.sist.oppdatert");
+        event.addFieldToReport("timestamp", aktiviteterSistOppdatert.toLocalDateTime().toString());
+        event.report();
+    }
+
+    private void sjekkDialogerSistOppdatert() {
+        Timestamp aktiviteterSistOppdatert = metadataRepository.hentDialogerSistOppdatert();
+        Event event = MetricsFactory.createEvent("portefolje.dialoger.sist.oppdatert");
+        event.addFieldToReport("timestamp", aktiviteterSistOppdatert.toLocalDateTime().toString());
+        event.report();
+    }
+
+    private void sjekkOppfolgingstatusSistOppdatert() {
+        Timestamp aktiviteterSistOppdatert = metadataRepository.hentOppfolgingstatusSistOppdatert();
+        Event event = MetricsFactory.createEvent("portefolje.oppfolging.sist.oppdatert");
+        event.addFieldToReport("timestamp", aktiviteterSistOppdatert.toLocalDateTime().toString());
+        event.report();
+    }
+
+    private void sjekkIndeksSistOpprettet() {
         String indeksNavn = elasticIndexer.hentGammeltIndeksNavn().orElseThrow(IllegalStateException::new);
-        Event event = MetricsFactory.createEvent("portefolje.indeks.gammel");
-        if (erOver26TimerGammel(indeksNavn)) {
-            event.report();
-        }
+        Event event = MetricsFactory.createEvent("portefolje.indeks.sist.opprettet");
+        event.addFieldToReport("timestamp", hentIndekseringsdato(indeksNavn));
+        event.report();
     }
 
-    static boolean erOver26TimerGammel(String indeksNavn) {
+    static LocalDateTime hentIndekseringsdato(String indeksNavn) {
         String[] split = indeksNavn.split("_");
         String klokkeslett = asList(split).get(split.length - 1);
         String dato = asList(split).get(split.length - 2);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
-        LocalDateTime indeksDato = LocalDateTime.parse(dato + "_" + klokkeslett, formatter);
-
-        return indeksDato.isBefore(LocalDateTime.now().minusHours(26));
+        return LocalDateTime.parse(dato + "_" + klokkeslett, formatter);
     }
 }

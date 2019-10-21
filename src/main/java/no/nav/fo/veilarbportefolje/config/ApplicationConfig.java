@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.veilarbportefolje.database.MetadataRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaAktiviteterHelsesjekk;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaYtleserHelsesjekk;
@@ -95,9 +96,6 @@ public class ApplicationConfig implements ApiApplication {
     private DataSource dataSource;
 
     @Inject
-    private IndekseringScheduler indekseringScheduler;
-
-    @Inject
     private TiltakHandler tiltakHandler;
 
     @Inject
@@ -154,8 +152,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public ElasticMetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
-        return new ElasticMetricsReporter(elasticIndexer);
+    public ElasticMetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer, MetadataRepository metadataRepository) {
+        return new ElasticMetricsReporter(elasticIndexer, metadataRepository);
     }
 
     @Bean
