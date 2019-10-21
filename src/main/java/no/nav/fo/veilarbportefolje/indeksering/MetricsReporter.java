@@ -1,10 +1,7 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
 import io.micrometer.core.instrument.Gauge;
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -12,10 +9,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.LOPENDEYTELSER_SFTP;
 import static no.nav.fo.veilarbportefolje.filmottak.FilmottakFileUtils.getLastModifiedTimeInMillis;
@@ -35,8 +30,7 @@ public class MetricsReporter {
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
         Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", this::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
         Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", this::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
-
-        new ScheduledThreadPoolExecutor(2).scheduleAtFixedRate(this::sjekkIndeksSistOpprettet, 10, 10, MINUTES);
+        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
     }
 
     private Number sjekkArenaYtelserSistOppdatert() {
@@ -49,11 +43,10 @@ public class MetricsReporter {
         return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }
 
-    private void sjekkIndeksSistOpprettet() {
+    private Number sjekkIndeksSistOpprettet() {
         String indeksNavn = elasticIndexer.hentGammeltIndeksNavn().orElseThrow(IllegalStateException::new);
-        Event event = MetricsFactory.createEvent("portefolje.indeks.sist.opprettet");
-        event.addFieldToReport("timestamp", hentIndekseringsdato(indeksNavn));
-        event.report();
+        LocalDateTime tidspunktForSisteHovedIndeksering = hentIndekseringsdato(indeksNavn);
+        return hoursSinceLastChanged(tidspunktForSisteHovedIndeksering);
     }
 
     static LocalDateTime hentIndekseringsdato(String indeksNavn) {
