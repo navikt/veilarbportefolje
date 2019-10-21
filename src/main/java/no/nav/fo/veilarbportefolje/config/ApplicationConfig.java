@@ -5,8 +5,6 @@ import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
-import no.nav.fo.veilarbportefolje.filmottak.ArenaAktiviteterHelsesjekk;
-import no.nav.fo.veilarbportefolje.filmottak.ArenaYtleserHelsesjekk;
 import no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakServlet;
@@ -69,8 +67,6 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
-        ArenaYtleserHelsesjekk.class,
-        ArenaAktiviteterHelsesjekk.class,
         ElasticConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
