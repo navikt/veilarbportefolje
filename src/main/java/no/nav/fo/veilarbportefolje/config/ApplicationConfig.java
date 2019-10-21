@@ -15,7 +15,7 @@ import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.YtelserServlet;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticConfig;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
-import no.nav.fo.veilarbportefolje.indeksering.ElasticMetricsReporter;
+import no.nav.fo.veilarbportefolje.indeksering.MetricsReporter;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
 import no.nav.fo.veilarbportefolje.internal.PopulerElasticServlet;
 import no.nav.fo.veilarbportefolje.internal.PopulerKrrServlet;
@@ -152,8 +152,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public ElasticMetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer, MetadataRepository metadataRepository) {
-        return new ElasticMetricsReporter(elasticIndexer, metadataRepository);
+    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer, MetadataRepository metadataRepository) {
+        return new MetricsReporter(elasticIndexer, metadataRepository);
     }
 
     @Bean

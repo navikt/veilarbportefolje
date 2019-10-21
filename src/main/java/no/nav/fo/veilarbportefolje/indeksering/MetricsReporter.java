@@ -19,13 +19,13 @@ import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Component
 @Slf4j
-public class ElasticMetricsReporter {
+public class MetricsReporter {
 
     private ElasticIndexer elasticIndexer;
     private MetadataRepository metadataRepository;
 
     @Inject
-    public ElasticMetricsReporter(ElasticIndexer elasticIndexer, MetadataRepository metadataRepository) {
+    public MetricsReporter(ElasticIndexer elasticIndexer, MetadataRepository metadataRepository) {
         this.elasticIndexer = elasticIndexer;
         this.metadataRepository = metadataRepository;
 
@@ -39,21 +39,21 @@ public class ElasticMetricsReporter {
 
     private void sjekkAktiviteterSistOppdatert() {
         Timestamp aktiviteterSistOppdatert = metadataRepository.hentAktiviteterSistOppdatert();
-        Event event = MetricsFactory.createEvent("portefolje.aktiviteter.sist.oppdatert");
+        Event event = MetricsFactory.createEvent("portefolje.aktivitet.feed.sist.oppdatert");
         event.addFieldToReport("timestamp", aktiviteterSistOppdatert.toLocalDateTime().toString());
         event.report();
     }
 
     private void sjekkDialogerSistOppdatert() {
         Timestamp aktiviteterSistOppdatert = metadataRepository.hentDialogerSistOppdatert();
-        Event event = MetricsFactory.createEvent("portefolje.dialoger.sist.oppdatert");
+        Event event = MetricsFactory.createEvent("portefolje.dialog.feed.sist.oppdatert");
         event.addFieldToReport("timestamp", aktiviteterSistOppdatert.toLocalDateTime().toString());
         event.report();
     }
 
     private void sjekkOppfolgingstatusSistOppdatert() {
         Timestamp aktiviteterSistOppdatert = metadataRepository.hentOppfolgingstatusSistOppdatert();
-        Event event = MetricsFactory.createEvent("portefolje.oppfolging.sist.oppdatert");
+        Event event = MetricsFactory.createEvent("portefolje.oppfolging.feed.sist.oppdatert");
         event.addFieldToReport("timestamp", aktiviteterSistOppdatert.toLocalDateTime().toString());
         event.report();
     }
