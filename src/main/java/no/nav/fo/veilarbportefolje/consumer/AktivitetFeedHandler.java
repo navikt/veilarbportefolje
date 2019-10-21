@@ -8,6 +8,8 @@ import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.feed.AktivitetDataFraFeed;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -20,6 +22,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     private final Counter antallTotaltMetrikk;
     private final Counter antallFeiletMetrikk;
+    private final Event sistOppdatert;
 
     private BrukerRepository brukerRepository;
     private AktivitetService aktivitetService;
@@ -35,6 +38,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "aktivitet").register(getMeterRegistry());
         antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "aktivitet").register(getMeterRegistry());
+        sistOppdatert = MetricsFactory.createEvent("portefolje.aktivitet.feed.sist.oppdatert");
+
+
     }
 
     @Override
@@ -54,6 +60,8 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
+        sistOppdatert.addFieldToReport("timestamp", lastEntry);
+        sistOppdatert.report();
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {

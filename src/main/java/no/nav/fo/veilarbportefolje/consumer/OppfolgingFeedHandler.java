@@ -11,6 +11,8 @@ import no.nav.fo.veilarbportefolje.domene.VeilederId;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.service.ArbeidslisteService;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
@@ -27,6 +29,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     private final Counter antallTotaltMetrikk;
     private final Counter antallFeiletMetrikk;
+    private final Event sistOppdatertMetrikk;
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
@@ -51,6 +54,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "oppfolging").register(getMeterRegistry());
         antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "oppfolging").register(getMeterRegistry());
+        sistOppdatertMetrikk = MetricsFactory.createEvent("portefolje.oppfolging.feed.sist.oppdatert");
     }
 
     @Override
@@ -66,6 +70,9 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             });
 
             finnMaxFeedId(data).ifPresent(id -> oppfolgingFeedRepository.updateOppfolgingFeedId(id));
+
+            sistOppdatertMetrikk.addFieldToReport("timestamp", lastEntryId);
+            sistOppdatertMetrikk.report();
 
         } catch (Exception e) {
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";

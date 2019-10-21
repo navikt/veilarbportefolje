@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
-import no.nav.fo.veilarbportefolje.database.MetadataRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaAktiviteterHelsesjekk;
 import no.nav.fo.veilarbportefolje.filmottak.ArenaYtleserHelsesjekk;
@@ -152,8 +151,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer, MetadataRepository metadataRepository) {
-        return new MetricsReporter(elasticIndexer, metadataRepository);
+    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
+        return new MetricsReporter(elasticIndexer);
     }
 
     @Bean

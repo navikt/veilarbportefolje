@@ -8,10 +8,13 @@ import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -28,6 +31,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     private final BrukerRepository brukerRepository;
     private final ElasticIndexer elasticIndexer;
     private final DialogFeedRepository dialogFeedRepository;
+    private final Event sistOppdatert;
 
     @Inject
     public DialogDataFeedHandler(BrukerRepository brukerRepository,
@@ -39,6 +43,8 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "dialog").register(getMeterRegistry());
         antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "dialog").register(getMeterRegistry());
+
+        sistOppdatert = MetricsFactory.createEvent("portefolje.dialog.feed.sist.oppdatert");
     }
 
     @Override
@@ -51,6 +57,8 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                 antallTotaltMetrikk.increment();
             });
             brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+            sistOppdatert.addFieldToReport("timestamp", LocalDateTime.now().toString());
+            sistOppdatert.report();
         } catch (Exception e) {
             antallFeiletMetrikk.increment();
             String message = "Feil ved behandling av dialogdata fra feed for liste med brukere.";
