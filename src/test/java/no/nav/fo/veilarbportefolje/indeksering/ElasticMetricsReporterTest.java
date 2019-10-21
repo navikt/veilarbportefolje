@@ -2,21 +2,16 @@ package no.nav.fo.veilarbportefolje.indeksering;
 
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ElasticMetricsReporterTest {
 
     @Test
-    void skal_returnere_true_naar_over_26_timer_gammel() {
+    void skal_hente_ut_timestamp_fra_indeksnavn() {
         String indeksNavn = "brukerindeks_p_20191008_0416";
-        boolean result = ElasticMetricsReporter.erOver26TimerGammel(indeksNavn);
-        assertThat(result).isTrue();
-    }
-
-    @Test
-    void skal_returnere_false_naar_under_26_timer_gammel() {
-        String indeksNavn = ElasticUtils.createIndexName("brukerindeks_p");
-        boolean result = ElasticMetricsReporter.erOver26TimerGammel(indeksNavn);
-        assertThat(result).isFalse();
+        LocalDateTime indekseringsdato = ElasticMetricsReporter.hentIndekseringsdato(indeksNavn);
+        assertThat(indekseringsdato.toString()).isEqualToIgnoringWhitespace("2019-10-08T04:16");
     }
 }
