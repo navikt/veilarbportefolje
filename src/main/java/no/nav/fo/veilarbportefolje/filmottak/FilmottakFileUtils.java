@@ -64,7 +64,7 @@ public class FilmottakFileUtils {
         });
     }
 
-    static Try<Long> getLastModifiedTimeInMillis(SftpConfig sftpConfig) {
+    public static Try<Long> getLastModifiedTimeInMillis(SftpConfig sftpConfig) {
         return Try.of(
                 () -> hentFil(sftpConfig)
                         .get()
@@ -73,7 +73,7 @@ public class FilmottakFileUtils {
                 .onFailure(e -> log.warn(String.format("Kunne ikke hente ut fil via nfs: %s", sftpConfig.getUrl())));
     }
 
-    static long hoursSinceLastChanged(LocalDateTime lastChanged) {
+    public static long hoursSinceLastChanged(LocalDateTime lastChanged) {
         return ChronoUnit.HOURS.between(lastChanged, LocalDateTime.now());
     }
 }
