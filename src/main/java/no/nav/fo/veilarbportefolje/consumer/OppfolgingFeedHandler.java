@@ -72,7 +72,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
             finnMaxFeedId(data).ifPresent(id -> oppfolgingFeedRepository.updateOppfolgingFeedId(id));
 
-            sistOppdatertMetrikk.addFieldToReport("timestamp", LocalDateTime.now().toString());
+            sistOppdatertMetrikk.addFieldToReport("last_entry", lastEntryId);
             sistOppdatertMetrikk.report();
 
         } catch (Exception e) {
