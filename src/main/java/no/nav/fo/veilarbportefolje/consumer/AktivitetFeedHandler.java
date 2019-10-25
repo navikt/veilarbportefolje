@@ -61,7 +61,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
-        sistOppdatert.addFieldToReport("timestamp", LocalDateTime.now().toString());
+        sistOppdatert.addFieldToReport("last_entry", lastEntry);
         sistOppdatert.report();
     }
 
