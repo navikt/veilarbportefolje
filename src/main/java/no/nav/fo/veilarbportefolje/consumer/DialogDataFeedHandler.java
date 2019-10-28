@@ -57,7 +57,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                 antallTotaltMetrikk.increment();
             });
             brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
-            sistOppdatert.addFieldToReport("timestamp", LocalDateTime.now().toString());
+            sistOppdatert.addFieldToReport("last_entry", lastEntry);
             sistOppdatert.report();
         } catch (Exception e) {
             antallFeiletMetrikk.increment();

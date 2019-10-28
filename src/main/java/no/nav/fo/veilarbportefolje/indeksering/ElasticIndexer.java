@@ -1,5 +1,7 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
@@ -49,6 +51,7 @@ import static no.nav.fo.veilarbportefolje.indeksering.IndekseringUtils.finnBruke
 import static no.nav.fo.veilarbportefolje.util.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static no.nav.json.JsonUtils.toJson;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -57,6 +60,7 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 public class ElasticIndexer {
 
     private final ElasticService elasticService;
+    private final Counter writeCounter;
 
     private RestHighLevelClient client;
 
@@ -75,6 +79,7 @@ public class ElasticIndexer {
         this.brukerRepository = brukerRepository;
         this.client = client;
         this.elasticService = elasticService;
+        writeCounter = Counter.builder("portefolje_elastic_writes").register(getMeterRegistry());
     }
 
     @SneakyThrows
@@ -280,6 +285,8 @@ public class ElasticIndexer {
                 .forEach(bulk::add);
 
         BulkResponse response = client.bulk(bulk, DEFAULT);
+
+        writeCounter.increment();
 
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());
