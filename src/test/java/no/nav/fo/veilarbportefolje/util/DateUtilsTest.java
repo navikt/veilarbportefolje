@@ -33,4 +33,12 @@ public class DateUtilsTest {
     public void shouldBeEqualToEpoch0() {
         assertTrue(isEpoch0(new Timestamp(0)));
     }
+
+    @Test
+    public void kort_datostring_skal_ikke_vaere_null() {
+        final Timestamp godkjentTimestamp = getTimestampFromSimpleISODate("2019-10-28");
+        final Timestamp feilendeTimestamp = getTimestampFromSimpleISODate("20191028");
+        assertThat(godkjentTimestamp.toString()).isEqualTo("2019-10-28 00:00:00.0");
+        assertThat(feilendeTimestamp).isNull();
+    }
 }

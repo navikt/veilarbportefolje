@@ -14,12 +14,12 @@ import java.util.Optional;
 import static no.nav.fo.veilarbportefolje.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
-public class ResetFeedServlet extends HttpServlet {
+public class ResetOppfolgingFeedServlet extends HttpServlet {
 
     private OppfolgingFeedRepository oppfolgingFeedRepository;
 
     @Inject
-    public ResetFeedServlet(OppfolgingFeedRepository oppfolgingFeedRepository) {
+    public ResetOppfolgingFeedServlet(OppfolgingFeedRepository oppfolgingFeedRepository) {
         this.oppfolgingFeedRepository = oppfolgingFeedRepository;
     }
 
