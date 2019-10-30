@@ -50,6 +50,9 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     @Override
     @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
+
+        log.info("DialogFeed data: {}", data);
+
         try {
             data.forEach(info -> {
                 dialogFeedRepository.oppdaterDialogInfoForBruker(info);

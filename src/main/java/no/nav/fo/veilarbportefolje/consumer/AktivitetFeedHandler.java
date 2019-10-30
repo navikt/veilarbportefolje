@@ -46,6 +46,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     @Override
     public void call(String lastEntry, List<AktivitetDataFraFeed> data) {
+
+        log.info("AktivitetfeedDebug data: {}", data);
+
         List<AktivitetDataFraFeed> avtalteAktiviteter = data
                 .stream()
                 .filter(AktivitetDataFraFeed::isAvtalt)
