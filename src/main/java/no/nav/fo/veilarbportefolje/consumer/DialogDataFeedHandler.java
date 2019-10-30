@@ -51,7 +51,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
 
-        log.info("DialogFeed data: {}", data);
+        log.info("DialogFeedDebug data: {}", data);
 
         try {
             data.forEach(info -> {
