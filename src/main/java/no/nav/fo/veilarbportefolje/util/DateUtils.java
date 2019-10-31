@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbportefolje.util;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -97,5 +99,19 @@ public class DateUtils {
 
     public static String getFarInTheFutureDate() {
         return toIsoUTC(getFarInTheFutureTimestamp());
+    }
+
+    public static Timestamp getTimestampFromSimpleISODate(String simpleISODate) {
+        try {
+            return dateToTimestamp(getISODateFormatter().parse(simpleISODate));
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    public static SimpleDateFormat getISODateFormatter() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        simpleDateFormat.setLenient(false);
+        return simpleDateFormat;
     }
 }

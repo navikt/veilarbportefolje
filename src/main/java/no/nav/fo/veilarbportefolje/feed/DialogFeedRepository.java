@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.feed;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.feed.DialogDataFraFeed;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 
+@Slf4j
 public class DialogFeedRepository {
     private JdbcTemplate db;
 
@@ -52,5 +54,10 @@ public class DialogFeedRepository {
                 .setSisteEndring(rs.getTimestamp("OPPDATERT_KILDESYSTEM"))
                 .setTidspunktEldsteUbehandlede(rs.getTimestamp("VENTER_PA_NAV"))
                 .setTidspunktEldsteVentende(rs.getTimestamp("VENTER_PA_BRUKER"));
+    }
+
+    public void updateDialogFeedTimestamp(Timestamp timestamp) {
+        log.info("Oppdaterer sist oppdatert timestamp for dialog: {}", timestamp);
+        SqlUtils.update(db, "METADATA").set("dialogaktor_sist_oppdatert", timestamp).execute();
     }
 }
