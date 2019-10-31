@@ -33,9 +33,11 @@ public class ResetAktivitetFeedServlet extends HttpServlet {
                 .map(DateUtils::getTimestampFromSimpleISODate)
                 .orElseThrow(() -> new WebApplicationException("Feil i datoformatering, bruk formatet: YYYY-MM-DD / 2020-12-31", Response.Status.BAD_REQUEST));
 
+        final String localDateTimeString = fromTimestamp.toLocalDateTime().toString() + "Z";
+
         if (isBasicAuthAuthorized(req)) {
-            brukerRepository.setAktiviteterSistOppdatert(fromTimestamp.toString());
-            resp.getWriter().write(String.format("Stilte aktivitet-feeeden tilbake til tidspunkt: %s", fromTimestamp.toString()));
+            brukerRepository.setAktiviteterSistOppdatert(localDateTimeString);
+            resp.getWriter().write(String.format("Stilte aktivitet-feeeden tilbake til tidspunkt: %s", localDateTimeString));
             resp.setStatus(200);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);

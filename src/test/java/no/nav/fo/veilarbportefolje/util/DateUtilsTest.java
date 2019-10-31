@@ -3,6 +3,7 @@ package no.nav.fo.veilarbportefolje.util;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.time.ZoneId;
 
 import static no.nav.fo.veilarbportefolje.util.DateUtils.*;
@@ -20,7 +21,6 @@ public class DateUtilsTest {
         assertThat(fromTimestamp).isEqualTo(original);
     }
 
-
     @Test
     public void should_return_utc_timestring_with_seconds() {
         Timestamp timestamp = timestampFromISO8601("2010-01-01T12:00+01:00");
@@ -36,9 +36,25 @@ public class DateUtilsTest {
 
     @Test
     public void kort_datostring_skal_ikke_vaere_null() {
-        final Timestamp godkjentTimestamp = getTimestampFromSimpleISODate("2019-10-28");
-        final Timestamp feilendeTimestamp = getTimestampFromSimpleISODate("20191028");
+        Timestamp godkjentTimestamp = getTimestampFromSimpleISODate("2019-10-28");
+        Timestamp feilendeTimestamp = getTimestampFromSimpleISODate("20191028");
         assertThat(godkjentTimestamp.toString()).isEqualTo("2019-10-28 00:00:00.0");
         assertThat(feilendeTimestamp).isNull();
+    }
+
+    @Test(expected = ParseException.class)
+    public void ugyldig_dato_skal_kaste_exception() throws ParseException {
+        getISODateFormatter().parse("2019-20-20");
+    }
+
+    @Test
+    public void tekst_skal_returnere_null() throws ParseException {
+        Timestamp hipp_hurra = getTimestampFromSimpleISODate("hipp hurra");
+        assertThat(hipp_hurra).isNull();
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void null_skal_kaste_exception() throws ParseException {
+        getTimestampFromSimpleISODate(null);
     }
 }

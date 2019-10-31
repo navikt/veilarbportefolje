@@ -109,7 +109,9 @@ public class DateUtils {
         }
     }
 
-    private static SimpleDateFormat getISODateFormatter() {
-        return new SimpleDateFormat("yyyy-MM-dd");
+    public static SimpleDateFormat getISODateFormatter() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        simpleDateFormat.setLenient(false);
+        return simpleDateFormat;
     }
 }

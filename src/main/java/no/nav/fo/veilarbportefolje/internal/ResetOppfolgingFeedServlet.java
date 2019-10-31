@@ -8,6 +8,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -26,10 +28,13 @@ public class ResetOppfolgingFeedServlet extends HttpServlet {
     @Override
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-
-        BigDecimal fromId = Optional.ofNullable(req.getParameter("fromId"))
-                .map(BigDecimal::new)
-                .orElse(new BigDecimal(0));
+        BigDecimal fromId;
+        try {
+            fromId = Optional.ofNullable(req.getParameter("fromId"))
+                    .map(BigDecimal::new).get();
+        } catch (NumberFormatException e) {
+            throw new WebApplicationException("Kunne ikke lese fromId, bruk kun tall", Response.Status.BAD_REQUEST);
+        }
 
         if (isBasicAuthAuthorized(req)) {
             oppfolgingFeedRepository.updateOppfolgingFeedId(fromId);
