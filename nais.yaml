@@ -4,6 +4,7 @@ kind: "Application"
 metadata:
   name: veilarbportefolje
   namespace: default
+  cluster: prod-fss
   labels:
     branch: master
     team: pto
