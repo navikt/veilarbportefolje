@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -65,6 +66,9 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             log.info("OppfolgingerfeedDebug data: {}", data);
 
             data.forEach(info -> {
+                if (info.getStartDato() == null) {
+                    log.warn("Bruker {} har ingen startdato", info.getAktoerid());
+                }
                 oppdaterOppfolgingData(info);
                 elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
                 antallTotaltMetrikk.increment();
