@@ -1,12 +1,14 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
+import no.nav.fo.veilarbportefolje.config.ApplicationConfig;
 import no.nav.fo.veilarbportefolje.config.DatabaseConfig;
 import no.nav.fo.veilarbportefolje.config.ServiceConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticClientConfig;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -28,7 +30,8 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @Configuration
 @Import({
         DatabaseConfig.class,
-        ServiceConfig.class
+        ServiceConfig.class,
+        ApplicationConfig.class
 })
 public class ElasticConfig {
 
@@ -38,7 +41,7 @@ public class ElasticConfig {
     public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
     public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
 
-    private static ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
+    public static ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
             .username(VEILARBELASTIC_USERNAME)
             .password(VEILARBELASTIC_PASSWORD)
             .hostname(getElasticHostname())
@@ -60,9 +63,9 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService) {
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), pepClient, veilederService);
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService);
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService, unleashService);
     }
 
     public static RestHighLevelClient createClient(ElasticClientConfig config) {

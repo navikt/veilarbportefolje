@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbportefolje.indeksering;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
@@ -12,6 +11,7 @@ import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
@@ -60,7 +60,7 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 public class ElasticIndexer {
 
     private final ElasticService elasticService;
-    private final Counter writeCounter;
+    private final ElasticQueue elasticQueue;
 
     private RestHighLevelClient client;
 
@@ -68,18 +68,24 @@ public class ElasticIndexer {
 
     private BrukerRepository brukerRepository;
 
+    private UnleashService unleash;
+
+    private static Counter deleteCounter = Counter.builder("portefolje_elastic_delete_operations").register(getMeterRegistry());
+
     @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient client,
-            ElasticService elasticService
+            ElasticService elasticService,
+            UnleashService unleash
     ) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.client = client;
         this.elasticService = elasticService;
-        writeCounter = Counter.builder("portefolje_elastic_writes").register(getMeterRegistry());
+        this.elasticQueue = new ElasticQueue();
+        this.unleash = unleash;
     }
 
     @SneakyThrows
@@ -145,7 +151,12 @@ public class ElasticIndexer {
             if (!brukereFortsattUnderOppfolging.isEmpty()) {
                 leggTilAktiviteter(brukereFortsattUnderOppfolging);
                 leggTilTiltak(brukereFortsattUnderOppfolging);
-                skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
+
+                if (unleash.isEnabled("portefolje.elastic_queue")) {
+                    elasticQueue.add(brukereFortsattUnderOppfolging);
+                } else {
+                    skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
+                }
             }
 
             slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
@@ -161,8 +172,8 @@ public class ElasticIndexer {
         int antall = brukere.size();
 
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-            event.addFieldToReport("es.antall.oppdateringer", antall);
-            event.report();
+        event.addFieldToReport("es.antall.oppdateringer", antall);
+        event.report();
     }
 
     @SneakyThrows
@@ -188,6 +199,7 @@ public class ElasticIndexer {
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() == 1) {
+            deleteCounter.increment();
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
         } else {
             String message = String.format("Feil ved sletting av bruker med aktoerId %s og personId %s i indeks %s", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
@@ -209,7 +221,13 @@ public class ElasticIndexer {
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
             leggTilTiltak(bruker);
-            skrivTilIndeks(getAlias(), bruker);
+
+            if (unleash.isEnabled("portefolje.elastic_queue")) {
+                elasticQueue.add(bruker);
+            } else {
+                skrivTilIndeks(getAlias(), bruker);
+            }
+
         } else {
             slettBruker(bruker);
         }
@@ -220,7 +238,13 @@ public class ElasticIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
-            skrivTilIndeks(getAlias(), brukere);
+
+            if (unleash.isEnabled("portefolje.elastic_queue")) {
+                elasticQueue.add(brukere);
+            } else {
+                skrivTilIndeks(getAlias(), brukere);
+            }
+
         });
     }
 
@@ -285,8 +309,6 @@ public class ElasticIndexer {
                 .forEach(bulk::add);
 
         BulkResponse response = client.bulk(bulk, DEFAULT);
-
-        writeCounter.increment();
 
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());

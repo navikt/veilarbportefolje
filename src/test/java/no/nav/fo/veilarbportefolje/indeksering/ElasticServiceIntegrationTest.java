@@ -16,6 +16,7 @@ import no.nav.fo.veilarbportefolje.indeksering.domene.ElasticClientConfig;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -88,7 +89,8 @@ public class ElasticServiceIntegrationTest {
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 restClient,
-                elasticService
+                elasticService,
+                mock(UnleashService.class)
         );
 
     }
