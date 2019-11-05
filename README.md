@@ -23,7 +23,7 @@ Noen av disse requestene benytter seg av Postman-miljøvariabler, importer disse
 høyre i Postman og velg `Import`. Importer disse filene:
 ```
 postman/preprod_environment
-postmane/prod_environment
+postman/prod_environment
 ``` 
 
 Disse environment-ene inneholder en auth-variabel. For å sette denne må du hente oidc-token i Fasit. Last ned filen du finner under enten `veilarbsecret_preprod` eller
