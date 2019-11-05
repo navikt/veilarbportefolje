@@ -70,8 +70,6 @@ http://<host>/veilarbportefolje/internal/populer_elastic
 ## Plugin til IntelliJ
 Dette prosjektet benytter seg av [lombok](https://projectlombok.org).
 
-Plugin for IntelliJ ligger på følgende path (testet med IntelliJ 2016.3):
-
 ## Sjekk at materialiserte views i databasen oppdateres (replikering)
 
 Les i jobbtabellen til oracle for å undersøke statusen på den automatisk refreshingen av materialiserte views 
