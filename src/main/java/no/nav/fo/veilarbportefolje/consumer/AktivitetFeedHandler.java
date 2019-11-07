@@ -23,7 +23,6 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     private final Counter antallTotaltMetrikk;
     private final Counter antallFeiletMetrikk;
-    private final Event sistOppdatert;
 
     private BrukerRepository brukerRepository;
     private AktivitetService aktivitetService;
@@ -39,7 +38,6 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "aktivitet").register(getMeterRegistry());
         antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "aktivitet").register(getMeterRegistry());
-        sistOppdatert = MetricsFactory.createEvent("portefolje.aktivitet.feed.sist.oppdatert");
 
 
     }
@@ -64,13 +62,15 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
 
         brukerRepository.setAktiviteterSistOppdatert(lastEntry);
+
+        Event sistOppdatert = MetricsFactory.createEvent("portefolje.aktivitet.feed.sist.oppdatert");
         sistOppdatert.addFieldToReport("last_entry", lastEntry);
         sistOppdatert.report();
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
-        antallTotaltMetrikk.count();
         try {
+            antallTotaltMetrikk.count();
             if (aktivitet.isHistorisk()) {
                 aktivitetDAO.deleteById(aktivitet.getAktivitetId());
             } else {
