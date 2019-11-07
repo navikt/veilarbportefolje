@@ -31,7 +31,6 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     private final BrukerRepository brukerRepository;
     private final ElasticIndexer elasticIndexer;
     private final DialogFeedRepository dialogFeedRepository;
-    private final Event sistOppdatert;
 
     @Inject
     public DialogDataFeedHandler(BrukerRepository brukerRepository,
@@ -43,8 +42,6 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "dialog").register(getMeterRegistry());
         antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "dialog").register(getMeterRegistry());
-
-        sistOppdatert = MetricsFactory.createEvent("portefolje.dialog.feed.sist.oppdatert");
     }
 
     @Override
@@ -60,8 +57,11 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                 antallTotaltMetrikk.increment();
             });
             brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+
+            Event sistOppdatert = MetricsFactory.createEvent("portefolje.dialog.feed.sist.oppdatert");
             sistOppdatert.addFieldToReport("last_entry", lastEntry);
             sistOppdatert.report();
+
         } catch (Exception e) {
             antallFeiletMetrikk.increment();
             String message = "Feil ved behandling av dialogdata fra feed for liste med brukere.";
