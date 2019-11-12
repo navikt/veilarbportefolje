@@ -70,7 +70,6 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
         try {
-            antallTotaltMetrikk.count();
             if (aktivitet.isHistorisk()) {
                 aktivitetDAO.deleteById(aktivitet.getAktivitetId());
             } else {
@@ -79,12 +78,12 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         } catch (Exception e) {
             String message = String.format("Kunne ikke lagre aktivitetdata fra feed for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);
-            antallFeiletMetrikk.count();
         }
     }
 
     void behandleAktivitetdata(List<AktoerId> aktoerids) {
         try {
+            antallTotaltMetrikk.count();
             if (aktoerids.isEmpty()) {
                 return;
             }
@@ -92,6 +91,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         } catch (Exception e) {
             String message = "Feil ved behandling av aktivitetdata fra feed";
             log.error(message, e);
+            antallFeiletMetrikk.count();
         }
     }
 }
