@@ -17,7 +17,6 @@ import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -90,27 +89,37 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         return data.stream().map(BrukerOppdatertInformasjon::getFeedId).filter(Objects::nonNull).max(naturalOrder());
     }
 
-    private void oppdaterOppfolgingData(BrukerOppdatertInformasjon info) {
-        boolean slettes = !info.getOppfolging() ||
-                !bytterTilVeilederPaSammeEnhet(AktoerId.of(info.getAktoerid()));
+    private void oppdaterOppfolgingData(BrukerOppdatertInformasjon oppfolgingData) {
+        AktoerId aktoerId = AktoerId.of(oppfolgingData.getAktoerid());
+
+        boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(aktoerId);
 
         transactor.inTransaction(() -> {
-            if (slettes) {
-                arbeidslisteService.deleteArbeidslisteForAktoerid(AktoerId.of(info.getAktoerid()));
+            if (skalSletteArbeidsliste) {
+                arbeidslisteService.deleteArbeidslisteForAktoerid(aktoerId);
             }
-            oppfolgingFeedRepository.oppdaterOppfolgingData(info);
+            oppfolgingFeedRepository.oppdaterOppfolgingData(oppfolgingData);
         });
 
     }
 
-    private Boolean bytterTilVeilederPaSammeEnhet(AktoerId aktoerId) {
-        return oppfolgingFeedRepository.retrieveOppfolgingData(aktoerId.toString())
-                .map(oppfolgingData -> brukerRepository
-                        .retrievePersonid(aktoerId)
-                        .flatMap(personId -> brukerRepository.retrieveEnhet(personId))
-                        .map(enhet -> veilederService.getIdenter(enhet)
-                                .contains(VeilederId.of(oppfolgingData.getVeileder()))
-                        ).getOrElse(false)
-                ).getOrElse(false);
+    private static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {
+        return !oppfolgingData.getOppfolging();
+    }
+
+    private boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(AktoerId aktoerId) {
+        return !oppfolgingFeedRepository
+                .retrieveOppfolgingData(aktoerId.toString())
+                .map(oppfolgingData -> veilederHarTilgangTilEnhet(aktoerId, oppfolgingData))
+                .getOrElse(false);
+    }
+
+    private boolean veilederHarTilgangTilEnhet(AktoerId aktoerId, BrukerOppdatertInformasjon oppfolgingData) {
+        VeilederId veilederId = VeilederId.of(oppfolgingData.getVeileder());
+        return brukerRepository
+                .retrievePersonid(aktoerId)
+                .flatMap(brukerRepository::retrieveEnhet)
+                .map(enhet -> veilederService.getIdenter(enhet).contains(veilederId))
+                .getOrElse(false);
     }
 }
