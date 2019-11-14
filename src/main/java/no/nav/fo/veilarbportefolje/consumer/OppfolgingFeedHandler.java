@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -29,7 +28,6 @@ import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
     private final Counter antallTotaltMetrikk;
-    private final Counter antallFeiletMetrikk;
     private final Event sistOppdatertMetrikk;
 
     private ArbeidslisteService arbeidslisteService;
@@ -54,7 +52,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.transactor = transactor;
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "oppfolging").register(getMeterRegistry());
-        antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "oppfolging").register(getMeterRegistry());
         sistOppdatertMetrikk = MetricsFactory.createEvent("portefolje.oppfolging.feed.sist.oppdatert");
     }
 
@@ -81,7 +78,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         } catch (Exception e) {
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
             log.error(message, e);
-            antallFeiletMetrikk.increment();
         }
     }
 
