@@ -1,30 +1,35 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.feed.AktivitetDataFraFeed;
+import no.nav.fo.veilarbportefolje.indeksering.ElasticUtils;
 import no.nav.fo.veilarbportefolje.service.AktivitetService;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
 
+    private static final String FEED_NAME = "aktivitet";
     private final Counter antallTotaltMetrikk;
 
     private BrukerRepository brukerRepository;
     private AktivitetService aktivitetService;
     private AktivitetDAO aktivitetDAO;
+
+    private static long lastEntryIdAsMillisSinceEpoch;
 
     @Inject
     public AktivitetFeedHandler(BrukerRepository brukerRepository,
@@ -34,7 +39,12 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         this.aktivitetService = aktivitetService;
         this.aktivitetDAO = aktivitetDAO;
 
-        antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "aktivitet").register(getMeterRegistry());
+        antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", FEED_NAME).register(getMeterRegistry());
+        Gauge.builder("portefolje_feed_last_id", AktivitetFeedHandler::getLastEntryIdAsMillisSinceEpoch).tag("feed_name", FEED_NAME).register(getMeterRegistry());
+    }
+
+    private static long getLastEntryIdAsMillisSinceEpoch() {
+        return lastEntryIdAsMillisSinceEpoch;
     }
 
     @Override
@@ -55,12 +65,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                 .map(AktoerId::of)
                 .collect(toList()));
 
-
-        brukerRepository.setAktiviteterSistOppdatert(lastEntry);
-
-        Event sistOppdatert = MetricsFactory.createEvent("portefolje.aktivitet.feed.sist.oppdatert");
-        sistOppdatert.addFieldToReport("last_entry", lastEntry);
-        sistOppdatert.report();
+        Timestamp lastEntryId = timestampFromISO8601(lastEntry);
+        lastEntryIdAsMillisSinceEpoch = lastEntryId.getTime();
+        brukerRepository.setAktiviteterSistOppdatert(lastEntryId);
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {

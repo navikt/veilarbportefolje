@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbportefolje.consumer;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
@@ -14,17 +15,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Date;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 
 @Slf4j
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
+    private static final String FEED_NAME = "dialog";
     private final Counter antallTotaltMetrikk;
+    private static long lastEntryIdAsMillisSinceEpoch;
 
     public static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
@@ -39,7 +43,12 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         this.elasticIndexer = elasticIndexer;
         this.dialogFeedRepository = dialogFeedRepository;
 
-        antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "dialog").register(getMeterRegistry());
+        antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", FEED_NAME).register(getMeterRegistry());
+        Gauge.builder("portefolje_feed_last_id", DialogDataFeedHandler::getLastEntryIdAsMillisSinceEpoch).tag("feed_name", FEED_NAME).register(getMeterRegistry());
+    }
+
+    private static long getLastEntryIdAsMillisSinceEpoch() {
+        return lastEntryIdAsMillisSinceEpoch;
     }
 
     @Override
@@ -54,6 +63,10 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
                 elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktorId()));
                 antallTotaltMetrikk.increment();
             });
+
+            Timestamp timestamp = timestampFromISO8601(lastEntry);
+            lastEntryIdAsMillisSinceEpoch = timestamp.getTime();
+
             brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
 
             Event sistOppdatert = MetricsFactory.createEvent("portefolje.dialog.feed.sist.oppdatert");
