@@ -29,7 +29,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     private static final String FEED_NAME = "oppfolging";
     private final Counter antallTotaltMetrikk;
-    private static long lastEntry;
+    private static BigDecimal lastEntry;
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
@@ -57,7 +57,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     }
 
-    private static long getLastEntry() {
+    private static BigDecimal getLastEntry() {
         return lastEntry;
     }
 
@@ -77,7 +77,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
             finnMaxFeedId(data).ifPresent(id -> {
                 oppfolgingFeedRepository.updateOppfolgingFeedId(id);
-                lastEntry = id.longValue();
+                lastEntry = id;
             });
 
         } catch (Exception e) {
