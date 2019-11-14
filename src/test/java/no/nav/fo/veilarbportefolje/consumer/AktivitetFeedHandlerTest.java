@@ -22,6 +22,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,8 +90,7 @@ public class AktivitetFeedHandlerTest {
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID2").setAvtalt(true));
 
-        aktivitetFeedHandler.call("dontcare", data);
-
+        aktivitetFeedHandler.call("1970-01-01T00:00:00Z", data);
         verify(aktivitetServiceMock, times(1)).utledOgIndekserAktivitetstatuserForAktoerid(eq(Arrays.asList(AktoerId.of("AktoerID1"), AktoerId.of("AktoerID2"))));
     }
 
@@ -100,8 +102,7 @@ public class AktivitetFeedHandlerTest {
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID1").setAvtalt(true));
         data.add(new AktivitetDataFraFeed().setAktorId("AktoerID2").setAvtalt(true));
 
-        aktivitetFeedHandler.call("dontcare", data);
-
+        aktivitetFeedHandler.call("1970-01-01T00:00:00Z", data);
         verify(aktivitetDAOMock, times(3)).upsertAktivitet(any(AktivitetDataFraFeed.class));
     }
 

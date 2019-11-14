@@ -29,7 +29,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbportefolje.database.Tabell.AKTOERID_TO_PERSONID;
 import static no.nav.fo.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.fo.veilarbportefolje.database.Tabell.METADATA;
-import static no.nav.fo.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
@@ -338,9 +337,9 @@ public class BrukerRepository {
         return brukere;
     }
 
-    public void setAktiviteterSistOppdatert(String sistOppdatert) {
+    public void setAktiviteterSistOppdatert(Timestamp sistOppdatert) {
         String sql = "UPDATE METADATA SET aktiviteter_sist_oppdatert = ?";
-        db.update(sql, timestampFromISO8601(sistOppdatert));
+        db.update(sql, sistOppdatert);
     }
 
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
