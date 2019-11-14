@@ -25,7 +25,6 @@ import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
 
     private final Counter antallTotaltMetrikk;
-    private final Counter antallFeiletMetrikk;
 
     public static final String DIALOGAKTOR_SIST_OPPDATERT = "dialogaktor_sist_oppdatert";
     private final BrukerRepository brukerRepository;
@@ -41,7 +40,6 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
         this.dialogFeedRepository = dialogFeedRepository;
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "dialog").register(getMeterRegistry());
-        antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "dialog").register(getMeterRegistry());
     }
 
     @Override
@@ -63,7 +61,6 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
             sistOppdatert.report();
 
         } catch (Exception e) {
-            antallFeiletMetrikk.increment();
             String message = "Feil ved behandling av dialogdata fra feed for liste med brukere.";
             log.error(message, e);
         }

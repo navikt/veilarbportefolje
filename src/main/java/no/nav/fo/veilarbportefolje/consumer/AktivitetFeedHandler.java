@@ -12,7 +12,6 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 
 import javax.inject.Inject;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -22,7 +21,6 @@ import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
 
     private final Counter antallTotaltMetrikk;
-    private final Counter antallFeiletMetrikk;
 
     private BrukerRepository brukerRepository;
     private AktivitetService aktivitetService;
@@ -37,9 +35,6 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         this.aktivitetDAO = aktivitetDAO;
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", "aktivitet").register(getMeterRegistry());
-        antallFeiletMetrikk = Counter.builder("portefolje_feed_feilet").tag("feed_name", "aktivitet").register(getMeterRegistry());
-
-
     }
 
     @Override
@@ -83,7 +78,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     void behandleAktivitetdata(List<AktoerId> aktoerids) {
         try {
-            antallTotaltMetrikk.count();
+            antallTotaltMetrikk.increment(aktoerids.size());
             if (aktoerids.isEmpty()) {
                 return;
             }
@@ -91,7 +86,6 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
         } catch (Exception e) {
             String message = "Feil ved behandling av aktivitetdata fra feed";
             log.error(message, e);
-            antallFeiletMetrikk.count();
         }
     }
 }
