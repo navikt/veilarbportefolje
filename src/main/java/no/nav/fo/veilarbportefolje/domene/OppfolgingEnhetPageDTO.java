@@ -5,8 +5,8 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-public class OppfolgingsEnhetPageDTO {
+public class OppfolgingEnhetPageDTO {
     int page_number;
     int page_number_total;
-    List<OppfolgingsEnhetDTO> users;
+    List<OppfolgingEnhetDTO> users;
 }

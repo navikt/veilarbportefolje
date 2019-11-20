@@ -69,7 +69,7 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public List<OppfolgingsEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
+    public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
         int rowNum = calculateRowNum(pageNumber, pageSize);
 
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
@@ -87,8 +87,8 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private static OppfolgingsEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
-        return new OppfolgingsEnhetDTO(
+    private static OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
+        return new OppfolgingEnhetDTO(
                 rs.getString("AKTOERID"),
                 rs.getString("NAV_KONTOR")
         );

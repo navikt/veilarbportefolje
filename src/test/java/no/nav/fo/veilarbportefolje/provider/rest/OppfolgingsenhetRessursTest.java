@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import javax.ws.rs.WebApplicationException;
 
-import static no.nav.fo.veilarbportefolje.provider.rest.OppfolgingsenhetRessurs.*;
+import static no.nav.fo.veilarbportefolje.provider.rest.OppfolgingenhetRessurs.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class OppfolgingsenhetRessursTest {

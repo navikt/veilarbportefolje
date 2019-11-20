@@ -4,8 +4,8 @@ import io.swagger.annotations.Api;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
-import no.nav.fo.veilarbportefolje.domene.OppfolgingsEnhetDTO;
-import no.nav.fo.veilarbportefolje.domene.OppfolgingsEnhetPageDTO;
+import no.nav.fo.veilarbportefolje.domene.OppfolgingEnhetDTO;
+import no.nav.fo.veilarbportefolje.domene.OppfolgingEnhetPageDTO;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -16,11 +16,11 @@ import java.util.List;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
 
-@Api(value = "OppfolgingsEnhet")
+@Api(value = "OppfolgingEnhet")
 @Path("/oppfolgingenhet")
 @Component
 @Produces(APPLICATION_JSON)
-public class OppfolgingsenhetRessurs {
+public class OppfolgingenhetRessurs {
 
     static final int PAGE_SIZE_MAX = 1000;
     private static final int PAGE_NUMBER_MAX = 500_000;
@@ -28,12 +28,12 @@ public class OppfolgingsenhetRessurs {
     private BrukerRepository brukerRepository;
 
     @Inject
-    public OppfolgingsenhetRessurs(BrukerRepository brukerRepository) {
+    public OppfolgingenhetRessurs(BrukerRepository brukerRepository) {
         this.brukerRepository = brukerRepository;
     }
 
     @GET
-    public OppfolgingsEnhetPageDTO getOppfolgingsEnhet(@DefaultValue("1") @QueryParam("page_number") int pageNumber, @DefaultValue("10") @QueryParam("page_size") int pageSize) {
+    public OppfolgingEnhetPageDTO getOppfolgingEnhet(@DefaultValue("1") @QueryParam("page_number") int pageNumber, @DefaultValue("10") @QueryParam("page_size") int pageSize) {
 
         autoriserBruker();
 
@@ -43,9 +43,9 @@ public class OppfolgingsenhetRessurs {
         validatePageSize(pageSize);
         validatePageNumber(pageNumber, totalNumberOfPages);
 
-        List<OppfolgingsEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentBrukereUnderOppfolging(pageNumber, pageSize);
+        List<OppfolgingEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentBrukereUnderOppfolging(pageNumber, pageSize);
 
-        return new OppfolgingsEnhetPageDTO(pageNumber, totalNumberOfPages, brukereMedOppfolgingsEnhet);
+        return new OppfolgingEnhetPageDTO(pageNumber, totalNumberOfPages, brukereMedOppfolgingsEnhet);
     }
 
     private void autoriserBruker() {

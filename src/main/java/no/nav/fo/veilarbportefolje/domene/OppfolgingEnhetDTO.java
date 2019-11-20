@@ -3,7 +3,7 @@ package no.nav.fo.veilarbportefolje.domene;
 import lombok.Value;
 
 @Value
-public class OppfolgingsEnhetDTO {
+public class OppfolgingEnhetDTO {
     String aktorId;
     String enhetId;
 }
