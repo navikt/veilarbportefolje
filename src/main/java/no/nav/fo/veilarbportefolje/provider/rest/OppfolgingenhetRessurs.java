@@ -76,7 +76,7 @@ public class OppfolgingenhetRessurs {
         }
     }
 
-    static int validatePageSize(int pageSize) {
+    static void validatePageSize(int pageSize) {
 
         if (pageSize < 1) {
             throw new WebApplicationException("Page size too small", 400);
@@ -85,8 +85,6 @@ public class OppfolgingenhetRessurs {
         if (pageSize > PAGE_SIZE_MAX) {
             throw new WebApplicationException("Page size exceeds max limit", 400);
         }
-
-        return pageSize;
     }
 
 }
