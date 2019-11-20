@@ -45,7 +45,9 @@ public class OppfolgingenhetRessurs {
 
         List<OppfolgingEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentBrukereUnderOppfolging(pageNumber, pageSize);
 
-        return new OppfolgingEnhetPageDTO(pageNumber, totalNumberOfPages, brukereMedOppfolgingsEnhet);
+        Integer nextPage = totalNumberOfPages <= pageNumber ? null : pageNumber + 1;
+
+        return new OppfolgingEnhetPageDTO(pageNumber, nextPage, totalNumberOfPages, brukereMedOppfolgingsEnhet);
     }
 
     private void autoriserBruker() {
