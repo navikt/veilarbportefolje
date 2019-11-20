@@ -105,7 +105,7 @@ public class BrukerRepository {
     private String countOppfolgingsBrukereSql() {
         return "SELECT COUNT(*) FROM VW_PORTEFOLJE_INFO " +
                 "WHERE FORMIDLINGSGRUPPEKODE = 'ARBS' " +
-                "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
+                "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
     }
 
     private static int calculateRowNum(int page, int pageSize) {
