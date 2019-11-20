@@ -22,17 +22,17 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.database.Tabell.AKTOERID_TO_PERSONID;
+import static no.nav.fo.veilarbportefolje.database.Tabell.*;
 import static no.nav.fo.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
-import static no.nav.fo.veilarbportefolje.database.Tabell.METADATA;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
-import static no.nav.sbl.sql.where.WhereClause.gt;
+import static no.nav.sbl.sql.where.WhereClause.*;
 
 @Slf4j
 public class BrukerRepository {
@@ -69,6 +69,49 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
+    public List<OppfolgingsEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
+        int rowNum = calculateRowNum(pageNumber, pageSize);
+
+        return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
+                .column("AKTOERID")
+                .column("NAV_KONTOR")
+                .where(lt("ROWNUM", rowNum)
+                        .and(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS"))
+                        .or(
+                                WhereClause.equals("FORMIDLINGSGRUPPEKODE", "IARBS")
+                                        .and(in("KVALIFISERINGSGRUPPEKODE", asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI")))
+                        )
+                )
+                .limit(pageSize)
+                .executeToList();
+    }
+
+    @SneakyThrows
+    private static OppfolgingsEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
+        return new OppfolgingsEnhetDTO(
+                rs.getString("AKTOERID"),
+                rs.getString("NAV_KONTOR")
+        );
+    }
+
+    public Optional<Integer> hentAntallBrukereUnderOppfolging() {
+        Integer count = db.query(countOppfolgingsBrukereSql(), rs -> {
+            rs.next();
+            return rs.getInt(1);
+        });
+        return Optional.ofNullable(count);
+    }
+
+    private String countOppfolgingsBrukereSql() {
+        return "SELECT COUNT(*) FROM VW_PORTEFOLJE_INFO " +
+                "WHERE (FORMIDLINGSGRUPPEKODE = 'ARBS' " +
+                "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI')))";
+    }
+
+    private static int calculateRowNum(int page, int pageSize) {
+        return (page * pageSize) + 1;
+    }
+
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
 
         db.setFetchSize(1000);
@@ -100,7 +143,7 @@ public class BrukerRepository {
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
-                .where(WhereClause.in("PERSON_ID", ids))
+                .where(in("PERSON_ID", ids))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
