@@ -77,6 +77,7 @@ public class BrukerRepository {
                 .column("NAV_KONTOR")
                 .where(lt("ROWNUM", rowNum)
                         .and(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS"))
+                        .or(WhereClause.equals("OPPFOLGING", "J"))
                         .or(
                                 WhereClause.equals("FORMIDLINGSGRUPPEKODE", "IARBS")
                                         .and(in("KVALIFISERINGSGRUPPEKODE", asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI")))
@@ -105,6 +106,7 @@ public class BrukerRepository {
     private String countOppfolgingsBrukereSql() {
         return "SELECT COUNT(*) FROM VW_PORTEFOLJE_INFO " +
                 "WHERE FORMIDLINGSGRUPPEKODE = 'ARBS' " +
+                "OR OPPFOLGING = 'J' " +
                 "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
     }
 
