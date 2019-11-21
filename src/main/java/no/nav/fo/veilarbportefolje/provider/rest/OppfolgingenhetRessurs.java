@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbportefolje.provider.rest;
 
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
@@ -16,6 +17,7 @@ import java.util.List;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
 
+@Slf4j
 @Api(value = "OppfolgingEnhet")
 @Path("/oppfolgingenhet")
 @Component
@@ -60,7 +62,12 @@ public class OppfolgingenhetRessurs {
     }
 
     static boolean ugyldigIdent(IdentType identType, String ident) {
-        return !identType.equals(Systemressurs) || !"srvveilarboppfolging".equals(ident);
+        if (!identType.equals(Systemressurs) || !"srvveilarboppfolging".equals(ident)) {
+            log.warn("Ident med navn {} og type {} er ugyldig", identType, ident);
+            return false;
+        } else {
+            return true;
+        }
     }
 
     static void validatePageNumber(int pageNumber, int pagesTotal) {
