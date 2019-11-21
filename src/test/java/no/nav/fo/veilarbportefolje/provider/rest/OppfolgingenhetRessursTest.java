@@ -8,7 +8,7 @@ import javax.ws.rs.WebApplicationException;
 import static no.nav.fo.veilarbportefolje.provider.rest.OppfolgingenhetRessurs.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class OppfolgingsenhetRessursTest {
+public class OppfolgingenhetRessursTest {
 
     @Test
     public void skal_sjekke_om_page_number_er_storre_enn_totalt_antall_pages() {
@@ -48,7 +48,7 @@ public class OppfolgingsenhetRessursTest {
 
     @Test
     public void skal_returnere_true_ved_ugyldig_ident_type() {
-        boolean result = ugyldigIdent(IdentType.InternBruker, "srvveilarboppfolging");
+        boolean result = ugyldigIdent(IdentType.Systemressurs, "srvveilarboppfolging");
         assertThat(result).isTrue();
     }
 
