@@ -64,9 +64,9 @@ public class OppfolgingenhetRessurs {
     static boolean ugyldigIdent(IdentType identType, String ident) {
         if (!identType.equals(Systemressurs) || !"srvveilarboppfolging".equals(ident)) {
             log.warn("Ident med navn {} og type {} er ugyldig", identType, ident);
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
     }
 
