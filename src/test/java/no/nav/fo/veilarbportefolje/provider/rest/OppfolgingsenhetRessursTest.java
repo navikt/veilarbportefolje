@@ -42,7 +42,7 @@ public class OppfolgingsenhetRessursTest {
 
     @Test
     public void skal_returnere_true_ved_ugyldig_ident() {
-        boolean result = ugyldigIdent(IdentType.Systemressurs, "srvveilarbportefolje");
+        boolean result = ugyldigIdent(IdentType.InternBruker, "srvveilarbportefolje");
         assertThat(result).isTrue();
     }
 
