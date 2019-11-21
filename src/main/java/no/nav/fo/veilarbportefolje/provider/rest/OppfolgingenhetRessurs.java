@@ -15,6 +15,7 @@ import javax.ws.rs.*;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
 
 @Slf4j
@@ -62,8 +63,8 @@ public class OppfolgingenhetRessurs {
     }
 
     static boolean ugyldigIdent(IdentType identType, String ident) {
-        if (!identType.equals(Systemressurs) || !"srvveilarboppfolging".equals(ident)) {
-            log.warn("Ident med navn {} og type {} er ugyldig", identType, ident);
+        if (!identType.equals(InternBruker) || !"srvveilarboppfolging".equals(ident)) {
+            log.warn("Ident med navn {} og type {} er ugyldig", ident, identType);
             return true;
         } else {
             return false;
