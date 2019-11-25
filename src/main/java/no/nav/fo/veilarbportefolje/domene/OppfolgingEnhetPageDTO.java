@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class OppfolgingEnhetPageDTO {
     int page_number;
-    int page_number_total;
+    long page_number_total;
     int number_of_users;
     List<OppfolgingEnhetDTO> users;
 }

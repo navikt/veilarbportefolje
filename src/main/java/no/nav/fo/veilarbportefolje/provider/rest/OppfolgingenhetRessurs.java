@@ -48,19 +48,19 @@ public class OppfolgingenhetRessurs {
         autoriserBruker();
 
         Integer totalNumberOfUsers = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(() -> new WebApplicationException(503));
-        int totalNumberOfPages = new BigDecimal(totalNumberOfUsers).divide(new BigDecimal(pageSize), RoundingMode.UP).toBigInteger().intValue();
+        long totalNumberOfPages = new BigDecimal(totalNumberOfUsers).divide(new BigDecimal(pageSize), RoundingMode.UP).longValue() + 1;
 
         validatePageSize(pageSize);
         validatePageNumber(pageNumber, totalNumberOfPages);
 
         List<OppfolgingEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentBrukereUnderOppfolging(pageNumber, pageSize);
-        brukereMedOppfolgingsEnhet
-                .forEach(bruker -> {
-                    if (bruker.getAktorId() == null) {
-                        String aktorId = hentAktoerIdFraAktoerService(bruker);
-                        bruker.setAktorId(aktorId);
-                    }
-                });
+
+        brukereMedOppfolgingsEnhet.forEach(bruker -> {
+            if (bruker.getAktorId() == null) {
+                String aktorId = hentAktoerIdFraAktoerService(bruker);
+                bruker.setAktorId(aktorId);
+            }
+        });
 
         return OppfolgingEnhetPageDTO.builder()
                 .page_number(pageNumber)
@@ -95,7 +95,7 @@ public class OppfolgingenhetRessurs {
         }
     }
 
-    static void validatePageNumber(int pageNumber, int pagesTotal) {
+    static void validatePageNumber(int pageNumber, long pagesTotal) {
 
         if (pageNumber < 1) {
             throw new WebApplicationException("Page number is below 1", 400);
