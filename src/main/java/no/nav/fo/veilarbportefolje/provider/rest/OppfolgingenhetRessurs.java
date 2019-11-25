@@ -60,9 +60,12 @@ public class OppfolgingenhetRessurs {
                     }
                 });
 
-        Integer nextPage = totalNumberOfPages <= pageNumber ? null : pageNumber + 1;
-
-        return new OppfolgingEnhetPageDTO(pageNumber, nextPage, totalNumberOfPages, brukereMedOppfolgingsEnhet);
+        return OppfolgingEnhetPageDTO.builder()
+                .page_number(pageNumber)
+                .page_number_total(totalNumberOfPages)
+                .number_of_users(brukereMedOppfolgingsEnhet.size())
+                .users(brukereMedOppfolgingsEnhet)
+                .build();
     }
 
     private String hentAktoerIdFraAktoerService(OppfolgingEnhetDTO bruker) {
