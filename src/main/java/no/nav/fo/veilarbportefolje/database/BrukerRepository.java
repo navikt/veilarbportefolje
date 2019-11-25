@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
+import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
@@ -20,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -40,11 +42,13 @@ public class BrukerRepository {
 
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private AktoerService aktoerService;
 
     @Inject
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, AktoerService aktoerService) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.aktoerService = aktoerService;
     }
 
     public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
@@ -72,8 +76,9 @@ public class BrukerRepository {
     public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
         int rowNum = calculateRowNum(pageNumber, pageSize);
 
-        return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
+        return SqlUtils.select(db, VW_PORTEFOLJE_INFO, this::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
+                .column("FODSELSNR")
                 .column("NAV_KONTOR")
                 .where(lt("ROWNUM", rowNum)
                         .and(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS"))
@@ -88,11 +93,22 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private static OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
+    private OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
         return new OppfolgingEnhetDTO(
-                rs.getString("AKTOERID"),
+                hentAktoerIdHvisNull(rs),
                 rs.getString("NAV_KONTOR")
         );
+    }
+
+    @SneakyThrows
+    private String hentAktoerIdHvisNull(ResultSet rs) {
+        String aktoerid = rs.getString("AKTOERID");
+        String fnr = rs.getString("FODSELSNR");
+        if (aktoerid == null) {
+            return aktoerService.hentAktoeridFraFnr(Fnr.of(fnr)).getOrElseThrow((Supplier<RuntimeException>) RuntimeException::new).toString();
+        } else {
+            return aktoerid;
+        }
     }
 
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
@@ -323,6 +339,11 @@ public class BrukerRepository {
     @SneakyThrows
     private PersonId mapPersonIdFromOppfolgingsbruker(ResultSet resultSet) {
         return PersonId.of(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
+    }
+
+    @SneakyThrows
+    private AktoerId mapToAktoerId(ResultSet rs) {
+        return AktoerId.of(rs.getString("AKTOERID"));
     }
 
     @SneakyThrows
