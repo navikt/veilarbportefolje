@@ -72,7 +72,7 @@ public class BrukerRepository {
     public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
         int rowNum = calculateRowNum(pageNumber, pageSize);
 
-        return SqlUtils.select(db, VW_PORTEFOLJE_INFO, this::mapTilOppfolgingEnhetDTO)
+        return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
                 .column("FODSELSNR")
                 .column("NAV_KONTOR")
@@ -89,7 +89,7 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
+    private static OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
         return new OppfolgingEnhetDTO(
                 rs.getString("FODSELSNR"),
                 rs.getString("AKTOERID"),
@@ -325,11 +325,6 @@ public class BrukerRepository {
     @SneakyThrows
     private PersonId mapPersonIdFromOppfolgingsbruker(ResultSet resultSet) {
         return PersonId.of(Integer.toString(resultSet.getBigDecimal("PERSON_ID").intValue()));
-    }
-
-    @SneakyThrows
-    private AktoerId mapToAktoerId(ResultSet rs) {
-        return AktoerId.of(rs.getString("AKTOERID"));
     }
 
     @SneakyThrows
