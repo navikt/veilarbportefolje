@@ -74,6 +74,7 @@ public class BrukerRepository {
 
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
+                .column("FODSELSNR")
                 .column("NAV_KONTOR")
                 .where(lt("ROWNUM", rowNum)
                         .and(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS"))
@@ -90,6 +91,7 @@ public class BrukerRepository {
     @SneakyThrows
     private static OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
         return new OppfolgingEnhetDTO(
+                rs.getString("FODSELSNR"),
                 rs.getString("AKTOERID"),
                 rs.getString("NAV_KONTOR")
         );

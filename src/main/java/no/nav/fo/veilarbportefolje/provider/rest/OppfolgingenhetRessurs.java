@@ -5,18 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
+import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.OppfolgingEnhetDTO;
 import no.nav.fo.veilarbportefolje.domene.OppfolgingEnhetPageDTO;
+import no.nav.fo.veilarbportefolje.service.AktoerService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
-
 import java.util.List;
+import java.util.function.Supplier;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
-import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
 
 @Slf4j
 @Api(value = "OppfolgingEnhet")
@@ -29,10 +30,12 @@ public class OppfolgingenhetRessurs {
     private static final int PAGE_NUMBER_MAX = 500_000;
 
     private BrukerRepository brukerRepository;
+    private AktoerService aktoerService;
 
     @Inject
-    public OppfolgingenhetRessurs(BrukerRepository brukerRepository) {
+    public OppfolgingenhetRessurs(BrukerRepository brukerRepository, AktoerService aktoerService) {
         this.brukerRepository = brukerRepository;
+        this.aktoerService = aktoerService;
     }
 
     @GET
@@ -47,10 +50,23 @@ public class OppfolgingenhetRessurs {
         validatePageNumber(pageNumber, totalNumberOfPages);
 
         List<OppfolgingEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentBrukereUnderOppfolging(pageNumber, pageSize);
+        brukereMedOppfolgingsEnhet
+                .forEach(bruker -> {
+                    if (null == bruker.getAktorId()) {
+                        final String aktorId = hentAktoerIdFraAktoerService(bruker);
+                        bruker.setAktorId(aktorId);
+                    }
+                });
 
         Integer nextPage = totalNumberOfPages <= pageNumber ? null : pageNumber + 1;
 
         return new OppfolgingEnhetPageDTO(pageNumber, nextPage, totalNumberOfPages, brukereMedOppfolgingsEnhet);
+    }
+
+    private String hentAktoerIdFraAktoerService(OppfolgingEnhetDTO bruker) {
+        return aktoerService.hentAktoeridFraFnr(Fnr.of(bruker.getFnr()))
+                .getOrElseThrow((Supplier<RuntimeException>) RuntimeException::new)
+                .toString();
     }
 
     private void autoriserBruker() {
