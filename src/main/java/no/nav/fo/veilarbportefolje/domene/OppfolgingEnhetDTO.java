@@ -1,9 +1,12 @@
 package no.nav.fo.veilarbportefolje.domene;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Value
+@Data
+@AllArgsConstructor
 public class OppfolgingEnhetDTO {
+    String fnr;
     String aktorId;
     String enhetId;
 }

@@ -7,7 +7,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.domene.*;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
-import no.nav.fo.veilarbportefolje.service.AktoerService;
 import no.nav.fo.veilarbportefolje.util.DbUtils;
 import no.nav.fo.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
@@ -21,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -42,13 +40,11 @@ public class BrukerRepository {
 
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private AktoerService aktoerService;
 
     @Inject
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, AktoerService aktoerService) {
+    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.aktoerService = aktoerService;
     }
 
     public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
@@ -95,20 +91,10 @@ public class BrukerRepository {
     @SneakyThrows
     private OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
         return new OppfolgingEnhetDTO(
-                hentAktoerIdHvisNull(rs),
+                rs.getString("FODSELSNR"),
+                rs.getString("AKTOERID"),
                 rs.getString("NAV_KONTOR")
         );
-    }
-
-    @SneakyThrows
-    private String hentAktoerIdHvisNull(ResultSet rs) {
-        String aktoerid = rs.getString("AKTOERID");
-        String fnr = rs.getString("FODSELSNR");
-        if (aktoerid == null) {
-            return aktoerService.hentAktoeridFraFnr(Fnr.of(fnr)).getOrElseThrow((Supplier<RuntimeException>) RuntimeException::new).toString();
-        } else {
-            return aktoerid;
-        }
     }
 
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
