@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
@@ -72,7 +71,7 @@ public class OppfolgingenhetRessurs {
 
     private String hentAktoerIdFraAktoerService(OppfolgingEnhetDTO bruker) {
         return aktoerService.hentAktoeridFraFnr(Fnr.of(bruker.getFnr()))
-                .getOrElseThrow((Supplier<RuntimeException>) RuntimeException::new)
+                .getOrElseThrow(e -> new RuntimeException(e))
                 .toString();
     }
 
