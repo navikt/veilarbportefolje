@@ -48,7 +48,7 @@ public class OppfolgingenhetRessurs {
         autoriserBruker();
 
         Integer totalNumberOfUsers = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(() -> new WebApplicationException(503));
-        long totalNumberOfPages = new BigDecimal(totalNumberOfUsers).divide(new BigDecimal(pageSize), RoundingMode.UP).longValue() + 1;
+        long totalNumberOfPages = new BigDecimal(totalNumberOfUsers).divide(new BigDecimal(pageSize), RoundingMode.UP).longValue();
 
         validatePageSize(pageSize);
         validatePageNumber(pageNumber, totalNumberOfPages);
