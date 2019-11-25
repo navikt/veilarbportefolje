@@ -47,8 +47,15 @@ public class OppfolgingenhetRessursTest {
     }
 
     @Test
+    public void skal_returnere_true_ved_systemressurs() {
+        boolean result = ugyldigIdent(IdentType.Systemressurs, "srvveilarbportefolje");
+        assertThat(result).isTrue();
+    }
+
+
+    @Test
     public void skal_returnere_true_ved_ugyldig_ident_type() {
-        boolean result = ugyldigIdent(IdentType.Systemressurs, "srvveilarboppfolging");
+        boolean result = ugyldigIdent(IdentType.EksternBruker, "srvveilarboppfolging");
         assertThat(result).isTrue();
     }
 
