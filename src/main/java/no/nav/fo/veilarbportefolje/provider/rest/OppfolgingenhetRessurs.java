@@ -54,8 +54,8 @@ public class OppfolgingenhetRessurs {
         List<OppfolgingEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentBrukereUnderOppfolging(pageNumber, pageSize);
         brukereMedOppfolgingsEnhet
                 .forEach(bruker -> {
-                    if (null == bruker.getAktorId()) {
-                        final String aktorId = hentAktoerIdFraAktoerService(bruker);
+                    if (bruker.getAktorId() == null) {
+                        String aktorId = hentAktoerIdFraAktoerService(bruker);
                         bruker.setAktorId(aktorId);
                     }
                 });
