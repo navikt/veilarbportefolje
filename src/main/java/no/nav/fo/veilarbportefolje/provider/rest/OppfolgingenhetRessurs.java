@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
+import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
 
 @Slf4j
 @Api(value = "OppfolgingEnhet")
@@ -79,7 +81,8 @@ public class OppfolgingenhetRessurs {
     }
 
     static boolean ugyldigIdent(IdentType identType, String ident) {
-        if (!identType.equals(InternBruker) || !"srvveilarboppfolging".equals(ident)) {
+        List<IdentType> internBrukere = Arrays.asList(InternBruker, Systemressurs);
+        if (!internBrukere.contains(identType) || !"srvveilarboppfolging".equals(ident)) {
             log.warn("Ident med navn {} og type {} er ugyldig", ident, identType);
             return true;
         } else {
