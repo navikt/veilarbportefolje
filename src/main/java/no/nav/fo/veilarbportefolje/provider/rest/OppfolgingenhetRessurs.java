@@ -53,16 +53,20 @@ public class OppfolgingenhetRessurs {
         brukereMedOppfolgingsEnhet
                 .forEach(bruker -> {
                     if (null == bruker.getAktorId()) {
-                        bruker.setAktorId(
-                                aktoerService.hentAktoeridFraFnr(Fnr.of(bruker.getFnr()))
-                                        .getOrElseThrow((Supplier<RuntimeException>) RuntimeException::new)
-                                        .toString());
+                        final String aktorId = hentAktoerIdFraAktoerService(bruker);
+                        bruker.setAktorId(aktorId);
                     }
                 });
 
         Integer nextPage = totalNumberOfPages <= pageNumber ? null : pageNumber + 1;
 
         return new OppfolgingEnhetPageDTO(pageNumber, nextPage, totalNumberOfPages, brukereMedOppfolgingsEnhet);
+    }
+
+    private String hentAktoerIdFraAktoerService(OppfolgingEnhetDTO bruker) {
+        return aktoerService.hentAktoeridFraFnr(Fnr.of(bruker.getFnr()))
+                .getOrElseThrow((Supplier<RuntimeException>) RuntimeException::new)
+                .toString();
     }
 
     private void autoriserBruker() {
