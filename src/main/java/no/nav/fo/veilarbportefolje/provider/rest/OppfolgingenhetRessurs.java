@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -46,7 +48,7 @@ public class OppfolgingenhetRessurs {
         autoriserBruker();
 
         Integer totalNumberOfUsers = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(() -> new WebApplicationException(503));
-        int totalNumberOfPages = totalNumberOfUsers / pageSize;
+        int totalNumberOfPages = new BigDecimal(totalNumberOfUsers).divide(new BigDecimal(pageSize), RoundingMode.UP).toBigInteger().intValue();
 
         validatePageSize(pageSize);
         validatePageNumber(pageNumber, totalNumberOfPages);
