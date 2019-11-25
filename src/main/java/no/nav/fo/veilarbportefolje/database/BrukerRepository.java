@@ -70,21 +70,21 @@ public class BrukerRepository {
     }
 
     public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
-        int rowNum = calculateRowNum(pageNumber, pageSize);
+        int rowNum = pageNumber * pageSize;
+        int offset = rowNum - pageSize;
 
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
                 .column("FODSELSNR")
                 .column("NAV_KONTOR")
-                .where(lt("ROWNUM", rowNum)
-                        .and(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS"))
+                .where(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS")
                         .or(WhereClause.equals("OPPFOLGING", "J"))
                         .or(
                                 WhereClause.equals("FORMIDLINGSGRUPPEKODE", "IARBS")
                                         .and(in("KVALIFISERINGSGRUPPEKODE", asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI")))
                         )
                 )
-                .limit(pageSize)
+                .limit(offset, rowNum)
                 .executeToList();
     }
 
@@ -113,7 +113,7 @@ public class BrukerRepository {
     }
 
     private static int calculateRowNum(int page, int pageSize) {
-        return (page * pageSize) + 1;
+        return (page * pageSize);
     }
 
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
