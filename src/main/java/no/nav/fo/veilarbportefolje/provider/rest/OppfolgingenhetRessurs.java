@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
+import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.Fnr;
 import no.nav.fo.veilarbportefolje.domene.OppfolgingEnhetDTO;
 import no.nav.fo.veilarbportefolje.domene.OppfolgingEnhetPageDTO;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
@@ -56,8 +58,12 @@ public class OppfolgingenhetRessurs {
 
         brukereMedOppfolgingsEnhet.forEach(bruker -> {
             if (bruker.getAktorId() == null) {
-                String aktorId = hentAktoerIdFraAktoerService(bruker);
-                bruker.setAktorId(aktorId);
+                Optional<AktoerId> maybeAktoerId = hentAktoerIdFraAktoerService(bruker);
+                if (maybeAktoerId.isPresent()) {
+                    bruker.setAktorId(maybeAktoerId.get().toString());
+                } else {
+                    log.warn("Fant ikke aktørId for bruker med personId {}", bruker.getPersonId());
+                }
             }
         });
 
@@ -69,10 +75,8 @@ public class OppfolgingenhetRessurs {
                 .build();
     }
 
-    private String hentAktoerIdFraAktoerService(OppfolgingEnhetDTO bruker) {
-        return aktoerService.hentAktoeridFraFnr(Fnr.of(bruker.getFnr()))
-                .getOrElseThrow(e -> new RuntimeException(e))
-                .toString();
+    private Optional<AktoerId> hentAktoerIdFraAktoerService(OppfolgingEnhetDTO bruker) {
+        return aktoerService.hentAktoeridFraFnr(Fnr.of(bruker.getFnr())).toJavaOptional();
     }
 
     private void autoriserBruker() {

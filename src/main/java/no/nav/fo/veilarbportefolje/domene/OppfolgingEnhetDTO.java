@@ -9,4 +9,5 @@ public class OppfolgingEnhetDTO {
     String fnr;
     String aktorId;
     String enhetId;
+    String personId;
 }

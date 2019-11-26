@@ -78,6 +78,7 @@ public class BrukerRepository {
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
                 .column("FODSELSNR")
+                .column("PERSON_ID")
                 .column("NAV_KONTOR")
                 .where(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS")
                         .or(WhereClause.equals("OPPFOLGING", "J"))
@@ -95,7 +96,8 @@ public class BrukerRepository {
         return new OppfolgingEnhetDTO(
                 rs.getString("FODSELSNR"),
                 rs.getString("AKTOERID"),
-                rs.getString("NAV_KONTOR")
+                rs.getString("NAV_KONTOR"),
+                rs.getString("PERSON_ID")
         );
     }
 
@@ -112,10 +114,6 @@ public class BrukerRepository {
                 "WHERE FORMIDLINGSGRUPPEKODE = 'ARBS' " +
                 "OR OPPFOLGING = 'J' " +
                 "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
-    }
-
-    private static int calculateRowNum(int page, int pageSize) {
-        return (page * pageSize);
     }
 
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
