@@ -73,6 +73,8 @@ public class BrukerRepository {
         int rowNum = pageNumber * pageSize;
         int offset = rowNum - pageSize;
 
+        log.info("rowNum: {} offset: {}", rowNum, offset);
+
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
                 .column("FODSELSNR")
