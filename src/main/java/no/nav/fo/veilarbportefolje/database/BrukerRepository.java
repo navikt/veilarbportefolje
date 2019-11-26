@@ -73,7 +73,7 @@ public class BrukerRepository {
         int rowNum = pageNumber * pageSize;
         int offset = rowNum - pageSize;
 
-        log.info("rowNum: {} offset: {}", rowNum, offset);
+        log.info("rowNum: {}, offset: {}, pageSize: {}", rowNum, offset, pageSize);
 
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
@@ -86,7 +86,7 @@ public class BrukerRepository {
                                         .and(in("KVALIFISERINGSGRUPPEKODE", asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI")))
                         )
                 )
-                .limit(offset, rowNum)
+                .limit(offset, pageSize)
                 .executeToList();
     }
 
