@@ -3,6 +3,8 @@ package no.nav.fo.veilarbportefolje.config;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
+import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProvider;
+import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbportefolje.database.BrukerRepository;
 import no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository;
@@ -43,6 +45,7 @@ import javax.sql.DataSource;
 import javax.ws.rs.client.Client;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
+import static no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig.STS_OIDC_CONFIGURATION_URL_PROPERTY;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.*;
@@ -140,9 +143,15 @@ public class ApplicationConfig implements ApiApplication {
 
     @Override
     public void configure(ApiAppConfigurator apiAppConfigurator) {
+
+        SecurityTokenServiceOidcProvider securityTokenServiceOidcProvider = new SecurityTokenServiceOidcProvider(SecurityTokenServiceOidcProviderConfig.builder()
+                .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
+                .build());
+
         apiAppConfigurator
                 .sts()
-                .issoLogin();
+                .issoLogin()
+                .oidcProvider(securityTokenServiceOidcProvider);
     }
 
     @Bean
