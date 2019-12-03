@@ -48,7 +48,13 @@ public class TotalHovedindekseringServlet extends HttpServlet {
                     () -> {
                         kopierGR199FraArena.startOppdateringAvYtelser();
                         tiltakHandler.startOppdateringAvTiltakIDatabasen();
-                        krrService.hentDigitalKontaktInformasjonBolk();
+
+                        try {
+                            krrService.hentDigitalKontaktInformasjonBolk();
+                        } catch (Exception e) {
+                            log.error("Oppdatering av KRR feilet");
+                        }
+
                         elasticIndexer.startIndeksering();
                     },
                     counter
