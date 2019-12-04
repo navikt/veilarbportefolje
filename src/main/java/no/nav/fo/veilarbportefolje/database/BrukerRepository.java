@@ -22,17 +22,21 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.database.Tabell.*;
+import static no.nav.fo.veilarbportefolje.database.Tabell.AKTOERID_TO_PERSONID;
 import static no.nav.fo.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
+import static no.nav.fo.veilarbportefolje.database.Tabell.METADATA;
+import static no.nav.fo.veilarbportefolje.database.VwPortefoljeInfoTabell.Kolonne.*;
+import static no.nav.fo.veilarbportefolje.database.VwPortefoljeInfoTabell.VW_PORTEFOLJE_INFO;
+import static no.nav.fo.veilarbportefolje.database.VwPortefoljeInfoTabell.brukerErUnderOppfolging;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.*;
 import static no.nav.fo.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
-import static no.nav.sbl.sql.where.WhereClause.*;
+import static no.nav.sbl.sql.where.WhereClause.gt;
+import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 public class BrukerRepository {
@@ -61,7 +65,7 @@ public class BrukerRepository {
         db.setFetchSize(10_000);
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -76,20 +80,15 @@ public class BrukerRepository {
         log.info("rowNum: {}, offset: {}, pageSize: {}", rowNum, offset, pageSize);
 
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
-                .column("AKTOERID")
-                .column("FODSELSNR")
-                .column("PERSON_ID")
-                .column("NAV_KONTOR")
-                .where(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS")
-                        .or(WhereClause.equals("OPPFOLGING", "J"))
-                        .or(
-                                WhereClause.equals("FORMIDLINGSGRUPPEKODE", "IARBS")
-                                        .and(in("KVALIFISERINGSGRUPPEKODE", asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI")))
-                        )
-                )
+                .column(AKTOERID)
+                .column(FODSELSNR)
+                .column(PERSON_ID)
+                .column(NAV_KONTOR)
+                .where(brukerErUnderOppfolging())
                 .limit(offset, pageSize)
                 .executeToList();
     }
+
 
     @SneakyThrows
     private static OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
@@ -126,7 +125,7 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
+                .select(db, VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
@@ -134,7 +133,7 @@ public class BrukerRepository {
 
     public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
+                .select(db, VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -145,7 +144,7 @@ public class BrukerRepository {
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()

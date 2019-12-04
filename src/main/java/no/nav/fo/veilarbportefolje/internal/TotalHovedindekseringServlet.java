@@ -7,7 +7,7 @@ import no.nav.fo.veilarbportefolje.batchjob.RunningJob;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
 import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
-import no.nav.fo.veilarbportefolje.service.KrrService;
+import no.nav.fo.veilarbportefolje.krr.KrrService;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -46,16 +46,14 @@ public class TotalHovedindekseringServlet extends HttpServlet {
 
             RunningJob runningJob = runAsyncJob(
                     () -> {
-                        kopierGR199FraArena.startOppdateringAvYtelser();
-                        tiltakHandler.startOppdateringAvTiltakIDatabasen();
-
                         try {
-                            krrService.hentDigitalKontaktInformasjonBolk();
-                        } catch (Exception e) {
-                            log.error("Oppdatering av KRR feilet");
+                            kopierGR199FraArena.startOppdateringAvYtelser();
+                            tiltakHandler.startOppdateringAvTiltakIDatabasen();
+                            krrService.oppdaterDigitialKontaktinformasjon();
+                        } finally {
+                            elasticIndexer.startIndeksering();
                         }
 
-                        elasticIndexer.startIndeksering();
                     },
                     counter
             );

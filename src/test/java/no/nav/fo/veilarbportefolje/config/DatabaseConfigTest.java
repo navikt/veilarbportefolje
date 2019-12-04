@@ -4,6 +4,7 @@ import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.*;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakRepository;
+import no.nav.fo.veilarbportefolje.krr.KrrRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -62,5 +63,5 @@ public class DatabaseConfigTest {
     }
 
     @Bean
-    public KrrRepository krrRepository() { return new KrrRepository(); }
+    public KrrRepository krrRepository(JdbcTemplate jdbcTemplate) { return new KrrRepository(jdbcTemplate); }
 }

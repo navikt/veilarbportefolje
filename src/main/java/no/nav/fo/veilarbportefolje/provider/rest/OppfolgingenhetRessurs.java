@@ -59,11 +59,13 @@ public class OppfolgingenhetRessurs {
         brukereMedOppfolgingsEnhet.forEach(bruker -> {
             if (bruker.getAktorId() == null) {
                 Optional<AktoerId> maybeAktoerId = hentAktoerIdFraAktoerService(bruker);
+
                 if (maybeAktoerId.isPresent()) {
                     bruker.setAktorId(maybeAktoerId.get().toString());
                 } else {
                     log.warn("Fant ikke aktørId for bruker med personId {}", bruker.getPersonId());
                 }
+
             }
         });
 

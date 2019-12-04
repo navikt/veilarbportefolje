@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.filmottak.tiltak.TiltakHandler;
 import no.nav.fo.veilarbportefolje.filmottak.ytelser.KopierGR199FraArena;
-import no.nav.fo.veilarbportefolje.service.KrrService;
+import no.nav.fo.veilarbportefolje.krr.KrrService;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;

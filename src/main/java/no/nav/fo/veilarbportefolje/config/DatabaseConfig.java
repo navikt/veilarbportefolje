@@ -3,6 +3,7 @@ package no.nav.fo.veilarbportefolje.config;
 import no.nav.fo.veilarbportefolje.aktivitet.AktivitetDAO;
 import no.nav.fo.veilarbportefolje.database.*;
 import no.nav.fo.veilarbportefolje.feed.DialogFeedRepository;
+import no.nav.fo.veilarbportefolje.krr.KrrRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.jdbc.DataSourceFactory;
@@ -29,6 +30,8 @@ public class DatabaseConfig {
     public static final String TOTALINDEKSERING = "totalindeksering";
     public static final String ES_TOTALINDEKSERING = "es_totalindeksering";
     public static final String ES_DELTAINDEKSERING = "es_deltaindeksering";
+
+    public static final int MAX_FETCH_SIZE = 1000;
 
     @Bean
     public DataSource dataSource() {
@@ -86,8 +89,8 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public KrrRepository krrRepository() {
-        return new KrrRepository();
+    public KrrRepository krrRepository(JdbcTemplate jdbcTemplate) {
+        return new KrrRepository(jdbcTemplate);
     }
 
     @Bean

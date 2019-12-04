@@ -28,9 +28,4 @@ public class RestUtils {
                         (entity) -> Response.status(OK).entity(entity).build()
                 );
     }
-
-    public static String getSsoToken() {
-        Subject subject = SubjectHandler.getSubject().orElseThrow(IllegalStateException::new);
-        return subject.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
-    }
 }
