@@ -42,10 +42,13 @@ public class IndekseringScheduler {
     public void totalIndexering() {
         runAsyncJobOnLeader(
                 () -> {
-                    kopierGR199FraArena.startOppdateringAvYtelser();
-                    tiltakHandler.startOppdateringAvTiltakIDatabasen();
-                    krrService.hentDigitalKontaktInformasjonBolk();
-                    elasticIndexer.startIndeksering();
+                    try {
+                        kopierGR199FraArena.startOppdateringAvYtelser();
+                        tiltakHandler.startOppdateringAvTiltakIDatabasen();
+                        krrService.hentDigitalKontaktInformasjonBolk();
+                    } finally {
+                        elasticIndexer.startIndeksering();
+                    }
                 }
                 , totalIndekseringCounter
         );
