@@ -45,7 +45,7 @@ public class IndekseringScheduler {
                     try {
                         kopierGR199FraArena.startOppdateringAvYtelser();
                         tiltakHandler.startOppdateringAvTiltakIDatabasen();
-                        krrService.hentDigitalKontaktInformasjonBolk();
+                        krrService.oppdaterDigitialKontaktinformasjon();
                     } finally {
                         elasticIndexer.startIndeksering();
                     }

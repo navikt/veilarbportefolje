@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.common.auth.TestSubjectUtils;
+import no.nav.fo.veilarbportefolje.FailSafeConfig;
 import no.nav.fo.veilarbportefolje.config.ClientConfig;
 import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import no.nav.sbl.sql.SqlUtils;
@@ -13,8 +14,11 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import java.time.Duration;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.common.auth.SsoToken.Type.OIDC;
@@ -98,7 +102,13 @@ public class KrrServiceTest {
                         .willReturn(ok().withHeader("Content-Type", APPLICATION_JSON).withBody(jsonBody))
         );
 
-        ClientConfig.setRetryDelayInSeconds(1);
+        ClientConfig.setDefaultFailsafeConfig(
+                FailSafeConfig.builder()
+                        .maxRetries(3)
+                        .retryDelay(Duration.ofMillis(1))
+                        .timeout(ofSeconds(100))
+                        .build()
+        );
 
         krrService.oppdaterKrrInfo(singletonList(FNR));
 
