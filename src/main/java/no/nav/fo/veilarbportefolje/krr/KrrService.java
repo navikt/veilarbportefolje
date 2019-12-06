@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.krr;
 
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.RetryPolicy;
 import net.sf.ehcache.util.FailSafeTimer;
 import no.nav.common.utils.CollectionUtils;
@@ -71,14 +72,15 @@ public class KrrService {
     public static Optional<KrrDTO> hentKrrKontaktInfo(List<String> fodselsnummere) {
         return RestUtils.withClient(client -> {
 
-                    RetryPolicy<Optional<KrrDTO>> retryPolicy = new RetryPolicy<Optional<KrrDTO>>()
-                            .handle(Exception.class)
-                            .withDelay(ofSeconds(getRetryDelayInSeconds()))
-                            .withMaxRetries(getMaxRetries())
-                            .onRetry(retry -> log.warn("Retrying due to %s", retry.getLastFailure()))
-                            .handleResult(Optional.empty());
+            RetryPolicy<Optional<KrrDTO>> retryPolicy = new RetryPolicy<Optional<KrrDTO>>()
+                    .withDelay(ofSeconds(getRetryDelayInSeconds()))
+                    .withMaxRetries(getMaxRetries())
+                    .onRetry(retry -> log.info("Retrying...", retry.getLastFailure()))
+                    .onFailure(failure -> log.error("Call failed", failure.getFailure()));
 
-                    return with(retryPolicy).get(() -> {
+            Fallback<Optional<KrrDTO>> fallbackPolicy = Fallback.of(Optional.empty());
+
+            return with(retryPolicy, fallbackPolicy).get(() -> {
 
                                 KrrDTO krrDto = client.target(getRequiredProperty(DKIF_URL_PROPERTY_NAME))
                                         .path(DKIF_URL_PATH)
