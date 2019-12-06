@@ -1,14 +1,28 @@
 package no.nav.fo.veilarbportefolje.krr;
 
 import lombok.extern.slf4j.Slf4j;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
+import net.sf.ehcache.util.FailSafeTimer;
 import no.nav.common.utils.CollectionUtils;
+import no.nav.fo.veilarbportefolje.config.ClientConfig;
 import no.nav.sbl.rest.RestUtils;
 
 import javax.inject.Inject;
+import javax.ws.rs.ProcessingException;
+import java.net.SocketException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import static java.time.Duration.ofSeconds;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static net.jodah.failsafe.Failsafe.with;
+import static no.nav.fo.veilarbportefolje.config.ClientConfig.*;
 import static no.nav.fo.veilarbportefolje.util.SubjectUtils.getOidcToken;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
@@ -46,20 +60,38 @@ public class KrrService {
     private void oppdaterKrrKontaktinfo(List<String> fodselsnummere) {
         log.info("Oppdaterer KRR for {} brukere", fodselsnummere.size());
 
-        KrrDTO response = hentKrrKontaktInfo(fodselsnummere);
-        List<KrrKontaktInfoDTO> kontaktinfo = new ArrayList<>(response.getKontaktinfo().values());
-        krrRepository.lagreKrrKontaktInfo(kontaktinfo);
+        Optional<KrrDTO> maybeKrrDto = hentKrrKontaktInfo(fodselsnummere);
+
+        maybeKrrDto
+                .map(dto -> new ArrayList<>(dto.getKontaktinfo().values()))
+                .ifPresent(krrRepository::lagreKrrKontaktInfo);
+
     }
 
-    public static KrrDTO hentKrrKontaktInfo(List<String> fodselsnummere) {
-        return RestUtils.withClient(client ->
-                client.target(getRequiredProperty(DKIF_URL_PROPERTY_NAME))
-                        .path(DKIF_URL_PATH)
-                        .queryParam("inkluderSikkerDigitalPost", false)
-                        .request()
-                        .header(AUTHORIZATION, "Bearer " + getOidcToken())
-                        .header("Nav-Personidenter", fodselsnummere)
-                        .get(KrrDTO.class)
+    public static Optional<KrrDTO> hentKrrKontaktInfo(List<String> fodselsnummere) {
+        return RestUtils.withClient(client -> {
+
+                    RetryPolicy<Optional<KrrDTO>> retryPolicy = new RetryPolicy<Optional<KrrDTO>>()
+                            .handle(Exception.class)
+                            .withDelay(ofSeconds(getRetryDelayInSeconds()))
+                            .withMaxRetries(getMaxRetries())
+                            .onRetry(retry -> log.warn("Retrying due to %s", retry.getLastFailure()))
+                            .handleResult(Optional.empty());
+
+                    return with(retryPolicy).get(() -> {
+
+                                KrrDTO krrDto = client.target(getRequiredProperty(DKIF_URL_PROPERTY_NAME))
+                                        .path(DKIF_URL_PATH)
+                                        .queryParam("inkluderSikkerDigitalPost", false)
+                                        .request()
+                                        .header(AUTHORIZATION, "Bearer " + getOidcToken())
+                                        .header("Nav-Personidenter", fodselsnummere)
+                                        .get(KrrDTO.class);
+
+                                return Optional.of(krrDto);
+                            }
+                    );
+                }
         );
     }
 }
