@@ -23,6 +23,7 @@ public class KrrRepositoryTest {
         SingleConnectionDataSource ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
         krrRepository = new KrrRepository(db);
+        krrRepository.slettKrrInformasjon();
     }
 
     @Test

@@ -61,11 +61,15 @@ public class KrrServiceTest {
     public void setUp() {
         SingleConnectionDataSource ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
+
         KrrRepository krrRepository = new KrrRepository(db);
+        krrRepository.slettKrrInformasjon();
+
         krrService = new KrrService(krrRepository);
 
         systemPropertiesRule.setProperty(DKIF_URL_PROPERTY_NAME, "http://localhost:" + wireMockRule.port());
         subjectRule.setSubject(TestSubjectUtils.builder().tokenType(OIDC).token("test").build());
+
     }
 
     @Test
