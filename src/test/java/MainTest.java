@@ -14,6 +14,7 @@ import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
+import static no.nav.fo.veilarbportefolje.krr.KrrService.DKIF_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
@@ -76,6 +77,8 @@ public class MainTest {
         ServiceUser elasticUser = getServiceUser("veilarbelastic_user", APPLICATION_NAME, getDefaultEnvironment());
         setProperty(ELASTICSEARCH_USERNAME_PROPERTY, elasticUser.getUsername());
         setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, elasticUser.getPassword());
+
+        setProperty(DKIF_URL_PROPERTY_NAME, "localhost:7009");
 
         ElectorMock.start();
         Main.main(PORT);

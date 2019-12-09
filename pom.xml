@@ -50,11 +50,6 @@
                 <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
                 <version>${no.nav.tjenestespesifikasjoner.version}</version>
             </dependency>
-            <dependency>
-                <groupId>no.nav.tjenestespesifikasjoner</groupId>
-                <artifactId>dkif-tjenestespesifikasjon</artifactId>
-                <version>${no.nav.tjenestespesifikasjoner.version}</version>
-            </dependency>
 
             <!--Elastic Search-->
             <dependency>
@@ -222,6 +217,11 @@
 
         <!--Diverse-->
         <dependency>
+            <groupId>net.jodah</groupId>
+            <artifactId>failsafe</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
             <version>${jsch.version}</version>
@@ -309,10 +309,6 @@
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>dkif-tjenestespesifikasjon</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -367,8 +363,9 @@
         <!--TEST-->
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock</artifactId>
-            <version>2.22.0</version>
+            <artifactId>wiremock-jre8</artifactId>
+            <version>2.25.1</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>

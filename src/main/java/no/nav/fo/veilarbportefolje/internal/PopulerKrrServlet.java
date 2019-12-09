@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.batchjob.BatchJob;
 import no.nav.fo.veilarbportefolje.batchjob.RunningJob;
-import no.nav.fo.veilarbportefolje.service.KrrService;
+import no.nav.fo.veilarbportefolje.krr.KrrService;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ public class PopulerKrrServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
 
-            RunningJob runningJob = BatchJob.runAsyncJob(krrService::hentDigitalKontaktInformasjonBolk, counter);
+            RunningJob runningJob = BatchJob.runAsyncJob(krrService::oppdaterDigitialKontaktinformasjon, counter);
             resp.getWriter().write(String.format("Startet oppdatering av reservesjonsdata fra krr (via dkif) med jobId %s på pod %s", runningJob.getJobId(), runningJob.getPodName()));
             resp.setStatus(SC_OK);
         } else {
