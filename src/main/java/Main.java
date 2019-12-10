@@ -32,6 +32,7 @@ public class Main {
                 "LOGINSERVICE_OIDC_DISCOVERYURI",
                 "OIDC_REDIRECT_URL",
                 "SECURITYTOKENSERVICE_URL",
+                "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL",
                 "UNLEASH_API_URL",
                 "VEILARBLOGIN_REDIRECT_URL_DESCRIPTION",
                 "VEILARBLOGIN_REDIRECT_URL_URL",

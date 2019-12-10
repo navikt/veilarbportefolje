@@ -5,12 +5,14 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.Timeout;
+import net.jodah.failsafe.event.ExecutionCompletedEvent;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.fo.veilarbportefolje.FailSafeConfig;
 import no.nav.sbl.rest.RestUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.swing.event.CaretListener;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -37,12 +39,17 @@ public class ClientConfig {
         Timeout<T> timeout = Timeout.of(config.getTimeout());
 
         Fallback<T> fallbackPolicy = Fallback.of(() -> null);
+        fallbackPolicy.onFailure(ClientConfig::logFailure);
 
         return Failsafe
-                .with(retryPolicy, timeout)
-                .onFailure(e -> log.error("{} {} {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace()))
+                .with(retryPolicy, fallbackPolicy, timeout)
+                .onFailure(ClientConfig::logFailure)
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
                 .get(() -> RestUtils.withClient(function));
+    }
+
+    private static <T> void logFailure(ExecutionCompletedEvent<T> e) {
+        log.error("{} {} {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace());
     }
 
     public static <T> T usingFailSafeClient(Function<Client, T> function) {
