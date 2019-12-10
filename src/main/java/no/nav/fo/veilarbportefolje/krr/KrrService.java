@@ -50,11 +50,13 @@ public class KrrService {
         log.info("Oppdaterer KRR for {} brukere", fodselsnummere.size());
 
         Optional<KrrDTO> maybeKrrDto = hentKrrKontaktInfo(fodselsnummere);
+        if (!maybeKrrDto.isPresent()) {
+            log.warn("Kall mot KRR retunert med tom tom respons");
+        }
 
         maybeKrrDto
                 .map(dto -> new ArrayList<>(dto.getKontaktinfo().values()))
                 .ifPresent(krrRepository::lagreKrrKontaktInfo);
-
     }
 
     public static Optional<KrrDTO> hentKrrKontaktInfo(List<String> fodselsnummere) {
