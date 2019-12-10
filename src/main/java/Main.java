@@ -17,26 +17,27 @@ public class Main {
 
     private static void readFromConfigMap() {
         NaisUtils.addConfigMapToEnv("pto-config",
-                "DKIF_URL",
-                "SECURITYTOKENSERVICE_URL",
-                "ABAC_PDP_ENDPOINT_URL",
                 "ABAC_PDP_ENDPOINT_DESCRIPTION",
-                "ISSO_HOST_URL",
-                "ISSO_JWKS_URL",
-                "ISSO_ISSUER_URL",
-                "ISSO_ISALIVE_URL",
-                "VEILARBLOGIN_REDIRECT_URL_DESCRIPTION",
-                "VEILARBLOGIN_REDIRECT_URL_URL",
-                "AKTOER_V2_SECURITYTOKEN",
+                "ABAC_PDP_ENDPOINT_URL",
+                "AKTOERREGISTER_API_V1_URL",
                 "AKTOER_V2_ENDPOINTURL",
+                "AKTOER_V2_SECURITYTOKEN",
                 "AKTOER_V2_WSDLURL",
-                "VIRKSOMHET_OPPFOELGINGSSTATUS_V2_SECURITYTOKEN",
-                "VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ENDPOINTURL",
-                "VIRKSOMHET_OPPFOELGINGSSTATUS_V2_WSDLURL",
+                "DKIF_URL",
+                "ISSO_HOST_URL",
+                "ISSO_ISALIVE_URL",
+                "ISSO_ISSUER_URL",
+                "ISSO_JWKS_URL",
                 "LOGINSERVICE_OIDC_CALLBACKURI",
                 "LOGINSERVICE_OIDC_DISCOVERYURI",
+                "OIDC_REDIRECT_URL",
+                "SECURITYTOKENSERVICE_URL",
                 "UNLEASH_API_URL",
-                "AKTOERREGISTER_API_V1_URL"
+                "VEILARBLOGIN_REDIRECT_URL_DESCRIPTION",
+                "VEILARBLOGIN_REDIRECT_URL_URL",
+                "VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ENDPOINTURL",
+                "VIRKSOMHET_OPPFOELGINGSSTATUS_V2_SECURITYTOKEN",
+                "VIRKSOMHET_OPPFOELGINGSSTATUS_V2_WSDLURL"
         );
     }
 
