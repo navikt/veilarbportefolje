@@ -39,8 +39,8 @@ public class ClientConfig {
         Fallback<T> fallbackPolicy = Fallback.of(() -> null);
 
         return Failsafe
-                .with(retryPolicy, fallbackPolicy, timeout)
-                .onFailure(failure -> log.error("{} {} {}", failure.getFailure(), failure.getFailure().getMessage(), failure.getFailure().getStackTrace()))
+                .with(retryPolicy, timeout)
+                .onFailure(e -> log.error("{} {} {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace()))
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
                 .get(() -> RestUtils.withClient(function));
     }
