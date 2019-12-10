@@ -32,21 +32,16 @@ public class ClientConfig {
 
         RetryPolicy<T> retryPolicy = new RetryPolicy<T>()
                 .withDelay(config.getRetryDelay())
-                .withMaxRetries(config.getMaxRetries())
-                .onRetry(retry -> log.info("Retrying...", retry.getLastFailure()))
-                .onFailure(failure -> log.error("Call failed", failure.getFailure()))
-                .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()));
+                .withMaxRetries(config.getMaxRetries());
 
         Timeout<T> timeout = Timeout.of(config.getTimeout());
-        timeout.onFailure(failure -> log.info("Call timed out", failure.getFailure()));
 
         Fallback<T> fallbackPolicy = Fallback.of(() -> null);
-        fallbackPolicy
-                .onSuccess(success -> log.warn("Using fallback value", success.getFailure()))
-                .onFailure(failure -> log.error("Fallback failed", failure.getFailure()));
 
         return Failsafe
                 .with(retryPolicy, fallbackPolicy, timeout)
+                .onFailure(failure -> log.error("{} {} {}", failure.getFailure(), failure.getFailure().getMessage(), failure.getFailure().getStackTrace()))
+                .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
                 .get(() -> RestUtils.withClient(function));
     }
 
