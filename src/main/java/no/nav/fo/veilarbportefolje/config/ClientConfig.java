@@ -34,12 +34,20 @@ public class ClientConfig {
                 .withDelay(config.getRetryDelay())
                 .withMaxRetries(config.getMaxRetries())
                 .onRetry(retry -> log.info("Retrying...", retry.getLastFailure()))
-                .onFailure(failure -> log.error("Call failed", failure.getFailure()))
+                .onFailure(failure -> log.error("Call failed after {} attempt(s) with failure {}", failure.getAttemptCount(), failure.getFailure()))
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()));
 
         Timeout<T> timeout = Timeout.of(config.getTimeout());
 
-        Fallback<T> fallbackPolicy = Fallback.of(() -> null);
+        timeout
+                .onSuccess(success -> log.info("Call succeded before timeout {}", success))
+                .onFailure(failure -> log.info("Call timed out after {} with failure {}", config.getTimeout(), failure.getFailure()));
+
+        Fallback<T> fallbackPolicy = Fallback.of(() -> null)
+
+        fallbackPolicy
+                .onSuccess(success -> log.info("Fallback succeded"))
+                .onFailure(failure -> log.error("Fallback failed with result {} and failure {}", failure.getResult(), failure.getFailure()));
 
         return Failsafe
                 .with(retryPolicy, fallbackPolicy, timeout)
