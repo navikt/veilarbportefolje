@@ -43,14 +43,19 @@ public class KrrRepository {
     }
 
     public void lagreKrrKontaktInfo(List<KrrKontaktInfoDTO> dtoer) {
+
+        log.info("Lagrer kontaktinfo fra KRR i database");
+
         int[] result = new InsertBatchQuery<KrrKontaktInfoDTO>(db, KRR)
                 .add(KrrTabell.Kolonne.FODSELSNR, KrrKontaktInfoDTO::getPersonident, String.class)
                 .add(KrrTabell.Kolonne.RESERVASJON, dto -> safeToJaNei(dto.isReservert()), String.class)
                 .add(KrrTabell.Kolonne.LAGTTILIDB, DbConstants.CURRENT_TIMESTAMP)
                 .execute(dtoer);
 
+        log.info("{} brukere oppdatert i database", result.length);
+
         if (result.length != dtoer.size()) {
-            log.warn("{} inserts KRR-tabellen feilet", result.length - dtoer.size());
+            log.warn("{} oppdateringer i databasen feilet", result.length - dtoer.size());
         }
     }
 }
