@@ -16,6 +16,8 @@ public class Main {
 
     public static void main(String... args) {
 
+        readFromConfigMap();
+
         setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
         setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
         setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-12-04");
