@@ -41,13 +41,6 @@ public class KrrRepositoryTest {
         assertThat(antallRader()).isEqualTo(0);
     }
 
-    @Test
-    public void skal_hente_ut_alle_fnr_med_krr_informasjon() {
-        List<String> fodselsnummere = krrRepository.hentAlleFnrUnderOppfolging();
-        assertThat(fodselsnummere).isNotEmpty();
-
-    }
-
     private int antallRader() {
         return DbUtils.selectCount(db, KRR).orElseThrow(RuntimeException::new);
     }
