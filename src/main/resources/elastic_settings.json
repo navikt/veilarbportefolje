@@ -56,8 +56,23 @@
         "aktoer_id": {
           "type": "keyword"
         },
+        "fornavn": {
+          "type": "text",
+          "analyzer": "fullt_navn_sok",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
         "etternavn": {
-          "type": "keyword"
+          "type": "text",
+          "analyzer": "fullt_navn_sok",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
         },
         "arbeidsliste_overskrift": {
           "type": "keyword"
