@@ -43,7 +43,7 @@ public class ClientConfig {
                 .onSuccess(success -> log.info("Call succeded before timeout {}", success))
                 .onFailure(failure -> log.info("Call timed out after {} with failure {}", config.getTimeout(), failure.getFailure()));
 
-        Fallback<T> fallbackPolicy = Fallback.of(() -> null)
+        Fallback<T> fallbackPolicy = Fallback.of(() -> null);
 
         fallbackPolicy
                 .onSuccess(success -> log.info("Fallback succeded"))
