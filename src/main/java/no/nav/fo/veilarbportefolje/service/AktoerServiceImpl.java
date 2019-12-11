@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.batchjob.BatchJob.runAsyncJobOnLeader;
+import static no.nav.jobutils.JobUtils.runAsyncJobOnLeader;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
@@ -48,7 +48,7 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Scheduled(cron = "0 0/5 * * * *")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
-        runAsyncJobOnLeader(this::mapAktorId, counter);
+        runAsyncJobOnLeader(this::mapAktorId);
     }
 
     void mapAktorId() {
