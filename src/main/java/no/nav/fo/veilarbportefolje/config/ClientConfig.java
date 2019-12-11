@@ -7,12 +7,12 @@ import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.Timeout;
 import net.jodah.failsafe.event.ExecutionCompletedEvent;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.FailSafeConfig;
 import no.nav.sbl.rest.RestUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.swing.event.CaretListener;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -40,6 +40,7 @@ public class ClientConfig {
 
         Fallback<T> fallbackPolicy = Fallback.of(() -> null);
         fallbackPolicy.onFailure(ClientConfig::logFailure);
+        fallbackPolicy.onSuccess(e -> log.info("Fallback succeded with value {}", e.getResult()));
 
         return Failsafe
                 .with(retryPolicy, fallbackPolicy, timeout)
