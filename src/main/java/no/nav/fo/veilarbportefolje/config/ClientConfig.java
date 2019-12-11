@@ -38,12 +38,8 @@ public class ClientConfig {
 
         Timeout<T> timeout = Timeout.of(config.getTimeout());
 
-        Fallback<T> fallbackPolicy = Fallback.of(() -> null);
-        fallbackPolicy.onFailure(ClientConfig::logFailure);
-        fallbackPolicy.onSuccess(e -> log.info("Fallback succeded with value {}", e.getResult()));
-
         return Failsafe
-                .with(retryPolicy, fallbackPolicy, timeout)
+                .with(retryPolicy, timeout)
                 .onFailure(ClientConfig::logFailure)
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
                 .get(() -> RestUtils.withClient(function));

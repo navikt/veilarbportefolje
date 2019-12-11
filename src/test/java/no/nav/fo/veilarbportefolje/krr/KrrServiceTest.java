@@ -115,6 +115,5 @@ public class KrrServiceTest {
         );
 
         krrService.oppdaterKrrInfo(singletonList(FNR));
-
     }
 }
