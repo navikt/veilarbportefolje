@@ -15,13 +15,18 @@ import no.nav.sbl.util.EnvironmentUtils;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.util.HashMap;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
 import static no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig.STS_OIDC_CONFIGURATION_URL_PROPERTY;
 import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
+import static no.nav.fo.veilarbportefolje.internal.AuthorizationUtils.AUTHORIZATION;
+import static no.nav.fo.veilarbportefolje.internal.AuthorizationUtils.getBasicAuthCredentials;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
@@ -62,6 +67,7 @@ public class PopulerKrrServlet extends HttpServlet {
 
             StsOidcToken stsOidcToken = RestUtils.withClient(c ->
                     c.target(stsConfiguration.token_endpoint)
+                            .queryParam(AUTHORIZATION, req.getHeader(AUTHORIZATION))
                             .queryParam("grant_type", "client_credentials")
                             .queryParam("scope", "openid")
                             .request()

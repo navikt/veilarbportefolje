@@ -9,6 +9,7 @@ import java.util.Base64;
 import java.util.Objects;
 
 import static java.lang.System.getProperty;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
 import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 
@@ -17,7 +18,6 @@ public class AuthorizationUtils {
 
     private static final String AUTHENTICATE = "WWW-Authenticate";
     private static final String BASIC_REALM = "BASIC realm=\"srvveilarbportefolje\"";
-    static final String AUTHORIZATION = "Authorization";
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
     public static boolean isBasicAuthAuthorized(HttpServletRequest request) {
