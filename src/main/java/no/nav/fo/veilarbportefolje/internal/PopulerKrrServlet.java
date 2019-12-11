@@ -7,6 +7,7 @@ import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.batchjob.BatchJob;
+import no.nav.fo.veilarbportefolje.batchjob.RunningJob;
 import no.nav.fo.veilarbportefolje.krr.KrrService;
 import no.nav.sbl.rest.RestUtils;
 import no.nav.sbl.util.EnvironmentUtils;
@@ -76,9 +77,7 @@ public class PopulerKrrServlet extends HttpServlet {
             SsoToken ssoToken = SsoToken.oidcToken(stsOidcToken.access_token, attributes);
             Subject subject = new Subject(systemUserName + "_oidc_token", Systemressurs, ssoToken);
 
-            SubjectHandler.withSubjectProvider(() -> subject, () -> {
-                BatchJob.runAsyncJob(krrService::oppdaterDigitialKontaktinformasjon, counter);
-            });
+            RunningJob runningJob = SubjectHandler.withSubjectProvider(() -> subject, () -> BatchJob.runAsyncJob(krrService::oppdaterDigitialKontaktinformasjon, counter));
 
             resp.getWriter().write(String.format("Startet oppdatering av reservesjonsdata fra krr (via dkif) med jobId %s på pod %s", runningJob.getJobId(), runningJob.getPodName()));
             resp.setStatus(SC_OK);
