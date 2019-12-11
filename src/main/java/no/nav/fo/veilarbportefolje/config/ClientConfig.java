@@ -46,7 +46,7 @@ public class ClientConfig {
     }
 
     private static <T> void logFailure(ExecutionCompletedEvent<T> e) {
-        log.error("{} {} {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace());
+        log.error("Failure: {} \n Message: {} \n Stacktrace: {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace());
     }
 
     public static <T> T usingFailSafeClient(Function<Client, T> function) {
