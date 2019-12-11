@@ -63,10 +63,10 @@ public class PopulerKrrServlet extends HttpServlet {
 
             StsOidcToken stsOidcToken = RestUtils.withClient(c ->
                     c.target(stsConfiguration.token_endpoint)
-                            .queryParam(AUTHORIZATION, req.getHeader(AUTHORIZATION))
                             .queryParam("grant_type", "client_credentials")
                             .queryParam("scope", "openid")
                             .request()
+                            .header(AUTHORIZATION, req.getHeader(AUTHORIZATION))
                             .get(StsOidcToken.class)
             );
 
