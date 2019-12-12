@@ -5,8 +5,11 @@ import no.nav.common.utils.CollectionUtils;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static no.nav.fo.veilarbportefolje.config.ClientConfig.usingFailSafeClient;
@@ -49,7 +52,7 @@ public class KrrService {
 
         Optional<KrrDTO> maybeKrrDto = hentKrrKontaktInfo(fodselsnummere);
         if (!maybeKrrDto.isPresent()) {
-            log.warn("Kall mot KRR retunert med tom tom respons");
+            log.warn("Kall mot KRR returnert med tom tom respons");
         }
 
         maybeKrrDto
@@ -58,6 +61,9 @@ public class KrrService {
     }
 
     public static Optional<KrrDTO> hentKrrKontaktInfo(List<String> fodselsnummere) {
+
+        List<String> fnrWithQuotes = fodselsnummere.stream().map(fnr -> "\"" + fnr + "\"").collect(Collectors.toList());
+
         return usingFailSafeClient(client -> {
 
 
@@ -66,7 +72,7 @@ public class KrrService {
                     .queryParam("inkluderSikkerDigitalPost", false)
                     .request()
                     .header(AUTHORIZATION, "Bearer " + getOidcToken())
-                    .header("Nav-Personidenter", "List " + fodselsnummere)
+                    .header("Nav-Personidenter", "List " + fnrWithQuotes)
                     .get(KrrDTO.class);
 
             return Optional.ofNullable(krrDTO);
