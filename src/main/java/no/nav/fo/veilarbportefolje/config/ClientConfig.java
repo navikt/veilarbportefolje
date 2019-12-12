@@ -17,6 +17,10 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.function.Function;
 
 import static java.time.Duration.ofSeconds;
@@ -36,6 +40,7 @@ public class ClientConfig {
     public static <T> T usingFailSafeClient(FailSafeConfig config, Function<Client, T> function) {
 
         RetryPolicy<T> retryPolicy = new RetryPolicy<T>()
+                .handle(IOException.class)
                 .withDelay(config.getRetryDelay())
                 .withMaxRetries(config.getMaxRetries());
 
