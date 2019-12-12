@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,32 +46,22 @@ public class KrrService {
 
     private void oppdaterKrrKontaktinfo(List<String> fodselsnummere) {
         log.info("Oppdaterer KRR for {} brukere", fodselsnummere.size());
-
-        Optional<KrrDTO> maybeKrrDto = hentKrrKontaktInfo(fodselsnummere);
-        if (!maybeKrrDto.isPresent()) {
-            log.warn("Kall mot KRR returnert med tom tom respons");
-        }
-
-        maybeKrrDto
-                .map(dto -> new ArrayList<>(dto.getKontaktinfo().values()))
-                .ifPresent(krrRepository::lagreKrrKontaktInfo);
+        Map<String, KrrKontaktInfoDTO> kontaktinfo = hentKrrKontaktInfo(fodselsnummere).getKontaktinfo();
+        krrRepository.lagreKrrKontaktInfo(kontaktinfo.values());
     }
 
-    public static Optional<KrrDTO> hentKrrKontaktInfo(List<String> fodselsnummere) {
+    public static KrrDTO hentKrrKontaktInfo(List<String> fodselsnummere) {
 
         List<String> fnrWithQuotes = fodselsnummere.stream().map(fnr -> "\"" + fnr + "\"").collect(Collectors.toList());
 
-        return usingFailSafeClient(client -> {
-
-            KrrDTO krrDTO = client.target(getRequiredProperty(DKIF_URL_PROPERTY_NAME))
-                    .path(DKIF_URL_PATH)
-                    .queryParam("inkluderSikkerDigitalPost", false)
-                    .request()
-                    .header(AUTHORIZATION, "Bearer " + getOidcToken())
-                    .header("Nav-Personidenter", "List " + fnrWithQuotes)
-                    .get(KrrDTO.class);
-
-            return Optional.ofNullable(krrDTO);
-        });
+        return usingFailSafeClient(client ->
+                client.target(getRequiredProperty(DKIF_URL_PROPERTY_NAME))
+                        .path(DKIF_URL_PATH)
+                        .queryParam("inkluderSikkerDigitalPost", false)
+                        .request()
+                        .header(AUTHORIZATION, "Bearer " + getOidcToken())
+                        .header("Nav-Personidenter", "List " + fnrWithQuotes)
+                        .get(KrrDTO.class)
+        );
     }
 }

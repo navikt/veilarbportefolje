@@ -10,6 +10,8 @@ import no.nav.sbl.sql.SqlUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static no.nav.fo.veilarbportefolje.database.KrrTabell.KRR;
@@ -40,6 +42,11 @@ public class KrrRepository {
                 .column(VwPortefoljeInfoTabell.Kolonne.FODSELSNR)
                 .where(brukerErUnderOppfolging())
                 .executeToList();
+    }
+
+    public void lagreKrrKontaktInfo(Collection<KrrKontaktInfoDTO> dtoer) {
+        ArrayList<KrrKontaktInfoDTO> krrKontaktInfo = new ArrayList<>(dtoer);
+        lagreKrrKontaktInfo(krrKontaktInfo);
     }
 
     public void lagreKrrKontaktInfo(List<KrrKontaktInfoDTO> dtoer) {

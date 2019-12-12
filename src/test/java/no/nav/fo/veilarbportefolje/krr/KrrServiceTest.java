@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.krr;
 
+import com.github.tomakehurst.wiremock.http.ContentTypeHeader;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.brukerdialog.security.context.SubjectRule;
@@ -11,15 +12,20 @@ import no.nav.sbl.sql.SqlUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import java.time.Duration;
+import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.common.auth.SsoToken.Type.OIDC;
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
@@ -41,6 +47,9 @@ public class KrrServiceTest {
 
     @Rule
     public SubjectRule subjectRule = new SubjectRule();
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     private JdbcTemplate db;
 
@@ -77,7 +86,7 @@ public class KrrServiceTest {
 
         stubFor(
                 get(urlEqualTo(DKIF_URL))
-                        .willReturn(ok().withHeader("Content-Type", "application/json").withBody(jsonBody))
+                        .willReturn(ok().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(jsonBody))
         );
 
         krrService.oppdaterKrrInfo(singletonList(FNR));
@@ -103,7 +112,7 @@ public class KrrServiceTest {
         stubFor(
                 get(urlEqualTo(DKIF_URL)).inScenario(retryScenario)
                         .whenScenarioStateIs("RETRY")
-                        .willReturn(ok().withHeader("Content-Type", APPLICATION_JSON).withBody(jsonBody))
+                        .willReturn(ok().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(jsonBody))
         );
 
         ClientConfig.setDefaultFailsafeConfig(
@@ -115,5 +124,21 @@ public class KrrServiceTest {
         );
 
         krrService.oppdaterKrrInfo(singletonList(FNR));
+    }
+
+    @Test
+    public void skal_ikke_sluke_feilmelding_fra_rest_tjeneste() {
+
+        exception.expect(WebApplicationException.class);
+        exception.expectMessage("error");
+
+        String badRequestBody = "{ \"message\": \"error\"}";
+
+        stubFor(
+                get(urlEqualTo(DKIF_URL))
+                        .willReturn(badRequest().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(badRequestBody))
+        );
+
+        KrrService.hentKrrKontaktInfo(singletonList(FNR));
     }
 }
