@@ -2,23 +2,26 @@ package no.nav.fo.veilarbportefolje.config;
 
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.Timeout;
 import net.jodah.failsafe.event.ExecutionCompletedEvent;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
-import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbportefolje.FailSafeConfig;
+import no.nav.fo.veilarbportefolje.krr.ErrorDTO;
 import no.nav.sbl.rest.RestUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.core.Response;
 import java.util.function.Function;
 
 import static java.time.Duration.ofSeconds;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static no.nav.sbl.rest.RestUtils.DEFAULT_CONFIG;
 
 @Slf4j
 @Configuration
@@ -42,8 +45,26 @@ public class ClientConfig {
                 .with(retryPolicy, timeout)
                 .onFailure(ClientConfig::logFailure)
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
-                .get(() -> RestUtils.withClient(function));
+                .get(() -> usingRestClient(function));
     }
+
+    private static <T> T usingRestClient(Function<Client, T> function) {
+        Client client = RestUtils.createClient(DEFAULT_CONFIG);
+        try {
+            return function.apply(client);
+        } catch (WebApplicationException e) {
+            Response response = e.getResponse();
+            if (response.getMediaType().equals(APPLICATION_JSON_TYPE)) {
+                ErrorDTO errorDTO = response.readEntity(ErrorDTO.class);
+                throw new WebApplicationException(errorDTO.getMessage(), e.getResponse());
+            } else {
+                throw e;
+            }
+        } finally {
+            client.close();
+        }
+    }
+
 
     private static <T> void logFailure(ExecutionCompletedEvent<T> e) {
         log.error("Failure: {} \n Message: {} \n Stacktrace: {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace());

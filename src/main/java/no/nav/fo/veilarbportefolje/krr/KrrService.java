@@ -66,7 +66,6 @@ public class KrrService {
 
         return usingFailSafeClient(client -> {
 
-
             KrrDTO krrDTO = client.target(getRequiredProperty(DKIF_URL_PROPERTY_NAME))
                     .path(DKIF_URL_PATH)
                     .queryParam("inkluderSikkerDigitalPost", false)
