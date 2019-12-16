@@ -47,7 +47,7 @@ public class ClientConfig {
         Timeout<T> timeout = Timeout.of(config.getTimeout());
 
         return Failsafe
-                .with(retryPolicy)
+                .with(retryPolicy, timeout)
                 .onFailure(ClientConfig::logFailure)
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
                 .get(() -> usingRestClient(function));

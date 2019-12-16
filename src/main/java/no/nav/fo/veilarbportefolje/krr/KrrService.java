@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.krr;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -9,6 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbportefolje.config.ClientConfig.usingFailSafeClient;
 import static no.nav.fo.veilarbportefolje.util.SubjectUtils.getOidcToken;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -60,6 +63,8 @@ public class KrrService {
                         .queryParam("inkluderSikkerDigitalPost", false)
                         .request()
                         .header(AUTHORIZATION, "Bearer " + getOidcToken())
+                        .header("Nav-Consumer-Id", APPLICATION_NAME)
+                        .header("Nav-Call-Id", generateId())
                         .header("Nav-Personidenter", "List " + fnrWithQuotes)
                         .get(KrrDTO.class)
         );
