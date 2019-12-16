@@ -2,6 +2,7 @@ package no.nav.fo.veilarbportefolje.krr;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
+import no.nav.sbl.rest.RestUtils;
 import org.apache.commons.lang3.RandomUtils;
 
 import javax.inject.Inject;
@@ -57,7 +58,7 @@ public class KrrService {
 
         List<String> fnrWithQuotes = fodselsnummere.stream().map(fnr -> "\"" + fnr + "\"").collect(Collectors.toList());
 
-        return usingFailSafeClient(client ->
+        return RestUtils.withClient(client ->
                 client.target(getRequiredProperty(DKIF_URL_PROPERTY_NAME))
                         .path(DKIF_URL_PATH)
                         .queryParam("inkluderSikkerDigitalPost", false)
