@@ -126,20 +126,4 @@ public class KrrServiceTest {
 
         krrService.oppdaterKrrInfo(singletonList(FNR));
     }
-
-    @Test
-    public void skal_ikke_sluke_feilmelding_fra_rest_tjeneste() {
-
-        exception.expect(WebApplicationException.class);
-        exception.expectMessage("error");
-
-        String badRequestBody = "{ \"message\": \"error\"}";
-
-        stubFor(
-                get(urlEqualTo(DKIF_URL))
-                        .willReturn(badRequest().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(badRequestBody))
-        );
-
-        KrrService.hentKrrKontaktInfo(singletonList(FNR));
-    }
 }
