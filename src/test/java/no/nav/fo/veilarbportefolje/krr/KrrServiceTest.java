@@ -127,7 +127,6 @@ public class KrrServiceTest {
         krrService.oppdaterKrrInfo(singletonList(FNR));
     }
 
-    @Ignore
     @Test
     public void skal_ikke_sluke_feilmelding_fra_rest_tjeneste() {
 

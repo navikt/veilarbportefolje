@@ -63,6 +63,7 @@ public class ClientConfig {
                 ErrorDTO errorDTO = response.readEntity(ErrorDTO.class);
                 throw new WebApplicationException(errorDTO.getMessage(), e.getResponse());
             } else {
+                log.error("message: {} \n stacktrace: {}\n ", e.getMessage(), e.getStackTrace());
                 throw e;
             }
         } finally {
