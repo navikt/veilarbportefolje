@@ -73,7 +73,7 @@ public class ClientConfig {
 
 
     private static <T> void logFailure(ExecutionCompletedEvent<T> e) {
-        log.error("Failure: {} \n Message: {} \n Stacktrace: {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace());
+        log.error("\nFailure: {} \n Message: {} \n Stacktrace: {} \n Result: {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace(), e.getResult());
     }
 
     public static <T> T usingFailSafeClient(Function<Client, T> function) {
