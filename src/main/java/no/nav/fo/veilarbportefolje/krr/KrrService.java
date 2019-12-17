@@ -65,8 +65,6 @@ public class KrrService {
                         .queryParam("inkluderSikkerDigitalPost", false)
                         .request()
                         .header(AUTHORIZATION, "Bearer " + getOidcToken())
-                        .header("Nav-Consumer-Id", APPLICATION_NAME)
-                        .header("Nav-Call-Id", generateId())
                         .header("Nav-Personidenter", "List " + fnrWithQuotes)
                         .get(KrrDTO.class)
         );
