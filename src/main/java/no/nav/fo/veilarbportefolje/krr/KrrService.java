@@ -23,7 +23,7 @@ public class KrrService {
 
     public static final String DKIF_URL_PROPERTY_NAME = "DKIF_URL";
     public static final String DKIF_URL_PATH = "/api/v1/personer/kontaktinformasjon";
-    public static final int BULK_SIZE = 500;
+    public static final int BULK_SIZE = 100;
 
     private KrrRepository krrRepository;
 
