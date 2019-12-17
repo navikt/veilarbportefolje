@@ -7,4 +7,5 @@ import java.util.Map;
 @Value
 public class KrrDTO {
     private Map<String, KrrKontaktInfoDTO> kontaktinfo;
+    private String melding;
 }

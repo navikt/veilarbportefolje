@@ -50,26 +50,8 @@ public class ClientConfig {
                 .with(retryPolicy, timeout)
                 .onFailure(ClientConfig::logFailure)
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
-                .get(() -> usingRestClient(function));
+                .get(() -> RestUtils.withClient(function));
     }
-
-    private static <T> T usingRestClient(Function<Client, T> function) {
-        Client client = RestUtils.createClient(DEFAULT_CONFIG);
-        try {
-            return function.apply(client);
-        } catch (WebApplicationException e) {
-            Response response = e.getResponse();
-            if (response.getMediaType().equals(APPLICATION_JSON_TYPE)) {
-                ErrorDTO errorDTO = response.readEntity(ErrorDTO.class);
-                throw new WebApplicationException(errorDTO.getMessage(), e.getResponse());
-            } else {
-                throw e;
-            }
-        } finally {
-            client.close();
-        }
-    }
-
 
     private static <T> void logFailure(ExecutionCompletedEvent<T> e) {
         log.error("\nFailure: {} \n Message: {} \n Stacktrace: {} \n Result: {}", e.getFailure(), e.getFailure().getMessage(), e.getFailure().getStackTrace(), e.getResult());
