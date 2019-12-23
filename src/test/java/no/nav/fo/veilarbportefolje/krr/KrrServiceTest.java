@@ -9,6 +9,7 @@ import no.nav.fo.veilarbportefolje.config.HttpConfig;
 import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -97,6 +98,7 @@ public class KrrServiceTest {
         assertThat(result).isEqualTo(FNR);
     }
 
+    @Ignore
     @Test
     public void skal_parse_feilmelding() {
 
