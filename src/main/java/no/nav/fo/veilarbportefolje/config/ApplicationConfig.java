@@ -66,7 +66,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         FeedConfig.class,
         RestConfig.class,
         AktorConfig.class,
-        ClientConfig.class,
+        HttpConfig.class,
         ScheduledErrorHandler.class,
         ElasticConfig.class
 })

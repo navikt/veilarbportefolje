@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbportefolje.config;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
@@ -7,29 +8,31 @@ import net.jodah.failsafe.Timeout;
 import net.jodah.failsafe.event.ExecutionCompletedEvent;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.fo.veilarbportefolje.FailSafeConfig;
-import no.nav.fo.veilarbportefolje.krr.ErrorDTO;
+import no.nav.fo.veilarbportefolje.krr.KrrDTO;
+import no.nav.json.JsonUtils;
 import no.nav.sbl.rest.RestUtils;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.JerseyClient;
+import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.function.Function;
 
 import static java.time.Duration.ofSeconds;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static no.nav.sbl.rest.RestUtils.DEFAULT_CONFIG;
 
 @Slf4j
 @Configuration
-public class ClientConfig {
+public class HttpConfig {
 
     private static FailSafeConfig defaultFailsafeConfig = FailSafeConfig.builder()
             .maxRetries(3)
@@ -37,6 +40,7 @@ public class ClientConfig {
             .timeout(ofSeconds(30))
             .build();
 
+    @SneakyThrows
     public static <T> T usingFailSafeClient(FailSafeConfig config, Function<Client, T> function) {
 
         RetryPolicy<T> retryPolicy = new RetryPolicy<T>()
@@ -48,7 +52,7 @@ public class ClientConfig {
 
         return Failsafe
                 .with(retryPolicy, timeout)
-                .onFailure(ClientConfig::logFailure)
+                .onFailure(HttpConfig::logFailure)
                 .onSuccess(success -> log.info("Call succeeded after {} attempt(s)", success.getAttemptCount()))
                 .get(() -> RestUtils.withClient(function));
     }
@@ -66,7 +70,7 @@ public class ClientConfig {
     }
 
     public static void setDefaultFailsafeConfig(FailSafeConfig defaultFailsafeConfig) {
-        ClientConfig.defaultFailsafeConfig = defaultFailsafeConfig;
+        HttpConfig.defaultFailsafeConfig = defaultFailsafeConfig;
     }
 
     @Bean
