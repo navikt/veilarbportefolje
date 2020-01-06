@@ -1,26 +1,18 @@
 package no.nav.fo.veilarbportefolje.krr;
 
-import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.common.auth.TestSubjectUtils;
-import no.nav.fo.veilarbportefolje.FailSafeConfig;
-import no.nav.fo.veilarbportefolje.config.HttpConfig;
 import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import java.time.Duration;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -60,8 +52,6 @@ public class KrrServiceTest {
             "}\n";
 
 
-    private static final String jsonBodyError = "{ \"melding\": \"det oppsto en feil\"}";
-
     private static final String FNR = "10101010101";
 
     private String DKIF_URL = DKIF_URL_PATH + "?inkluderSikkerDigitalPost=false";
@@ -96,52 +86,5 @@ public class KrrServiceTest {
                 .execute();
 
         assertThat(result).isEqualTo(FNR);
-    }
-
-    @Ignore
-    @Test
-    public void skal_parse_feilmelding() {
-
-        stubFor(
-                get(urlEqualTo(DKIF_URL))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(400)
-                                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                                        .withBody(jsonBodyError)
-                        )
-        );
-
-        KrrDTO krrDTO = KrrService.hentKrrKontaktInfo(singletonList(FNR));
-        assertThat(krrDTO.getMelding()).isNotNull();
-    }
-
-
-    @Test
-    public void skal_proeve_igjen_ved_feil_mot_dkif() {
-        String retryScenario = "retry_scenario";
-
-        stubFor(
-                get(urlEqualTo(DKIF_URL)).inScenario(retryScenario)
-                        .whenScenarioStateIs(STARTED)
-                        .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER))
-                        .willSetStateTo("RETRY")
-        );
-
-        stubFor(
-                get(urlEqualTo(DKIF_URL)).inScenario(retryScenario)
-                        .whenScenarioStateIs("RETRY")
-                        .willReturn(ok().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(jsonBody))
-        );
-
-        HttpConfig.setDefaultFailsafeConfig(
-                FailSafeConfig.builder()
-                        .maxRetries(3)
-                        .retryDelay(Duration.ofMillis(1))
-                        .timeout(ofSeconds(100))
-                        .build()
-        );
-
-        krrService.oppdaterKrrInfo(singletonList(FNR));
     }
 }
