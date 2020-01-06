@@ -3,7 +3,6 @@ package no.nav.fo.veilarbportefolje.krr;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.common.utils.IdUtils;
-import no.nav.fo.veilarbportefolje.config.HttpConfig;
 import no.nav.sbl.rest.RestUtils;
 
 import javax.inject.Inject;
