@@ -63,7 +63,7 @@ public class KrrService {
                         .request()
                         .header(AUTHORIZATION, "Bearer " + getOidcToken())
                         .header("Nav-Personidenter", "List " + fnrWithQuotes)
-                        .header("Call-Id", IdUtils.generateId())
+                        .header("Nav-Call-Id", IdUtils.generateId())
                         .get(KrrDTO.class)
         );
     }
