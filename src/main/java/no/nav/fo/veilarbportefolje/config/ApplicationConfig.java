@@ -19,7 +19,7 @@ import no.nav.fo.veilarbportefolje.indeksering.ElasticIndexer;
 import no.nav.fo.veilarbportefolje.indeksering.MetricsReporter;
 import no.nav.fo.veilarbportefolje.indeksering.IndekseringScheduler;
 import no.nav.fo.veilarbportefolje.internal.*;
-import no.nav.fo.veilarbportefolje.krr.KrrService;
+import no.nav.fo.veilarbportefolje.service.KrrService;
 import no.nav.fo.veilarbportefolje.service.PepClient;
 import no.nav.fo.veilarbportefolje.service.PepClientImpl;
 import no.nav.fo.veilarbportefolje.service.VeilederService;
@@ -66,7 +66,8 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         FeedConfig.class,
         RestConfig.class,
         AktorConfig.class,
-        HttpConfig.class,
+        ClientConfig.class,
+        DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
         ElasticConfig.class
 })

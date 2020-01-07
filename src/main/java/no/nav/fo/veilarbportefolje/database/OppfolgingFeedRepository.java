@@ -14,8 +14,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+import static java.lang.Boolean.TRUE;
 import static no.nav.fo.veilarbportefolje.util.DbUtils.parseJaNei;
-import static no.nav.fo.veilarbportefolje.util.DbUtils.safeToJaNei;
 
 @Slf4j
 public class OppfolgingFeedRepository {
@@ -40,6 +40,10 @@ public class OppfolgingFeedRepository {
             .set("FEED_ID", info.getFeedId())
             .where(WhereClause.equals("AKTOERID", info.getAktoerid()))
             .execute();
+    }
+
+    static String safeToJaNei(Boolean aBoolean) {
+        return TRUE.equals(aBoolean) ? "J" : "N";
     }
 
     public Try<BrukerOppdatertInformasjon> retrieveOppfolgingData(String aktoerId) {

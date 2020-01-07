@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1.2019.12.19-16.43-8b0fbaf35e9b</version>
+        <version>1.2019.10.14-11.26-d162453764a7</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -48,6 +48,11 @@
             <dependency>
                 <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
+                <version>${no.nav.tjenestespesifikasjoner.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.tjenestespesifikasjoner</groupId>
+                <artifactId>dkif-tjenestespesifikasjon</artifactId>
                 <version>${no.nav.tjenestespesifikasjoner.version}</version>
             </dependency>
 
@@ -136,10 +141,6 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>auth</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>jobutils</artifactId>
         </dependency>
 
         <!--Spring-->
@@ -308,6 +309,10 @@
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
+            <artifactId>dkif-tjenestespesifikasjon</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -362,9 +367,8 @@
         <!--TEST-->
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-jre8</artifactId>
-            <version>2.25.1</version>
-            <scope>test</scope>
+            <artifactId>wiremock</artifactId>
+            <version>2.22.0</version>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>

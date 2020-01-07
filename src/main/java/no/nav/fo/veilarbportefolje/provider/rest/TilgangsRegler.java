@@ -15,13 +15,13 @@ import java.util.List;
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
-import static no.nav.fo.veilarbportefolje.util.SubjectUtils.getOidcToken;
+import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.getSsoToken;
 
 public class TilgangsRegler {
 
     static void tilgangTilOppfolging(PepClient pep) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
-        test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, getOidcToken()));
+        test("oppfølgingsbruker", veilederId, pep.isSubjectMemberOfModiaOppfolging(veilederId, getSsoToken()));
     }
 
     static void tilgangTilEnhet(PepClient pep, String enhet) {

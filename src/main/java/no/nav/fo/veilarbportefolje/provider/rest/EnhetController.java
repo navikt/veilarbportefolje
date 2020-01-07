@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.createResponse;
-import static no.nav.fo.veilarbportefolje.util.SubjectUtils.getOidcToken;
+import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.getSsoToken;
 
 @Api(value = "Enhet")
 @Path("/enhet")
@@ -64,7 +64,7 @@ public class EnhetController {
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
             BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getOidcToken(), pepClient);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getSsoToken(), pepClient);
 
             Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
                     sensurerteBrukereSublist,

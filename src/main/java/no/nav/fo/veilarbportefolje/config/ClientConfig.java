@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.config;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.sbl.rest.RestUtils;
 import org.springframework.context.annotation.Bean;
@@ -9,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
+import java.io.IOException;
 
-@Slf4j
 @Configuration
-public class HttpConfig {
+public class ClientConfig {
 
     @Bean
     public Client client() {
@@ -25,7 +24,7 @@ public class HttpConfig {
         private SystemUserTokenProvider systemUserTokenProvider = new SystemUserTokenProvider();
 
         @Override
-        public void filter(ClientRequestContext clientRequestContext) {
+        public void filter(ClientRequestContext clientRequestContext) throws IOException {
             clientRequestContext.getHeaders().putSingle("Authorization", "Bearer " + systemUserTokenProvider.getToken());
         }
     }

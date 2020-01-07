@@ -77,7 +77,7 @@ Plugin for IntelliJ ligger på følgende path (testet med IntelliJ 2016.3):
 Les i jobbtabellen til oracle for å undersøke statusen på den automatisk refreshingen av materialiserte views 
 
 ```
-select * from dba_scheduler_jobs;
+select * from all_scheduler_jobs;
 ```
 
 ## Kontakt og spørsmål

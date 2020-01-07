@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.createResponse;
-import static no.nav.fo.veilarbportefolje.util.SubjectUtils.getOidcToken;
+import static no.nav.fo.veilarbportefolje.provider.rest.RestUtils.getSsoToken;
 
 @Api(value = "Veileder")
 @Path("/veileder")
@@ -63,7 +63,7 @@ public class VeilederController {
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
             BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getOidcToken(), pepClient);
+            List<Bruker> sensurerteBrukereSublist = PortefoljeUtils.sensurerBrukere(brukereMedAntall.getBrukere(), getSsoToken(), pepClient);
 
             Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
                     sensurerteBrukereSublist,

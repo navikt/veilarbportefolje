@@ -23,7 +23,6 @@ public class KrrRepositoryTest {
         SingleConnectionDataSource ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
         krrRepository = new KrrRepository(db);
-        krrRepository.slettKrrInformasjon();
     }
 
     @Test
@@ -39,6 +38,13 @@ public class KrrRepositoryTest {
 
         krrRepository.slettKrrInformasjon();
         assertThat(antallRader()).isEqualTo(0);
+    }
+
+    @Test
+    public void skal_hente_ut_alle_fnr_med_krr_informasjon() {
+        List<String> fodselsnummere = krrRepository.hentAlleFnrUnderOppfolging();
+        assertThat(fodselsnummere).isNotEmpty();
+
     }
 
     private int antallRader() {

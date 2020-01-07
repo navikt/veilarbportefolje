@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarbportefolje.indeksering.domene.OppfolgingsBruker;
 import org.apache.commons.lang3.text.WordUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -13,7 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static java.lang.Boolean.TRUE;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.fo.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.fo.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
@@ -159,22 +157,5 @@ public class DbUtils {
 
     public static String dbTimerNavn(String sql) {
         return (sql + ".db").replaceAll("[^\\w]", "-");
-    }
-
-    public static void truncateTable(JdbcTemplate db, String tableName) {
-        db.execute("TRUNCATE TABLE " + tableName);
-    }
-
-    public static Optional<Integer> selectCount(JdbcTemplate db, String tableName) {
-        Integer count = db.query("SELECT COUNT(*) FROM " + tableName, rs -> {
-            rs.next();
-            return rs.getInt(1);
-        });
-
-        return Optional.ofNullable(count);
-    }
-
-    public static String safeToJaNei(Boolean aBoolean) {
-        return TRUE.equals(aBoolean) ? "J" : "N";
     }
 }

@@ -1,19 +1,21 @@
 package no.nav.fo.veilarbportefolje.database;
 
-import io.vavr.control.Try;
 import no.nav.fo.veilarbportefolje.domene.AktoerId;
 import no.nav.fo.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import io.vavr.control.Try;
 
 import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.Instant;
 
 import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
-import static no.nav.fo.veilarbportefolje.util.DbUtils.safeToJaNei;
-import static org.hamcrest.Matchers.is;
+import static no.nav.fo.veilarbportefolje.database.OppfolgingFeedRepository.safeToJaNei;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class OppfolgingFeedRepositoryTest {
