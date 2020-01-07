@@ -42,7 +42,6 @@ spec:
   vault:
     enabled: true
   filesFrom:
-    files:
       - configmap: pto-config
   env:
     - APPDYNAMICS_CONTROLLER_HOST_NAME

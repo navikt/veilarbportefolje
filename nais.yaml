@@ -19,11 +19,6 @@ spec:
     - https://veilarbportefolje.nais.adeo.no
     - https://app.adeo.no/veilarbportefolje
   webproxy: true
-  vault:
-    enabled: true
-  filesFrom:
-    files:
-      - configmap: pto-config
   leaderElection: true
   healthcheck:
     liveness:
@@ -44,6 +39,10 @@ spec:
     requests:
       cpu: 500m
       memory: 2Gi
+  vault:
+    enabled: true
+  filesFrom:
+      - configmap: pto-config
   env:
     - APPDYNAMICS_CONTROLLER_HOST_NAME
     - APPDYNAMICS_AGENT_ACCOUNT_NAME
