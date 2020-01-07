@@ -19,7 +19,7 @@
     </build>
 
     <properties>
-        <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
+        <no.nav.tjenestespesifikasjoner.version>1.2019.12.19-16.43-8b0fbaf35e9b</no.nav.tjenestespesifikasjoner.version>
         <jsch.version>0.1.54</jsch.version>
         <elastic.version>6.5.2</elastic.version>
     </properties>
