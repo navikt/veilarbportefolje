@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbportefolje.service;
 
-import io.micrometer.core.instrument.Counter;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dialogarena.aktor.AktorService;
@@ -19,8 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbportefolje.batchjob.BatchJob.runAsyncJobOnLeader;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
+import static no.nav.jobutils.JobUtils.runAsyncJobOnLeader;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -37,8 +35,6 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private Transactor transactor;
 
-    private Counter counter = Counter.builder("portefolje_aktoertilpersonidmapping_feilet").register(getMeterRegistry());
-
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM OPPFOLGING_DATA "
             + "WHERE OPPFOLGING = 'J' "
@@ -48,7 +44,7 @@ public class AktoerServiceImpl implements AktoerService {
 
     @Scheduled(cron = "0 0/5 * * * *")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
-        runAsyncJobOnLeader(this::mapAktorId, counter);
+        runAsyncJobOnLeader(this::mapAktorId);
     }
 
     void mapAktorId() {
