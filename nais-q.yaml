@@ -41,9 +41,9 @@ spec:
       memory: 2Gi
   vault:
     enabled: true
-  configMaps:
+  filesFrom:
     files:
-      - pto-config
+      - configmap: pto-config
   env:
     - APPDYNAMICS_CONTROLLER_HOST_NAME
     - APPDYNAMICS_AGENT_ACCOUNT_NAME
