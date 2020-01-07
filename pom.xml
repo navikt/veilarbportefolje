@@ -5,8 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>no.nav.common</groupId>
-        <artifactId>mor-pom</artifactId>
-        <version>1.2019.11.28-16.07-69bf339eebe8</version>
+        <artifactId>mor-pom</artifactId>gs
+
+        <version>1.2019.12.19-16.43-8b0fbaf35e9b</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
