@@ -25,7 +25,7 @@ jobs:
       - name: Run maven tests
         run: mvn -B verify
   test-build-and-push:
-    name: Build and push
+    name: Test, build and push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
     steps:
