@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/navikt/veilarbportefolje.svg?style=svg)](https://circleci.com/gh/navikt/veilarbportefolje)
+![](https://github.com/navikt/veilarbportefolje/workflows/Build,%20push%20and%20deploy/badge.svg)
 
 # Portefølje-serverside
 
