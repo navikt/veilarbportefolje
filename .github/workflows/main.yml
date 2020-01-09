@@ -24,7 +24,7 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
       - name: Run maven tests
         run: mvn -B verify
-  test-test-build-and-push:
+  test-build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
