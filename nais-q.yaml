@@ -19,6 +19,8 @@ spec:
   webproxy: true
   vault:
     enabled: true
+  filesFrom:
+    - configmap: pto-config
   leaderElection: true
   healthcheck:
     liveness:
