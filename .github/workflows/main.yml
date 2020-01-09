@@ -24,7 +24,7 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
       - name: Run maven tests
         run: mvn -B verify
-  test-build-and-push:
+  test-test-build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
@@ -53,7 +53,7 @@ jobs:
   deploy-q0:
     name: Deploy application to Q0
     if: github.ref == 'refs/heads/dev'
-    needs: build-and-push
+    needs: test-build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -68,7 +68,7 @@ jobs:
   deploy-q1:
     name: Deploy application to Q1
     if: github.ref == 'refs/heads/dev'
-    needs: build-and-push
+    needs: test-build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -83,7 +83,7 @@ jobs:
   deploy-prod:
     name: Deploy application to prod
     if: github.ref == 'refs/heads/master'
-    needs: build-and-push
+    needs: test-build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
