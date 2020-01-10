@@ -35,8 +35,6 @@ public class Main {
         System.setProperty(SecurityConstants.SYSTEMUSER_USERNAME, serviceUser.username);
         System.setProperty(SecurityConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
 
-
-
         NaisUtils.Credentials oracleCreds = getCredentials("oracle_creds");
         System.setProperty("VEILARBPORTEFOLJEDB_USERNAME", oracleCreds.username);
         System.setProperty("VEILARBPORTEFOLJEDB_PASSWORD", oracleCreds.password);
