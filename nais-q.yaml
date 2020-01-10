@@ -24,7 +24,7 @@ spec:
         mountPath: /var/run/secrets/nais.io/service_user
       - kvPath: /oracle/data/dev/creds/veilarbportefolje_{{namespace}}-user
         mountPath: /var/run/secrets/nais.io/oracle_creds
-      - kvPath: /kv/dev/fss/veilarbportefolje/{{namespace}}
+      - kvPath: /kv/preprod/fss/veilarbportefolje/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
   filesFrom:
     - configmap: pto-config
