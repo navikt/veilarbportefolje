@@ -35,10 +35,6 @@ public class Main {
         System.setProperty(SecurityConstants.SYSTEMUSER_USERNAME, serviceUser.username);
         System.setProperty(SecurityConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
 
-        setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
-        setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
-        setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-12-04");
-        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleash.nais.adeo.no/api/");
 
 
         NaisUtils.Credentials oracleCreds = getCredentials("oracle_creds");
@@ -75,6 +71,11 @@ public class Main {
                 "VIRKSOMHET_ENHET_V1_SECURITYTOKEN",
                 "VIRKSOMHET_ENHET_V1_WSDLURL"
         );
+
+        setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
+        setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
+        setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-12-04");
+        setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleash.nais.adeo.no/api/");
 
         ApiApp.runApp(ApplicationConfig.class, args);
     }
