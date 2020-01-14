@@ -55,7 +55,7 @@ public class ElasticUtils {
     }
 
     static String getAlias() {
-        return String.format("brukerindeks_%s", EnvironmentUtils.requireEnvironmentName());
+        return String.format("brukerindeks_%s", EnvironmentUtils.requireNamespace());
     }
 
     static String getElasticScheme() {

@@ -14,33 +14,28 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.ws.rs.core.UriBuilder;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY;
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
-import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
-import static no.nav.sbl.util.EnvironmentUtils.*;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class FilmottakConfig {
 
+    public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME";
+    public static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD = "VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD";
+
     public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
-            "filmottak",
-            "gr202",
-            "arena_paagaaende_aktiviteter.xml",
-            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY),
-            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY));
+            getRequiredProperty("SFTP_GR202_ARENA_PAAGAAENDE_AKTIVITETER_URL"),
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME),
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD));
 
     public static final SftpConfig LOPENDEYTELSER_SFTP = new SftpConfig(
-            "filmottak-loependeytelser",
-            "gr199",
-            "arena_loepende_ytelser.xml",
-            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME_PROPERTY),
-            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD_PROPERTY));
+            getRequiredProperty("SFTP_GR199_ARENA_LOEPENDE_YTELSER_URL"),
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME),
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD));
 
     @Bean
     public IndekserYtelserHandler indekserYtelserHandler() {
@@ -102,24 +97,10 @@ public class FilmottakConfig {
         private String username;
         private String password;
 
-        SftpConfig(String host, String folder, String filename, String username, String password) {
-            this.url = buildUrl(host, folder, filename);
+        SftpConfig(String url, String username, String password) {
+            this.url = url;
             this.username = username;
             this.password = password;
-        }
-
-        private String buildUrl(String host, String folder, String filename) {
-            boolean preprod = getEnvironmentClass() != P;
-            UriBuilder uriBuilder = UriBuilder.fromPath(folder)
-                    .scheme("sftp")
-                    .host(host + "." + (preprod ? "preprod.local" : "adeo.no"));
-            if (preprod) {
-                uriBuilder.path(requireEnvironmentName());
-            }
-            return uriBuilder
-                    .path(filename)
-                    .build()
-                    .toString();
         }
 
         public String getUrl() {

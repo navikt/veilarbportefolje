@@ -10,7 +10,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class ElasticUtilsTest {
 
     @Rule
-    public SystemPropertiesRule rule = new SystemPropertiesRule().setProperty("FASIT_ENVIRONMENT_NAME", "test");
+    public SystemPropertiesRule rule = new SystemPropertiesRule().setProperty("NAIS_NAMESPACE", "test");
 
     @Test
     public void skal_returnere_riktig_elastic_url() {
