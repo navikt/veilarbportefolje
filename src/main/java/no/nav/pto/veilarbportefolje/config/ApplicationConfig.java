@@ -71,7 +71,8 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
-        ElasticConfig.class
+        ElasticConfig.class,
+        ControllerConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
 
