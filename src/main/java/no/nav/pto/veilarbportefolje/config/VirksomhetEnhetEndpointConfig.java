@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.VIRKSOMHET_ENHET_V1_URL_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VIRKSOMHET_ENHET_V1_URL_PROPERTY;
 import static no.nav.pto.veilarbportefolje.util.PingUtils.ping;
 import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;

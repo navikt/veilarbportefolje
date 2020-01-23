@@ -23,7 +23,7 @@ import java.time.ZonedDateTime;
 
 import static java.util.Collections.singletonList;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.VEILARBDIALOG_URL_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VEILARBDIALOG_URL_PROPERTY;
 import static no.nav.pto.veilarbportefolje.feed.FeedConfig.FEED_PAGE_SIZE;
 import static no.nav.pto.veilarbportefolje.feed.FeedConfig.FEED_POLLING_INTERVAL_IN_SECONDS;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;

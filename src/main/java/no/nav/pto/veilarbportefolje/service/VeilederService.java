@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.VEILARBVEILEDER_URL_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VEILARBVEILEDER_URL_PROPERTY;
 import static no.nav.pto.veilarbportefolje.config.CacheConfig.VEILARBVEILEDER;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 

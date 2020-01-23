@@ -1,7 +1,6 @@
 import no.nav.common.leaderelection.ElectorMock;
 import no.nav.fasit.DbCredentials;
 import no.nav.fasit.ServiceUser;
-import no.nav.pto.veilarbportefolje.Main;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.testconfig.ApiAppTest;
 
@@ -11,9 +10,9 @@ import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
 import static no.nav.fasit.FasitUtils.*;
 import static no.nav.fasit.FasitUtils.Zone.FSS;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.*;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.pto.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;

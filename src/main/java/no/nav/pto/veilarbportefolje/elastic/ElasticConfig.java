@@ -20,8 +20,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 

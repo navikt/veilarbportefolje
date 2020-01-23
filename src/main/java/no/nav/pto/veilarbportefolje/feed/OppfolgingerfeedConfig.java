@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 import static java.math.BigDecimal.valueOf;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.feed.consumer.FeedConsumerConfig.*;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.VEILARBOPPFOLGING_URL_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VEILARBOPPFOLGING_URL_PROPERTY;
 import static no.nav.pto.veilarbportefolje.feed.FeedConfig.*;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 

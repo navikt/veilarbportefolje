@@ -31,7 +31,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.common.utils.CollectionUtils.*;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.*;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;

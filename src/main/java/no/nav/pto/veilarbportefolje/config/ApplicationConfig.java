@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje;
+package no.nav.pto.veilarbportefolje.config;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;

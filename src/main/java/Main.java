@@ -1,9 +1,7 @@
-package no.nav.pto.veilarbportefolje;
-
 import no.nav.apiapp.ApiApp;
 import no.nav.brukerdialog.tools.SecurityConstants;
 import no.nav.common.utils.NaisUtils;
-import no.nav.pto.veilarbportefolje.ApplicationConfig;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfig;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
 
@@ -11,11 +9,9 @@ import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.OIDC_REDIRECT_URL_PROPERTY_NAME;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.dialogarena.aktor.AktorConfig.AKTOER_ENDPOINT_URL;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.AKTOER_V2_URL_PROPERTY;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
-import static no.nav.sbl.util.EnvironmentUtils.*;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 public class Main {
 

@@ -1,8 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakOppdateringer;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.UtdanningaktivitetTyper;
@@ -21,7 +19,7 @@ import java.time.temporal.ChronoUnit;
 
 import static java.lang.System.setProperty;
 import static junit.framework.TestCase.assertTrue;
-import static no.nav.pto.veilarbportefolje.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
