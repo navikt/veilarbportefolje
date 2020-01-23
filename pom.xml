@@ -9,7 +9,7 @@
         <version>1.2020.01.07-12.25-79f6cda3b780</version>
     </parent>
 
-    <groupId>no.nav.fo</groupId>
+    <groupId>no.nav.pto</groupId>
     <artifactId>veilarbportefolje</artifactId>
     <version>1</version>
     <packaging>war</packaging>

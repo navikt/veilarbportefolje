@@ -67,7 +67,6 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         MetricsConfig.class,
         CacheConfig.class,
         FeedConfig.class,
-        RestConfig.class,
         AktorConfig.class,
         ClientConfig.class,
         DigitalKontaktinformasjonConfig.class,
