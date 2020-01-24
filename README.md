@@ -65,7 +65,6 @@ select * from dba_scheduler_jobs;
 
 ## URL-er for manuell oppdatering av søkeindeks
 
-
 | Endepunkt                            | Beskrivelse                                                      |      
 | ------------------------------------ | -----------------------------------------------------------------|
 | /internal/totalhovedindeksering      | Les inn filer fra arena, hent data fra krr og oppdater indeks    |
@@ -76,8 +75,6 @@ select * from dba_scheduler_jobs;
 | /internal/reset_feed_oppfolging      | Spol tilbake feed som overfører data om veiledertilordninger     |
 | /internal/reset_feed_dialog          | Spol tilbake feed som overfører dialoger fra aktivitetsplanen    |
 | /internal/reset_feed_aktivitet       | Spol tilbake feed som overfører aktiviteter fra aktivitetsplanen |
-
-
 
 
 ## Plugin til IntelliJ
