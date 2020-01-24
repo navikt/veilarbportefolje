@@ -4,11 +4,20 @@
 
 Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av søkeindeks brukt i modia oversikten.
 
+Følgende data aggregeres:
+* Informasjon om brukere under oppfølging via databaselink til Arena
+* Informasjon om løpende ytelser fra arena via sftp
+* Informasjon om brukeraktiviteter fra arena via sftp
+* Reservering mot digitale henvendelser i KRR via dkif
+* Veiledertilordninger fra `veilaroppfolging` via REST-feed
+* Dialoger fra `veilarbdialog` (aktivitetsplan) via REST-feed
+* Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via REST-feed
+
 ## Hvordan bygge
 
 Kjør `mvn clean install`
 
-##### Oppsett av Postman
+## Oppsett av Postman
 Importer denne filen i Postman:
 ```
 postman/config.json
@@ -31,7 +40,7 @@ stringData:
     client_pwd: <token>
 ```
 
-##### Oppsett av Elasticsearch
+## Oppsett av Elasticsearch
 Elastic er satt opp via et "Infrastructure as code"-repo (IAC) for tredjepartsapplikasjoner på NAIS:
 
 https://github.com/navikt/nais-tpa/
@@ -44,6 +53,14 @@ Innstillinger i clusteret er definert i filen:
 
 ```
 src/main/resources/elastic_settings.json
+```
+
+## Sjekk at databaselink fra arena oppdateres
+
+Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppdateringen databaselinken til arena 
+
+```
+select * from dba_scheduler_jobs;
 ```
 
 ## URL-er for manuell oppdatering av søkeindeks
@@ -61,18 +78,12 @@ src/main/resources/elastic_settings.json
 | /internal/reset_feed_aktivitet       | Spol tilbake feed som overfører aktiviteter fra aktivitetsplanen |
 
 
+
+
 ## Plugin til IntelliJ
 Dette prosjektet benytter seg av [lombok](https://projectlombok.org).
 
-Plugin for IntelliJ ligger på følgende path (testet med IntelliJ 2016.3):
-
-## Sjekk at materialiserte views i databasen oppdateres (replikering)
-
-Les i jobbtabellen til oracle for å undersøke statusen på den automatisk refreshingen av materialiserte views 
-
-```
-select * from dba_scheduler_jobs;
-```
+Plugin kan lastes ned her: https://plugins.jetbrains.com/plugin/6317-lombok
 
 ## Kontakt og spørsmål
 Opprett en issue i GitHub for eventuelle spørsmål.
