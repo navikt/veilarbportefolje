@@ -9,7 +9,7 @@ Følgende data aggregeres:
 * Informasjon om løpende ytelser fra arena via sftp
 * Informasjon om brukeraktiviteter fra arena via sftp
 * Reservering mot digitale henvendelser i KRR via dkif
-* Veiledertilordninger fra `veilaroppfolging` via REST-feed
+* Veiledertilordninger fra `veilarboppfolging` via REST-feed
 * Dialoger fra `veilarbdialog` (aktivitetsplan) via REST-feed
 * Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via REST-feed
 
