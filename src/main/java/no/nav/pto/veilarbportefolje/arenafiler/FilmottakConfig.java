@@ -1,5 +1,8 @@
 package no.nav.pto.veilarbportefolje.arenafiler;
 
+import io.vavr.control.Try;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.IndekserYtelserHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
@@ -14,6 +17,7 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.xml.bind.UnmarshalException;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
@@ -30,12 +34,17 @@ public class FilmottakConfig {
     public static final SftpConfig AKTIVITETER_SFTP = new SftpConfig(
             getRequiredProperty("SFTP_GR202_ARENA_PAAGAAENDE_AKTIVITETER_URL"),
             getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME),
-            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD));
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD),
+            ArenaFilType.GR_199_TILTAK
+
+    );
 
     public static final SftpConfig LOPENDEYTELSER_SFTP = new SftpConfig(
             getRequiredProperty("SFTP_GR199_ARENA_LOEPENDE_YTELSER_URL"),
             getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME),
-            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD));
+            getRequiredProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD),
+            ArenaFilType.GR_202_YTELSER
+    );
 
     @Bean
     public IndekserYtelserHandler indekserYtelserHandler() {
@@ -81,26 +90,50 @@ public class FilmottakConfig {
 
         return () -> {
             try {
+
                 FileObject fileObject = FilmottakFileUtils.hentFilViaSftp(sftpConfig).get();
-                if (fileObject.exists()) {
-                    return lyktes(metadata);
+
+                switch (sftpConfig.arenaFilType) {
+                    case GR_199_TILTAK:
+                        Try<TiltakOgAktiviteterForBrukere> tiltak = FilmottakFileUtils.unmarshallTiltakFil(fileObject);
+                        if (tiltak.isFailure()) {
+                            return innlesingAvFilFeilet(sftpConfig, metadata);
+                        }
+                        break;
+                    case GR_202_YTELSER:
+                        Try<LoependeYtelser> ytelser = FilmottakFileUtils.unmarshallLoependeYtelserFil(fileObject);
+                        if (ytelser.isFailure()) {
+                            return innlesingAvFilFeilet(sftpConfig, metadata);
+                        }
+                        break;
+                    default:
+                        return feilet(metadata, new IllegalStateException(sftpConfig.getUrl()));
                 }
-                return feilet(metadata, new FileNotFoundException("File not found at " + sftpConfig.getUrl()));
+
             } catch (FileSystemException e) {
                 return feilet(metadata, e);
             }
+
+            return lyktes(metadata);
         };
+    }
+
+    private Pingable.Ping innlesingAvFilFeilet(SftpConfig sftpConfig, PingMetadata metadata) {
+        String message = String.format("Kunne ikke unmarshalle fil: %s", sftpConfig.url);
+        return feilet(metadata, new UnmarshalException(message));
     }
 
     public static class SftpConfig {
         private String url;
         private String username;
         private String password;
+        private ArenaFilType arenaFilType;
 
-        SftpConfig(String url, String username, String password) {
+        SftpConfig(String url, String username, String password, ArenaFilType arenaFilType) {
             this.url = url;
             this.username = username;
             this.password = password;
+            this.arenaFilType = arenaFilType;
         }
 
         public String getUrl() {
