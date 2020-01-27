@@ -1,17 +1,23 @@
 ![](https://github.com/navikt/veilarbportefolje/workflows/Build,%20push%20and%20deploy/badge.svg)
 
-# Portefølje-serverside
+# Beskrivelse
 
-Mikrotjeneste som aggregerer data fra andre tjenester og håndterer oppdatering av søkeindeks.
+Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av søkeindeks brukt i modia oversikten.
 
-## For å bygge
-`mvn clean install`
+Følgende data aggregeres:
+* Informasjon om brukere under oppfølging via databaselink til Arena
+* Informasjon om løpende ytelser fra arena via sftp
+* Informasjon om brukeraktiviteter fra arena via sftp
+* Reservering mot digitale henvendelser i KRR via dkif
+* Veiledertilordninger fra `veilarboppfolging` via REST-feed
+* Dialoger fra `veilarbdialog` (aktivitetsplan) via REST-feed
+* Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via REST-feed
 
-## Elasticsearch
+## Hvordan bygge
 
-Denne applikasjonen går mot et elasticsearch-cluster for indeksering av data om oppfølgingsbrukere.
+Kjør `mvn clean install`
 
-##### Oppsett av Postman
+## Oppsett av Postman
 Importer denne filen i Postman:
 ```
 postman/config.json
@@ -34,12 +40,7 @@ stringData:
     client_pwd: <token>
 ```
 
-##### Integrasjonstester
-Integrasjonstestene vil kjøre mot preprod i utviklerimage og på byggserver. Om man vil kjøre de på egen laptop kjør:
-```.env
-docker-compose up
-```
-##### Oppsett av Elastic
+## Oppsett av Elasticsearch
 Elastic er satt opp via et "Infrastructure as code"-repo (IAC) for tredjepartsapplikasjoner på NAIS:
 
 https://github.com/navikt/nais-tpa/
@@ -51,34 +52,37 @@ https://www.github.com/navikt/pam-elasticsearch
 Innstillinger i clusteret er definert i filen:
 
 ```
-elastic_settings.json
+src/main/resources/elastic_settings.json
 ```
 
+## Sjekk at databaselink fra arena oppdateres
 
-## URL-er å utføre full hovedindeksering, populering av indeks, oppdatering av ytelser og tiltak
-```
-http://<host>/veilarbportefolje/internal/totalhovedindeksering
-http://<host>/veilarbportefolje/internal/populerindeks
-http://<host>/veilarbportefolje/internal/oppdaterytelser
-http://<host>/veilarbportefolje/internal/oppdatertiltak
-http://<host>/veilarbportefolje/internal/populer_elastic
+Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppdateringen databaselinken til arena 
 
 ```
+select * from dba_scheduler_jobs;
+```
 
-!! OBS OBS Om det er gjort endringer i schemaet til indeksen må man kanskje restarte indeksen !!
+## URL-er for manuell oppdatering av søkeindeks
+
+| Endepunkt                            | Beskrivelse                                                      |      
+| ------------------------------------ | -----------------------------------------------------------------|
+| /internal/totalhovedindeksering      | Les inn filer fra arena, hent data fra krr og oppdater indeks    |
+| /internal/populer_elastic            | Les fra database og oppdater indeks                              |
+| /internal/oppdater_ytelser           | Les inn ytelsesfil fra arena og oppdater database                |
+| /internal/oppdater_tiltak            | Les inn tiltaksfil fra arena og oppdater database                |
+| /internal/populer_krr                | Hent data om reservasjon i krr og oppdater database              |
+| /internal/reset_feed_oppfolging      | Spol tilbake feed som overfører data om veiledertilordninger     |
+| /internal/reset_feed_dialog          | Spol tilbake feed som overfører dialoger fra aktivitetsplanen    |
+| /internal/reset_feed_aktivitet       | Spol tilbake feed som overfører aktiviteter fra aktivitetsplanen |
+
 
 ## Plugin til IntelliJ
 Dette prosjektet benytter seg av [lombok](https://projectlombok.org).
 
-## Sjekk at materialiserte views i databasen oppdateres (replikering)
-
-Les i jobbtabellen til oracle for å undersøke statusen på den automatisk refreshingen av materialiserte views 
-
-```
-select * from all_scheduler_jobs;
-```
+Plugin kan lastes ned her: https://plugins.jetbrains.com/plugin/6317-lombok
 
 ## Kontakt og spørsmål
 Opprett en issue i GitHub for eventuelle spørsmål.
 
-Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #team-biff.
+Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #pto.

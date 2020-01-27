@@ -10,12 +10,12 @@ import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
 import static no.nav.fasit.FasitUtils.*;
 import static no.nav.fasit.FasitUtils.Zone.FSS;
-import static no.nav.fo.veilarbportefolje.config.ApplicationConfig.*;
-import static no.nav.fo.veilarbportefolje.config.DatabaseConfig.*;
-import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
-import static no.nav.fo.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
-import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD;
-import static no.nav.fo.veilarbportefolje.filmottak.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
+import static no.nav.pto.veilarbportefolje.config.DatabaseConfig.*;
+import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
+import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
@@ -31,7 +31,7 @@ public class MainTest {
     private static final String VEILARBLOGIN_REDIRECT_URL_ALIAS = "veilarblogin.redirect-url";
     private static final String DIGITAL_KONTAKINFORMASJON_V1_ALIAS = "DigitalKontakinformasjon_v1";
     private static final String VIRKSOMHET_ENHET_V1_ALIAS = "virksomhet:Enhet_v1";
-    private static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_ALIAS = "veilarbportefolje.filmottak.sftp.login";
+    private static final String VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_ALIAS = "veilarbportefolje.arenafiler.sftp.login";
 
     public static void main(String[] args) {
 
