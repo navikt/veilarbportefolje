@@ -316,20 +316,20 @@ public class ElasticQueryBuilder {
     }
 
 
-    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet) {
+    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstotteFeatureErPa) {
         BoolQueryBuilder enhetQuery = boolQuery().must(termQuery("enhet_id", enhetId));
-        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet);
+        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstotteFeatureErPa);
     }
 
-    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet) {
+    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstotteFeatureErPa) {
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
 
-        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet);
+        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstotteFeatureErPa);
     }
 
-    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
+    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstotteFeatureErPa) {
 
 
         return new SearchSourceBuilder()

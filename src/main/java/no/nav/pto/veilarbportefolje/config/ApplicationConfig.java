@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.YtelserServlet;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
-import no.nav.pto.veilarbportefolje.config.*;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.feed.FeedConfig;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
@@ -21,6 +20,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.internal.*;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerConfig;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
@@ -60,6 +60,7 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 @Import({
         AbacContext.class,
         DatabaseConfig.class,
+        KafkaConsumerConfig.class,
         VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
         ExternalServiceConfig.class,
@@ -89,6 +90,7 @@ public class ApplicationConfig implements ApiApplication {
     public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
+    public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
 
     @Inject
     private DataSource dataSource;

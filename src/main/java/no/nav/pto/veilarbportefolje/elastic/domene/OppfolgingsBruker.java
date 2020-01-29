@@ -75,4 +75,6 @@ public class OppfolgingsBruker {
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
     boolean har_veileder_fra_enhet;
+    String vedtak_status;
+    String vedtak_status_opprettet;
 }

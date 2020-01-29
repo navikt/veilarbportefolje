@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.DataSourceFactory;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.util.UUID;
 
@@ -28,6 +30,7 @@ public class DatabaseConfig {
     public static final String VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_URL";
     public static final String VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_USERNAME";
     public static final String VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_PASSWORD";
+
 
     @Bean
     public DataSource dataSource() {
@@ -50,8 +53,8 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate, unleashService);
     }
 
     @Bean
@@ -82,6 +85,11 @@ public class DatabaseConfig {
     @Bean
     public EnhetTiltakRepository enhetTiltakRepository() {
         return new EnhetTiltakRepository();
+    }
+
+    @Bean
+    public VedtakStatusRepository vedtakStatusRepository() {
+        return new VedtakStatusRepository();
     }
 
     @Bean

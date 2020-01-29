@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class KafkaVedtakStatusEndring {
 
     public enum KafkaVedtakStatus {
-        UTKAST_OPPRETTET, SENDT_TIL_BESLUTTER, SENDT_TIL_BRUKER
+        UTKAST_OPPRETTET, SENDT_TIL_BESLUTTER, SENDT_TIL_BRUKER, UTKAST_SLETTET
     }
     long id;
     String aktorId;

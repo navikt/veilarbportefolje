@@ -2,10 +2,13 @@ package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.text.WordUtils;
 
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.HashSet;
@@ -21,9 +24,10 @@ import static no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils.isNyF
 public class DbUtils {
 
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa ) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
+        String vedtakstatus = rs.getString("VEDTAKSTATUS");
 
         String fornavn = kapitaliser(rs.getString("fornavn"));
         String etternavn = kapitaliser(rs.getString("etternavn"));
@@ -64,14 +68,16 @@ public class DbUtils {
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
-                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode,vedtakstotteFeatureErPa, vedtakstatus))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
                 .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
                 .setAktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
                 .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
-                .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
+                .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
+                .setVedtak_status(vedtakstotteFeatureErPa ? rs.getString("VEDTAKSTATUS") : null)
+                .setVedtak_status_opprettet(vedtakstotteFeatureErPa? rs.getString("VEDTAK_STATUS_ENDRET_TIDSPUNKT") : null);
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 

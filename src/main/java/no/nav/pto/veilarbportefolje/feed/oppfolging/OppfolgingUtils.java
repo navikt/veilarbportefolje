@@ -18,9 +18,13 @@ public class OppfolgingUtils {
         return veileder == null || veileder.isEmpty();
     }
 
-    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
+    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode, boolean vedtakstotteFeatureErPa, String vedtakStatus) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return false;
+        }
+        if (vedtakstotteFeatureErPa) {
+           List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
+           return !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus == null;
         }
         return "IVURD".equals(kvalifiseringsgruppekode) || "BKART".equals(kvalifiseringsgruppekode);
     }

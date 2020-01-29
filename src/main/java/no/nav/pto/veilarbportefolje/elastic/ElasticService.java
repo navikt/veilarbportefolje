@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.Statustall
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.json.JsonUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -30,11 +31,13 @@ public class ElasticService {
     RestHighLevelClient client;
     PepClient pepClient;
     VeilederService veilederService;
+    UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService) {
+    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
         this.client = client;
         this.pepClient = pepClient;
         this.veilederService = veilederService;
+        this.unleashService = unleashService;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall, String indexAlias) {
@@ -109,14 +112,15 @@ public class ElasticService {
         List<String> veilederPaaEnhet = veilederService.getIdenter(enhetId).stream()
                 .map(VeilederId::toString)
                 .collect(toList());
-
-        SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet);
+        boolean x = vedtakstotteFeatureErPa();
+        SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, x);
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId, String indexAlias) {
+
         SearchSourceBuilder request = byggPortefoljestorrelserQuery(enhetId);
         PortefoljestorrelserResponse response = search(request, indexAlias, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
@@ -136,5 +140,9 @@ public class ElasticService {
     private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
         return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
+    }
+
+    private boolean vedtakstotteFeatureErPa() {
+        return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
     }
 }
