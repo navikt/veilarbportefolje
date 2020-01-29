@@ -4,6 +4,8 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.Timer;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -29,7 +31,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private static final String FEED_NAME = "oppfolging";
     private final Counter antallTotaltMetrikk;
     private static BigDecimal lastEntry;
-
+    private final Timer timer;
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
@@ -53,6 +55,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", FEED_NAME).register(getMeterRegistry());
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
+        this.timer = MetricsFactory.createTimer("veilarbportefolje.veiledertilordning");
 
     }
 
@@ -62,8 +65,11 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
+
+        timer.start();
+        log.info("OppfolgingerfeedDebug data: {}", data);
+
         try {
-            log.info("OppfolgingerfeedDebug data: {}", data);
 
             data.forEach(info -> {
                 if (info.getStartDato() == null) {
@@ -83,6 +89,9 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
             log.error(message, e);
         }
+
+        timer.stop();
+        timer.report();
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {
