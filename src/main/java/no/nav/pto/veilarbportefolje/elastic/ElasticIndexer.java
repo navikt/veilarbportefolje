@@ -197,11 +197,14 @@ public class ElasticIndexer {
     }
 
 
-    public void indekserAsynkront(AktoerId aktoerId) {
+    public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
+
         CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
+
         future.exceptionally(e -> {
             throw new RuntimeException(e);
         });
+        return future;
     }
 
     public void indekser(AktoerId aktoerId) {

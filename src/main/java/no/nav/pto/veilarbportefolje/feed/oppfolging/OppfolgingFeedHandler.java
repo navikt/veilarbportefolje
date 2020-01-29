@@ -1,17 +1,16 @@
 package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
 
@@ -20,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.Comparator.naturalOrder;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
@@ -29,7 +29,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
 
     private static final String FEED_NAME = "oppfolging";
-    private final Counter antallTotaltMetrikk;
     private static BigDecimal lastEntry;
     private final Timer timer;
     private ArbeidslisteService arbeidslisteService;
@@ -53,7 +52,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.veilederService = veilederService;
         this.transactor = transactor;
 
-        antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", FEED_NAME).register(getMeterRegistry());
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
         this.timer = MetricsFactory.createTimer("veilarbportefolje.veiledertilordning");
 
@@ -76,8 +74,14 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                     log.warn("Bruker {} har ingen startdato", info.getAktoerid());
                 }
                 oppdaterOppfolgingData(info);
-                elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
-                antallTotaltMetrikk.increment();
+
+                CompletableFuture<Void> future = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+
+                future.thenRun(() -> {
+                    timer.stop();
+                    timer.report();
+                });
+
             });
 
             finnMaxFeedId(data).ifPresent(id -> {
@@ -89,9 +93,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
             log.error(message, e);
         }
-
-        timer.stop();
-        timer.report();
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {
