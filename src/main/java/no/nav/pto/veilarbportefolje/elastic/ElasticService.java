@@ -31,13 +31,11 @@ public class ElasticService {
     RestHighLevelClient client;
     PepClient pepClient;
     VeilederService veilederService;
-    UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
+    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService) {
         this.client = client;
         this.pepClient = pepClient;
         this.veilederService = veilederService;
-        this.unleashService = unleashService;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall, String indexAlias) {
@@ -112,8 +110,7 @@ public class ElasticService {
         List<String> veilederPaaEnhet = veilederService.getIdenter(enhetId).stream()
                 .map(VeilederId::toString)
                 .collect(toList());
-        boolean x = vedtakstotteFeatureErPa();
-        SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, x);
+        SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet);
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets);
@@ -140,9 +137,5 @@ public class ElasticService {
     private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
         return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
-    }
-
-    private boolean vedtakstotteFeatureErPa() {
-        return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
     }
 }

@@ -133,6 +133,12 @@ public class ElasticQueryBuilder {
             case "aaprettighetsperiode":
                 sorterAapRettighetsPeriode(searchSourceBuilder, order);
                 break;
+            case "vedtakStatus":
+                searchSourceBuilder.sort("vedtak_status", order);
+                break;
+            case "vedtakStatusOpprettet":
+                searchSourceBuilder.sort("vedtak_status_opprettet", order);
+                break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
@@ -225,7 +231,9 @@ public class ElasticQueryBuilder {
                         .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
                         .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"));
                 break;
-
+            case UNDER_VURDERING:
+                queryBuilder = existsQuery("vedtak_status");
+                break;
             default:
                 throw new IllegalStateException();
 
@@ -316,20 +324,20 @@ public class ElasticQueryBuilder {
     }
 
 
-    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstotteFeatureErPa) {
+    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet) {
         BoolQueryBuilder enhetQuery = boolQuery().must(termQuery("enhet_id", enhetId));
-        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstotteFeatureErPa);
+        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet);
     }
 
-    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstotteFeatureErPa) {
+    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet) {
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
 
-        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstotteFeatureErPa);
+        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet);
     }
 
-    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstotteFeatureErPa) {
+    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
 
 
         return new SearchSourceBuilder()
@@ -350,7 +358,8 @@ public class ElasticQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
-                                moterMedNavIdag(filtrereVeilederOgEnhet)
+                                moterMedNavIdag(filtrereVeilederOgEnhet),
+                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status")
                         ));
     }
 
