@@ -88,8 +88,8 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public VedtakStatusRepository vedtakStatusRepository() {
-        return new VedtakStatusRepository();
+    public VedtakStatusRepository vedtakStatusRepository(JdbcTemplate jdbcTemplate) {
+        return new VedtakStatusRepository(jdbcTemplate);
     }
 
     @Bean
