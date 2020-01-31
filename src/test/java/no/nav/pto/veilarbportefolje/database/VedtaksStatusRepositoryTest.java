@@ -33,9 +33,7 @@ public class VedtaksStatusRepositoryTest {
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.UTKAST_OPPRETTET)
                 .setStatusEndretTidspunkt(time)
                 .setAktorId(aktorId)
-                .setHovedmal(Hovedmal.SKAFFEA)
                 .setId(0)
-                .setInnsatsgruppe(Innsatsgruppe.BATT)
                 .setSistRedigertTidspunkt(time);
         vedtakStatusRepository.upsertVedtak(kafkaVedtakStatusEndring);
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(aktorId);

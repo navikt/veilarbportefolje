@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.database.*;
 import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import org.mockito.Mock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -15,10 +17,15 @@ import javax.sql.DataSource;
 
 public class DatabaseConfigTest {
 
+    @Mock
+    protected UnleashService unleashService;
+
+
     @Bean
     public DataSource hsqldbDataSource() {
       return LocalJndiContextConfig.setupInMemoryDatabase();
     }
+
 
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
@@ -41,8 +48,8 @@ public class DatabaseConfigTest {
     }
 
     @Bean
-    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate, unleashService);
     }
 
     @Bean
