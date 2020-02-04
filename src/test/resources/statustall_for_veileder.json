@@ -574,6 +574,44 @@
             "boost": 1.0
           }
         },
+        "underVurdering": {
+          "bool": {
+            "must": [
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
+                }
+              },
+              {
+                "exists": {
+                  "field": "vedtak_status",
+                  "boost": 1.0
+                }
+              }
+            ],
+            "adjust_pure_negative": true,
+            "boost": 1.0
+          }
+        },
         "utlopteAktiviteter": {
           "bool": {
             "must": [

@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
 import no.nav.sbl.jdbc.DataSourceFactory;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,8 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
+import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
@@ -51,6 +54,7 @@ public class DatabaseConfig {
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource ds) {
         return new NamedParameterJdbcTemplate(ds);
     }
+
 
     @Bean
     public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {

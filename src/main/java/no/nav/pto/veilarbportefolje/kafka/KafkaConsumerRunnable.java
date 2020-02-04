@@ -3,52 +3,64 @@ package no.nav.pto.veilarbportefolje.kafka;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
+import no.nav.jobutils.JobUtils;
 import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.service.VedtakService;
+import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
+import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static no.nav.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.kafka.KafkaConsumerConfig.KAFKA_BROKERS;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.KAFKA_BROKERS_URL_PROPERTY;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 @Slf4j
-@Component
 public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
 
-    @Inject
     private VedtakService vedtakService;
-
-    private KafkaConsumer<String, String> kafkaConsumer;
-    protected static final String KAFKA_CONSUMER_TOPIC = "aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName();
 
     private long lastThrownExceptionTime;
     private Exception e;
+    private KafkaConsumer<String, String> kafkaConsumer;
 
 
-    public KafkaConsumerRunnable () {
+    protected static final String KAFKA_BROKERS = getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY);
+    private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
+    private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
+    protected static final String KAFKA_CONSUMER_TOPIC = "aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName();
+
+
+
+    public KafkaConsumerRunnable (VedtakService vedtakService) {
         // TODO SKA DENNA TA IN TOPICS ELLER SKA VI DEFINIERA ALLA TOPICS HER?
-        kafkaConsumer = new KafkaConsumer<>(KafkaConsumerConfig.kafkaProperties());
-        kafkaConsumer.subscribe(Arrays.asList(KAFKA_CONSUMER_TOPIC));
+        // TODO SWITCH CASE PÅ TOPIC record.topic() ELLER LAGA EN NY INSTANSE AV DENNA KLASS FØR VARJE TOPIC ?
+        this.kafkaConsumer = new KafkaConsumer<>(kafkaProperties());
+        this.kafkaConsumer.subscribe(Arrays.asList(KAFKA_CONSUMER_TOPIC));
+        this.vedtakService = vedtakService;
+
+        JobUtils.runAsyncJobOnLeader(this::run);
     }
 
     @Override
     public void run() {
         try {
             while(true) {
-                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(10));
+                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(10L));
                 for (TopicPartition partition : records.partitions()) {
                     List<ConsumerRecord<String, String>> partitionRecords = records.records(partition);
                     for (ConsumerRecord<String, String> record : partitionRecords) {
@@ -72,7 +84,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     }
 
     @Override
-    public void helsesjekk() throws Throwable {
+    public void helsesjekk() {
         if ((this.lastThrownExceptionTime + 60_000L) > System.currentTimeMillis()) {
             throw new IllegalArgumentException("Kafka consumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
         }
@@ -81,5 +93,19 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     @Override
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
+    }
+
+    public static HashMap<String, Object> kafkaProperties () {
+        HashMap<String, Object>  props = new HashMap<> ();
+        props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
+        props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
+        props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+        props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
+        props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
+        props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(MAX_POLL_INTERVAL_MS_CONFIG, 5000);
+        props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return props;
     }
 }

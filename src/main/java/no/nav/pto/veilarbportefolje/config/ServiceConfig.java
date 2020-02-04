@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
+import no.nav.pto.veilarbportefolje.database.VedtakStatusRepository;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -28,6 +29,11 @@ public class ServiceConfig {
     @Bean
     public AktivitetService aktivitetService(AktoerService aktoerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering) {
         return new AktivitetService(aktoerService, aktivitetDAO, persistentOppdatering);
+    }
+
+    @Bean
+    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository) {
+        return new VedtakService(vedtakStatusRepository);
     }
 
     @Bean

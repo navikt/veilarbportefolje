@@ -20,11 +20,12 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.internal.*;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerConfig;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
+import no.nav.pto.veilarbportefolje.service.VedtakService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
@@ -60,7 +61,6 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
 @Import({
         AbacContext.class,
         DatabaseConfig.class,
-        KafkaConsumerConfig.class,
         VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
         ExternalServiceConfig.class,
@@ -158,14 +158,6 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public UnleashService unleashService() {
-        return new UnleashService(UnleashServiceConfig.builder()
-                .applicationName(APPLICATION_NAME)
-                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
-                .build());
-    }
-
-    @Bean
     public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
         return new MetricsReporter(elasticIndexer);
     }
@@ -188,6 +180,20 @@ public class ApplicationConfig implements ApiApplication {
     @Bean
     public PepClient pepClient(Pep pep) {
         return new PepClientImpl(pep);
+    }
+
+    @Bean
+    public KafkaConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService) {
+        return new KafkaConsumerRunnable(vedtakService);
+    }
+
+
+    @Bean
+    public UnleashService unleashService() {
+        return new UnleashService(UnleashServiceConfig.builder()
+                .applicationName(APPLICATION_NAME)
+                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                .build());
     }
 
     @Bean
