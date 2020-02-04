@@ -7,17 +7,28 @@ import javax.inject.Inject;
 
 public class VedtakService {
 
-    @Inject
     private VedtakStatusRepository vedtakStatusRepository;
 
+    public VedtakService(VedtakStatusRepository vedtakStatusRepository) {
+        this.vedtakStatusRepository = vedtakStatusRepository;
+    }
+
     public void behandleMelding(KafkaVedtakStatusEndring melding) {
-        if (melding.getVedtakStatus().equals(KafkaVedtakStatusEndring.KafkaVedtakStatus.UTKAST_SLETTET)) {
-            vedtakStatusRepository.slettVedtakUtkast(melding);
-        } else if (melding.getVedtakStatus().equals(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BESLUTTER)) {
-            vedtakStatusRepository.slettVedtak(melding);
-            vedtakStatusRepository.upsertVedtak(melding);
-        } else {
-            vedtakStatusRepository.upsertVedtak(melding);
+        KafkaVedtakStatusEndring.KafkaVedtakStatus vedtakStatus = melding.getVedtakStatus();
+        switch (vedtakStatus) {
+            case UTKAST_SLETTET:
+                vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
+                break;
+            case UTKAST_OPPRETTET:
+                vedtakStatusRepository.insertVedtak(melding);
+                break;
+            case SENDT_TIL_BRUKER:
+                vedtakStatusRepository.slettGamleVedtakOgUtkast(melding);
+                vedtakStatusRepository.insertVedtak(melding);
+                break;
+            case SENDT_TIL_BESLUTTER:
+                vedtakStatusRepository.updateVedtak(melding);
+                break;
         }
     }
 }

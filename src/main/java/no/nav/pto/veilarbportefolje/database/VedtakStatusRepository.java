@@ -9,39 +9,56 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class VedtakStatusRepository {
 
     private JdbcTemplate db;
 
-
     public VedtakStatusRepository(JdbcTemplate db) {
         this.db = db;
     }
 
 
-    public void slettVedtakUtkast (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
+    public void slettVedtakUtkast (long id) {
         SqlUtils.delete(db, "VEDTAKSTATUS_DATA")
-                .where(WhereClause.equals("AKTOERID", kafkaVedtakStatusEndring.getAktorId()).and(WhereClause.equals("ID", kafkaVedtakStatusEndring.getId())))
+                .where(WhereClause.equals("VEDTAKID", id))
                 .execute();
     }
 
-    public void slettVedtak (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
+    public void slettGamleVedtakOgUtkast (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
         SqlUtils.delete(db, "VEDTAKSTATUS_DATA")
                 .where(WhereClause.equals("AKTOERID", kafkaVedtakStatusEndring.getAktorId()))
                 .execute();
     }
 
-    public void upsertVedtak (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
-        SqlUtils.upsert(db, "VEDTAKSTATUS_DATA")
+    public void insertVedtak (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
+        Hovedmal hovedmal = kafkaVedtakStatusEndring.getHovedmal();
+        Innsatsgruppe innsatsgruppe =  kafkaVedtakStatusEndring.getInnsatsgruppe();
+
+        SqlUtils.insert(db, "VEDTAKSTATUS_DATA")
+                .value("AKTOERID", kafkaVedtakStatusEndring.getAktorId())
+                .value("VEDTAKSTATUS", kafkaVedtakStatusEndring.getVedtakStatus().name())
+                .value("INNSATSGRUPPE", innsatsgruppe!= null ? innsatsgruppe.name(): null)
+                .value("HOVEDMAL", hovedmal!=null ? hovedmal.name(): null)
+                .value("VEDTAK_STATUS_ENDRET_TIDSPUNKT", Timestamp.valueOf(kafkaVedtakStatusEndring.getStatusEndretTidspunkt()))
+                .value("VEDTAKID", kafkaVedtakStatusEndring.getVedtakId())
+                .execute();
+    }
+
+
+    public void updateVedtak (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
+        Hovedmal hovedmal = kafkaVedtakStatusEndring.getHovedmal();
+        Innsatsgruppe innsatsgruppe =  kafkaVedtakStatusEndring.getInnsatsgruppe();
+
+        SqlUtils.update(db, "VEDTAKSTATUS_DATA")
                 .set("AKTOERID", kafkaVedtakStatusEndring.getAktorId())
-                .set("STATUS", kafkaVedtakStatusEndring.getVedtakStatus())
-                .set("INNSATSGRUPPE", kafkaVedtakStatusEndring.getInnsatsgruppe())
-                .set("HOVEDMAL", kafkaVedtakStatusEndring.getHovedmal())
-                .set("SIST_REDIGERT_TIDSPUNKT", kafkaVedtakStatusEndring.getSistRedigertTidspunkt())
-                .set("STATUS_ENDRET_TIDSPUNKT", kafkaVedtakStatusEndring.getStatusEndretTidspunkt())
-                .where(WhereClause.equals("AKTOERID", kafkaVedtakStatusEndring.getAktorId()).and(WhereClause.equals("ID", kafkaVedtakStatusEndring.getId())))
+                .set("VEDTAKSTATUS", kafkaVedtakStatusEndring.getVedtakStatus().name())
+                .set("INNSATSGRUPPE", innsatsgruppe!= null ? innsatsgruppe.name(): null)
+                .set("HOVEDMAL", hovedmal!=null ? hovedmal.name(): null)
+                .set("VEDTAK_STATUS_ENDRET_TIDSPUNKT", Timestamp.valueOf(kafkaVedtakStatusEndring.getStatusEndretTidspunkt()))
+                .whereEquals("VEDTAKID", kafkaVedtakStatusEndring.getVedtakId())
                 .execute();
     }
 
@@ -54,13 +71,14 @@ public class VedtakStatusRepository {
 
     @SneakyThrows
     private static KafkaVedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs){
+       String hovedmal =  rs.getString("HOVEDMAL");
+       String innsatsgruppe =  rs.getString("INNSATSGRUPPE");
         return new KafkaVedtakStatusEndring()
-                .setId(rs.getInt("ID"))
-                .setHovedmal(Hovedmal.valueOf(rs.getString("HOVEDMAL")))
-                .setInnsatsgruppe(Innsatsgruppe.valueOf(rs.getString("INNSATSGRUPPE")))
-                .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.valueOf(rs.getString("STATUS")))
-                .setSistRedigertTidspunkt(rs.getTimestamp("SIST_REDIGERT_TIDSPUNKT").toLocalDateTime())
-                .setStatusEndretTidspunkt(rs.getTimestamp("STATUS_ENDRET_TIDSPUNKT").toLocalDateTime())
+                .setVedtakId(rs.getInt("VEDTAKID"))
+                .setHovedmal(hovedmal!= null ? Hovedmal.valueOf(hovedmal): null)
+                .setInnsatsgruppe(innsatsgruppe!= null ? Innsatsgruppe.valueOf(rs.getString("INNSATSGRUPPE")): null)
+                .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.valueOf(rs.getString("VEDTAKSTATUS")))
+                .setStatusEndretTidspunkt(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT").toLocalDateTime())
                 .setAktorId(rs.getString("AKTOERID"));
 
     }

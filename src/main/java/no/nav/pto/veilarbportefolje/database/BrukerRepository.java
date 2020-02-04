@@ -38,7 +38,7 @@ import static no.nav.sbl.sql.where.WhereClause.*;
 @Slf4j
 public class BrukerRepository {
 
-    UnleashService unleashService;
+    private UnleashService unleashService;
 
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;

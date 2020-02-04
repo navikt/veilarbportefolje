@@ -12,11 +12,10 @@ public class KafkaVedtakStatusEndring {
     public enum KafkaVedtakStatus {
         UTKAST_OPPRETTET, SENDT_TIL_BESLUTTER, SENDT_TIL_BRUKER, UTKAST_SLETTET
     }
-    long id;
+    long vedtakId;
     String aktorId;
     KafkaVedtakStatus vedtakStatus;
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
-    LocalDateTime sistRedigertTidspunkt;
     LocalDateTime statusEndretTidspunkt;
 }

@@ -76,7 +76,7 @@ public class DbUtils {
                 .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
                 .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
-                .setVedtak_status(vedtakstotteFeatureErPa ? rs.getString("VEDTAKSTATUS") : null)
+                .setVedtak_status(vedtakstotteFeatureErPa ? vedtakstatus : null)
                 .setVedtak_status_opprettet(vedtakstotteFeatureErPa? rs.getString("VEDTAK_STATUS_ENDRET_TIDSPUNKT") : null);
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
