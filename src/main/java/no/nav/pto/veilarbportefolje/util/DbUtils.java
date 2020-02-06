@@ -27,7 +27,6 @@ public class DbUtils {
     public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa ) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
-        String vedtakstatus = rs.getString("VEDTAKSTATUS");
 
         String fornavn = kapitaliser(rs.getString("fornavn"));
         String etternavn = kapitaliser(rs.getString("etternavn"));
@@ -68,16 +67,15 @@ public class DbUtils {
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
-                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode,vedtakstotteFeatureErPa, vedtakstatus))
+                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
                 .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
                 .setAktivitet_start(toIsoUTC(rs.getTimestamp("aktivitet_start")))
                 .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
-                .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
-                .setVedtak_status(vedtakstotteFeatureErPa ? vedtakstatus : null)
-                .setVedtak_status_opprettet(vedtakstotteFeatureErPa? rs.getString("VEDTAK_STATUS_ENDRET_TIDSPUNKT") : null);
+                .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
+
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 
@@ -89,6 +87,14 @@ public class DbUtils {
                     .setArbeidsliste_kommentar(rs.getString("ARBEIDSLISTE_KOMMENTAR"))
                     .setArbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
+        }
+
+        if(vedtakstotteFeatureErPa) {
+            String vedtakstatus = rs.getString("VEDTAKSTATUS");
+            bruker
+                    .setTrenger_vurdering(OppfolgingUtils.trengerVurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus))
+                    .setVedtak_status(vedtakstotteFeatureErPa ? vedtakstatus : null)
+                    .setVedtak_status_opprettet(vedtakstotteFeatureErPa? rs.getString("VEDTAK_STATUS_ENDRET_TIDSPUNKT") : null);
         }
 
         return bruker;

@@ -1,9 +1,6 @@
-package no.nav.pto.veilarbportefolje.service;
+package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.pto.veilarbportefolje.database.VedtakStatusRepository;
 import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
-
-import javax.inject.Inject;
 
 public class VedtakService {
 

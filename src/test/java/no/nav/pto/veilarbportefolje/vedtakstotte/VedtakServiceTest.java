@@ -1,9 +1,10 @@
-package no.nav.pto.veilarbportefolje.service;
+package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.pto.veilarbportefolje.database.VedtakStatusRepository;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;
 import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,6 +27,7 @@ public class VedtakServiceTest {
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
         this.vedtakService = new VedtakService(vedtakStatusRepository);
+
     }
 
     @Test

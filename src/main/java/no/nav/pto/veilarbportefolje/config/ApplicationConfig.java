@@ -25,7 +25,7 @@ import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
-import no.nav.pto.veilarbportefolje.service.VedtakService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
@@ -183,18 +183,18 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService) {
-        return new KafkaConsumerRunnable(vedtakService);
-    }
-
-
-    @Bean
     public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.builder()
                 .applicationName(APPLICATION_NAME)
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
     }
+
+    @Bean
+    public KafkaConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService, UnleashService unleashService) {
+        return new KafkaConsumerRunnable(vedtakService, unleashService);
+    }
+
 
     @Bean
     public IndekseringScheduler indekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {

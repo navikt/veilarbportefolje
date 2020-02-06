@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.database;
+package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;

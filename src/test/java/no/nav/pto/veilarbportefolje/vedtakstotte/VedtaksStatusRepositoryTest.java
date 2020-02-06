@@ -1,8 +1,9 @@
-package no.nav.pto.veilarbportefolje.database;
+package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;
 import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;

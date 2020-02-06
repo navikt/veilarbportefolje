@@ -5,8 +5,9 @@ import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.jobutils.JobUtils;
 import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
-import no.nav.pto.veilarbportefolje.service.VedtakService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -15,7 +16,6 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.stereotype.Component;
 
 
 import java.time.Duration;
@@ -33,6 +33,8 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
 
     private VedtakService vedtakService;
+    private UnleashService unleashService;
+
 
     private long lastThrownExceptionTime;
     private Exception e;
@@ -46,14 +48,17 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
 
 
 
-    public KafkaConsumerRunnable (VedtakService vedtakService) {
+    public KafkaConsumerRunnable (VedtakService vedtakService, UnleashService unleashService) {
         // TODO SKA DENNA TA IN TOPICS ELLER SKA VI DEFINIERA ALLA TOPICS HER?
         // TODO SWITCH CASE PÅ TOPIC record.topic() ELLER LAGA EN NY INSTANSE AV DENNA KLASS FØR VARJE TOPIC ?
         this.kafkaConsumer = new KafkaConsumer<>(kafkaProperties());
         this.kafkaConsumer.subscribe(Arrays.asList(KAFKA_CONSUMER_TOPIC));
         this.vedtakService = vedtakService;
+        this.unleashService= unleashService;
 
-        JobUtils.runAsyncJobOnLeader(this::run);
+        if(this.vedstakstotteFeatureErPa()) {
+            JobUtils.runAsyncJobOnLeader(this::run);
+        }
     }
 
     @Override
@@ -88,6 +93,10 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         if ((this.lastThrownExceptionTime + 60_000L) > System.currentTimeMillis()) {
             throw new IllegalArgumentException("Kafka consumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
         }
+    }
+
+    private boolean vedstakstotteFeatureErPa () {
+        return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
     }
 
     @Override
