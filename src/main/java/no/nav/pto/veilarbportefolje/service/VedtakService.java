@@ -23,7 +23,7 @@ public class VedtakService {
                 vedtakStatusRepository.insertVedtak(melding);
                 break;
             case SENDT_TIL_BRUKER:
-                vedtakStatusRepository.slettGamleVedtakOgUtkast(melding);
+                vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
                 vedtakStatusRepository.insertVedtak(melding);
                 break;
             case SENDT_TIL_BESLUTTER:

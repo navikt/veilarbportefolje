@@ -27,9 +27,9 @@ public class VedtakStatusRepository {
                 .execute();
     }
 
-    public void slettGamleVedtakOgUtkast (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
+    public void slettGamleVedtakOgUtkast (String aktorId) {
         SqlUtils.delete(db, "VEDTAKSTATUS_DATA")
-                .where(WhereClause.equals("AKTOERID", kafkaVedtakStatusEndring.getAktorId()))
+                .where(WhereClause.equals("AKTOERID", aktorId))
                 .execute();
     }
 

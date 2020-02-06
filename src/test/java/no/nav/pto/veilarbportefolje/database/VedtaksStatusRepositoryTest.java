@@ -25,6 +25,7 @@ public class VedtaksStatusRepositoryTest {
     public void setup() {
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
+        vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
     }
 
 
@@ -33,12 +34,6 @@ public class VedtaksStatusRepositoryTest {
         insertVedtakIDB();
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
-
-        vedtakStatusRepository.slettVedtakUtkast(VEDTAKID);
-
-        endringer = vedtakStatusRepository.hentVedtak(AKTORID);
-        assertThat(endringer.size()).isEqualTo(0);
-
     }
 
     @Test
@@ -57,10 +52,6 @@ public class VedtaksStatusRepositoryTest {
         vedtakStatusRepository.updateVedtak(kafkaVedtakStatusEndring);
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
-        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakStatusEndring);
-
-        vedtakStatusRepository.slettVedtakUtkast(VEDTAKID);
-
     }
 
 
