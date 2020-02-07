@@ -1,7 +1,9 @@
-package no.nav.pto.veilarbportefolje.domene;
+package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.domene.Hovedmal;
+import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 
 import java.time.LocalDateTime;
 

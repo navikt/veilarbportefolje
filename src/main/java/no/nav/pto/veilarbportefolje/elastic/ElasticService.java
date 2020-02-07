@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.Statustall
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.json.JsonUtils;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;

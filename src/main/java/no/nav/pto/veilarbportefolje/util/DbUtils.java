@@ -2,13 +2,10 @@ package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.text.WordUtils;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.HashSet;
@@ -94,7 +91,7 @@ public class DbUtils {
             bruker
                     .setTrenger_vurdering(OppfolgingUtils.trengerVurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus))
                     .setVedtak_status(vedtakstotteFeatureErPa ? vedtakstatus : null)
-                    .setVedtak_status_opprettet(vedtakstotteFeatureErPa? rs.getString("VEDTAK_STATUS_ENDRET_TIDSPUNKT") : null);
+                    .setVedtak_status_endret(vedtakstotteFeatureErPa? rs.getString("VEDTAK_STATUS_ENDRET_TIDSPUNKT") : null);
         }
 
         return bruker;

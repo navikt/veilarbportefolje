@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;
 import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
-import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -67,14 +66,23 @@ public class VedtakServiceTest {
 
     @Test
     public void skallSletteGamleVedtak()  {
-        LocalDateTime time = LocalDateTime.now();
+        vedtakStatusRepository.insertVedtak(new KafkaVedtakStatusEndring()
+                .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BRUKER)
+                .setStatusEndretTidspunkt(LocalDateTime.now())
+                .setAktorId(AKTORID)
+                .setVedtakId(2)
+                .setHovedmal(Hovedmal.OKEDELT)
+                .setInnsatsgruppe(Innsatsgruppe.BATT));
+
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBruker = new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BRUKER)
-                .setStatusEndretTidspunkt(time)
+                .setStatusEndretTidspunkt(LocalDateTime.now())
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(Hovedmal.SKAFFEA)
                 .setInnsatsgruppe(Innsatsgruppe.VARIG);
+
+
         vedtakService.behandleMelding(kafkaVedtakSendtTilBruker);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);

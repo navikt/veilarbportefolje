@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;
 import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
-import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;

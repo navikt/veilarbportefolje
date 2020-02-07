@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.jobutils.JobUtils;
-import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;

@@ -45,7 +45,10 @@ public class ValideringsRegler {
             "aaprettighetsperiode",
             "moterMedNAVIdag",
             "oppfolging_startdato",
-            "veileder_id");
+            "veileder_id",
+            "vedtakstatus",
+            "vedtak_status_endret"
+            );
 
     static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));

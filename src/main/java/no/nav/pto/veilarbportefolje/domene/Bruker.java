@@ -67,6 +67,8 @@ public class Bruker {
     LocalDateTime moteStartTid;
     LocalDateTime moteSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
+    String vedtakStatus;
+    LocalDateTime vedtakStatusEndret;
 
     public static Bruker of(OppfolgingsBruker bruker) {
 
@@ -114,6 +116,8 @@ public class Bruker {
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
+                .setVedtakStatus(bruker.getVedtak_status())
+                .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(toLocalDateTimeOrNull(bruker.getOppfolging_startdato()))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))

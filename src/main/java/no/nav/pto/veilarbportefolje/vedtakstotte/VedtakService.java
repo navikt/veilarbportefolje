@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.pto.veilarbportefolje.domene.KafkaVedtakStatusEndring;
-
 public class VedtakService {
 
     private VedtakStatusRepository vedtakStatusRepository;
