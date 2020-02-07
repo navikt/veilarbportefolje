@@ -53,15 +53,13 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         this.vedtakService = vedtakService;
         this.unleashService= unleashService;
 
-        if(this.vedstakstotteFeatureErPa()) {
-            JobUtils.runAsyncJob(this::run);
-        }
+        JobUtils.runAsyncJob(this::run);
     }
 
     @Override
     public void run() {
         try {
-            while (true) {
+            while (this.vedstakstotteFeatureErPa()) {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, String> record : records) {
                     KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
