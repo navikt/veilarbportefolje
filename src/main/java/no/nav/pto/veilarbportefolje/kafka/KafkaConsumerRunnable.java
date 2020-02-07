@@ -12,8 +12,6 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
@@ -56,28 +54,20 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         this.unleashService= unleashService;
 
         if(this.vedstakstotteFeatureErPa()) {
-            JobUtils.runAsyncJobOnLeader(this::run);
+            JobUtils.runAsyncJob(this::run);
         }
     }
 
     @Override
     public void run() {
         try {
-            while(true) {
-                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(10L));
-                for (TopicPartition partition : records.partitions()) {
-                    List<ConsumerRecord<String, String>> partitionRecords = records.records(partition);
-                    for (ConsumerRecord<String, String> record : partitionRecords) {
-                        // TODO SWITCH CASE PÅ TOPIC record.topic() ELLER LAGA EN NY INSTANSE AV DENNA KLASS FØR VARJE TOPIC ?
-                        KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
-                        log.info("Leser melding for aktorId:" + melding.getAktorId() + " på topic: " + record.topic());
-
-                        vedtakService.behandleMelding(melding);
-
-                        //HVIS INSETTNINGEN I DB:EN VAR VEDLYKKAD SÅ COMMITTER VI OFFSETEN
-                        long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
-                        kafkaConsumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
-                    }
+            while (true) {
+                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
+                for (ConsumerRecord<String, String> record : records) {
+                    KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
+                    log.info("Leser melding for aktorId:" + melding.getAktorId() + " på topic: " + record.topic());
+                    vedtakService.behandleMelding(melding);
+                    kafkaConsumer.commitSync();
                 }
             }
         } catch (Exception e) {
