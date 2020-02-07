@@ -59,13 +59,17 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     @Override
     public void run() {
         try {
-            while (this.vedstakstotteFeatureErPa()) {
-                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
-                for (ConsumerRecord<String, String> record : records) {
-                    KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
-                    log.info("Leser melding for aktorId:" + melding.getAktorId() + " på topic: " + record.topic());
-                    vedtakService.behandleMelding(melding);
-                    kafkaConsumer.commitSync();
+            while (true) {
+                boolean vedstakstotteFeatureErPa = this.vedstakstotteFeatureErPa();
+                log.info("vedstakstotteFeatureErPa " + vedstakstotteFeatureErPa);
+                if (vedstakstotteFeatureErPa) {
+                    ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
+                    for (ConsumerRecord<String, String> record : records) {
+                        KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
+                        log.info("Leser melding for aktorId:" + melding.getAktorId() + " på topic: " + record.topic());
+                        vedtakService.behandleMelding(melding);
+                        kafkaConsumer.commitSync();
+                    }
                 }
             }
         } catch (Exception e) {
