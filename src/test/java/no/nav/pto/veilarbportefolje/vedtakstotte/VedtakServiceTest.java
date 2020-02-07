@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;
 import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class VedtakServiceTest {
 
@@ -31,7 +33,7 @@ public class VedtakServiceTest {
     public void setup (){
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
-        this.vedtakService = new VedtakService(vedtakStatusRepository);
+        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class));
 
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
 

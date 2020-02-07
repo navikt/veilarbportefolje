@@ -1,11 +1,15 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 public class VedtakService {
 
     private VedtakStatusRepository vedtakStatusRepository;
+    private ElasticIndexer elasticIndexer;
 
-    public VedtakService(VedtakStatusRepository vedtakStatusRepository) {
+    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
         this.vedtakStatusRepository = vedtakStatusRepository;
+        this.elasticIndexer = elasticIndexer;
     }
 
     public void behandleMelding(KafkaVedtakStatusEndring melding) {
@@ -25,5 +29,6 @@ public class VedtakService {
                 vedtakStatusRepository.updateVedtak(melding);
                 break;
         }
+        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
     }
 }

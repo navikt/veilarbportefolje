@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
@@ -33,8 +34,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository) {
-        return new VedtakService(vedtakStatusRepository);
+    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
+        return new VedtakService(vedtakStatusRepository, elasticIndexer);
     }
 
     @Bean
