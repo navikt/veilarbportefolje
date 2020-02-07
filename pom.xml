@@ -225,6 +225,16 @@
             <artifactId>elasticsearch</artifactId>
         </dependency>
 
+        <!-- Kafka -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+        </dependency>
+
         <!--Diverse-->
         <dependency>
             <groupId>com.jcraft</groupId>

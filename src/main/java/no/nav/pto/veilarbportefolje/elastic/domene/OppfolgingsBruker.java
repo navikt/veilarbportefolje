@@ -47,6 +47,7 @@ public class OppfolgingsBruker {
     boolean ny_for_veileder;
     boolean ny_for_enhet;
     boolean trenger_vurdering;
+    boolean under_vurdering;
     String venterpasvarfrabruker;
     String venterpasvarfranav;
     String nyesteutlopteaktivitet;
@@ -74,4 +75,6 @@ public class OppfolgingsBruker {
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
     boolean har_veileder_fra_enhet;
+    String vedtak_status;
+    String vedtak_status_endret;
 }

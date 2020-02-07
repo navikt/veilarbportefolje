@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.YtelserServlet;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
-import no.nav.pto.veilarbportefolje.config.*;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.feed.FeedConfig;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
@@ -21,10 +20,12 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.internal.*;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
@@ -156,14 +157,6 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public UnleashService unleashService() {
-        return new UnleashService(UnleashServiceConfig.builder()
-                .applicationName(APPLICATION_NAME)
-                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
-                .build());
-    }
-
-    @Bean
     public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
         return new MetricsReporter(elasticIndexer);
     }
@@ -187,6 +180,20 @@ public class ApplicationConfig implements ApiApplication {
     public PepClient pepClient(Pep pep) {
         return new PepClientImpl(pep);
     }
+
+    @Bean
+    public UnleashService unleashService() {
+        return new UnleashService(UnleashServiceConfig.builder()
+                .applicationName(APPLICATION_NAME)
+                .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
+                .build());
+    }
+
+    @Bean
+    public KafkaConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService, UnleashService unleashService) {
+        return new KafkaConsumerRunnable(vedtakService, unleashService);
+    }
+
 
     @Bean
     public IndekseringScheduler indekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {

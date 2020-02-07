@@ -1,24 +1,35 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.*;
 import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import org.mockito.Mock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
+import static org.mockito.Mockito.mock;
+
 public class DatabaseConfigTest {
+
+    @Bean
+    public UnleashService unleashService() {
+        return mock(UnleashService.class);
+    }
 
     @Bean
     public DataSource hsqldbDataSource() {
       return LocalJndiContextConfig.setupInMemoryDatabase();
     }
+
 
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
@@ -41,8 +52,8 @@ public class DatabaseConfigTest {
     }
 
     @Bean
-    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate, unleashService);
     }
 
     @Bean

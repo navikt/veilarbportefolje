@@ -30,6 +30,11 @@ public class OppfolgingUtils {
         return "IARBS".equals(formidlingsgruppekode) && !OPPFOLGINGKODER.contains(kvalifiseringsgruppekode);
     }
 
+    public static boolean trengerVurderingVedtakstotte (String kvalifiseringsgruppekode, String vedtakStatus) {
+            List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
+            return !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus == null;
+    }
+
     public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return null;

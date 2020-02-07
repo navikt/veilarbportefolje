@@ -6,8 +6,10 @@ import no.nav.pto.veilarbportefolje.database.*;
 import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.DataSourceFactory;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +31,7 @@ public class DatabaseConfig {
     public static final String VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_USERNAME";
     public static final String VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_PASSWORD";
 
+
     @Bean
     public DataSource dataSource() {
         return DataSourceFactory.dataSource()
@@ -49,9 +52,10 @@ public class DatabaseConfig {
         return new NamedParameterJdbcTemplate(ds);
     }
 
+
     @Bean
-    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, DataSource ds, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate, unleashService);
     }
 
     @Bean
@@ -82,6 +86,11 @@ public class DatabaseConfig {
     @Bean
     public EnhetTiltakRepository enhetTiltakRepository() {
         return new EnhetTiltakRepository();
+    }
+
+    @Bean
+    public VedtakStatusRepository vedtakStatusRepository(JdbcTemplate jdbcTemplate) {
+        return new VedtakStatusRepository(jdbcTemplate);
     }
 
     @Bean
