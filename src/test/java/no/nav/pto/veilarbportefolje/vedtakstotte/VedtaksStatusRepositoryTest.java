@@ -48,7 +48,7 @@ public class VedtaksStatusRepositoryTest {
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID);
 
-        vedtakStatusRepository.updateVedtak(kafkaVedtakStatusEndring);
+        vedtakStatusRepository.upsertVedtak(kafkaVedtakStatusEndring);
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
     }
@@ -63,7 +63,7 @@ public class VedtaksStatusRepositoryTest {
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(null)
                 .setInnsatsgruppe(null);
-        vedtakStatusRepository.insertVedtak(kafkaVedtakStatusEndring);
+        vedtakStatusRepository.upsertVedtak(kafkaVedtakStatusEndring);
     }
 
 

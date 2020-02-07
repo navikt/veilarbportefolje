@@ -68,7 +68,7 @@ public class VedtakServiceTest {
 
     @Test
     public void skallSletteGamleVedtak()  {
-        vedtakStatusRepository.insertVedtak(new KafkaVedtakStatusEndring()
+        vedtakStatusRepository.upsertVedtak(new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BRUKER)
                 .setStatusEndretTidspunkt(LocalDateTime.now())
                 .setAktorId(AKTORID)
