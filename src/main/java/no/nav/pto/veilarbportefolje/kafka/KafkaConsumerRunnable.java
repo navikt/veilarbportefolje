@@ -22,7 +22,6 @@ import java.time.Duration;
 import java.util.*;
 
 import static no.nav.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.KAFKA_BROKERS_URL_PROPERTY;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -40,7 +39,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     private Exception e;
     private KafkaConsumer<String, String> kafkaConsumer;
 
-
+    public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
     protected static final String KAFKA_BROKERS = getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY);
     private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);

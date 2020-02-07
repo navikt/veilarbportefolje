@@ -90,7 +90,6 @@ public class ApplicationConfig implements ApiApplication {
     public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
-    public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
 
     @Inject
     private DataSource dataSource;
