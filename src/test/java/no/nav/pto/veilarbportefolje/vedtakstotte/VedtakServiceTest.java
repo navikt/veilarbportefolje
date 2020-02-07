@@ -20,26 +20,28 @@ public class VedtakServiceTest {
     private static String AKTORID = "123456789";
     private static long VEDTAKID = 1;
 
+    private static  KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
+            .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.UTKAST_OPPRETTET)
+            .setStatusEndretTidspunkt(LocalDateTime.now())
+            .setAktorId(AKTORID)
+            .setVedtakId(VEDTAKID)
+            .setHovedmal(null)
+            .setInnsatsgruppe(null);
+
     @Before
     public void setup (){
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
         this.vedtakService = new VedtakService(vedtakStatusRepository);
+
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
+
+        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
 
     }
 
     @Test
     public void skallSetteInUtkast()  {
-        LocalDateTime time = LocalDateTime.now();
-        KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
-                .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.UTKAST_OPPRETTET)
-                .setStatusEndretTidspunkt(time)
-                .setAktorId(AKTORID)
-                .setVedtakId(VEDTAKID)
-                .setHovedmal(null)
-                .setInnsatsgruppe(null);
-        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
 
        List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakStatusEndring);
@@ -49,34 +51,34 @@ public class VedtakServiceTest {
     @Test
     public void skallOppdatereUtkast()  {
         LocalDateTime time = LocalDateTime.now();
-        KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
+        KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BESLUTTER)
                 .setStatusEndretTidspunkt(time)
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(Hovedmal.BEHOLDEA)
                 .setInnsatsgruppe(Innsatsgruppe.BATT);
-        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
+        vedtakService.behandleMelding(kafkaVedtakSendtTilBeslutter);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
-        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakStatusEndring);
+        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBeslutter);
         assertThat(endringer.size()).isEqualTo(1);
     }
 
     @Test
     public void skallSletteGamleVedtak()  {
         LocalDateTime time = LocalDateTime.now();
-        KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
+        KafkaVedtakStatusEndring kafkaVedtakSendtTilBruker = new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BRUKER)
                 .setStatusEndretTidspunkt(time)
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(Hovedmal.SKAFFEA)
                 .setInnsatsgruppe(Innsatsgruppe.VARIG);
-        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
+        vedtakService.behandleMelding(kafkaVedtakSendtTilBruker);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
-        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakStatusEndring);
+        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBruker);
         assertThat(endringer.size()).isEqualTo(1);
 
     }
