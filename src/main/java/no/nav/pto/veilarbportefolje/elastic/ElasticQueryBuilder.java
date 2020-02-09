@@ -136,9 +136,6 @@ public class ElasticQueryBuilder {
             case "vedtakstatus":
                 searchSourceBuilder.sort("vedtak_status", order);
                 break;
-            case "vedtak_status_endret":
-                searchSourceBuilder.sort("vedtak_status_endret", order);
-                break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
