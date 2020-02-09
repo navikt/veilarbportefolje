@@ -133,11 +133,11 @@ public class ElasticQueryBuilder {
             case "aaprettighetsperiode":
                 sorterAapRettighetsPeriode(searchSourceBuilder, order);
                 break;
-            case "vedtakStatus":
+            case "vedtakstatus":
                 searchSourceBuilder.sort("vedtak_status", order);
                 break;
-            case "vedtakStatusOpprettet":
-                searchSourceBuilder.sort("vedtak_status_opprettet", order);
+            case "vedtak_status_endret":
+                searchSourceBuilder.sort("vedtak_status_endret", order);
                 break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
