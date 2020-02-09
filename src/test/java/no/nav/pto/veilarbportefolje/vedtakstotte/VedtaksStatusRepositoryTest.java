@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.pto.veilarbportefolje.domene.Hovedmal;
-import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,7 +27,7 @@ public class VedtaksStatusRepositoryTest {
 
 
     @Test
-    public void skallSetteInVedtakOgSletteUtkast() {
+    public void skallSetteInVedtak() {
         insertVedtakIDB();
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
@@ -42,8 +40,8 @@ public class VedtaksStatusRepositoryTest {
         LocalDateTime time = LocalDateTime.now();
         KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BESLUTTER)
-                .setHovedmal(Hovedmal.SKAFFEA)
-                .setInnsatsgruppe(Innsatsgruppe.VARIG)
+                .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID)
+                .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS)
                 .setStatusEndretTidspunkt(time)
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID);

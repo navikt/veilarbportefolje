@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.pto.veilarbportefolje.domene.Hovedmal;
-import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,28 +35,27 @@ public class VedtakServiceTest {
 
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
 
-        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
-
     }
 
     @Test
     public void skallSetteInUtkast()  {
-
-       List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
-       assertThat(endringer.get(0)).isEqualTo(kafkaVedtakStatusEndring);
-       assertThat(endringer.size()).isEqualTo(1);
+        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
+        List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        assertThat(endringer.get(0)).isEqualTo(kafkaVedtakStatusEndring);
+        assertThat(endringer.size()).isEqualTo(1);
     }
 
     @Test
     public void skallOppdatereUtkast()  {
+        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
         LocalDateTime time = LocalDateTime.now();
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BESLUTTER)
                 .setStatusEndretTidspunkt(time)
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
-                .setHovedmal(Hovedmal.BEHOLDEA)
-                .setInnsatsgruppe(Innsatsgruppe.BATT);
+                .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID)
+                .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS);
         vedtakService.behandleMelding(kafkaVedtakSendtTilBeslutter);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
@@ -73,16 +70,16 @@ public class VedtakServiceTest {
                 .setStatusEndretTidspunkt(LocalDateTime.now())
                 .setAktorId(AKTORID)
                 .setVedtakId(2)
-                .setHovedmal(Hovedmal.OKEDELT)
-                .setInnsatsgruppe(Innsatsgruppe.BATT));
+                .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
+                .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS));
 
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBruker = new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BRUKER)
                 .setStatusEndretTidspunkt(LocalDateTime.now())
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
-                .setHovedmal(Hovedmal.SKAFFEA)
-                .setInnsatsgruppe(Innsatsgruppe.VARIG);
+                .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
+                .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS);
 
 
         vedtakService.behandleMelding(kafkaVedtakSendtTilBruker);
