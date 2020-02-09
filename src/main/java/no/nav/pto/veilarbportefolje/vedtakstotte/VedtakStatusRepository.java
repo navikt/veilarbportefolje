@@ -1,8 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.SneakyThrows;
-import no.nav.pto.veilarbportefolje.domene.Hovedmal;
-import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,8 +31,8 @@ public class VedtakStatusRepository {
     }
 
     public void upsertVedtak (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
-        Hovedmal hovedmal = kafkaVedtakStatusEndring.getHovedmal();
-        Innsatsgruppe innsatsgruppe =  kafkaVedtakStatusEndring.getInnsatsgruppe();
+        KafkaVedtakStatusEndring.Hovedmal hovedmal = kafkaVedtakStatusEndring.getHovedmal();
+        KafkaVedtakStatusEndring.Innsatsgruppe innsatsgruppe =  kafkaVedtakStatusEndring.getInnsatsgruppe();
 
         SqlUtils.upsert(db, "VEDTAKSTATUS_DATA")
                 .set("AKTOERID", kafkaVedtakStatusEndring.getAktorId())
@@ -56,15 +54,14 @@ public class VedtakStatusRepository {
 
     @SneakyThrows
     private static KafkaVedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs){
-       String hovedmal =  rs.getString("HOVEDMAL");
-       String innsatsgruppe =  rs.getString("INNSATSGRUPPE");
+        String hovedmal =  rs.getString("HOVEDMAL");
+        String innsatsgruppe =  rs.getString("INNSATSGRUPPE");
         return new KafkaVedtakStatusEndring()
                 .setVedtakId(rs.getInt("VEDTAKID"))
-                .setHovedmal(hovedmal!= null ? Hovedmal.valueOf(hovedmal): null)
-                .setInnsatsgruppe(innsatsgruppe!= null ? Innsatsgruppe.valueOf(rs.getString("INNSATSGRUPPE")): null)
+                .setHovedmal(hovedmal!= null ? KafkaVedtakStatusEndring.Hovedmal.valueOf(hovedmal): null)
+                .setInnsatsgruppe(innsatsgruppe!= null ? KafkaVedtakStatusEndring.Innsatsgruppe.valueOf(rs.getString("INNSATSGRUPPE")): null)
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.valueOf(rs.getString("VEDTAKSTATUS")))
                 .setStatusEndretTidspunkt(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT").toLocalDateTime())
                 .setAktorId(rs.getString("AKTOERID"));
-
     }
 }
