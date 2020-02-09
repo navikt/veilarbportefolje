@@ -35,6 +35,10 @@ public class OppfolgingUtils {
             return !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus == null;
     }
 
+    public static boolean trengerRevurderingVedtakstotte (String kvalifiseringsgruppekode, String vedtakStatus) {
+        return !(trengerVurderingVedtakstotte(kvalifiseringsgruppekode, vedtakStatus));
+    }
+
     public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return null;

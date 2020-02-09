@@ -69,6 +69,7 @@ public class Bruker {
     boolean erSykmeldtMedArbeidsgiver;
     String vedtakStatus;
     LocalDateTime vedtakStatusEndret;
+    boolean trengerRevurdering;
 
     public static Bruker of(OppfolgingsBruker bruker) {
 
@@ -119,6 +120,7 @@ public class Bruker {
                 .setVedtakStatus(bruker.getVedtak_status())
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(toLocalDateTimeOrNull(bruker.getOppfolging_startdato()))
+                .setTrengerRevurdering(bruker.isTrenger_revurdering())
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))

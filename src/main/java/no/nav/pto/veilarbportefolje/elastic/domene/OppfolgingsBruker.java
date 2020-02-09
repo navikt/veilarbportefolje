@@ -77,4 +77,5 @@ public class OppfolgingsBruker {
     boolean har_veileder_fra_enhet;
     String vedtak_status;
     String vedtak_status_endret;
+    boolean trenger_revurdering;
 }

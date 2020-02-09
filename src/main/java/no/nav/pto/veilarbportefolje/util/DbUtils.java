@@ -90,8 +90,9 @@ public class DbUtils {
             String vedtakstatus = rs.getString("VEDTAKSTATUS");
             bruker
                     .setTrenger_vurdering(OppfolgingUtils.trengerVurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus))
-                    .setVedtak_status(vedtakstotteFeatureErPa ? vedtakstatus : null)
-                    .setVedtak_status_endret(vedtakstotteFeatureErPa? toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")) : null);
+                    .setVedtak_status(vedtakstatus)
+                    .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
+                    .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus));
         }
 
         return bruker;
