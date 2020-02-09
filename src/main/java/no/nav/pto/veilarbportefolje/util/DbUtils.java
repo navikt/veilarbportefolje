@@ -91,7 +91,7 @@ public class DbUtils {
             bruker
                     .setTrenger_vurdering(OppfolgingUtils.trengerVurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus))
                     .setVedtak_status(vedtakstotteFeatureErPa ? vedtakstatus : null)
-                    .setVedtak_status_endret(vedtakstotteFeatureErPa? rs.getString("VEDTAK_STATUS_ENDRET_TIDSPUNKT") : null);
+                    .setVedtak_status_endret(vedtakstotteFeatureErPa? toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")) : null);
         }
 
         return bruker;
