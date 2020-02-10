@@ -65,16 +65,17 @@ select * from dba_scheduler_jobs;
 
 ## URL-er for manuell oppdatering av søkeindeks
 
-| Endepunkt                            | Beskrivelse                                                      |      
-| ------------------------------------ | -----------------------------------------------------------------|
-| /internal/totalhovedindeksering      | Les inn filer fra arena, hent data fra krr og oppdater indeks    |
-| /internal/populer_elastic            | Les fra database og oppdater indeks                              |
-| /internal/oppdater_ytelser           | Les inn ytelsesfil fra arena og oppdater database                |
-| /internal/oppdater_tiltak            | Les inn tiltaksfil fra arena og oppdater database                |
-| /internal/populer_krr                | Hent data om reservasjon i krr og oppdater database              |
-| /internal/reset_feed_oppfolging      | Spol tilbake feed som overfører data om veiledertilordninger     |
-| /internal/reset_feed_dialog          | Spol tilbake feed som overfører dialoger fra aktivitetsplanen    |
-| /internal/reset_feed_aktivitet       | Spol tilbake feed som overfører aktiviteter fra aktivitetsplanen |
+| Endepunkt                                             | Beskrivelse                                                      |      
+| ------------------------------------------------------| -----------------------------------------------------------------|
+| /internal/totalhovedindeksering                       | Les inn filer fra arena, hent data fra krr og oppdater indeks    |
+| /internal/populer_elastic                             | Les fra database og oppdater indeks                              |
+| /internal/oppdater_ytelser                            | Les inn ytelsesfil fra arena og oppdater database                |
+| /internal/oppdater_tiltak                             | Les inn tiltaksfil fra arena og oppdater database                |
+| /internal/populer_krr                                 | Hent data om reservasjon i krr og oppdater database              |
+| /internal/reset_feed_oppfolging                       | Spol tilbake feed som overfører data om veiledertilordninger     |
+| /internal/reset_feed_dialog                           | Spol tilbake feed som overfører dialoger fra aktivitetsplanen    |
+| /internal/reset_feed_aktivitet                        | Spol tilbake feed som overfører aktiviteter fra aktivitetsplanen |
+| /internal/slett_aktivitet?aktivitetId=<id>            | Slett aktivitet fra database og indeks                            |
 
 
 ## Plugin til IntelliJ

@@ -4,7 +4,9 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.UpsertQuery;
@@ -34,6 +36,17 @@ public class AktivitetDAO {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
+    public AktoerId getAktoerId(String aktivitetId) {
+        return SqlUtils
+                .select(db, AKTIVITETER, rs -> rs.getString("AKTOERID"))
+                .column("AKTOERID")
+                .where(WhereClause.equals(AKTIVITETID, aktivitetId))
+                .executeToList()
+                .stream()
+                .findFirst()
+                .map(AktoerId::of)
+                .orElseThrow(IllegalStateException::new);
+    }
 
     public void slettAlleAktivitetstatus(String aktivitettype) {
         db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
