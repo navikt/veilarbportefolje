@@ -62,7 +62,7 @@
         "arbeidsliste_overskrift": {
           "type": "keyword"
         },
-        "vedtakstatus": {
+        "vedtak_status": {
           "type": "keyword"
         },
         "fullt_navn": {
