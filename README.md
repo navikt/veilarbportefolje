@@ -15,6 +15,8 @@ Følgende data aggregeres:
 
 ## Hvordan bygge
 
+
+
 Kjør `mvn clean install`
 
 ## Oppsett av Postman
