@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.feed.FeedConfig;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
@@ -115,6 +116,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private BrukerRepository brukerRepository;
 
+    @Inject
+    private AktivitetDAO aktivitetDAO;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -135,6 +139,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingFeedRepository), "/internal/reset_feed_oppfolging");
         leggTilServlet(servletContext, new ResetDialogFeedServlet(dialogFeedRepository), "/internal/reset_feed_dialog");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
+        leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
     }
 
     private Boolean skipDbMigration() {
