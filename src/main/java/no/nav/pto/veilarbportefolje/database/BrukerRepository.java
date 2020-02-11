@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,14 +38,16 @@ import static no.nav.sbl.sql.where.WhereClause.*;
 @Slf4j
 public class BrukerRepository {
 
+    private UnleashService unleashService;
 
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Inject
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.unleashService = unleashService;
     }
 
     public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
@@ -59,9 +62,10 @@ public class BrukerRepository {
 
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
+        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -118,6 +122,8 @@ public class BrukerRepository {
 
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
 
+        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
+
         db.setFetchSize(1000);
 
         Timestamp sistIndeksert = SqlUtils
@@ -126,15 +132,17 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
     }
 
     public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
+        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
+
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, DbUtils::mapTilOppfolgingsBruker)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -143,9 +151,10 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
+        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()
@@ -485,5 +494,9 @@ public class BrukerRepository {
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
+    }
+
+    private boolean vedtakstotteFeatureErPa() {
+        return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
     }
 }

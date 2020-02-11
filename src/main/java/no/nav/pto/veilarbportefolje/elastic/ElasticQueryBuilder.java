@@ -133,6 +133,9 @@ public class ElasticQueryBuilder {
             case "aaprettighetsperiode":
                 sorterAapRettighetsPeriode(searchSourceBuilder, order);
                 break;
+            case "vedtakstatus":
+                searchSourceBuilder.sort("vedtak_status", order);
+                break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
@@ -225,7 +228,9 @@ public class ElasticQueryBuilder {
                         .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
                         .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"));
                 break;
-
+            case UNDER_VURDERING:
+                queryBuilder = existsQuery("vedtak_status");
+                break;
             default:
                 throw new IllegalStateException();
 
@@ -350,7 +355,8 @@ public class ElasticQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
-                                moterMedNavIdag(filtrereVeilederOgEnhet)
+                                moterMedNavIdag(filtrereVeilederOgEnhet),
+                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status")
                         ));
     }
 

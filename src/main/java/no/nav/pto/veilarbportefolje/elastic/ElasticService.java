@@ -109,7 +109,6 @@ public class ElasticService {
         List<String> veilederPaaEnhet = veilederService.getIdenter(enhetId).stream()
                 .map(VeilederId::toString)
                 .collect(toList());
-
         SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet);
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -117,6 +116,7 @@ public class ElasticService {
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId, String indexAlias) {
+
         SearchSourceBuilder request = byggPortefoljestorrelserQuery(enhetId);
         PortefoljestorrelserResponse response = search(request, indexAlias, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();

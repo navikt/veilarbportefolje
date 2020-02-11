@@ -21,6 +21,7 @@ public class StatusTall {
     public long minArbeidsliste;
     public long erSykmeldtMedArbeidsgiver;
     public long moterMedNAVIdag;
+    public long underVurdering;
 
     public StatusTall() {
     }
@@ -40,5 +41,6 @@ public class StatusTall {
         this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();
         this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
         this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
+        this.underVurdering = buckets.getUnderVurdering().getDoc_count();
     }
 }

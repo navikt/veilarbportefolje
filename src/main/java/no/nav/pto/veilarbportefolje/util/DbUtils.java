@@ -21,7 +21,7 @@ import static no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils.isNyF
 public class DbUtils {
 
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa ) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
 
@@ -73,6 +73,7 @@ public class DbUtils {
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
                 .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")));
 
+
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 
         if (brukerHarArbeidsliste) {
@@ -83,6 +84,15 @@ public class DbUtils {
                     .setArbeidsliste_kommentar(rs.getString("ARBEIDSLISTE_KOMMENTAR"))
                     .setArbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
+        }
+
+        if(vedtakstotteFeatureErPa) {
+            String vedtakstatus = rs.getString("VEDTAKSTATUS");
+            bruker
+                    .setTrenger_vurdering(OppfolgingUtils.trengerVurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus))
+                    .setVedtak_status(vedtakstatus)
+                    .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
+                    .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus));
         }
 
         return bruker;

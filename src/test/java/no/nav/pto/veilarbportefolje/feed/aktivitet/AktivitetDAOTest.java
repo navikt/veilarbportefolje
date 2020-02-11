@@ -56,8 +56,59 @@ public class AktivitetDAOTest {
     @Inject
     private AktivitetDAO aktivitetDAO;
 
+
+    @Test(expected = IllegalStateException.class)
+    public void skal_kaste_exception_ved_manglende_aktoer_id() {
+        aktivitetDAO.getAktoerId("finnes_ikke");
+    }
+
     @Test
-    public void skalSetteInnAktivitet() throws Exception {
+    public void skal_hente_aktoerid_for_aktivitet() {
+        String expectedAktoerId = "aktoer_id_test_1";
+        String aktivitetId = "aktivitet_id_test_1";
+
+        AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
+                .setAktivitetId(aktivitetId)
+                .setAktivitetType("test_type")
+                .setAktorId("aktoer_id_test_1")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("PLANLAGT");
+
+        AktivitetDataFraFeed aktivitet2 = new AktivitetDataFraFeed()
+                .setAktivitetId("aktivitet_id_test_2")
+                .setAktorId("aktoer_id_test_2")
+                .setAktivitetType("test_type")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("PLANLAGT");
+
+        AktivitetDataFraFeed aktivitet3 = new AktivitetDataFraFeed()
+                .setAktivitetId(aktivitetId)
+                .setAktorId("aktoer_id_test_1")
+                .setAktivitetType("test_type")
+                .setAktorId("aktoer_id_test_1")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setStatus("PLANLAGT");
+
+        aktivitetDAO.upsertAktivitet(aktivitet1);
+        aktivitetDAO.upsertAktivitet(aktivitet2);
+        aktivitetDAO.upsertAktivitet(aktivitet3);
+
+        String actualAktoerId = aktivitetDAO.getAktoerId(aktivitetId).toString();
+
+        assertThat(actualAktoerId).isEqualTo(expectedAktoerId);
+    }
+
+    @Test
+    public void skalSetteInnAktivitet() {
         AktivitetDataFraFeed aktivitet = new AktivitetDataFraFeed()
                 .setAktivitetId("aktivitetid")
                 .setAktivitetType("aktivitettype")
@@ -76,7 +127,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void skalOppdatereAktivitet() throws Exception {
+    public void skalOppdatereAktivitet() {
         AktivitetDataFraFeed aktivitet1 = new AktivitetDataFraFeed()
                 .setAktivitetId("aktivitetid")
                 .setAktivitetType("aktivitettype")
