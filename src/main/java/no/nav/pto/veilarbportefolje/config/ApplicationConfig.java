@@ -21,7 +21,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.internal.*;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
+import no.nav.pto.veilarbportefolje.kafka.KafkaVedtakstotteServiceRunnable;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
@@ -192,11 +192,6 @@ public class ApplicationConfig implements ApiApplication {
                 .applicationName(APPLICATION_NAME)
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
-    }
-
-    @Bean
-    public KafkaConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable(vedtakService, unleashService);
     }
 
 

@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.util.*;
 
 import static no.nav.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_BROKERS;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -27,32 +28,18 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_
 import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 @Slf4j
-public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
+public class KafkaVedtakstotteServiceRunnable implements Helsesjekk, Runnable {
 
     private VedtakService vedtakService;
     private UnleashService unleashService;
-
-
+    private KafkaConsumer<String, String> kafkaConsumer;
     private long lastThrownExceptionTime;
     private Exception e;
-    private KafkaConsumer<String, String> kafkaConsumer;
 
-    public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
-    protected static final String KAFKA_BROKERS = getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY);
-    private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
-    private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
-    protected static final String KAFKA_CONSUMER_TOPIC = "aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName();
-
-
-
-    public KafkaConsumerRunnable (VedtakService vedtakService, UnleashService unleashService) {
-        // TODO SKA DENNA TA IN TOPICS ELLER SKA VI DEFINIERA ALLA TOPICS HER?
-        // TODO SWITCH CASE PÅ TOPIC record.topic() ELLER LAGA EN NY INSTANSE AV DENNA KLASS FØR VARJE TOPIC ?
-        this.kafkaConsumer = new KafkaConsumer<>(kafkaProperties());
-        this.kafkaConsumer.subscribe(Arrays.asList(KAFKA_CONSUMER_TOPIC));
-        this.vedtakService = vedtakService;
-        this.unleashService= unleashService;
-
+    public KafkaVedtakstotteServiceRunnable(VedtakService vedtakService, UnleashService unleashService, KafkaConsumer<String, String> kafkaConsumer) {
+        this.vedtakService  = vedtakService;
+        this.unleashService = unleashService;
+        this.kafkaConsumer = kafkaConsumer;;
         JobUtils.runAsyncJob(this::run);
     }
 
@@ -79,7 +66,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     @Override
     public void helsesjekk() {
         if ((this.lastThrownExceptionTime + 60_000L) > System.currentTimeMillis()) {
-            throw new IllegalArgumentException("Kafka consumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
+            throw new IllegalArgumentException("Kafka veilarbportefolje-vedtakstotte-consumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
         }
     }
 
@@ -92,17 +79,4 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
     }
 
-    public static HashMap<String, Object> kafkaProperties () {
-        HashMap<String, Object>  props = new HashMap<> ();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
-        props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
-        props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
-        props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
-        props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
-        props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(MAX_POLL_INTERVAL_MS_CONFIG, 5000);
-        props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        return props;
-    }
 }
