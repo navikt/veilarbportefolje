@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
@@ -23,11 +24,17 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Getter
 @RequiredArgsConstructor
 public class Arbeidsliste {
+
+     public enum Kategori {
+        BLA, GRONN, GUL, LILLA
+    }
+
     final VeilederId sistEndretAv;
     final ZonedDateTime endringstidspunkt;
     final String overskrift;
     final String kommentar;
     final ZonedDateTime frist;
+    final Kategori kategori;
     Boolean isOppfolgendeVeileder;
     Boolean arbeidslisteAktiv;
     Boolean harVeilederTilgang;
@@ -44,13 +51,14 @@ public class Arbeidsliste {
 
         String overskrift = bruker.getArbeidsliste_overskrift();
         String kommentar = bruker.getArbeidsliste_kommentar();
+        String kategori = bruker.getArbeidsliste_kategori();
 
         ZonedDateTime frist = null;
         if (bruker.getArbeidsliste_frist() != null) {
             frist = toZonedDateTime(dateIfNotFarInTheFutureDate(Instant.parse(bruker.getArbeidsliste_frist())));
         }
 
-        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist)
+        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, Kategori.valueOf(kategori))
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 
@@ -66,6 +74,7 @@ public class Arbeidsliste {
                         @JsonProperty("frist") ZonedDateTime frist,
                         @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
                         @JsonProperty("arbeidslisteAktiv") Boolean arbeidslisteAktiv,
+                        @JsonProperty("kategori") Kategori kategori,
                         @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang) {
         this.sistEndretAv = sistEndretAv;
         this.endringstidspunkt = endringstidspunkt;
@@ -75,5 +84,6 @@ public class Arbeidsliste {
         this.isOppfolgendeVeileder = isOppfolgendeVeileder;
         this.arbeidslisteAktiv = arbeidslisteAktiv;
         this.harVeilederTilgang = harVeilederTilgang;
+        this.kategori = kategori;
     }
 }

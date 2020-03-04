@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.api;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
+import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
@@ -94,7 +95,8 @@ public class ValideringsRegler {
                                 validerFnr(arbeidsliste.getFnr()),
                                 valid(arbeidsliste.getOverskrift()),
                                 validateKommentar(arbeidsliste.getKommentar()),
-                                validateFrist(arbeidsliste.getFrist(), redigering)
+                                validateFrist(arbeidsliste.getFrist(), redigering),
+                                validateKategori(arbeidsliste.getKategori())
                         )
                         .ap(ArbeidslisteDTO::of);
     }
@@ -112,6 +114,14 @@ public class ValideringsRegler {
 
     private static boolean isBeforeToday(Timestamp timestamp) {
         return timestamp.toLocalDateTime().toLocalDate().isBefore(LocalDate.now());
+    }
+
+    private static Validation<String, Arbeidsliste.Kategori> validateKategori (String kategori) {
+        try {
+            return valid(Arbeidsliste.Kategori.valueOf(kategori));
+        } catch (Exception e) {
+            return invalid(format("%s er ikke et gyldig kategori", kategori));
+        }
     }
 
     private static Validation<String, String> validateKommentar(String kommentar) {

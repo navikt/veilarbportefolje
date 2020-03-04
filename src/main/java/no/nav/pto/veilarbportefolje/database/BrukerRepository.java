@@ -221,6 +221,7 @@ public class BrukerRepository {
                     "ARBEIDSLISTE_FRIST, " +
                     "ARBEIDSLISTE_ENDRET_AV, " +
                     "ARBEIDSLISTE_ENDRET_TID " +
+                    "ARBEIDSLISTE_KATEGORI " +
                     "FROM " +
                     "vw_portefolje_info";
 
