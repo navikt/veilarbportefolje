@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.feed.FeedConfig;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
@@ -195,8 +196,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable(vedtakService, unleashService);
+    public KafkaConsumerRunnable kafkaConsumerRunnable(AktivitetService aktivitetService, VedtakService vedtakService, UnleashService unleashService) {
+        return new KafkaConsumerRunnable(aktivitetService, vedtakService, unleashService);
     }
 
 

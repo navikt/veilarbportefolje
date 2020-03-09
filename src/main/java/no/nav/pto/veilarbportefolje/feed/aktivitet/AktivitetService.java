@@ -4,6 +4,7 @@ package no.nav.pto.veilarbportefolje.feed.aktivitet;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.kafka.aktivitet.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 
@@ -25,6 +26,10 @@ public class AktivitetService {
         this.aktivitetDAO = aktivitetDAO;
         this.aktoerService = aktoerService;
         this.persistentOppdatering = persistentOppdatering;
+    }
+
+    public void behandleMelding(KafkaAktivitetMelding melding) {
+        log.info("Behandler aktivitet {} for aktørid {} fra kafka med meldingid {}", melding.getAktivitetId(), melding.getAktorId(), melding.getMeldingId());
     }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
@@ -57,4 +62,5 @@ public class AktivitetService {
         List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds, aktoerService, aktivitetDAO);
         persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);
     }
+
 }
