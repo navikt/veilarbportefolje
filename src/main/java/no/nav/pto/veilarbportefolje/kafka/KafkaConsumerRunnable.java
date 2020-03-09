@@ -71,7 +71,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         while (true) {
             try {
 
-                ConsumerRecords<String, String> records = kafka.poll(Duration.ofSeconds(1L));
+                ConsumerRecords<String, String> records = kafka.poll(Duration.ofSeconds(30));
 
                 for (ConsumerRecord<String, String> record : records) {
                     routeMessage(record);
