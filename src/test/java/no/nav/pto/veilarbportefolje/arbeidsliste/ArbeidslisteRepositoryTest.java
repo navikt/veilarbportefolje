@@ -41,13 +41,15 @@ public class ArbeidslisteRepositoryTest {
                 .setVeilederId(VeilederId.of("X11111"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar")
-                .setOverskrift("Dette er en overskrift");
+                .setOverskrift("Dette er en overskrift")
+                .setKategori(Arbeidsliste.Kategori.BLA);
 
         data2 = new ArbeidslisteDTO(new Fnr("01010101011"))
                 .setAktoerId(AktoerId.of("22222223"))
                 .setVeilederId(VeilederId.of("X11112"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
-                .setKommentar("Dette er en kommentar");
+                .setKommentar("Dette er en kommentar")
+                .setKategori(Arbeidsliste.Kategori.GRONN);
 
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
 
@@ -63,6 +65,20 @@ public class ArbeidslisteRepositoryTest {
         assertTrue(result.isSuccess());
         assertEquals(data.getVeilederId(), result.get().getSistEndretAv());
     }
+
+    @Test
+    public void skalKunneOppdatereKategori() throws Exception {
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
+        assertEquals(Arbeidsliste.Kategori.BLA, result.get().getKategori());
+
+        Try<Arbeidsliste> updatedArbeidsliste = result.map(arbeidsliste -> new ArbeidslisteDTO(Fnr.of("01010101010")).setAktoerId(data.getAktoerId()).setEndringstidspunkt(data.getEndringstidspunkt()).setFrist(data.getFrist()).setKommentar(data.getKommentar()).setKategori(Arbeidsliste.Kategori.LILLA))
+                .flatMap(res -> repo.updateArbeidsliste(res))
+                .flatMap(aktoerId -> repo.retrieveArbeidsliste(aktoerId));
+
+        assertTrue(result.isSuccess());
+        assertEquals(Arbeidsliste.Kategori.LILLA, updatedArbeidsliste.get().getKategori());
+    }
+
 
     @Test
     public void skalOppdatereEksisterendeArbeidsliste() throws Exception {
