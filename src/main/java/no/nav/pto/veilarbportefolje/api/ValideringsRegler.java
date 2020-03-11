@@ -48,7 +48,8 @@ public class ValideringsRegler {
             "oppfolging_startdato",
             "veileder_id",
             "vedtakstatus",
-            "vedtak_status_endret"
+            "vedtak_status_endret",
+            "arbeidslisteikon"
             );
 
     static void sjekkEnhet(String enhet) {

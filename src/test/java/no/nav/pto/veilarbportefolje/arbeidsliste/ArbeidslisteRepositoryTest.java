@@ -71,8 +71,15 @@ public class ArbeidslisteRepositoryTest {
         Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
         assertEquals(Arbeidsliste.Kategori.BLA, result.get().getKategori());
 
-        Try<Arbeidsliste> updatedArbeidsliste = result.map(arbeidsliste -> new ArbeidslisteDTO(Fnr.of("01010101010")).setAktoerId(data.getAktoerId()).setEndringstidspunkt(data.getEndringstidspunkt()).setFrist(data.getFrist()).setKommentar(data.getKommentar()).setKategori(Arbeidsliste.Kategori.LILLA))
-                .flatMap(res -> repo.updateArbeidsliste(res))
+        Try<Arbeidsliste> updatedArbeidsliste = result
+                .map(arbeidsliste -> new ArbeidslisteDTO(Fnr.of("01010101010"))
+                        .setAktoerId(data.getAktoerId())
+                        .setVeilederId(data.getVeilederId())
+                        .setEndringstidspunkt(data.getEndringstidspunkt())
+                        .setFrist(data.getFrist())
+                        .setKommentar(data.getKommentar())
+                        .setKategori(Arbeidsliste.Kategori.LILLA))
+                .flatMap(oppdatertArbeidsliste -> repo.updateArbeidsliste(oppdatertArbeidsliste))
                 .flatMap(aktoerId -> repo.retrieveArbeidsliste(aktoerId));
 
         assertTrue(result.isSuccess());

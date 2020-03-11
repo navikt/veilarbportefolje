@@ -9,6 +9,7 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.Pair;
 import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
+import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -325,6 +326,32 @@ public class ElasticServiceIntegrationTest {
         assertThat(statustall.ufordelteBrukere).isEqualTo(1);
     }
 
+    @Test
+    public void skal_sortere_brukerepa_arbeidslisteikon() {
+
+        val blaBruker = new OppfolgingsBruker()
+                .setArbeidsliste_kategori(Arbeidsliste.Kategori.BLA.name());
+
+        val lillaBruker = new OppfolgingsBruker()
+                .setArbeidsliste_kategori(Arbeidsliste.Kategori.LILLA.name());
+
+        skrivBrukereTilTestindeks(blaBruker, lillaBruker);
+        BrukereMedAntall response = elasticService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                "desc",
+                "arbeidslisteikon",
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null,
+                TEST_INDEX
+        );
+
+        List<Bruker> responseBrukere = response.getBrukere();
+        assertThat(responseBrukere.get(0).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.LILLA);
+        assertThat(responseBrukere.get(1).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.BLA);
+
+    }
     @Test
     public void skal_hente_brukere_som_trenger_vurdering_og_er_ny_for_enhet() {
 
