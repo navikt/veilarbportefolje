@@ -35,23 +35,4 @@ public class KafkaVedtakStatusEndring {
     Hovedmal hovedmal;
     LocalDateTime statusEndretTidspunkt;
 
-    public static Map<Innsatsgruppe, no.nav.pto.veilarbportefolje.domene.Innsatsgruppe> mapInnsatsGruppeTilArenaInnsatsGruppe() {
-        //TODO HVA SKA GRADERT VARIG INNSATS MAPPES TIL ?
-        return new HashMap<Innsatsgruppe,no.nav.pto.veilarbportefolje.domene.Innsatsgruppe>() {{
-            put( Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS, no.nav.pto.veilarbportefolje.domene.Innsatsgruppe.VARIG);
-            put(Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, no.nav.pto.veilarbportefolje.domene.Innsatsgruppe.BFORM);
-            put(Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,    no.nav.pto.veilarbportefolje.domene.Innsatsgruppe.BATT);
-            put(Innsatsgruppe.STANDARD_INNSATS,    no.nav.pto.veilarbportefolje.domene.Innsatsgruppe.IKVAL);
-            put(Innsatsgruppe.VARIG_TILPASSET_INNSATS,    no.nav.pto.veilarbportefolje.domene.Innsatsgruppe.VARIG);
-        }};
-
-    }
-
-    public static Map<Hovedmal, no.nav.pto.veilarbportefolje.domene.Hovedmal> mapHovedMalTilArenaHovedmal() {
-        return new HashMap<Hovedmal,no.nav.pto.veilarbportefolje.domene.Hovedmal>() {{
-            put( Hovedmal.BEHOLDE_ARBEID, no.nav.pto.veilarbportefolje.domene.Hovedmal.BEHOLDEA);
-            put(Hovedmal.SKAFFE_ARBEID, no.nav.pto.veilarbportefolje.domene.Hovedmal.SKAFFEA);
-        }};
-
-    }
 }

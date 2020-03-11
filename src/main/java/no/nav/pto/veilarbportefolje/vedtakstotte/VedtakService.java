@@ -1,7 +1,18 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import org.apache.lucene.search.Query;
+import org.elasticsearch.common.io.stream.StreamOutput;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryShardContext;
+import org.elasticsearch.index.reindex.UpdateByQueryRequest;
+
+import java.io.IOException;
+
 public class VedtakService {
 
     private VedtakStatusRepository vedtakStatusRepository;
@@ -16,7 +27,7 @@ public class VedtakService {
         KafkaVedtakStatusEndring.KafkaVedtakStatus vedtakStatus = melding.getVedtakStatus();
         switch (vedtakStatus) {
             case UTKAST_SLETTET:
-                vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
+
                 break;
             case UTKAST_OPPRETTET:
             case SENDT_TIL_BESLUTTER:
@@ -28,5 +39,10 @@ public class VedtakService {
                 break;
         }
         elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+    }
+
+    private void slettUtkast(KafkaVedtakStatusEndring melding) {
+        vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
+        elasticIndexer.oppdaterBrukerFeldt(new UpdateByQueryRequest())
     }
 }

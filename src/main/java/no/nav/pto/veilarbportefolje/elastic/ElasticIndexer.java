@@ -31,6 +31,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
+import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 
 import javax.inject.Inject;
 import java.nio.charset.Charset;
@@ -194,6 +195,11 @@ public class ElasticIndexer {
             String message = String.format("Feil ved sletting av bruker med aktoerId %s og personId %s i indeks %s", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
             throw new RuntimeException(message);
         }
+    }
+
+    @SneakyThrows
+    public BulkByScrollResponse oppdaterBrukerFeldt(UpdateByQueryRequest updateByQueryRequest) {
+        return client.updateByQuery(updateByQueryRequest, DEFAULT);
     }
 
 
