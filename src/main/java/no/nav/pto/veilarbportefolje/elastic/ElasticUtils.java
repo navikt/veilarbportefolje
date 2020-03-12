@@ -22,7 +22,7 @@ public class ElasticUtils {
     }
 
     public static long getCount(String hostname, String username, String password) {
-        String url = "http://" + hostname + ":9200/_doc/_count";
+        String url = "http://" + hostname + ":9200/" + getAlias() + "/_count";
 
         return RestUtils.withClient(client ->
                 client
