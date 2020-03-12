@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
@@ -62,25 +63,32 @@ public class ElasticIndexer {
 
     private final ElasticService elasticService;
     private final Counter writeCounter;
-
-    private RestHighLevelClient client;
-
+    private RestHighLevelClient deprecatedClient;
+    private OpenDistroClient openDistroClient;
     private AktivitetDAO aktivitetDAO;
-
     private BrukerRepository brukerRepository;
+    private UnleashService unleashService;
 
     @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
-            RestHighLevelClient client,
-            ElasticService elasticService
+            RestHighLevelClient deprecatedClient,
+            OpenDistroClient openDistroClient,
+            ElasticService elasticService,
+            UnleashService unleashService
     ) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
-        this.client = client;
+        this.deprecatedClient = deprecatedClient;
+        this.openDistroClient = openDistroClient;
         this.elasticService = elasticService;
+        this.unleashService = unleashService;
         writeCounter = Counter.builder("portefolje_elastic_writes").register(getMeterRegistry());
+    }
+
+    private boolean opendistroIsEnabled() {
+        return unleashService.isEnabled("portefolje.opendistro");
     }
 
     @SneakyThrows
@@ -171,7 +179,7 @@ public class ElasticIndexer {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(getAlias());
 
-        boolean exists = client.indices().exists(request, DEFAULT);
+        boolean exists = opendistroIsEnabled() ? openDistroClient.indices().exists(request, DEFAULT) : deprecatedClient.indices().exists(request, DEFAULT);
         return !exists;
     }
 
@@ -187,7 +195,8 @@ public class ElasticIndexer {
         DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
                 .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
-        BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+        BulkByScrollResponse response =  opendistroIsEnabled() ? openDistroClient.deleteByQuery(deleteQuery, DEFAULT) : deprecatedClient.deleteByQuery(deleteQuery, DEFAULT);
+
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
         } else {
@@ -231,7 +240,7 @@ public class ElasticIndexer {
     @SneakyThrows
     public Optional<String> hentGammeltIndeksNavn() {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(getAlias());
-        GetAliasesResponse response = client.indices().getAlias(getAliasRequest, DEFAULT);
+        GetAliasesResponse response = opendistroIsEnabled() ? openDistroClient.indices().getAlias(getAliasRequest, DEFAULT) : deprecatedClient.indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
     }
 
@@ -242,7 +251,7 @@ public class ElasticIndexer {
                 .alias(getAlias());
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
-        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = opendistroIsEnabled() ? openDistroClient.indices().updateAliases(request, DEFAULT) : deprecatedClient.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke legge til alias {}", getAlias());
@@ -265,7 +274,7 @@ public class ElasticIndexer {
                 .addAliasAction(removeAliasAction)
                 .addAliasAction(addAliasAction);
 
-        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = opendistroIsEnabled() ? openDistroClient.indices().updateAliases(request, DEFAULT) : deprecatedClient.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke oppdatere alias {}", getAlias());
@@ -274,7 +283,7 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public void slettGammelIndeks(String gammelIndeks) {
-        AcknowledgedResponse response = client.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
+        AcknowledgedResponse response = deprecatedClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
         if (!response.isAcknowledged()) {
             log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
         }
@@ -288,7 +297,7 @@ public class ElasticIndexer {
                 .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
                 .forEach(bulk::add);
 
-        BulkResponse response = client.bulk(bulk, DEFAULT);
+        BulkResponse response = opendistroIsEnabled() ? openDistroClient.bulk(bulk, DEFAULT) : deprecatedClient.bulk(bulk, DEFAULT);
 
         writeCounter.increment();
 
@@ -309,7 +318,7 @@ public class ElasticIndexer {
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
 
-        CreateIndexResponse response = client.indices().create(request, DEFAULT);
+        CreateIndexResponse response = opendistroIsEnabled() ? openDistroClient.indices().create(request, DEFAULT) : deprecatedClient.indices().create(request, DEFAULT);
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();
