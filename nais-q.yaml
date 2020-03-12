@@ -26,8 +26,6 @@ spec:
         mountPath: /var/run/secrets/nais.io/oracle_creds
       - kvPath: /kv/preprod/fss/veilarbportefolje/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
-  envFrom:
-    - configmap: pto-config
   leaderElection: true
   healthcheck:
     liveness:
@@ -48,3 +46,10 @@ spec:
     requests:
       cpu: 500m
       memory: 2Gi
+  envFrom:
+    - configmap: pto-config
+  env:
+    - name: VEILARBELASTIC_HOSTNAME
+      value: "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local"
+    - name: VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME
+      value: "tpa-veilarb-opendistro-elasticsearch.tpa.svc.nais.local"

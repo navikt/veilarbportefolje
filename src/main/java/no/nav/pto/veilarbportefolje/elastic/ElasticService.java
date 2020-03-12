@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.Statustall
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.json.JsonUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -27,14 +28,18 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Component
 public class ElasticService {
-    RestHighLevelClient client;
+    RestHighLevelClient deprecatedClient;
+    OpenDistroClient openDistroClient;
     PepClient pepClient;
     VeilederService veilederService;
+    UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService) {
-        this.client = client;
+    public ElasticService(RestHighLevelClient deprecatedClient, OpenDistroClient openDistroClient, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
+        this.deprecatedClient = deprecatedClient;
         this.pepClient = pepClient;
         this.veilederService = veilederService;
+        this.openDistroClient = openDistroClient;
+        this.unleashService = unleashService;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall, String indexAlias) {
@@ -129,7 +134,7 @@ public class ElasticService {
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = unleashService.isEnabled("portefolje.opendistro") ? openDistroClient.search(request, RequestOptions.DEFAULT) : deprecatedClient.search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
