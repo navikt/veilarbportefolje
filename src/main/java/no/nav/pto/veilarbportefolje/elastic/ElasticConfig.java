@@ -47,7 +47,7 @@ public class ElasticConfig {
             .build();
 
     public static String VEILARB_OPENDISTRO_ELASTICSEARCH_USERNAME = getRequiredProperty(VEILARB_OPENDISTRO_ELASTICSEARCH_USERNAME_PROPERTY);
-    public static String VEILARB_OPENDISTRO_ELASTICSEARCH_PASSWORD = getRequiredProperty(VEILARB_OPENDISTRO_ELASTICSEARCH_USERNAME_PROPERTY);
+    public static String VEILARB_OPENDISTRO_ELASTICSEARCH_PASSWORD = getRequiredProperty(VEILARB_OPENDISTRO_ELASTICSEARCH_PASSWORD_PROPERTY);
     public static String VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME = getRequiredProperty(VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME_PROPERTY);
 
     private static ElasticClientConfig openDistroClientConfig = ElasticClientConfig.builder()
