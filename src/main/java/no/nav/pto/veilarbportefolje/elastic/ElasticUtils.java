@@ -24,6 +24,8 @@ public class ElasticUtils {
     public static long getCount(String hostname, String username, String password) {
         String url = "http://" + hostname + "/_doc/_count";
 
+        log.info("calling url: {}", url);
+
         return RestUtils.withClient(client ->
                 client
                         .target(url)
