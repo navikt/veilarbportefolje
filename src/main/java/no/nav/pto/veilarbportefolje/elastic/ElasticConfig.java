@@ -98,6 +98,11 @@ public class ElasticConfig {
     }
 
     @Bean
+    public OpenDistroElasticSelftest openDistroElasticSelftest() {
+        return new OpenDistroElasticSelftest(openDistroClient());
+    }
+
+    @Bean
     public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
         ElasticService elasticService = new ElasticService(deprecatedClient(), openDistroClient(), pepClient, veilederService, unleashService);
         return new ElasticIndexer(aktivitetDAO, brukerRepository, deprecatedClient(), openDistroClient(), elasticService, unleashService);
