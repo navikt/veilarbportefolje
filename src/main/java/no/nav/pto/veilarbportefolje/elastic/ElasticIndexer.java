@@ -25,7 +25,9 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -34,6 +36,7 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -57,6 +60,7 @@ import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticIndexer {
@@ -163,8 +167,8 @@ public class ElasticIndexer {
         int antall = brukere.size();
 
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-            event.addFieldToReport("es.antall.oppdateringer", antall);
-            event.report();
+        event.addFieldToReport("es.antall.oppdateringer", antall);
+        event.report();
     }
 
     @SneakyThrows
@@ -196,12 +200,6 @@ public class ElasticIndexer {
             throw new RuntimeException(message);
         }
     }
-
-    @SneakyThrows
-    public BulkByScrollResponse oppdaterBrukerFeldt(UpdateByQueryRequest updateByQueryRequest) {
-        return client.updateByQuery(updateByQueryRequest, DEFAULT);
-    }
-
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
 
@@ -302,6 +300,18 @@ public class ElasticIndexer {
             throw new RuntimeException(response.buildFailureMessage());
         }
         log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
+    }
+
+    public void oppdaterBrukerDoc(OppfolgingsBruker oppfolgingsBruker) throws IOException {
+        UpdateRequest updateRequest =  Optional.of(oppfolgingsBruker)
+                .map(bruker -> new UpdateRequest()
+                        .index(getAlias())
+                        .type("_doc")
+                        .id(bruker.getFnr())
+                        .doc(toJson(bruker)))
+                .get();
+
+        client.update(updateRequest, DEFAULT);
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {

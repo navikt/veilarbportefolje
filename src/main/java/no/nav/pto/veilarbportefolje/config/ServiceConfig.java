@@ -34,8 +34,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
-        return new VedtakService(vedtakStatusRepository, elasticIndexer);
+    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+        return new VedtakService(vedtakStatusRepository, elasticIndexer, aktoerService);
     }
 
     @Bean

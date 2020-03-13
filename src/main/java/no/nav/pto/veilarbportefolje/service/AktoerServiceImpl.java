@@ -74,6 +74,11 @@ public class AktoerServiceImpl implements AktoerService {
                 .map(AktoerId::of);
     }
 
+    public Try<Fnr> hentFnrFraAktorId(AktoerId aktorId) {
+        return Try.of(() -> aktorService.getFnr(aktorId.toString()).get())
+                .map(Fnr::of);
+    }
+
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
         Map<Fnr, Optional<PersonId>> typeMap = new HashMap<>();
         Map<String, Optional<String>> stringMap = brukerRepository.retrievePersonidFromFnrs(fnrs.stream().map(Fnr::toString).collect(toList()));

@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.mock.AktoerServiceMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,7 +20,7 @@ public class VedtakServiceTest {
     private static String AKTORID = "123456789";
     private static long VEDTAKID = 1;
 
-    private static  KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
+    private static KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
             .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.UTKAST_OPPRETTET)
             .setStatusEndretTidspunkt(LocalDateTime.now())
             .setAktorId(AKTORID)
@@ -31,7 +32,7 @@ public class VedtakServiceTest {
     public void setup (){
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class));
+        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class), new AktoerServiceMock());
 
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
 
