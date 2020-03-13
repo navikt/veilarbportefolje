@@ -45,7 +45,7 @@ public class ElasticUtils {
     public static <T> T restClient(Function<WebTarget, T> function) {
         Client client = RestUtils.createClient();
         client.register(new ElasticAuthFilter());
-        WebTarget target = client.target("http://" + VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME);
+        WebTarget target = client.target("http://" + VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME + ":9200");
         try {
             return function.apply(target);
         } finally {
