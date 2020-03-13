@@ -49,9 +49,8 @@ public class KafkaVedtakstotteServiceRunnable implements Helsesjekk, Runnable {
             try {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, String> record : records) {
-                    KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
-                    log.info("Behandler melding for aktorId: {}  på topic: " + record.topic());
-                    vedtakService.behandleMelding(melding);
+                    log.info("Behandler melding for på topic: " + record.topic());
+                    vedtakService.behandleKafkaMelding(record.value());
                     kafkaConsumer.commitSync();
                 }
             }

@@ -14,7 +14,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
+import java.lang.reflect.Array;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Date;
 
 import static no.nav.json.JsonUtils.fromJson;
@@ -22,40 +24,44 @@ import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_BROKERS;
 
 
 @Slf4j
-public class KafkaDialogServiceRunnable implements Helsesjekk, Runnable {
+public class KafkaConsumerServiceRunnable implements Helsesjekk, Runnable {
 
-    private DialogFeedRepository dialogFeedRepository;
-    private ElasticIndexer elasticIndexer;
+    private KafkaConsumerService kafkaConsumerService;
     private UnleashService unleashService;
     private Consumer<String, String> kafkaConsumer;
+    private String toggleName;
+    private String topicName;
+
     private long lastThrownExceptionTime;
+
     private Exception e;
 
-    public KafkaDialogServiceRunnable(DialogFeedRepository dialogFeedRepository, UnleashService unleashService, Consumer<String, String> kafkaConsumer, ElasticIndexer elasticIndexer) {
-        this.dialogFeedRepository  = dialogFeedRepository;
+    public KafkaConsumerServiceRunnable(KafkaConsumerService kafkaConsumerService, UnleashService unleashService, Consumer<String, String> kafkaConsumer, String topicName, String toggleName) {
+        this.kafkaConsumerService  = kafkaConsumerService;
         this.unleashService = unleashService;
         this.kafkaConsumer = kafkaConsumer;
-        this.elasticIndexer = elasticIndexer;
+        this.toggleName = toggleName;
+        this.topicName = topicName;
+
+        kafkaConsumer.subscribe(Arrays.asList(topicName));
+
         JobUtils.runAsyncJob(this::run);
     }
 
     @Override
     public void run() {
-        while (this.dialogKafkaFeaturePa()) {
+        while (this.featureErPa()) {
             try {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, String> record : records) {
-                    DialogDataFraFeed melding = fromJson(record.value(), DialogDataFraFeed.class);
-                    log.info("Behandler melding for aktorId: {}  på topic: " + record.topic());
-                    dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
-                    elasticIndexer.indekserAsynkront(AktoerId.of(melding.getAktorId()));
+                    kafkaConsumerService.behandleKafkaMelding(record.value(), record.topic());
                     kafkaConsumer.commitSync();
                 }
             }
             catch (Exception e) {
                 this.e = e;
                 this.lastThrownExceptionTime = System.currentTimeMillis();
-                log.error("Feilet ved behandling av kafka-dialog-melding", e);
+                log.error(String.format("Feilet ved behandling av melding på topicen %s , %s", this.topicName, e));
             }
         }
     }
@@ -63,12 +69,12 @@ public class KafkaDialogServiceRunnable implements Helsesjekk, Runnable {
     @Override
     public void helsesjekk() {
         if ((this.lastThrownExceptionTime + 60_000L) > System.currentTimeMillis()) {
-            throw new IllegalArgumentException("Kafka veilarbportefolje-dialog-consumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
+            throw new IllegalArgumentException(String.format("Feilet å konsumera på topicen  %s,  %s" , this.topicName,  new Date(this.lastThrownExceptionTime)), this.e);
         }
     }
 
-    private boolean dialogKafkaFeaturePa () {
-        return unleashService.isEnabled("veilarbdialog.kafka");
+    private boolean featureErPa () {
+        return unleashService.isEnabled(this.toggleName);
     }
 
     @Override

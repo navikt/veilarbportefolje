@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService.KAFKA_VEDTAK_CONSUMER_TOPIC;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -26,7 +27,6 @@ public class KafkaConfig {
     private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
 
-    protected static final String KAFKA_VEDTAK_CONSUMER_TOPIC = "aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName();
     protected static final String KAFKA_DIALOG_CONSUMER_TOPIC = "aapen-oppfolging-endringPaaDialog-v1-" + requireEnvironmentName();
 
 
@@ -45,22 +45,18 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumer<String, String> kafkaVedtakConsumer () {
-        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(kafkaProperties());
-        kafkaConsumer.subscribe(Arrays.asList(KAFKA_VEDTAK_CONSUMER_TOPIC));
-        return kafkaConsumer;
+    public KafkaConsumer<String, String> kafkaConsumer() {
+        return new KafkaConsumer<>(kafkaProperties());
     }
 
     @Bean
-    public KafkaConsumer<String, String> kafkaDialogConsumer () {
-        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(kafkaProperties());
-        kafkaConsumer.subscribe(Arrays.asList(KAFKA_DIALOG_CONSUMER_TOPIC));
-        return kafkaConsumer;
+    public KafkaConsumerServiceRunnable kafkaVedtakConsumerRunnable(VedtakService vedtakService, UnleashService unleashService, KafkaConsumer kafkaConsumer) {
+        return new KafkaConsumerServiceRunnable(vedtakService, unleashService, kafkaConsumer, KAFKA_VEDTAK_CONSUMER_TOPIC);
     }
 
     @Bean
-    public KafkaVedtakstotteServiceRunnable kafkaConsumerRunnable(VedtakService vedtakService, UnleashService unleashService, KafkaConsumer kafkaVedtakConsumer) {
-        return new KafkaVedtakstotteServiceRunnable(vedtakService, unleashService, kafkaVedtakConsumer);
+    public KafkaConsumerServiceRunnable kafkaDialogConsumerRunnable(VedtakService vedtakService, UnleashService unleashService, KafkaConsumer kafkaConsumer) {
+        return new KafkaConsumerServiceRunnable(vedtakService, unleashService, kafkaConsumer, KAFKA_DIALOG_CONSUMER_TOPIC);
     }
 
 }
