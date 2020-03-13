@@ -4,15 +4,16 @@ import io.micrometer.core.instrument.Counter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
+import no.nav.json.JsonUtils;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -27,14 +28,15 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.GetAliasesResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
 import javax.inject.Inject;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -46,15 +48,15 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE_LIMIT;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
+import static javax.ws.rs.client.Entity.entity;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static no.nav.json.JsonUtils.toJson;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.*;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
-import static no.nav.json.JsonUtils.toJson;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -171,8 +173,8 @@ public class ElasticIndexer {
         int antall = brukere.size();
 
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-            event.addFieldToReport("es.antall.oppdateringer", antall);
-            event.report();
+        event.addFieldToReport("es.antall.oppdateringer", antall);
+        event.report();
     }
 
     @SneakyThrows
@@ -196,7 +198,7 @@ public class ElasticIndexer {
         DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
                 .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
-        BulkByScrollResponse response =  opendistroIsEnabled() ? openDistroClient.deleteByQuery(deleteQuery, DEFAULT) : deprecatedClient.deleteByQuery(deleteQuery, DEFAULT);
+        BulkByScrollResponse response = opendistroIsEnabled() ? openDistroClient.deleteByQuery(deleteQuery, DEFAULT) : deprecatedClient.deleteByQuery(deleteQuery, DEFAULT);
 
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
@@ -313,31 +315,32 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public String opprettNyIndeks(String navn) {
+    public String opprettNyIndeks(String indeksNavn) {
 
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
 
-        log.info("Opretter ny indeks {}", navn);
+        log.info("Opretter ny indeks {}", indeksNavn);
         if (opendistroIsEnabled()) {
-            log.info("Oprettet ny indeks i opendistro {}", navn);
-            org.elasticsearch.client.indices.CreateIndexRequest createIndexRequest = new org.elasticsearch.client.indices.CreateIndexRequest(navn).source(json, JSON);
-            org.elasticsearch.client.indices.CreateIndexResponse createIndexResponse = openDistroClient.indices().create(createIndexRequest, DEFAULT);
-            if (!createIndexResponse.isAcknowledged()) {
-                log.error("Kunne ikke opprette ny indeks {}", navn);
-                throw new RuntimeException();
-            }
+            log.info("Oprettet ny indeks i opendistro {}", indeksNavn);
+
+            restClient(target -> target
+                    .path("/" + indeksNavn)
+                    .request()
+                    .put(entity(json, APPLICATION_JSON_TYPE))
+            );
+
         } else {
-            log.info("Oprettet ny indeks i deprecated elastic {}", navn);
-            CreateIndexRequest deprecatedRequest = new CreateIndexRequest(navn).source(json, JSON);
+            log.info("Oprettet ny indeks i deprecated elastic {}", indeksNavn);
+            CreateIndexRequest deprecatedRequest = new CreateIndexRequest(indeksNavn).source(json, JSON);
             CreateIndexResponse response = deprecatedClient.indices().create(deprecatedRequest, DEFAULT);
             if (!response.isAcknowledged()) {
-                log.error("Kunne ikke opprette ny indeks {}", navn);
+                log.error("Kunne ikke opprette ny indeks {}", indeksNavn);
                 throw new RuntimeException();
             }
         }
-        log.info("Oprettet ny indeks {}", navn);
+        log.info("Oprettet ny indeks {}", indeksNavn);
 
-        return navn;
+        return indeksNavn;
     }
 
     private void validateBatchSize(List<OppfolgingsBruker> brukere) {
