@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -74,24 +75,32 @@ public class ElasticServiceIntegrationTest {
         VeilederService veilederServiceMock = mock(VeilederService.class);
         when(veilederServiceMock.getIdenter(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
 
-        RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
-                .username("")
-                .password("")
-                .hostname("localhost")
-                .port(9200)
-                .scheme("http")
-                .build()
-        );
+        RestHighLevelClient restClient = ElasticConfig.createClient(config());
+        OpenDistroClient openDistroClient = ElasticConfig.createOpenDistroClient(config());
 
-        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock);
+        UnleashService unleashMock = mock(UnleashService.class);
+
+        elasticService = new ElasticService(restClient, openDistroClient, pepMock, veilederServiceMock, unleashMock);
 
         indexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 restClient,
-                elasticService
+                openDistroClient,
+                elasticService,
+                unleashMock
         );
 
+    }
+
+    private static ElasticClientConfig config() {
+        return ElasticClientConfig.builder()
+                .username("")
+                .password("")
+                .hostname("localhost")
+                .port(9200)
+                .scheme("http")
+                .build();
     }
 
     @Before
