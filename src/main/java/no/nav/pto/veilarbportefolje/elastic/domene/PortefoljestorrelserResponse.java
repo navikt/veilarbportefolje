@@ -7,7 +7,6 @@ import java.util.List;
 
 @Data
 public class PortefoljestorrelserResponse {
-    Hits hits;
     PortefoljestorrelserAggregations aggregations;
 
     @Data
