@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static no.nav.pto.veilarbportefolje.dialog.DialogServiceConsumer.DIALOG_KAFKA_TOGGLE;
+import static no.nav.pto.veilarbportefolje.dialog.DialogServiceConsumer.KAFKA_DIALOG_CONSUMER_TOPIC;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService.KAFKA_VEDTAK_CONSUMER_TOPIC;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
@@ -27,8 +29,6 @@ public class KafkaConfig {
     protected static final String KAFKA_BROKERS = getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY);
     private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
-
-    protected static final String KAFKA_DIALOG_CONSUMER_TOPIC = "aapen-oppfolging-endringPaaDialog-v1-" + requireEnvironmentName();
 
 
     public static HashMap<String, Object> kafkaProperties () {
@@ -57,7 +57,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaConsumerServiceRunnable kafkaDialogConsumerRunnable(DialogServiceConsumer dialogService, UnleashService unleashService, KafkaConsumer kafkaConsumer) {
-        return new KafkaConsumerServiceRunnable(dialogService, unleashService, kafkaConsumer, KAFKA_DIALOG_CONSUMER_TOPIC, "veilarbdialog.kafka");
+        return new KafkaConsumerServiceRunnable(dialogService, unleashService, kafkaConsumer, KAFKA_DIALOG_CONSUMER_TOPIC, DIALOG_KAFKA_TOGGLE);
     }
 
 }
