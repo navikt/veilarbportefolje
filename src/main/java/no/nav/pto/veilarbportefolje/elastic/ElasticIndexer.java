@@ -38,6 +38,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -45,6 +46,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -317,12 +319,13 @@ public class ElasticIndexer {
     @SneakyThrows
     public String opprettNyIndeks(String indeksNavn) {
 
-        String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
 
         log.info("Opretter ny indeks {}", indeksNavn);
+
         if (opendistroIsEnabled()) {
             log.info("Oprettet ny indeks i opendistro {}", indeksNavn);
 
+            String json = IOUtils.toString(getClass().getResource("/elastic_7_settings.json"), UTF_8);
             restClient(target -> target
                     .path("/" + indeksNavn)
                     .request()
@@ -330,6 +333,7 @@ public class ElasticIndexer {
             );
 
         } else {
+            String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), UTF_8);
             log.info("Oprettet ny indeks i deprecated elastic {}", indeksNavn);
             CreateIndexRequest deprecatedRequest = new CreateIndexRequest(indeksNavn).source(json, JSON);
             CreateIndexResponse response = deprecatedClient.indices().create(deprecatedRequest, DEFAULT);
