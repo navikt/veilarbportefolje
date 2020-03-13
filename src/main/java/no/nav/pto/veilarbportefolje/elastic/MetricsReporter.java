@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
@@ -47,9 +49,11 @@ public class MetricsReporter {
     }
 
     private Number sjekkIndeksSistOpprettet() {
-        String indeksNavn = elasticIndexer.hentGammeltIndeksNavn().orElseThrow(IllegalStateException::new);
-        LocalDateTime tidspunktForSisteHovedIndeksering = hentIndekseringsdato(indeksNavn);
-        return hoursSinceLastChanged(tidspunktForSisteHovedIndeksering);
+        return elasticIndexer
+                .hentGammeltIndeksNavn()
+                .map(MetricsReporter::hentIndekseringsdato)
+                .map(FilmottakFileUtils::hoursSinceLastChanged)
+                .orElse(Long.MAX_VALUE);
     }
 
     static LocalDateTime hentIndekseringsdato(String indeksNavn) {
