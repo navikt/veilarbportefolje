@@ -80,12 +80,11 @@ public class ElasticConfig {
 
         return new OpenDistroClient(RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
-                .setMaxRetryTimeoutMillis(SOCKET_TIMEOUT)
                 .setRequestConfigCallback(
                         requestConfig -> {
-                            requestConfig.setConnectTimeout(CONNECT_TIMEOUT);
-                            requestConfig.setSocketTimeout(SOCKET_TIMEOUT);
-                            requestConfig.setConnectionRequestTimeout(0); // http://www.github.com/elastic/elasticsearch/issues/24069
+                            requestConfig.setConnectTimeout(15_000);
+                            requestConfig.setSocketTimeout(15_0000);
+                            requestConfig.setConnectionRequestTimeout(15_000);
                             return requestConfig;
                         }
                 ));
@@ -116,7 +115,6 @@ public class ElasticConfig {
 
         return new RestHighLevelClient(RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
-                .setMaxRetryTimeoutMillis(SOCKET_TIMEOUT)
                 .setRequestConfigCallback(
                         requestConfig -> {
                             requestConfig.setConnectTimeout(CONNECT_TIMEOUT);

@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;

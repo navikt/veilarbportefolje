@@ -21,7 +21,7 @@
     <properties>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
         <jsch.version>0.1.54</jsch.version>
-        <elastic.version>6.5.2</elastic.version>
+        <elastic.version>7.6.1</elastic.version>
     </properties>
 
     <dependencyManagement>

@@ -316,10 +316,9 @@ public class ElasticIndexer {
     public String opprettNyIndeks(String navn) {
 
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
-        CreateIndexRequest request = new CreateIndexRequest(navn)
-                .source(json, XContentType.JSON);
-
+        CreateIndexRequest request = new CreateIndexRequest(navn).source(json, XContentType.JSON);
         CreateIndexResponse response = opendistroIsEnabled() ? openDistroClient.indices().create(request, DEFAULT) : deprecatedClient.indices().create(request, DEFAULT);
+
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();
