@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import io.micrometer.core.instrument.Counter;
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
@@ -26,17 +28,16 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
-import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -302,16 +303,14 @@ public class ElasticIndexer {
         log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
     }
 
-    public void oppdaterBrukerDoc(OppfolgingsBruker oppfolgingsBruker) throws IOException {
-        UpdateRequest updateRequest =  Optional.of(oppfolgingsBruker)
-                .map(bruker -> new UpdateRequest()
-                        .index(getAlias())
-                        .type("_doc")
-                        .id(bruker.getFnr())
-                        .doc(toJson(bruker)))
-                .get();
+    public Try<UpdateResponse> oppdaterBruker(Tuple2<Fnr, XContentBuilder> tupleAvFnrOgJson) {
+        UpdateRequest updateRequest = new UpdateRequest()
+                .index(getAlias())
+                .type("_doc")
+                .id(tupleAvFnrOgJson._1.toString())
+                .doc(tupleAvFnrOgJson._2);
 
-        client.update(updateRequest, DEFAULT);
+        return Try.of(() -> client.update(updateRequest, DEFAULT));
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
