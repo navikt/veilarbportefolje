@@ -131,7 +131,8 @@ public class ElasticIndexer {
     public void deltaindeksering() {
         if (indeksenIkkeFinnes()) {
             String message = format("Deltaindeksering: finner ingen indeks med alias %s", getAlias());
-            throw new IllegalStateException(message);
+            log.warn(message);
+            return;
         }
 
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
