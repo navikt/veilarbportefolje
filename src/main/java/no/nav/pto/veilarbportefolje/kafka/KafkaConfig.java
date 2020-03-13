@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.pto.veilarbportefolje.dialog.DialogServiceConsumer;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -51,12 +52,12 @@ public class KafkaConfig {
 
     @Bean
     public KafkaConsumerServiceRunnable kafkaVedtakConsumerRunnable(VedtakService vedtakService, UnleashService unleashService, KafkaConsumer kafkaConsumer) {
-        return new KafkaConsumerServiceRunnable(vedtakService, unleashService, kafkaConsumer, KAFKA_VEDTAK_CONSUMER_TOPIC);
+        return new KafkaConsumerServiceRunnable(vedtakService, unleashService, kafkaConsumer, KAFKA_VEDTAK_CONSUMER_TOPIC, "veilarbportfolje-hent-data-fra-vedtakstotte");
     }
 
     @Bean
-    public KafkaConsumerServiceRunnable kafkaDialogConsumerRunnable(VedtakService vedtakService, UnleashService unleashService, KafkaConsumer kafkaConsumer) {
-        return new KafkaConsumerServiceRunnable(vedtakService, unleashService, kafkaConsumer, KAFKA_DIALOG_CONSUMER_TOPIC);
+    public KafkaConsumerServiceRunnable kafkaDialogConsumerRunnable(DialogServiceConsumer dialogService, UnleashService unleashService, KafkaConsumer kafkaConsumer) {
+        return new KafkaConsumerServiceRunnable(dialogService, unleashService, kafkaConsumer, KAFKA_DIALOG_CONSUMER_TOPIC, "veilarbdialog.kafka");
     }
 
 }
