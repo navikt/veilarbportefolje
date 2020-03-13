@@ -27,6 +27,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -57,6 +58,7 @@ import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
+import static org.elasticsearch.common.xcontent.XContentType.JSON;
 
 @Slf4j
 public class ElasticIndexer {
@@ -293,7 +295,7 @@ public class ElasticIndexer {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
-                .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
+                .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), JSON))
                 .forEach(bulk::add);
 
         BulkResponse response = opendistroIsEnabled() ? openDistroClient.bulk(bulk, DEFAULT) : deprecatedClient.bulk(bulk, DEFAULT);
@@ -314,16 +316,25 @@ public class ElasticIndexer {
     public String opprettNyIndeks(String navn) {
 
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
-        CreateIndexRequest request = new CreateIndexRequest(navn).source(json, XContentType.JSON);
 
         log.info("Opretter ny indeks {}", navn);
-        CreateIndexResponse response = opendistroIsEnabled() ? openDistroClient.indices().create(request, DEFAULT) : deprecatedClient.indices().create(request, DEFAULT);
-
-        if (!response.isAcknowledged()) {
-            log.error("Kunne ikke opprette ny indeks {}", navn);
-            throw new RuntimeException();
+        if (opendistroIsEnabled()) {
+            log.info("Oprettet ny indeks i opendistro {}", navn);
+            org.elasticsearch.client.indices.CreateIndexRequest createIndexRequest = new org.elasticsearch.client.indices.CreateIndexRequest(navn).source(json, JSON);
+            org.elasticsearch.client.indices.CreateIndexResponse createIndexResponse = openDistroClient.indices().create(createIndexRequest, DEFAULT);
+            if (!createIndexResponse.isAcknowledged()) {
+                log.error("Kunne ikke opprette ny indeks {}", navn);
+                throw new RuntimeException();
+            }
+        } else {
+            log.info("Oprettet ny indeks i deprecated elastic {}", navn);
+            CreateIndexRequest deprecatedRequest = new CreateIndexRequest(navn).source(json, JSON);
+            CreateIndexResponse response = deprecatedClient.indices().create(deprecatedRequest, DEFAULT);
+            if (!response.isAcknowledged()) {
+                log.error("Kunne ikke opprette ny indeks {}", navn);
+                throw new RuntimeException();
+            }
         }
-
         log.info("Oprettet ny indeks {}", navn);
 
         return navn;

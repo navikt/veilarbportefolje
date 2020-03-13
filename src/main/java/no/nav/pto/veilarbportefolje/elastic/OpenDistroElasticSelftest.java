@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
