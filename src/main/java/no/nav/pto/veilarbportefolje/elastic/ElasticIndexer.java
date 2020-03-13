@@ -98,8 +98,6 @@ public class ElasticIndexer {
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
 
         String nyIndeks = opprettNyIndeks(createIndexName(getAlias()));
-        log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
-
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging();
         log.info("Hovedindeksering: Hentet {} oppfølgingsbrukere fra databasen", brukere.size());
@@ -317,12 +315,16 @@ public class ElasticIndexer {
 
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
         CreateIndexRequest request = new CreateIndexRequest(navn).source(json, XContentType.JSON);
+
+        log.info("Opretter ny indeks {}", navn);
         CreateIndexResponse response = opendistroIsEnabled() ? openDistroClient.indices().create(request, DEFAULT) : deprecatedClient.indices().create(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();
         }
+
+        log.info("Oprettet ny indeks {}", navn);
 
         return navn;
     }
