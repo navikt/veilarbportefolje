@@ -64,7 +64,6 @@ import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentType.JSON;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticIndexer {
@@ -320,7 +319,7 @@ public class ElasticIndexer {
                 .id(tupleAvFnrOgJson._1.toString())
                 .doc(tupleAvFnrOgJson._2);
 
-        return Try.of(() -> client.update(updateRequest, DEFAULT));
+        return Try.of(() -> opendistroIsEnabled() ? openDistroClient.update(updateRequest, DEFAULT) : deprecatedClient.update(updateRequest, DEFAULT));
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
