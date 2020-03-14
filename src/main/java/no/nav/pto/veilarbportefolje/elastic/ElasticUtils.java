@@ -5,22 +5,19 @@ import no.nav.pto.veilarbportefolje.elastic.domene.CountResponse;
 import no.nav.sbl.rest.RestUtils;
 import no.nav.sbl.util.EnvironmentUtils;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.function.Function;
 
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.*;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
 import static no.nav.sbl.util.EnvironmentUtils.resolveHostName;
 
 @Slf4j
 public class ElasticUtils {
+
+    public static final String NAIS_LOADBALANCED_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
+    public static final String NAIS_INTERNAL_CLUSTER_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
 
     public static String createIndexName(String alias) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
@@ -28,38 +25,65 @@ public class ElasticUtils {
         return String.format("%s_%s", alias, timestamp);
     }
 
-    public static long getCount(String hostname, String username, String password) {
-        String url = "http://" + hostname + ":9200/" + getAlias() + "/_count";
+
+    public static long getCount() {
+        String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
 
         return RestUtils.withClient(client ->
                 client
                         .target(url)
                         .request()
-                        .header("Authorization", getAuthHeaderValue(username, password))
+                        .header("Authorization", getAuthHeaderValue())
                         .get(CountResponse.class)
                         .getCount()
         );
-
     }
 
-    public static <T> T restClient(Function<WebTarget, T> function) {
-        Client client = RestUtils.createClient();
-        client.register(new ElasticAuthFilter());
-        WebTarget target = client.target("http://" + VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME + ":9200");
-        try {
-            return function.apply(target);
-        } finally {
-            client.close();
-        }
+    static String getAbsoluteUrl() {
+        return String.format(
+                "%s://%s:%s/%s/",
+                getElasticScheme(),
+                getElasticHostname(),
+                getElasticPort(),
+                getAlias()
+        );
     }
 
-    static String getAuthHeaderValue(String username, String password) {
-        String auth = username + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
+    static String getAuthHeaderValue() {
+        String auth = VEILARBELASTIC_USERNAME + ":" + VEILARBELASTIC_PASSWORD;
+        return "Basic "  + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 
     static String getAlias() {
         return String.format("brukerindeks_%s", EnvironmentUtils.requireNamespace());
     }
 
+    static String getElasticScheme() {
+        if (onDevillo()) {
+            return "https";
+        } else {
+            return "http";
+        }
+    }
+
+    static int getElasticPort() {
+        if (onDevillo()) {
+            return 443;
+        } else {
+            return 9200;
+        }
+    }
+
+    static String getElasticHostname() {
+        if (onDevillo()) {
+            return NAIS_LOADBALANCED_HOSTNAME;
+        } else {
+            return NAIS_INTERNAL_CLUSTER_HOSTNAME;
+        }
+    }
+
+    public static boolean onDevillo() {
+        String hostname = resolveHostName();
+        return hostname.contains("devillo.no");
+    }
 }
