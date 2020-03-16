@@ -123,6 +123,7 @@ public class ElasticIndexer {
             throw new IllegalStateException(message);
         }
 
+        FunksjonelleMetrikker.oppdaterAntallBrukere();
 
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
 
@@ -159,7 +160,6 @@ public class ElasticIndexer {
 
         int antall = brukere.size();
 
-        FunksjonelleMetrikker.oppdaterAntallBrukere();
 
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
             event.addFieldToReport("es.antall.oppdateringer", antall);
