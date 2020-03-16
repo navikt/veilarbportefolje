@@ -121,7 +121,7 @@ public class ValideringsRegler {
         try {
             return valid(Arbeidsliste.Kategori.valueOf(kategori));
         } catch (Exception e) {
-            return invalid(format("%s er ikke et gyldig kategori", kategori));
+            return invalid(format("%s er ikke en gyldig kategori", kategori));
         }
     }
 
