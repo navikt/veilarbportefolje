@@ -22,6 +22,8 @@
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
         <jsch.version>0.1.54</jsch.version>
         <elastic.version>6.5.2</elastic.version>
+        <kafka.avro.version>5.0.2</kafka.avro.version>
+        <veilarbregistrering.avro.version>1.202003161308-3389b42</veilarbregistrering.avro.version>
     </properties>
 
     <dependencyManagement>
@@ -72,6 +74,18 @@
                 <groupId>com.oracle.ojdbc</groupId>
                 <artifactId>ojdbc8</artifactId>
                 <version>19.3.0.0</version>
+            </dependency>
+
+            <!--Avro -->
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-avro-serializer</artifactId>
+                <version>${kafka.avro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.arbeid</groupId>
+                <artifactId>veilarbregistrering-skjema</artifactId>
+                <version>${veilarbregistrering.avro.version}</version>
             </dependency>
 
         </dependencies>
