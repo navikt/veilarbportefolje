@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
@@ -23,11 +24,17 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Getter
 @RequiredArgsConstructor
 public class Arbeidsliste {
+
+     public enum Kategori {
+        BLA, GRONN, GUL, LILLA
+    }
+
     final VeilederId sistEndretAv;
     final ZonedDateTime endringstidspunkt;
     final String overskrift;
     final String kommentar;
     final ZonedDateTime frist;
+    final Kategori kategori;
     Boolean isOppfolgendeVeileder;
     Boolean arbeidslisteAktiv;
     Boolean harVeilederTilgang;
@@ -35,6 +42,8 @@ public class Arbeidsliste {
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
         VeilederId sistEndretAv = VeilederId.of(bruker.getArbeidsliste_sist_endret_av_veilederid());
+        String kategori = bruker.getArbeidsliste_kategori();
+        Kategori arbeidslisteKategori = Optional.ofNullable(kategori).map(Kategori::valueOf).orElse(null);
 
         ZonedDateTime endringstidspunkt = null;
         if (bruker.getArbeidsliste_endringstidspunkt() != null) {
@@ -50,7 +59,7 @@ public class Arbeidsliste {
             frist = toZonedDateTime(dateIfNotFarInTheFutureDate(Instant.parse(bruker.getArbeidsliste_frist())));
         }
 
-        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist)
+        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, arbeidslisteKategori)
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 
@@ -66,6 +75,7 @@ public class Arbeidsliste {
                         @JsonProperty("frist") ZonedDateTime frist,
                         @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
                         @JsonProperty("arbeidslisteAktiv") Boolean arbeidslisteAktiv,
+                        @JsonProperty("kategori") Kategori kategori,
                         @JsonProperty("harVeilederTilgang") Boolean harVeilederTilgang) {
         this.sistEndretAv = sistEndretAv;
         this.endringstidspunkt = endringstidspunkt;
@@ -75,5 +85,6 @@ public class Arbeidsliste {
         this.isOppfolgendeVeileder = isOppfolgendeVeileder;
         this.arbeidslisteAktiv = arbeidslisteAktiv;
         this.harVeilederTilgang = harVeilederTilgang;
+        this.kategori = kategori;
     }
 }

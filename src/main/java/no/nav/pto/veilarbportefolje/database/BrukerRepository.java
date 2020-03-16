@@ -179,52 +179,6 @@ public class BrukerRepository {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
     }
 
-    static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO =
-            "SELECT " +
-                    "person_id, " +
-                    "fodselsnr, " +
-                    "fornavn, " +
-                    "etternavn, " +
-                    "nav_kontor, " +
-                    "formidlingsgruppekode, " +
-                    "iserv_fra_dato, " +
-                    "kvalifiseringsgruppekode, " +
-                    "rettighetsgruppekode, " +
-                    "hovedmaalkode, " +
-                    "sikkerhetstiltak_type_kode, " +
-                    "fr_kode, " +
-                    "sperret_ansatt, " +
-                    "er_doed, " +
-                    "doed_fra_dato, " +
-                    "tidsstempel, " +
-                    "veilederident, " +
-                    "ytelse, " +
-                    "utlopsdato, " +
-                    "ny_for_veileder, " +
-                    "utlopsdatofasett, " +
-                    "dagputlopuke, dagputlopukefasett, " +
-                    "permutlopuke, permutlopukefasett, " +
-                    "aapmaxtiduke, aapmaxtidukefasett, " +
-                    "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
-                    "oppfolging, " +
-                    "venterpasvarfrabruker, " +
-                    "venterpasvarfranav, " +
-                    "nyesteutlopteaktivitet, " +
-                    "aktivitet_start, " +
-                    "neste_aktivitet_start, " +
-                    "forrige_aktivitet_start, " +
-                    "manuell, " +
-                    "reservertikrr, " +
-                    "ARBEIDSLISTE_AKTIV, " +
-                    "ARBEIDSLISTE_KOMMENTAR, " +
-                    "ARBEIDSLISTE_OVERSKRIFT, " +
-                    "ARBEIDSLISTE_FRIST, " +
-                    "ARBEIDSLISTE_ENDRET_AV, " +
-                    "ARBEIDSLISTE_ENDRET_TID " +
-                    "FROM " +
-                    "vw_portefolje_info";
-
-
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
     }
@@ -428,13 +382,6 @@ public class BrukerRepository {
                 .set("aapunntakdagerigjen", (Object) null)
                 .set("aapunntakukerigjenfasett", (Object) null)
                 .execute();
-    }
-
-    String retrieveOppdaterteBrukereSQL() {
-        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " +
-                "WHERE " +
-                "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
 
     String retrieveSistIndeksertSQL() {

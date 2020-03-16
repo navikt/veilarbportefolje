@@ -83,6 +83,7 @@ public class DbUtils {
                     .setArbeidsliste_endringstidspunkt(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_ENDRET_TID")))
                     .setArbeidsliste_kommentar(rs.getString("ARBEIDSLISTE_KOMMENTAR"))
                     .setArbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
+                    .setArbeidsliste_kategori(rs.getString("ARBEIDSLISTE_KATEGORI"))
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
         }
 
