@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.jobutils.JobUtils;
+import no.nav.pto.veilarbportefolje.registrering.KafkaRegistreringMelding;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
@@ -31,6 +33,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
 
     private VedtakService vedtakService;
     private UnleashService unleashService;
+    private RegistreringService registreringService;
 
 
     private long lastThrownExceptionTime;
@@ -41,31 +44,43 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     protected static final String KAFKA_BROKERS = getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY);
     private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
-    protected static final String KAFKA_CONSUMER_TOPIC = "aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName();
+    protected static final String KAFKA_VEDTAKSTOTTE_CONSUMER_TOPIC = "aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName();
+    protected static final String KAFKA_REGISTRERING_CONSUMER_TOPIC = "aapen-arbeid-arbeidssoker-registrert" + requireEnvironmentName();
 
 
 
-    public KafkaConsumerRunnable (VedtakService vedtakService, UnleashService unleashService) {
+    public KafkaConsumerRunnable (VedtakService vedtakService, UnleashService unleashService, RegistreringService registreringService) {
         // TODO SKA DENNA TA IN TOPICS ELLER SKA VI DEFINIERA ALLA TOPICS HER?
         // TODO SWITCH CASE PÅ TOPIC record.topic() ELLER LAGA EN NY INSTANSE AV DENNA KLASS FØR VARJE TOPIC ?
         this.kafkaConsumer = new KafkaConsumer<>(kafkaProperties());
-        this.kafkaConsumer.subscribe(Arrays.asList(KAFKA_CONSUMER_TOPIC));
+        this.kafkaConsumer.subscribe(Arrays.asList(KAFKA_VEDTAKSTOTTE_CONSUMER_TOPIC, KAFKA_REGISTRERING_CONSUMER_TOPIC));
+
         this.vedtakService = vedtakService;
-        this.unleashService= unleashService;
+        this.registreringService = registreringService;
+        this.unleashService = unleashService;
 
         JobUtils.runAsyncJob(this::run);
     }
 
     @Override
     public void run() {
-        while (this.vedstakstotteFeatureErPa()) {
+        while (true) {
             try {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, String> record : records) {
-                    KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
-                    log.info("Behandler melding for aktorId: {}  på topic: " + record.topic());
-                    vedtakService.behandleMelding(melding);
-                    kafkaConsumer.commitSync();
+                    String topic = record.topic();
+                    log.info("Behandler melding for på topic:" + topic);
+                    if(topic.equals(KAFKA_VEDTAKSTOTTE_CONSUMER_TOPIC) && this.vedstakstotteFeatureErPa()){
+                        KafkaVedtakStatusEndring melding = fromJson(record.value(), KafkaVedtakStatusEndring.class);
+                        vedtakService.behandleMelding(melding);
+                        kafkaConsumer.commitSync();
+
+                    } else if(topic.equals(KAFKA_REGISTRERING_CONSUMER_TOPIC)) {
+                        KafkaRegistreringMelding melding = fromJson(record.value(), KafkaRegistreringMelding.class);
+                        registreringService.behandleKafkaMelding(melding);
+                        kafkaConsumer.commitSync();
+                    }
+
                 }
             }
             catch (Exception e) {

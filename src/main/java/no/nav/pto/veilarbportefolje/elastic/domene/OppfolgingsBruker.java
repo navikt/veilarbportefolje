@@ -79,4 +79,5 @@ public class OppfolgingsBruker {
     String vedtak_status;
     String vedtak_status_endret;
     boolean trenger_revurdering;
+    String brukers_situasjon;
 }

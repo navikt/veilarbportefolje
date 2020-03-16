@@ -27,6 +27,7 @@ public class Filtervalg {
     public List<String> tiltakstyper = new ArrayList<>();
     public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
     public String navnEllerFnrQuery;
+    public List<String> registreringstype = new ArrayList<>();
 
     public boolean harAktiveFilter() {
          return harFerdigFilter() ||
