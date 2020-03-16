@@ -138,6 +138,7 @@ public class ElasticQueryBuilder {
                 break;
             case "arbeidslistekategori":
                 searchSourceBuilder.sort("arbeidsliste_kategori", order);
+                break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
