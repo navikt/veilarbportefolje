@@ -10,4 +10,5 @@ public class ArbeidslisteRequest {
     String overskrift;
     String kommentar;
     String frist;
+    String kategori;
 }

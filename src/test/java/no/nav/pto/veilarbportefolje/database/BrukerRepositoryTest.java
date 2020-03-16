@@ -42,15 +42,6 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class BrukerRepositoryTest {
 
-    private static final String[] SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
-            "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-            "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-            "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START", "FORRIGE_AKTIVITET_START", "MANUELL", "RESERVERTIKRR",
-            "ARBEIDSLISTE_AKTIV", "ARBEIDSLISTE_KOMMENTAR", "ARBEIDSLISTE_OVERSKRIFT", "ARBEIDSLISTE_FRIST", "ARBEIDSLISTE_ENDRET_AV", "ARBEIDSLISTE_ENDRET_TID"};
-
     @Inject
     private JdbcTemplate jdbcTemplate;
 
@@ -112,34 +103,6 @@ public class BrukerRepositoryTest {
         assertThat(result).isFalse();
     }
 
-
-    @Test
-    public void skalHenteUtAlleBrukereFraDatabasen() {
-        List<Map<String, Object>> brukere = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO);
-
-        assertThat(brukere.size()).isEqualTo(72);
-    }
-
-    @Test
-    public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
-        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO).get(0).keySet();
-        assertThat(faktiskeDatabaseFelter).containsExactly(SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING);
-    }
-
-    @Test
-    public void skalHenteKunNyesteBrukereFraDatabasen() {
-        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-
-        List<Map<String, Object>> nyeBrukere = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL());
-        jdbcTemplate.queryForList(brukerRepository.retrieveSistIndeksertSQL());
-        assertThat(nyeBrukere.size()).isEqualTo(4);
-    }
-
-    @Test
-    public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
-        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
-        assertThat(faktiskeDatabaseFelter).containsExactly(SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING);
-    }
 
     @Test
     public void skalKunHaEnCelleIIndekseringLogg() {

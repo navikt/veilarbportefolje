@@ -56,6 +56,7 @@ public class ArbeidslisteRepository {
                             .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
+                            .set("KATEGORI", data.getKategori().name())
                             .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                             .execute();
                     return data.getAktoerId();
@@ -73,6 +74,7 @@ public class ArbeidslisteRepository {
                             .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
+                            .set("KATEGORI", data.getKategori().name())
                             .whereEquals("AKTOERID", data.getAktoerId().toString())
                             .execute();
                     return data.getAktoerId();
@@ -104,7 +106,9 @@ public class ArbeidslisteRepository {
                 toZonedDateTime(rs.getTimestamp("ENDRINGSTIDSPUNKT")),
                 rs.getString("OVERSKRIFT"),
                 rs.getString("KOMMENTAR"),
-                toZonedDateTime(rs.getTimestamp("FRIST")));
+                toZonedDateTime(rs.getTimestamp("FRIST")),
+                Arbeidsliste.Kategori.valueOf(rs.getString("KATEGORI"))
+        );
     }
 
 }

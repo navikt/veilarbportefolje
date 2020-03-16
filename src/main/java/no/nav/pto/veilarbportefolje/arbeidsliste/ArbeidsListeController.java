@@ -197,6 +197,7 @@ public class ArbeidsListeController {
                 .setVeilederId(VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new)))
                 .setOverskrift(body.getOverskrift())
                 .setKommentar(body.getKommentar())
+                .setKategori(Arbeidsliste.Kategori.valueOf(body.getKategori()))
                 .setFrist(frist);
     }
 
@@ -223,7 +224,7 @@ public class ArbeidsListeController {
     }
 
     private Arbeidsliste emptyArbeidsliste() {
-        return new Arbeidsliste(null, null, null, null, null);
+        return new Arbeidsliste(null, null, null, null, null, null);
     }
 
     private void validerOppfolgingOgBruker(String fnr) {
