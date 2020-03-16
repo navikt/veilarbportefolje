@@ -6,6 +6,7 @@ import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProvider;
 import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.YtelserServlet;
@@ -32,6 +33,7 @@ import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
+import org.apache.kafka.common.metrics.MetricConfig;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,6 +53,7 @@ import javax.ws.rs.client.Client;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig.STS_OIDC_CONFIGURATION_URL_PROPERTY;
+import static no.nav.metrics.MetricsConfig.resolveNaisConfig;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.*;
@@ -124,6 +127,8 @@ public class ApplicationConfig implements ApiApplication {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error(e.getMessage(), e));
+
+        MetricsClient.enableMetrics(resolveNaisConfig());
 
         if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
