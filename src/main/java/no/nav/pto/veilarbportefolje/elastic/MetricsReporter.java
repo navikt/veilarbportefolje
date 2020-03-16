@@ -41,12 +41,20 @@ public class MetricsReporter {
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
 
         if (isLeader()) {
-            Event countBrukere = MetricsFactory.createEvent("portefolje_antall_brukere_i_oversikten").addFieldToReport("antall_brukere", ElasticUtils.getCount());
             Executors
                     .newScheduledThreadPool(1)
                     .scheduleAtFixedRate(
-                            () -> countBrukere.report(),
-                            10,
+                            () -> {
+
+                                long count = ElasticUtils.getCount();
+                                log.info("{} Brukere i indeks", count);
+
+                                MetricsFactory
+                                        .createEvent("portefolje_antall_brukere_i_oversikten")
+                                        .addFieldToReport("antall_brukere", count)
+                                        .report();
+                            },
+                            5,
                             10,
                             MINUTES
                     );
