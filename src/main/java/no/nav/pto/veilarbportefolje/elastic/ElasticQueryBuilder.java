@@ -136,7 +136,7 @@ public class ElasticQueryBuilder {
             case "vedtakstatus":
                 searchSourceBuilder.sort("vedtak_status", order);
                 break;
-            case "arbeidslisteikon":
+            case "arbeidslistekategori":
                 searchSourceBuilder.sort("arbeidsliste_kategori", order);
             default:
                 defaultSort(sortField, searchSourceBuilder, order);

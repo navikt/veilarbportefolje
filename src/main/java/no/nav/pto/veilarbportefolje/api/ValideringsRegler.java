@@ -49,7 +49,7 @@ public class ValideringsRegler {
             "veileder_id",
             "vedtakstatus",
             "vedtak_status_endret",
-            "arbeidslisteikon"
+            "arbeidslistekategori"
             );
 
     static void sjekkEnhet(String enhet) {
