@@ -42,6 +42,8 @@ public class Arbeidsliste {
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();
         VeilederId sistEndretAv = VeilederId.of(bruker.getArbeidsliste_sist_endret_av_veilederid());
+        String kategori = bruker.getArbeidsliste_kategori();
+        Kategori arbeidslisteKategori = Optional.ofNullable(kategori).map(Kategori::valueOf).orElse(null);
 
         ZonedDateTime endringstidspunkt = null;
         if (bruker.getArbeidsliste_endringstidspunkt() != null) {
@@ -51,14 +53,13 @@ public class Arbeidsliste {
 
         String overskrift = bruker.getArbeidsliste_overskrift();
         String kommentar = bruker.getArbeidsliste_kommentar();
-        String kategori = bruker.getArbeidsliste_kategori();
 
         ZonedDateTime frist = null;
         if (bruker.getArbeidsliste_frist() != null) {
             frist = toZonedDateTime(dateIfNotFarInTheFutureDate(Instant.parse(bruker.getArbeidsliste_frist())));
         }
 
-        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, Kategori.valueOf(kategori))
+        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, arbeidslisteKategori)
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 
