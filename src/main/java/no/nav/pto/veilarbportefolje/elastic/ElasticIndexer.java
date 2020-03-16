@@ -123,6 +123,7 @@ public class ElasticIndexer {
             throw new IllegalStateException(message);
         }
 
+
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
@@ -158,6 +159,8 @@ public class ElasticIndexer {
 
         int antall = brukere.size();
 
+        FunksjonelleMetrikker.oppdaterAntallBrukere();
+
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
             event.addFieldToReport("es.antall.oppdateringer", antall);
             event.report();
@@ -187,7 +190,6 @@ public class ElasticIndexer {
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
-            FunksjonelleMetrikker.oppdaterAntallBrukere();
         } else {
             String message = String.format("Feil ved sletting av bruker med aktoerId %s og personId %s i indeks %s", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
             throw new RuntimeException(message);
@@ -293,7 +295,6 @@ public class ElasticIndexer {
         }
 
         log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
-        FunksjonelleMetrikker.oppdaterAntallBrukere();
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {

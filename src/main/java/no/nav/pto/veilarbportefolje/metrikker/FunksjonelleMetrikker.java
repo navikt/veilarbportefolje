@@ -14,7 +14,7 @@ public class FunksjonelleMetrikker {
 
     public static void oppdaterAntallBrukere() {
         MetricsFactory
-                .createEvent("portefolje_antall_brukere")
+                .createEvent("portefolje.antall.brukere")
                 .addFieldToReport("antall_brukere", ElasticUtils.getCount())
                 .report();
     }
