@@ -1,18 +1,18 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import io.micrometer.core.instrument.Counter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
+import no.nav.metrics.Event;
+import no.nav.metrics.MetricsFactory;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
@@ -44,6 +44,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static no.nav.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
@@ -51,8 +52,6 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
-import static no.nav.json.JsonUtils.toJson;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -61,7 +60,6 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 public class ElasticIndexer {
 
     private final ElasticService elasticService;
-    private final Counter writeCounter;
 
     private RestHighLevelClient client;
 
@@ -80,7 +78,6 @@ public class ElasticIndexer {
         this.brukerRepository = brukerRepository;
         this.client = client;
         this.elasticService = elasticService;
-        writeCounter = Counter.builder("portefolje_elastic_writes").register(getMeterRegistry());
     }
 
     @SneakyThrows
@@ -190,6 +187,7 @@ public class ElasticIndexer {
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
+            FunksjonelleMetrikker.oppdaterAntallBrukere();
         } else {
             String message = String.format("Feil ved sletting av bruker med aktoerId %s og personId %s i indeks %s", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
             throw new RuntimeException(message);
@@ -290,12 +288,12 @@ public class ElasticIndexer {
 
         BulkResponse response = client.bulk(bulk, DEFAULT);
 
-        writeCounter.increment();
-
         if (response.hasFailures()) {
             throw new RuntimeException(response.buildFailureMessage());
         }
+
         log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
+        FunksjonelleMetrikker.oppdaterAntallBrukere();
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {

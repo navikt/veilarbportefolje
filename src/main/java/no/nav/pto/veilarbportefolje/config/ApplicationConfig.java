@@ -128,8 +128,6 @@ public class ApplicationConfig implements ApiApplication {
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error(e.getMessage(), e));
 
-        MetricsClient.enableMetrics(resolveNaisConfig());
-
         if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
             flyway.setDataSource(dataSource);

@@ -1,13 +1,7 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.internal.TimedExecutorService;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.leaderelection.LeaderElection;
-import no.nav.fo.feed.util.MetricsUtils;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -15,13 +9,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static no.nav.common.leaderelection.LeaderElection.isLeader;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.LOPENDEYTELSER_SFTP;
@@ -39,27 +28,6 @@ public class MetricsReporter {
         this.elasticIndexer = elasticIndexer;
 
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
-
-        if (isLeader()) {
-            Executors
-                    .newScheduledThreadPool(1)
-                    .scheduleAtFixedRate(
-                            () -> {
-
-                                long count = ElasticUtils.getCount();
-                                log.info("{} Brukere i indeks", count);
-
-                                MetricsFactory
-                                        .createEvent("portefolje_antall_brukere_i_oversikten")
-                                        .addFieldToReport("antall_brukere", count)
-                                        .report();
-                            },
-                            5,
-                            10,
-                            MINUTES
-                    );
-        }
-
         Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", this::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
         Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", this::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
         Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
