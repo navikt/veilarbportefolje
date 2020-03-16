@@ -327,7 +327,7 @@ public class ElasticServiceIntegrationTest {
     }
 
     @Test
-    public void skal_sortere_brukerepa_arbeidslisteikon() {
+    public void skal_sortere_brukere_pa_arbeidslisteikon() {
 
         val blaBruker = new OppfolgingsBruker()
                 .setArbeidsliste_kategori(Arbeidsliste.Kategori.BLA.name());
