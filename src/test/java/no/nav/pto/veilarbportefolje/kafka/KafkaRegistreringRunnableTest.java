@@ -47,6 +47,7 @@ public class KafkaRegistreringRunnableTest {
         kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
                 0L, AKTORID, event));
 
+        while(kafkaConsumer.position(new TopicPartition("test-topic", 0)) == 0 ) {}
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event);
 
     }
