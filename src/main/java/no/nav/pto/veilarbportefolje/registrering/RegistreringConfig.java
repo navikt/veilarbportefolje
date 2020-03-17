@@ -23,7 +23,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 @Configuration
 public class RegistreringConfig {
 
-    static final String KAFKA_REGISTRERING_CONSUMER_TOPIC = "aapen-arbeid-arbeidssoker-registrert" + requireEnvironmentName();
+    static final String KAFKA_REGISTRERING_CONSUMER_TOPIC = "aapen-arbeid-arbeidssoker-registrert-" + requireEnvironmentName();
 
     @Bean
     public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
