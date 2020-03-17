@@ -21,15 +21,17 @@ public class KafkaRegistreringRunnableTest {
 
     private MockConsumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
     private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate( setupInMemoryDatabase()));
-    KafkaRegistreringRunnable kafkaRegistreringRunnable;
     private static String AKTORID = "123456789";
+    private TopicPartition topicPartition = new TopicPartition("test-topic", 0);
+
+    private KafkaRegistreringRunnable kafkaRegistreringRunnable;
 
     @Before
     public void setup(){
         System.setProperty("APP_ENVIRONMENT_NAME", "TEST-Q0");
 
-        kafkaConsumer.assign(Collections.singletonList(new TopicPartition("test-topic", 0)));
-        kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long> (){{put (new TopicPartition("test-topic", 0), 0L);}});
+        kafkaConsumer.assign(Collections.singletonList(topicPartition));
+        kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long> (){{put (topicPartition, 0L);}});
         kafkaRegistreringRunnable = new KafkaRegistreringRunnable(new RegistreringService(registreringRepository), kafkaConsumer);
     }
 
@@ -47,7 +49,7 @@ public class KafkaRegistreringRunnableTest {
         kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
                 0L, AKTORID, event));
 
-        while(kafkaConsumer.position(new TopicPartition("test-topic", 0)) == 0 ) {}
+        while(kafkaConsumer.position(topicPartition) == 0 ) {}
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event);
 
     }
