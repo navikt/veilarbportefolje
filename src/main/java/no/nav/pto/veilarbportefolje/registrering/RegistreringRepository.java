@@ -26,7 +26,6 @@ public class RegistreringRepository {
                 .execute();
     }
 
-
     public ArbeidssokerRegistrertEvent hentBrukerRegistrering(AktoerId aktoerId) {
         return SqlUtils.select(db, BRUKER_REGISTRERING_TABELL, RegistreringRepository::mapTilArbeidssokerRegistrertEvent)
                 .column("*")

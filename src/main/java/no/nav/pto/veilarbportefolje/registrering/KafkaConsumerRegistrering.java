@@ -18,7 +18,6 @@ import static no.nav.pto.veilarbportefolje.util.KafkaUtils.KAFKA_BROKERS;
 public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
     private Consumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer;
     private RegistreringService registreringService;
-
     private long lastThrownExceptionTime;
     private Exception e;
 
@@ -27,7 +26,6 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
         this.kafkaConsumer = kafkaRegistreringConsumer;
         JobUtils.runAsyncJob(this);
     }
-
 
     @Override
     public void run() {
@@ -46,7 +44,6 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
             }
         }
     }
-
 
     @Override
     public void helsesjekk() {

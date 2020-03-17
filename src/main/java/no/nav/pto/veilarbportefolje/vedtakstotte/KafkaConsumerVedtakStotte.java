@@ -21,8 +21,6 @@ public class KafkaConsumerVedtakStotte implements Helsesjekk, Runnable {
 
     private VedtakService vedtakService;
     private UnleashService unleashService;
-
-
     private long lastThrownExceptionTime;
     private Exception e;
     private Consumer<String, String> kafkaVedtakStotteConsumer;
