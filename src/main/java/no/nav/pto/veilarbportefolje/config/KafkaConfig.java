@@ -46,7 +46,6 @@ public class KafkaConfig {
         HashMap<String, Object> props = kafkaProperties();
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
-        props.put("schema.registry.url", "url???"); // KANSKE IKKE TRENGER?
         props.put("specific.avro.reader", true);
 
         Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer = new KafkaConsumer<>(props);
