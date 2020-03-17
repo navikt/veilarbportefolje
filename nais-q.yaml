@@ -48,3 +48,6 @@ spec:
     requests:
       cpu: 500m
       memory: 2Gi
+  env:
+    - name: KAFKA_SCHEMA_URL
+      value: https://isso-q.adeo.no/isso/oauth2/connect/jwk_uri
