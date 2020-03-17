@@ -1,39 +1,32 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.jobutils.JobUtils;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
-import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
+import java.util.Date;
 
-public class KafkaRegistreringRunnable  implements Helsesjekk, Runnable {
-    protected static final String KAFKA_REGISTRERING_CONSUMER_TOPIC = "aapen-arbeid-arbeidssoker-registrert" + requireEnvironmentName();
-    private KafkaConsumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer;
+import static no.nav.pto.veilarbportefolje.config.KafkaConfig.KAFKA_BROKERS;
+
+@Slf4j
+public class KafkaRegistreringRunnable implements Helsesjekk, Runnable {
+    private Consumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer;
     private RegistreringService registreringService;
 
-    public KafkaRegistreringRunnable(RegistreringService registreringService) {
-        HashMap<String, Object> props = KafkaUtils.kafkaProperties();
-        props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
-        props.put("schema.registry.url", "url???"); // KANSKE IKKE TRENGER?
-        props.put("specific.avro.reader", "true");
+    private long lastThrownExceptionTime;
+    private Exception e;
 
-
+    public KafkaRegistreringRunnable(RegistreringService registreringService, Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer) {
         this.registreringService = registreringService;
-        this.kafkaConsumer = new KafkaConsumer<String, ArbeidssokerRegistrertEvent>(props);
-        this.kafkaConsumer.subscribe(Collections.singletonList(KAFKA_REGISTRERING_CONSUMER_TOPIC));
-        JobUtils.runAsyncJob(this::run);
+        this.kafkaConsumer = kafkaRegistreringConsumer;
+        JobUtils.runAsyncJob(this);
     }
 
 
@@ -41,27 +34,31 @@ public class KafkaRegistreringRunnable  implements Helsesjekk, Runnable {
     public void run() {
         while (true) {
             try {
-                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
-                for (ConsumerRecord<String, String> record : records) {
-                    registreringService.behandleKafkaMelding(melding);
+                ConsumerRecords<String, ArbeidssokerRegistrertEvent> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
+                for (ConsumerRecord<String, ArbeidssokerRegistrertEvent> record : records) {
+                    log.info("Behandler melding for på topic: " + record.topic());
+                    registreringService.behandleKafkaMelding(record.value());
                     kafkaConsumer.commitSync();
                 }
             } catch (Exception e) {
                 this.e = e;
                 this.lastThrownExceptionTime = System.currentTimeMillis();
-                log.error("Feilet ved behandling av kafka-vedtaksstotte-melding", e);
+                log.error("Feilet ved behandling av kafka-registrering-melding", e);
             }
         }
     }
 
 
     @Override
-    public void helsesjekk() throws Throwable {
-
+    public void helsesjekk() {
+        if ((this.lastThrownExceptionTime + 60_000L) > System.currentTimeMillis()) {
+            throw new IllegalArgumentException("Kafka registreringsconsumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
+        }
     }
 
     @Override
     public HelsesjekkMetadata getMetadata() {
-        return null;
+        return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
     }
+
 }

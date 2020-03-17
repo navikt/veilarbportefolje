@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
+import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+
 public class RegistreringService {
     private RegistreringRepository registreringRepository;
 
@@ -7,7 +9,7 @@ public class RegistreringService {
         this.registreringRepository = registreringRepository;
     }
 
-    public void behandleKafkaMelding(KafkaRegistreringMelding kafkaRegistreringMelding) {
+    public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         registreringRepository.insertBrukerRegistrering(kafkaRegistreringMelding);
     }
 

@@ -77,29 +77,28 @@
             <dependency>
                 <groupId>no.nav.arbeid</groupId>
                 <artifactId>veilarbregistrering-skjema</artifactId>
-                <version>1.202003162309-6dca9cf</version>
+                <version>1.202003170935-7f8835e</version>
             </dependency>
             <dependency>
                 <groupId>io.confluent</groupId>
                 <artifactId>kafka-avro-serializer</artifactId>
                 <version>${confluent.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>1.8.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-
-        <dependency>
-            <groupId>no.nav.arbeid</groupId>
-            <artifactId>veilarbregistrering-skjema</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.oracle.ojdbc</groupId>
             <artifactId>ojdbc8</artifactId>
         </dependency>
 
-
+        <!--AVRO OG SKJEMAS -->
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
@@ -110,11 +109,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>no.nav.arbeid</groupId>
             <artifactId>veilarbregistrering-skjema</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+        </dependency>
+
+
         <!--FELLESBIBLIOTEKER-->
         <dependency>
             <groupId>no.nav.common</groupId>

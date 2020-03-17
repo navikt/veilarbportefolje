@@ -21,11 +21,13 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.internal.*;
+import no.nav.pto.veilarbportefolje.kafka.KafkaRegistreringRunnable;
 import no.nav.pto.veilarbportefolje.kafka.KafkaVedtakStotteConsumerRunnable;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -74,7 +76,8 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
         ElasticConfig.class,
-        ControllerConfig.class
+        ControllerConfig.class,
+        KafkaConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
 
@@ -193,12 +196,6 @@ public class ApplicationConfig implements ApiApplication {
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
     }
-
-    @Bean
-    public KafkaVedtakStotteConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService, UnleashService unleashService) {
-        return new KafkaVedtakStotteConsumerRunnable(vedtakService, unleashService);
-    }
-
 
     @Bean
     public IndekseringScheduler indekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
