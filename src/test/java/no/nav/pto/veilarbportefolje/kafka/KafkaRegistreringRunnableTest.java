@@ -17,14 +17,13 @@ import java.util.HashMap;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class KafkaRegistreringRunnableTest {
+public class KafkaRegistreringRunnableTest extends Thread {
 
     private MockConsumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
     private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate( setupInMemoryDatabase()));
     private static String AKTORID = "123456789";
     private TopicPartition topicPartition = new TopicPartition("test-topic", 0);
 
-    private KafkaRegistreringRunnable kafkaRegistreringRunnable;
 
     @Before
     public void setup(){
@@ -32,12 +31,12 @@ public class KafkaRegistreringRunnableTest {
 
         kafkaConsumer.assign(Collections.singletonList(topicPartition));
         kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long> (){{put (topicPartition, 0L);}});
-        kafkaRegistreringRunnable = new KafkaRegistreringRunnable(new RegistreringService(registreringRepository), kafkaConsumer);
+        new KafkaRegistreringRunnable(new RegistreringService(registreringRepository), kafkaConsumer);
     }
 
 
     @Test
-    public void testConsumer() {
+    public void testConsumer() throws InterruptedException {
 
         ArbeidssokerRegistrertEvent event = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
@@ -45,11 +44,10 @@ public class KafkaRegistreringRunnableTest {
                 .setRegistreringOpprettet(null)
                 .build();
 
-
         kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
                 0L, AKTORID, event));
 
-        while(kafkaConsumer.position(topicPartition) == 0 ) {}
+        Thread.sleep(2000);
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event);
 
     }

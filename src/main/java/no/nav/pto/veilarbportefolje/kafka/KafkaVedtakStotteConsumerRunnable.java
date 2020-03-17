@@ -29,9 +29,6 @@ public class KafkaVedtakStotteConsumerRunnable implements Helsesjekk, Runnable {
     private Exception e;
     private Consumer<String, String> kafkaVedtakStotteConsumer;
 
-
-
-
     public KafkaVedtakStotteConsumerRunnable(VedtakService vedtakService, UnleashService unleashService, Consumer<String, String> kafkaVedtakStotteConsumer) {
         // TODO SKA DENNA TA IN TOPICS ELLER SKA VI DEFINIERA ALLA TOPICS HER?
         // TODO SWITCH CASE PÅ TOPIC record.topic() ELLER LAGA EN NY INSTANSE AV DENNA KLASS FØR VARJE TOPIC ?
