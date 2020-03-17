@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Collections;
 import java.util.HashMap;
 
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
@@ -24,6 +25,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 public class RegistreringConfig {
 
     static final String KAFKA_REGISTRERING_CONSUMER_TOPIC = "aapen-arbeid-arbeidssoker-registrert-" + requireEnvironmentName();
+    static final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
 
     @Bean
     public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
@@ -31,7 +33,7 @@ public class RegistreringConfig {
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-        props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "thisUrlMustBeSetAtLeastToADummyValue");
+        props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL);
 
         Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer = new KafkaConsumer<>(props);
         kafkaRegistreringConsumer.subscribe(Collections.singletonList(KAFKA_REGISTRERING_CONSUMER_TOPIC));

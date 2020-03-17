@@ -48,3 +48,6 @@ spec:
     requests:
       cpu: 500m
       memory: 2Gi
+  env:
+    - name: KAFKA_SCHEMAS_URL
+      value: https://kafka-schema-registry.nais.preprod.local
