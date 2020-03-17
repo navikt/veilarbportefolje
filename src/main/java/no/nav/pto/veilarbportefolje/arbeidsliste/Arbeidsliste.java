@@ -23,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Accessors(chain = true)
 @Getter
 @RequiredArgsConstructor
-public class    Arbeidsliste {
+public class Arbeidsliste {
 
      public enum Kategori {
         BLA, GRONN, GUL, LILLA
