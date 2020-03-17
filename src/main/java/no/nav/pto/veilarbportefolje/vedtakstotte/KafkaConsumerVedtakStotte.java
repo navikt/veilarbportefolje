@@ -1,11 +1,9 @@
-package no.nav.pto.veilarbportefolje.kafka;
+package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.jobutils.JobUtils;
-import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -16,10 +14,10 @@ import java.time.Duration;
 import java.util.*;
 
 import static no.nav.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.config.KafkaConfig.KAFKA_BROKERS;
+import static no.nav.pto.veilarbportefolje.util.KafkaUtils.KAFKA_BROKERS;
 
 @Slf4j
-public class KafkaVedtakStotteConsumerRunnable implements Helsesjekk, Runnable {
+public class KafkaConsumerVedtakStotte implements Helsesjekk, Runnable {
 
     private VedtakService vedtakService;
     private UnleashService unleashService;
@@ -29,7 +27,7 @@ public class KafkaVedtakStotteConsumerRunnable implements Helsesjekk, Runnable {
     private Exception e;
     private Consumer<String, String> kafkaVedtakStotteConsumer;
 
-    public KafkaVedtakStotteConsumerRunnable(VedtakService vedtakService, UnleashService unleashService, Consumer<String, String> kafkaVedtakStotteConsumer) {
+    public KafkaConsumerVedtakStotte(VedtakService vedtakService, UnleashService unleashService, Consumer<String, String> kafkaVedtakStotteConsumer) {
         // TODO SKA DENNA TA IN TOPICS ELLER SKA VI DEFINIERA ALLA TOPICS HER?
         // TODO SWITCH CASE PÅ TOPIC record.topic() ELLER LAGA EN NY INSTANSE AV DENNA KLASS FØR VARJE TOPIC ?
         this.kafkaVedtakStotteConsumer = kafkaVedtakStotteConsumer;

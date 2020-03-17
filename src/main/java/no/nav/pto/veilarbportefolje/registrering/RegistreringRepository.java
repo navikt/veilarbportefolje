@@ -34,8 +34,6 @@ public class RegistreringRepository {
                 .execute();
     }
 
-
-
     //TODO LYTTE PÅ AVSLUTTOPPFOLGINGFEEDEN OG SLETT BRUKEREN PGA DATAMINIMERING OSV MORRO
     public void slettBrukerRegistrering(AktoerId aktoerId) {
         SqlUtils.delete(db, BRUKER_REGISTRERING_TABELL)

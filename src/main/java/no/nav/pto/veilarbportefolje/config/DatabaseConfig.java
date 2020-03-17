@@ -90,16 +90,6 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public VedtakStatusRepository vedtakStatusRepository(JdbcTemplate jdbcTemplate) {
-        return new VedtakStatusRepository(jdbcTemplate);
-    }
-
-    @Bean
-    public RegistreringRepository registreringRepository(JdbcTemplate jdbcTemplate) {
-        return new RegistreringRepository(jdbcTemplate);
-    }
-
-    @Bean
     public KrrRepository krrRepository() {
         return new KrrRepository();
     }

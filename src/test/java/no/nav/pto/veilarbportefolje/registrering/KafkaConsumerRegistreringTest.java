@@ -1,9 +1,7 @@
-package no.nav.pto.veilarbportefolje.kafka;
+package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -17,7 +15,7 @@ import java.util.HashMap;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class KafkaRegistreringRunnableTest extends Thread {
+public class KafkaConsumerRegistreringTest extends Thread {
 
     private MockConsumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
     private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate( setupInMemoryDatabase()));
@@ -31,7 +29,7 @@ public class KafkaRegistreringRunnableTest extends Thread {
 
         kafkaConsumer.assign(Collections.singletonList(topicPartition));
         kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long> (){{put (topicPartition, 0L);}});
-        new KafkaRegistreringRunnable(new RegistreringService(registreringRepository), kafkaConsumer);
+        new KafkaConsumerRegistrering(new RegistreringService(registreringRepository), kafkaConsumer);
     }
 
 

@@ -36,16 +36,6 @@ public class ServiceConfig {
     }
 
     @Bean
-    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
-        return new VedtakService(vedtakStatusRepository, elasticIndexer);
-    }
-
-    @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository) {
-        return new RegistreringService(registreringRepository);
-    }
-
-    @Bean
     public TiltakService tiltakService() {
         return new TiltakService();
     }

@@ -21,15 +21,13 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.internal.*;
-import no.nav.pto.veilarbportefolje.kafka.KafkaRegistreringRunnable;
-import no.nav.pto.veilarbportefolje.kafka.KafkaVedtakStotteConsumerRunnable;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringConfig;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakConfig;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -77,7 +75,8 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         ScheduledErrorHandler.class,
         ElasticConfig.class,
         ControllerConfig.class,
-        KafkaConfig.class
+        VedtakConfig.class,
+        RegistreringConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
 
