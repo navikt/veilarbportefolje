@@ -55,6 +55,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
+        byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
 
         if (filtervalg.harYtelsefilter()) {
 

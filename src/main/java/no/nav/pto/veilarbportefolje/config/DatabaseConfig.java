@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.database.*;
 import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
@@ -86,11 +87,6 @@ public class DatabaseConfig {
     @Bean
     public EnhetTiltakRepository enhetTiltakRepository() {
         return new EnhetTiltakRepository();
-    }
-
-    @Bean
-    public VedtakStatusRepository vedtakStatusRepository(JdbcTemplate jdbcTemplate) {
-        return new VedtakStatusRepository(jdbcTemplate);
     }
 
     @Bean
