@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -14,6 +15,9 @@ import java.util.HashMap;
 
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class KafkaConsumerRegistreringTest extends Thread {
 
@@ -22,14 +26,15 @@ public class KafkaConsumerRegistreringTest extends Thread {
     private static String AKTORID = "123456789";
     private TopicPartition topicPartition = new TopicPartition("test-topic", 0);
 
-
     @Before
     public void setup(){
         System.setProperty("APP_ENVIRONMENT_NAME", "TEST-Q0");
 
         kafkaConsumer.assign(Collections.singletonList(topicPartition));
         kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long> (){{put (topicPartition, 0L);}});
-        new KafkaConsumerRegistrering(new RegistreringService(registreringRepository), kafkaConsumer);
+        UnleashService unleashService = mock(UnleashService.class);
+        when(unleashService.isEnabled(any(String.class))).thenReturn(true);
+        new KafkaConsumerRegistrering(new RegistreringService(registreringRepository), kafkaConsumer, unleashService);
     }
 
 

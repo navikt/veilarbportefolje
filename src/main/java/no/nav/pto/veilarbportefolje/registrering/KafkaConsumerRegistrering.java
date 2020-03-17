@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.jobutils.JobUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,18 +19,20 @@ import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
     private Consumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer;
     private RegistreringService registreringService;
+    private UnleashService unleashService;
     private long lastThrownExceptionTime;
     private Exception e;
 
-    public KafkaConsumerRegistrering(RegistreringService registreringService, Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer) {
+    public KafkaConsumerRegistrering(RegistreringService registreringService, Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer, UnleashService unleashService) {
         this.registreringService = registreringService;
+        this.unleashService = unleashService;
         this.kafkaConsumer = kafkaRegistreringConsumer;
         JobUtils.runAsyncJob(this);
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (this.registreringFeature()) {
             try {
                 ConsumerRecords<String, ArbeidssokerRegistrertEvent> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, ArbeidssokerRegistrertEvent> record : records) {
@@ -55,6 +58,10 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
     @Override
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
+    }
+
+    private boolean registreringFeature () {
+        return unleashService.isEnabled("veilarbportfolje.registrering");
     }
 
 }

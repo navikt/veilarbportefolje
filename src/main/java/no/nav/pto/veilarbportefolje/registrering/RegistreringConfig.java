@@ -4,6 +4,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -47,8 +48,8 @@ public class RegistreringConfig {
     }
 
     @Bean
-    public KafkaConsumerRegistrering kafkaConsumerRegistrering(RegistreringService registreringService, Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer) {
-        return new KafkaConsumerRegistrering(registreringService, kafkaRegistreringConsumer);
+    public KafkaConsumerRegistrering kafkaConsumerRegistrering(RegistreringService registreringService, Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer, UnleashService unleashService) {
+        return new KafkaConsumerRegistrering(registreringService, kafkaRegistreringConsumer, unleashService);
     }
 
 }
