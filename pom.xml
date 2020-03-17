@@ -23,6 +23,8 @@
         <jsch.version>0.1.54</jsch.version>
         <elastic.version>6.5.2</elastic.version>
         <confluent.version>5.0.2</confluent.version>
+        <avro.version>1.8.2</avro.version>
+        <veilarbregistrering.skjema.version>1.202003170935-7f8835e</veilarbregistrering.skjema.version>
     </properties>
 
     <dependencyManagement>
@@ -77,7 +79,7 @@
             <dependency>
                 <groupId>no.nav.arbeid</groupId>
                 <artifactId>veilarbregistrering-skjema</artifactId>
-                <version>1.202003170935-7f8835e</version>
+                <version>${veilarbregistrering.skjema.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.confluent</groupId>
@@ -87,7 +89,7 @@
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
-                <version>1.8.2</version>
+                <version>${avro.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -98,7 +100,7 @@
             <artifactId>ojdbc8</artifactId>
         </dependency>
 
-        <!--AVRO OG SKJEMAS -->
+        <!--AVRO OG AVROSKJEMAS -->
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
