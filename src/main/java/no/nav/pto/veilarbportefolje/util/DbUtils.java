@@ -72,7 +72,7 @@ public class DbUtils {
                 .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
                 .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
-                .setBrukers_situasjon(rs.getString("BRUKERSSITUASJON"));
+                .setBrukers_situasjon(rs.getString("BRUKERS_SITUASJON"));
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 

@@ -21,7 +21,7 @@ public class RegistreringRepository {
     public void insertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         SqlUtils.upsert(db, BRUKER_REGISTRERING_TABELL)
                 .set("AKTOERID", kafkaRegistreringMelding.getAktorid())
-                .set("BRUKERSSITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
+                .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .where(WhereClause.equals("AKTOERID", kafkaRegistreringMelding.getAktorid()))
                 .execute();
     }
@@ -42,7 +42,7 @@ public class RegistreringRepository {
 
     private static ArbeidssokerRegistrertEvent mapTilArbeidssokerRegistrertEvent (ResultSet rs) throws SQLException {
         return ArbeidssokerRegistrertEvent.newBuilder()
-                .setBrukersSituasjon(rs.getString("BRUKERSSITUASJON"))
+                .setBrukersSituasjon(rs.getString("BRUKERS_SITUASJON"))
                 .setAktorid(rs.getString("AKTOERID"))
                 .setRegistreringOpprettet(null)
                 .build();
