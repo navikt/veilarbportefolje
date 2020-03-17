@@ -90,6 +90,11 @@
     <dependencies>
 
         <dependency>
+            <groupId>no.nav.arbeid</groupId>
+            <artifactId>veilarbregistrering-skjema</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.oracle.ojdbc</groupId>
             <artifactId>ojdbc8</artifactId>
         </dependency>
