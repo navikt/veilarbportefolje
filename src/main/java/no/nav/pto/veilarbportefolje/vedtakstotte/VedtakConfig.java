@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.util.KafkaUtils;
+import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -19,7 +19,7 @@ public class VedtakConfig {
 
     @Bean
     public Consumer<String, String> kafkaVedtakStotteConsumer() {
-        Consumer<String, String> kafkaVedtakStotteConsumer = new KafkaConsumer<>(KafkaUtils.kafkaProperties());
+        Consumer<String, String> kafkaVedtakStotteConsumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
         kafkaVedtakStotteConsumer.subscribe(Collections.singletonList(KAFKA_VEDTAKSTOTTE_CONSUMER_TOPIC));
         return  kafkaVedtakStotteConsumer;
     }

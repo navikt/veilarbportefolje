@@ -12,7 +12,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import java.time.Duration;
 import java.util.Date;
 
-import static no.nav.pto.veilarbportefolje.util.KafkaUtils.KAFKA_BROKERS;
+import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 
 @Slf4j
 public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {

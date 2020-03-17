@@ -14,7 +14,7 @@ import java.time.Duration;
 import java.util.*;
 
 import static no.nav.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.util.KafkaUtils.KAFKA_BROKERS;
+import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 
 @Slf4j
 public class KafkaConsumerVedtakStotte implements Helsesjekk, Runnable {
