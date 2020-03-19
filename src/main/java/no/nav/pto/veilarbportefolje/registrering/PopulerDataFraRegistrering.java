@@ -45,12 +45,14 @@ public class PopulerDataFraRegistrering extends HttpServlet {
     public void populerMedBrukerRegistrering(Integer fra, Integer til) {
         long t0 = System.currentTimeMillis();
         List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().subList(fra, til);
-        brukere.stream().forEach(bruker -> {
-            veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
-                    .map(brukerRegistreringData -> mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id())))
-                    .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
-                    .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoer_id(), error)));
-        });
+        brukere.stream()
+                .filter(bruker -> bruker.getAktoer_id() != null)
+                .forEach(bruker -> {
+                    veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
+                            .map(brukerRegistreringData -> mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id())))
+                            .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
+                            .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoer_id(), error)));
+                });
 
         long t1 = System.currentTimeMillis();
         long time = t1 - t0;
