@@ -2,9 +2,9 @@ package no.nav.pto.veilarbportefolje.feed.aktivitet;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
-import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
+import no.nav.pto.veilarbportefolje.feed.OidcFeedOutInterceptor;
 import no.nav.pto.veilarbportefolje.feed.Utils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import org.springframework.context.annotation.Bean;

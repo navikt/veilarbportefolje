@@ -7,8 +7,6 @@ import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.Pair;
-import no.nav.fasit.FasitUtils;
-import no.nav.fasit.ServiceUser;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
@@ -34,7 +32,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.common.utils.CollectionUtils.*;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
@@ -60,11 +57,6 @@ public class ElasticServiceIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-
-        ServiceUser user = FasitUtils.getServiceUser("veilarbelastic_user", APPLICATION_NAME);
-        System.setProperty(ELASTICSEARCH_USERNAME_PROPERTY, user.username);
-        System.setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, user.password);
-        System.setProperty("FASIT_ENVIRONMENT_NAME", FasitUtils.getDefaultEnvironment());
 
         PepClient pepMock = mock(PepClient.class);
         when(pepMock.isSubjectAuthorizedToSeeEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);

@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1.2020.01.07-12.25-79f6cda3b780</version>
+        <version>1.2020.03.19_11.53-26f52be04676</version>
     </parent>
 
     <groupId>no.nav.pto</groupId>
@@ -142,7 +142,7 @@
         <!--oidc-security-->
         <dependency>
             <groupId>no.nav.common</groupId>
-            <artifactId>oidc-security</artifactId>
+            <artifactId>oidc</artifactId>
         </dependency>
 
         <!--Funksjonell programmering-->
@@ -162,10 +162,6 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>rest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>fasit</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
@@ -431,10 +427,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>smoketest</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>

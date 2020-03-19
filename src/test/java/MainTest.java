@@ -1,21 +1,15 @@
 import no.nav.common.leaderelection.ElectorMock;
-import no.nav.fasit.DbCredentials;
-import no.nav.fasit.ServiceUser;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.testconfig.ApiAppTest;
 
 import java.util.Optional;
 
 import static java.lang.System.setProperty;
-import static no.nav.brukerdialog.security.Constants.*;
-import static no.nav.fasit.FasitUtils.*;
-import static no.nav.fasit.FasitUtils.Zone.FSS;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_USERNAME;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
 import static no.nav.pto.veilarbportefolje.config.DatabaseConfig.*;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.HSQL_URL;
-import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupDataSourceWithCredentials;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
@@ -37,6 +31,7 @@ public class MainTest {
 
         setupTestContext(ApiAppTest.Config.builder().applicationName(APPLICATION_NAME).build());
 
+/*
         ServiceUser serviceUser = getServiceUser(SERVICE_USER_ALIAS, APPLICATION_NAME);
         setProperty(SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(SYSTEMUSER_PASSWORD, serviceUser.getPassword());
@@ -78,11 +73,12 @@ public class MainTest {
         ServiceUser elasticUser = getServiceUser("veilarbelastic_user", APPLICATION_NAME, getDefaultEnvironment());
         setProperty(ELASTICSEARCH_USERNAME_PROPERTY, elasticUser.getUsername());
         setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, elasticUser.getPassword());
+        */
 
         ElectorMock.start();
         Main.main(PORT);
     }
-
+/*
     private static DbCredentials resolveDbCredentials() {
         Optional<String> miljoDatabaseProperty = getOptionalProperty("miljo.database");
         if (miljoDatabaseProperty.isPresent() && "true".equals(miljoDatabaseProperty.get())) {
@@ -95,5 +91,5 @@ public class MainTest {
             setProperty(SKIP_DB_MIGRATION_PROPERTY, "true");
             return dbCredentials;
         }
-    }
+    }*/
 }

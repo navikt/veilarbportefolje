@@ -7,9 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 
 import static java.lang.System.setProperty;
-import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
-import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
 import static no.nav.pto.veilarbportefolje.internal.AuthorizationUtils.AUTHORIZATION;
+import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.SYSTEMUSER_PASSWORD;
+import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.SYSTEMUSER_USERNAME;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
