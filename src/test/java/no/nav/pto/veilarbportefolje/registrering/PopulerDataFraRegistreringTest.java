@@ -39,6 +39,7 @@ public class PopulerDataFraRegistreringTest {
         when(brukerRepository.hentAlleBrukereUnderOppfolging()).thenReturn(Collections.singletonList(new OppfolgingsBruker().setFnr("12346789101").setAktoer_id("123456789")));
 
         this.populerDataFraRegistrering = new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient);
+        jdbcTemplate.execute("truncate table BRUKER_REGISTRERING");
 
     }
 
