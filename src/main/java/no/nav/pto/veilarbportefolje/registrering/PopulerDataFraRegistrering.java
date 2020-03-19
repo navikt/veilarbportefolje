@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class PopulerDataFraRegistrering extends HttpServlet {
@@ -36,6 +37,7 @@ public class PopulerDataFraRegistrering extends HttpServlet {
             Integer fra = Integer.parseInt(req.getParameter("fra"));
             Integer til = Integer.parseInt(req.getParameter("til"));
             populerMedBrukerRegistrering(fra, til);
+            resp.setStatus(200);
         }
         else {
             AuthorizationUtils.writeUnauthorized(resp);
@@ -44,12 +46,20 @@ public class PopulerDataFraRegistrering extends HttpServlet {
 
     public void populerMedBrukerRegistrering(Integer fra, Integer til) {
         long t0 = System.currentTimeMillis();
-        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().subList(fra, til);
-        brukere.stream()
+
+        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().stream()
                 .filter(bruker -> bruker.getAktoer_id() != null)
+                .collect(Collectors.toList());
+
+
+        List<OppfolgingsBruker> subList = brukere.subList(fra, til);
+        subList.stream()
                 .forEach(bruker -> {
                     veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
-                            .map(brukerRegistreringData -> mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id())))
+                            .map(brukerRegistreringData -> {
+                                log.info("Hentet registreringsdata for brukere med aktorId" + bruker.getAktoer_id());
+                                return mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id()));
+                            })
                             .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
                             .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoer_id(), error)));
                 });
@@ -58,7 +68,6 @@ public class PopulerDataFraRegistrering extends HttpServlet {
         long time = t1 - t0;
 
         int antall = til-fra;
-
         log.info(String.format("Hentning av brukerregistreringdata før %s brukere tokk %s ", antall,  time));
     }
 
