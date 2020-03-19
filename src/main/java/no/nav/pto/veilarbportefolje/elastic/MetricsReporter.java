@@ -34,11 +34,13 @@ public class MetricsReporter {
     }
 
     private Number sjekkArenaYtelserSistOppdatert() {
+        log.info("sjekkArenaYtelserSistOppdatert");
         Long millis = getLastModifiedTimeInMillis(LOPENDEYTELSER_SFTP).getOrElseThrow(() -> new RuntimeException());
         return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }
 
     private Number sjekkArenaAktiviteterSistOppdatert() {
+        log.info("sjekkArenaAktiviteterSistOppdatert");
         Long millis = getLastModifiedTimeInMillis(AKTIVITETER_SFTP).getOrElseThrow(() -> new RuntimeException());
         return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }
