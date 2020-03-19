@@ -26,8 +26,8 @@ import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.LOPENDEYTE
 @Slf4j
 public class FilmottakFileUtils {
 
-    private static Timer timerYtelse = Timer.builder("portefolje_ytelse_sftp").tag("hostname", "sftp://filmottak").register(getMeterRegistry());
-    private static Timer timerTiltak = Timer.builder("portefolje_tiltak_sftp").tag("hostname", "sftp://filmottak-loependeytelser").register(getMeterRegistry());
+    private static Timer timerYtelse = Timer.builder("portefolje_ytelse_sftp").tag("sftp_hostname", "sftp://filmottak").register(getMeterRegistry());
+    private static Timer timerTiltak = Timer.builder("portefolje_tiltak_sftp").tag("sftp_hostname", "sftp://filmottak-loependeytelser").register(getMeterRegistry());
 
     public static Try<FileObject> hentTiltaksFil() {
         return timerTiltak.record(() -> hentFil(AKTIVITETER_SFTP));
