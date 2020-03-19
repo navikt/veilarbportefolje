@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenafiler;
 
-import io.micrometer.core.instrument.Timer;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
@@ -19,22 +18,19 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
+import static no.nav.metrics.utils.MetricsUtils.timed;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.LOPENDEYTELSER_SFTP;
 
 @Slf4j
 public class FilmottakFileUtils {
 
-    private static Timer timerYtelse = Timer.builder("portefolje_ytelse_sftp").tag("sftp_hostname", "sftp://filmottak").register(getMeterRegistry());
-    private static Timer timerTiltak = Timer.builder("portefolje_tiltak_sftp").tag("sftp_hostname", "sftp://filmottak-loependeytelser").register(getMeterRegistry());
-
     public static Try<FileObject> hentTiltaksFil() {
-        return timerTiltak.record(() -> hentFil(AKTIVITETER_SFTP));
+        return timed("portefolje.sftp.tiltak", () -> hentFil(AKTIVITETER_SFTP));
     }
 
     public static Try<FileObject> hentYtelseFil() {
-        return timerYtelse.record(() -> hentFil(LOPENDEYTELSER_SFTP));
+        return timed("portefolje.sftp.ytelse", () -> hentFil(LOPENDEYTELSER_SFTP));
     }
 
     private static Try<FileObject> hentFil(SftpConfig sftpConfig) {
