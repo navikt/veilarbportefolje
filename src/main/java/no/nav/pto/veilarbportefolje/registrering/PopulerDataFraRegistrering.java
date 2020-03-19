@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.jobutils.JobUtils;
@@ -9,13 +10,10 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.registrering.domene.BrukerRegistreringWrapper;
 import no.nav.pto.veilarbportefolje.registrering.domene.DinSituasjonSvar;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-
+@Slf4j
 public class PopulerDataFraRegistrering implements Runnable {
     private RegistreringService registreringService;
     private BrukerRepository brukerRepository;
@@ -37,16 +35,16 @@ public class PopulerDataFraRegistrering implements Runnable {
             brukerBatch.stream().forEach(bruker -> {
                 veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
                         .map(brukerRegistreringData -> mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id())))
-                        .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert));
+                        .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
+                        .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoer_id(), error)));
             });
         });
     }
 
     private ArbeidssokerRegistrertEvent mapRegistreringTilArbeidssokerRegistrertEvent (BrukerRegistreringWrapper registrering, AktoerId aktoerId) {
-        ZonedDateTime opprettetDato = ZonedDateTime.of(registrering.getRegistrering().getOpprettetDato(), ZoneId.systemDefault());
         Optional<DinSituasjonSvar> brukerSituasjon = Optional.ofNullable(registrering.getRegistrering().getBesvarelse().getDinSituasjon());
         return ArbeidssokerRegistrertEvent.newBuilder()
-                .setRegistreringOpprettet(opprettetDato.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(null)
                 .setBrukersSituasjon(brukerSituasjon.map(Enum::name).orElse(null))
                 .setAktorid(aktoerId.toString())
                 .build();
