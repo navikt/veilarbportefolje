@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 public class KafkaConsumerRegistreringTest extends Thread {
 
     private MockConsumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
-    private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate( setupInMemoryDatabase()));
+    private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate(setupInMemoryDatabase()));
     private static String AKTORID = "123456789";
     private TopicPartition topicPartition = new TopicPartition("test-topic", 0);
 
