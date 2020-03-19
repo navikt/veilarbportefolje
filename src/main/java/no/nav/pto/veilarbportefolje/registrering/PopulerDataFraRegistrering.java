@@ -19,7 +19,7 @@ public class PopulerDataFraRegistrering implements Runnable {
     private BrukerRepository brukerRepository;
     private VeilarbregistreringClient veilarbregistreringClient;
 
-    static int BATCH_SIZE = 10; //
+    static int BATCH_SIZE = 10; //TODO SETT TILL 1000 SOM ARBEIDSSOKER
 
     public PopulerDataFraRegistrering(RegistreringService registreringService, BrukerRepository brukerRepository, VeilarbregistreringClient veilarbregistreringClient) {
         this.registreringService = registreringService;
@@ -30,7 +30,7 @@ public class PopulerDataFraRegistrering implements Runnable {
     }
 
     public void run() {
-        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().subList(0, 10); // TAR BARA 10 FØRSTE FØR ATT TESTA I Q=
+        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().subList(0, 10); //TODO TAR BARA 10 FØRSTE FØR ATT TESTA I Q0 FJERN FJERN FJERN!!!
         CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
             brukerBatch.stream().forEach(bruker -> {
                 veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
