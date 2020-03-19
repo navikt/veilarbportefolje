@@ -62,9 +62,4 @@ public class RegistreringConfig {
         return new VeilarbregistreringClient(client);
     }
 
-    @Bean
-    public PopulerDataFraRegistrering populerDataFraRegistrering(RegistreringService registreringService, BrukerRepository brukerRepository, VeilarbregistreringClient veilarbregistreringClient) {
-        return new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient);
-    }
-
 }
