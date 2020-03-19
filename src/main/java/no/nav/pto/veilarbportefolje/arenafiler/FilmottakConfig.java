@@ -89,29 +89,24 @@ public class FilmottakConfig {
         );
 
         return () -> {
-            try {
 
-                FileObject fileObject = FilmottakFileUtils.hentFilViaSftp(sftpConfig).get();
-
-                switch (sftpConfig.arenaFilType) {
-                    case GR_199_TILTAK:
-                        Try<TiltakOgAktiviteterForBrukere> tiltak = FilmottakFileUtils.unmarshallTiltakFil(fileObject);
-                        if (tiltak.isFailure()) {
-                            return innlesingAvFilFeilet(sftpConfig, metadata);
-                        }
-                        break;
-                    case GR_202_YTELSER:
-                        Try<LoependeYtelser> ytelser = FilmottakFileUtils.unmarshallLoependeYtelserFil(fileObject);
-                        if (ytelser.isFailure()) {
-                            return innlesingAvFilFeilet(sftpConfig, metadata);
-                        }
-                        break;
-                    default:
-                        return feilet(metadata, new IllegalStateException(sftpConfig.getUrl()));
-                }
-
-            } catch (FileSystemException e) {
-                return feilet(metadata, e);
+            switch (sftpConfig.arenaFilType) {
+                case GR_199_TILTAK:
+                    FileObject tiltakFil = FilmottakFileUtils.hentTiltaksFil().getOrElseThrow(() -> new RuntimeException());
+                    Try<TiltakOgAktiviteterForBrukere> tiltak = FilmottakFileUtils.unmarshallTiltakFil(tiltakFil);
+                    if (tiltak.isFailure()) {
+                        return innlesingAvFilFeilet(sftpConfig, metadata);
+                    }
+                    break;
+                case GR_202_YTELSER:
+                    FileObject ytelseFil = FilmottakFileUtils.hentYtelseFil().getOrElseThrow(() -> new RuntimeException());
+                    Try<LoependeYtelser> ytelser = FilmottakFileUtils.unmarshallLoependeYtelserFil(ytelseFil);
+                    if (ytelser.isFailure()) {
+                        return innlesingAvFilFeilet(sftpConfig, metadata);
+                    }
+                    break;
+                default:
+                    return feilet(metadata, new IllegalStateException(sftpConfig.getUrl()));
             }
 
             return lyktes(metadata);

@@ -45,7 +45,7 @@ public class FilmottakFileUtils {
         }
     }
 
-    static Try<FileObject> hentFilViaSftp(SftpConfig sftpConfig) throws FileSystemException {
+    private static Try<FileObject> hentFilViaSftp(SftpConfig sftpConfig) throws FileSystemException {
         FileSystemOptions fsOptions = new FileSystemOptions();
         SftpFileSystemConfigBuilder sftpFileSystemConfigBuilder = SftpFileSystemConfigBuilder.getInstance();
         sftpFileSystemConfigBuilder.setPreferredAuthentications(fsOptions, "password");
