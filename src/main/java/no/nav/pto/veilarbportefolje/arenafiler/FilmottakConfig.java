@@ -147,5 +147,9 @@ public class FilmottakConfig {
         String getPassword() {
             return password;
         }
+
+        public ArenaFilType getArenaFilType() {
+            return arenaFilType;
+        }
     }
 }
