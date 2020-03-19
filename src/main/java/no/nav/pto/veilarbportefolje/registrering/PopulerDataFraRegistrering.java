@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.jobutils.JobUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -36,7 +37,7 @@ public class PopulerDataFraRegistrering extends HttpServlet {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             Integer fra = Integer.parseInt(req.getParameter("fra"));
             Integer til = Integer.parseInt(req.getParameter("til"));
-            populerMedBrukerRegistrering(fra, til);
+            JobUtils.runAsyncJob(() -> populerMedBrukerRegistrering(fra, til));
             resp.setStatus(200);
         }
         else {
@@ -55,7 +56,7 @@ public class PopulerDataFraRegistrering extends HttpServlet {
         List<OppfolgingsBruker> subList = brukere.subList(fra, til);
         subList.stream()
                 .forEach(bruker -> {
-                    veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
+                            veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
                             .map(brukerRegistreringData -> {
                                 log.info("Hentet registreringsdata for brukere med aktorId" + bruker.getAktoer_id());
                                 return mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id()));
