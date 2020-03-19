@@ -35,17 +35,29 @@ public class PopulerDataFraRegistrering extends HttpServlet {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             Integer fra = Integer.parseInt(req.getParameter("fra"));
             Integer til = Integer.parseInt(req.getParameter("til"));
-            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().subList(fra, til);
-            brukere.stream().forEach(bruker -> {
-                veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
-                        .map(brukerRegistreringData -> mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id())))
-                        .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
-                        .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoer_id(), error)));
-            });
+            populerMedBrukerRegistrering(fra, til);
         }
         else {
             AuthorizationUtils.writeUnauthorized(resp);
         }
+    }
+
+    public void populerMedBrukerRegistrering(Integer fra, Integer til) {
+        long t0 = System.currentTimeMillis();
+        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().subList(fra, til);
+        brukere.stream().forEach(bruker -> {
+            veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
+                    .map(brukerRegistreringData -> mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id())))
+                    .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
+                    .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoer_id(), error)));
+        });
+
+        long t1 = System.currentTimeMillis();
+        long time = t1 - t0;
+
+        int antall = til-fra;
+
+        log.info(String.format("Hentning av brukerregistreringdata før %s brukere tokk %s ", antall,  time));
     }
 
     private ArbeidssokerRegistrertEvent mapRegistreringTilArbeidssokerRegistrertEvent (BrukerRegistreringWrapper registrering, AktoerId aktoerId) {
