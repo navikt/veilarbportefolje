@@ -36,11 +36,11 @@ public class PopulerDataFraRegistreringTest {
         System.setProperty("VEILARBREGISTRERING_URL", "thisUrlMustBeSetAtLeastToADummyValue");
         this.veilarbregistreringClient = mock(VeilarbregistreringClient.class);
 
-        when(brukerRepository.hentAlleBrukereUnderOppfolging()).thenReturn(Collections.singletonList(
+        when(brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering()).thenReturn(Collections.singletonList(
                 new OppfolgingsBruker()
                         .setFnr("12346789101")
                         .setAktoer_id("123456789")
-                        .setOppfolging_startdato("2020-03-20T17:38:35.437106Z")
+                        .setOppfolging_startdato("2020-01-03T15:54:02.658Z")
         ));
 
         this.populerDataFraRegistrering = new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient);

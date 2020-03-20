@@ -49,17 +49,7 @@ public class PopulerDataFraRegistrering extends HttpServlet {
     public void populerMedBrukerRegistrering(Integer fra, Integer til) {
         long t0 = System.currentTimeMillis();
 
-        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().stream()
-                .filter(bruker -> bruker.getAktoer_id() != null)
-                .filter(bruker -> bruker.getOppfolging_startdato() != null)
-                .sorted((oppfolgingsbrukerA, oppfolgingsbrukerB) -> {
-                    ZonedDateTime oppfolgingStartDatoA =  ZonedDateTime.parse(oppfolgingsbrukerA.getOppfolging_startdato(), DateTimeFormatter.ISO_INSTANT);
-                    ZonedDateTime oppfolgingStartDatoB =  ZonedDateTime.parse(oppfolgingsbrukerB.getOppfolging_startdato(), DateTimeFormatter.ISO_INSTANT);
-                    return oppfolgingStartDatoA.compareTo(oppfolgingStartDatoB);
-                })
-                .collect(Collectors.toList());
-
-        List<OppfolgingsBruker> subList = brukere.subList(fra, til);
+        List<OppfolgingsBruker> subList = brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering().subList(fra, til);
         subList.stream()
                 .forEach(bruker -> {
                     veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))

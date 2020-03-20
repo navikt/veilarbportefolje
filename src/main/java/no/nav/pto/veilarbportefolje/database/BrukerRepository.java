@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -67,6 +68,22 @@ public class BrukerRepository {
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
                 .column("*")
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolgingRegistrering() {
+        db.setFetchSize(10_000);
+        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
+
+        return SqlUtils
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
+                .column("*")
+                .where(WhereClause.isNotNull("aktoerid"))
+                .where(WhereClause.isNotNull("oppfolging_startdato"))
+                .orderBy(OrderClause.desc("oppfolging_startdato"))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
