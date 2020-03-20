@@ -19,7 +19,7 @@ public class VeilarbregistreringClient {
         this.client = client;
     }
     public Try<BrukerRegistreringWrapper> hentRegistrering(Fnr fnr) {
-        return Try.of(() -> client.target(String.join(VEILARBREGISTRERING_URL, "veilarbregistrering/api/", "/registrering?fnr=", fnr.toString())).request().get())
+        return Try.of(() -> client.target(VEILARBREGISTRERING_URL + "/veilarbregistrering/api" +"/registrering?fnr="+ fnr.toString()).request().get())
                 .filter((resp) -> resp.getStatus() >= 200 && resp.getStatus() < 300)
                 .map((resp) -> resp.getStatus() == 204 ? null : resp.readEntity(BrukerRegistreringWrapper.class))
                 .onFailure(error -> log.warn(String.format("Feilede att med føljande fel : %s ", error)));
