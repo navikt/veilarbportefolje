@@ -79,12 +79,7 @@ public class BrukerRepository {
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
         SelectQuery<OppfolgingsBruker> sqlQuery = SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
-                .column("AKTOERID")
-                .column("FODSELSNR")
-                .column("FORMIDLINGSGRUPPEKODE")
-                .column("KVALIFISERINGSGRUPPEKODE")
-                .column("OPPFOLGING")
-                .column("OPPFOLGING_STARTDATO")
+                .column("*")
                 .where(WhereClause.isNotNull("AKTOERID")
                         .and(WhereClause.isNotNull("OPPFOLGING_STARTDATO"))
                         .and(WhereClause.lt("ROWNUM", rownumber)))
