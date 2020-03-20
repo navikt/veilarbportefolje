@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
@@ -36,7 +37,12 @@ public class PopulerDataFraRegistreringTest {
         System.setProperty("VEILARBREGISTRERING_URL", "thisUrlMustBeSetAtLeastToADummyValue");
         this.veilarbregistreringClient = mock(VeilarbregistreringClient.class);
 
-        when(brukerRepository.hentAlleBrukereUnderOppfolging()).thenReturn(Collections.singletonList(new OppfolgingsBruker().setFnr("12346789101").setAktoer_id("123456789")));
+        when(brukerRepository.hentAlleBrukereUnderOppfolging()).thenReturn(Collections.singletonList(
+                new OppfolgingsBruker()
+                        .setFnr("12346789101")
+                        .setAktoer_id("123456789")
+                        .setOppfolging_startdato(LocalDateTime.now().toString())
+        ));
 
         this.populerDataFraRegistrering = new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient);
         jdbcTemplate.execute("truncate table BRUKER_REGISTRERING");
