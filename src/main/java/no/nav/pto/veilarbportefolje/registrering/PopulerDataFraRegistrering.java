@@ -58,8 +58,13 @@ public class PopulerDataFraRegistrering extends HttpServlet {
                 .forEach(bruker -> {
                             veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
                             .map(brukerRegistreringData -> {
-                                log.info("Hentet registreringsdata for brukere med aktorId" + bruker.getAktoer_id());
-                                return mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id()));
+                                if(brukerRegistreringData != null) {
+                                    log.info("Hentet registreringsdata for brukere med aktorId" + bruker.getAktoer_id());
+                                    return mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, AktoerId.of(bruker.getAktoer_id()));
+                                }
+                                else {
+                                    throw new Error("Brukaren hade ikke registrert sig");
+                                }
                             })
                             .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
                             .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoer_id(), error.getMessage())));
