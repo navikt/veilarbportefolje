@@ -10,7 +10,7 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 public class OidcFeedOutInterceptor implements OutInterceptor {
 
-    String discoveryUrl = getRequiredProperty("SECURITY_TOKEN_SERVICE_DISCOVERY_URL");
+    String discoveryUrl = getRequiredProperty("OPENAM_DISCOVERY_URL");
     String username = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
     String password = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
     private SystemUserTokenProvider systemUserTokenProvider =
