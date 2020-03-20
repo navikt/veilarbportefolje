@@ -235,6 +235,9 @@ public class ElasticQueryBuilder {
             case UNDER_VURDERING:
                 queryBuilder = existsQuery("vedtak_status");
                 break;
+            case PERMITTERTE_UTEN_OPPFOLGINGSVEDTAK:
+                queryBuilder = existsQuery("er_permitert_uten_oppfolgingsvedtak");
+                break;
             default:
                 throw new IllegalStateException();
 
