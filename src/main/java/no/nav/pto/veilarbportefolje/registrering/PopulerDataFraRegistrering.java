@@ -38,7 +38,7 @@ public class PopulerDataFraRegistrering extends HttpServlet {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
             Integer fra = Integer.parseInt(req.getParameter("fra"));
             Integer til = Integer.parseInt(req.getParameter("til"));
-            JobUtils.runAsyncJob(() -> populerMedBrukerRegistrering(fra, til));
+            populerMedBrukerRegistrering(fra, til);
             resp.setStatus(200);
         }
         else {
