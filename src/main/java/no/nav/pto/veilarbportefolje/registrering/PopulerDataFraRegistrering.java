@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,8 +51,13 @@ public class PopulerDataFraRegistrering extends HttpServlet {
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().stream()
                 .filter(bruker -> bruker.getAktoer_id() != null)
+                .filter(bruker -> bruker.getOppfolging_startdato() != null)
+                .sorted((oppfolgingsbrukerA, oppfolgingsbrukerB)-> {
+                   LocalDateTime oppfolgingStartDatoA =  LocalDateTime.parse(oppfolgingsbrukerA.getOppfolging_startdato());
+                   LocalDateTime oppfolgingStartDatoB =  LocalDateTime.parse(oppfolgingsbrukerB.getOppfolging_startdato());
+                   return oppfolgingStartDatoA.compareTo(oppfolgingStartDatoB);
+                })
                 .collect(Collectors.toList());
-
 
         List<OppfolgingsBruker> subList = brukere.subList(fra, til);
         subList.stream()
