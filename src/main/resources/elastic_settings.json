@@ -62,6 +62,9 @@
         "arbeidsliste_overskrift": {
           "type": "keyword"
         },
+        "brukers_situasjon": {
+          "type": "keyword"
+        },
         "arbeidsliste_kategori": {
           "type": "keyword"
         },
