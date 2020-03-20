@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -53,8 +54,8 @@ public class PopulerDataFraRegistrering extends HttpServlet {
                 .filter(bruker -> bruker.getAktoer_id() != null)
                 .filter(bruker -> bruker.getOppfolging_startdato() != null)
                 .sorted((oppfolgingsbrukerA, oppfolgingsbrukerB)-> {
-                   LocalDateTime oppfolgingStartDatoA =  LocalDateTime.parse(oppfolgingsbrukerA.getOppfolging_startdato());
-                   LocalDateTime oppfolgingStartDatoB =  LocalDateTime.parse(oppfolgingsbrukerB.getOppfolging_startdato());
+                   LocalDateTime oppfolgingStartDatoA =  Timestamp.valueOf(oppfolgingsbrukerA.getOppfolging_startdato()).toLocalDateTime();
+                   LocalDateTime oppfolgingStartDatoB =  Timestamp.valueOf(oppfolgingsbrukerB.getOppfolging_startdato()).toLocalDateTime();
                    return oppfolgingStartDatoA.compareTo(oppfolgingStartDatoB);
                 })
                 .collect(Collectors.toList());

@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
@@ -41,7 +40,7 @@ public class PopulerDataFraRegistreringTest {
                 new OppfolgingsBruker()
                         .setFnr("12346789101")
                         .setAktoer_id("123456789")
-                        .setOppfolging_startdato(LocalDateTime.now().toString())
+                        .setOppfolging_startdato("2020-01-03T15:54:02.658Z")
         ));
 
         this.populerDataFraRegistrering = new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient);
