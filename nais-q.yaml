@@ -50,6 +50,6 @@ spec:
       memory: 2Gi
   env:
     - name: JAVA_OPTS
-      value: "-Xms2048 -Xmx4098m"
+      value: "-Xms2048m -Xmx4098m"
     - name: KAFKA_SCHEMAS_URL
       value: https://kafka-schema-registry.nais.preprod.local
