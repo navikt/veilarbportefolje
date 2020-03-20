@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.sql.SelectQuery;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
@@ -75,9 +76,8 @@ public class BrukerRepository {
     }
 
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolgingRegistrering(int rownumber, int limit) {
-        db.setFetchSize(10_000);
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-        return SqlUtils
+        SelectQuery<OppfolgingsBruker> sqlQuery = SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
                 .column("AKTOERID")
                 .column("FODSELSNR")
@@ -85,11 +85,16 @@ public class BrukerRepository {
                 .column("KVALIFISERINGSGRUPPEKODE")
                 .column("OPPFOLGING")
                 .column("OPPFOLGING_STARTDATO")
-                .orderBy(OrderClause.desc("oppfolging_startdato"))
+                .where(WhereClause.isNotNull("AKTOERID")
+                        .and(WhereClause.isNotNull("OPPFOLGING_STARTDATO"))
+                        .and(WhereClause.lt("ROWNUM", rownumber)))
                 .limit(limit)
-                .where(WhereClause.lt("ROWNUM", rownumber)
-                        .and(WhereClause.isNotNull("aktoerid"))
-                        .and(WhereClause.isNotNull("oppfolging_startdato")))
+                .orderBy(OrderClause.desc("OPPFOLGING_STARTDATO"));
+
+        log.info("SQL query" + sqlQuery.toString());
+
+
+        return sqlQuery
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
