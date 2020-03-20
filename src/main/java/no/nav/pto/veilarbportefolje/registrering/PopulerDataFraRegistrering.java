@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
-import no.nav.jobutils.JobUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -15,8 +14,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,17 +52,17 @@ public class PopulerDataFraRegistrering extends HttpServlet {
         List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging().stream()
                 .filter(bruker -> bruker.getAktoer_id() != null)
                 .filter(bruker -> bruker.getOppfolging_startdato() != null)
-                .sorted((oppfolgingsbrukerA, oppfolgingsbrukerB)-> {
-                   LocalDateTime oppfolgingStartDatoA =  Timestamp.valueOf(oppfolgingsbrukerA.getOppfolging_startdato()).toLocalDateTime();
-                   LocalDateTime oppfolgingStartDatoB =  Timestamp.valueOf(oppfolgingsbrukerB.getOppfolging_startdato()).toLocalDateTime();
-                   return oppfolgingStartDatoA.compareTo(oppfolgingStartDatoB);
+                .sorted((oppfolgingsbrukerA, oppfolgingsbrukerB) -> {
+                    ZonedDateTime oppfolgingStartDatoA =  ZonedDateTime.parse(oppfolgingsbrukerA.getOppfolging_startdato(), DateTimeFormatter.ISO_INSTANT);
+                    ZonedDateTime oppfolgingStartDatoB =  ZonedDateTime.parse(oppfolgingsbrukerB.getOppfolging_startdato(), DateTimeFormatter.ISO_INSTANT);
+                    return oppfolgingStartDatoA.compareTo(oppfolgingStartDatoB);
                 })
                 .collect(Collectors.toList());
 
         List<OppfolgingsBruker> subList = brukere.subList(fra, til);
         subList.stream()
                 .forEach(bruker -> {
-                            veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
+                    veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))
                             .map(brukerRegistreringData -> {
                                 if(brukerRegistreringData != null) {
                                     log.info("Hentet registreringsdata for brukere med aktorId" + bruker.getAktoer_id());

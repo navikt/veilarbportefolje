@@ -40,7 +40,7 @@ public class PopulerDataFraRegistreringTest {
                 new OppfolgingsBruker()
                         .setFnr("12346789101")
                         .setAktoer_id("123456789")
-                        .setOppfolging_startdato("2020-01-03T15:54:02.658Z")
+                        .setOppfolging_startdato("2020-03-20T17:38:35.437106Z")
         ));
 
         this.populerDataFraRegistrering = new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient);
