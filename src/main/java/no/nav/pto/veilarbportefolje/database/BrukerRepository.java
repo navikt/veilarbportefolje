@@ -74,16 +74,22 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolgingRegistrering() {
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolgingRegistrering(int rownumber, int limit) {
         db.setFetchSize(10_000);
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
-                .column("*")
+                .column("AKTOERID")
+                .column("FODSELSNR")
+                .column("FORMIDLINGSGRUPPEKODE")
+                .column("KVALIFISERINGSGRUPPEKODE")
+                .column("OPPFOLGING")
+                .column("OPPFOLGING_STARTDATO")
+                .orderBy(OrderClause.desc("oppfolging_startdato"))
+                .limit(limit)
+                .where(WhereClause.lt("ROWNUM", rownumber))
                 .where(WhereClause.isNotNull("aktoerid"))
                 .where(WhereClause.isNotNull("oppfolging_startdato"))
-                .orderBy(OrderClause.desc("oppfolging_startdato"))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)

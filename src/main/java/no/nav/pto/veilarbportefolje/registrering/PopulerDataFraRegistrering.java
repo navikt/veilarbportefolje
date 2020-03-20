@@ -14,11 +14,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class PopulerDataFraRegistrering extends HttpServlet {
@@ -49,7 +46,8 @@ public class PopulerDataFraRegistrering extends HttpServlet {
     public void populerMedBrukerRegistrering(Integer fra, Integer til) {
         long t0 = System.currentTimeMillis();
 
-        List<OppfolgingsBruker> subList = brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering().subList(fra, til);
+        List<OppfolgingsBruker> subList = brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering(fra, til);
+
         subList.stream()
                 .forEach(bruker -> {
                     veilarbregistreringClient.hentRegistrering(Fnr.of(bruker.getFnr()))

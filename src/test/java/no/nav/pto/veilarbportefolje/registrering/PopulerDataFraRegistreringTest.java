@@ -18,6 +18,7 @@ import java.util.Collections;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +37,7 @@ public class PopulerDataFraRegistreringTest {
         System.setProperty("VEILARBREGISTRERING_URL", "thisUrlMustBeSetAtLeastToADummyValue");
         this.veilarbregistreringClient = mock(VeilarbregistreringClient.class);
 
-        when(brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering()).thenReturn(Collections.singletonList(
+        when(brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering(anyInt(), anyInt())).thenReturn(Collections.singletonList(
                 new OppfolgingsBruker()
                         .setFnr("12346789101")
                         .setAktoer_id("123456789")
