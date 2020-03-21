@@ -44,12 +44,12 @@ spec:
   resources:
     limits:
       cpu: "6"
-      memory: 5Gi
+      memory: 8Gi
     requests:
       cpu: 500m
       memory: 2Gi
   env:
     - name: JAVA_OPTS
-      value: "-Xms2048m -Xmx4098m"
+      value: "-Xms2048m -Xmx8096m"
     - name: KAFKA_SCHEMAS_URL
       value: https://kafka-schema-registry.nais.adeo.no/
