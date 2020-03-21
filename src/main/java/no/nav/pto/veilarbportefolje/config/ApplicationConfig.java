@@ -142,7 +142,7 @@ public class ApplicationConfig implements ApiApplication {
             flyway.migrate();
         }
 
-        leggTilServlet(servletContext, new TotalHovedindekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena, krrService), "/internal/totalhovedindeksering");
+        leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
