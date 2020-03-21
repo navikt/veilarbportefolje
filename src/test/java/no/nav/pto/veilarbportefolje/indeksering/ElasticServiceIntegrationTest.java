@@ -18,6 +18,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -38,8 +39,7 @@ import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Ignore
 @Slf4j
@@ -90,7 +90,8 @@ public class ElasticServiceIntegrationTest {
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 restClient,
-                elasticService
+                elasticService,
+                mock(UnleashService.class)
         );
 
     }
