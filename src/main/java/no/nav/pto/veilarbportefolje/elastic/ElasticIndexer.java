@@ -35,12 +35,13 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import javax.inject.Inject;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static java.lang.String.copyValueOf;
 import static java.lang.String.format;
+import static java.time.LocalDateTime.now;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -82,39 +83,40 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public void startIndeksering() {
-        log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
-        long t0 = System.currentTimeMillis();
-        Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
+        log.info("Starter hovedindeksering");
 
         String nyIndeks = opprettNyIndeks(createIndexName(getAlias()));
-        log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
+        log.info("Opprettet ny indeks {}", nyIndeks);
 
+        int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
 
-        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging();
-        log.info("Hovedindeksering: Hentet {} oppfølgingsbrukere fra databasen", brukere.size());
+        log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
+        for (int i = 0; i < antallBrukere; i = i + BATCH_SIZE) {
 
-        log.info("Hovedindeksering: Batcher opp uthenting av aktiviteter og tiltak samt skriveoperasjon til indeks (BATCH_SIZE={})", BATCH_SIZE);
-        CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
-            leggTilAktiviteter(brukerBatch);
-            leggTilTiltak(brukerBatch);
-            skrivTilIndeks(nyIndeks, brukerBatch);
-        });
+            log.info("Indekserer {}/{} brukere", BATCH_SIZE, antallBrukere);
+
+            int fra = i;
+            int til = i + BATCH_SIZE;
+
+            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
+            leggTilAktiviteter(brukere);
+            leggTilTiltak(brukere);
+
+            skrivTilIndeks(nyIndeks, brukere);
+        }
 
         Optional<String> gammelIndeks = hentGammeltIndeksNavn();
         if (gammelIndeks.isPresent()) {
-            log.info("Hovedindeksering: Peker alias mot ny indeks og sletter den gamle");
+            log.info("Peker alias mot ny indeks {} og sletter gammel indeks {}", nyIndeks, gammelIndeks);
             flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
             slettGammelIndeks(gammelIndeks.get());
         } else {
-            log.info("Hovedindeksering: Lager alias til ny indeks");
-            leggTilAliasTilIndeks(nyIndeks);
+            log.info("Oppretter alias til ny indeks: {}", nyIndeks);
+            opprettAliasForIndeks(nyIndeks);
         }
 
-        long t1 = System.currentTimeMillis();
-        long time = t1 - t0;
-
-        brukerRepository.oppdaterSistIndeksertElastic(tidsstempel);
-        log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
+        brukerRepository.oppdaterSistIndeksertElastic(Timestamp.valueOf(now()));
+        log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
     }
 
     public void deltaindeksering() {
@@ -134,7 +136,7 @@ public class ElasticIndexer {
             return;
         }
 
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = Timestamp.valueOf(now());
 
         CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
 
@@ -236,7 +238,7 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    private void leggTilAliasTilIndeks(String indeks) {
+    private void opprettAliasForIndeks(String indeks) {
         AliasActions addAliasAction = new AliasActions(ADD)
                 .index(indeks)
                 .alias(getAlias());

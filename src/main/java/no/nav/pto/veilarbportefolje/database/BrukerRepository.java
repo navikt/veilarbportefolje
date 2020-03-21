@@ -35,6 +35,7 @@ import static no.nav.pto.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSE
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
+import static no.nav.sbl.sql.order.OrderClause.asc;
 import static no.nav.sbl.sql.where.WhereClause.*;
 
 @Slf4j
@@ -62,13 +63,16 @@ public class BrukerRepository {
         }
     }
 
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
-        db.setFetchSize(10_000);
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging(int fromExclusive, int toInclusive) {
+        db.setFetchSize(1000);
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
                 .column("*")
+                .limit(1000)
+                .orderBy(asc("AKTOERID"))
+                .where(gt("rowNum", fromExclusive).and(lteq("rowNum", toInclusive)))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)
