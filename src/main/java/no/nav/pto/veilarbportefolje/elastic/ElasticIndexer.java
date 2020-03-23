@@ -145,14 +145,20 @@ public class ElasticIndexer {
         int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
 
         log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
-        for (int i = 0; i < antallBrukere; i = calculatePageSize(i, BATCH_SIZE)) {
 
-            log.info("Indekserer {}/{} brukere", BATCH_SIZE, antallBrukere);
+        int currentPage = 0;
+        for (int fra = 0; fra < antallBrukere; fra = utregnTil(fra, BATCH_SIZE)) {
 
-            int fra = i;
-            int pageSize = calculatePageSize(i, BATCH_SIZE);
+            int til = utregnTil(fra, BATCH_SIZE);
 
-            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, pageSize);
+            int numberOfPages = antallBrukere / BATCH_SIZE;
+            currentPage = currentPage + 1;
+
+            log.info("{}/{} Indekserer brukere fra {} til {} av {}", currentPage, numberOfPages, fra, til, antallBrukere);
+
+            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
+            log.info("Hentet ut {} brukere fra databasen", brukere.size());
+
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
 
@@ -173,16 +179,16 @@ public class ElasticIndexer {
         log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
     }
 
-    static int calculatePageSize(int i, int batchSize) {
-        if (i < 0 || batchSize < 0) {
+    static int utregnTil(int from, int batchSize) {
+        if (from < 0 || batchSize < 0) {
             throw new IllegalArgumentException("Negative numbers are not allowed");
         }
 
-        if (i == 0) {
+        if (from == 0) {
             return batchSize;
         }
 
-        return i * BATCH_SIZE;
+        return from + BATCH_SIZE;
     }
 
     public void deltaindeksering() {
