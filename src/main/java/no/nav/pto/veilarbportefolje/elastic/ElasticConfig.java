@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -60,9 +61,9 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService) {
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), pepClient, veilederService);
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService);
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService,unleashService);
     }
 
     public static RestHighLevelClient createClient(ElasticClientConfig config) {

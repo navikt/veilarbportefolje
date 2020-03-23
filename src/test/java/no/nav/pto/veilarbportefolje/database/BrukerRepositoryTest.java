@@ -23,15 +23,14 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.pto.veilarbportefolje.feed.dialog.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
+import static no.nav.pto.veilarbportefolje.feed.dialog.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -50,10 +49,13 @@ public class BrukerRepositoryTest {
 
     private int ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA = 51;
     private int ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA = 4;
+    private int ANTALL_LINJER_I_TESTDATA = 4;
 
     public void insertoppfolgingsbrukerTestData() {
         try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8)));
+            List<String> lines = IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8);
+            ANTALL_LINJER_I_TESTDATA = lines.size();
+            jdbcTemplate.execute(Joiner.on("\n").join(lines));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"), UTF_8)));
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,8 +72,25 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skal_returnere_riktig_antall_brukere_under_oppfolging() {
-        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging();
+        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging(0, ANTALL_LINJER_I_TESTDATA);
         assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
+    }
+
+    @Test
+    public void skal_hente_riktig_antall_fnr() {
+        List<String> fnr = brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10);
+        assertThat(fnr.size()).isEqualTo(10);
+    }
+
+    @Test
+    public void skal_ikke_tryne_om_man_proever_aa_hente_for_mange_fnr() {
+        brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10000);
+    }
+
+    @Test
+    public void skal_returnere_riktig_antall_brukere() {
+        int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
+        assertThat(antallBrukere).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
     }
 
     @Test
