@@ -83,6 +83,7 @@ public class BrukerRepository {
         db.setFetchSize(fetchSize);
 
         List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
+        log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
 
         String sql = "SELECT * FROM"
                 + " VW_PORTEFOLJE_INFO"
@@ -93,6 +94,8 @@ public class BrukerRepository {
                 mapOf(Pair.of("fnr", fnr)),
                 (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
         );
+
+        log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO");
 
         return brukere.stream().filter(Objects::nonNull).collect(toList());
     }

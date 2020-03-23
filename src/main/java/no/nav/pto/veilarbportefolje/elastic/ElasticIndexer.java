@@ -151,7 +151,7 @@ public class ElasticIndexer {
 
             int til = utregnTil(fra, BATCH_SIZE);
 
-            int numberOfPages = antallBrukere / BATCH_SIZE;
+            int numberOfPages = antallBrukere / BATCH_SIZE - 1;
             currentPage = currentPage + 1;
 
             log.info("{}/{} Indekserer brukere fra {} til {} av {}", currentPage, numberOfPages, fra, til, antallBrukere);
