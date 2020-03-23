@@ -5,6 +5,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.internal.AuthorizationUtils;
+import no.nav.pto.veilarbportefolje.registrering.domene.Besvarelse;
 import no.nav.pto.veilarbportefolje.registrering.domene.BrukerRegistreringWrapper;
 import no.nav.pto.veilarbportefolje.registrering.domene.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.registrering.domene.HentRegistreringDTO;
@@ -66,7 +67,10 @@ public class PopulerDataFraRegistrering extends HttpServlet {
     }
 
     private ArbeidssokerRegistrertEvent mapRegistreringTilArbeidssokerRegistrertEvent (BrukerRegistreringWrapper registrering, AktoerId aktoerId) {
-        Optional<DinSituasjonSvar> brukerSituasjon = Optional.ofNullable(registrering.getRegistrering().getBesvarelse().getDinSituasjon());
+        Optional<Besvarelse> besvarelse = Optional.ofNullable(registrering.getRegistrering().getBesvarelse());
+
+        Optional<DinSituasjonSvar> brukerSituasjon =  besvarelse.flatMap(besvarelse1 -> Optional.ofNullable(besvarelse1.getDinSituasjon()));
+
         return ArbeidssokerRegistrertEvent.newBuilder()
                 .setRegistreringOpprettet(null)
                 .setBrukersSituasjon(brukerSituasjon.map(Enum::name).orElse(null))

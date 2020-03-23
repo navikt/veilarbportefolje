@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
 import io.vavr.control.Try;
+import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -62,7 +63,7 @@ public class PopulerDataFraRegistreringTest {
         AktoerId aktoerId = AktoerId.of("123456789");
         populerDataFraRegistrering.populerMedBrukerRegistrering(0,1);
 
-        assertThat(registreringRepository.hentBrukerRegistrering(aktoerId)).isEqualTo(null);
+        assertThat(registreringRepository.hentBrukerRegistrering(aktoerId)).isEqualTo(ArbeidssokerRegistrertEvent.newBuilder().setAktorid("123456789").build());
     }
 
     @Test
