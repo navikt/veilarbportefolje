@@ -7,13 +7,16 @@ import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
 
 import java.util.Map;
 
-@Value
 public class UnleashServiceMock extends UnleashService {
 
     boolean enabled;
 
     public UnleashServiceMock(boolean isEnabled) {
-        super(UnleashServiceConfig.builder().build(), new Strategy() {
+        super(UnleashServiceConfig.builder()
+                .unleashApiUrl("http://test")
+                .applicationName("test")
+                .build(),
+                new Strategy() {
             @Override
             public String getName() {
                 return null;
@@ -26,5 +29,9 @@ public class UnleashServiceMock extends UnleashService {
         });
 
         this.enabled = isEnabled;
+    }
+
+    public boolean isEnabled(String anyString) {
+        return enabled;
     }
 }
