@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
@@ -41,12 +42,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.time.LocalDateTime.now;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.json.JsonUtils.toJson;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
@@ -59,6 +59,9 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 @Slf4j
 public class ElasticIndexer {
 
+    final static int BATCH_SIZE = 1000;
+    final static int BATCH_SIZE_LIMIT = 1000;
+
     private final ElasticService elasticService;
 
     private RestHighLevelClient client;
@@ -67,21 +70,37 @@ public class ElasticIndexer {
 
     private BrukerRepository brukerRepository;
 
+    private UnleashService unleashService;
+
     @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient client,
-            ElasticService elasticService
+            ElasticService elasticService,
+            UnleashService unleashService
     ) {
+
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.client = client;
         this.elasticService = elasticService;
+        this.unleashService = unleashService;
     }
 
     @SneakyThrows
     public void startIndeksering() {
+
+        if (unleashService.isEnabled("portefolje.ny_hovedindeksering")) {
+            nyHovedIndekseringMedPaging();
+        } else {
+            gammelHovedIndeksering();
+        }
+
+
+    }
+
+    private void gammelHovedIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
@@ -107,7 +126,7 @@ public class ElasticIndexer {
             slettGammelIndeks(gammelIndeks.get());
         } else {
             log.info("Hovedindeksering: Lager alias til ny indeks");
-            leggTilAliasTilIndeks(nyIndeks);
+            opprettAliasForIndeks(nyIndeks);
         }
 
         long t1 = System.currentTimeMillis();
@@ -115,6 +134,61 @@ public class ElasticIndexer {
 
         brukerRepository.oppdaterSistIndeksertElastic(tidsstempel);
         log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
+    }
+
+    private void nyHovedIndekseringMedPaging() {
+        log.info("Starter hovedindeksering");
+
+        String nyIndeks = opprettNyIndeks(createIndexName(getAlias()));
+        log.info("Opprettet ny indeks {}", nyIndeks);
+
+        int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
+
+        log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
+
+        int currentPage = 0;
+        for (int fra = 0; fra < antallBrukere; fra = utregnTil(fra, BATCH_SIZE)) {
+
+            int til = utregnTil(fra, BATCH_SIZE);
+
+            int numberOfPages = antallBrukere / BATCH_SIZE - 1;
+            currentPage = currentPage + 1;
+
+            log.info("{}/{} Indekserer brukere fra {} til {} av {}", currentPage, numberOfPages, fra, til, antallBrukere);
+
+            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
+            log.info("Hentet ut {} brukere fra databasen", brukere.size());
+
+            leggTilAktiviteter(brukere);
+            leggTilTiltak(brukere);
+
+            skrivTilIndeks(nyIndeks, brukere);
+        }
+
+        Optional<String> gammelIndeks = hentGammeltIndeksNavn();
+        if (gammelIndeks.isPresent()) {
+            log.info("Peker alias mot ny indeks {} og sletter gammel indeks {}", nyIndeks, gammelIndeks);
+            flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
+            slettGammelIndeks(gammelIndeks.get());
+        } else {
+            log.info("Oppretter alias til ny indeks: {}", nyIndeks);
+            opprettAliasForIndeks(nyIndeks);
+        }
+
+        brukerRepository.oppdaterSistIndeksertElastic(Timestamp.valueOf(now()));
+        log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
+    }
+
+    static int utregnTil(int from, int batchSize) {
+        if (from < 0 || batchSize < 0) {
+            throw new IllegalArgumentException("Negative numbers are not allowed");
+        }
+
+        if (from == 0) {
+            return batchSize;
+        }
+
+        return from + BATCH_SIZE;
     }
 
     public void deltaindeksering() {
@@ -134,7 +208,7 @@ public class ElasticIndexer {
             return;
         }
 
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = Timestamp.valueOf(now());
 
         CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
 
@@ -162,8 +236,8 @@ public class ElasticIndexer {
 
 
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-            event.addFieldToReport("es.antall.oppdateringer", antall);
-            event.report();
+        event.addFieldToReport("es.antall.oppdateringer", antall);
+        event.report();
     }
 
     @SneakyThrows
@@ -236,7 +310,7 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    private void leggTilAliasTilIndeks(String indeks) {
+    private void opprettAliasForIndeks(String indeks) {
         AliasActions addAliasAction = new AliasActions(ADD)
                 .index(indeks)
                 .alias(getAlias());

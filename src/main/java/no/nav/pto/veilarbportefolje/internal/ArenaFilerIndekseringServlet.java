@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import static no.nav.jobutils.JobUtils.runAsyncJob;
 
 @Slf4j
-public class TotalHovedindekseringServlet extends HttpServlet {
+public class ArenaFilerIndekseringServlet extends HttpServlet {
 
     private ElasticIndexer elasticIndexer;
 
@@ -23,13 +23,10 @@ public class TotalHovedindekseringServlet extends HttpServlet {
 
     private KopierGR199FraArena kopierGR199FraArena;
 
-    private KrrService krrService;
-
-    public TotalHovedindekseringServlet(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
+    public ArenaFilerIndekseringServlet(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena) {
         this.elasticIndexer = elasticIndexer;
         this.tiltakHandler = tiltakHandler;
         this.kopierGR199FraArena = kopierGR199FraArena;
-        this.krrService = krrService;
     }
 
     @Override
@@ -41,7 +38,6 @@ public class TotalHovedindekseringServlet extends HttpServlet {
                         try {
                             kopierGR199FraArena.startOppdateringAvYtelser();
                             tiltakHandler.startOppdateringAvTiltakIDatabasen();
-                            krrService.hentDigitalKontaktInformasjonBolk();
                         } finally {
                             elasticIndexer.startIndeksering();
                         }
