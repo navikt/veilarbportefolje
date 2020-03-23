@@ -22,6 +22,6 @@ public class VeilarbregistreringClient {
         return Try.of(() -> client.target(VEILARBREGISTRERING_URL + "/veilarbregistrering/api" +"/registrering?fnr="+ fnr.toString()).request().get())
                 .filter((resp) -> resp.getStatus() >= 200 && resp.getStatus() < 300)
                 .map((resp) -> resp.getStatus() == 204 ? null : resp.readEntity(BrukerRegistreringWrapper.class))
-                .onFailure(error -> log.warn(String.format("Feilede att med føljande fel : %s ", error)));
+                .onFailure(error -> log.warn(String.format("Feilede hente registreringsdata : %s ", error)));
     }
 }
