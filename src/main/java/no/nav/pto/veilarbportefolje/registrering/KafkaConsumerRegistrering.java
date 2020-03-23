@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
@@ -13,6 +14,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import java.time.Duration;
 import java.util.Date;
 
+import static java.time.Duration.ofSeconds;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 
 @Slf4j
@@ -30,9 +32,18 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
         JobUtils.runAsyncJob(this);
     }
 
+    @SneakyThrows
     @Override
     public void run() {
-        while (this.registreringFeature()) {
+
+        while (true) {
+            if (this.registreringFeature()) {
+                break;
+            }
+            Thread.sleep(60*1000);
+        }
+
+        while (true) {
             try {
                 ConsumerRecords<String, ArbeidssokerRegistrertEvent> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, ArbeidssokerRegistrertEvent> record : records) {
@@ -60,7 +71,7 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
         return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
     }
 
-    private boolean registreringFeature () {
+    private boolean registreringFeature() {
         return unleashService.isEnabled("veilarbportfolje.registrering");
     }
 
