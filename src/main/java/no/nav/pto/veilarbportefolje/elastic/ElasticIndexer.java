@@ -47,8 +47,6 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.json.JsonUtils.toJson;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
@@ -60,6 +58,9 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
 public class ElasticIndexer {
+
+    final static int BATCH_SIZE = 1000;
+    final static int BATCH_SIZE_LIMIT = 1000;
 
     private final ElasticService elasticService;
 
@@ -144,14 +145,14 @@ public class ElasticIndexer {
         int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
 
         log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
-        for (int i = 0; i < antallBrukere; i = i + BATCH_SIZE) {
+        for (int i = 0; i < antallBrukere; i = calculatePageSize(i, BATCH_SIZE)) {
 
             log.info("Indekserer {}/{} brukere", BATCH_SIZE, antallBrukere);
 
             int fra = i;
-            int til = i + BATCH_SIZE;
+            int pageSize = calculatePageSize(i, BATCH_SIZE);
 
-            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
+            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, pageSize);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
 
@@ -170,6 +171,18 @@ public class ElasticIndexer {
 
         brukerRepository.oppdaterSistIndeksertElastic(Timestamp.valueOf(now()));
         log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
+    }
+
+    static int calculatePageSize(int i, int batchSize) {
+        if (i < 0 || batchSize < 0) {
+            throw new IllegalArgumentException("Negative numbers are not allowed");
+        }
+
+        if (i == 0) {
+            return batchSize;
+        }
+
+        return i * BATCH_SIZE;
     }
 
     public void deltaindeksering() {
