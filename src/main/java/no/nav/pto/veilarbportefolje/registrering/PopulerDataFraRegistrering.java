@@ -48,17 +48,15 @@ public class PopulerDataFraRegistrering extends HttpServlet {
         List<HentRegistreringDTO> subList = brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering(fra, til);
 
         subList.forEach(bruker -> veilarbregistreringClient.hentRegistrering(bruker.getFnr())
-                .map(brukerRegistreringData -> {
+                .onSuccess(brukerRegistreringData -> {
                     if(brukerRegistreringData != null) {
                         log.info("Hentet registreringsdata for brukere med aktorId" + bruker.getAktoerId().toString());
-                        return mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, bruker.getAktoerId());
+                        ArbeidssokerRegistrertEvent arbeidssokerRegistrert =  mapRegistreringTilArbeidssokerRegistrertEvent(brukerRegistreringData, bruker.getAktoerId());
+                        registreringService.behandleKafkaMelding(arbeidssokerRegistrert);
+                    } else {
+                        log.warn("Fante ingen brukerregistreringsdata for aktorId" + bruker.getAktoerId().toString());
                     }
-                    else {
-                        throw new Error("Brukaren hade ikke registrert sig");
-                    }
-                })
-                .onSuccess(arbeidssokerRegistrert -> registreringService.behandleKafkaMelding(arbeidssokerRegistrert))
-                .onFailure(error -> log.warn(String.format("Feilede att registreringsdata for aktorId %s med føljande fel : %s ", bruker.getAktoerId(), error.getMessage()))));
+                }));
 
         long t1 = System.currentTimeMillis();
         long time = t1 - t0;
