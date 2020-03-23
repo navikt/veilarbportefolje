@@ -83,6 +83,7 @@ public class BrukerRepository {
         db.setFetchSize(fetchSize);
 
         List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
+
         log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
 
         String sql = "SELECT * FROM"
@@ -95,26 +96,25 @@ public class BrukerRepository {
                 (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
         );
 
-        log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO");
+        log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
 
         return brukere.stream().filter(Objects::nonNull).collect(toList());
     }
 
     public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
-        String sql = "  SELECT FODSELSNR " +
-                "  FROM (SELECT " +
-                "          BRUKER.FODSELSNR, " +
-                "          rownum rn " +
-                "        FROM ( " +
-                "               SELECT * " +
-                "               FROM OPPFOLGINGSBRUKER " +
-                "               ORDER BY FODSELSNR " +
-                "             ) " +
-                "             BRUKER " +
-                "        WHERE rownum <= :to " +
-                "  ) " +
-                " " +
-                "  WHERE rn > :from";
+        String sql = "SELECT FODSELSNR "
+                + "FROM (SELECT "
+                + "BRUKER.FODSELSNR, "
+                + "rownum rn "
+                + "FROM ( "
+                + "SELECT * "
+                + "FROM OPPFOLGINGSBRUKER "
+                + "ORDER BY FODSELSNR "
+                + ") "
+                + "BRUKER "
+                + "WHERE rownum <= :to "
+                + ")"
+                + "WHERE rn > 0 ";
 
         Map<String, Integer> parameters = mapOf(
                 Pair.of("from", fromExclusive),
