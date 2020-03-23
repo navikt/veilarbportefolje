@@ -4,11 +4,7 @@ import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.registrering.domene.Besvarelse;
-import no.nav.pto.veilarbportefolje.registrering.domene.BrukerRegistreringWrapper;
-import no.nav.pto.veilarbportefolje.registrering.domene.DinSituasjonSvar;
-import no.nav.pto.veilarbportefolje.registrering.domene.OrdinaerBrukerRegistrering;
+import no.nav.pto.veilarbportefolje.registrering.domene.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,11 +34,7 @@ public class PopulerDataFraRegistreringTest {
         this.veilarbregistreringClient = mock(VeilarbregistreringClient.class);
 
         when(brukerRepository.hentAlleBrukereUnderOppfolgingRegistrering(anyInt(), anyInt())).thenReturn(Collections.singletonList(
-                new OppfolgingsBruker()
-                        .setFnr("12346789101")
-                        .setAktoer_id("123456789")
-                        .setOppfolging_startdato("2020-01-03T15:54:02.658Z")
-        ));
+                new HentRegistreringDTO(AktoerId.of("123456789"), Fnr.of("12346789101"))));
 
         this.populerDataFraRegistrering = new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient);
         jdbcTemplate.execute("truncate table BRUKER_REGISTRERING");
