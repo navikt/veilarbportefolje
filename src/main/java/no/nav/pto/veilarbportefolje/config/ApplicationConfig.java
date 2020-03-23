@@ -21,13 +21,16 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.internal.*;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import no.nav.pto.veilarbportefolje.registrering.PopulerDataFraRegistrering;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringConfig;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.registrering.VeilarbregistreringClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakConfig;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -74,7 +77,9 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
         ElasticConfig.class,
-        ControllerConfig.class
+        ControllerConfig.class,
+        VedtakConfig.class,
+        RegistreringConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
 
@@ -89,16 +94,8 @@ public class ApplicationConfig implements ApiApplication {
     public static final String VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY = "VEILARBLOGIN_REDIRECT_URL_URL";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
-
-    // Elasticsearch
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
-    public static final String VEILARBELASTIC_HOSTNAME_PROPERTY = "VEILARBELASTIC_HOSTNAME";
-
-    public static final String VEILARB_OPENDISTRO_ELASTICSEARCH_USERNAME_PROPERTY = "VEILARB_OPENDISTRO_ELASTICSEARCH_USERNAME";
-    public static final String VEILARB_OPENDISTRO_ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARB_OPENDISTRO_ELASTICSEARCH_PASSWORD";
-    public static final String VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME_PROPERTY = "VEILARB_OPENDISTRO_ELASTICSEARCH_HOSTNAME";
-
 
     @Inject
     private DataSource dataSource;
@@ -127,6 +124,12 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private AktivitetDAO aktivitetDAO;
 
+    @Inject
+    private RegistreringService registreringService;
+
+    @Inject
+    private VeilarbregistreringClient veilarbregistreringClient;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -139,7 +142,7 @@ public class ApplicationConfig implements ApiApplication {
             flyway.migrate();
         }
 
-        leggTilServlet(servletContext, new TotalHovedindekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena, krrService), "/internal/totalhovedindeksering");
+        leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
@@ -148,6 +151,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new ResetDialogFeedServlet(dialogFeedRepository), "/internal/reset_feed_dialog");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
         leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
+        leggTilServlet(servletContext, new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient), "/internal/populer_registrering");
     }
 
     private Boolean skipDbMigration() {
@@ -201,12 +205,6 @@ public class ApplicationConfig implements ApiApplication {
                 .unleashApiUrl(getRequiredProperty(UNLEASH_API_URL_PROPERTY_NAME))
                 .build());
     }
-
-    @Bean
-    public KafkaConsumerRunnable kafkaConsumerRunnable(VedtakService vedtakService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable(vedtakService, unleashService);
-    }
-
 
     @Bean
     public IndekseringScheduler indekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {

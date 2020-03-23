@@ -55,6 +55,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
+        byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
 
         if (filtervalg.harYtelsefilter()) {
 
@@ -135,6 +136,9 @@ public class ElasticQueryBuilder {
                 break;
             case "vedtakstatus":
                 searchSourceBuilder.sort("vedtak_status", order);
+                break;
+            case "arbeidslistekategori":
+                searchSourceBuilder.sort("arbeidsliste_kategori", order);
                 break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);

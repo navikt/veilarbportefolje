@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getElasticHostname;
 
 @Component
 public class ElasticSelftest implements Helsesjekk {
@@ -19,6 +19,7 @@ public class ElasticSelftest implements Helsesjekk {
     private static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
 
     @Inject
+
     public ElasticSelftest(RestHighLevelClient client) {
         this.client = client;
     }
@@ -26,7 +27,7 @@ public class ElasticSelftest implements Helsesjekk {
     @Override
     @SneakyThrows
     public void helsesjekk() {
-        long antallDokumenter = ElasticUtils.getCount(VEILARBELASTIC_HOSTNAME, VEILARBELASTIC_USERNAME, VEILARBELASTIC_PASSWORD);
+        long antallDokumenter = ElasticUtils.getCount();
         if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {
             String feilmelding = String.format("Antall dokumenter i elastic (%s) er mindre enn forventet antall (%s)", antallDokumenter, FORVENTET_MINIMUM_ANTALL_DOKUMENTER);
             throw new RuntimeException(feilmelding);
@@ -39,7 +40,7 @@ public class ElasticSelftest implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         return new HelsesjekkMetadata(
                 "elasticsearch helsesjekk",
-                String.format("http://%s/%s", VEILARBELASTIC_HOSTNAME, getAlias()),
+                String.format("http://%s/%s", getElasticHostname(), getAlias()),
                 String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), true
         );
     }

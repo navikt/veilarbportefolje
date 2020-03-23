@@ -18,10 +18,22 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static no.nav.metrics.utils.MetricsUtils.timed;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.AKTIVITETER_SFTP;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.LOPENDEYTELSER_SFTP;
+
 @Slf4j
 public class FilmottakFileUtils {
 
-    public static Try<FileObject> hentFil(SftpConfig sftpConfig) {
+    public static Try<FileObject> hentTiltaksFil() {
+        return timed("portefolje.sftp.tiltak", () -> hentFil(AKTIVITETER_SFTP));
+    }
+
+    public static Try<FileObject> hentYtelseFil() {
+        return timed("portefolje.sftp.ytelse", () -> hentFil(LOPENDEYTELSER_SFTP));
+    }
+
+    private static Try<FileObject> hentFil(SftpConfig sftpConfig) {
         log.info("Starter henting av fil fra {}", sftpConfig.getUrl());
         try {
             return FilmottakFileUtils.hentFilViaSftp(sftpConfig);
@@ -33,7 +45,7 @@ public class FilmottakFileUtils {
         }
     }
 
-    static Try<FileObject> hentFilViaSftp(SftpConfig sftpConfig) throws FileSystemException {
+    private static Try<FileObject> hentFilViaSftp(SftpConfig sftpConfig) throws FileSystemException {
         FileSystemOptions fsOptions = new FileSystemOptions();
         SftpFileSystemConfigBuilder sftpFileSystemConfigBuilder = SftpFileSystemConfigBuilder.getInstance();
         sftpFileSystemConfigBuilder.setPreferredAuthentications(fsOptions, "password");

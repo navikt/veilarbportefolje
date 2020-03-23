@@ -62,6 +62,9 @@
         "arbeidsliste_overskrift": {
           "type": "keyword"
         },
+        "arbeidsliste_kategori": {
+          "type": "keyword"
+        },
         "vedtak_status": {
           "type": "keyword"
         },
