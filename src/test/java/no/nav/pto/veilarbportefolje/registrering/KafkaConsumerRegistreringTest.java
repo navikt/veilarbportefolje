@@ -1,5 +1,5 @@
 package no.nav.pto.veilarbportefolje.registrering;
-/*
+
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class KafkaConsumerRegistreringTest extends Thread {
+
     private MockConsumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
     private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate(setupInMemoryDatabase()));
     private static String AKTORID = "123456789";
@@ -53,9 +54,4 @@ public class KafkaConsumerRegistreringTest extends Thread {
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event);
 
     }
-
-
 }
-
-
- */
