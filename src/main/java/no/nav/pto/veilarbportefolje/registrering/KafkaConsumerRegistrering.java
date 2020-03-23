@@ -36,20 +36,18 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
     @Override
     public void run() {
 
-        while (true) {
-            if (this.registreringFeature()) {
-                try {
-                    ConsumerRecords<String, ArbeidssokerRegistrertEvent> records = kafkaConsumer.poll(Duration.ofMinutes(1L));
-                    for (ConsumerRecord<String, ArbeidssokerRegistrertEvent> record : records) {
-                        log.info("Behandler melding for på topic: " + record.topic());
-                        registreringService.behandleKafkaMelding(record.value());
-                        kafkaConsumer.commitSync();
-                    }
-                } catch (Exception e) {
-                    this.e = e;
-                    this.lastThrownExceptionTime = System.currentTimeMillis();
-                    log.error("Feilet ved behandling av kafka-registrering-melding", e);
+        while (this.registreringFeature()) {
+            try {
+                ConsumerRecords<String, ArbeidssokerRegistrertEvent> records = kafkaConsumer.poll(Duration.ofMinutes(1L));
+                for (ConsumerRecord<String, ArbeidssokerRegistrertEvent> record : records) {
+                    log.info("Behandler melding for på topic: " + record.topic());
+                    registreringService.behandleKafkaMelding(record.value());
+                    kafkaConsumer.commitSync();
                 }
+            } catch (Exception e) {
+                this.e = e;
+                this.lastThrownExceptionTime = System.currentTimeMillis();
+                log.error("Feilet ved behandling av kafka-registrering-melding", e);
             }
         }
     }
