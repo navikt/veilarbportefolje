@@ -82,7 +82,8 @@ public class BrukerRepository {
         int fetchSize = 1000;
         db.setFetchSize(fetchSize);
 
-        List<String> fnr = hentFnrSomErUnderOppfolgingFraArena(fromExclusive, toInclusive);
+        log.info("Henter ut fra {} til {}", fromExclusive, toInclusive);
+        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
 
         log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
 
@@ -101,7 +102,7 @@ public class BrukerRepository {
         return brukere.stream().filter(Objects::nonNull).collect(toList());
     }
 
-    public List<String> hentFnrSomErUnderOppfolgingFraArena(int fromExclusive, int toInclusive) {
+    public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
         String sql = "SELECT FODSELSNR "
                 + "FROM (SELECT "
                 + "BRUKER.FODSELSNR, "
@@ -109,8 +110,6 @@ public class BrukerRepository {
                 + "FROM ( "
                 + "SELECT * "
                 + "FROM OPPFOLGINGSBRUKER "
-                + "WHERE FORMIDLINGSGRUPPEKODE = 'ARBS' " // ER ARBEDISSØKER
-                + "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND FORMIDLINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI')) " // ER SYKEMELDT MED ARBEIDSVGIVER
                 + "ORDER BY FODSELSNR "
                 + ") "
                 + "BRUKER "
@@ -127,7 +126,7 @@ public class BrukerRepository {
     }
 
     public List<HentRegistreringDTO> hentAlleBrukereUnderOppfolgingRegistrering(int fromExclusive, int toInclusive) {
-        List<String> fnr = hentFnrSomErUnderOppfolgingFraArena(fromExclusive, toInclusive);
+        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
 
 
 

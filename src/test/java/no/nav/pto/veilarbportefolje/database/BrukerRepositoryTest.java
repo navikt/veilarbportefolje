@@ -78,13 +78,13 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skal_hente_riktig_antall_fnr() {
-        List<String> fnr = brukerRepository.hentFnrSomErUnderOppfolgingFraArena(0, 10);
+        List<String> fnr = brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10);
         assertThat(fnr.size()).isEqualTo(10);
     }
 
     @Test
     public void skal_ikke_tryne_om_man_proever_aa_hente_for_mange_fnr() {
-        brukerRepository.hentFnrSomErUnderOppfolgingFraArena(0, 10000);
+        brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10000);
     }
 
     @Test
