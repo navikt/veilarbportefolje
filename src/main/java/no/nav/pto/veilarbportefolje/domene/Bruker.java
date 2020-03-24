@@ -70,7 +70,7 @@ public class Bruker {
     String vedtakStatus;
     LocalDateTime vedtakStatusEndret;
     boolean trengerRevurdering;
-    String brukersSituasjon;
+    boolean erPermittertUtenOppfolgingdVedtak;
 
     public static Bruker of(OppfolgingsBruker bruker) {
 
@@ -122,7 +122,7 @@ public class Bruker {
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(toLocalDateTimeOrNull(bruker.getOppfolging_startdato()))
                 .setTrengerRevurdering(bruker.isTrenger_revurdering())
-                .setBrukersSituasjon(bruker.getBrukers_situasjon())
+                .setErPermittertUtenOppfolgingdVedtak(bruker.isEr_permittert_uten_oppfolgingsvedtak())
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
