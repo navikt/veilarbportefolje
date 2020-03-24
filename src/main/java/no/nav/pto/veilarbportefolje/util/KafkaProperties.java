@@ -27,6 +27,8 @@ public class KafkaProperties {
         props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
         props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(MAX_POLL_INTERVAL_MS_CONFIG, 300000);
+        props.put(MAX_POLL_RECORDS_CONFIG, 100);
+        props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
