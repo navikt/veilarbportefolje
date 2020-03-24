@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.registrering.domene.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 
@@ -20,8 +21,8 @@ public class OppfolgingUtils {
         return veileder == null || veileder.isEmpty();
     }
 
-    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
-        if ("ISERV".equals(formidlingsgruppekode)) {
+    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode, boolean erPermitertUtenOppfolgingsvedtak) {
+        if ("ISERV".equals(formidlingsgruppekode) || erPermitertUtenOppfolgingsvedtak) {
             return false;
         }
         return "IVURD".equals(kvalifiseringsgruppekode) || "BKART".equals(kvalifiseringsgruppekode);
@@ -53,11 +54,13 @@ public class OppfolgingUtils {
         }
     }
 
-    public static boolean erPermitertUtenOppfolgingsvedtak(String brukersSituasjon, String kvalifiseringsgruppekode) {
-        if(brukersSituasjon != null) {
-            DinSituasjonSvar brukersRegisteringSvar = DinSituasjonSvar.valueOf(brukersSituasjon);
-            return  !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && brukersRegisteringSvar.equals(DinSituasjonSvar.ER_PERMITTERT);
-        }
-        return false;
+    public static boolean erPermitertUtenOppfolgingsvedtak(String formidlingsgruppekode, String brukersSituasjon, String kvalifiseringsgruppekode) {
+        return Optional.ofNullable(brukersSituasjon)
+                .map(DinSituasjonSvar::valueOf)
+                .map(dinSituasjonSvar ->
+                        "ARBS".equals(formidlingsgruppekode)
+                                && !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode)
+                                && dinSituasjonSvar.equals(DinSituasjonSvar.ER_PERMITTERT))
+                .orElse(false);
     }
 }

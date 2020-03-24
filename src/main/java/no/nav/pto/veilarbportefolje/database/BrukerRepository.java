@@ -68,9 +68,10 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
+        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -94,7 +95,7 @@ public class BrukerRepository {
         List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
                 sql,
                 mapOf(Pair.of("fnr", fnr)),
-                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
+                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa(), registreringFeatureErPa()) : null
         );
 
         log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
@@ -207,6 +208,7 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
 
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
+        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         db.setFetchSize(1000);
 
@@ -216,7 +218,7 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
@@ -224,9 +226,10 @@ public class BrukerRepository {
 
     public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
+        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -236,9 +239,10 @@ public class BrukerRepository {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
+        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()
@@ -529,5 +533,9 @@ public class BrukerRepository {
 
     private boolean vedtakstotteFeatureErPa() {
         return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
+    }
+
+    private boolean registreringFeatureErPa() {
+        return unleashService.isEnabled("veilarbportfolje.registrering");
     }
 }
