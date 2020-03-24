@@ -536,6 +536,6 @@ public class BrukerRepository {
     }
 
     private boolean registreringFeatureErPa() {
-        return unleashService.isEnabled("veilarbportfolje.registrering");
+        return unleashService.isEnabled("veilarbportefolje.permitterte-uten-oppfolgingsvedtak");
     }
 }
