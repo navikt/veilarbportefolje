@@ -134,8 +134,6 @@ public class ApplicationConfig implements ApiApplication {
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
 
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error(e.getMessage(), e));
-
         if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
             flyway.setDataSource(dataSource);
