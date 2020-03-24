@@ -363,7 +363,8 @@ public class ElasticQueryBuilder {
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status")
+                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "erPermittertUtenOppfolgingdVedtak", "er_permittert_uten_oppfolgingsvedtak")
                         ));
     }
 
