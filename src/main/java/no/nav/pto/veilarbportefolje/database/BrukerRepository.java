@@ -5,13 +5,14 @@ import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.registrering.domene.HentRegistreringDTO;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -27,14 +28,17 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.utils.CollectionUtils.mapOf;
 import static no.nav.pto.veilarbportefolje.database.Tabell.*;
 import static no.nav.pto.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
-import static no.nav.sbl.sql.where.WhereClause.*;
+import static no.nav.sbl.sql.where.WhereClause.gt;
+import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 public class BrukerRepository {
@@ -74,26 +78,74 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolgingRegistrering(int rownumber, int limit) {
-        db.setFetchSize(10_000);
-        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-        return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
-                .column("AKTOERID")
-                .column("FODSELSNR")
-                .column("FORMIDLINGSGRUPPEKODE")
-                .column("KVALIFISERINGSGRUPPEKODE")
-                .column("OPPFOLGING")
-                .column("OPPFOLGING_STARTDATO")
-                .orderBy(OrderClause.desc("oppfolging_startdato"))
-                .limit(limit)
-                .where(WhereClause.lt("ROWNUM", rownumber))
-                .where(WhereClause.isNotNull("aktoerid"))
-                .where(WhereClause.isNotNull("oppfolging_startdato"))
-                .executeToList()
-                .stream()
-                .filter(Objects::nonNull)
-                .collect(toList());
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging(int fromExclusive, int toInclusive) {
+        int fetchSize = 1000;
+        db.setFetchSize(fetchSize);
+
+        log.info("Henter ut fra {} til {}", fromExclusive, toInclusive);
+        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
+
+        log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
+
+        String sql = "SELECT * FROM"
+                + " VW_PORTEFOLJE_INFO"
+                + " WHERE FODSELSNR IN (:fnr)";
+
+        List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
+                sql,
+                mapOf(Pair.of("fnr", fnr)),
+                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
+        );
+
+        log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
+
+        return brukere.stream().filter(Objects::nonNull).collect(toList());
+    }
+
+    public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
+        String sql = "SELECT FODSELSNR "
+                + "FROM (SELECT "
+                + "BRUKER.FODSELSNR, "
+                + "rownum rn "
+                + "FROM ( "
+                + "SELECT * "
+                + "FROM OPPFOLGINGSBRUKER "
+                + "ORDER BY FODSELSNR "
+                + ") "
+                + "BRUKER "
+                + "WHERE rownum <= :to "
+                + ")"
+                + "WHERE rn > :from ";
+
+        Map<String, Integer> parameters = mapOf(
+                Pair.of("from", fromExclusive),
+                Pair.of("to", toInclusive)
+        );
+
+        return namedParameterJdbcTemplate.queryForList(sql, parameters, String.class);
+    }
+
+    public List<HentRegistreringDTO> hentAlleBrukereUnderOppfolgingRegistrering(int fromExclusive, int toInclusive) {
+        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
+
+
+
+        String sql = "SELECT AKTOERID, FODSELSNR FROM"
+                + " VW_PORTEFOLJE_INFO"
+                + " WHERE FODSELSNR IN (:fnr) "
+                + " AND AKTOERID IS NOT NULL "
+                + " AND OPPFOLGING_STARTDATO IS NOT NULL "
+                + " AND ( FORMIDLINGSGRUPPEKODE = 'ARBS' "
+                    + "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND (KVALIFISERINGSGRUPPEKODE = 'BATT' OR KVALIFISERINGSGRUPPEKODE = 'BFORM' OR KVALIFISERINGSGRUPPEKODE = 'VARIG' OR KVALIFISERINGSGRUPPEKODE = 'IKVAL' OR KVALIFISERINGSGRUPPEKODE = 'VURDU' OR KVALIFISERINGSGRUPPEKODE = 'OPPFI'))"
+                    + "OR  OPPFOLGING = 'J' )";
+
+
+        List<HentRegistreringDTO> hentRegistreringForDisseBrukare = namedParameterJdbcTemplate.query(
+                sql,
+                mapOf(Pair.of("fnr", fnr)),
+                (rs, rowNum) -> mapTilHentRegistreringDTO(rs));
+
+        return hentRegistreringForDisseBrukare;
     }
 
     public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
@@ -128,12 +180,21 @@ public class BrukerRepository {
         );
     }
 
+    @SneakyThrows
+    private static HentRegistreringDTO mapTilHentRegistreringDTO(ResultSet rs) {
+        return new HentRegistreringDTO(
+                AktoerId.of(rs.getString("AKTOERID")),
+                Fnr.of(rs.getString("FODSELSNR"))
+        );
+    }
+
+
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
         Integer count = db.query(countOppfolgingsBrukereSql(), rs -> {
             rs.next();
             return rs.getInt(1);
         });
-        return Optional.ofNullable(count);
+        return ofNullable(count);
     }
 
     private String countOppfolgingsBrukereSql() {

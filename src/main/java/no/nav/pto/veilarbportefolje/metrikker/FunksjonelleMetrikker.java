@@ -20,19 +20,4 @@ public class FunksjonelleMetrikker {
                 .report();
     }
 
-    public static void oppdaterTimerSidenArenaFilYtelserBleLest() {
-        MetricsFactory
-                .createEvent("portefolje.arena.fil.ytelser.sist.oppdatert")
-                .addFieldToReport("antall_timer", MetricsReporter.sjekkArenaYtelserSistOppdatert())
-                .report();
-    }
-
-    public static void oppdaterTimerSidenArenaFilAktiviteterBleLest() {
-        MetricsFactory
-                .createEvent("portefolje.arena.fil.tiltak.sist.oppdatert")
-                .addFieldToReport("antall_timer", MetricsReporter.sjekkArenaAktiviteterSistOppdatert())
-                .report();
-    }
-
-
 }
