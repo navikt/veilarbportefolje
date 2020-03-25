@@ -2,13 +2,16 @@ package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
 
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
+import no.nav.pto.veilarbportefolje.registrering.domene.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 
 public class OppfolgingUtils {
+    private static List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
     public static boolean erBrukerUnderOppfolging(String formidlingsgruppekode, String servicegruppekode, boolean oppfolgingsbruker) {
         return oppfolgingsbruker ||
                 UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);
@@ -18,8 +21,8 @@ public class OppfolgingUtils {
         return veileder == null || veileder.isEmpty();
     }
 
-    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
-        if ("ISERV".equals(formidlingsgruppekode)) {
+    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode, boolean erPermitertUtenOppfolgingsvedtak) {
+        if ("ISERV".equals(formidlingsgruppekode) || erPermitertUtenOppfolgingsvedtak) {
             return false;
         }
         return "IVURD".equals(kvalifiseringsgruppekode) || "BKART".equals(kvalifiseringsgruppekode);
@@ -31,12 +34,11 @@ public class OppfolgingUtils {
     }
 
     public static boolean trengerVurderingVedtakstotte (String kvalifiseringsgruppekode, String vedtakStatus) {
-        List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
         return !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus == null;
     }
 
     public static boolean trengerRevurderingVedtakstotte (String kvalifiseringsgruppekode, String vedtakStatus) {
-        List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
+
         return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
     }
 
@@ -50,5 +52,15 @@ public class OppfolgingUtils {
         } else {
             return null;
         }
+    }
+
+    public static boolean erPermitertUtenOppfolgingsvedtak(String formidlingsgruppekode, String brukersSituasjon, String kvalifiseringsgruppekode) {
+        return Optional.ofNullable(brukersSituasjon)
+                .map(DinSituasjonSvar::valueOf)
+                .map(dinSituasjonSvar ->
+                        "ARBS".equals(formidlingsgruppekode)
+                                && !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode)
+                                && dinSituasjonSvar.equals(DinSituasjonSvar.ER_PERMITTERT))
+                .orElse(false);
     }
 }

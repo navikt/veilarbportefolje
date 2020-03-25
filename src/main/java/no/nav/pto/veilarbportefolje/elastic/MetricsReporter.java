@@ -30,11 +30,8 @@ public class MetricsReporter {
 
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
         Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
-
-        if (LeaderElection.isLeader()) {
-            Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", MetricsReporter::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
-            Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", MetricsReporter::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
-        }
+        Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", MetricsReporter::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
+        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", MetricsReporter::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
     }
 
     public static long sjekkArenaYtelserSistOppdatert() {

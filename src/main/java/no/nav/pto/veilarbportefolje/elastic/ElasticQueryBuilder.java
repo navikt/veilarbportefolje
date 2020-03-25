@@ -235,6 +235,9 @@ public class ElasticQueryBuilder {
             case UNDER_VURDERING:
                 queryBuilder = existsQuery("vedtak_status");
                 break;
+            case PERMITTERTE_UTEN_OPPFOLGINGSVEDTAK:
+                queryBuilder = matchQuery("er_permittert_uten_oppfolgingsvedtak", true);
+                break;
             default:
                 throw new IllegalStateException();
 
@@ -360,7 +363,8 @@ public class ElasticQueryBuilder {
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status")
+                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "erPermittertUtenOppfolgingdVedtak", "er_permittert_uten_oppfolgingsvedtak")
                         ));
     }
 
