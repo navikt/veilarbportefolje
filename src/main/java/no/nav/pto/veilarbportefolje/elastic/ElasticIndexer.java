@@ -372,6 +372,7 @@ public class ElasticIndexer {
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
+        log.info("Skriver bruker {} til indeks", oppfolgingsBruker.getAktoer_id());
         skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
     }
 

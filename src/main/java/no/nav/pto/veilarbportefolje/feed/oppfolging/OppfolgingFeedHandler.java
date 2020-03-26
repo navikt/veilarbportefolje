@@ -1,10 +1,12 @@
 package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -30,13 +32,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
     private static final String FEED_NAME = "oppfolging";
     private static BigDecimal lastEntry;
-    private final Timer timer;
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
     private OppfolgingFeedRepository oppfolgingFeedRepository;
     private VeilederService veilederService;
     private Transactor transactor;
+    private final Counter antallTotaltMetrikk;
 
     @Inject
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
@@ -53,7 +55,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.transactor = transactor;
 
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
-        this.timer = MetricsFactory.createTimer("veilarbportefolje.veiledertilordning");
+        antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", FEED_NAME).register(getMeterRegistry());
 
     }
 
@@ -64,35 +66,34 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
 
-        timer.start();
         log.info("OppfolgingerfeedDebug data: {}", data);
 
-        try {
+        MetricsUtils.timed("feed.oppfolging", () -> {
+            try {
 
-            data.forEach(info -> {
-                if (info.getStartDato() == null) {
-                    log.warn("Bruker {} har ingen startdato", info.getAktoerid());
-                }
-                oppdaterOppfolgingData(info);
+                data.forEach(info -> {
+                    if (info.getStartDato() == null) {
+                        log.warn("Bruker {} har ingen startdato", info.getAktoerid());
+                    }
+                    oppdaterOppfolgingData(info);
 
-                CompletableFuture<Void> future = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+                    elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
 
-                future.thenRun(() -> {
-                    timer.stop();
-                    timer.report();
+
                 });
 
-            });
+                finnMaxFeedId(data).ifPresent(id -> {
+                    oppfolgingFeedRepository.updateOppfolgingFeedId(id);
+                    lastEntry = id;
+                });
 
-            finnMaxFeedId(data).ifPresent(id -> {
-                oppfolgingFeedRepository.updateOppfolgingFeedId(id);
-                lastEntry = id;
-            });
+                antallTotaltMetrikk.increment(data.size());
 
-        } catch (Exception e) {
-            String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
-            log.error(message, e);
-        }
+            } catch (Exception e) {
+                String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
+                log.error(message, e);
+            }
+        });
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {

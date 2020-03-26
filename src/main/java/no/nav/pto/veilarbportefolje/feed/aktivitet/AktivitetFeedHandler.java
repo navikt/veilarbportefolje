@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 
@@ -48,22 +49,26 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
         log.info("AktivitetfeedDebug data: {}", data);
 
-        List<AktivitetDataFraFeed> avtalteAktiviteter = data
-                .stream()
-                .filter(AktivitetDataFraFeed::isAvtalt)
-                .collect(toList());
+        MetricsUtils.timed("feed.aktivitet", () -> {
 
-        avtalteAktiviteter.forEach(this::lagreAktivitetData);
+            List<AktivitetDataFraFeed> avtalteAktiviteter = data
+                    .stream()
+                    .filter(AktivitetDataFraFeed::isAvtalt)
+                    .collect(toList());
 
-        behandleAktivitetdata(avtalteAktiviteter
-                .stream().map(AktivitetDataFraFeed::getAktorId)
-                .distinct()
-                .map(AktoerId::of)
-                .collect(toList()));
+            avtalteAktiviteter.forEach(this::lagreAktivitetData);
 
-        Timestamp lastEntryId = timestampFromISO8601(lastEntry);
-        lastEntryIdAsMillisSinceEpoch = lastEntryId.getTime();
-        brukerRepository.setAktiviteterSistOppdatert(lastEntryId);
+            behandleAktivitetdata(avtalteAktiviteter
+                    .stream().map(AktivitetDataFraFeed::getAktorId)
+                    .distinct()
+                    .map(AktoerId::of)
+                    .collect(toList()));
+
+            Timestamp lastEntryId = timestampFromISO8601(lastEntry);
+            lastEntryIdAsMillisSinceEpoch = lastEntryId.getTime();
+            brukerRepository.setAktiviteterSistOppdatert(lastEntryId);
+
+        });
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
