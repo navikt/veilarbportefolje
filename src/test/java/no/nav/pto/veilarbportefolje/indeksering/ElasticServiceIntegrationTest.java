@@ -9,6 +9,7 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.Pair;
 import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
+import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -17,6 +18,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -37,8 +39,7 @@ import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Ignore
 @Slf4j
@@ -89,7 +90,8 @@ public class ElasticServiceIntegrationTest {
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 restClient,
-                elasticService
+                elasticService,
+                mock(UnleashService.class)
         );
 
     }
@@ -325,6 +327,32 @@ public class ElasticServiceIntegrationTest {
         assertThat(statustall.ufordelteBrukere).isEqualTo(1);
     }
 
+    @Test
+    public void skal_sortere_brukere_pa_arbeidslisteikon() {
+
+        val blaBruker = new OppfolgingsBruker()
+                .setArbeidsliste_kategori(Arbeidsliste.Kategori.BLA.name());
+
+        val lillaBruker = new OppfolgingsBruker()
+                .setArbeidsliste_kategori(Arbeidsliste.Kategori.LILLA.name());
+
+        skrivBrukereTilTestindeks(blaBruker, lillaBruker);
+        BrukereMedAntall response = elasticService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                "desc",
+                "arbeidslisteikon",
+                new Filtervalg().setFerdigfilterListe(emptyList()),
+                null,
+                null,
+                TEST_INDEX
+        );
+
+        List<Bruker> responseBrukere = response.getBrukere();
+        assertThat(responseBrukere.get(0).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.LILLA);
+        assertThat(responseBrukere.get(1).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.BLA);
+
+    }
     @Test
     public void skal_hente_brukere_som_trenger_vurdering_og_er_ny_for_enhet() {
 

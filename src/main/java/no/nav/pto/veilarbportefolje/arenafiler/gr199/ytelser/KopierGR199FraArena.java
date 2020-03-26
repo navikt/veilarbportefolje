@@ -25,7 +25,7 @@ public class KopierGR199FraArena {
         log.info("Indeksering: Starter oppdatering av ytelser...");
         aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
 
-        FilmottakFileUtils.hentFil(LOPENDEYTELSER_SFTP)
+        FilmottakFileUtils.hentYtelseFil()
                 .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs"))
                 .flatMap(FilmottakFileUtils::unmarshallLoependeYtelserFil)
                 .onFailure(log(log, "Unmarshalling av ytelsesfil feilet"))

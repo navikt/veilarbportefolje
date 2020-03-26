@@ -71,6 +71,7 @@ public class OppfolgingsBruker {
     String arbeidsliste_kommentar;
     String arbeidsliste_overskrift;
     String arbeidsliste_frist;
+    String arbeidsliste_kategori;
     String oppfolging_startdato;
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
@@ -78,4 +79,5 @@ public class OppfolgingsBruker {
     String vedtak_status;
     String vedtak_status_endret;
     boolean trenger_revurdering;
+    String brukers_situasjon;
 }

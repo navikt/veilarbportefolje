@@ -5,6 +5,7 @@ import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
@@ -26,14 +27,17 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.utils.CollectionUtils.mapOf;
 import static no.nav.pto.veilarbportefolje.database.Tabell.*;
 import static no.nav.pto.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
-import static no.nav.sbl.sql.where.WhereClause.*;
+import static no.nav.sbl.sql.where.WhereClause.gt;
+import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 public class BrukerRepository {
@@ -73,6 +77,53 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging(int fromExclusive, int toInclusive) {
+        int fetchSize = 1000;
+        db.setFetchSize(fetchSize);
+
+        log.info("Henter ut fra {} til {}", fromExclusive, toInclusive);
+        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
+
+        log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
+
+        String sql = "SELECT * FROM"
+                + " VW_PORTEFOLJE_INFO"
+                + " WHERE FODSELSNR IN (:fnr)";
+
+        List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
+                sql,
+                mapOf(Pair.of("fnr", fnr)),
+                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
+        );
+
+        log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
+
+        return brukere.stream().filter(Objects::nonNull).collect(toList());
+    }
+
+    public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
+        String sql = "SELECT FODSELSNR "
+                + "FROM (SELECT "
+                + "BRUKER.FODSELSNR, "
+                + "rownum rn "
+                + "FROM ( "
+                + "SELECT * "
+                + "FROM OPPFOLGINGSBRUKER "
+                + "ORDER BY FODSELSNR "
+                + ") "
+                + "BRUKER "
+                + "WHERE rownum <= :to "
+                + ")"
+                + "WHERE rn > :from ";
+
+        Map<String, Integer> parameters = mapOf(
+                Pair.of("from", fromExclusive),
+                Pair.of("to", toInclusive)
+        );
+
+        return namedParameterJdbcTemplate.queryForList(sql, parameters, String.class);
+    }
+
     public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
         int rowNum = pageNumber * pageSize;
         int offset = rowNum - pageSize;
@@ -105,12 +156,13 @@ public class BrukerRepository {
         );
     }
 
+
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
         Integer count = db.query(countOppfolgingsBrukereSql(), rs -> {
             rs.next();
             return rs.getInt(1);
         });
-        return Optional.ofNullable(count);
+        return ofNullable(count);
     }
 
     private String countOppfolgingsBrukereSql() {
@@ -178,52 +230,6 @@ public class BrukerRepository {
     private static boolean harOppfolgingsFlaggSatt(ResultSet rs) {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
     }
-
-    static final String SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO =
-            "SELECT " +
-                    "person_id, " +
-                    "fodselsnr, " +
-                    "fornavn, " +
-                    "etternavn, " +
-                    "nav_kontor, " +
-                    "formidlingsgruppekode, " +
-                    "iserv_fra_dato, " +
-                    "kvalifiseringsgruppekode, " +
-                    "rettighetsgruppekode, " +
-                    "hovedmaalkode, " +
-                    "sikkerhetstiltak_type_kode, " +
-                    "fr_kode, " +
-                    "sperret_ansatt, " +
-                    "er_doed, " +
-                    "doed_fra_dato, " +
-                    "tidsstempel, " +
-                    "veilederident, " +
-                    "ytelse, " +
-                    "utlopsdato, " +
-                    "ny_for_veileder, " +
-                    "utlopsdatofasett, " +
-                    "dagputlopuke, dagputlopukefasett, " +
-                    "permutlopuke, permutlopukefasett, " +
-                    "aapmaxtiduke, aapmaxtidukefasett, " +
-                    "aapunntakdagerigjen, aapunntakukerigjenfasett, " +
-                    "oppfolging, " +
-                    "venterpasvarfrabruker, " +
-                    "venterpasvarfranav, " +
-                    "nyesteutlopteaktivitet, " +
-                    "aktivitet_start, " +
-                    "neste_aktivitet_start, " +
-                    "forrige_aktivitet_start, " +
-                    "manuell, " +
-                    "reservertikrr, " +
-                    "ARBEIDSLISTE_AKTIV, " +
-                    "ARBEIDSLISTE_KOMMENTAR, " +
-                    "ARBEIDSLISTE_OVERSKRIFT, " +
-                    "ARBEIDSLISTE_FRIST, " +
-                    "ARBEIDSLISTE_ENDRET_AV, " +
-                    "ARBEIDSLISTE_ENDRET_TID " +
-                    "FROM " +
-                    "vw_portefolje_info";
-
 
     public void updateMetadata(String name, Date date) {
         update(db, METADATA).set(name, date).execute();
@@ -428,13 +434,6 @@ public class BrukerRepository {
                 .set("aapunntakdagerigjen", (Object) null)
                 .set("aapunntakukerigjenfasett", (Object) null)
                 .execute();
-    }
-
-    String retrieveOppdaterteBrukereSQL() {
-        return SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO +
-                " " +
-                "WHERE " +
-                "tidsstempel > (" + retrieveSistIndeksertSQL() + ")";
     }
 
     String retrieveSistIndeksertSQL() {

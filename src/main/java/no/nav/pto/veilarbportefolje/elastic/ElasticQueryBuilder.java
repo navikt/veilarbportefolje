@@ -55,6 +55,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
+        byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
 
         if (filtervalg.harYtelsefilter()) {
 
@@ -135,6 +136,9 @@ public class ElasticQueryBuilder {
                 break;
             case "vedtakstatus":
                 searchSourceBuilder.sort("vedtak_status", order);
+                break;
+            case "arbeidslistekategori":
+                searchSourceBuilder.sort("arbeidsliste_kategori", order);
                 break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
@@ -230,6 +234,12 @@ public class ElasticQueryBuilder {
                 break;
             case UNDER_VURDERING:
                 queryBuilder = existsQuery("vedtak_status");
+                break;
+            case PERMITTERTE_ETTER_NIENDE_MARS:
+                queryBuilder = byggPermittertFilter();
+                break;
+            case IKKE_PERMITTERTE_ETTER_NIENDE_MARS:
+                queryBuilder = byggIkkePermittertFilter();
                 break;
             default:
                 throw new IllegalStateException();
@@ -334,6 +344,20 @@ public class ElasticQueryBuilder {
         return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet);
     }
 
+    static BoolQueryBuilder byggIkkePermittertFilter() {
+        return boolQuery()
+                .mustNot(matchQuery("brukers_situasjon", "ER_PERMITTERT"))
+                .mustNot(rangeQuery("oppfolging_startdato")
+                        .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())));
+    }
+
+    static BoolQueryBuilder byggPermittertFilter() {
+        return boolQuery()
+                .must(matchQuery("brukers_situasjon", "ER_PERMITTERT"))
+                .must(rangeQuery("oppfolging_startdato")
+                        .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())));
+    }
+
     private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
 
 
@@ -356,8 +380,18 @@ public class ElasticQueryBuilder {
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
-                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status")
+                                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
+                                permitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet),
+                                ikkePermitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet)
                         ));
+    }
+
+    private static KeyedFilter permitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter("permitterteEtterNiendeMars", byggPermittertFilter().must(filtrereVeilederOgEnhet));
+    }
+
+    private static KeyedFilter ikkePermitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter("ikkePermitterteEtterNiendeMars", byggIkkePermittertFilter().must(filtrereVeilederOgEnhet));
     }
 
     private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {

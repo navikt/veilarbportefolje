@@ -41,7 +41,8 @@ public class ElasticSelftest implements Helsesjekk {
         return new HelsesjekkMetadata(
                 "elasticsearch helsesjekk",
                 String.format("http://%s/%s", getElasticHostname(), getAlias()),
-                String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), true
+                String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER),
+                false
         );
     }
 

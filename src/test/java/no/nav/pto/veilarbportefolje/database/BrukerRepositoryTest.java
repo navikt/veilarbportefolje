@@ -23,15 +23,14 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.pto.veilarbportefolje.feed.dialog.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
+import static no.nav.pto.veilarbportefolje.feed.dialog.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -42,15 +41,6 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class BrukerRepositoryTest {
 
-    private static final String[] SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING = new String[]{"PERSON_ID", "FODSELSNR", "FORNAVN", "ETTERNAVN", "NAV_KONTOR",
-            "FORMIDLINGSGRUPPEKODE", "ISERV_FRA_DATO", "KVALIFISERINGSGRUPPEKODE", "RETTIGHETSGRUPPEKODE",
-            "HOVEDMAALKODE", "SIKKERHETSTILTAK_TYPE_KODE", "FR_KODE", "SPERRET_ANSATT", "ER_DOED", "DOED_FRA_DATO", "TIDSSTEMPEL", "VEILEDERIDENT",
-            "YTELSE", "UTLOPSDATO", "NY_FOR_VEILEDER", "UTLOPSDATOFASETT", "DAGPUTLOPUKE", "DAGPUTLOPUKEFASETT",
-            "PERMUTLOPUKE", "PERMUTLOPUKEFASETT", "AAPMAXTIDUKE", "AAPMAXTIDUKEFASETT", "AAPUNNTAKDAGERIGJEN", "AAPUNNTAKUKERIGJENFASETT",
-            "OPPFOLGING", "VENTERPASVARFRABRUKER", "VENTERPASVARFRANAV", "NYESTEUTLOPTEAKTIVITET",
-            "AKTIVITET_START", "NESTE_AKTIVITET_START", "FORRIGE_AKTIVITET_START", "MANUELL", "RESERVERTIKRR",
-            "ARBEIDSLISTE_AKTIV", "ARBEIDSLISTE_KOMMENTAR", "ARBEIDSLISTE_OVERSKRIFT", "ARBEIDSLISTE_FRIST", "ARBEIDSLISTE_ENDRET_AV", "ARBEIDSLISTE_ENDRET_TID"};
-
     @Inject
     private JdbcTemplate jdbcTemplate;
 
@@ -59,10 +49,13 @@ public class BrukerRepositoryTest {
 
     private int ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA = 51;
     private int ANTALL_OPPDATERTE_BRUKERE_I_TESTDATA = 4;
+    private int ANTALL_LINJER_I_TESTDATA = 4;
 
     public void insertoppfolgingsbrukerTestData() {
         try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8)));
+            List<String> lines = IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8);
+            ANTALL_LINJER_I_TESTDATA = lines.size();
+            jdbcTemplate.execute(Joiner.on("\n").join(lines));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"), UTF_8)));
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,8 +72,25 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skal_returnere_riktig_antall_brukere_under_oppfolging() {
-        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging();
+        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging(0, ANTALL_LINJER_I_TESTDATA);
         assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
+    }
+
+    @Test
+    public void skal_hente_riktig_antall_fnr() {
+        List<String> fnr = brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10);
+        assertThat(fnr.size()).isEqualTo(10);
+    }
+
+    @Test
+    public void skal_ikke_tryne_om_man_proever_aa_hente_for_mange_fnr() {
+        brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10000);
+    }
+
+    @Test
+    public void skal_returnere_riktig_antall_brukere() {
+        int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
+        assertThat(antallBrukere).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
     }
 
     @Test
@@ -112,34 +122,6 @@ public class BrukerRepositoryTest {
         assertThat(result).isFalse();
     }
 
-
-    @Test
-    public void skalHenteUtAlleBrukereFraDatabasen() {
-        List<Map<String, Object>> brukere = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO);
-
-        assertThat(brukere.size()).isEqualTo(72);
-    }
-
-    @Test
-    public void skalHaFolgendeFelterNaarHenterUtAlleBrukere() {
-        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(BrukerRepository.SELECT_PORTEFOLJEINFO_FROM_VW_PORTEFOLJE_INFO).get(0).keySet();
-        assertThat(faktiskeDatabaseFelter).containsExactly(SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING);
-    }
-
-    @Test
-    public void skalHenteKunNyesteBrukereFraDatabasen() {
-        jdbcTemplate.update("UPDATE METADATA SET SIST_INDEKSERT = ?", timestampFromISO8601("2017-01-16T00:00:00Z"));
-
-        List<Map<String, Object>> nyeBrukere = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL());
-        jdbcTemplate.queryForList(brukerRepository.retrieveSistIndeksertSQL());
-        assertThat(nyeBrukere.size()).isEqualTo(4);
-    }
-
-    @Test
-    public void skalHaFolgendeFelterNaarHenterUtNyeBrukere() {
-        Set<String> faktiskeDatabaseFelter = jdbcTemplate.queryForList(brukerRepository.retrieveOppdaterteBrukereSQL()).get(0).keySet();
-        assertThat(faktiskeDatabaseFelter).containsExactly(SKAL_HA_FELTER_FRA_INDEKSERINGSSPORRING);
-    }
 
     @Test
     public void skalKunHaEnCelleIIndekseringLogg() {

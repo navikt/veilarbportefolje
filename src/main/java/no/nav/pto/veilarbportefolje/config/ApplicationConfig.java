@@ -25,7 +25,9 @@ import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringConfig;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakConfig;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -72,7 +74,9 @@ import static no.nav.sbl.util.EnvironmentUtils.*;
         DigitalKontaktinformasjonConfig.class,
         ScheduledErrorHandler.class,
         ElasticConfig.class,
-        ControllerConfig.class
+        ControllerConfig.class,
+        VedtakConfig.class,
+        RegistreringConfig.class
 })
 public class ApplicationConfig implements ApiApplication {
 
@@ -121,15 +125,13 @@ public class ApplicationConfig implements ApiApplication {
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
 
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error(e.getMessage(), e));
-
         if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
             flyway.setDataSource(dataSource);
             flyway.migrate();
         }
 
-        leggTilServlet(servletContext, new TotalHovedindekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena, krrService), "/internal/totalhovedindeksering");
+        leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");

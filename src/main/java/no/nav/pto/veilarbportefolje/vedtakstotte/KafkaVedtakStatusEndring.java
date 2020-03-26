@@ -27,7 +27,6 @@ public class KafkaVedtakStatusEndring {
         VARIG_TILPASSET_INNSATS
     }
 
-    public
     long vedtakId;
     String aktorId;
     KafkaVedtakStatus vedtakStatus;

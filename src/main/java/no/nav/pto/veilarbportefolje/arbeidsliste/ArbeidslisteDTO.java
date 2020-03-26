@@ -20,13 +20,15 @@ public class ArbeidslisteDTO {
     Timestamp frist;
     Timestamp endringstidspunkt;
     Boolean isOppfolgendeVeileder;
+    Arbeidsliste.Kategori kategori;
 
-    public static ArbeidslisteDTO of(Fnr fnr, String overskrift, String kommentar, Timestamp frist) {
+    public static ArbeidslisteDTO of(Fnr fnr, String overskrift, String kommentar, Timestamp frist, Arbeidsliste.Kategori kategori) {
         return
                 new ArbeidslisteDTO(fnr)
                         .setVeilederId(VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new)))
                         .setOverskrift(overskrift)
                         .setKommentar(kommentar)
+                        .setKategori(kategori)
                         .setFrist(frist);
     }
 }

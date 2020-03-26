@@ -27,7 +27,7 @@ Dette gir deg en samling av endepunkter man kan bruke i testing og feilsøk av
 Elasticsearch. 
 
 Noen av disse requestene benytter seg av Postman-miljøvariabler, importer disse ved å trykke på tannhjulet øverst til
-høyre i Postman og velg `Import`. Importer disse filene:
+høyre i Postman og velg `Import`. Importer disse filene: 
 ```
 postman/preprod_environment
 postman/prod_environment
