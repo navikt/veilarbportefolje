@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
 
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
-import no.nav.pto.veilarbportefolje.registrering.domene.DinSituasjonSvar;
+import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 
 import java.util.List;
@@ -21,8 +21,8 @@ public class OppfolgingUtils {
         return veileder == null || veileder.isEmpty();
     }
 
-    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode, boolean erPermitertUtenOppfolgingsvedtak) {
-        if ("ISERV".equals(formidlingsgruppekode) || erPermitertUtenOppfolgingsvedtak) {
+    public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
+        if ("ISERV".equals(formidlingsgruppekode)) {
             return false;
         }
         return "IVURD".equals(kvalifiseringsgruppekode) || "BKART".equals(kvalifiseringsgruppekode);

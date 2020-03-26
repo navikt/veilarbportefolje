@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.registrering.domene.HentRegistreringDTO;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -68,10 +67,9 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -95,7 +93,7 @@ public class BrukerRepository {
         List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
                 sql,
                 mapOf(Pair.of("fnr", fnr)),
-                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa(), registreringFeatureErPa()) : null
+                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
         );
 
         log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
@@ -124,29 +122,6 @@ public class BrukerRepository {
         );
 
         return namedParameterJdbcTemplate.queryForList(sql, parameters, String.class);
-    }
-
-    public List<HentRegistreringDTO> hentAlleBrukereUnderOppfolgingRegistrering(int fromExclusive, int toInclusive) {
-        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
-
-
-
-        String sql = "SELECT AKTOERID, FODSELSNR FROM"
-                + " VW_PORTEFOLJE_INFO"
-                + " WHERE FODSELSNR IN (:fnr) "
-                + " AND AKTOERID IS NOT NULL "
-                + " AND OPPFOLGING_STARTDATO IS NOT NULL "
-                + " AND ( FORMIDLINGSGRUPPEKODE = 'ARBS' "
-                    + "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND (KVALIFISERINGSGRUPPEKODE = 'BATT' OR KVALIFISERINGSGRUPPEKODE = 'BFORM' OR KVALIFISERINGSGRUPPEKODE = 'VARIG' OR KVALIFISERINGSGRUPPEKODE = 'IKVAL' OR KVALIFISERINGSGRUPPEKODE = 'VURDU' OR KVALIFISERINGSGRUPPEKODE = 'OPPFI'))"
-                    + "OR  OPPFOLGING = 'J' )";
-
-
-        List<HentRegistreringDTO> hentRegistreringForDisseBrukare = namedParameterJdbcTemplate.query(
-                sql,
-                mapOf(Pair.of("fnr", fnr)),
-                (rs, rowNum) -> mapTilHentRegistreringDTO(rs));
-
-        return hentRegistreringForDisseBrukare;
     }
 
     public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
@@ -181,14 +156,6 @@ public class BrukerRepository {
         );
     }
 
-    @SneakyThrows
-    private static HentRegistreringDTO mapTilHentRegistreringDTO(ResultSet rs) {
-        return new HentRegistreringDTO(
-                AktoerId.of(rs.getString("AKTOERID")),
-                Fnr.of(rs.getString("FODSELSNR"))
-        );
-    }
-
 
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
         Integer count = db.query(countOppfolgingsBrukereSql(), rs -> {
@@ -208,7 +175,6 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
 
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         db.setFetchSize(1000);
 
@@ -218,7 +184,7 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa))
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
@@ -226,10 +192,9 @@ public class BrukerRepository {
 
     public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa))
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -239,10 +204,9 @@ public class BrukerRepository {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-        boolean registreringFeatureErPa = registreringFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa, registreringFeatureErPa) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()
@@ -533,9 +497,5 @@ public class BrukerRepository {
 
     private boolean vedtakstotteFeatureErPa() {
         return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
-    }
-
-    private boolean registreringFeatureErPa() {
-        return unleashService.isEnabled("veilarbportefolje.permitterte_uten_oppfolgingsvedtak");
     }
 }

@@ -56,10 +56,4 @@ public class RegistreringConfig {
     public KafkaConsumerRegistrering kafkaConsumerRegistrering(RegistreringService registreringService, Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer, UnleashService unleashService) {
         return new KafkaConsumerRegistrering(registreringService, kafkaRegistreringConsumer, unleashService);
     }
-
-    @Bean
-    public VeilarbregistreringClient veilarbregistreringClient(Client client) {
-        return new VeilarbregistreringClient(client);
-    }
-
 }
