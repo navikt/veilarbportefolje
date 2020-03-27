@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.registrering.domene;
+package no.nav.pto.veilarbportefolje.registrering;
 
 public enum DinSituasjonSvar {
     MISTET_JOBBEN,

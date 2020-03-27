@@ -26,18 +26,18 @@ public class OppfolgingUtilsTest {
 
     @Test
     public void brukerTrengerVurdering() {
-        assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "BKART", false));
-        assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "IVURD", false));
+        assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "BKART"));
+        assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "IVURD"));
     }
     @Test
     public void brukerMedISERVTrengerIkkeVurdering() {
-        assertFalse(OppfolgingUtils.trengerVurdering("ISERV", "IVURD", false));
-        assertFalse(OppfolgingUtils.trengerVurdering("ISERV", "BKART", false));
+        assertFalse(OppfolgingUtils.trengerVurdering("ISERV", "IVURD"));
+        assertFalse(OppfolgingUtils.trengerVurdering("ISERV", "BKART"));
     }
 
     @Test
     public void brukerUtenBKART_IVURD_trengerIkkeVurdering() {
-        assertFalse(OppfolgingUtils.trengerVurdering("IARBS", "VURDU", false));
+        assertFalse(OppfolgingUtils.trengerVurdering("IARBS", "VURDU"));
     }
 
     @Test

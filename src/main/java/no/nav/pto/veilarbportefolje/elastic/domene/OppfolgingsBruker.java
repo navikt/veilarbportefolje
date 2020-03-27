@@ -80,5 +80,4 @@ public class OppfolgingsBruker {
     String vedtak_status_endret;
     boolean trenger_revurdering;
     String brukers_situasjon;
-    boolean er_permittert_uten_oppfolgingsvedtak;
 }

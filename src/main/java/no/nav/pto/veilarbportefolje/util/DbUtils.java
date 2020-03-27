@@ -21,7 +21,7 @@ import static no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils.isNyF
 public class DbUtils {
 
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa, boolean registreringFeatureErPa ) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
         String brukersSituasjon = rs.getString("BRUKERS_SITUASJON");
@@ -65,7 +65,7 @@ public class DbUtils {
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
-                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode, false))
+                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
                 .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
@@ -95,13 +95,6 @@ public class DbUtils {
                     .setVedtak_status(vedtakstatus)
                     .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
                     .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus));
-        }
-
-        if(registreringFeatureErPa) {
-            boolean erPermittertUtenOppfolgingsVedtak = OppfolgingUtils.erPermitertUtenOppfolgingsvedtak(formidlingsgruppekode, brukersSituasjon, kvalifiseringsgruppekode);
-               bruker
-                       .setEr_permittert_uten_oppfolgingsvedtak(erPermittertUtenOppfolgingsVedtak)
-                       .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode, erPermittertUtenOppfolgingsVedtak));
         }
 
         return bruker;

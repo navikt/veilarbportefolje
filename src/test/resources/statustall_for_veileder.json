@@ -2,46 +2,6 @@
   "statustall": {
     "filters": {
       "filters": {
-        "erPermittertUtenOppfolgingdVedtak" : {
-          "bool" : {
-            "must" : [
-              {
-                "bool" : {
-                  "must" : [
-                    {
-                      "term" : {
-                        "enhet_id" : {
-                          "value" : "0000",
-                          "boost" : 1.0
-                        }
-                      }
-                    },
-                    {
-                      "term" : {
-                        "veileder_id" : {
-                          "value" : "Z000000",
-                          "boost" : 1.0
-                        }
-                      }
-                    }
-                  ],
-                  "adjust_pure_negative" : true,
-                  "boost" : 1.0
-                }
-              },
-              {
-                "term" : {
-                  "er_permittert_uten_oppfolgingsvedtak" : {
-                    "value" : true,
-                    "boost" : 1.0
-                  }
-                }
-              }
-            ],
-            "adjust_pure_negative" : true,
-            "boost" : 1.0
-          }
-        },
         "erSykmeldtMedArbeidsgiver": {
           "bool": {
             "must": [
@@ -259,6 +219,88 @@
             "boost": 1.0
           }
         },
+        "ikkePermitterteEtterNiendeMars" : {
+          "bool" : {
+            "must" : [
+              {
+                "bool" : {
+                  "should" : [
+                    {
+                      "bool" : {
+                        "must_not" : [
+                          {
+                            "match" : {
+                              "brukers_situasjon" : {
+                                "query" : "ER_PERMITTERT",
+                                "operator" : "OR",
+                                "prefix_length" : 0,
+                                "max_expansions" : 50,
+                                "fuzzy_transpositions" : true,
+                                "lenient" : false,
+                                "zero_terms_query" : "NONE",
+                                "auto_generate_synonyms_phrase_query" : true,
+                                "boost" : 1.0
+                              }
+                            }
+                          }
+                        ],
+                        "adjust_pure_negative" : true,
+                        "boost" : 1.0
+                      }
+                    },
+                    {
+                      "bool" : {
+                        "must_not" : [
+                          {
+                            "range" : {
+                              "oppfolging_startdato" : {
+                                "from" : "2020-03-10T00:00:00Z",
+                                "to" : null,
+                                "include_lower" : true,
+                                "include_upper" : true,
+                                "boost" : 1.0
+                              }
+                            }
+                          }
+                        ],
+                        "adjust_pure_negative" : true,
+                        "boost" : 1.0
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              },
+              {
+                "bool" : {
+                  "must" : [
+                    {
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term" : {
+                        "veileder_id" : {
+                          "value" : "Z000000",
+                          "boost" : 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
+          }
+        },
         "inaktiveBrukere": {
           "bool": {
             "must": [
@@ -469,6 +511,64 @@
             ],
             "adjust_pure_negative": true,
             "boost": 1.0
+          }
+        },
+        "permitterteEtterNiendeMars" : {
+          "bool" : {
+            "must" : [
+              {
+                "match" : {
+                  "brukers_situasjon" : {
+                    "query" : "ER_PERMITTERT",
+                    "operator" : "OR",
+                    "prefix_length" : 0,
+                    "max_expansions" : 50,
+                    "fuzzy_transpositions" : true,
+                    "lenient" : false,
+                    "zero_terms_query" : "NONE",
+                    "auto_generate_synonyms_phrase_query" : true,
+                    "boost" : 1.0
+                  }
+                }
+              },
+              {
+                "range" : {
+                  "oppfolging_startdato" : {
+                    "from" : "2020-03-10T00:00:00Z",
+                    "to" : null,
+                    "include_lower" : true,
+                    "include_upper" : true,
+                    "boost" : 1.0
+                  }
+                }
+              },
+              {
+                "bool" : {
+                  "must" : [
+                    {
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term" : {
+                        "veileder_id" : {
+                          "value" : "Z000000",
+                          "boost" : 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
           }
         },
         "totalt": {

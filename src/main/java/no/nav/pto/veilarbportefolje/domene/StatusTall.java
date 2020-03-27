@@ -22,7 +22,8 @@ public class StatusTall {
     public long erSykmeldtMedArbeidsgiver;
     public long moterMedNAVIdag;
     public long underVurdering;
-    public long erPermittertUtenOppfolgingdVedtak;
+    public long permitterteEtterNiendeMars;
+    public long ikkePermitterteEtterNiendeMars;
 
     public StatusTall() {
     }
@@ -43,6 +44,7 @@ public class StatusTall {
         this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
         this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
         this.underVurdering = buckets.getUnderVurdering().getDoc_count();
-        this.erPermittertUtenOppfolgingdVedtak = buckets.getErPermittertUtenOppfolgingdVedtak().getDoc_count();
+        this.permitterteEtterNiendeMars = buckets.getPermitterteEtterNiendeMars().getDoc_count();
+        this.ikkePermitterteEtterNiendeMars = buckets.getIkkePermitterteEtterNiendeMars().getDoc_count();
     }
 }

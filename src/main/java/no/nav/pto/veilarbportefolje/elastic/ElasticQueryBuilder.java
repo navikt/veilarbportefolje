@@ -235,8 +235,11 @@ public class ElasticQueryBuilder {
             case UNDER_VURDERING:
                 queryBuilder = existsQuery("vedtak_status");
                 break;
-            case PERMITTERTE_UTEN_OPPFOLGINGSVEDTAK:
-                queryBuilder = matchQuery("er_permittert_uten_oppfolgingsvedtak", true);
+            case PERMITTERTE_ETTER_NIENDE_MARS:
+                queryBuilder = byggPermittertFilter();
+                break;
+            case IKKE_PERMITTERTE_ETTER_NIENDE_MARS:
+                queryBuilder = byggIkkePermittertFilter();
                 break;
             default:
                 throw new IllegalStateException();
@@ -341,6 +344,22 @@ public class ElasticQueryBuilder {
         return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet);
     }
 
+    static BoolQueryBuilder byggIkkePermittertFilter() {
+        return boolQuery()
+                .must(boolQuery()
+                        .should(boolQuery().mustNot(matchQuery("brukers_situasjon", "ER_PERMITTERT")))
+                        .should(boolQuery().mustNot(rangeQuery("oppfolging_startdato")
+                                .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())))));
+
+    }
+
+    static BoolQueryBuilder byggPermittertFilter() {
+        return boolQuery()
+                .must(matchQuery("brukers_situasjon", "ER_PERMITTERT"))
+                .must(rangeQuery("oppfolging_startdato")
+                        .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())));
+    }
+
     private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
 
 
@@ -364,8 +383,17 @@ public class ElasticQueryBuilder {
                                 mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
-                                mustBeTrueFilter(filtrereVeilederOgEnhet, "erPermittertUtenOppfolgingdVedtak", "er_permittert_uten_oppfolgingsvedtak")
+                                permitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet),
+                                ikkePermitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet)
                         ));
+    }
+
+    private static KeyedFilter permitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter("permitterteEtterNiendeMars", byggPermittertFilter().must(filtrereVeilederOgEnhet));
+    }
+
+    private static KeyedFilter ikkePermitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
+        return new KeyedFilter("ikkePermitterteEtterNiendeMars", byggIkkePermittertFilter().must(filtrereVeilederOgEnhet));
     }
 
     private static KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
