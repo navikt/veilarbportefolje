@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -203,38 +204,44 @@ public class ElasticIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
 
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+
+        log.info("Deltaindeksering: hentet ut oppdaterte brukere {}", aktoerIder);
+
         if (brukere.isEmpty()) {
-            log.info("Deltaindeksering: Fullført (Ingen oppdaterte brukere ble funnet)");
+            log.info("Deltaindeksering: Ingen oppdaterte brukere ble funnet. Avslutter.");
             return;
         }
 
         Timestamp timestamp = Timestamp.valueOf(now());
 
-        CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
+        MetricsUtils.timed("portefolje.deltaindeksering.write_to_index", () -> {
 
-            List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
-                    .filter(UnderOppfolgingRegler::erUnderOppfolging)
-                    .collect(Collectors.toList());
+            CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
 
-            if (!brukereFortsattUnderOppfolging.isEmpty()) {
-                leggTilAktiviteter(brukereFortsattUnderOppfolging);
-                leggTilTiltak(brukereFortsattUnderOppfolging);
-                skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
-            }
+                List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
+                        .filter(UnderOppfolgingRegler::erUnderOppfolging)
+                        .collect(Collectors.toList());
 
-            slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
+                if (!brukereFortsattUnderOppfolging.isEmpty()) {
+                    log.info("Deltaindeksering: Legger til aktiviteter");
+                    leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                    log.info("Deltaindeksering: Legger til tiltak");
+                    leggTilTiltak(brukereFortsattUnderOppfolging);
+                    log.info("Deltaindeksering: Skriver til indeks");
+                    skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
+                }
 
+                log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under indeksering");
+                slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
+            });
         });
 
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
-        List<String> personIder = brukere.stream().map(OppfolgingsBruker::getPerson_id).collect(Collectors.toList());
-        log.info("DELTAINDEKSERING: Indeks oppdatert for {} brukere med aktoerId {} og personId {})", brukere.size(), aktoerIder, personIder);
+        log.info("Deltaindeksering: Indeks oppdatert for {} brukere {}", brukere.size(), aktoerIder);
 
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
         int antall = brukere.size();
-
-
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
         event.addFieldToReport("es.antall.oppdateringer", antall);
         event.report();
