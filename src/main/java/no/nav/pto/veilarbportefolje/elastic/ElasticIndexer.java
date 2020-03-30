@@ -215,26 +215,23 @@ public class ElasticIndexer {
 
         Timestamp timestamp = Timestamp.valueOf(now());
 
-        MetricsUtils.timed("portefolje.deltaindeksering.write_to_index", () -> {
+        CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
 
-            CollectionUtils.partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
+            List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
+                    .filter(UnderOppfolgingRegler::erUnderOppfolging)
+                    .collect(Collectors.toList());
 
-                List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
-                        .filter(UnderOppfolgingRegler::erUnderOppfolging)
-                        .collect(Collectors.toList());
+            if (!brukereFortsattUnderOppfolging.isEmpty()) {
+                log.info("Deltaindeksering: Legger til aktiviteter");
+                leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                log.info("Deltaindeksering: Legger til tiltak");
+                leggTilTiltak(brukereFortsattUnderOppfolging);
+                log.info("Deltaindeksering: Skriver til indeks");
+                skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
+            }
 
-                if (!brukereFortsattUnderOppfolging.isEmpty()) {
-                    log.info("Deltaindeksering: Legger til aktiviteter");
-                    leggTilAktiviteter(brukereFortsattUnderOppfolging);
-                    log.info("Deltaindeksering: Legger til tiltak");
-                    leggTilTiltak(brukereFortsattUnderOppfolging);
-                    log.info("Deltaindeksering: Skriver til indeks");
-                    skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
-                }
-
-                log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under indeksering");
-                slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
-            });
+            log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under oppfolging");
+            slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
         });
 
         log.info("Deltaindeksering: Indeks oppdatert for {} brukere {}", brukere.size(), aktoerIder);
