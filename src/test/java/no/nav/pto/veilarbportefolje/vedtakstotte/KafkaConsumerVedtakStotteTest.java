@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -65,7 +64,7 @@ public class KafkaConsumerVedtakStotteTest {
                 0L, AKTORID, toJson(event)));
 
         Thread.sleep(2000);
-        assertThat(vedtakRepository.hentVedtak(AKTORID)).isEqualTo(Arrays.asList(event));
+        assertThat(vedtakRepository.hentVedtak(AKTORID).get(0)).isEqualTo(event);
 
     }
 }
