@@ -58,8 +58,8 @@ public class IndekseringScheduler {
         maybeJob.ifPresent(job -> log.info("Startet nattlig elastic av krr med jobId {} på pod {}", job.getJobId(), job.getPodName()));
     }
 
-    // Kjører hvert minutt
-    @Scheduled(cron = "0 * * * * *")
+    // Kjører hvert femte minutt
+    @Scheduled(cron = "* 0/5 * ? * * *")
     public void deltaindeksering() {
         JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering);
     }
