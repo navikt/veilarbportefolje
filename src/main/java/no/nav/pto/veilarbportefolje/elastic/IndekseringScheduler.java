@@ -59,7 +59,7 @@ public class IndekseringScheduler {
     }
 
     // Kjører hvert femte minutt
-    @Scheduled(cron = "* 0/5 * * * *")
+    @Scheduled(cron = "* 0/5 * * * ?")
     public void deltaindeksering() {
         JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering);
     }
