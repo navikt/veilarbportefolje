@@ -29,7 +29,7 @@ jobs:
   test-build-and-push:
     name: Test, build and push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/fo-2540-fiks-status-kafka'
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -69,7 +69,7 @@ jobs:
           VAR: version=${{ env.IMAGE_TAG }},namespace=q0
   deploy-q1:
     name: Deploy application to Q1
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/fo-2540-fiks-status-kafka'
     needs: test-build-and-push
     runs-on: ubuntu-latest
     steps:
