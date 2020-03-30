@@ -232,7 +232,7 @@ public class ElasticIndexer {
                     skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
                 }
 
-                log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under indeksering");
+                log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under oppfolging");
                 slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
             });
         });
