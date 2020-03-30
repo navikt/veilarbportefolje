@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -52,8 +53,6 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.json.JsonUtils.toJson;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.BATCH_SIZE_LIMIT;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
@@ -65,6 +64,9 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
 public class ElasticIndexer {
+
+    final static int BATCH_SIZE = 1000;
+    final static int BATCH_SIZE_LIMIT = 1000;
 
     private final ElasticService elasticService;
 
@@ -149,14 +151,20 @@ public class ElasticIndexer {
         int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
 
         log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
-        for (int i = 0; i < antallBrukere; i = i + BATCH_SIZE) {
 
-            log.info("Indekserer {}/{} brukere", BATCH_SIZE, antallBrukere);
+        int currentPage = 0;
+        for (int fra = 0; fra < antallBrukere; fra = utregnTil(fra, BATCH_SIZE)) {
 
-            int fra = i;
-            int til = i + BATCH_SIZE;
+            int til = utregnTil(fra, BATCH_SIZE);
+
+            int numberOfPages = antallBrukere / BATCH_SIZE - 1;
+            currentPage = currentPage + 1;
+
+            log.info("{}/{} Indekserer brukere fra {} til {} av {}", currentPage, numberOfPages, fra, til, antallBrukere);
 
             List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
+            log.info("Hentet ut {} brukere fra databasen", brukere.size());
+
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
 
@@ -177,6 +185,18 @@ public class ElasticIndexer {
         log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
     }
 
+    static int utregnTil(int from, int batchSize) {
+        if (from < 0 || batchSize < 0) {
+            throw new IllegalArgumentException("Negative numbers are not allowed");
+        }
+
+        if (from == 0) {
+            return batchSize;
+        }
+
+        return from + BATCH_SIZE;
+    }
+
     public void deltaindeksering() {
         if (indeksenIkkeFinnes()) {
             String message = format("Deltaindeksering: finner ingen indeks med alias %s", getAlias());
@@ -189,8 +209,12 @@ public class ElasticIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
 
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+
+        log.info("Deltaindeksering: hentet ut {} oppdaterte brukere {}", brukere.size(), aktoerIder);
+
         if (brukere.isEmpty()) {
-            log.info("Deltaindeksering: Fullført (Ingen oppdaterte brukere ble funnet)");
+            log.info("Deltaindeksering: Ingen oppdaterte brukere ble funnet. Avslutter.");
             return;
         }
 
@@ -203,24 +227,23 @@ public class ElasticIndexer {
                     .collect(Collectors.toList());
 
             if (!brukereFortsattUnderOppfolging.isEmpty()) {
+                log.info("Deltaindeksering: Legger til aktiviteter");
                 leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                log.info("Deltaindeksering: Legger til tiltak");
                 leggTilTiltak(brukereFortsattUnderOppfolging);
+                log.info("Deltaindeksering: Skriver til indeks");
                 skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
             }
 
+            log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under oppfolging");
             slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
-
         });
 
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
-        List<String> personIder = brukere.stream().map(OppfolgingsBruker::getPerson_id).collect(Collectors.toList());
-        log.info("DELTAINDEKSERING: Indeks oppdatert for {} brukere med aktoerId {} og personId {})", brukere.size(), aktoerIder, personIder);
+        log.info("Deltaindeksering: Indeks oppdatert for {} brukere {}", brukere.size(), aktoerIder);
 
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
         int antall = brukere.size();
-
-
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
         event.addFieldToReport("es.antall.oppdateringer", antall);
         event.report();

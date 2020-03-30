@@ -25,10 +25,7 @@ import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
-import no.nav.pto.veilarbportefolje.registrering.PopulerDataFraRegistrering;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringConfig;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.registrering.VeilarbregistreringClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakConfig;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -124,17 +121,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private AktivitetDAO aktivitetDAO;
 
-    @Inject
-    private RegistreringService registreringService;
-
-    @Inject
-    private VeilarbregistreringClient veilarbregistreringClient;
-
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
-
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error(e.getMessage(), e));
 
         if (!skipDbMigration()) {
             Flyway flyway = new Flyway();
@@ -151,7 +140,6 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new ResetDialogFeedServlet(dialogFeedRepository), "/internal/reset_feed_dialog");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
         leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
-        leggTilServlet(servletContext, new PopulerDataFraRegistrering(registreringService, brukerRepository, veilarbregistreringClient), "/internal/populer_registrering");
     }
 
     private Boolean skipDbMigration() {

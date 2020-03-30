@@ -21,9 +21,10 @@ import static no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils.isNyF
 public class DbUtils {
 
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa ) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
+        String brukersSituasjon = rs.getString("BRUKERS_SITUASJON");
 
         String fornavn = kapitaliser(rs.getString("fornavn"));
         String etternavn = kapitaliser(rs.getString("etternavn"));
@@ -72,7 +73,7 @@ public class DbUtils {
                 .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
                 .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
-                .setBrukers_situasjon(rs.getString("BRUKERS_SITUASJON"));
+                .setBrukers_situasjon(brukersSituasjon);
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 

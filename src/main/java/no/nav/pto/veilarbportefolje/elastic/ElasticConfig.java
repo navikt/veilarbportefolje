@@ -33,9 +33,6 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 })
 public class ElasticConfig {
 
-    static int BATCH_SIZE = 1000;
-    static int BATCH_SIZE_LIMIT = 1000;
-
     public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
     public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
 
