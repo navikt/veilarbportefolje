@@ -206,7 +206,7 @@ public class ElasticIndexer {
 
         List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
 
-        log.info("Deltaindeksering: hentet ut oppdaterte brukere {}", aktoerIder);
+        log.info("Deltaindeksering: hentet ut {} oppdaterte brukere {}", brukere.size(), aktoerIder);
 
         if (brukere.isEmpty()) {
             log.info("Deltaindeksering: Ingen oppdaterte brukere ble funnet. Avslutter.");
