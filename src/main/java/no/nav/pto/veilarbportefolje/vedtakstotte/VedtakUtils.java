@@ -3,8 +3,10 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +48,7 @@ public class VedtakUtils {
                 jsonBuilder()
                         .startObject()
                         .field("vedtak_status", melding.getVedtakStatus().name())
-                        .field("vedtak_status_endret", melding.getStatusEndretTidspunkt().toString())
+                        .field("vedtak_status_endret", DateUtils.toIsoUTC(Timestamp.valueOf(melding.getStatusEndretTidspunkt())))
                         .endObject());
     }
 
