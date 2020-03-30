@@ -1,15 +1,18 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.jobutils.JobUtils;
+import no.nav.jobutils.RunningJob;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
-import no.nav.jobutils.JobUtils;
-import no.nav.jobutils.RunningJob;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 @Slf4j
 public class IndekseringScheduler {
@@ -24,10 +27,18 @@ public class IndekseringScheduler {
 
     @Inject
     public IndekseringScheduler(no.nav.pto.veilarbportefolje.elastic.ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
-        this.elasticIndexer = elasticIndexer;
-        this.tiltakHandler = tiltakHandler;
+        this.elasticIndexer      = elasticIndexer;
+        this.tiltakHandler       = tiltakHandler;
         this.kopierGR199FraArena = kopierGR199FraArena;
-        this.krrService = krrService;
+        this.krrService          = krrService;
+
+        scheduleDeltaindeksering(elasticIndexer);
+    }
+
+    private static void scheduleDeltaindeksering(ElasticIndexer elasticIndexer) {
+        log.info("Deltaindksering: setter opp deltaindeksering med 1 minutt delay");
+        Executors.newSingleThreadScheduledExecutor()
+                        .scheduleWithFixedDelay(elasticIndexer::deltaindeksering, 1, 1, MINUTES);
     }
 
     // Kjører hver dag kl 04:00
@@ -57,11 +68,4 @@ public class IndekseringScheduler {
         );
         maybeJob.ifPresent(job -> log.info("Startet nattlig elastic av krr med jobId {} på pod {}", job.getJobId(), job.getPodName()));
     }
-
-    // Kjører hvert femte minutt
-    @Scheduled(cron = "* 0/5 * * * *")
-    public void deltaindeksering() {
-        JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering);
-    }
-
 }
