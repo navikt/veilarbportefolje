@@ -1,14 +1,18 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.Hovedmal;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
 public class VedtakUtils {
 
-    public static Map<KafkaVedtakStatusEndring.Innsatsgruppe, Innsatsgruppe> mapInnsatsGruppeTilArenaInnsatsGruppe() {
+     static Map<KafkaVedtakStatusEndring.Innsatsgruppe, Innsatsgruppe> mapInnsatsGruppeTilArenaInnsatsGruppe() {
         //TODO HVA SKA GRADERT VARIG INNSATS MAPPES TIL ?
         return new HashMap<KafkaVedtakStatusEndring.Innsatsgruppe,Innsatsgruppe>() {{
             put(KafkaVedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
@@ -20,11 +24,30 @@ public class VedtakUtils {
 
     }
 
-    public static Map<KafkaVedtakStatusEndring.Hovedmal, Hovedmal> mapHovedMalTilArenaHovedmal() {
+     static Map<KafkaVedtakStatusEndring.Hovedmal, Hovedmal> mapHovedMalTilArenaHovedmal() {
         return new HashMap<KafkaVedtakStatusEndring.Hovedmal, Hovedmal>() {{
             put( KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID, Hovedmal.BEHOLDEA);
             put(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID, Hovedmal.SKAFFEA);
         }};
+    }
+
+     static Try<XContentBuilder> byggVedtakstotteNullVerdiJson() {
+        return Try.of(() ->
+                jsonBuilder()
+                        .startObject()
+                        .nullField("vedtak_status")
+                        .nullField("vedtak_status_endret")
+                        .endObject());
+    }
+
+
+    static Try<XContentBuilder> byggVedtakstotteJson(KafkaVedtakStatusEndring melding) {
+        return Try.of(() ->
+                jsonBuilder()
+                        .startObject()
+                        .field("vedtak_status", melding.getVedtakStatus().name())
+                        .field("vedtak_status_endret", melding.getStatusEndretTidspunkt().toString())
+                        .endObject());
     }
 
 }

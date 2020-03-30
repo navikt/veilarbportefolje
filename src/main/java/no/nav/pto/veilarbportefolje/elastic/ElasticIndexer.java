@@ -363,7 +363,7 @@ public class ElasticIndexer {
                 .id(tupleAvFnrOgJson._1.toString())
                 .doc(tupleAvFnrOgJson._2);
 
-        return Try.of(() -> opendistroIsEnabled() ? openDistroClient.update(updateRequest, DEFAULT) : deprecatedClient.update(updateRequest, DEFAULT));
+        return Try.of(() -> client.update(updateRequest, DEFAULT));
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
