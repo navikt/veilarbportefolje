@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import io.vavr.control.Try;
+import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -39,11 +40,9 @@ public class KafkaConsumerVedtakStotteTest {
 
         kafkaConsumer.assign(Collections.singletonList(topicPartition));
         kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long>(){{put (topicPartition, 0L);}});
-        UnleashService unleashService = mock(UnleashService.class);
+        UnleashService unleashService = new UnleashServiceMock(true);
         AktoerService aktoerService = mock(AktoerService.class);
         ElasticIndexer indexer = mock(ElasticIndexer.class);
-
-        when(unleashService.isEnabled(any(String.class))).thenReturn(true);
         when(aktoerService.hentFnrFraAktorId(any(AktoerId.class))).thenReturn(Try.success(Fnr.of("12345678911")));
 
 
