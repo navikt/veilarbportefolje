@@ -1,11 +1,8 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
+import no.nav.pto.veilarbportefolje.mock.AktoerServiceMock;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
@@ -22,9 +19,7 @@ import java.util.HashMap;
 import static no.nav.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class KafkaConsumerVedtakStotteTest {
     private MockConsumer<String, String> kafkaConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
@@ -40,12 +35,9 @@ public class KafkaConsumerVedtakStotteTest {
         kafkaConsumer.assign(Collections.singletonList(topicPartition));
         kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long>(){{put (topicPartition, 0L);}});
         UnleashService unleashService = new UnleashServiceMock(true);
-        AktoerService aktoerService = mock(AktoerService.class);
         ElasticIndexer indexer = mock(ElasticIndexer.class);
-        when(aktoerService.hentFnrFraAktorId(any(AktoerId.class))).thenReturn(Try.success(Fnr.of("12345678911")));
 
-
-        new KafkaConsumerVedtakStotte(new VedtakService(vedtakRepository, indexer, aktoerService), unleashService, kafkaConsumer);
+        new KafkaConsumerVedtakStotte(new VedtakService(vedtakRepository, indexer, new AktoerServiceMock()), unleashService, kafkaConsumer);
     }
 
 
