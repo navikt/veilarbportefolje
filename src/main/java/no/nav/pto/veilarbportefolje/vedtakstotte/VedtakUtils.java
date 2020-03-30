@@ -19,8 +19,8 @@ public class VedtakUtils {
         return new HashMap<KafkaVedtakStatusEndring.Innsatsgruppe,Innsatsgruppe>() {{
             put(KafkaVedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
             put(KafkaVedtakStatusEndring.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Innsatsgruppe.BFORM);
-            put(KafkaVedtakStatusEndring.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,   Innsatsgruppe.BATT);
-            put(KafkaVedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS,   Innsatsgruppe.IKVAL);
+            put(KafkaVedtakStatusEndring.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS, Innsatsgruppe.BATT);
+            put(KafkaVedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS, Innsatsgruppe.IKVAL);
             put(KafkaVedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
         }};
 
@@ -28,7 +28,7 @@ public class VedtakUtils {
 
      static Map<KafkaVedtakStatusEndring.Hovedmal, Hovedmal> mapHovedMalTilArenaHovedmal() {
         return new HashMap<KafkaVedtakStatusEndring.Hovedmal, Hovedmal>() {{
-            put( KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID, Hovedmal.BEHOLDEA);
+            put(KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID, Hovedmal.BEHOLDEA);
             put(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID, Hovedmal.SKAFFEA);
         }};
     }
