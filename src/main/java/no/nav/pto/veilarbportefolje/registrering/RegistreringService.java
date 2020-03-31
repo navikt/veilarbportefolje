@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -15,10 +16,10 @@ public class RegistreringService {
     }
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        ArbeidssokerRegistrertEvent hentBrukerRegistrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(kafkaRegistreringMelding.getAktorid()));
+        ArbeidssokerRegistrertEvent brukerRegistrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(kafkaRegistreringMelding.getAktorid()));
 
-        if(hentBrukerRegistrering != null) {
-            if (erNyereRegistering(hentBrukerRegistrering, kafkaRegistreringMelding)) {
+        if(harRegistreringsDato(brukerRegistrering)) {
+            if (erNyereRegistering(brukerRegistrering, kafkaRegistreringMelding)) {
                 registreringRepository.uppdaterBrukerRegistring(kafkaRegistreringMelding);
             }
             return;
@@ -31,6 +32,10 @@ public class RegistreringService {
         ZonedDateTime registreringOpprettetDato = LocalDateTime.parse(gjeldendeBrukerRegistrering.getRegistreringOpprettet(), DateTimeFormatter.ISO_ZONED_DATE_TIME).atZone(ZoneId.systemDefault());
         ZonedDateTime registeringsOpprettetDatoDatoFraKafka = LocalDateTime.parse(kafkaRegistreringMelding.getRegistreringOpprettet(), DateTimeFormatter.ISO_ZONED_DATE_TIME).atZone(ZoneId.systemDefault());
         return registeringsOpprettetDatoDatoFraKafka.isAfter(registreringOpprettetDato);
+    }
+
+    private boolean harRegistreringsDato (ArbeidssokerRegistrertEvent brukerRegistrering) {
+        return brukerRegistrering != null && brukerRegistrering.getRegistreringOpprettet() != null;
     }
 
 }

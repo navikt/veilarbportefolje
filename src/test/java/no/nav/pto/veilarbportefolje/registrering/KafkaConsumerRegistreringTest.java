@@ -64,6 +64,33 @@ public class KafkaConsumerRegistreringTest extends Thread {
 
         Thread.sleep(4000); //VENTER PÅ SERVICEN FÅR BEHANDLET BEGGE MELDINGERNE
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event2);
+        kafkaConsumer.close();
 
+    }
+
+    @Test
+    public void skaHanteraAttRegisteringOpprettetErNullIDatabasen() throws InterruptedException {
+
+        ArbeidssokerRegistrertEvent event1 = ArbeidssokerRegistrertEvent.newBuilder()
+                .setAktorid(AKTORID)
+                .setBrukersSituasjon("Situasjon")
+                .setRegistreringOpprettet(null)
+                .build();
+
+        registreringRepository.insertBrukerRegistrering(event1);
+
+        ArbeidssokerRegistrertEvent kafkaMelding = ArbeidssokerRegistrertEvent.newBuilder()
+                .setAktorid(AKTORID)
+                .setBrukersSituasjon("Permittert")
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .build();
+
+
+        kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
+                1L, AKTORID, kafkaMelding));
+
+        Thread.sleep(2000); //VENTER PÅ SERVICEN FÅR BEHANDLET MELDING
+        assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(kafkaMelding);
+        kafkaConsumer.close();
     }
 }

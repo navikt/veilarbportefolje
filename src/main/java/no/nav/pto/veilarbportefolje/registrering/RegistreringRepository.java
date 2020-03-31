@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +12,7 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 public class RegistreringRepository {
 
@@ -24,12 +24,16 @@ public class RegistreringRepository {
     }
 
     public void insertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        Timestamp timestamp = Timestamp.from((ZonedDateTime.parse(kafkaRegistreringMelding.getRegistreringOpprettet()).toInstant()));
-        SqlUtils.insert(db, BRUKER_REGISTRERING_TABELL)
-                .value("AKTOERID", kafkaRegistreringMelding.getAktorid())
-                .value("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
-                .value("REGISTRERING_OPPRETTET", timestamp)
-                .value("SIST_OPPDATERT", new Timestamp(System.currentTimeMillis()))
+        Timestamp timestamp = Optional.ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
+                .map(registreringOpprettet ->Timestamp.from((ZonedDateTime.parse(registreringOpprettet).toInstant())))
+                .orElse(null);
+
+        SqlUtils.upsert(db, BRUKER_REGISTRERING_TABELL)
+                .set("AKTOERID", kafkaRegistreringMelding.getAktorid())
+                .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
+                .set("SIST_OPPDATERT", new Timestamp(System.currentTimeMillis()))
+                .set("REGISTRERING_OPPRETTET", timestamp)
+                .where(WhereClause.equals("AKTOERID", kafkaRegistreringMelding.getAktorid()))
                 .execute();
     }
 
@@ -58,11 +62,15 @@ public class RegistreringRepository {
     }
 
     private static ArbeidssokerRegistrertEvent mapTilArbeidssokerRegistrertEvent (ResultSet rs) throws SQLException {
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(rs.getTimestamp("REGISTRERING_OPPRETTET").toLocalDateTime(), ZoneId.systemDefault());
+        String registreringOpprettet = Optional.ofNullable(rs.getTimestamp("REGISTRERING_OPPRETTET"))
+                .map(registreringDato -> ZonedDateTime.of(registreringDato.toLocalDateTime(), ZoneId.systemDefault()))
+                .map(zonedDateRegistreringDato -> zonedDateRegistreringDato.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+                .orElse(null);
+
         return ArbeidssokerRegistrertEvent.newBuilder()
                 .setBrukersSituasjon(rs.getString("BRUKERS_SITUASJON"))
                 .setAktorid(rs.getString("AKTOERID"))
-                .setRegistreringOpprettet(zonedDateTime.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(registreringOpprettet)
                 .build();
     }
 }
