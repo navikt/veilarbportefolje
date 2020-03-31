@@ -20,7 +20,7 @@ public class RegistreringService {
 
         if(harRegistreringsDato(brukerRegistrering)) {
             if (erNyereRegistering(brukerRegistrering, kafkaRegistreringMelding)) {
-                registreringRepository.uppdaterBrukerRegistring(kafkaRegistreringMelding);
+                registreringRepository.oppdaterBrukerRegistring(kafkaRegistreringMelding);
             }
             return;
         }

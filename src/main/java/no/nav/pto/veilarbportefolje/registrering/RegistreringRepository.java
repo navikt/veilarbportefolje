@@ -31,18 +31,18 @@ public class RegistreringRepository {
         SqlUtils.upsert(db, BRUKER_REGISTRERING_TABELL)
                 .set("AKTOERID", kafkaRegistreringMelding.getAktorid())
                 .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
-                .set("SIST_OPPDATERT", new Timestamp(System.currentTimeMillis()))
+                .set("KAFKA_MELDING_MOTTATT", new Timestamp(System.currentTimeMillis()))
                 .set("REGISTRERING_OPPRETTET", timestamp)
                 .where(WhereClause.equals("AKTOERID", kafkaRegistreringMelding.getAktorid()))
                 .execute();
     }
 
-    public void uppdaterBrukerRegistring(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
+    public void oppdaterBrukerRegistring(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         Timestamp timestamp = Timestamp.from((ZonedDateTime.parse(kafkaRegistreringMelding.getRegistreringOpprettet()).toInstant()));
         SqlUtils.update(db, BRUKER_REGISTRERING_TABELL)
                 .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .set("REGISTRERING_OPPRETTET", timestamp)
-                .set("SIST_OPPDATERT", new Timestamp(System.currentTimeMillis()))
+                .set("KAFKA_MELDING_MOTTATT", new Timestamp(System.currentTimeMillis()))
                 .whereEquals("AKTOERID", kafkaRegistreringMelding.getAktorid())
                 .execute();
     }
