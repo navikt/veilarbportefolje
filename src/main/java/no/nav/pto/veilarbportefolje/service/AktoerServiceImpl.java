@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,6 +36,9 @@ public class AktoerServiceImpl implements AktoerService {
     @Inject
     private Transactor transactor;
 
+    @Inject
+    private ElasticIndexer elasticIndexer;
+
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM OPPFOLGING_DATA "
             + "WHERE OPPFOLGING = 'J' "
@@ -50,7 +54,13 @@ public class AktoerServiceImpl implements AktoerService {
     void mapAktorId() {
         List<String> aktoerIder = db.query(IKKE_MAPPEDE_AKTORIDER, (rs, rowNum) -> rs.getString("AKTOERID"));
         log.info("Aktørider som skal mappes " + aktoerIder);
-        aktoerIder.forEach((id) -> hentPersonidFraAktoerid(AktoerId.of(id)));
+
+        aktoerIder.forEach((id) -> {
+            AktoerId aktoerId = AktoerId.of(id);
+            hentPersonidFraAktoerid(aktoerId);
+            elasticIndexer.indekserAsynkront(aktoerId);
+        });
+
         log.info("Ferdig med mapping av [" + aktoerIder.size() + "] aktørider");
     }
 
