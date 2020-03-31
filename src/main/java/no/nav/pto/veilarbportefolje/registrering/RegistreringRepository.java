@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,6 +29,7 @@ public class RegistreringRepository {
                 .value("AKTOERID", kafkaRegistreringMelding.getAktorid())
                 .value("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .value("REGISTRERING_OPPRETTET", timestamp)
+                .value("SIST_OPPDATERT", new Timestamp(System.currentTimeMillis()))
                 .execute();
     }
 
@@ -36,6 +38,7 @@ public class RegistreringRepository {
         SqlUtils.update(db, BRUKER_REGISTRERING_TABELL)
                 .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .set("REGISTRERING_OPPRETTET", timestamp)
+                .set("SIST_OPPDATERT", new Timestamp(System.currentTimeMillis()))
                 .whereEquals("AKTOERID", kafkaRegistreringMelding.getAktorid())
                 .execute();
     }
