@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.leaderelection.LeaderElection;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -28,17 +29,17 @@ public class MetricsReporter {
         this.elasticIndexer = elasticIndexer;
 
         Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
-        Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", this::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
-        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", this::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
         Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
+        Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", MetricsReporter::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
+        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", MetricsReporter::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
     }
 
-    private Number sjekkArenaYtelserSistOppdatert() {
+    public static long sjekkArenaYtelserSistOppdatert() {
         Long millis = getLastModifiedTimeInMillis(LOPENDEYTELSER_SFTP).getOrElseThrow(() -> new RuntimeException());
         return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }
 
-    private Number sjekkArenaAktiviteterSistOppdatert() {
+    public static long sjekkArenaAktiviteterSistOppdatert() {
         Long millis = getLastModifiedTimeInMillis(AKTIVITETER_SFTP).getOrElseThrow(() -> new RuntimeException());
         return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }

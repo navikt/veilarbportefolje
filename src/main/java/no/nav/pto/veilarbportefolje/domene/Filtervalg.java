@@ -43,6 +43,7 @@ public class Filtervalg {
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
                 !hovedmal.isEmpty() ||
+                !registreringstype.isEmpty() ||
                  harManuellBrukerStatus() ||
                  harNavnEllerFnrQuery();
     }

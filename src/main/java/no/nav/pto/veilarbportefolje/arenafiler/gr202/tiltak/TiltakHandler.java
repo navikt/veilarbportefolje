@@ -55,7 +55,7 @@ public class TiltakHandler {
     public void startOppdateringAvTiltakIDatabasen() {
         log.info("Indeksering: Starter oppdatering av tiltak fra Arena...");
 
-        FilmottakFileUtils.hentFil(AKTIVITETER_SFTP)
+        FilmottakFileUtils.hentTiltaksFil()
                 .onFailure(log(log, "Kunne ikke hente tiltaksfil"))
                 .flatMap(FilmottakFileUtils::unmarshallTiltakFil)
                 .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen"))

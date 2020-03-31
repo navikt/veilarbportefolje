@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.metrikker;
 import no.nav.metrics.MetricsClient;
 import no.nav.metrics.MetricsFactory;
 import no.nav.pto.veilarbportefolje.elastic.ElasticUtils;
+import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 
 import static no.nav.metrics.MetricsConfig.resolveNaisConfig;
 
@@ -18,4 +19,5 @@ public class FunksjonelleMetrikker {
                 .addFieldToReport("antall_brukere", ElasticUtils.getCount())
                 .report();
     }
+
 }
