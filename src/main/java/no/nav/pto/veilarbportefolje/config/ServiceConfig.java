@@ -1,18 +1,13 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
+import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
-import no.nav.pto.veilarbportefolje.service.*;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
