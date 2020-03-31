@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,7 +18,6 @@ public class RegistreringRepositoryTest {
 
     private RegistreringRepository registreringRepository;
     private static String AKTORID = "123456789";
-    private static String AKTORID_1 = "123456789_1";
 
     @Before
     public void setup() {
@@ -57,7 +55,7 @@ public class RegistreringRepositoryTest {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringRepository.uppdaterBrukerRegistring(event2);
+        registreringRepository.oppdaterBrukerRegistring(event2);
 
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event2);
     }
