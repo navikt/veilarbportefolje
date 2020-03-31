@@ -4,6 +4,8 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -11,6 +13,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.ws.rs.client.Client;
@@ -24,6 +27,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 
 
 @Configuration
+@Import(ElasticConfig.class)
 public class RegistreringConfig {
 
     static final String KAFKA_REGISTRERING_CONSUMER_TOPIC = "aapen-arbeid-arbeidssoker-registrert-" + requireEnvironmentName();
@@ -48,8 +52,8 @@ public class RegistreringConfig {
     }
 
     @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository) {
-        return new RegistreringService(registreringRepository);
+    public RegistreringService registreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer) {
+        return new RegistreringService(registreringRepository, elasticIndexer);
     }
 
     @Bean
