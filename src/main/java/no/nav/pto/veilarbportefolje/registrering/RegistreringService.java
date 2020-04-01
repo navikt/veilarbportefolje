@@ -7,24 +7,31 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 
 public class RegistreringService {
     private RegistreringRepository registreringRepository;
+    private ElasticIndexer elasticIndexer;
 
-    public RegistreringService(RegistreringRepository registreringRepository) {
+    public RegistreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer) {
         this.registreringRepository = registreringRepository;
+        this.elasticIndexer = elasticIndexer;
     }
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         ArbeidssokerRegistrertEvent brukerRegistrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(kafkaRegistreringMelding.getAktorid()));
+        AktoerId aktoerId = AktoerId.of(kafkaRegistreringMelding.getAktorid());
 
         if(harRegistreringsDato(brukerRegistrering)) {
             if (erNyereRegistering(brukerRegistrering, kafkaRegistreringMelding)) {
                 registreringRepository.oppdaterBrukerRegistring(kafkaRegistreringMelding);
+                elasticIndexer.indekserAsynkront(aktoerId);
             }
             return;
         }
         registreringRepository.insertBrukerRegistrering(kafkaRegistreringMelding);
+        elasticIndexer.indekserAsynkront(aktoerId);
 
     }
 

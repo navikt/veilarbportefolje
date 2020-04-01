@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class KafkaConsumerRegistreringTest extends Thread {
 
@@ -28,6 +30,7 @@ public class KafkaConsumerRegistreringTest extends Thread {
     private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate(setupInMemoryDatabase()));
     private static String AKTORID = "123456789";
     private TopicPartition topicPartition = new TopicPartition("test-topic", 0);
+    private ElasticIndexer elasticMock = mock(ElasticIndexer.class);
 
     @Before
     public void setup(){
@@ -37,7 +40,7 @@ public class KafkaConsumerRegistreringTest extends Thread {
         kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long> (){{put (topicPartition, 0L);}});
 
         UnleashServiceMock unleashMock = new UnleashServiceMock(true);
-        new KafkaConsumerRegistrering(new RegistreringService(registreringRepository), kafkaConsumer, unleashMock);
+        new KafkaConsumerRegistrering(new RegistreringService(registreringRepository, elasticMock), kafkaConsumer, unleashMock);
     }
 
 
