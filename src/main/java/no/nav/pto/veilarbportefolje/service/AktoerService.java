@@ -12,5 +12,6 @@ import java.util.Optional;
 public interface AktoerService {
     Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerid);
     Try<AktoerId> hentAktoeridFraFnr(Fnr fnr);
+    Try<Fnr> hentFnrFraAktorId(AktoerId aktoerId);
     Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs);
 }

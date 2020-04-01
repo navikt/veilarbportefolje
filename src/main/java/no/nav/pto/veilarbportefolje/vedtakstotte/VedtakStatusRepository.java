@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 public class VedtakStatusRepository {
 
@@ -31,14 +32,14 @@ public class VedtakStatusRepository {
     }
 
     public void upsertVedtak (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
-        KafkaVedtakStatusEndring.Hovedmal hovedmal = kafkaVedtakStatusEndring.getHovedmal();
-        KafkaVedtakStatusEndring.Innsatsgruppe innsatsgruppe =  kafkaVedtakStatusEndring.getInnsatsgruppe();
+        Optional<KafkaVedtakStatusEndring.Hovedmal> hovedmal = Optional.ofNullable(kafkaVedtakStatusEndring.getHovedmal());
+        Optional<KafkaVedtakStatusEndring.Innsatsgruppe> innsatsgruppe =  Optional.ofNullable(kafkaVedtakStatusEndring.getInnsatsgruppe());
 
         SqlUtils.upsert(db, "VEDTAKSTATUS_DATA")
                 .set("AKTOERID", kafkaVedtakStatusEndring.getAktorId())
                 .set("VEDTAKSTATUS", kafkaVedtakStatusEndring.getVedtakStatus().name())
-                .set("INNSATSGRUPPE", innsatsgruppe!= null ? innsatsgruppe.name(): null)
-                .set("HOVEDMAL", hovedmal!=null ? hovedmal.name(): null)
+                .set("INNSATSGRUPPE", innsatsgruppe.map(Enum::name).orElse(null))
+                .set("HOVEDMAL", hovedmal.map(Enum::name).orElse(null))
                 .set("VEDTAK_STATUS_ENDRET_TIDSPUNKT", Timestamp.valueOf(kafkaVedtakStatusEndring.getStatusEndretTidspunkt()))
                 .set("VEDTAKID", kafkaVedtakStatusEndring.getVedtakId())
                 .where(WhereClause.equals("VEDTAKID", kafkaVedtakStatusEndring.getVedtakId()))
@@ -54,12 +55,12 @@ public class VedtakStatusRepository {
 
     @SneakyThrows
     private static KafkaVedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs){
-        String hovedmal =  rs.getString("HOVEDMAL");
-        String innsatsgruppe =  rs.getString("INNSATSGRUPPE");
+        Optional<String> hovedmal = Optional.ofNullable(rs.getString("HOVEDMAL"));
+        Optional<String> innsatsgruppe =  Optional.ofNullable(rs.getString("INNSATSGRUPPE"));
         return new KafkaVedtakStatusEndring()
                 .setVedtakId(rs.getInt("VEDTAKID"))
-                .setHovedmal(hovedmal!= null ? KafkaVedtakStatusEndring.Hovedmal.valueOf(hovedmal): null)
-                .setInnsatsgruppe(innsatsgruppe!= null ? KafkaVedtakStatusEndring.Innsatsgruppe.valueOf(rs.getString("INNSATSGRUPPE")): null)
+                .setHovedmal(hovedmal.map(KafkaVedtakStatusEndring.Hovedmal::valueOf).orElse(null))
+                .setInnsatsgruppe(innsatsgruppe.map(KafkaVedtakStatusEndring.Innsatsgruppe::valueOf).orElse( null))
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.valueOf(rs.getString("VEDTAKSTATUS")))
                 .setStatusEndretTidspunkt(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT").toLocalDateTime())
                 .setAktorId(rs.getString("AKTOERID"));
