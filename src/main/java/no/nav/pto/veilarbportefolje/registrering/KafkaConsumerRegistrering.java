@@ -42,8 +42,8 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
                 for (ConsumerRecord<String, ArbeidssokerRegistrertEvent> record : records) {
                     log.info("Behandler melding for på topic: " + record.topic());
                     registreringService.behandleKafkaMelding(record.value());
-                    kafkaConsumer.commitSync();
                 }
+                kafkaConsumer.commitSync();
             } catch (Exception e) {
                 this.e = e;
                 this.lastThrownExceptionTime = System.currentTimeMillis();
