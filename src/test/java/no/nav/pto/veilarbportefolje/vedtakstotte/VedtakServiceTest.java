@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.mock.AktoerServiceMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,8 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static no.nav.json.JsonUtils.toJson;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -21,7 +20,7 @@ public class VedtakServiceTest {
     private static String AKTORID = "123456789";
     private static long VEDTAKID = 1;
 
-    private static  KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
+    private static KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
             .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.UTKAST_OPPRETTET)
             .setStatusEndretTidspunkt(LocalDateTime.now())
             .setAktorId(AKTORID)
@@ -33,8 +32,7 @@ public class VedtakServiceTest {
     public void setup (){
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
-        System.setProperty("APP_ENVIRONMENT_NAME", "test!!!");
-        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class));
+        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class), new AktoerServiceMock());
 
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
 
@@ -42,7 +40,7 @@ public class VedtakServiceTest {
 
     @Test
     public void skallSetteInUtkast()  {
-        vedtakService.behandleKafkaMelding(toJson(kafkaVedtakStatusEndring), VedtakService.KAFKA_VEDTAK_CONSUMER_TOPIC );
+        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(kafkaVedtakStatusEndring);
         assertThat(endringer.size()).isEqualTo(1);
@@ -50,7 +48,7 @@ public class VedtakServiceTest {
 
     @Test
     public void skallOppdatereUtkast()  {
-        vedtakService.behandleKafkaMelding(toJson(kafkaVedtakStatusEndring), VedtakService.KAFKA_VEDTAK_CONSUMER_TOPIC );
+        vedtakService.behandleMelding(kafkaVedtakStatusEndring);
         LocalDateTime time = LocalDateTime.now();
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
                 .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BESLUTTER)
@@ -59,7 +57,7 @@ public class VedtakServiceTest {
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID)
                 .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS);
-        vedtakService.behandleKafkaMelding(toJson(kafkaVedtakSendtTilBeslutter), VedtakService.KAFKA_VEDTAK_CONSUMER_TOPIC );
+        vedtakService.behandleMelding(kafkaVedtakSendtTilBeslutter);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBeslutter);
@@ -84,7 +82,8 @@ public class VedtakServiceTest {
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
                 .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS);
 
-        vedtakService.behandleKafkaMelding(toJson(kafkaVedtakSendtTilBruker), VedtakService.KAFKA_VEDTAK_CONSUMER_TOPIC);
+
+        vedtakService.behandleMelding(kafkaVedtakSendtTilBruker);
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBruker);

@@ -346,9 +346,11 @@ public class ElasticQueryBuilder {
 
     static BoolQueryBuilder byggIkkePermittertFilter() {
         return boolQuery()
-                .mustNot(matchQuery("brukers_situasjon", "ER_PERMITTERT"))
-                .mustNot(rangeQuery("oppfolging_startdato")
-                        .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())));
+                .must(boolQuery()
+                        .should(boolQuery().mustNot(matchQuery("brukers_situasjon", "ER_PERMITTERT")))
+                        .should(boolQuery().mustNot(rangeQuery("oppfolging_startdato")
+                                .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())))));
+
     }
 
     static BoolQueryBuilder byggPermittertFilter() {

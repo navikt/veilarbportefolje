@@ -1,10 +1,13 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -26,8 +29,11 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -203,8 +209,12 @@ public class ElasticIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
 
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+
+        log.info("Deltaindeksering: hentet ut {} oppdaterte brukere {}", brukere.size(), aktoerIder);
+
         if (brukere.isEmpty()) {
-            log.info("Deltaindeksering: Fullført (Ingen oppdaterte brukere ble funnet)");
+            log.info("Deltaindeksering: Ingen oppdaterte brukere ble funnet. Avslutter.");
             return;
         }
 
@@ -217,24 +227,23 @@ public class ElasticIndexer {
                     .collect(Collectors.toList());
 
             if (!brukereFortsattUnderOppfolging.isEmpty()) {
+                log.info("Deltaindeksering: Legger til aktiviteter");
                 leggTilAktiviteter(brukereFortsattUnderOppfolging);
+                log.info("Deltaindeksering: Legger til tiltak");
                 leggTilTiltak(brukereFortsattUnderOppfolging);
+                log.info("Deltaindeksering: Skriver til indeks");
                 skrivTilIndeks(getAlias(), brukereFortsattUnderOppfolging);
             }
 
+            log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under oppfolging");
             slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
-
         });
 
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
-        List<String> personIder = brukere.stream().map(OppfolgingsBruker::getPerson_id).collect(Collectors.toList());
-        log.info("DELTAINDEKSERING: Indeks oppdatert for {} brukere med aktoerId {} og personId {})", brukere.size(), aktoerIder, personIder);
+        log.info("Deltaindeksering: Indeks oppdatert for {} brukere {}", brukere.size(), aktoerIder);
 
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
         int antall = brukere.size();
-
-
         Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
         event.addFieldToReport("es.antall.oppdateringer", antall);
         event.report();
@@ -265,11 +274,9 @@ public class ElasticIndexer {
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
         } else {
-            String message = String.format("Feil ved sletting av bruker med aktoerId %s og personId %s i indeks %s", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
-            throw new RuntimeException(message);
+            log.error("Feil ved sletting av bruker med aktoerId {}", bruker.getAktoer_id());
         }
     }
-
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
 
@@ -369,6 +376,16 @@ public class ElasticIndexer {
         }
 
         log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
+    }
+
+    public Try<UpdateResponse> oppdaterBruker(Tuple2<Fnr, XContentBuilder> tupleAvFnrOgJson) {
+        UpdateRequest updateRequest = new UpdateRequest()
+                .index(getAlias())
+                .type("_doc")
+                .id(tupleAvFnrOgJson._1.toString())
+                .doc(tupleAvFnrOgJson._2);
+
+        return Try.of(() -> client.update(updateRequest, DEFAULT));
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {

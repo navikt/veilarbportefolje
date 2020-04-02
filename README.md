@@ -64,6 +64,8 @@ Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppd
 select * from dba_scheduler_jobs;
 ```
 
+
+
 ## URL-er for manuell oppdatering av søkeindeks
 
 | Endepunkt                                             | Beskrivelse                                                      |      

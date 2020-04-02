@@ -55,6 +55,11 @@ public class AktoerServiceMock implements AktoerService {
     }
 
     @Override
+    public Try<Fnr> hentFnrFraAktorId(AktoerId aktoerId) {
+        return Try.success(FNR).map(Fnr::of);
+    }
+
+    @Override
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
         return null;
     }
