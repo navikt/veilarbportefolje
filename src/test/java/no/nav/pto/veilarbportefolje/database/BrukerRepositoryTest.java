@@ -71,23 +71,6 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skal_returnere_riktig_antall_brukere_under_oppfolging() {
-        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging(0, ANTALL_LINJER_I_TESTDATA);
-        assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
-    }
-
-    @Test
-    public void skal_hente_riktig_antall_fnr() {
-        List<String> fnr = brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10);
-        assertThat(fnr.size()).isEqualTo(10);
-    }
-
-    @Test
-    public void skal_ikke_tryne_om_man_proever_aa_hente_for_mange_fnr() {
-        brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10000);
-    }
-
-    @Test
     public void skal_returnere_riktig_antall_brukere() {
         int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
         assertThat(antallBrukere).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);

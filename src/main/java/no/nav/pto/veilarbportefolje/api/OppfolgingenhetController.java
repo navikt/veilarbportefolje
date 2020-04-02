@@ -54,7 +54,7 @@ public class OppfolgingenhetController {
         validatePageSize(pageSize);
         validatePageNumber(pageNumber, totalNumberOfPages);
 
-        List<OppfolgingEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentBrukereUnderOppfolging(pageNumber, pageSize);
+        List<OppfolgingEnhetDTO> brukereMedOppfolgingsEnhet = brukerRepository.hentEnhetForOppfolgingsBrukere(pageNumber, pageSize);
 
         brukereMedOppfolgingsEnhet.forEach(bruker -> {
             if (bruker.getAktorId() == null) {

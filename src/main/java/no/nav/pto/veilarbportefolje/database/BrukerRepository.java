@@ -5,7 +5,6 @@ import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
@@ -30,7 +29,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.utils.CollectionUtils.mapOf;
 import static no.nav.pto.veilarbportefolje.database.Tabell.*;
 import static no.nav.pto.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
@@ -64,86 +62,43 @@ public class BrukerRepository {
         }
     }
 
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
+    public List<OppfolgingsBruker> hentOppfolgingsBrukere() {
         db.setFetchSize(10_000);
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
-        return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
-                .column("*")
-                .executeToList()
-                .stream()
-                .filter(Objects::nonNull)
-                .collect(toList());
+        return SqlUtils.select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
+                       .column("*")
+                       .executeToList()
+                       .stream()
+                       .filter(Objects::nonNull)
+                       .collect(toList());
     }
 
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging(int fromExclusive, int toInclusive) {
-        int fetchSize = 1000;
-        db.setFetchSize(fetchSize);
+    public List<OppfolgingsBruker> hentOppfolgingsBrukere(int pageNumber, int rowCount) {
+        int rowNum = pageNumber * rowCount;
+        int offset = rowNum - rowCount;
 
-        log.info("Henter ut fra {} til {}", fromExclusive, toInclusive);
-        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
-
-        log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
-
-        String sql = "SELECT * FROM"
-                + " VW_PORTEFOLJE_INFO"
-                + " WHERE FODSELSNR IN (:fnr)";
-
-        List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
-                sql,
-                mapOf(Pair.of("fnr", fnr)),
-                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
-        );
-
-        log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
-
-        return brukere.stream().filter(Objects::nonNull).collect(toList());
+        return SqlUtils.select(db, VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()))
+                       .column("*")
+                       .where(brukerErUnderOppfolging())
+                       .limit(offset, rowCount)
+                       .executeToList();
     }
 
-    public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
-        String sql = "SELECT FODSELSNR "
-                + "FROM (SELECT "
-                + "BRUKER.FODSELSNR, "
-                + "rownum rn "
-                + "FROM ( "
-                + "SELECT * "
-                + "FROM OPPFOLGINGSBRUKER "
-                + "ORDER BY FODSELSNR "
-                + ") "
-                + "BRUKER "
-                + "WHERE rownum <= :to "
-                + ")"
-                + "WHERE rn > :from ";
-
-        Map<String, Integer> parameters = mapOf(
-                Pair.of("from", fromExclusive),
-                Pair.of("to", toInclusive)
-        );
-
-        return namedParameterJdbcTemplate.queryForList(sql, parameters, String.class);
-    }
-
-    public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
+    public List<OppfolgingEnhetDTO> hentEnhetForOppfolgingsBrukere(int pageNumber, int pageSize) {
         int rowNum = pageNumber * pageSize;
         int offset = rowNum - pageSize;
 
         log.info("rowNum: {}, offset: {}, pageSize: {}", rowNum, offset, pageSize);
 
         return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
-                .column("AKTOERID")
-                .column("FODSELSNR")
-                .column("PERSON_ID")
-                .column("NAV_KONTOR")
-                .where(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS")
-                        .or(WhereClause.equals("OPPFOLGING", "J"))
-                        .or(
-                                WhereClause.equals("FORMIDLINGSGRUPPEKODE", "IARBS")
-                                        .and(in("KVALIFISERINGSGRUPPEKODE", asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI")))
-                        )
-                )
-                .limit(offset, pageSize)
-                .executeToList();
+                       .column("AKTOERID")
+                       .column("FODSELSNR")
+                       .column("PERSON_ID")
+                       .column("NAV_KONTOR")
+                       .where(brukerErUnderOppfolging())
+                       .limit(offset, pageSize)
+                       .executeToList();
     }
 
     @SneakyThrows
@@ -205,14 +160,13 @@ public class BrukerRepository {
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
-        return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
-                .column("*")
-                .where(in("PERSON_ID", ids))
-                .executeToList()
-                .stream()
-                .filter(Objects::nonNull)
-                .collect(toList());
+        return SqlUtils.select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
+                       .column("*")
+                       .where(in("PERSON_ID", ids))
+                       .executeToList()
+                       .stream()
+                       .filter(Objects::nonNull)
+                       .collect(toList());
     }
 
     public boolean erUnderOppfolging(ResultSet rs) {
@@ -498,4 +452,17 @@ public class BrukerRepository {
     private boolean vedtakstotteFeatureErPa() {
         return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
     }
+
+    private WhereClause brukerErUnderOppfolging() {
+        return WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS")
+                          .or(WhereClause.equals("OPPFOLGING", "J"))
+                          .or(
+                                  WhereClause
+                                          .equals("FORMIDLINGSGRUPPEKODE", "IARBS")
+                                          .and(in("KVALIFISERINGSGRUPPEKODE",
+                                                  asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI"))
+                                              )
+                             );
+    }
+
 }

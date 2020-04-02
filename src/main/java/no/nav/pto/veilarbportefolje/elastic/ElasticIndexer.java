@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
-import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -115,7 +114,7 @@ public class ElasticIndexer {
         log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
 
 
-        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging();
+        List<OppfolgingsBruker> brukere = brukerRepository.hentOppfolgingsBrukere();
         log.info("Hovedindeksering: Hentet {} oppfølgingsbrukere fra databasen", brukere.size());
 
         log.info("Hovedindeksering: Batcher opp uthenting av aktiviteter og tiltak samt skriveoperasjon til indeks (BATCH_SIZE={})", BATCH_SIZE);
@@ -153,16 +152,16 @@ public class ElasticIndexer {
         log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
 
         int currentPage = 0;
-        for (int fra = 0; fra < antallBrukere; fra = utregnTil(fra, BATCH_SIZE)) {
+        for (int fra = 0; fra < antallBrukere; fra = til(fra, BATCH_SIZE)) {
 
-            int til = utregnTil(fra, BATCH_SIZE);
+            int til = til(fra, BATCH_SIZE);
 
             int numberOfPages = antallBrukere / BATCH_SIZE - 1;
             currentPage = currentPage + 1;
 
             log.info("{}/{} Indekserer brukere fra {} til {} av {}", currentPage, numberOfPages, fra, til, antallBrukere);
 
-            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
+            List<OppfolgingsBruker> brukere = brukerRepository.hentOppfolgingsBrukere(fra, til);
             log.info("Hentet ut {} brukere fra databasen", brukere.size());
 
             leggTilAktiviteter(brukere);
@@ -185,7 +184,7 @@ public class ElasticIndexer {
         log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
     }
 
-    static int utregnTil(int from, int batchSize) {
+    static int til(int from, int batchSize) {
         if (from < 0 || batchSize < 0) {
             throw new IllegalArgumentException("Negative numbers are not allowed");
         }
