@@ -25,12 +25,12 @@ public class RegistreringService {
         if(harRegistreringsDato(brukerRegistrering)) {
             if (erNyereRegistering(brukerRegistrering, kafkaRegistreringMelding)) {
                 registreringRepository.oppdaterBrukerRegistring(kafkaRegistreringMelding);
-                elasticIndexer.indekserAsynkront(aktoerId);
+                //elasticIndexer.indekserAsynkront(aktoerId);
             }
             return;
         }
         registreringRepository.insertBrukerRegistrering(kafkaRegistreringMelding);
-        elasticIndexer.indekserAsynkront(aktoerId);
+        //elasticIndexer.indekserAsynkront(aktoerId);
 
     }
 
