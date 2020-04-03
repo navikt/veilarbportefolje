@@ -38,7 +38,7 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
 
         while (this.registreringFeature()) {
             try {
-                ConsumerRecords<String, ArbeidssokerRegistrertEvent> records = kafkaConsumer.poll(Duration.ofSeconds(10L));
+                ConsumerRecords<String, ArbeidssokerRegistrertEvent> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, ArbeidssokerRegistrertEvent> record : records) {
                     log.info("Behandler melding for på topic: " + record.topic());
                     registreringService.behandleKafkaMelding(record.value());

@@ -26,8 +26,9 @@ public class KafkaProperties {
         props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
         props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
         props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(MAX_POLL_INTERVAL_MS_CONFIG, 20000);
-        props.put(MAX_POLL_RECORDS_CONFIG, 10);
+        props.put(MAX_POLL_INTERVAL_MS_CONFIG, 10000);
+        props.put(MAX_POLL_RECORDS_CONFIG, 5);
+        props.put(SESSION_TIMEOUT_MS_CONFIG, 20000);
         props.put(ENABLE_AUTO_COMMIT_CONFIG, true);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
