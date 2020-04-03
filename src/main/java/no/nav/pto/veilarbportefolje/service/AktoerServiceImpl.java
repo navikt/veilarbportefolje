@@ -71,7 +71,7 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     private PersonId getPersonIdFromFnr(AktoerId aktoerId) {
-        Fnr fnr = hentFnrViaSoap(aktoerId).get();
+        Fnr fnr = hentFnrFraAktorId(aktoerId).get();
         PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
         AktoerId nyAktorIdForPersonId = hentAktoeridFraFnr(fnr).get();
 
@@ -91,7 +91,7 @@ public class AktoerServiceImpl implements AktoerService {
         return typeMap;
     }
 
-    private Try<Fnr> hentFnrViaSoap(AktoerId aktoerId) {
+    public Try<Fnr> hentFnrFraAktorId(AktoerId aktoerId) {
         return Try.of(() -> aktorService.getFnr(aktoerId.toString()).orElseThrow(IllegalStateException::new)).map(Fnr::of);
     }
 
