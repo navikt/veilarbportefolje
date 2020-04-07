@@ -65,9 +65,8 @@ public class KafkaConsumerRegistreringTest extends Thread {
         kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
                 1L, AKTORID, event1));
 
-        Thread.sleep(4000); //VENTER PÅ SERVICEN FÅR BEHANDLET BEGGE MELDINGERNE
+        Thread.sleep(2000); //VENTER PÅ SERVICEN FÅR BEHANDLET BEGGE MELDINGERNE
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event2);
-        kafkaConsumer.close();
 
     }
 
@@ -92,8 +91,7 @@ public class KafkaConsumerRegistreringTest extends Thread {
         kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
                 1L, AKTORID, kafkaMelding));
 
-        Thread.sleep(2000); //VENTER PÅ SERVICEN FÅR BEHANDLET MELDING
+        Thread.sleep(1000); //VENTER PÅ SERVICEN FÅR BEHANDLET MELDING
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(kafkaMelding);
-        kafkaConsumer.close();
     }
 }
