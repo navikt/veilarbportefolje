@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.context.annotation.Bean;
@@ -33,10 +32,5 @@ public class VedtakConfig {
     @Bean
     public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
         return new VedtakService(vedtakStatusRepository, elasticIndexer, aktoerService);
-    }
-
-    @Bean
-    public KafkaConsumerVedtakStotte kafkaConsumerVedtakStotte(VedtakService vedtakService, UnleashService unleashService, Consumer<String, String> kafkaVedtakStotteConsumer) {
-        return new KafkaConsumerVedtakStotte(vedtakService, unleashService, kafkaVedtakStotteConsumer);
     }
 }

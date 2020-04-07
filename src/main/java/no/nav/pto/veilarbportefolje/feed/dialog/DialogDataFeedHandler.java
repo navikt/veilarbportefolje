@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,6 @@ import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.dialog.DialogServiceConsumer.DIALOG_KAFKA_TOGGLE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -57,7 +57,7 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     @Override
     @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
-        if (!unleashService.isEnabled(DIALOG_KAFKA_TOGGLE)) {
+        if (!unleashService.isEnabled("veilarbdialog.kafka")) {
             log.info("DialogFeedDebug data: {}", data);
             try {
                 data.forEach(info -> {

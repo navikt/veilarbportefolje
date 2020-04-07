@@ -3,8 +3,11 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
+import no.nav.pto.veilarbportefolje.dialog.DialogService;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
+import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
@@ -40,4 +43,8 @@ public class ServiceConfig {
         return new KrrService(krrRepository, dkif);
     }
 
+    @Bean
+    public DialogService dialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer) {
+        return new DialogService(dialogFeedRepository, elasticIndexer);
+    }
 }

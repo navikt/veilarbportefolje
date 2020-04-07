@@ -31,22 +31,22 @@ public class VedtakStatusRepository {
                 .execute();
     }
 
-    public void upsertVedtak (KafkaVedtakStatusEndring kafkaVedtakStatusEndring) {
-        Optional<KafkaVedtakStatusEndring.Hovedmal> hovedmal = Optional.ofNullable(kafkaVedtakStatusEndring.getHovedmal());
-        Optional<KafkaVedtakStatusEndring.Innsatsgruppe> innsatsgruppe =  Optional.ofNullable(kafkaVedtakStatusEndring.getInnsatsgruppe());
+    public void upsertVedtak (VedtakStatusEndring vedtakStatusEndring) {
+        Optional<VedtakStatusEndring.Hovedmal> hovedmal = Optional.ofNullable(vedtakStatusEndring.getHovedmal());
+        Optional<VedtakStatusEndring.Innsatsgruppe> innsatsgruppe =  Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe());
 
         SqlUtils.upsert(db, "VEDTAKSTATUS_DATA")
-                .set("AKTOERID", kafkaVedtakStatusEndring.getAktorId())
-                .set("VEDTAKSTATUS", kafkaVedtakStatusEndring.getVedtakStatus().name())
+                .set("AKTOERID", vedtakStatusEndring.getAktorId())
+                .set("VEDTAKSTATUS", vedtakStatusEndring.getVedtakStatus().name())
                 .set("INNSATSGRUPPE", innsatsgruppe.map(Enum::name).orElse(null))
                 .set("HOVEDMAL", hovedmal.map(Enum::name).orElse(null))
-                .set("VEDTAK_STATUS_ENDRET_TIDSPUNKT", Timestamp.valueOf(kafkaVedtakStatusEndring.getStatusEndretTidspunkt()))
-                .set("VEDTAKID", kafkaVedtakStatusEndring.getVedtakId())
-                .where(WhereClause.equals("VEDTAKID", kafkaVedtakStatusEndring.getVedtakId()))
+                .set("VEDTAK_STATUS_ENDRET_TIDSPUNKT", Timestamp.valueOf(vedtakStatusEndring.getStatusEndretTidspunkt()))
+                .set("VEDTAKID", vedtakStatusEndring.getVedtakId())
+                .where(WhereClause.equals("VEDTAKID", vedtakStatusEndring.getVedtakId()))
                 .execute();
     }
 
-    public List<KafkaVedtakStatusEndring> hentVedtak (String aktorId) {
+    public List<VedtakStatusEndring> hentVedtak (String aktorId) {
         return SqlUtils.select(db, "VEDTAKSTATUS_DATA", VedtakStatusRepository::mapKafkaVedtakStatusEndring)
                 .where(WhereClause.equals("AKTOERID", aktorId))
                 .column("*")
@@ -54,14 +54,14 @@ public class VedtakStatusRepository {
     }
 
     @SneakyThrows
-    private static KafkaVedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs){
+    private static VedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs){
         Optional<String> hovedmal = Optional.ofNullable(rs.getString("HOVEDMAL"));
         Optional<String> innsatsgruppe =  Optional.ofNullable(rs.getString("INNSATSGRUPPE"));
-        return new KafkaVedtakStatusEndring()
+        return new VedtakStatusEndring()
                 .setVedtakId(rs.getInt("VEDTAKID"))
-                .setHovedmal(hovedmal.map(KafkaVedtakStatusEndring.Hovedmal::valueOf).orElse(null))
-                .setInnsatsgruppe(innsatsgruppe.map(KafkaVedtakStatusEndring.Innsatsgruppe::valueOf).orElse( null))
-                .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.valueOf(rs.getString("VEDTAKSTATUS")))
+                .setHovedmal(hovedmal.map(VedtakStatusEndring.Hovedmal::valueOf).orElse(null))
+                .setInnsatsgruppe(innsatsgruppe.map(VedtakStatusEndring.Innsatsgruppe::valueOf).orElse( null))
+                .setVedtakStatus(VedtakStatusEndring.KafkaVedtakStatus.valueOf(rs.getString("VEDTAKSTATUS")))
                 .setStatusEndretTidspunkt(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT").toLocalDateTime())
                 .setAktorId(rs.getString("AKTOERID"));
     }
