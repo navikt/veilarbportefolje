@@ -42,11 +42,11 @@ spec:
     path: veilarbportefolje/internal/metrics
   resources:
     limits:
-      cpu: "8"
-      memory: 8Gi
+      cpu: "4"
+      memory: 10Gi
     requests:
       cpu: "1"
-      memory: 3Gi
+      memory: 4Gi
   env:
     - name: JAVA_OPTS
       value: "-Xms2048m -Xmx4098m"
