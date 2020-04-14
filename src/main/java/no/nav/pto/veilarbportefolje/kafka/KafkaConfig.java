@@ -28,8 +28,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 @Configuration
 public class KafkaConfig {
 
-
-
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName()),
         DIALOG_CONSUMER_TOPIC("aapen-oppfolging-endringPaaDialog-v1-" + requireEnvironmentName()),
