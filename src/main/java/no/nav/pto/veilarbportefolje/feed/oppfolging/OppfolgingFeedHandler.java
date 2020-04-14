@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
 import io.micrometer.core.instrument.Gauge;
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.metrics.MetricsFactory;
@@ -16,6 +17,7 @@ import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,7 +104,8 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon oppfolgingData) {
         AktoerId aktoerId = AktoerId.of(oppfolgingData.getAktoerid());
 
-        boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(aktoerId);
+        Try<BrukerOppdatertInformasjon> hentOppfolgingData =  oppfolgingFeedRepository.retrieveOppfolgingData(aktoerId.toString());
+        boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
@@ -117,9 +120,8 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         return !oppfolgingData.getOppfolging();
     }
 
-    private boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(AktoerId aktoerId) {
-        return !oppfolgingFeedRepository
-                .retrieveOppfolgingData(aktoerId.toString())
+    private boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(Try<BrukerOppdatertInformasjon> hentOppfolgingData, AktoerId aktoerId) {
+        return !hentOppfolgingData
                 .map(oppfolgingData -> veilederHarTilgangTilEnhet(aktoerId, oppfolgingData))
                 .getOrElse(false);
     }

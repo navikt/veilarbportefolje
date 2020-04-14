@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
-import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -274,7 +273,7 @@ public class ElasticIndexer {
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
         } else {
-            log.error("Feil ved sletting av bruker med aktoerId {}", bruker.getAktoer_id());
+            log.warn("Feil ved sletting av bruker med aktoerId {}", bruker.getAktoer_id());
         }
     }
 

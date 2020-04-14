@@ -9,8 +9,8 @@ metadata:
 spec:
   image: docker.pkg.github.com/navikt/veilarbportefolje/veilarbportefolje:{{version}}
   replicas:
-    min: 6
-    max: 6
+    min: 3
+    max: 3
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
@@ -42,13 +42,13 @@ spec:
     path: veilarbportefolje/internal/metrics
   resources:
     limits:
-      cpu: "8"
-      memory: 8Gi
+      cpu: "4"
+      memory: 10Gi
     requests:
       cpu: "1"
-      memory: 3Gi
+      memory: 4Gi
   env:
     - name: JAVA_OPTS
-      value: "-Xms2048m -Xmx8092m"
+      value: "-Xms4096m -Xmx10144m"
     - name: KAFKA_SCHEMAS_URL
       value: https://kafka-schema-registry.nais.adeo.no/
