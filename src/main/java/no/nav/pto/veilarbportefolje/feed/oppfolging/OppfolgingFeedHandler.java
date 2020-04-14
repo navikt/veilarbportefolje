@@ -105,7 +105,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         AktoerId aktoerId = AktoerId.of(oppfolgingData.getAktoerid());
 
         Try<BrukerOppdatertInformasjon> hentOppfolgingData =  oppfolgingFeedRepository.retrieveOppfolgingData(aktoerId.toString());
-        boolean skalSletteArbeidsliste = erEttNyereFeedElement(hentOppfolgingData, oppfolgingData.getEndretTimestamp())  && ( brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId));
+        boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
@@ -124,13 +124,6 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         return !hentOppfolgingData
                 .map(oppfolgingData -> veilederHarTilgangTilEnhet(aktoerId, oppfolgingData))
                 .getOrElse(false);
-    }
-
-    //HVIS VI SPOLER TILBAKE OPPFOLGINGSFEEDEN SÅ RISIKERAR VI ATT SLETTE ARBEIDSLISTE
-    private boolean erEttNyereFeedElement(Try<BrukerOppdatertInformasjon> hentOppfolgingData, Timestamp oppdatertOppfolging) {
-        return hentOppfolgingData
-                .map(oppfolgingData -> oppfolgingData.getEndretTimestamp().after(oppdatertOppfolging))
-                .getOrElse(true);
     }
 
     private boolean veilederHarTilgangTilEnhet(AktoerId aktoerId, BrukerOppdatertInformasjon oppfolgingData) {
