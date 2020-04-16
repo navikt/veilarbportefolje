@@ -68,7 +68,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     private boolean featureErPa() {
         return this.featureNavn
                 .map(featureNavn -> unleashService.isEnabled(featureNavn))
-                .orElse(true);
+                .orElse(false);
     }
 
     @Override
