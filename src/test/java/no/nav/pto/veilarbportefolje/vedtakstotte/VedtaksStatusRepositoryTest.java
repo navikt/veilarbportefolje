@@ -29,7 +29,7 @@ public class VedtaksStatusRepositoryTest {
     @Test
     public void skallSetteInVedtak() {
         insertVedtakIDB();
-        List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        List<VedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
     }
 
@@ -38,30 +38,30 @@ public class VedtaksStatusRepositoryTest {
         insertVedtakIDB();
 
         LocalDateTime time = LocalDateTime.now();
-        KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
-                .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BESLUTTER)
-                .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID)
-                .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS)
+        VedtakStatusEndring vedtakStatusEndring = new VedtakStatusEndring()
+                .setVedtakStatus(VedtakStatusEndring.KafkaVedtakStatus.SENDT_TIL_BESLUTTER)
+                .setHovedmal(VedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID)
+                .setInnsatsgruppe(VedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS)
                 .setStatusEndretTidspunkt(time)
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID);
 
-        vedtakStatusRepository.upsertVedtak(kafkaVedtakStatusEndring);
-        List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        vedtakStatusRepository.upsertVedtak(vedtakStatusEndring);
+        List<VedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
     }
 
 
     private void insertVedtakIDB() {
         LocalDateTime time = LocalDateTime.now();
-        KafkaVedtakStatusEndring kafkaVedtakStatusEndring = new KafkaVedtakStatusEndring()
-                .setVedtakStatus(KafkaVedtakStatusEndring.KafkaVedtakStatus.UTKAST_OPPRETTET)
+        VedtakStatusEndring vedtakStatusEndring = new VedtakStatusEndring()
+                .setVedtakStatus(VedtakStatusEndring.KafkaVedtakStatus.UTKAST_OPPRETTET)
                 .setStatusEndretTidspunkt(time)
                 .setAktorId(AKTORID)
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(null)
                 .setInnsatsgruppe(null);
-        vedtakStatusRepository.upsertVedtak(kafkaVedtakStatusEndring);
+        vedtakStatusRepository.upsertVedtak(vedtakStatusEndring);
     }
 
 

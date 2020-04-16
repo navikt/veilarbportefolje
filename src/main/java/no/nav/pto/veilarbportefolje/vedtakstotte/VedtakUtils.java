@@ -14,22 +14,22 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 public class VedtakUtils {
 
-     static Map<KafkaVedtakStatusEndring.Innsatsgruppe, Innsatsgruppe> mapInnsatsGruppeTilArenaInnsatsGruppe() {
+     static Map<VedtakStatusEndring.Innsatsgruppe, Innsatsgruppe> mapInnsatsGruppeTilArenaInnsatsGruppe() {
         //TODO HVA SKA GRADERT VARIG INNSATS MAPPES TIL ?
-        return new HashMap<KafkaVedtakStatusEndring.Innsatsgruppe,Innsatsgruppe>() {{
-            put(KafkaVedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
-            put(KafkaVedtakStatusEndring.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Innsatsgruppe.BFORM);
-            put(KafkaVedtakStatusEndring.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS, Innsatsgruppe.BATT);
-            put(KafkaVedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS, Innsatsgruppe.IKVAL);
-            put(KafkaVedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
+        return new HashMap<VedtakStatusEndring.Innsatsgruppe,Innsatsgruppe>() {{
+            put(VedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
+            put(VedtakStatusEndring.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Innsatsgruppe.BFORM);
+            put(VedtakStatusEndring.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS, Innsatsgruppe.BATT);
+            put(VedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS, Innsatsgruppe.IKVAL);
+            put(VedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
         }};
 
     }
 
-     static Map<KafkaVedtakStatusEndring.Hovedmal, Hovedmal> mapHovedMalTilArenaHovedmal() {
-        return new HashMap<KafkaVedtakStatusEndring.Hovedmal, Hovedmal>() {{
-            put(KafkaVedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID, Hovedmal.BEHOLDEA);
-            put(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID, Hovedmal.SKAFFEA);
+     static Map<VedtakStatusEndring.Hovedmal, Hovedmal> mapHovedMalTilArenaHovedmal() {
+        return new HashMap<VedtakStatusEndring.Hovedmal, Hovedmal>() {{
+            put(VedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID, Hovedmal.BEHOLDEA);
+            put(VedtakStatusEndring.Hovedmal.SKAFFE_ARBEID, Hovedmal.SKAFFEA);
         }};
     }
 
@@ -43,7 +43,7 @@ public class VedtakUtils {
     }
 
 
-    static Try<XContentBuilder> byggVedtakstotteJson(KafkaVedtakStatusEndring melding) {
+    static Try<XContentBuilder> byggVedtakstotteJson(VedtakStatusEndring melding) {
         return Try.of(() ->
                 jsonBuilder()
                         .startObject()

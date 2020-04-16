@@ -105,6 +105,17 @@ public class DatabaseConfig {
     }
 
     @Bean
+    public VedtakStatusRepository vedtakStatusRepository(JdbcTemplate jdbcTemplate) {
+        return new VedtakStatusRepository(jdbcTemplate);
+    }
+
+    @Bean
+    public RegistreringRepository registreringRepository(JdbcTemplate jdbcTemplate) {
+        return new RegistreringRepository(jdbcTemplate);
+    }
+
+
+    @Bean
     public Pingable dbPinger(final JdbcTemplate db) {
         PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),

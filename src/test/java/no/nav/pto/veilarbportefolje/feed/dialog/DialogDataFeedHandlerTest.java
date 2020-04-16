@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.feed.dialog;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class DialogDataFeedHandlerTest {
         elasticIndexer = mock(ElasticIndexer.class);
         dialogFeedRepository = mock(DialogFeedRepository.class);
         brukerRepository = mock(BrukerRepository.class);
-        dialogDataFeedHandler = new DialogDataFeedHandler(brukerRepository, elasticIndexer, dialogFeedRepository);
+        dialogDataFeedHandler = new DialogDataFeedHandler(brukerRepository, elasticIndexer, dialogFeedRepository, mock(UnleashService.class));
     }
 
     @Test
