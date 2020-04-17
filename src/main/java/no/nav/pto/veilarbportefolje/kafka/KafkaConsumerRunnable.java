@@ -34,7 +34,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         this.topic = topic;
         this.featureNavn = featureNavn;
         this.kafkaConsumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
-        kafkaConsumer.subscribe(Collections.singletonList(topic.name()));
+        kafkaConsumer.subscribe(Collections.singletonList(topic.topic));
 
         JobUtils.runAsyncJob(this);
     }

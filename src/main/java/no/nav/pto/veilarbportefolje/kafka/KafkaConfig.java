@@ -33,7 +33,7 @@ public class KafkaConfig {
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireEnvironmentName()),
         KAFKA_REGISTRERING_CONSUMER_TOPIC( "aapen-arbeid-arbeidssoker-registrert-" + requireEnvironmentName());
 
-        private final String topic;
+        final String topic;
 
         Topic(String topic) {
             this.topic = topic;
