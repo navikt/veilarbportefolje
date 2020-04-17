@@ -30,7 +30,7 @@ public class KafkaConfig {
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName()),
-        DIALOG_CONSUMER_TOPIC("aapen-oppfolging-endringPaaDialog-v1-" + requireEnvironmentName()),
+        DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireEnvironmentName()),
         KAFKA_REGISTRERING_CONSUMER_TOPIC( "aapen-arbeid-arbeidssoker-registrert-" + requireEnvironmentName());
 
         private final String topic;
