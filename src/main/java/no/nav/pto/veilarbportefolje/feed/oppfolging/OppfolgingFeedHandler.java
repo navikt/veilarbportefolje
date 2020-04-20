@@ -13,16 +13,22 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static java.time.Instant.now;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -80,6 +86,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                 CompletableFuture<Void> future = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
 
                 future.thenRun(() -> {
+
+                    Duration timeElapsed = DateUtils.calculateTimeElapsed(info.getEndretTimestamp().toInstant());
+                    MetricsFactory
+                            .createEvent("portefolje.feed_time_elapsed_oppfolging")
+                            .addFieldToReport("time_elapsed", timeElapsed.toMillis())
+                            .report();
+
                     timer.stop();
                     timer.report();
                 });
@@ -104,7 +117,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon oppfolgingData) {
         AktoerId aktoerId = AktoerId.of(oppfolgingData.getAktoerid());
 
-        Try<BrukerOppdatertInformasjon> hentOppfolgingData =  oppfolgingFeedRepository.retrieveOppfolgingData(aktoerId.toString());
+        Try<BrukerOppdatertInformasjon> hentOppfolgingData = oppfolgingFeedRepository.retrieveOppfolgingData(aktoerId.toString());
         boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
 
         transactor.inTransaction(() -> {

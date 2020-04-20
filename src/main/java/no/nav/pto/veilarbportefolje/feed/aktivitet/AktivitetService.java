@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static io.vavr.control.Try.run;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
@@ -53,8 +54,8 @@ public class AktivitetService {
         persistentOppdatering.lagreBrukeroppdateringerIDB(aktivitetBrukerOppdateringer);
     }
 
-    public void utledOgIndekserAktivitetstatuserForAktoerid(List<AktoerId> aktoerIds) {
+    public CompletableFuture<Void> utledOgIndekserAktivitetstatuserForAktoerid(List<AktoerId> aktoerIds) {
         List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds, aktoerService, aktivitetDAO);
-        persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);
+        return persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);
     }
 }

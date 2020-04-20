@@ -10,15 +10,19 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.calculateTimeElapsed;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -62,8 +66,15 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
             try {
                 data.forEach(info -> {
                     dialogFeedRepository.oppdaterDialogInfoForBruker(info);
-                    elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktorId()));
-                    antallTotaltMetrikk.increment();
+                    CompletableFuture<Void> indeksering = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktorId()));
+
+                    indeksering.thenRun(() -> {
+                        Duration timeElapsed = calculateTimeElapsed(info.getSisteEndring().toInstant());
+                        MetricsFactory
+                                .createEvent("portefolje.feed_time_elapsed_dialog")
+                                .addFieldToReport("time_elapsed", timeElapsed)
+                                .report();
+                    });
                 });
 
                 Timestamp timestamp = timestampFromISO8601(lastEntry);

@@ -1,16 +1,31 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 
+import static java.time.Duration.ofSeconds;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertTrue;
 
 public class DateUtilsTest {
+
+    @Test
+    public void skal_kalkulere_riktig_tidsintervall_basert_paa_timestamp() {
+        Instant twoHoursAgo = Instant.now().minus(30, SECONDS);
+        Duration duration = DateUtils.calculateTimeElapsed(twoHoursAgo);
+        Assert.assertThat(duration.toMillis(), lessThanOrEqualTo(ofSeconds(31).toMillis()));
+        Assert.assertThat(duration.toMillis(), greaterThanOrEqualTo(ofSeconds(29).toMillis()));
+    }
 
     @Test
     public void should_return_correct_date() {

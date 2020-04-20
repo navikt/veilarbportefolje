@@ -4,16 +4,22 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.metrics.MetricsFactory;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 
 @Slf4j
 public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> {
@@ -26,6 +32,8 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
     private AktivitetDAO aktivitetDAO;
 
     private static long lastEntryIdAsMillisSinceEpoch;
+
+    private static Map<String, Instant> endretTidspunktForAktoerId = new HashMap<>();
 
     @Inject
     public AktivitetFeedHandler(BrukerRepository brukerRepository,
@@ -53,13 +61,14 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                 .filter(AktivitetDataFraFeed::isAvtalt)
                 .collect(toList());
 
+        endretTidspunktForAktoerId = new HashMap<>();
         avtalteAktiviteter.forEach(this::lagreAktivitetData);
 
         behandleAktivitetdata(avtalteAktiviteter
-                .stream().map(AktivitetDataFraFeed::getAktorId)
-                .distinct()
-                .map(AktoerId::of)
-                .collect(toList()));
+                                      .stream().map(AktivitetDataFraFeed::getAktorId)
+                                      .distinct()
+                                      .map(AktoerId::of)
+                                      .collect(toList()));
 
         Timestamp lastEntryId = timestampFromISO8601(lastEntry);
         lastEntryIdAsMillisSinceEpoch = lastEntryId.getTime();
@@ -67,6 +76,9 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
     }
 
     private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
+
+        endretTidspunktForAktoerId.put(aktivitet.getAktorId(), aktivitet.endretDato.toInstant());
+
         try {
             if (aktivitet.isHistorisk()) {
                 aktivitetDAO.deleteById(aktivitet.getAktivitetId());
@@ -85,7 +97,16 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
             if (aktoerids.isEmpty()) {
                 return;
             }
-            aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerids);
+            CompletableFuture<Void> indeksering = aktivitetService.utledOgIndekserAktivitetstatuserForAktoerid(aktoerids);
+            indeksering.thenRun(() -> {
+                aktoerids.forEach(aktoerId -> {
+                    Duration timeElapsed = calculateTimeElapsed(endretTidspunktForAktoerId.get(aktoerId.toString()));
+                    MetricsFactory
+                            .createEvent("portefolje.feed_time_elapsed_aktivitet")
+                            .addFieldToReport("time_elapsed", timeElapsed)
+                            .report();
+                });
+            });
         } catch (Exception e) {
             String message = "Feil ved behandling av aktivitetdata fra feed";
             log.error(message, e);
