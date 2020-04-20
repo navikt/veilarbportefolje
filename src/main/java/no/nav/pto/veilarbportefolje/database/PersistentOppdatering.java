@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 
 import javax.inject.Inject;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,11 +30,11 @@ public class PersistentOppdatering {
     @Inject
     private AktivitetDAO aktivitetDAO;
 
-    public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
+    public CompletableFuture<Void> lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
 
-        runAsync(() -> elasticIndexer.indekserBrukere(personIds));
+        return runAsync(() -> elasticIndexer.indekserBrukere(personIds));
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {
