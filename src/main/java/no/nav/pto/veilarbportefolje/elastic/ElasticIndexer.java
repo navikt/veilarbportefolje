@@ -282,8 +282,10 @@ public class ElasticIndexer {
         CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
 
         future.exceptionally(e -> {
-            throw new RuntimeException(e);
+            log.warn("Klarte ikke indeksere", e);
+            return null;
         });
+
         return future;
     }
 
@@ -370,7 +372,7 @@ public class ElasticIndexer {
         BulkResponse response = client.bulk(bulk, DEFAULT);
 
         if (response.hasFailures()) {
-            throw new RuntimeException(response.buildFailureMessage());
+            log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
         }
 
         log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
