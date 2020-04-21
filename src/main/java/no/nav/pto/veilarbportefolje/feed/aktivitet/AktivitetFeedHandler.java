@@ -103,7 +103,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
                     Duration timeElapsed = calculateTimeElapsed(endretTidspunktForAktoerId.get(aktoerId.toString()));
                     MetricsFactory
                             .createEvent("portefolje.feed_time_elapsed_aktivitet")
-                            .addFieldToReport("time_elapsed", timeElapsed)
+                            .addFieldToReport("time_elapsed", timeElapsed.toMillis())
                             .report();
                 });
             });
