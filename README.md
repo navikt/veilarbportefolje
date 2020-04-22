@@ -60,7 +60,6 @@ src/main/resources/elastic_settings.json
 ## Sjekk at databaselink fra arena oppdateres
 
 Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppdateringen databaselinken til arena 
-
 ```
 select * from dba_scheduler_jobs;
 ```
