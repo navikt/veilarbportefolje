@@ -9,14 +9,20 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.calculateTimeElapsed;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -32,14 +38,17 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     private final BrukerRepository brukerRepository;
     private final ElasticIndexer elasticIndexer;
     private final DialogFeedRepository dialogFeedRepository;
+    private final UnleashService unleashService;
 
     @Inject
     public DialogDataFeedHandler(BrukerRepository brukerRepository,
                                  ElasticIndexer elasticIndexer,
-                                 DialogFeedRepository dialogFeedRepository) {
+                                 DialogFeedRepository dialogFeedRepository,
+                                 UnleashService unleashService) {
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
         this.dialogFeedRepository = dialogFeedRepository;
+        this.unleashService = unleashService;
 
         antallTotaltMetrikk = Counter.builder("portefolje_feed").tag("feed_name", FEED_NAME).register(getMeterRegistry());
         Gauge.builder("portefolje_feed_last_id", DialogDataFeedHandler::getLastEntryIdAsMillisSinceEpoch).tag("feed_name", FEED_NAME).register(getMeterRegistry());
@@ -52,28 +61,35 @@ public class DialogDataFeedHandler implements FeedCallback<DialogDataFraFeed> {
     @Override
     @Transactional
     public void call(String lastEntry, List<DialogDataFraFeed> data) {
+        if (!unleashService.isEnabled("veilarbdialog.kafka")) {
+            log.info("DialogFeedDebug data: {}", data);
+            try {
+                data.forEach(info -> {
+                    dialogFeedRepository.oppdaterDialogInfoForBruker(info);
+                    CompletableFuture<Void> indeksering = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktorId()));
 
-        log.info("DialogFeedDebug data: {}", data);
+                    indeksering.thenRun(() -> {
+                        Duration timeElapsed = calculateTimeElapsed(info.getSisteEndring().toInstant());
+                        MetricsFactory
+                                .createEvent("portefolje.feed_time_elapsed_dialog")
+                                .addFieldToReport("time_elapsed", timeElapsed)
+                                .report();
+                    });
+                });
 
-        try {
-            data.forEach(info -> {
-                dialogFeedRepository.oppdaterDialogInfoForBruker(info);
-                elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktorId()));
-                antallTotaltMetrikk.increment();
-            });
+                Timestamp timestamp = timestampFromISO8601(lastEntry);
+                lastEntryIdAsMillisSinceEpoch = timestamp.getTime();
 
-            Timestamp timestamp = timestampFromISO8601(lastEntry);
-            lastEntryIdAsMillisSinceEpoch = timestamp.getTime();
+                brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
 
-            brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, Date.from(ZonedDateTime.parse(lastEntry).toInstant()));
+                Event sistOppdatert = MetricsFactory.createEvent("portefolje.dialog.feed.sist.oppdatert");
+                sistOppdatert.addFieldToReport("last_entry", lastEntry);
+                sistOppdatert.report();
 
-            Event sistOppdatert = MetricsFactory.createEvent("portefolje.dialog.feed.sist.oppdatert");
-            sistOppdatert.addFieldToReport("last_entry", lastEntry);
-            sistOppdatert.report();
-
-        } catch (Exception e) {
-            String message = "Feil ved behandling av dialogdata fra feed for liste med brukere.";
-            log.error(message, e);
+            } catch (Exception e) {
+                String message = "Feil ved behandling av dialogdata fra feed for liste med brukere.";
+                log.error(message, e);
+            }
         }
     }
 }

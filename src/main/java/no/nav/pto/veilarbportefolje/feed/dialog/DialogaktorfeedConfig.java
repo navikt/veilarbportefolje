@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.feed.Utils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -65,7 +66,8 @@ public class DialogaktorfeedConfig {
     public FeedCallback<DialogDataFraFeed> dialogDataFeedHandler(AktoerService aktoerService,
                                                                  BrukerRepository brukerRepository,
                                                                  ElasticIndexer elasticIndexer,
-                                                                 DialogFeedRepository dialogFeedRepository) {
-        return new DialogDataFeedHandler(brukerRepository, elasticIndexer, dialogFeedRepository);
+                                                                 DialogFeedRepository dialogFeedRepository,
+                                                                 UnleashService unleashService) {
+        return new DialogDataFeedHandler(brukerRepository, elasticIndexer, dialogFeedRepository, unleashService);
     }
 }

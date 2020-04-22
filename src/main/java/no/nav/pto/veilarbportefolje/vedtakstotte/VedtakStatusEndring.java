@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Data
 @Accessors(chain = true)
-public class KafkaVedtakStatusEndring {
+public class VedtakStatusEndring {
 
     public enum KafkaVedtakStatus {
         UTKAST_OPPRETTET, SENDT_TIL_BESLUTTER, SENDT_TIL_BRUKER, UTKAST_SLETTET

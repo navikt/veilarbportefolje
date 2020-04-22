@@ -3,10 +3,7 @@ package no.nav.pto.veilarbportefolje.util;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
@@ -17,10 +14,15 @@ public class DateUtils {
     private static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
     private static final String EPOCH_0 = "1970-01-01T00:00:00Z";
 
+    public static Duration calculateTimeElapsed(Instant instant) {
+        return Duration.between(instant, Instant.now());
+    }
+
     public static Timestamp timestampFromISO8601(String date) {
         Instant instant =  ZonedDateTime.parse(date).toInstant();
         return Timestamp.from(instant);
     }
+
 
     static String iso8601FromTimestamp(Timestamp timestamp, ZoneId zoneId) {
         if(timestamp == null) {
