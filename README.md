@@ -52,6 +52,7 @@ https://www.github.com/navikt/pam-elasticsearch
 
 Innstillinger i clusteret er definert i filen:
 
+
 ```
 src/main/resources/elastic_settings.json
 ```
