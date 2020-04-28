@@ -25,9 +25,9 @@ public class VedtakStatusRepository {
                 .execute();
     }
 
-    public void slettGamleVedtakOgUtkast (String aktoerId) {
+    public void slettGamleVedtakOgUtkast (String aktorId) {
         SqlUtils.delete(db, "VEDTAKSTATUS_DATA")
-                .where(WhereClause.equals("AKTOERID", aktoerId))
+                .where(WhereClause.equals("AKTOERID", aktorId))
                 .execute();
     }
 
@@ -46,9 +46,9 @@ public class VedtakStatusRepository {
                 .execute();
     }
 
-    public List<VedtakStatusEndring> hentVedtak (String aktoerId) {
+    public List<VedtakStatusEndring> hentVedtak (String aktorId) {
         return SqlUtils.select(db, "VEDTAKSTATUS_DATA", VedtakStatusRepository::mapKafkaVedtakStatusEndring)
-                .where(WhereClause.equals("AKTOERID", aktoerId))
+                .where(WhereClause.equals("AKTOERID", aktorId))
                 .column("*")
                 .executeToList();
     }
