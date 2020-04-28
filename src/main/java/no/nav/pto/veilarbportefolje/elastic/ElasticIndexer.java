@@ -271,7 +271,7 @@ public class ElasticIndexer {
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() == 1) {
-            log.info("Slettet bruker med aktoerId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
+            log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
         } else {
             log.warn("Feil ved sletting av bruker med aktoerId {}", bruker.getAktoer_id());
         }
