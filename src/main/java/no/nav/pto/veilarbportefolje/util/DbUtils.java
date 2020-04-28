@@ -29,6 +29,9 @@ public class DbUtils {
         String fornavn = kapitaliser(rs.getString("fornavn"));
         String etternavn = kapitaliser(rs.getString("etternavn"));
 
+        boolean trengerVurdering = OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode);
+        boolean erSykmeldtMedArbeidsgiver = OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode);
+
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
                 .setOppfolging_startdato(toIsoUTC(rs.getTimestamp("oppfolging_startdato")))
@@ -65,7 +68,7 @@ public class DbUtils {
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
-                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .setTrenger_vurdering(trengerVurdering)
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
                 .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
@@ -73,7 +76,8 @@ public class DbUtils {
                 .setNeste_aktivitet_start(toIsoUTC(rs.getTimestamp("neste_aktivitet_start")))
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
                 .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
-                .setBrukers_situasjon(brukersSituasjon);
+                .setBrukers_situasjon(brukersSituasjon)
+                .setEr_sykmeldt_med_arbeidsgiver(erSykmeldtMedArbeidsgiver);
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 
@@ -91,7 +95,8 @@ public class DbUtils {
         if(vedtakstotteFeatureErPa) {
             String vedtakstatus = rs.getString("VEDTAKSTATUS");
             bruker
-                    .setTrenger_vurdering(OppfolgingUtils.trengerVurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus))
+                    .setTrenger_vurdering(trengerVurdering && vedtakstatus == null)
+                    .setEr_sykmeldt_med_arbeidsgiver(erSykmeldtMedArbeidsgiver && vedtakstatus == null)
                     .setVedtak_status(vedtakstatus)
                     .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
                     .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(kvalifiseringsgruppekode, vedtakstatus));

@@ -14,25 +14,6 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 public class VedtakUtils {
 
-     static Map<VedtakStatusEndring.Innsatsgruppe, Innsatsgruppe> mapInnsatsGruppeTilArenaInnsatsGruppe() {
-        //TODO HVA SKA GRADERT VARIG INNSATS MAPPES TIL ?
-        return new HashMap<VedtakStatusEndring.Innsatsgruppe,Innsatsgruppe>() {{
-            put(VedtakStatusEndring.Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
-            put(VedtakStatusEndring.Innsatsgruppe.SITUASJONSBESTEMT_INNSATS, Innsatsgruppe.BFORM);
-            put(VedtakStatusEndring.Innsatsgruppe.SPESIELT_TILPASSET_INNSATS, Innsatsgruppe.BATT);
-            put(VedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS, Innsatsgruppe.IKVAL);
-            put(VedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS, Innsatsgruppe.VARIG);
-        }};
-
-    }
-
-     static Map<VedtakStatusEndring.Hovedmal, Hovedmal> mapHovedMalTilArenaHovedmal() {
-        return new HashMap<VedtakStatusEndring.Hovedmal, Hovedmal>() {{
-            put(VedtakStatusEndring.Hovedmal.BEHOLDE_ARBEID, Hovedmal.BEHOLDEA);
-            put(VedtakStatusEndring.Hovedmal.SKAFFE_ARBEID, Hovedmal.SKAFFEA);
-        }};
-    }
-
      static Try<XContentBuilder> byggVedtakstotteNullVerdiJson() {
         return Try.of(() ->
                 jsonBuilder()
@@ -43,12 +24,12 @@ public class VedtakUtils {
     }
 
 
-    static Try<XContentBuilder> byggVedtakstotteJson(VedtakStatusEndring melding) {
+    static Try<XContentBuilder> byggVedtakstotteJson(KafkaVedtakStatusEndring melding) {
         return Try.of(() ->
                 jsonBuilder()
                         .startObject()
-                        .field("vedtak_status", melding.getVedtakStatus().name())
-                        .field("vedtak_status_endret", DateUtils.toIsoUTC(Timestamp.valueOf(melding.getStatusEndretTidspunkt())))
+                        .field("vedtak_status", melding.getVedtakStatusEndring().name())
+                        .field("vedtak_status_endret", DateUtils.toIsoUTC(Timestamp.valueOf(melding.getTimestamp())))
                         .endObject());
     }
 

@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
 public class OppfolgingUtils {
     private static List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
+    private static List<String> OPPFOLGINGKODER = asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG");
     public static boolean erBrukerUnderOppfolging(String formidlingsgruppekode, String servicegruppekode, boolean oppfolgingsbruker) {
         return oppfolgingsbruker ||
                 UnderOppfolgingRegler.erUnderOppfolging(formidlingsgruppekode, servicegruppekode);
@@ -29,7 +32,6 @@ public class OppfolgingUtils {
     }
 
     public static boolean erSykmeldtMedArbeidsgiver (String formidlingsgruppekode, String kvalifiseringsgruppekode) {
-        List<String> OPPFOLGINGKODER = asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG");
         return "IARBS".equals(formidlingsgruppekode) && !OPPFOLGINGKODER.contains(kvalifiseringsgruppekode);
     }
 
@@ -38,7 +40,6 @@ public class OppfolgingUtils {
     }
 
     public static boolean trengerRevurderingVedtakstotte (String kvalifiseringsgruppekode, String vedtakStatus) {
-
         return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
     }
 
@@ -52,15 +53,5 @@ public class OppfolgingUtils {
         } else {
             return null;
         }
-    }
-
-    public static boolean erPermitertUtenOppfolgingsvedtak(String formidlingsgruppekode, String brukersSituasjon, String kvalifiseringsgruppekode) {
-        return Optional.ofNullable(brukersSituasjon)
-                .map(DinSituasjonSvar::valueOf)
-                .map(dinSituasjonSvar ->
-                        "ARBS".equals(formidlingsgruppekode)
-                                && !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode)
-                                && dinSituasjonSvar.equals(DinSituasjonSvar.ER_PERMITTERT))
-                .orElse(false);
     }
 }
