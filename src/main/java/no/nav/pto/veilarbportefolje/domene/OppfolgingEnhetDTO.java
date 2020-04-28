@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class OppfolgingEnhetDTO {
     String fnr;
-    String aktoerId;
+    String aktorId;
     String enhetId;
     String personId;
 }
