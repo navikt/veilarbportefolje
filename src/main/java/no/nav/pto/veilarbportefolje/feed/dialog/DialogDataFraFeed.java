@@ -11,7 +11,7 @@ public class DialogDataFraFeed implements Comparable<DialogDataFraFeed> {
 
     public static final String FEED_NAME = "dialogaktor";
 
-    public String aktorId;
+    public String aktoerId;
     public Date sisteEndring;
     public Date tidspunktEldsteVentende;
     public Date tidspunktEldsteUbehandlede;

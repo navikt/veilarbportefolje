@@ -28,7 +28,7 @@ public class VedtakStatusEndring {
     }
 
     long vedtakId;
-    String aktorId;
+    String aktoerId;
     KafkaVedtakStatus vedtakStatus;
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;

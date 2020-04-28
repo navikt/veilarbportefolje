@@ -45,7 +45,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
             try {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, String> record : records) {
-                    log.info("Behandler melding for aktorId: {}  på topic: " + record.topic());
+                    log.info("Behandler melding for aktoerId: {}  på topic: " + record.topic());
                     kafkaService.behandleKafkaMelding(record.value());
                 }
             } catch (Exception e) {
