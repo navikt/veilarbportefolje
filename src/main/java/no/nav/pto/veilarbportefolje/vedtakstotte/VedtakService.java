@@ -1,12 +1,9 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 
 import static no.nav.json.JsonUtils.fromJson;
 
@@ -15,12 +12,10 @@ public class VedtakService implements KafkaConsumerService {
 
     private VedtakStatusRepository vedtakStatusRepository;
     private ElasticIndexer elasticIndexer;
-    private AktoerService aktoerService;
 
-    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
         this.vedtakStatusRepository = vedtakStatusRepository;
         this.elasticIndexer = elasticIndexer;
-        this.aktoerService = aktoerService;
     }
 
     public void behandleKafkaMelding(String melding) {
@@ -53,36 +48,19 @@ public class VedtakService implements KafkaConsumerService {
 
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
-        nullstillVedtakStatusIIndeks(melding);
+        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
-        oppdaterVedtaksStatusIIndeks(melding);
+        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
-        nullstillVedtakStatusIIndeks(melding);
+        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
     }
-
-    private void oppdaterVedtaksStatusIIndeks(KafkaVedtakStatusEndring melding) {
-        Fnr fnr = aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId())).get();
-        VedtakUtils.byggVedtakstotteJson(melding)
-                .map(json -> new Tuple2<>(fnr, json))
-                .map(tuple -> elasticIndexer.oppdaterBruker(tuple)
-                        .onFailure(error -> log.warn(String.format("Feil ved oppdatering i brukerindeks av bruker med aktoerId: %s i brukerindeks, %s ", melding.getAktorId(), error))));
-    }
-
-    private void nullstillVedtakStatusIIndeks(KafkaVedtakStatusEndring melding) {
-        Fnr fnr = aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId())).get();
-        VedtakUtils.byggVedtakstotteNullVerdiJson()
-                .map(json -> new Tuple2<>(fnr, json))
-                .map(tuple -> elasticIndexer.oppdaterBruker(tuple)
-                        .onFailure(error -> log.warn(String.format("Feil ved oppdatering i brukerindeks av bruker med aktoerId: %s, %s ", melding.getAktorId(), error))));
-    }
-
 }
