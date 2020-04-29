@@ -48,19 +48,19 @@ public class VedtakService implements KafkaConsumerService {
 
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
-        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+        elasticIndexer.indekserAsynkront(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
-        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+        elasticIndexer.indekserAsynkront(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
-        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+        elasticIndexer.indekserAsynkront(AktoerId.of(melding.getAktorId()));
     }
 }
