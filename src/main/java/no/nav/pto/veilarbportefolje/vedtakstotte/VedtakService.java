@@ -19,10 +19,8 @@ public class VedtakService implements KafkaConsumerService {
     }
 
     public void behandleKafkaMelding(String melding) {
-        log.info("Behandler melding {} " + melding);
         KafkaVedtakStatusEndring vedtakStatusEndring = fromJson(melding, KafkaVedtakStatusEndring.class);
         KafkaVedtakStatusEndring.VedtakStatusEndring vedtakStatus = vedtakStatusEndring.getVedtakStatusEndring();
-        log.info("Behandler vedtakstatus {} " + vedtakStatus.name());
         switch (vedtakStatus) {
             case UTKAST_SLETTET : {
                 slettUtkast(vedtakStatusEndring);
@@ -40,7 +38,6 @@ public class VedtakService implements KafkaConsumerService {
             case GODKJENT_AV_BESLUTTER:
             case KLAR_TIL_BESLUTTER:
             case KLAR_TIL_VEILEDER: {
-                log.info("oppdaterUtkast vedtakstatus {} " + vedtakStatus.name());
                 oppdaterUtkast(vedtakStatusEndring);
             }
         }

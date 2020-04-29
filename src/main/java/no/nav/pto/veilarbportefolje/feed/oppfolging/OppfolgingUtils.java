@@ -35,12 +35,11 @@ public class OppfolgingUtils {
         return "IARBS".equals(formidlingsgruppekode) && !OPPFOLGINGKODER.contains(kvalifiseringsgruppekode);
     }
 
-    public static boolean trengerVurderingVedtakstotte (String kvalifiseringsgruppekode, String vedtakStatus) {
-        return !INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus == null;
-    }
-
-    public static boolean trengerRevurderingVedtakstotte (String kvalifiseringsgruppekode, String vedtakStatus) {
-        return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
+    public static boolean trengerRevurderingVedtakstotte (String formidlingsgruppekode, String kvalifiseringsgruppekode, String vedtakStatus) {
+        if ("ISERV".equals(formidlingsgruppekode)) {
+            return false;
+        }
+        return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null && !"VEDTAK_SENDT".equals(vedtakStatus);
     }
 
     public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
