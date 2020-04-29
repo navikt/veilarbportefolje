@@ -35,6 +35,7 @@ postman/prod_environment
 Disse environment-ene inneholder en auth-variabel. For å sette denne må du hente oidc-token i Fasit. Last ned filen du finner under enten `veilarbsecret_preprod` eller
 `veilarbsecret_prod` og bruk tokenet som ligger i følgende del av fila:
 
+
 ```
 stringData:
     client_pwd: <token>
