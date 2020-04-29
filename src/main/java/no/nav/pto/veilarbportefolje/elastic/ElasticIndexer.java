@@ -289,7 +289,8 @@ public class ElasticIndexer {
 
     public void indekser(AktoerId aktoerId) {
         OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
-
+        log.info("bruker trenger vurdering " + bruker.isTrenger_vurdering());
+        log.info("bruker vedtakstatus " + bruker.getVedtak_status());
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
             leggTilTiltak(bruker);
