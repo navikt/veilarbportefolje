@@ -361,7 +361,7 @@ public class ElasticQueryBuilder {
                 .aggregation(
                         filters(
                                 "statustall",
-                                erSykmeldtMedArbeidsgiver(filtrereVeilederOgEnhet),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "erSykmeldtMedArbeidsgiver", "er_sykmeldt_med_arbeidsgiver"),
                                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
                                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                                 inaktiveBrukere(filtrereVeilederOgEnhet),
