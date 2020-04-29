@@ -39,7 +39,7 @@ public class OppfolgingUtils {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return false;
         }
-        return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null && !"VEDTAK_SENDT".equals(vedtakStatus);
+        return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
     }
 
     public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
