@@ -223,14 +223,7 @@ public class ElasticQueryBuilder {
                         .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
-                queryBuilder = boolQuery()
-                        .must(matchQuery("formidlingsgruppekode", "IARBS"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BATT"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BFORM"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "IKVAL"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VURDU"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"));
+                queryBuilder = matchQuery("er_sykmeldt_med_arbeidsgiver", true);
                 break;
             case UNDER_VURDERING:
                 queryBuilder = existsQuery("vedtak_status");
@@ -368,7 +361,7 @@ public class ElasticQueryBuilder {
                 .aggregation(
                         filters(
                                 "statustall",
-                                erSykmeldtMedArbeidsgiver(filtrereVeilederOgEnhet),
+                                mustBeTrueFilter(filtrereVeilederOgEnhet, "erSykmeldtMedArbeidsgiver", "er_sykmeldt_med_arbeidsgiver"),
                                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
                                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                                 inaktiveBrukere(filtrereVeilederOgEnhet),

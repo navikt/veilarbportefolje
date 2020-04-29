@@ -79,5 +79,6 @@ public class OppfolgingsBruker {
     String vedtak_status;
     String vedtak_status_endret;
     boolean trenger_revurdering;
+    boolean er_sykmeldt_med_arbeidsgiver;
     String brukers_situasjon;
 }
