@@ -288,6 +288,7 @@ public class ElasticIndexer {
     }
 
     public void indekser(AktoerId aktoerId) {
+        log.info("aktoerId " + aktoerId.aktoerId);
         OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
         log.info("bruker trenger vurdering " + bruker.isTrenger_vurdering());
         log.info("bruker vedtakstatus " + bruker.getVedtak_status());
