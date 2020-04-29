@@ -99,7 +99,7 @@ public class DbUtils {
                     .setEr_sykmeldt_med_arbeidsgiver(erSykmeldtMedArbeidsgiver && vedtakstatus == null)
                     .setVedtak_status(vedtakstatus)
                     .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
-                    .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode,kvalifiseringsgruppekode, vedtakstatus));
+                    .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
         }
 
         return bruker;
