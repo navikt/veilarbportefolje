@@ -89,7 +89,7 @@ public class Bruker {
                 .setNyForEnhet(bruker.isNy_for_enhet())
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(bruker.isTrenger_vurdering())
-                .setErSykmeldtMedArbeidsgiver(bruker.isEr_sykmeldt_med_arbeidsgiver())
+                .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
                 .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
