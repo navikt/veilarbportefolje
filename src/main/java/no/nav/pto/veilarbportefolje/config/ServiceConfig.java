@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
-import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;

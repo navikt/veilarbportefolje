@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.*;
-import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;

@@ -15,7 +15,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.feed.FeedConfig;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
-import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
@@ -111,9 +111,6 @@ public class ApplicationConfig implements ApiApplication {
     private OppfolgingFeedRepository oppfolgingFeedRepository;
 
     @Inject
-    private DialogFeedRepository dialogFeedRepository;
-
-    @Inject
     private BrukerRepository brukerRepository;
 
     @Inject
@@ -135,7 +132,6 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
         leggTilServlet(servletContext, new PopulerKrrServlet(krrService), "/internal/populer_krr");
         leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingFeedRepository), "/internal/reset_feed_oppfolging");
-        leggTilServlet(servletContext, new ResetDialogFeedServlet(dialogFeedRepository), "/internal/reset_feed_dialog");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
         leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
     }

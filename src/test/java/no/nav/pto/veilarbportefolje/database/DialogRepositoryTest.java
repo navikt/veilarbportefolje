@@ -1,9 +1,9 @@
-package no.nav.pto.veilarbportefolje.feed.dialog;
+package no.nav.pto.veilarbportefolje.database;
 
 
-import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogData;
+import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.feed.dialog.DialogDataFraFeed;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 
-public class DialogFeedRepositoryTest {
+public class DialogRepositoryTest {
 
 
     private DialogFeedRepository dialogFeedRepository;
@@ -36,19 +36,19 @@ public class DialogFeedRepositoryTest {
         Timestamp venteDato = new Timestamp(now - 1000);
 
         dialogFeedRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, endringsDato));
-        DialogDataFraFeed dialogFraDatabase = dialogFeedRepository.retrieveDialogData(AKTOER_ID.toString()).get();
+        DialogData dialogFraDatabase = dialogFeedRepository.retrieveDialogData(AKTOER_ID.toString()).get();
         verifiserData(venteDato, dialogFraDatabase, endringsDato);
     }
 
-    private DialogDataFraFeed lagDialogData(Timestamp venteDato, Timestamp endringsDato) {
-        return new DialogDataFraFeed()
+    private DialogData lagDialogData(Timestamp venteDato, Timestamp endringsDato) {
+        return new DialogData()
                 .setAktorId(AKTOER_ID.toString())
                 .setTidspunktEldsteUbehandlede(venteDato)
                 .setSisteEndring(endringsDato)
                 .setTidspunktEldsteVentende(venteDato);
     }
 
-    private void verifiserData(Timestamp date, DialogDataFraFeed dialogFraDatabase, Timestamp endringsDato) {
+    private void verifiserData(Timestamp date, DialogData dialogFraDatabase, Timestamp endringsDato) {
         assertThat(dialogFraDatabase.getTidspunktEldsteVentende(), is(date));
         assertThat(dialogFraDatabase.getTidspunktEldsteUbehandlede(), is(date));
         assertThat(dialogFraDatabase.getSisteEndring(), is(endringsDato));
@@ -60,7 +60,7 @@ public class DialogFeedRepositoryTest {
         Timestamp venteDato = new Timestamp(Instant.now().toEpochMilli()-1000);
 
         dialogFeedRepository.oppdaterDialogInfoForBruker(lagDialogData(venteDato, venteDato));
-        DialogDataFraFeed dialogFraDatabase = dialogFeedRepository.retrieveDialogData(AKTOER_ID.toString()).get();
+        DialogData dialogFraDatabase = dialogFeedRepository.retrieveDialogData(AKTOER_ID.toString()).get();
         verifiserData(venteDato, dialogFraDatabase, venteDato);
 
         Timestamp nyEndringsDato = new Timestamp(Instant.now().toEpochMilli());
