@@ -33,8 +33,6 @@ public class VedtakService implements KafkaConsumerService {
             case UTKAST_OPPRETTET:
             case BESLUTTER_PROSESS_STARTET:
             case BLI_BESLUTTER:
-            case OVERTA_FOR_BESLUTTER:
-            case OVERTA_FOR_VEILEDER:
             case GODKJENT_AV_BESLUTTER:
             case KLAR_TIL_BESLUTTER:
             case KLAR_TIL_VEILEDER: {
