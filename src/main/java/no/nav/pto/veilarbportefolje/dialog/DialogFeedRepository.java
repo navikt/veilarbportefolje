@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.feed.dialog;
+package no.nav.pto.veilarbportefolje.dialog;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
@@ -28,7 +28,7 @@ public class DialogFeedRepository {
         return new Timestamp(date.toInstant().toEpochMilli());
     }
 
-    public void oppdaterDialogInfoForBruker(DialogDataFraFeed dialog) {
+    public void oppdaterDialogInfoForBruker(DialogData dialog) {
         SqlUtils.upsert(db, "DIALOG")
             .set("VENTER_PA_BRUKER", toTimestamp(dialog.getTidspunktEldsteVentende()))
             .set("VENTER_PA_NAV", toTimestamp(dialog.getTidspunktEldsteUbehandlede()))
@@ -38,7 +38,7 @@ public class DialogFeedRepository {
             .where(WhereClause.equals("AKTOERID", dialog.getAktorId())).execute();
     }
 
-    public Try<DialogDataFraFeed> retrieveDialogData(String aktoerId) {
+    public Try<DialogData> retrieveDialogData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT * FROM DIALOG WHERE AKTOERID = ?",
                 new Object[] {aktoerId},
@@ -47,8 +47,8 @@ public class DialogFeedRepository {
     }
 
     @SneakyThrows
-    private DialogDataFraFeed mapToDialogData(ResultSet rs, int i) {
-        return new DialogDataFraFeed()
+    private DialogData mapToDialogData(ResultSet rs, int i) {
+        return new DialogData()
                 .setAktorId(rs.getString("AKTOERID"))
                 .setSisteEndring(rs.getTimestamp("OPPDATERT_KILDESYSTEM"))
                 .setTidspunktEldsteUbehandlede(rs.getTimestamp("VENTER_PA_NAV"))
