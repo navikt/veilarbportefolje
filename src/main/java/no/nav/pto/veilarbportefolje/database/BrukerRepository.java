@@ -193,6 +193,8 @@ public class BrukerRepository {
     public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
         boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
+        log.info("vedtakstotteFeatureErPa {}", vedtakstotteFeatureErPa);
+
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
                 .column("*")
