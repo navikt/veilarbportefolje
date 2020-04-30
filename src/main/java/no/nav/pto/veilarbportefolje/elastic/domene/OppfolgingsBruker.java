@@ -47,7 +47,6 @@ public class OppfolgingsBruker {
     boolean ny_for_veileder;
     boolean ny_for_enhet;
     boolean trenger_vurdering;
-    boolean under_vurdering;
     String venterpasvarfrabruker;
     String venterpasvarfranav;
     String nyesteutlopteaktivitet;

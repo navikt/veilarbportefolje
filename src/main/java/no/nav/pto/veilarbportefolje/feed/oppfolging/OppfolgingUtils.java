@@ -1,16 +1,11 @@
 package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
-
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
-import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Arrays.asList;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
 public class OppfolgingUtils {
     private static List<String> INNSATSGRUPPEKODER =  asList( "IKVAL", "BFORM", "BATT", "VARIG");
