@@ -12,23 +12,19 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.result.Result;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static java.time.Instant.now;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -83,8 +79,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                 }
                 oppdaterOppfolgingData(info);
 
-                CompletableFuture<Void> future = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
-
+                CompletableFuture<Result<AktoerId>> future = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
                 future.thenRun(() -> {
 
                     Duration timeElapsed = DateUtils.calculateTimeElapsed(info.getEndretTimestamp().toInstant());

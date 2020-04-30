@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
+import no.nav.pto.veilarbportefolje.result.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
@@ -44,11 +45,11 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.json.JsonUtils.toJson;
@@ -277,17 +278,12 @@ public class ElasticIndexer {
         }
     }
 
-    public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
-
-        CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
-
-        future.exceptionally(e -> {
-            throw new RuntimeException(e);
-        });
-        return future;
+    public CompletableFuture<Result<AktoerId>> indekserAsynkront(AktoerId aktoerId) {
+        Supplier<AktoerId> supplier = () -> indekser(aktoerId);
+        return Result.ofAsync(supplier);
     }
 
-    public void indekser(AktoerId aktoerId) {
+    public AktoerId indekser(AktoerId aktoerId) {
         OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
@@ -296,6 +292,7 @@ public class ElasticIndexer {
         } else {
             slettBruker(bruker);
         }
+        return aktoerId;
     }
 
     public void indekserBrukere(List<PersonId> personIds) {

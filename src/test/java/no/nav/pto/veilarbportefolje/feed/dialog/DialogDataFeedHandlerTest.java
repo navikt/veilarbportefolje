@@ -7,10 +7,12 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.Collections;
+import java.util.Date;
 
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static no.nav.pto.veilarbportefolje.feed.dialog.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
+import static no.nav.pto.veilarbportefolje.result.Result.ok;
 import static org.mockito.Mockito.*;
 
 public class DialogDataFeedHandlerTest {
@@ -24,7 +26,7 @@ public class DialogDataFeedHandlerTest {
     @Before
     public void setUp() {
         elasticIndexer = mock(ElasticIndexer.class);
-        when(elasticIndexer.indekserAsynkront(any())).thenReturn(CompletableFuture.runAsync(() -> {}));
+        when(elasticIndexer.indekserAsynkront(any())).thenReturn(supplyAsync(() -> ok(AktoerId.of(""))));
         dialogFeedRepository = mock(DialogFeedRepository.class);
         brukerRepository = mock(BrukerRepository.class);
         dialogDataFeedHandler = new DialogDataFeedHandler(brukerRepository, elasticIndexer, dialogFeedRepository, mock(UnleashService.class));
