@@ -289,6 +289,194 @@
             "boost": 1.0
           }
         },
+        "minArbeidslisteBla" : {
+          "bool" : {
+            "must" : [
+              {
+                "bool" : {
+                  "must" : [
+                    {
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term" : {
+                        "veileder_id" : {
+                          "value" : "Z000000",
+                          "boost" : 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              },
+              {
+                "match" : {
+                  "arbeidsliste_kategori" : {
+                    "query" : "BLA",
+                    "operator" : "OR",
+                    "prefix_length" : 0,
+                    "max_expansions" : 50,
+                    "fuzzy_transpositions" : true,
+                    "lenient" : false,
+                    "zero_terms_query" : "NONE",
+                    "auto_generate_synonyms_phrase_query" : true,
+                    "boost" : 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
+          }
+        },
+        "minArbeidslisteGronn" : {
+          "bool" : {
+            "must" : [
+              {
+                "bool" : {
+                  "must" : [
+                    {
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term" : {
+                        "veileder_id" : {
+                          "value" : "Z000000",
+                          "boost" : 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              },
+              {
+                "match" : {
+                  "arbeidsliste_kategori" : {
+                    "query" : "GRONN",
+                    "operator" : "OR",
+                    "prefix_length" : 0,
+                    "max_expansions" : 50,
+                    "fuzzy_transpositions" : true,
+                    "lenient" : false,
+                    "zero_terms_query" : "NONE",
+                    "auto_generate_synonyms_phrase_query" : true,
+                    "boost" : 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
+          }
+        },
+        "minArbeidslisteGul" : {
+          "bool" : {
+            "must" : [
+              {
+                "bool" : {
+                  "must" : [
+                    {
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term" : {
+                        "veileder_id" : {
+                          "value" : "Z000000",
+                          "boost" : 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              },
+              {
+                "match" : {
+                  "arbeidsliste_kategori" : {
+                    "query" : "GUL",
+                    "operator" : "OR",
+                    "prefix_length" : 0,
+                    "max_expansions" : 50,
+                    "fuzzy_transpositions" : true,
+                    "lenient" : false,
+                    "zero_terms_query" : "NONE",
+                    "auto_generate_synonyms_phrase_query" : true,
+                    "boost" : 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
+          }
+        },
+        "minArbeidslisteLilla" : {
+          "bool" : {
+            "must" : [
+              {
+                "bool" : {
+                  "must" : [
+                    {
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term" : {
+                        "veileder_id" : {
+                          "value" : "Z000000",
+                          "boost" : 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
+                }
+              },
+              {
+                "match" : {
+                  "arbeidsliste_kategori" : {
+                    "query" : "LILLA",
+                    "operator" : "OR",
+                    "prefix_length" : 0,
+                    "max_expansions" : 50,
+                    "fuzzy_transpositions" : true,
+                    "lenient" : false,
+                    "zero_terms_query" : "NONE",
+                    "auto_generate_synonyms_phrase_query" : true,
+                    "boost" : 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
+          }
+        },
         "moterMedNAVIdag" : {
           "bool" : {
             "must" : [

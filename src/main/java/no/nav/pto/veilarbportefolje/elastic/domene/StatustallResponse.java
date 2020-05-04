@@ -36,6 +36,10 @@ public class StatustallResponse {
                 Bucket underVurdering;
                 Bucket permitterteEtterNiendeMars;
                 Bucket ikkePermitterteEtterNiendeMars;
+                Bucket minArbeidslisteBla;
+                Bucket minArbeidslisteLilla;
+                Bucket minArbeidslisteGronn;
+                Bucket minArbeidslisteGul;
             }
         }
     }
