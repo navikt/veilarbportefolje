@@ -24,6 +24,10 @@ public class StatusTall {
     public long underVurdering;
     public long permitterteEtterNiendeMars;
     public long ikkePermitterteEtterNiendeMars;
+    public long minArbeidslisteBla;
+    public long minArbeidslisteLilla;
+    public long minArbeidslisteGronn;
+    public long minArbeidslisteGul;
 
     public StatusTall() {
     }
@@ -46,5 +50,9 @@ public class StatusTall {
         this.underVurdering = buckets.getUnderVurdering().getDoc_count();
         this.permitterteEtterNiendeMars = buckets.getPermitterteEtterNiendeMars().getDoc_count();
         this.ikkePermitterteEtterNiendeMars = buckets.getIkkePermitterteEtterNiendeMars().getDoc_count();
+        this.minArbeidslisteBla = buckets.getMinArbeidslisteBla().getDoc_count();
+        this.minArbeidslisteLilla = buckets.getMinArbeidslisteLilla().getDoc_count();
+        this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
+        this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
     }
 }
