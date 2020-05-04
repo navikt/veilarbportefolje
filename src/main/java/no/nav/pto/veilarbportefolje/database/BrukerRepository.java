@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.database;
 
+import io.vavr.CheckedFunction0;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;

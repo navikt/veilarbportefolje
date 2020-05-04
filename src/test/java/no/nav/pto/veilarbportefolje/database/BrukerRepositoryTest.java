@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import com.google.common.base.Joiner;
 import io.vavr.control.Try;
+import lombok.val;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;

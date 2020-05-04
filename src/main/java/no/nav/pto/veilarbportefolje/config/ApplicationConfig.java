@@ -14,8 +14,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.feed.FeedConfig;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
-import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
@@ -108,7 +107,7 @@ public class ApplicationConfig implements ApiApplication {
     private KrrService krrService;
 
     @Inject
-    private OppfolgingFeedRepository oppfolgingFeedRepository;
+    private OppfolgingRepository oppfolgingRepository;
 
     @Inject
     private BrukerRepository brukerRepository;
@@ -131,7 +130,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
         leggTilServlet(servletContext, new PopulerKrrServlet(krrService), "/internal/populer_krr");
-        leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingFeedRepository), "/internal/reset_feed_oppfolging");
+        leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingRepository), "/internal/reset_feed_oppfolging");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
         leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
     }

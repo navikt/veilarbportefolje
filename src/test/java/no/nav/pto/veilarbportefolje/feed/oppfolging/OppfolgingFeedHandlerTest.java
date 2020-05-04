@@ -9,25 +9,20 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import static java.time.Duration.ofSeconds;
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 public class OppfolgingFeedHandlerTest {
@@ -49,7 +44,7 @@ public class OppfolgingFeedHandlerTest {
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
-    private OppfolgingFeedRepository oppfolgingFeedRepository;
+    private OppfolgingRepository oppfolgingRepository;
     private VeilederService veilederService;
 
     private OppfolgingFeedHandler oppfolgingFeedHandler;
@@ -61,14 +56,14 @@ public class OppfolgingFeedHandlerTest {
         arbeidslisteService = mock(ArbeidslisteService.class);
         brukerRepository = mock(BrukerRepository.class);
         elasticIndexer = mock(ElasticIndexer.class);
-        oppfolgingFeedRepository = mock(OppfolgingFeedRepository.class);
+        oppfolgingRepository = mock(OppfolgingRepository.class);
         veilederService = mock(VeilederService.class);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
                 elasticIndexer,
-                oppfolgingFeedRepository,
+                oppfolgingRepository,
                 veilederService,
                 new TestTransactor());
     }
@@ -156,18 +151,18 @@ public class OppfolgingFeedHandlerTest {
     }
 
     private void givenBrukerIkkeHarNoeOppfolgingsData() {
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString()))
+        when(oppfolgingRepository.retrieveOppfolgingData(AKTOER_ID))
                 .thenReturn(Try.failure(new RuntimeException()));
     }
 
     private void givenBrukerBlirFjernetFraOppfolging() {
         nyInformasjon = brukerInfo(false, null);
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString()))
+        when(oppfolgingRepository.retrieveOppfolgingData(AKTOER_ID))
                 .thenReturn(Try.success(nyInformasjon));
     }
 
     private void givenBrukersHarOppfolgingsData() {
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString()))
+        when(oppfolgingRepository.retrieveOppfolgingData(AKTOER_ID))
                 .thenReturn(Try.success(eksisterendeInformasjon));
     }
 
@@ -187,7 +182,7 @@ public class OppfolgingFeedHandlerTest {
     }
 
     private void givenBrukerManglerEnhet(){
-        when(oppfolgingFeedRepository.retrieveOppfolgingData(AKTOER_ID.toString())).thenReturn(Try.success(eksisterendeInformasjon));
+        when(oppfolgingRepository.retrieveOppfolgingData(AKTOER_ID)).thenReturn(Try.success(eksisterendeInformasjon));
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
         when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.failure(new RuntimeException()));
     }
@@ -202,15 +197,15 @@ public class OppfolgingFeedHandlerTest {
 
     private void thenOppfolgingDataErOppdatert() {
         verify(elasticIndexer).indekserAsynkront(AKTOER_ID);
-        verify(oppfolgingFeedRepository).oppdaterOppfolgingData(nyInformasjon);
+        verify(oppfolgingRepository).oppdaterOppfolgingData(nyInformasjon);
     }
 
     private void thenArbeidslisteErSlettet() {
-        verify(arbeidslisteService).deleteArbeidslisteForAktoerid(AKTOER_ID);
+        verify(arbeidslisteService).deleteArbeidslisteForAktoerId(AKTOER_ID);
     }
 
     private void thenArbeidsliteErIkkeSlettet() {
-        verify(arbeidslisteService, never()).deleteArbeidslisteForAktoerid(AKTOER_ID);
+        verify(arbeidslisteService, never()).deleteArbeidslisteForAktoerId(AKTOER_ID);
     }
 
 

@@ -12,17 +12,14 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.jdbc.Transactor;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,7 +39,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
-    private OppfolgingFeedRepository oppfolgingFeedRepository;
+    private OppfolgingRepository oppfolgingRepository;
     private VeilederService veilederService;
     private Transactor transactor;
 
@@ -50,13 +47,13 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
                                  ElasticIndexer elasticIndexer,
-                                 OppfolgingFeedRepository oppfolgingFeedRepository,
+                                 OppfolgingRepository oppfolgingRepository,
                                  VeilederService veilederService,
                                  Transactor transactor) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
-        this.oppfolgingFeedRepository = oppfolgingFeedRepository;
+        this.oppfolgingRepository = oppfolgingRepository;
         this.veilederService = veilederService;
         this.transactor = transactor;
 
@@ -100,7 +97,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             });
 
             finnMaxFeedId(data).ifPresent(id -> {
-                oppfolgingFeedRepository.updateOppfolgingFeedId(id);
+                oppfolgingRepository.updateOppfolgingFeedId(id);
                 lastEntry = id;
             });
 
@@ -117,29 +114,30 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon oppfolgingData) {
         AktoerId aktoerId = AktoerId.of(oppfolgingData.getAktoerid());
 
-        Try<BrukerOppdatertInformasjon> hentOppfolgingData = oppfolgingFeedRepository.retrieveOppfolgingData(aktoerId.toString());
+        Try<BrukerOppdatertInformasjon> hentOppfolgingData = oppfolgingRepository.retrieveOppfolgingData(aktoerId);
+
         boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
-                arbeidslisteService.deleteArbeidslisteForAktoerid(aktoerId);
+                arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
             }
-            oppfolgingFeedRepository.oppdaterOppfolgingData(oppfolgingData);
+            oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
         });
 
     }
 
-    private static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {
+    public static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {
         return !oppfolgingData.getOppfolging();
     }
 
-    private boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(Try<BrukerOppdatertInformasjon> hentOppfolgingData, AktoerId aktoerId) {
+    public boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(Try<BrukerOppdatertInformasjon> hentOppfolgingData, AktoerId aktoerId) {
         return !hentOppfolgingData
                 .map(oppfolgingData -> veilederHarTilgangTilEnhet(aktoerId, oppfolgingData))
                 .getOrElse(false);
     }
 
-    private boolean veilederHarTilgangTilEnhet(AktoerId aktoerId, BrukerOppdatertInformasjon oppfolgingData) {
+    public boolean veilederHarTilgangTilEnhet(AktoerId aktoerId, BrukerOppdatertInformasjon oppfolgingData) {
         VeilederId veilederId = VeilederId.of(oppfolgingData.getVeileder());
         return brukerRepository
                 .retrievePersonid(aktoerId)

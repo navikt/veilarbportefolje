@@ -77,7 +77,7 @@ public class ArbeidslisteService {
         return brukerRepository.retrieveEnhet(fnr);
     }
 
-    public void deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
+    public void deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
         arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
     }
 

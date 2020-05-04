@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
@@ -18,11 +18,11 @@ import static no.nav.pto.veilarbportefolje.internal.AuthorizationUtils.isBasicAu
 @Slf4j
 public class ResetOppfolgingFeedServlet extends HttpServlet {
 
-    private OppfolgingFeedRepository oppfolgingFeedRepository;
+    private OppfolgingRepository oppfolgingRepository;
 
     @Inject
-    public ResetOppfolgingFeedServlet(OppfolgingFeedRepository oppfolgingFeedRepository) {
-        this.oppfolgingFeedRepository = oppfolgingFeedRepository;
+    public ResetOppfolgingFeedServlet(OppfolgingRepository oppfolgingRepository) {
+        this.oppfolgingRepository = oppfolgingRepository;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ResetOppfolgingFeedServlet extends HttpServlet {
         }
 
         if (isBasicAuthAuthorized(req)) {
-            oppfolgingFeedRepository.updateOppfolgingFeedId(fromId);
+            oppfolgingRepository.updateOppfolgingFeedId(fromId);
             resp.getWriter().write(String.format("Stilte oppfolging-feeeden tilbake til id: %s", fromId));
             resp.setStatus(200);
 

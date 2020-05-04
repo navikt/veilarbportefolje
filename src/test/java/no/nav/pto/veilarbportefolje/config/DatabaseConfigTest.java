@@ -5,7 +5,7 @@ import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.*;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.Bean;
@@ -60,7 +60,7 @@ public class DatabaseConfigTest {
     }
 
     @Bean
-    public OppfolgingFeedRepository OppfolgingFeedRepository(JdbcTemplate db){ return new OppfolgingFeedRepository(db); }
+    public OppfolgingRepository OppfolgingFeedRepository(JdbcTemplate db){ return new OppfolgingRepository(db); }
 
     @Bean
     public DialogFeedRepository dialogFeedRepository(JdbcTemplate db) { return new DialogFeedRepository(db); }

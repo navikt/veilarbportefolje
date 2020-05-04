@@ -91,6 +91,7 @@ public class AktoerServiceImpl implements AktoerService {
         return typeMap;
     }
 
+    @Deprecated
     public Try<Fnr> hentFnrFraAktorId(AktoerId aktoerId) {
         return Try.of(() -> aktorService.getFnr(aktoerId.toString()).orElseThrow(IllegalStateException::new)).map(Fnr::of);
     }
