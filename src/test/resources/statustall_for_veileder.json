@@ -30,108 +30,9 @@
                 }
               },
               {
-                "match": {
-                  "formidlingsgruppekode": {
-                    "query": "IARBS",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              }
-            ],
-            "must_not": [
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "BATT",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "BFORM",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "IKVAL",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "VURDU",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "OPPFI",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "VARIG",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
+                "term": {
+                  "er_sykmeldt_med_arbeidsgiver": {
+                    "value": true,
                     "boost": 1.0
                   }
                 }
@@ -219,86 +120,86 @@
             "boost": 1.0
           }
         },
-        "ikkePermitterteEtterNiendeMars" : {
-          "bool" : {
-            "must" : [
+        "ikkePermitterteEtterNiendeMars": {
+          "bool": {
+            "must": [
               {
-                "bool" : {
-                  "should" : [
+                "bool": {
+                  "should": [
                     {
-                      "bool" : {
-                        "must_not" : [
+                      "bool": {
+                        "must_not": [
                           {
-                            "match" : {
-                              "brukers_situasjon" : {
-                                "query" : "ER_PERMITTERT",
-                                "operator" : "OR",
-                                "prefix_length" : 0,
-                                "max_expansions" : 50,
-                                "fuzzy_transpositions" : true,
-                                "lenient" : false,
-                                "zero_terms_query" : "NONE",
-                                "auto_generate_synonyms_phrase_query" : true,
-                                "boost" : 1.0
+                            "match": {
+                              "brukers_situasjon": {
+                                "query": "ER_PERMITTERT",
+                                "operator": "OR",
+                                "prefix_length": 0,
+                                "max_expansions": 50,
+                                "fuzzy_transpositions": true,
+                                "lenient": false,
+                                "zero_terms_query": "NONE",
+                                "auto_generate_synonyms_phrase_query": true,
+                                "boost": 1.0
                               }
                             }
                           }
                         ],
-                        "adjust_pure_negative" : true,
-                        "boost" : 1.0
+                        "adjust_pure_negative": true,
+                        "boost": 1.0
                       }
                     },
                     {
-                      "bool" : {
-                        "must_not" : [
+                      "bool": {
+                        "must_not": [
                           {
-                            "range" : {
-                              "oppfolging_startdato" : {
-                                "from" : "2020-03-10T00:00:00Z",
-                                "to" : null,
-                                "include_lower" : true,
-                                "include_upper" : true,
-                                "boost" : 1.0
+                            "range": {
+                              "oppfolging_startdato": {
+                                "from": "2020-03-10T00:00:00Z",
+                                "to": null,
+                                "include_lower": true,
+                                "include_upper": true,
+                                "boost": 1.0
                               }
                             }
                           }
                         ],
-                        "adjust_pure_negative" : true,
-                        "boost" : 1.0
+                        "adjust_pure_negative": true,
+                        "boost": 1.0
                       }
                     }
                   ],
-                  "adjust_pure_negative" : true,
-                  "boost" : 1.0
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
                 }
               },
               {
-                "bool" : {
-                  "must" : [
+                "bool": {
+                  "must": [
                     {
-                      "term" : {
-                        "enhet_id" : {
-                          "value" : "0000",
-                          "boost" : 1.0
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
                         }
                       }
                     },
                     {
-                      "term" : {
-                        "veileder_id" : {
-                          "value" : "Z000000",
-                          "boost" : 1.0
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
                         }
                       }
                     }
                   ],
-                  "adjust_pure_negative" : true,
-                  "boost" : 1.0
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
                 }
               }
             ],
-            "adjust_pure_negative" : true,
-            "boost" : 1.0
+            "adjust_pure_negative": true,
+            "boost": 1.0
           }
         },
         "inaktiveBrukere": {
@@ -388,49 +289,237 @@
             "boost": 1.0
           }
         },
-        "moterMedNAVIdag" : {
-          "bool" : {
-            "must" : [
+        "minArbeidslisteBla": {
+          "bool": {
+            "must": [
               {
-                "bool" : {
-                  "must" : [
+                "bool": {
+                  "must": [
                     {
-                      "term" : {
-                        "enhet_id" : {
-                          "value" : "0000",
-                          "boost" : 1.0
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
                         }
                       }
                     },
                     {
-                      "term" : {
-                        "veileder_id" : {
-                          "value" : "Z000000",
-                          "boost" : 1.0
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
                         }
                       }
                     }
                   ],
-                  "adjust_pure_negative" : true,
-                  "boost" : 1.0
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
                 }
-              }
-            ],
-            "should" : [
+              },
               {
-                "range" : {
-                  "aktivitet_mote_startdato" : {
-                    "from" : "fromDate",
-                    "to" : "toDate",
-                    "include_lower" : true,
-                    "include_upper" : false,
-                    "boost" : 1.0
+                "match": {
+                  "arbeidsliste_kategori": {
+                    "query": "BLA",
+                    "operator": "OR",
+                    "prefix_length": 0,
+                    "max_expansions": 50,
+                    "fuzzy_transpositions": true,
+                    "lenient": false,
+                    "zero_terms_query": "NONE",
+                    "auto_generate_synonyms_phrase_query": true,
+                    "boost": 1.0
                   }
                 }
               }
             ],
-            "adjust_pure_negative" : true,
-            "boost" : 1.0
+            "adjust_pure_negative": true,
+            "boost": 1.0
+          }
+        },
+        "minArbeidslisteGronn": {
+          "bool": {
+            "must": [
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
+                }
+              },
+              {
+                "match": {
+                  "arbeidsliste_kategori": {
+                    "query": "GRONN",
+                    "operator": "OR",
+                    "prefix_length": 0,
+                    "max_expansions": 50,
+                    "fuzzy_transpositions": true,
+                    "lenient": false,
+                    "zero_terms_query": "NONE",
+                    "auto_generate_synonyms_phrase_query": true,
+                    "boost": 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative": true,
+            "boost": 1.0
+          }
+        },
+        "minArbeidslisteGul": {
+          "bool": {
+            "must": [
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
+                }
+              },
+              {
+                "match": {
+                  "arbeidsliste_kategori": {
+                    "query": "GUL",
+                    "operator": "OR",
+                    "prefix_length": 0,
+                    "max_expansions": 50,
+                    "fuzzy_transpositions": true,
+                    "lenient": false,
+                    "zero_terms_query": "NONE",
+                    "auto_generate_synonyms_phrase_query": true,
+                    "boost": 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative": true,
+            "boost": 1.0
+          }
+        },
+        "minArbeidslisteLilla": {
+          "bool": {
+            "must": [
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
+                }
+              },
+              {
+                "match": {
+                  "arbeidsliste_kategori": {
+                    "query": "LILLA",
+                    "operator": "OR",
+                    "prefix_length": 0,
+                    "max_expansions": 50,
+                    "fuzzy_transpositions": true,
+                    "lenient": false,
+                    "zero_terms_query": "NONE",
+                    "auto_generate_synonyms_phrase_query": true,
+                    "boost": 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative": true,
+            "boost": 1.0
+          }
+        },
+        "moterMedNAVIdag": {
+          "bool": {
+            "must": [
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
+                        }
+                      }
+                    },
+                    {
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
+                }
+              }
+            ],
+            "should": [
+              {
+                "range": {
+                  "aktivitet_mote_startdato": {
+                    "from": "fromDate",
+                    "to": "toDate",
+                    "include_lower": true,
+                    "include_upper": false,
+                    "boost": 1.0
+                  }
+                }
+              }
+            ],
+            "adjust_pure_negative": true,
+            "boost": 1.0
           }
         },
         "nyeBrukere": {
@@ -513,62 +602,62 @@
             "boost": 1.0
           }
         },
-        "permitterteEtterNiendeMars" : {
-          "bool" : {
-            "must" : [
+        "permitterteEtterNiendeMars": {
+          "bool": {
+            "must": [
               {
-                "match" : {
-                  "brukers_situasjon" : {
-                    "query" : "ER_PERMITTERT",
-                    "operator" : "OR",
-                    "prefix_length" : 0,
-                    "max_expansions" : 50,
-                    "fuzzy_transpositions" : true,
-                    "lenient" : false,
-                    "zero_terms_query" : "NONE",
-                    "auto_generate_synonyms_phrase_query" : true,
-                    "boost" : 1.0
+                "match": {
+                  "brukers_situasjon": {
+                    "query": "ER_PERMITTERT",
+                    "operator": "OR",
+                    "prefix_length": 0,
+                    "max_expansions": 50,
+                    "fuzzy_transpositions": true,
+                    "lenient": false,
+                    "zero_terms_query": "NONE",
+                    "auto_generate_synonyms_phrase_query": true,
+                    "boost": 1.0
                   }
                 }
               },
               {
-                "range" : {
-                  "oppfolging_startdato" : {
-                    "from" : "2020-03-10T00:00:00Z",
-                    "to" : null,
-                    "include_lower" : true,
-                    "include_upper" : true,
-                    "boost" : 1.0
+                "range": {
+                  "oppfolging_startdato": {
+                    "from": "2020-03-10T00:00:00Z",
+                    "to": null,
+                    "include_lower": true,
+                    "include_upper": true,
+                    "boost": 1.0
                   }
                 }
               },
               {
-                "bool" : {
-                  "must" : [
+                "bool": {
+                  "must": [
                     {
-                      "term" : {
-                        "enhet_id" : {
-                          "value" : "0000",
-                          "boost" : 1.0
+                      "term": {
+                        "enhet_id": {
+                          "value": "0000",
+                          "boost": 1.0
                         }
                       }
                     },
                     {
-                      "term" : {
-                        "veileder_id" : {
-                          "value" : "Z000000",
-                          "boost" : 1.0
+                      "term": {
+                        "veileder_id": {
+                          "value": "Z000000",
+                          "boost": 1.0
                         }
                       }
                     }
                   ],
-                  "adjust_pure_negative" : true,
-                  "boost" : 1.0
+                  "adjust_pure_negative": true,
+                  "boost": 1.0
                 }
               }
             ],
-            "adjust_pure_negative" : true,
-            "boost" : 1.0
+            "adjust_pure_negative": true,
+            "boost": 1.0
           }
         },
         "totalt": {

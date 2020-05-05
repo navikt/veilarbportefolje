@@ -28,9 +28,10 @@ public class Filtervalg {
     public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
     public String navnEllerFnrQuery;
     public List<String> registreringstype = new ArrayList<>();
+    public List<String> arbeidslisteKategori = new ArrayList<>();
 
     public boolean harAktiveFilter() {
-         return harFerdigFilter() ||
+        return harFerdigFilter() ||
                 harYtelsefilter() ||
                 !alder.isEmpty() ||
                 !kjonn.isEmpty() ||
@@ -44,8 +45,9 @@ public class Filtervalg {
                 !tiltakstyper.isEmpty() ||
                 !hovedmal.isEmpty() ||
                 !registreringstype.isEmpty() ||
-                 harManuellBrukerStatus() ||
-                 harNavnEllerFnrQuery();
+                !arbeidslisteKategori.isEmpty() ||
+                harManuellBrukerStatus() ||
+                harNavnEllerFnrQuery();
     }
 
     private boolean harFerdigFilter() {
@@ -65,7 +67,7 @@ public class Filtervalg {
     }
 
     public boolean harNavnEllerFnrQuery() {
-        return navnEllerFnrQuery !=null && StringUtils.isNotBlank(navnEllerFnrQuery);
+        return navnEllerFnrQuery != null && StringUtils.isNotBlank(navnEllerFnrQuery);
     }
 
     public boolean valider() {
