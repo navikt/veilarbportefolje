@@ -21,6 +21,6 @@ public class DialogService implements KafkaConsumerService {
     public void behandleKafkaMelding(String kafkaMelding) {
         DialogData melding = fromJson(kafkaMelding, DialogData.class);
         dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
-        elasticIndexer.indekserAsynkront(AktoerId.of(melding.getAktorId()));
+        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
     }
 }
