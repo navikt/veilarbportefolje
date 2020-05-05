@@ -225,7 +225,14 @@ public class ElasticQueryBuilder {
                         .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
-                queryBuilder = matchQuery("er_sykmeldt_med_arbeidsgiver", true);
+                queryBuilder = boolQuery()
+                        .must(matchQuery("formidlingsgruppekode", "IARBS"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BATT"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BFORM"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "IKVAL"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VURDU"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
+                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"));
                 break;
             case UNDER_VURDERING:
                 queryBuilder = existsQuery("vedtak_status");
