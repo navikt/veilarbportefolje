@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
+import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -56,6 +57,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
         byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
+        byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
 
         if (filtervalg.harYtelsefilter()) {
 
@@ -255,7 +257,7 @@ public class ElasticQueryBuilder {
         return boolQuery;
     }
 
-    static<T> BoolQueryBuilder byggManuellFilter (List<T> filtervalgsListe, BoolQueryBuilder queryBuilder, String matchQueryString) {
+    static <T> BoolQueryBuilder byggManuellFilter(List<T> filtervalgsListe, BoolQueryBuilder queryBuilder, String matchQueryString) {
         if (!filtervalgsListe.isEmpty()) {
             BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
             filtervalgsListe.forEach(filtervalg -> boolQueryBuilder.should(matchQuery(matchQueryString, filtervalg)));
@@ -384,7 +386,11 @@ public class ElasticQueryBuilder {
                                 moterMedNavIdag(filtrereVeilederOgEnhet),
                                 mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "vedtak_status"),
                                 permitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet),
-                                ikkePermitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet)
+                                ikkePermitterteEtterNiendeMarsStatusTall(filtrereVeilederOgEnhet),
+                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
+                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
+                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
+                                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
                         ));
     }
 
@@ -446,6 +452,15 @@ public class ElasticQueryBuilder {
         );
     }
 
+    private static KeyedFilter mustMatchQuery(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String matchQuery, String value) {
+        return new KeyedFilter(
+                key,
+                boolQuery()
+                        .must(filtrereVeilederOgEnhet)
+                        .must(matchQuery(matchQuery, value))
+        );
+    }
+
     private static KeyedFilter ikkeIavtaltAktivitet(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new KeyedFilter(
                 "ikkeIavtaltAktivitet",
@@ -489,4 +504,3 @@ public class ElasticQueryBuilder {
         return format("%s.contains(doc.veileder_id.value)", medKlammer);
     }
 }
-
