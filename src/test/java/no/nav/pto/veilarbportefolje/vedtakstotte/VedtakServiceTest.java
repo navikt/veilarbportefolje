@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,7 +33,7 @@ public class VedtakServiceTest {
     public void setup (){
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class));
+        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class), mock(AktoerService.class));
 
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
 

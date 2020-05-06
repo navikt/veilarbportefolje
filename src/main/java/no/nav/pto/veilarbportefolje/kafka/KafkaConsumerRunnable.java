@@ -12,12 +12,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
-import org.slf4j.MDC;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Optional;
 
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;

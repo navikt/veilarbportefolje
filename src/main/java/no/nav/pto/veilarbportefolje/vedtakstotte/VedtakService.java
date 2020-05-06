@@ -4,6 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
+
+import java.util.Collections;
 
 import static no.nav.json.JsonUtils.fromJson;
 
@@ -12,10 +15,12 @@ public class VedtakService implements KafkaConsumerService {
 
     private VedtakStatusRepository vedtakStatusRepository;
     private ElasticIndexer elasticIndexer;
+    private AktoerService aktoerService;
 
-    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
+    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
         this.vedtakStatusRepository = vedtakStatusRepository;
         this.elasticIndexer = elasticIndexer;
+        this.aktoerService = aktoerService;
     }
 
     public void behandleKafkaMelding(String melding) {
@@ -43,19 +48,28 @@ public class VedtakService implements KafkaConsumerService {
 
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
-        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+        indekserBruker(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
-        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+        indekserBruker(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
-        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+        indekserBruker(AktoerId.of(melding.getAktorId()));
+    }
+
+    private void indekserBruker (AktoerId aktoerId) {
+        try {
+            elasticIndexer.indekser(aktoerId);
+        } catch (NullPointerException e) {
+            aktoerService.hentPersonidFraAktoerid(aktoerId)
+                    .onSuccess(personId -> elasticIndexer.indekserBrukere(Collections.singletonList(personId)));
+        }
     }
 }
