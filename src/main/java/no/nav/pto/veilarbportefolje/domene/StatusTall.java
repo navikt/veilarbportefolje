@@ -32,7 +32,7 @@ public class StatusTall {
     public StatusTall() {
     }
 
-    public StatusTall(StatustallBuckets buckets) {
+    public StatusTall(StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
         this.totalt = buckets.getTotalt().getDoc_count();
         this.nyeBrukere = buckets.getNyeBrukere().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
@@ -47,12 +47,12 @@ public class StatusTall {
         this.minArbeidsliste = buckets.getMinArbeidsliste().getDoc_count();
         this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
         this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
-        this.underVurdering = buckets.getUnderVurdering().getDoc_count();
         this.permitterteEtterNiendeMars = buckets.getPermitterteEtterNiendeMars().getDoc_count();
         this.ikkePermitterteEtterNiendeMars = buckets.getIkkePermitterteEtterNiendeMars().getDoc_count();
         this.minArbeidslisteBla = buckets.getMinArbeidslisteBla().getDoc_count();
         this.minArbeidslisteLilla = buckets.getMinArbeidslisteLilla().getDoc_count();
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
+        this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count():0;
     }
 }
