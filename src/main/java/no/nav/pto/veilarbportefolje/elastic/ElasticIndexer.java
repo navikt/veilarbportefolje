@@ -298,6 +298,17 @@ public class ElasticIndexer {
         }
     }
 
+    public void indekser(Fnr fnr) {
+        OppfolgingsBruker bruker = brukerRepository.hentBruker(fnr);
+        if (erUnderOppfolging(bruker)) {
+            leggTilAktiviteter(bruker);
+            leggTilTiltak(bruker);
+            skrivTilIndeks(getAlias(), bruker);
+        } else {
+            slettBruker(bruker);
+        }
+    }
+
     public void indekserBrukere(List<PersonId> personIds) {
         CollectionUtils.partition(personIds, BATCH_SIZE).forEach(batch -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);

@@ -6,8 +6,6 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 
-import java.util.Collections;
-
 import static no.nav.json.JsonUtils.fromJson;
 
 @Slf4j
@@ -68,8 +66,8 @@ public class VedtakService implements KafkaConsumerService {
         try {
             elasticIndexer.indekser(aktoerId);
         } catch (NullPointerException e) {
-            aktoerService.hentPersonidFraAktoerid(aktoerId)
-                    .onSuccess(personId -> elasticIndexer.indekserBrukere(Collections.singletonList(personId)));
+            aktoerService.hentFnrFraAktorId(aktoerId)
+                    .onSuccess(elasticIndexer::indekser);
         }
     }
 }

@@ -94,8 +94,6 @@ public class DbUtils {
 
         if(vedtakstotteFeatureErPa) {
             String vedtakstatus = rs.getString("VEDTAKSTATUS");
-
-            log.info("vedtakstatusFraDB {}", vedtakstatus);
             bruker
                     .setTrenger_vurdering(trengerVurdering && vedtakstatus == null)
                     .setEr_sykmeldt_med_arbeidsgiver(erSykmeldtMedArbeidsgiver && vedtakstatus == null)
