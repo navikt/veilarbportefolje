@@ -1,21 +1,19 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.util.StringUtils;
+import no.nav.pto.veilarbportefolje.util.Result;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 import static no.nav.json.JsonUtils.fromJson;
 
@@ -29,8 +27,6 @@ public class OppfolgingService implements KafkaConsumerService {
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
 
-    public final static Supplier<IllegalStateException> ILLEGAL_STATE_EXCEPTION = () -> new IllegalStateException();
-
     public OppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elastic, VeilederService veilederService, NavKontorService navKontorService, ArbeidslisteService arbeidslisteService) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
@@ -42,42 +38,49 @@ public class OppfolgingService implements KafkaConsumerService {
     @Override
     @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
-        val dto = fromJson(kafkaMelding, OppfolgingDTO.class);
-        val startDato = dto.getStartDato();
-        val aktoerId = dto.getAktoerId();
+        OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding, OppfolgingStatus.class);
+        AktoerId aktoerId = oppfolgingStatus.getAktoerId();
 
-        if (startDato == null) {
+        if (oppfolgingStatus.getStartDato() == null) {
             log.warn("Bruker {} har ikke startDato", aktoerId);
         }
 
-        if (brukerenIkkeLengerErUnderOppfolging(dto) || eksisterendeVeilederIkkeLengerHarTilgangTilBruker(aktoerId)) {
-            arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
+        if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) || eksisterendeVeilederHarIkkeTilgangTilBruker(aktoerId)) {
+            Result<Integer> result = arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
+            if (result.isErr()) {
+                log.error("Kunne ikke slette arbeidsliste for bruker {}", aktoerId);
+            }
         }
-        oppfolgingRepository.oppdaterOppfolgingData(dto);
+
+        oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).ok()
+                .orElseThrow(IllegalStateException::new);
+
+        elastic.indekser(aktoerId).ok()
+                .orElseThrow(IllegalStateException::new);
     }
 
-    boolean brukerenHarEnVeileder(AktoerId aktoerId) {
-        Try<BrukerOppdatertInformasjon> result = oppfolgingRepository.retrieveOppfolgingData(aktoerId);
-        return result
-                .map(BrukerOppdatertInformasjon::getVeileder)
-                .map(StringUtils::notNullOrEmpty)
-                .getOrElse(false);
-    }
-
-    boolean eksisterendeVeilederIkkeLengerHarTilgangTilBruker(AktoerId aktoerId) {
-        return brukerenHarEnVeileder(aktoerId) && !eksisterendeVeilederHarTilgangTilBruker(aktoerId);
+    boolean eksisterendeVeilederHarIkkeTilgangTilBruker(AktoerId aktoerId) {
+        return !eksisterendeVeilederHarTilgangTilBruker(aktoerId);
     }
 
     boolean eksisterendeVeilederHarTilgangTilBruker(AktoerId aktoerId) {
-        BrukerOppdatertInformasjon info = oppfolgingRepository.retrieveOppfolgingData(aktoerId).getOrElseThrow(ILLEGAL_STATE_EXCEPTION);
-        String enhet = navKontorService.hentEnhetForBruker(aktoerId).getOrElseThrow(ILLEGAL_STATE_EXCEPTION);
-        List<VeilederId> veilederePaaBrukerSinEnhet = veilederService.getIdenter(enhet);
+        Optional<VeilederId> eksisterendeVeileder = oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
+                .map(info -> info.getVeileder())
+                .map(VeilederId::new);
 
-        VeilederId eksisterendeVeileder = VeilederId.of(info.getVeileder());
-        return veilederePaaBrukerSinEnhet.contains(eksisterendeVeileder);
+        if (!eksisterendeVeileder.isPresent()) {
+            return false;
+        }
+
+        Result<List<VeilederId>> result = navKontorService.hentEnhetForBruker(aktoerId)
+                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet));
+
+        return eksisterendeVeileder
+                .flatMap(veileder -> result.ok().map(veilederePaaEnhet -> veilederePaaEnhet.contains(veileder)))
+                .orElse(false);
     }
 
-    static boolean brukerenIkkeLengerErUnderOppfolging(OppfolgingDTO dto) {
-        return !dto.isOppfolging();
+    static boolean brukerenIkkeLengerErUnderOppfolging(OppfolgingStatus oppfolgingStatus) {
+        return !oppfolgingStatus.isOppfolging();
     }
 }

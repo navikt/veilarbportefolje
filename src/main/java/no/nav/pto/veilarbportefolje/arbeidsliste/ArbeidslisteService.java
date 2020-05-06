@@ -1,15 +1,13 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
+import no.nav.pto.veilarbportefolje.util.Result;
 
 import javax.inject.Inject;
 
@@ -77,8 +75,8 @@ public class ArbeidslisteService {
         return brukerRepository.retrieveEnhet(fnr);
     }
 
-    public void deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
-        arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
+    public Result<Integer> deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
+        return arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
     }
 
     private Try<AktoerId> hentAktoerId(Fnr fnr) {

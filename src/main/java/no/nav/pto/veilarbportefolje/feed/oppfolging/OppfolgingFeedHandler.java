@@ -142,7 +142,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         return brukerRepository
                 .retrievePersonid(aktoerId)
                 .flatMap(brukerRepository::retrieveEnhet)
-                .map(enhet -> veilederService.getIdenter(enhet).contains(veilederId))
+                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet).contains(veilederId))
                 .getOrElse(false);
     }
 }

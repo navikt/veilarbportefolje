@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 
 @Value
 @Builder
-public class OppfolgingDTO {
+public class OppfolgingStatus {
     AktoerId aktoerId;
     VeilederId veileder;
     boolean oppfolging;
