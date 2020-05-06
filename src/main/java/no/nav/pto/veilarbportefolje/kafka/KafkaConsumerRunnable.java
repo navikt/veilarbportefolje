@@ -64,9 +64,6 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
                 this.lastThrownExceptionTime = System.currentTimeMillis();
                 log.error("Feilet på {} : {}", topic.name(), e);
             }
-            finally {
-                kafkaConsumer.close();
-            }
         }
     }
 
