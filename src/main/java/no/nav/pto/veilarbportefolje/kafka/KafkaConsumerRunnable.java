@@ -51,7 +51,6 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
             try {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
                 for (ConsumerRecord<String, String> record : records) {
-                    MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdFromHeaders(record.headers()));
                     log.info(
                             "Konsumerer kafka-melding med key {} og offset {} på topic {}",
                             record.key(),
@@ -67,7 +66,6 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
             }
             finally {
                 kafkaConsumer.close();
-                MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
             }
         }
     }
