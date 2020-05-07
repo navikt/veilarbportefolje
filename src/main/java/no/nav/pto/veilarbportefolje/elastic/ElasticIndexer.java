@@ -434,7 +434,7 @@ public class ElasticIndexer {
     }
 
     private void leggTilTiltak(OppfolgingsBruker bruker) {
-        leggTilAktiviteter(Collections.singletonList(bruker));
+        leggTilTiltak(Collections.singletonList(bruker));
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {
