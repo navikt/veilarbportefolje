@@ -155,6 +155,6 @@ public class ElasticService {
 
 
     private boolean erVedtakstottePilotPa() {
-        return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
+        return unleashService.isEnabled("pto.vedtaksstotte.pilot");
     }
 }
