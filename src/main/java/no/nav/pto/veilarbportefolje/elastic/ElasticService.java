@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.Statustall
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.json.JsonUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -30,11 +31,13 @@ public class ElasticService {
     RestHighLevelClient client;
     PepClient pepClient;
     VeilederService veilederService;
+    UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService) {
+    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
         this.client = client;
         this.pepClient = pepClient;
         this.veilederService = veilederService;
+        this.unleashService = unleashService;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall, String indexAlias) {
@@ -59,9 +62,9 @@ public class ElasticService {
                 .collect(toList());
 
         if (filtervalg.harAktiveFilter()) {
-
+            boolean erVedtakstottePilotPa =erVedtakstottePilotPa();
             filtervalg.ferdigfilterListe.forEach(
-                    filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet))
+                    filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa))
             );
 
             leggTilManuelleFilter(boolQuery, filtervalg);
@@ -83,6 +86,7 @@ public class ElasticService {
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
+                .map(this::setTrengerVurdering)
                 .map(Bruker::of)
                 .collect(toList());
 
@@ -99,20 +103,24 @@ public class ElasticService {
     }
 
     public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId, String indexAlias) {
-        SearchSourceBuilder request = byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList());
+        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
+        SearchSourceBuilder request = byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new StatusTall(buckets);
+        return new StatusTall(buckets, vedtakstottePilotErPa);
     }
 
     public StatusTall hentStatusTallForEnhet(String enhetId, String indexAlias) {
         List<String> veilederPaaEnhet = veilederService.getIdenter(enhetId).stream()
                 .map(VeilederId::toString)
                 .collect(toList());
-        SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet);
+
+        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
+
+        SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new StatusTall(buckets);
+        return new StatusTall(buckets, vedtakstottePilotErPa);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId, String indexAlias) {
@@ -136,5 +144,17 @@ public class ElasticService {
     private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
         return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
+    }
+
+    private OppfolgingsBruker setTrengerVurdering(OppfolgingsBruker oppfolgingsBruker) {
+      if(erVedtakstottePilotPa()) {
+          return oppfolgingsBruker;
+      }
+      return oppfolgingsBruker.setTrenger_revurdering(false);
+    }
+
+
+    private boolean erVedtakstottePilotPa() {
+        return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
     }
 }

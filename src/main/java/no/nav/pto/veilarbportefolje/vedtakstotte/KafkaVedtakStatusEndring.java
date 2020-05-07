@@ -43,4 +43,23 @@ public class KafkaVedtakStatusEndring {
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
 
+    //DENNE TRENGER VI FOR ATT SORETINGREKKEFOLGEN SKA BLI RIKTIG
+    public static String vedtakStatusTilTekst(VedtakStatusEndring vedtakStatusEndring) {
+        switch(vedtakStatusEndring) {
+            case UTKAST_OPPRETTET:
+            return "Utkast";
+            case BESLUTTER_PROSESS_STARTET:
+                return "Trenger beslutter";
+            case BLI_BESLUTTER:
+            case KLAR_TIL_BESLUTTER:
+                return "Venter på beslutter";
+            case GODKJENT_AV_BESLUTTER:
+                return "Klar til utsendelse";
+            case KLAR_TIL_VEILEDER:
+                return "Venter på veileder";
+            default:
+                return null;
+        }
+    }
+
 }

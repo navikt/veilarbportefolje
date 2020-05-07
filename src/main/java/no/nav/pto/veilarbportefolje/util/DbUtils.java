@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.apache.commons.lang3.text.WordUtils;
 
 import java.math.BigDecimal;
@@ -21,16 +22,14 @@ import static no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils.isNyF
 public class DbUtils {
 
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean vedtakstotteFeatureErPa) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
         String brukersSituasjon = rs.getString("BRUKERS_SITUASJON");
 
         String fornavn = kapitaliser(rs.getString("fornavn"));
         String etternavn = kapitaliser(rs.getString("etternavn"));
-
-        boolean trengerVurdering = OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode);
-        boolean erSykmeldtMedArbeidsgiver = OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode);
+        String vedtakstatus = rs.getString("VEDTAKSTATUS");
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
@@ -68,7 +67,7 @@ public class DbUtils {
                 .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
                 .setNy_for_veileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
                 .setNy_for_enhet(isNyForEnhet(rs.getString("veilederident")))
-                .setTrenger_vurdering(trengerVurdering)
+                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp("venterpasvarfrabruker")))
                 .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp("venterpasvarfranav")))
                 .setNyesteutlopteaktivitet(toIsoUTC(rs.getTimestamp("nyesteutlopteaktivitet")))
@@ -77,7 +76,11 @@ public class DbUtils {
                 .setForrige_aktivitet_start(toIsoUTC(rs.getTimestamp("forrige_aktivitet_start")))
                 .setManuell_bruker(identifiserManuellEllerKRRBruker(rs.getString("RESERVERTIKRR"), rs.getString("MANUELL")))
                 .setBrukers_situasjon(brukersSituasjon)
-                .setEr_sykmeldt_med_arbeidsgiver(erSykmeldtMedArbeidsgiver);
+                .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
+                .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
+                .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
+
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
 
@@ -90,18 +93,6 @@ public class DbUtils {
                     .setArbeidsliste_overskrift(rs.getString("ARBEIDSLISTE_OVERSKRIFT"))
                     .setArbeidsliste_kategori(rs.getString("ARBEIDSLISTE_KATEGORI"))
                     .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp("ARBEIDSLISTE_FRIST"))).orElse(getFarInTheFutureDate()));
-        }
-
-        if(vedtakstotteFeatureErPa) {
-            String vedtakstatus = rs.getString("VEDTAKSTATUS");
-
-            log.info("vedtakstatusFraDB {}", vedtakstatus);
-            bruker
-                    .setTrenger_vurdering(trengerVurdering && vedtakstatus == null)
-                    .setEr_sykmeldt_med_arbeidsgiver(erSykmeldtMedArbeidsgiver && vedtakstatus == null)
-                    .setVedtak_status(vedtakstatus)
-                    .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
-                    .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
         }
 
         return bruker;

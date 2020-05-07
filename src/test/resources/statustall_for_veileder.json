@@ -38,6 +38,14 @@
                 }
               }
             ],
+            "must_not" : [
+              {
+                "exists" : {
+                  "field" : "vedtak_status",
+                  "boost" : 1.0
+                }
+              }
+            ],
             "adjust_pure_negative" : true,
             "boost" : 1.0
           }
@@ -725,6 +733,14 @@
                     "value": true,
                     "boost": 1.0
                   }
+                }
+              }
+            ],
+            "must_not" : [
+              {
+                "exists" : {
+                  "field" : "vedtak_status",
+                  "boost" : 1.0
                 }
               }
             ],

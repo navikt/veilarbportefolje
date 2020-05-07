@@ -30,6 +30,14 @@
                 }
               }
             ],
+            "must_not" : [
+              {
+                "exists" : {
+                  "field" : "vedtak_status",
+                  "boost" : 1.0
+                }
+              }
+            ],
             "adjust_pure_negative": true,
             "boost": 1.0
           }
@@ -572,36 +580,44 @@
             "boost": 1.0
           }
         },
-        "trengerVurdering": {
-          "bool": {
-            "must": [
+        "trengerVurdering" : {
+          "bool" : {
+            "must" : [
               {
-                "bool": {
-                  "must": [
+                "bool" : {
+                  "must" : [
                     {
-                      "term": {
-                        "enhet_id": {
-                          "value": "0000",
-                          "boost": 1.0
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
                         }
                       }
                     }
                   ],
-                  "adjust_pure_negative": true,
-                  "boost": 1.0
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
                 }
               },
               {
-                "term": {
-                  "trenger_vurdering": {
-                    "value": true,
-                    "boost": 1.0
+                "term" : {
+                  "trenger_vurdering" : {
+                    "value" : true,
+                    "boost" : 1.0
                   }
                 }
               }
             ],
-            "adjust_pure_negative": true,
-            "boost": 1.0
+            "must_not" : [
+              {
+                "exists" : {
+                  "field" : "vedtak_status",
+                  "boost" : 1.0
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
           }
         },
         "ufordelteBrukere": {

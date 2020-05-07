@@ -9,6 +9,7 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.Pair;
 import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
+import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
@@ -84,7 +85,7 @@ public class ElasticServiceIntegrationTest {
                 .build()
         );
 
-        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock);
+        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock, new UnleashServiceMock(true));
 
         indexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),

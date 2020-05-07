@@ -143,7 +143,7 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_bygge_korrekt_json_for_aa_hente_ut_statustall_for_veileder() {
-        val builder = byggStatusTallForVeilederQuery("0000", "Z000000", listOf("Z00001"));
+        val builder = byggStatusTallForVeilederQuery("0000", "Z000000", listOf("Z00001"), true);
 
         val actualJson = builder.aggregations().toString();
         String expectedJson = readFileAsJsonString("/statustall_for_veileder.json");
@@ -156,7 +156,7 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_bygge_korrekt_json_for_aa_hente_ut_statustall_for_enhet() {
-        val builder = byggStatusTallForEnhetQuery("0000", listOf("Z00001"));
+        val builder = byggStatusTallForEnhetQuery("0000", listOf("Z00001"), true);
 
         val actualJson = builder.aggregations().toString();
         String expectedJson = readFileAsJsonString("/statustall_for_enhet.json");
