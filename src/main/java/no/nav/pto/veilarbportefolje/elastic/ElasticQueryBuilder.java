@@ -421,7 +421,7 @@ public class ElasticQueryBuilder {
         if(vedtakstottePilotErPa) {
             boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
         }
-        System.out.println(new KeyedFilter("trengerVurdering", boolQueryBuilder).toString());
+
         return new KeyedFilter("trengerVurdering", boolQueryBuilder);
     }
 
