@@ -14,6 +14,8 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.feed.FeedConfig;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedHandler;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;

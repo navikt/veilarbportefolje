@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
+import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -65,7 +66,10 @@ public class OppfolgingFeedHandlerTest {
                 elasticIndexer,
                 oppfolgingRepository,
                 veilederService,
-                new TestTransactor());
+                new TestTransactor(),
+                new UnleashServiceMock(false)
+        );
+
     }
 
     private BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");

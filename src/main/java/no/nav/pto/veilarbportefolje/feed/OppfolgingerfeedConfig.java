@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,13 +72,17 @@ public class OppfolgingerfeedConfig {
                                                                           ElasticIndexer elasticIndexer,
                                                                           OppfolgingRepository oppfolgingRepository,
                                                                           VeilederService veilederService,
-                                                                          Transactor transactor) {
-        return new OppfolgingFeedHandler(arbeidslisteService,
+                                                                          Transactor transactor,
+                                                                          UnleashService unleashService) {
+        return new OppfolgingFeedHandler(
+                arbeidslisteService,
                 brukerRepository,
                 elasticIndexer,
-                                         oppfolgingRepository,
+                oppfolgingRepository,
                 veilederService,
-                transactor);
+                transactor,
+                unleashService
+        );
     }
 
     public static String nesteId(JdbcTemplate db) {

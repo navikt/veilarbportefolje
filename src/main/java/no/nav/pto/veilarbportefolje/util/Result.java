@@ -55,6 +55,13 @@ public class Result<V> {
         return ok == null ? value : ok;
     }
 
+    public V orElseThrowException() {
+        if (err == null) {
+            return ok;
+        }
+        throw new RuntimeException(err);
+    }
+
     @Override
     public String toString() {
         return ok == null ? "Err(" + err + ")" : "Ok(" + ok + ")";

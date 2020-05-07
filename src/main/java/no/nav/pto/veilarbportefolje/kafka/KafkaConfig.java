@@ -29,6 +29,8 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 @Configuration
 public class KafkaConfig {
 
+    public final static String KAFKA_OPPFOLGING_TOGGLE = "portefolje.kafka.oppfolging";
+
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName()),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireEnvironmentName()),
@@ -74,7 +76,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaConsumerRunnable kafkaVedtakConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable(oppfolgingService, unleashService, Topic.VEDTAK_STATUS_ENDRING_TOPIC, Optional.of(("veilarbportfolje-hent-data-fra-oppfolging")));
+        return new KafkaConsumerRunnable(oppfolgingService, unleashService, Topic.VEDTAK_STATUS_ENDRING_TOPIC, Optional.of(KAFKA_OPPFOLGING_TOGGLE));
     }
 
 

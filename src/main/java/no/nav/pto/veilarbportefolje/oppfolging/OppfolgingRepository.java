@@ -60,7 +60,7 @@ public class OppfolgingRepository {
                 .where(WhereClause.equals("AKTOERID", aktoerId))
                 .execute();
 
-        return Result.of(query).map(queryResult -> dto.getAktoerId());
+        return Result.of(query).map(_queryResult -> dto.getAktoerId());
     }
 
 

@@ -52,11 +52,11 @@ public class OppfolgingService implements KafkaConsumerService {
             }
         }
 
-        oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).ok()
-                .orElseThrow(IllegalStateException::new);
+        oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus)
+                .orElseThrowException();
 
-        elastic.indekser(aktoerId).ok()
-                .orElseThrow(IllegalStateException::new);
+        elastic.indekser(aktoerId)
+                .orElseThrowException();
     }
 
     boolean eksisterendeVeilederHarIkkeTilgangTilBruker(AktoerId aktoerId) {

@@ -295,7 +295,7 @@ public class ElasticIndexer {
             return result;
         }
 
-        OppfolgingsBruker bruker = result.ok().orElseThrow(IllegalStateException::new);
+        OppfolgingsBruker bruker = result.orElseThrowException();
 
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
