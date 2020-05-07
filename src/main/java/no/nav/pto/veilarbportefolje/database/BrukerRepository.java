@@ -43,16 +43,13 @@ import static no.nav.sbl.sql.where.WhereClause.in;
 @Slf4j
 public class BrukerRepository {
 
-    private UnleashService unleashService;
-
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Inject
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
+    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.unleashService = unleashService;
     }
 
     public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
@@ -224,10 +221,6 @@ public class BrukerRepository {
     @SneakyThrows
     private static boolean harOppfolgingsFlaggSatt(ResultSet rs) {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
-    }
-
-    public void updateMetadata(String name, Date date) {
-        update(db, METADATA).set(name, date).execute();
     }
 
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {

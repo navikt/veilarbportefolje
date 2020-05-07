@@ -55,8 +55,8 @@ public class DatabaseConfig {
 
 
     @Bean
-    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
-        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate, unleashService);
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
     }
 
     @Bean
