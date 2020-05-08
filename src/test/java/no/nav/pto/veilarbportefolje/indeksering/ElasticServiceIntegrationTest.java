@@ -17,7 +17,6 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -78,16 +77,15 @@ public class ElasticServiceIntegrationTest {
                 .build()
         );
 
-        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock, new UnleashServiceMock(true));
-
+        UnleashServiceMock unleashMock = new UnleashServiceMock(false);
+        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock, unleashMock);
         indexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 restClient,
                 elasticService,
-                mock(UnleashService.class)
+                unleashMock
         );
-
     }
 
     @Before

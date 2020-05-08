@@ -209,7 +209,6 @@ public class ApplicationConfig implements ApiApplication {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(discoveryUrl)
                 .withClientId(clientId)
-                .withIdTokenCookieName("DOES NOT MATTER")
                 .withIdentType(IdentType.Systemressurs);
     }
 
