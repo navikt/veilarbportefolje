@@ -193,6 +193,15 @@ public class BrukerRepository {
         return Result.of(query);
     }
 
+    public Result<OppfolgingsBruker> hentBruker(Fnr fnr) {
+        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
+                .column("*")
+                .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                .execute();
+
+        return Result.of(query);
+    }
+
     public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());

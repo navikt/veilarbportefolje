@@ -5,7 +5,6 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
@@ -73,7 +72,7 @@ public class OppfolgingService implements KafkaConsumerService {
         }
 
         Result<List<VeilederId>> result = navKontorService.hentEnhetForBruker(aktoerId)
-                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet));
+                .mapOk(enhet -> veilederService.hentVeilederePaaEnhet(enhet));
 
         return eksisterendeVeileder
                 .flatMap(veileder -> result.ok().map(veilederePaaEnhet -> veilederePaaEnhet.contains(veileder)))

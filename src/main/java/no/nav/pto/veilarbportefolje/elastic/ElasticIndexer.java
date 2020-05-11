@@ -311,6 +311,26 @@ public class ElasticIndexer {
         return result;
     }
 
+    public Result<OppfolgingsBruker> indekser(Fnr fnr) {
+        Result<OppfolgingsBruker> result = brukerRepository.hentBruker(fnr);
+        if (result.isErr()) {
+            log.error("Kunne ikke hente bruker {} ", fnr.toString());
+            return result;
+        }
+
+        OppfolgingsBruker bruker = result.orElseThrowException();
+
+        if (erUnderOppfolging(bruker)) {
+            leggTilAktiviteter(bruker);
+            leggTilTiltak(bruker);
+            skrivTilIndeks(getAlias(), bruker);
+        } else {
+            slettBruker(bruker);
+        }
+
+        return result;
+    }
+
     public void indekserBrukere(List<PersonId> personIds) {
         CollectionUtils.partition(personIds, BATCH_SIZE).forEach(batch -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
