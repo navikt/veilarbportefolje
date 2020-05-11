@@ -8,18 +8,15 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.errors.InterruptException;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
-import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Thread.currentThread;
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
@@ -29,7 +26,7 @@ public class KafkaConsumerRunnable implements Runnable {
 
     private final KafkaConsumerService kafkaService;
     private final UnleashService unleashService;
-    private final KafkaConfig.Topic topic;
+    private final String topic;
     private final Optional<String> featureNavn;
     private final KafkaConsumer<String, String> consumer;
     private final AtomicBoolean shutdown;
@@ -42,7 +39,7 @@ public class KafkaConsumerRunnable implements Runnable {
 
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
-        this.topic = topic;
+        this.topic = topic.topic;
         this.featureNavn = featureNavn;
         this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
         this.shutdown = new AtomicBoolean(false);
@@ -55,14 +52,16 @@ public class KafkaConsumerRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            consumer.subscribe(singletonList(topic.topic));
+            consumer.subscribe(singletonList(topic));
+            log.info("Subscriber til topic {}", topic);
 
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
                 records.forEach(record -> process(record));
             }
+            log.info("Avslutter konsumering av topic {}", topic);
         } catch (Exception e) {
-            log.error("Konsument feilet under poll() eller subscribe() for topic {}", topic.topic);
+            log.error("Konsument feilet under poll() eller subscribe() for topic {}", topic);
         } finally {
             consumer.close();
             shutdownLatch.countDown();
