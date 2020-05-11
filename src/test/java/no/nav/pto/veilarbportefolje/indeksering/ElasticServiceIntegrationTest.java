@@ -74,7 +74,7 @@ public class ElasticServiceIntegrationTest {
         when(pepMock.isSubjectAuthorizedToSeeKode7(PRIVILEGED_TOKEN)).thenReturn(true);
 
         VeilederService veilederServiceMock = mock(VeilederService.class);
-        when(veilederServiceMock.getIdenter(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
+        when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
 
         RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
                 .username("")

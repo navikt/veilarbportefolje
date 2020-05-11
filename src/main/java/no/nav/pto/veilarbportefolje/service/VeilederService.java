@@ -26,8 +26,9 @@ public class VeilederService {
     }
 
     @Cacheable(VEILARBVEILEDER)
-    public List<VeilederId> getIdenter(String enhet) {
+    public List<VeilederId> hentVeilederePaaEnhet(String enhet) {
         log.info("henter identer for enhet: {}", enhet);
+
         List<String> strings = restClient
                 .target(String.format("%s/enhet/%s/identer", host, enhet))
                 .request()

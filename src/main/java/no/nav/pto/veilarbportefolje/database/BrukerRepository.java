@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
+import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -42,16 +43,13 @@ import static no.nav.sbl.sql.where.WhereClause.in;
 @Slf4j
 public class BrukerRepository {
 
-    private UnleashService unleashService;
-
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Inject
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
+    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.unleashService = unleashService;
     }
 
     public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
@@ -180,18 +178,19 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs))
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
     }
 
-    public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
-        return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs))
+    public Result<OppfolgingsBruker> hentBruker(AktoerId aktoerId) {
+        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
+
+        return Result.of(query);
     }
 
     public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
@@ -224,10 +223,6 @@ public class BrukerRepository {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
     }
 
-    public void updateMetadata(String name, Date date) {
-        update(db, METADATA).set(name, date).execute();
-    }
-
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
                 () -> {
@@ -239,6 +234,17 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
+    public Result<String> hentEnhetForBruker(AktoerId aktoerId) {
+        Supplier<String> query = () -> {
+            return select(db, VW_PORTEFOLJE_INFO, rs -> rs.getString("NAV_KONTOR"))
+                    .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                    .execute();
+        };
+
+        return Result.of(query);
+    }
+
+    @Deprecated
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
                 () -> {

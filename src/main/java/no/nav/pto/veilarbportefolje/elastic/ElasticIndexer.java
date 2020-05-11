@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
+import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
@@ -290,8 +291,15 @@ public class ElasticIndexer {
         return future;
     }
 
-    public void indekser(AktoerId aktoerId) {
-        OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
+    public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
+        Result<OppfolgingsBruker> result = brukerRepository.hentBruker(aktoerId);
+        if (result.isErr()) {
+            log.error("Kunne ikke hente bruker {} ", aktoerId);
+            return result;
+        }
+
+        OppfolgingsBruker bruker = result.orElseThrowException();
+
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
             leggTilTiltak(bruker);
@@ -299,6 +307,8 @@ public class ElasticIndexer {
         } else {
             slettBruker(bruker);
         }
+
+        return result;
     }
 
     public void indekserBrukere(List<PersonId> personIds) {

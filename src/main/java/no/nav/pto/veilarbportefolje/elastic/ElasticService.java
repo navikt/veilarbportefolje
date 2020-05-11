@@ -57,7 +57,7 @@ public class ElasticService {
             boolQuery.filter(termQuery("veileder_id", veilederIdent.get()));
         }
 
-        List<String> veiledereMedTilgangTilEnhet = veilederService.getIdenter(enhetId).stream()
+        List<String> veiledereMedTilgangTilEnhet = veilederService.hentVeilederePaaEnhet(enhetId).stream()
                 .map(VeilederId::getVeilederId)
                 .collect(toList());
 
@@ -111,7 +111,7 @@ public class ElasticService {
     }
 
     public StatusTall hentStatusTallForEnhet(String enhetId, String indexAlias) {
-        List<String> veilederPaaEnhet = veilederService.getIdenter(enhetId).stream()
+        List<String> veilederPaaEnhet = veilederService.hentVeilederePaaEnhet(enhetId).stream()
                 .map(VeilederId::toString)
                 .collect(toList());
 
