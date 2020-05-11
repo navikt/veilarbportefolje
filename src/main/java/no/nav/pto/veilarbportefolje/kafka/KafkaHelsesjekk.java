@@ -31,6 +31,6 @@ public class KafkaHelsesjekk implements Helsesjekk {
 
     @Override
     public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata(topic, KAFKA_BROKERS, "Sjekker at vi får kontakt med kafka", false);
+        return new HelsesjekkMetadata(topic, KAFKA_BROKERS, "Sjekker at vi får kontakt med partisjonene for " + topic, false);
     }
 }
