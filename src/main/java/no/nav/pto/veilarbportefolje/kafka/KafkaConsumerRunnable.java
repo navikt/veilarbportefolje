@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
@@ -7,11 +8,16 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.errors.InterruptException;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
+import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Thread.currentThread;
 import static java.time.Duration.ofSeconds;
@@ -26,6 +32,8 @@ public class KafkaConsumerRunnable implements Runnable {
     private final KafkaConfig.Topic topic;
     private final Optional<String> featureNavn;
     private final KafkaConsumer<String, String> consumer;
+    private final AtomicBoolean shutdown;
+    private final CountDownLatch shutdownLatch;
 
     public KafkaConsumerRunnable(KafkaConsumerService kafkaService,
                                  UnleashService unleashService,
@@ -37,11 +45,11 @@ public class KafkaConsumerRunnable implements Runnable {
         this.topic = topic;
         this.featureNavn = featureNavn;
         this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
+        this.shutdown = new AtomicBoolean(false);
+        this.shutdownLatch = new CountDownLatch(1);
 
-        Thread consumerThread = new Thread(this);
-        consumerThread.setDaemon(true);
-        consumerThread.start();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> consumerThread.interrupt()));
+        CompletableFuture.runAsync(this);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
     }
 
     @Override
@@ -49,17 +57,23 @@ public class KafkaConsumerRunnable implements Runnable {
         try {
             consumer.subscribe(singletonList(topic.topic));
 
-            while (featureErPa() && !currentThread().isInterrupted()) {
+            while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
                 records.forEach(record -> process(record));
             }
-
         } catch (Exception e) {
-            log.error("Konsument feilet under poll() eller subscribe() for topic {} : {}", topic.name(), e);
+            log.error("Konsument feilet under poll() eller subscribe() for topic {}", topic.topic);
         } finally {
             consumer.close();
+            shutdownLatch.countDown();
             log.info("Lukket konsument");
         }
+    }
+
+    @SneakyThrows
+    public void shutdown() {
+        shutdown.set(true);
+        shutdownLatch.await();
     }
 
     private void process(ConsumerRecord<String, String> record) {
