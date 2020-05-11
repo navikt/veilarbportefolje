@@ -152,6 +152,7 @@ public class ApplicationConfig implements ApiApplication {
 
         apiAppConfigurator
                 .sts()
+                .selfTests(KafkaConfig.getHelseSjekker())
                 .issoLogin()
                 .oidcProvider(securityTokenServiceOidcProvider);
     }

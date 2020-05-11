@@ -21,8 +21,10 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.time.Duration.ofSeconds;
+import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.kafkaProperties;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -47,9 +49,9 @@ public class KafkaConfig {
         }
     }
 
-    static {
+    public static List<KafkaHelsesjekk> getHelseSjekker() {
         List<Topic> topics = Arrays.asList(Topic.values());
-        topics.forEach(topic -> new KafkaHelsesjekk(topic));
+        return topics.stream().map(topic -> new KafkaHelsesjekk(topic)).collect(toList());
     }
 
     @Bean
