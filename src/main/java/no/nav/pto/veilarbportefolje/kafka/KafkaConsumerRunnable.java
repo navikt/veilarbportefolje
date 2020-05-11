@@ -6,13 +6,16 @@ import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import static java.lang.Thread.currentThread;
@@ -60,7 +63,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
     @Override
     public void run() {
         try {
-            consumer.subscribe(singletonList(topic.topic));
+            consumer.subscribe(singletonList(topic.topic), getConsumerRebalanceListener());
 
             while (featureErPa() && !currentThread().isInterrupted()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
@@ -112,4 +115,17 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
                 .orElse(IdUtils.generateId());
     }
 
+    private static ConsumerRebalanceListener getConsumerRebalanceListener() {
+        return new ConsumerRebalanceListener() {
+                    @Override
+                    public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+                        partitions.forEach(partition -> log.info("Partition revoked for topic-partition {}", partition));
+                    }
+
+                    @Override
+                    public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+                        partitions.forEach(partition -> log.info("Partition assigned for topic-partition {}", partition));
+                    }
+                };
+    }
 }
