@@ -90,10 +90,11 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
             kafkaService.behandleKafkaMelding(record.value());
         } catch (Exception e) {
             log.error(
-                    "Behandling av kafka-melding feilet for key {} og offset {} på topic {}",
+                    "Behandling av kafka-melding feilet for key {} og offset {} på topic {}: {}",
                     record.key(),
                     record.offset(),
-                    record.topic()
+                    record.topic(),
+                    e
             );
         }
         MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
