@@ -12,8 +12,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
-
-import java.util.HashMap;
 import java.util.Optional;
 
 import static java.lang.Thread.currentThread;
@@ -21,7 +19,6 @@ import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 @Slf4j
 public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
@@ -41,10 +38,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         this.unleashService = unleashService;
         this.topic = topic;
         this.featureNavn = featureNavn;
-        HashMap<String, Object> props = KafkaProperties.kafkaProperties();
-        props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer-" + topic.topic);
-
-        this.consumer = new KafkaConsumer<>(props);
+        this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties(topic));
 
         Thread consumerThread = new Thread(this);
         consumerThread.setDaemon(true);
@@ -69,7 +63,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
 
             while (featureErPa() && !currentThread().isInterrupted()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
-                records.forEach(record -> process(record));
+                records.forEach(this::process);
             }
 
         } catch (Exception e) {
@@ -106,7 +100,7 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
 
     private boolean featureErPa() {
         return this.featureNavn
-                .map(featureNavn -> unleashService.isEnabled(featureNavn))
+                .map(unleashService::isEnabled)
                 .orElse(false);
     }
 

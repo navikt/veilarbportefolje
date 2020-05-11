@@ -46,12 +46,12 @@ public class KafkaConfig {
     @Bean
     public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
         final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
-        HashMap<String, Object> props = KafkaProperties.kafkaProperties();
+        HashMap<String, Object> props = KafkaProperties.kafkaProperties(Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL);
-        props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer-" + Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topic);
+
 
         Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer = new KafkaConsumer<>(props);
         kafkaRegistreringConsumer.subscribe(Collections.singletonList(Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topic));
@@ -75,7 +75,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaVedtakConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
+    public KafkaConsumerRunnable kafkaOppfolgingConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
         return new KafkaConsumerRunnable(oppfolgingService, unleashService, Topic.VEDTAK_STATUS_ENDRING_TOPIC, Optional.of(KAFKA_OPPFOLGING_TOGGLE));
     }
 
