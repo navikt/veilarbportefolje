@@ -1,8 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.selftest.Helsesjekk;
-import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -19,10 +17,9 @@ import static java.lang.Thread.currentThread;
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
-import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 
 @Slf4j
-public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
+public class KafkaConsumerRunnable implements Runnable {
 
     private final KafkaConsumerService kafkaService;
     private final UnleashService unleashService;
@@ -45,16 +42,6 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
         consumerThread.setDaemon(true);
         consumerThread.start();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> consumerThread.interrupt()));
-    }
-
-    @Override
-    public void helsesjekk() {
-        consumer.partitionsFor(topic.topic);
-    }
-
-    @Override
-    public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata(this.getClass().getName(), KAFKA_BROKERS, topic.topic, false);
     }
 
     @Override
