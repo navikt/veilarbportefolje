@@ -85,8 +85,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaVedtakConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable(oppfolgingService, unleashService, Topic.VEDTAK_STATUS_ENDRING_TOPIC, Optional.of(KAFKA_OPPFOLGING_TOGGLE));
+    public KafkaConsumerRunnable kafkaOppfolgingStatusConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
+        return new KafkaConsumerRunnable(oppfolgingService, unleashService, Topic.OPPFOLGING_CONSUMER_TOPIC, Optional.of(KAFKA_OPPFOLGING_TOGGLE));
     }
 
 
