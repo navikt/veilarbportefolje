@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import no.nav.apiapp.selftest.Helsesjekk;
+import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -17,14 +19,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
+import java.time.Duration;
+import java.util.*;
 
+import static java.time.Duration.ofSeconds;
+import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
+import static no.nav.pto.veilarbportefolje.util.KafkaProperties.kafkaProperties;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 
 @Configuration
 public class KafkaConfig {
@@ -44,10 +47,15 @@ public class KafkaConfig {
         }
     }
 
+    static {
+        List<Topic> topics = Arrays.asList(Topic.values());
+        topics.forEach(topic -> new KafkaHelsesjekk(topic));
+    }
+
     @Bean
     public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
         final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
-        HashMap<String, Object> props = KafkaProperties.kafkaProperties();
+        HashMap<String, Object> props = kafkaProperties();
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
