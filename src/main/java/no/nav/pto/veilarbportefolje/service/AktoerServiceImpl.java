@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.jobutils.JobUtils.runAsyncJobOnLeader;
+import static no.nav.pto.veilarbportefolje.util.JobUtils.runAsyncJobOnLeader;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {

@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.internal.AuthorizationUtils;
-import no.nav.jobutils.JobUtils;
+import no.nav.pto.veilarbportefolje.util.JobUtils;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
