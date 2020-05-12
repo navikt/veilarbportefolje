@@ -147,6 +147,13 @@ public class ApplicationConfig implements ApiApplication {
         }
 
         new KafkaConsumerRunnable(
+                vedtakService,
+                unleashService,
+                KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
+                Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
+        );
+
+        new KafkaConsumerRunnable(
                 oppfolgingService,
                 unleashService,
                 KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC,
@@ -158,13 +165,6 @@ public class ApplicationConfig implements ApiApplication {
                 unleashService,
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
                 Optional.of("veilarbdialog.kafka")
-        );
-
-        new KafkaConsumerRunnable(
-                vedtakService,
-                unleashService,
-                KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
         );
 
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
