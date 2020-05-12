@@ -17,16 +17,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-
-import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.time.Duration.ofSeconds;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
-import static no.nav.pto.veilarbportefolje.util.KafkaProperties.kafkaProperties;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -57,7 +49,7 @@ public class KafkaConfig {
     @Bean
     public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
         final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
-        HashMap<String, Object> props = KafkaProperties.kafkaProperties(Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC);
+        HashMap<String, Object> props = KafkaProperties.kafkaProperties(Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topic);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);

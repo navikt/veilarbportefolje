@@ -39,8 +39,8 @@ public class KafkaConsumerRunnable implements Runnable {
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
         this.topic = topic.topic;
+        this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties(topic.topic));
         this.featureNavn = featureNavn;
-        this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties(topic));
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
