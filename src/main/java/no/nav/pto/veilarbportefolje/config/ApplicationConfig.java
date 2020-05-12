@@ -55,6 +55,7 @@ import javax.sql.DataSource;
 import javax.ws.rs.client.Client;
 
 import java.util.Optional;
+import java.util.concurrent.ForkJoinPool;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig.STS_OIDC_CONFIGURATION_URL_PROPERTY;
@@ -145,6 +146,10 @@ public class ApplicationConfig implements ApiApplication {
             flyway.setDataSource(dataSource);
             flyway.migrate();
         }
+
+        System.out.println("CPU Core: " + Runtime.getRuntime().availableProcessors());
+        System.out.println("CommonPool Parallelism: " + ForkJoinPool.commonPool().getParallelism());
+        System.out.println("CommonPool Common Parallelism: " + ForkJoinPool.getCommonPoolParallelism());
 
         new KafkaConsumerRunnable(
                 vedtakService,
