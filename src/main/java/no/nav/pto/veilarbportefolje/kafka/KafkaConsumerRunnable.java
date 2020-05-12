@@ -12,8 +12,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
+
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -65,7 +65,7 @@ public class KafkaConsumerRunnable implements Runnable {
         } finally {
             consumer.close();
             shutdownLatch.countDown();
-            log.info("Lukket konsument");
+            log.info("Lukket konsument for topic {}", topic);
         }
     }
 
