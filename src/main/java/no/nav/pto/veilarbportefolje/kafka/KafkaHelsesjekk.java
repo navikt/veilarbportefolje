@@ -9,7 +9,6 @@ import java.util.HashMap;
 import static java.time.Duration.ofSeconds;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.kafkaProperties;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 public class KafkaHelsesjekk implements Helsesjekk {
 
@@ -17,8 +16,7 @@ public class KafkaHelsesjekk implements Helsesjekk {
     private final String topic;
 
     public KafkaHelsesjekk(KafkaConfig.Topic topic) {
-        HashMap<String, Object> properties = kafkaProperties();
-        properties.put(GROUP_ID_CONFIG, topic + "-helsesjekk");
+        HashMap<String, Object> properties = kafkaProperties( topic.topic + "-helsesjekk");
 
         this.consumer = new KafkaConsumer<>(properties);
         this.topic = topic.topic;

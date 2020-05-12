@@ -11,7 +11,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -40,8 +39,8 @@ public class KafkaConsumerRunnable implements Runnable {
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
         this.topic = topic.topic;
+        this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties(topic.topic));
         this.featureNavn = featureNavn;
-        this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
@@ -57,7 +56,7 @@ public class KafkaConsumerRunnable implements Runnable {
 
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
-                records.forEach(record -> process(record));
+                records.forEach(this::process);
             }
             log.info("Avslutter konsumering av topic {}", topic);
         } catch (Exception e) {
@@ -90,11 +89,10 @@ public class KafkaConsumerRunnable implements Runnable {
             kafkaService.behandleKafkaMelding(record.value());
         } catch (Exception e) {
             log.error(
-                    "Behandling av kafka-melding feilet for key {} og offset {} på topic {}: {}",
+                    "Behandling av kafka-melding feilet for key {} og offset {} på topic {}",
                     record.key(),
                     record.offset(),
-                    record.topic(),
-                    e
+                    record.topic()
             );
         }
         MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
@@ -102,7 +100,7 @@ public class KafkaConsumerRunnable implements Runnable {
 
     private boolean featureErPa() {
         return this.featureNavn
-                .map(featureNavn -> unleashService.isEnabled(featureNavn))
+                .map(unleashService::isEnabled)
                 .orElse(false);
     }
 
