@@ -52,8 +52,9 @@ public class KafkaConsumerRunnable implements Runnable {
     @Override
     public void run() {
         try {
+            log.info("designated til topic {}", this.topic);
             consumer.subscribe(singletonList(topic));
-            log.info("Subscriber til topic {}", topic);
+            consumer.listTopics().forEach((t,p) -> log.info("Subscriber til topic {}", t));
 
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
