@@ -71,6 +71,7 @@ public class KafkaConsumerRunnable implements Runnable {
 
     @SneakyThrows
     public void shutdown() {
+        log.info("kaller shutdown for topic {}", topic);
         shutdown.set(true);
         shutdownLatch.await();
     }
