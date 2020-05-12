@@ -46,10 +46,10 @@ public class OppfolgingRepository {
     }
 
     public Result<AktoerId> oppdaterOppfolgingData(OppfolgingStatus dto) {
-        String aktoerId = dto.getAktoerId().toString();
+        String aktoerId = dto.getAktoerId().aktoerId;
 
         Supplier<Boolean> query = () -> SqlUtils.upsert(db, "OPPFOLGING_DATA")
-                .set("VEILEDERIDENT", dto.getVeileder())
+                .set("VEILEDERIDENT", dto.getVeilederId().veilederId)
                 .set("OPPDATERT_KILDESYSTEM", dto.getEndretTimestamp())
                 .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
                 .set("OPPFOLGING", safeToJaNei(dto.isOppfolging()))
@@ -69,11 +69,10 @@ public class OppfolgingRepository {
     }
 
     public Result<BrukerOppdatertInformasjon> hentOppfolgingData(AktoerId aktoerId) {
-        String id = aktoerId.toString();
         Supplier<BrukerOppdatertInformasjon> query = () ->
                 db.queryForObject(
                         "SELECT * FROM OPPFOLGING_DATA WHERE AKTOERID = ?",
-                        new Object[]{id},
+                        new Object[]{aktoerId.aktoerId},
                         this::mapToBrukerOppdatertInformasjon
                 );
 

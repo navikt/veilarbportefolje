@@ -14,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.json.JsonUtils.fromJson;
-
+import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStatus.fromJson;
 
 @Slf4j
 public class OppfolgingService implements KafkaConsumerService {
@@ -37,7 +36,7 @@ public class OppfolgingService implements KafkaConsumerService {
     @Override
     @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
-        OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding, OppfolgingStatus.class);
+        OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding);
         AktoerId aktoerId = oppfolgingStatus.getAktoerId();
 
         if (oppfolgingStatus.getStartDato() == null) {

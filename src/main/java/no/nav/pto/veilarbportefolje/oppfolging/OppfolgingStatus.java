@@ -2,24 +2,37 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.Builder;
 import lombok.Value;
-import no.nav.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import oracle.sql.ZONEIDMAP;
+import org.json.JSONObject;
 
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
+
+import static java.time.OffsetDateTime.parse;
 
 @Value
 @Builder
 public class OppfolgingStatus {
     AktoerId aktoerId;
-    String veileder;
+    VeilederId veilederId;
     boolean oppfolging;
     boolean nyForVeileder;
     boolean manuell;
-    ZonedDateTime endretTimestamp;
-    ZonedDateTime startDato;
+    OffsetDateTime endretTimestamp;
+    OffsetDateTime startDato;
+
+    public static OppfolgingStatus fromJson(String payload) {
+        JSONObject json = new JSONObject(payload);
+        return OppfolgingStatus.builder()
+                .aktoerId(AktoerId.of(json.getString("aktoerid")))
+                .veilederId(VeilederId.of(json.getString("veileder")))
+                .oppfolging(json.getBoolean("oppfolging"))
+                .nyForVeileder(json.getBoolean("nyForVeileder"))
+                .manuell(json.getBoolean("manuell"))
+                .endretTimestamp(parse(json.getString("endretTimestamp")))
+                .startDato(parse(json.getString("startDato")))
+                .build();
+    }
 }
 
 
