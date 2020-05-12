@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.logstash.logback.marker.Markers;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
@@ -12,6 +13,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
+import org.slf4j.MarkerFactory;
 
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -19,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
+import static net.logstash.logback.marker.Markers.append;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j
@@ -52,22 +55,20 @@ public class KafkaConsumerRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            log.info("Subscriber til topic {}", this.topic);
+
             consumer.subscribe(singletonList(topic));
             consumer.subscription().forEach(subscription -> log.info("Har subscribet til topic {}", subscription));
 
-            boolean logged = false;
             while (featureErPa() && !shutdown.get()) {
-                if (!logged) {
-                    log.info("Poller topic {}", this.topic);
-                    logged = true;
-                }
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
             }
-            log.info("Avslutter konsumering av topic {}", topic);
         } catch (Exception e) {
-            log.error("Konsument feilet under poll() eller subscribe() for topic {}", topic);
+            log.error(
+                    append("stack_trace", e.getStackTrace()),
+                    "{} under poll() eller subscribe() for topic {}", e.getClass().getSimpleName(), topic
+            );
+
         } finally {
             consumer.close();
             shutdownLatch.countDown();
@@ -96,8 +97,11 @@ public class KafkaConsumerRunnable implements Runnable {
         try {
             kafkaService.behandleKafkaMelding(record.value());
         } catch (Exception e) {
+
             log.error(
-                    "Behandling av kafka-melding feilet for key {} og offset {} på topic {}",
+                    append("stack_trace", e.getStackTrace()),
+                    "{} for key {} og offset {} på topic {}",
+                    e.getClass().getSimpleName(),
                     record.key(),
                     record.offset(),
                     record.topic()
