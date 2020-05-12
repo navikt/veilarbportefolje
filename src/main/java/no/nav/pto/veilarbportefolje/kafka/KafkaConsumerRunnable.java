@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.selftest.Helsesjekk;
-import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -13,21 +12,24 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Thread.currentThread;
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
-import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 
 @Slf4j
-public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
+public class KafkaConsumerRunnable implements Runnable {
 
     private final KafkaConsumerService kafkaService;
     private final UnleashService unleashService;
-    private final KafkaConfig.Topic topic;
+    private final String topic;
     private final Optional<String> featureNavn;
     private final KafkaConsumer<String, String> consumer;
+    private final AtomicBoolean shutdown;
+    private final CountDownLatch shutdownLatch;
 
     public KafkaConsumerRunnable(KafkaConsumerService kafkaService,
                                  UnleashService unleashService,
@@ -36,42 +38,40 @@ public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
 
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
-        this.topic = topic;
+        this.topic = topic.topic;
         this.featureNavn = featureNavn;
         this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties(topic));
+        this.shutdown = new AtomicBoolean(false);
+        this.shutdownLatch = new CountDownLatch(1);
 
-        Thread consumerThread = new Thread(this);
-        consumerThread.setDaemon(true);
-        consumerThread.start();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> consumerThread.interrupt()));
-    }
-
-    @Override
-    public void helsesjekk() {
-        consumer.partitionsFor(topic.topic);
-    }
-
-    @Override
-    public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata(this.getClass().getName(), KAFKA_BROKERS, topic.topic, false);
+        CompletableFuture.runAsync(this);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
     }
 
     @Override
     public void run() {
         try {
-            consumer.subscribe(singletonList(topic.topic));
+            consumer.subscribe(singletonList(topic));
+            log.info("Subscriber til topic {}", topic);
 
-            while (featureErPa() && !currentThread().isInterrupted()) {
+            while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
             }
-
+            log.info("Avslutter konsumering av topic {}", topic);
         } catch (Exception e) {
-            log.error("Konsument feilet under poll() eller subscribe() for topic {} : {}", topic.name(), e);
+            log.error("Konsument feilet under poll() eller subscribe() for topic {}", topic);
         } finally {
             consumer.close();
+            shutdownLatch.countDown();
             log.info("Lukket konsument");
         }
+    }
+
+    @SneakyThrows
+    public void shutdown() {
+        shutdown.set(true);
+        shutdownLatch.await();
     }
 
     private void process(ConsumerRecord<String, String> record) {

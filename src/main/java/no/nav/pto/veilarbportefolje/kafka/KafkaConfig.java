@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import no.nav.apiapp.selftest.Helsesjekk;
+import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -17,10 +19,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.time.Duration.ofSeconds;
+import static java.util.stream.Collectors.toList;
+import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
+import static no.nav.pto.veilarbportefolje.util.KafkaProperties.kafkaProperties;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -43,6 +49,11 @@ public class KafkaConfig {
         }
     }
 
+    public static List<KafkaHelsesjekk> getHelseSjekker() {
+        List<Topic> topics = Arrays.asList(Topic.values());
+        return topics.stream().map(topic -> new KafkaHelsesjekk(topic)).collect(toList());
+    }
+
     @Bean
     public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
         final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
@@ -51,7 +62,6 @@ public class KafkaConfig {
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL);
-
 
         Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer = new KafkaConsumer<>(props);
         kafkaRegistreringConsumer.subscribe(Collections.singletonList(Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topic));
@@ -75,8 +85,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaOppfolgingConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable(oppfolgingService, unleashService, Topic.VEDTAK_STATUS_ENDRING_TOPIC, Optional.of(KAFKA_OPPFOLGING_TOGGLE));
+    public KafkaConsumerRunnable kafkaOppfolgingStatusConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
+        return new KafkaConsumerRunnable(oppfolgingService, unleashService, Topic.OPPFOLGING_CONSUMER_TOPIC, Optional.of(KAFKA_OPPFOLGING_TOGGLE));
     }
 
 
