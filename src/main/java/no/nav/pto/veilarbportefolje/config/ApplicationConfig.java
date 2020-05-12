@@ -157,14 +157,14 @@ public class ApplicationConfig implements ApiApplication {
                 dialogService,
                 unleashService,
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-                Optional.of(("veilarbdialog.kafka"))
+                Optional.of("veilarbdialog.kafka")
         );
 
         new KafkaConsumerRunnable(
                 vedtakService,
                 unleashService,
                 KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                Optional.of(("veilarbportfolje-hent-data-fra-vedtakstotte"))
+                Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
         );
 
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
