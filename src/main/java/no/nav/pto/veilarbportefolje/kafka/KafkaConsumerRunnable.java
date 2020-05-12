@@ -54,7 +54,7 @@ public class KafkaConsumerRunnable implements Runnable {
         try {
             log.info("Subscriber til topic {}", this.topic);
             consumer.subscribe(singletonList(topic));
-            log.info("Har subscribet til topic {}", this.topic);
+            consumer.subscription().forEach(subscription -> log.info("Har subscribet til topic {}", this.topic));
 
             boolean logged = false;
             while (featureErPa() && !shutdown.get()) {
