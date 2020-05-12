@@ -64,11 +64,12 @@ public class KafkaConsumerRunnable implements Runnable {
                 records.forEach(this::process);
             }
         } catch (Exception e) {
-            log.error(
-                    append("stack_trace", e.getStackTrace()),
-                    "{} under poll() eller subscribe() for topic {}", e.getClass().getSimpleName(), topic
+            String mld = String.format(
+                    "%s under poll() eller subscribe() for topic %s",
+                    e.getClass().getSimpleName(),
+                    topic
             );
-
+            log.error(mld, e);
         } finally {
             consumer.close();
             shutdownLatch.countDown();
@@ -97,15 +98,14 @@ public class KafkaConsumerRunnable implements Runnable {
         try {
             kafkaService.behandleKafkaMelding(record.value());
         } catch (Exception e) {
-
-            log.error(
-                    append("stack_trace", e.getStackTrace()),
-                    "{} for key {} og offset {} på topic {}",
+            String mld = String.format(
+                    "%s for key %s, og offset %s på topic %s",
                     e.getClass().getSimpleName(),
                     record.key(),
                     record.offset(),
                     record.topic()
             );
+            log.error(mld, e);
         }
         MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
     }

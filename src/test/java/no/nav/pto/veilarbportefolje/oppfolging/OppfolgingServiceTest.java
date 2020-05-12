@@ -12,8 +12,6 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Optional;
-
 import static java.util.Collections.singletonList;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService.brukerenIkkeLengerErUnderOppfolging;
 import static org.assertj.core.api.Assertions.assertThat;
