@@ -138,11 +138,6 @@
             <groupId>no.nav.common</groupId>
             <artifactId>jdbc</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>jobutils</artifactId>
-        </dependency>
-
 
         <!--oidc-security-->
         <dependency>

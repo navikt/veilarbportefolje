@@ -5,14 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.krr.KrrService;
-import no.nav.jobutils.RunningJob;
+import no.nav.pto.veilarbportefolje.util.RunningJob;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static no.nav.jobutils.JobUtils.runAsyncJob;
+import static no.nav.pto.veilarbportefolje.util.JobUtils.runAsyncJob;
 
 @Slf4j
 public class ArenaFilerIndekseringServlet extends HttpServlet {

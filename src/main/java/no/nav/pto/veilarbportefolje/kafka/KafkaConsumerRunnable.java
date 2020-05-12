@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
+import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -14,8 +15,6 @@ import org.slf4j.MDC;
 
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.time.Duration.ofSeconds;
@@ -46,9 +45,7 @@ public class KafkaConsumerRunnable implements Runnable {
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
-        Thread thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.start();
+        JobUtils.runAsyncJob(this);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
     }
 

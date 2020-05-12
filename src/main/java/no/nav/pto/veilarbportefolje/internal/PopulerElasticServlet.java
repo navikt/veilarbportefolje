@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.internal;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.jobutils.JobUtils;
-import no.nav.jobutils.RunningJob;
+import no.nav.pto.veilarbportefolje.util.JobUtils;
+import no.nav.pto.veilarbportefolje.util.RunningJob;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
