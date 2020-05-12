@@ -147,10 +147,6 @@ public class ApplicationConfig implements ApiApplication {
             flyway.migrate();
         }
 
-        System.out.println("CPU Core: " + Runtime.getRuntime().availableProcessors());
-        System.out.println("CommonPool Parallelism: " + ForkJoinPool.commonPool().getParallelism());
-        System.out.println("CommonPool Common Parallelism: " + ForkJoinPool.getCommonPoolParallelism());
-
         new KafkaConsumerRunnable(
                 vedtakService,
                 unleashService,
