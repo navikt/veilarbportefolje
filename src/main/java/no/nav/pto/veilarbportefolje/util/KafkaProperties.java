@@ -17,14 +17,14 @@ public class KafkaProperties {
     private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
 
-    public static HashMap<String, Object> kafkaProperties(String topic) {
+    public static HashMap<String, Object> kafkaProperties() {
         HashMap<String, Object>  props = new HashMap<> ();
         props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
         props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer-" + topic);
+        props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
         props.put(MAX_POLL_RECORDS_CONFIG, 5);
         props.put(SESSION_TIMEOUT_MS_CONFIG, 20000);
         props.put(ENABLE_AUTO_COMMIT_CONFIG, true);
