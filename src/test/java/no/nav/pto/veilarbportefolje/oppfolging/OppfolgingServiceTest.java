@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.val;
+import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -9,6 +10,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,8 +42,8 @@ public class OppfolgingServiceTest {
                 mock(ElasticIndexer.class),
                 veilederServiceMock,
                 navKontorServiceMock,
-                mock(ArbeidslisteService.class)
-        );
+                mock(ArbeidslisteService.class),
+                new UnleashServiceMock(false));
     }
 
     @Test
