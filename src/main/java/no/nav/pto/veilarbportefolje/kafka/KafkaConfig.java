@@ -51,7 +51,7 @@ public class KafkaConfig {
     @Bean
     public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
         final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
-        HashMap<String, Object> props = KafkaProperties.kafkaProperties(Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topic);
+        HashMap<String, Object> props = KafkaProperties.kafkaProperties();
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);

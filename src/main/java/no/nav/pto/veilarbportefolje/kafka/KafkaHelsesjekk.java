@@ -16,9 +16,7 @@ public class KafkaHelsesjekk implements Helsesjekk {
     private final String topic;
 
     public KafkaHelsesjekk(KafkaConfig.Topic topic) {
-        HashMap<String, Object> properties = kafkaProperties( topic.topic + "-helsesjekk");
-
-        this.consumer = new KafkaConsumer<>(properties);
+        this.consumer = new KafkaConsumer<>(kafkaProperties());
         this.topic = topic.topic;
     }
 
