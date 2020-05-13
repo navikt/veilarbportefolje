@@ -75,7 +75,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
 
-        if (unleashService.isEnabled(KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
+        if (!unleashService.isEnabled(KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
             log.info("Oppdateringer for oppfølgingsstatus blir behandlet via kafka");
             return;
         }
