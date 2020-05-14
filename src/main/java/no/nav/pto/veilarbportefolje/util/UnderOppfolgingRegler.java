@@ -26,6 +26,12 @@ public class UnderOppfolgingRegler {
         return erUnderOppfolging(formidlingsgruppekode, servicegruppeKode) || oppfolgingsFlaggErSatt(bruker);
     }
 
+    public static boolean erUnderOppfolging(Result<OppfolgingsBruker> bruker) {
+        return bruker
+                .mapOk(UnderOppfolgingRegler::erUnderOppfolging)
+                .orElse(false);
+    }
+
     private static boolean erArbeidssoker(String formidlingsgruppeKode) {
         return ARBEIDSOKER.equals(formidlingsgruppeKode);
     }

@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -8,6 +9,9 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.Result;
+import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
+
+import java.util.concurrent.CompletableFuture;
 
 import static no.nav.json.JsonUtils.fromJson;
 
@@ -17,32 +21,29 @@ public class DialogService implements KafkaConsumerService {
     private DialogFeedRepository dialogFeedRepository;
     private ElasticIndexer elasticIndexer;
     private AktoerService aktoerService;
+    private BrukerRepository brukerRepository;
 
 
-    public DialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+    public DialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService, BrukerRepository brukerRepository) {
         this.dialogFeedRepository = dialogFeedRepository;
         this.elasticIndexer = elasticIndexer;
         this.aktoerService = aktoerService;
+        this.brukerRepository = brukerRepository;
     }
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         DialogData melding = fromJson(kafkaMelding, DialogData.class);
-        dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
-        indekserBruker(AktoerId.of(melding.getAktorId()));
+        CompletableFuture.runAsync(()-> dialogFeedRepository.oppdaterDialogInfoForBruker(melding));
+        CompletableFuture.supplyAsync(()-> aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId())))
+                .thenAccept(tryFnr -> tryFnr.onSuccess(this::indekserBruker));
+
     }
 
-    private void indekserBruker (AktoerId aktoerId) {
-        Result<OppfolgingsBruker> result = elasticIndexer.indekser(aktoerId)
-                .mapError(err -> {
-                            Fnr fnr = aktoerService.hentFnrFraAktorId(aktoerId).get();
-                            return elasticIndexer.indekser(fnr);
-                        }
-                );
-
-        if(result.isErr()) {
-            log.warn("Feil ved indeksering av bruker med aktorId {}", aktoerId.aktoerId);
+    private void indekserBruker (Fnr fnr) {
+        Result<OppfolgingsBruker> oppfolgingsBrukerResult = brukerRepository.hentBruker(fnr);
+        if(UnderOppfolgingRegler.erUnderOppfolging(oppfolgingsBrukerResult)) {
+            elasticIndexer.indekser(fnr);
         }
-
     }
 }
