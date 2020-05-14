@@ -62,6 +62,9 @@ public class OppfolgingServiceTest {
         when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
                 .thenReturn(Result.err(new IllegalStateException()));
 
+        when(navKontorServiceMock.hentEnhetForBruker(any(AktoerId.class)))
+                .thenReturn(Result.of(() -> "0000"));
+
         boolean result = oppfolgingService.eksisterendeVeilederHarTilgangTilBruker(TEST_ID);
         assertThat(result).isFalse();
     }
