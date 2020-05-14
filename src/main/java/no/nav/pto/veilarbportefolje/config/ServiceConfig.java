@@ -54,13 +54,13 @@ public class ServiceConfig {
     }
 
     @Bean
-    public DialogService dialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer) {
-        return new DialogService(dialogFeedRepository, elasticIndexer);
+    public DialogService dialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+        return new DialogService(dialogFeedRepository, elasticIndexer, aktoerService);
     }
 
     @Bean
-    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
-        return new VedtakService(vedtakStatusRepository, elasticIndexer);
+    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+        return new VedtakService(vedtakStatusRepository, elasticIndexer, aktoerService);
     }
 
     @Bean
