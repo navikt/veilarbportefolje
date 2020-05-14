@@ -2,9 +2,6 @@ import no.nav.apiapp.ApiApp;
 import no.nav.brukerdialog.tools.SecurityConstants;
 import no.nav.common.utils.NaisUtils;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfig;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
 

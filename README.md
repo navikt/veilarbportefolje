@@ -63,7 +63,6 @@ Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppd
 ```
 select * from dba_scheduler_jobs;
 ```
-
 ## URL-er for manuell oppdatering av søkeindeks
 
 | Endepunkt                                             | Beskrivelse                                                      |      
@@ -86,5 +85,6 @@ Plugin kan lastes ned her: https://plugins.jetbrains.com/plugin/6317-lombok
 
 ## Kontakt og spørsmål
 Opprett en issue i GitHub for eventuelle spørsmål.
+
 
 Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #pto.

@@ -5,17 +5,19 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.json.JsonUtils.fromJson;
-
+import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStatus.fromJson;
 
 @Slf4j
 public class OppfolgingService implements KafkaConsumerService {
@@ -25,19 +27,28 @@ public class OppfolgingService implements KafkaConsumerService {
     private final VeilederService veilederService;
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
+    private final UnleashService unleashService;
 
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elastic, VeilederService veilederService, NavKontorService navKontorService, ArbeidslisteService arbeidslisteService) {
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elastic, VeilederService veilederService, NavKontorService navKontorService, ArbeidslisteService arbeidslisteService, UnleashService unleashService) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
         this.veilederService = veilederService;
         this.navKontorService = navKontorService;
         this.arbeidslisteService = arbeidslisteService;
+        this.unleashService = unleashService;
     }
 
     @Override
     @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
-        OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding, OppfolgingStatus.class);
+        if (!unleashService.isEnabled(
+          
+          .KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
+            log.info("Ingorerer melding fra kafka");
+            return;
+        }
+
+        OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding);
         AktoerId aktoerId = oppfolgingStatus.getAktoerId();
 
         if (oppfolgingStatus.getStartDato() == null) {
