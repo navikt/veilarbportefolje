@@ -41,9 +41,7 @@ public class OppfolgingService implements KafkaConsumerService {
     @Override
     @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (!unleashService.isEnabled(
-          
-          .KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
+        if (!unleashService.isEnabled(KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
             log.info("Ingorerer melding fra kafka");
             return;
         }
