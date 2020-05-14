@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.jobutils.JobUtils.runAsyncJobOnLeader;
+import static no.nav.pto.veilarbportefolje.util.JobUtils.runAsyncJobOnLeader;
 
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
@@ -91,6 +91,7 @@ public class AktoerServiceImpl implements AktoerService {
         return typeMap;
     }
 
+    @Deprecated
     public Try<Fnr> hentFnrFraAktorId(AktoerId aktoerId) {
         return Try.of(() -> aktorService.getFnr(aktoerId.toString()).orElseThrow(IllegalStateException::new)).map(Fnr::of);
     }

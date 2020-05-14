@@ -9,6 +9,7 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.Pair;
 import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
+import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
@@ -73,7 +74,7 @@ public class ElasticServiceIntegrationTest {
         when(pepMock.isSubjectAuthorizedToSeeKode7(PRIVILEGED_TOKEN)).thenReturn(true);
 
         VeilederService veilederServiceMock = mock(VeilederService.class);
-        when(veilederServiceMock.getIdenter(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
+        when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
 
         RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
                 .username("")
@@ -84,7 +85,7 @@ public class ElasticServiceIntegrationTest {
                 .build()
         );
 
-        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock);
+        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock, new UnleashServiceMock(true));
 
         indexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),

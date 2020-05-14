@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
+import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
@@ -282,13 +283,21 @@ public class ElasticIndexer {
         CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
 
         future.exceptionally(e -> {
-            throw new RuntimeException(e);
+            log.warn("Klarte ikke indeksere", e);
+            return null;
         });
+
         return future;
     }
 
-    public void indekser(AktoerId aktoerId) {
-        OppfolgingsBruker bruker = brukerRepository.hentBruker(aktoerId);
+    public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
+        Result<OppfolgingsBruker> result = brukerRepository.hentBruker(aktoerId);
+        if (result.isErr()) {
+            log.error("Kunne ikke hente bruker {} ", aktoerId);
+            return result;
+        }
+
+        OppfolgingsBruker bruker = result.orElseThrowException();
 
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
@@ -297,6 +306,8 @@ public class ElasticIndexer {
         } else {
             slettBruker(bruker);
         }
+
+        return result;
     }
 
     public void indekserBrukere(List<PersonId> personIds) {
@@ -371,7 +382,7 @@ public class ElasticIndexer {
         BulkResponse response = client.bulk(bulk, DEFAULT);
 
         if (response.hasFailures()) {
-            throw new RuntimeException(response.buildFailureMessage());
+            log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
         }
 
         log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
@@ -435,7 +446,7 @@ public class ElasticIndexer {
     }
 
     private void leggTilTiltak(OppfolgingsBruker bruker) {
-        leggTilAktiviteter(Collections.singletonList(bruker));
+        leggTilTiltak(Collections.singletonList(bruker));
     }
 
     private void leggTilAktiviteter(List<OppfolgingsBruker> brukere) {

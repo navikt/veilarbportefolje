@@ -47,7 +47,6 @@ public class OppfolgingsBruker {
     boolean ny_for_veileder;
     boolean ny_for_enhet;
     boolean trenger_vurdering;
-    boolean under_vurdering;
     String venterpasvarfrabruker;
     String venterpasvarfranav;
     String nyesteutlopteaktivitet;
@@ -79,5 +78,6 @@ public class OppfolgingsBruker {
     String vedtak_status;
     String vedtak_status_endret;
     boolean trenger_revurdering;
+    boolean er_sykmeldt_med_arbeidsgiver;
     String brukers_situasjon;
 }

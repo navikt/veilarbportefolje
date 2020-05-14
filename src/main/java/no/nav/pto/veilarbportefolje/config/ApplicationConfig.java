@@ -1,36 +1,42 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProvider;
 import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.pto.veilarbportefolje.abac.PepClient;
+import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.YtelserServlet;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.feed.FeedConfig;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
-import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
+import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
+import no.nav.pto.veilarbportefolje.feed.FeedConfig;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.internal.*;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
-import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
+import org.apache.yetus.audience.InterfaceStability;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,6 +53,9 @@ import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 import javax.ws.rs.client.Client;
+
+import java.util.Optional;
+import java.util.concurrent.ForkJoinPool;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig.STS_OIDC_CONFIGURATION_URL_PROPERTY;
@@ -108,16 +117,25 @@ public class ApplicationConfig implements ApiApplication {
     private KrrService krrService;
 
     @Inject
-    private OppfolgingFeedRepository oppfolgingFeedRepository;
-
-    @Inject
-    private DialogFeedRepository dialogFeedRepository;
+    private OppfolgingRepository oppfolgingRepository;
 
     @Inject
     private BrukerRepository brukerRepository;
 
     @Inject
     private AktivitetDAO aktivitetDAO;
+
+    @Inject
+    private OppfolgingService oppfolgingService;
+
+    @Inject
+    private UnleashService unleashService;
+
+    @Inject
+    private DialogService dialogService;
+
+    @Inject
+    private VedtakService vedtakService;
 
     @Override
     public void startup(ServletContext servletContext) {
@@ -129,13 +147,33 @@ public class ApplicationConfig implements ApiApplication {
             flyway.migrate();
         }
 
+        new KafkaConsumerRunnable(
+                vedtakService,
+                unleashService,
+                KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
+                Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
+        );
+
+        new KafkaConsumerRunnable(
+                oppfolgingService,
+                unleashService,
+                KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC,
+                Optional.of(KafkaConfig.KAFKA_OPPFOLGING_TOGGLE)
+        );
+
+        new KafkaConsumerRunnable(
+                dialogService,
+                unleashService,
+                KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
+                Optional.of("veilarbdialog.kafka")
+        );
+
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");
         leggTilServlet(servletContext, new PopulerElasticServlet(elasticIndexer), "/internal/populer_elastic");
         leggTilServlet(servletContext, new PopulerKrrServlet(krrService), "/internal/populer_krr");
-        leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingFeedRepository), "/internal/reset_feed_oppfolging");
-        leggTilServlet(servletContext, new ResetDialogFeedServlet(dialogFeedRepository), "/internal/reset_feed_dialog");
+        leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingRepository), "/internal/reset_feed_oppfolging");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
         leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
     }
@@ -155,6 +193,7 @@ public class ApplicationConfig implements ApiApplication {
 
         apiAppConfigurator
                 .sts()
+                .selfTests(KafkaConfig.getHelseSjekker())
                 .issoLogin()
                 .oidcProvider(securityTokenServiceOidcProvider);
     }

@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +29,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
-import static no.nav.pto.veilarbportefolje.feed.dialog.DialogDataFeedHandler.DIALOGAKTOR_SIST_OPPDATERT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -345,17 +343,4 @@ public class BrukerRepositoryTest {
         assertTrue(result.get() == null);
     }
 
-    @Test
-    public void skalOppdatereMetadata() throws Exception {
-        Date date = new Date();
-
-        brukerRepository.updateMetadata(DIALOGAKTOR_SIST_OPPDATERT, date);
-
-        Date upDated = (Date) brukerRepository.db.queryForList("SELECT "
-                + DIALOGAKTOR_SIST_OPPDATERT
-                + " from METADATA")
-                .get(0)
-                .get(DIALOGAKTOR_SIST_OPPDATERT);
-        assertEquals(date, upDated);
-    }
 }

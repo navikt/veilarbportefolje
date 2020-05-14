@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.*;
-import no.nav.pto.veilarbportefolje.feed.dialog.DialogFeedRepository;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
@@ -55,8 +55,8 @@ public class DatabaseConfig {
 
 
     @Bean
-    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
-        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate, unleashService);
+    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
     }
 
     @Bean
@@ -65,8 +65,8 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public OppfolgingFeedRepository OppfolgingFeedRepository(JdbcTemplate db) {
-        return new OppfolgingFeedRepository(db);
+    public OppfolgingRepository OppfolgingFeedRepository(JdbcTemplate db) {
+        return new OppfolgingRepository(db);
     }
 
     @Bean

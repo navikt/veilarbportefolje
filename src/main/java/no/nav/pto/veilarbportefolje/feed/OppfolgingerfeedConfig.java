@@ -9,11 +9,12 @@ import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedHandler;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedRepository;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,15 +70,19 @@ public class OppfolgingerfeedConfig {
     public FeedCallback<BrukerOppdatertInformasjon> oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                                                           BrukerRepository brukerRepository,
                                                                           ElasticIndexer elasticIndexer,
-                                                                          OppfolgingFeedRepository oppfolgingFeedRepository,
+                                                                          OppfolgingRepository oppfolgingRepository,
                                                                           VeilederService veilederService,
-                                                                          Transactor transactor) {
-        return new OppfolgingFeedHandler(arbeidslisteService,
+                                                                          Transactor transactor,
+                                                                          UnleashService unleashService) {
+        return new OppfolgingFeedHandler(
+                arbeidslisteService,
                 brukerRepository,
                 elasticIndexer,
-                oppfolgingFeedRepository,
+                oppfolgingRepository,
                 veilederService,
-                transactor);
+                transactor,
+                unleashService
+        );
     }
 
     public static String nesteId(JdbcTemplate db) {

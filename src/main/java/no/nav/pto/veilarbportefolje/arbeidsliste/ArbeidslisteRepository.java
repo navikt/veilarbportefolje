@@ -1,10 +1,12 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
+import com.google.common.base.Supplier;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -95,8 +97,14 @@ public class ArbeidslisteRepository {
                 .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db", e));
     }
 
-    public void deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
-        namedParameterJdbcTemplate.update(DELETE_FROM_ARBEIDSLISTE_SQL, Collections.singletonMap("aktoerid", aktoerId.toString()));
+    public Result<Integer> deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
+        Supplier<Integer> query = () -> {
+            return namedParameterJdbcTemplate
+                    .update(DELETE_FROM_ARBEIDSLISTE_SQL,
+                            Collections.singletonMap("aktoerid", aktoerId.toString())
+                    );
+        };
+        return Result.of(query);
     }
 
     @SneakyThrows

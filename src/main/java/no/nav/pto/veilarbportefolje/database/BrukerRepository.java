@@ -8,9 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
+import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -42,16 +42,13 @@ import static no.nav.sbl.sql.where.WhereClause.in;
 @Slf4j
 public class BrukerRepository {
 
-    private UnleashService unleashService;
-
     JdbcTemplate db;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Inject
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, UnleashService unleashService) {
+    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.unleashService = unleashService;
     }
 
     public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
@@ -66,10 +63,9 @@ public class BrukerRepository {
 
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
-        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -93,7 +89,7 @@ public class BrukerRepository {
         List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
                 sql,
                 mapOf(Pair.of("fnr", fnr)),
-                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa()) : null
+                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null
         );
 
         log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
@@ -173,9 +169,6 @@ public class BrukerRepository {
     }
 
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
-
-        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-
         db.setFetchSize(1000);
 
         Timestamp sistIndeksert = SqlUtils
@@ -184,29 +177,27 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
     }
 
-    public OppfolgingsBruker hentBruker(AktoerId aktoerId) {
-        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
-
-        return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> DbUtils.mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa))
+    public Result<OppfolgingsBruker> hentBruker(AktoerId aktoerId) {
+        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
+
+        return Result.of(query);
     }
 
     public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
-        boolean vedtakstotteFeatureErPa = vedtakstotteFeatureErPa();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, vedtakstotteFeatureErPa) : null)
+                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()
@@ -231,10 +222,6 @@ public class BrukerRepository {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
     }
 
-    public void updateMetadata(String name, Date date) {
-        update(db, METADATA).set(name, date).execute();
-    }
-
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
                 () -> {
@@ -246,6 +233,17 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
+    public Result<String> hentEnhetForBruker(AktoerId aktoerId) {
+        Supplier<String> query = () -> {
+            return select(db, VW_PORTEFOLJE_INFO, rs -> rs.getString("NAV_KONTOR"))
+                    .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                    .execute();
+        };
+
+        return Result.of(query);
+    }
+
+    @Deprecated
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
                 () -> {
@@ -493,9 +491,5 @@ public class BrukerRepository {
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
-    }
-
-    private boolean vedtakstotteFeatureErPa() {
-        return unleashService.isEnabled("veilarbportfolje-hent-data-fra-vedtakstotte");
     }
 }

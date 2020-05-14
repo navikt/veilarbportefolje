@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import lombok.val;
 import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
@@ -10,6 +11,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
+import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
@@ -181,7 +183,7 @@ public class ElasticQueryBuilder {
         return builder;
     }
 
-    static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet) {
+    static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
         LocalDate localDate = LocalDate.now();
 
         QueryBuilder queryBuilder;
@@ -193,7 +195,7 @@ public class ElasticQueryBuilder {
                 queryBuilder = byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet);
                 break;
             case TRENGER_VURDERING:
-                queryBuilder = matchQuery("trenger_vurdering", true);
+                queryBuilder = byggTrengerVurderingFilter(erVedtakstottePilotPa);
                 break;
             case INAKTIVE_BRUKERE:
                 queryBuilder = matchQuery("formidlingsgruppekode", "ISERV");
@@ -225,18 +227,13 @@ public class ElasticQueryBuilder {
                         .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
-                queryBuilder = boolQuery()
-                        .must(matchQuery("formidlingsgruppekode", "IARBS"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BATT"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BFORM"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "IKVAL"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VURDU"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"));
+                queryBuilder = byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
                 break;
             case UNDER_VURDERING:
-                queryBuilder = existsQuery("vedtak_status");
-                break;
+                if(erVedtakstottePilotPa) {
+                    queryBuilder = existsQuery("vedtak_status");
+                    break;
+                }
             case PERMITTERTE_ETTER_NIENDE_MARS:
                 queryBuilder = byggPermittertFilter();
                 break;
@@ -249,6 +246,30 @@ public class ElasticQueryBuilder {
         }
         return queryBuilder;
     }
+
+    // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
+    static QueryBuilder byggTrengerVurderingFilter(boolean erVedtakstottePilotPa) {
+        if(erVedtakstottePilotPa) {
+            return boolQuery()
+                    .must(matchQuery("trenger_vurdering", true))
+                    .mustNot(existsQuery("vedtak_status"));
+        }
+
+        return matchQuery("trenger_vurdering", true);
+
+    }
+
+    static QueryBuilder byggErSykmeldtMedArbeidsgiverFilter(boolean erVedtakstottePilotPa) {
+        if(erVedtakstottePilotPa) {
+            return boolQuery()
+                    .must(matchQuery("er_sykmeldt_med_arbeidsgiver", true))
+                    .mustNot(existsQuery("vedtak_status"));
+        }
+
+        return matchQuery("er_sykmeldt_med_arbeidsgiver", true);
+
+    }
+
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     static BoolQueryBuilder byggUfordeltBrukereQuery(List<String> veiledereMedTilgangTilEnhet) {
@@ -333,17 +354,17 @@ public class ElasticQueryBuilder {
     }
 
 
-    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet) {
+    static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder enhetQuery = boolQuery().must(termQuery("enhet_id", enhetId));
-        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet);
+        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
     }
 
-    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet) {
+    static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
 
-        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet);
+        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
     }
 
     static BoolQueryBuilder byggIkkePermittertFilter() {
@@ -362,15 +383,13 @@ public class ElasticQueryBuilder {
                         .gte(toIsoUTC(LocalDate.of(2020, 3, 10).atStartOfDay())));
     }
 
-    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
-
-
+    private static SearchSourceBuilder byggStatusTallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         return new SearchSourceBuilder()
                 .size(0)
                 .aggregation(
                         filters(
                                 "statustall",
-                                erSykmeldtMedArbeidsgiver(filtrereVeilederOgEnhet),
+                                erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
                                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
                                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                                 inaktiveBrukere(filtrereVeilederOgEnhet),
@@ -378,7 +397,7 @@ public class ElasticQueryBuilder {
                                 mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukere", "ny_for_enhet"),
                                 mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukereForVeileder", "ny_for_veileder"),
                                 totalt(filtrereVeilederOgEnhet),
-                                mustBeTrueFilter(filtrereVeilederOgEnhet, "trengerVurdering", "trenger_vurdering"),
+                                trengerVurderingFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
                                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
                                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
@@ -391,7 +410,31 @@ public class ElasticQueryBuilder {
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
-                        ));
+                                ));
+    }
+
+    private static KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+                .must(filtrereVeilederOgEnhet)
+                .must(termQuery("trenger_vurdering", true));
+
+        if(vedtakstottePilotErPa) {
+            boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
+        }
+
+        return new KeyedFilter("trengerVurdering", boolQueryBuilder);
+    }
+
+    private static KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+                .must(filtrereVeilederOgEnhet)
+                .must(termQuery("er_sykmeldt_med_arbeidsgiver", true));
+
+        if(vedtakstottePilotErPa) {
+            boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
+        }
+
+        return new KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
     }
 
     private static KeyedFilter permitterteEtterNiendeMarsStatusTall(BoolQueryBuilder filtrereVeilederOgEnhet) {
@@ -480,21 +523,6 @@ public class ElasticQueryBuilder {
         );
     }
 
-    private static KeyedFilter erSykmeldtMedArbeidsgiver(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        return new KeyedFilter(
-                "erSykmeldtMedArbeidsgiver",
-                boolQuery()
-                        .must(filtrereVeilederOgEnhet)
-                        .must(matchQuery("formidlingsgruppekode", "IARBS"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BATT"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "BFORM"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "IKVAL"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VURDU"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "OPPFI"))
-                        .mustNot(matchQuery("kvalifiseringsgruppekode", "VARIG"))
-        );
-    }
-
     public static String byggVeilederPaaEnhetScript(List<String> veilederePaaEnhet) {
         String veiledere = veilederePaaEnhet.stream()
                 .map(id -> format("\"%s\"", id))
@@ -504,3 +532,4 @@ public class ElasticQueryBuilder {
         return format("%s.contains(doc.veileder_id.value)", medKlammer);
     }
 }
+

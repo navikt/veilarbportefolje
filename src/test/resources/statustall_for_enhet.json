@@ -22,110 +22,19 @@
                 }
               },
               {
-                "match": {
-                  "formidlingsgruppekode": {
-                    "query": "IARBS",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
+                "term": {
+                  "er_sykmeldt_med_arbeidsgiver": {
+                    "value": true,
                     "boost": 1.0
                   }
                 }
               }
             ],
-            "must_not": [
+            "must_not" : [
               {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "BATT",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "BFORM",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "IKVAL",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "VURDU",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "OPPFI",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
-                }
-              },
-              {
-                "match": {
-                  "kvalifiseringsgruppekode": {
-                    "query": "VARIG",
-                    "operator": "OR",
-                    "prefix_length": 0,
-                    "max_expansions": 50,
-                    "fuzzy_transpositions": true,
-                    "lenient": false,
-                    "zero_terms_query": "NONE",
-                    "auto_generate_synonyms_phrase_query": true,
-                    "boost": 1.0
-                  }
+                "exists" : {
+                  "field" : "vedtak_status",
+                  "boost" : 1.0
                 }
               }
             ],
@@ -671,36 +580,44 @@
             "boost": 1.0
           }
         },
-        "trengerVurdering": {
-          "bool": {
-            "must": [
+        "trengerVurdering" : {
+          "bool" : {
+            "must" : [
               {
-                "bool": {
-                  "must": [
+                "bool" : {
+                  "must" : [
                     {
-                      "term": {
-                        "enhet_id": {
-                          "value": "0000",
-                          "boost": 1.0
+                      "term" : {
+                        "enhet_id" : {
+                          "value" : "0000",
+                          "boost" : 1.0
                         }
                       }
                     }
                   ],
-                  "adjust_pure_negative": true,
-                  "boost": 1.0
+                  "adjust_pure_negative" : true,
+                  "boost" : 1.0
                 }
               },
               {
-                "term": {
-                  "trenger_vurdering": {
-                    "value": true,
-                    "boost": 1.0
+                "term" : {
+                  "trenger_vurdering" : {
+                    "value" : true,
+                    "boost" : 1.0
                   }
                 }
               }
             ],
-            "adjust_pure_negative": true,
-            "boost": 1.0
+            "must_not" : [
+              {
+                "exists" : {
+                  "field" : "vedtak_status",
+                  "boost" : 1.0
+                }
+              }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
           }
         },
         "ufordelteBrukere": {

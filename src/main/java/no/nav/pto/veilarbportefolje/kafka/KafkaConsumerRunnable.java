@@ -1,77 +1,122 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.selftest.Helsesjekk;
-import no.nav.apiapp.selftest.HelsesjekkMetadata;
-import no.nav.jobutils.JobUtils;
+import net.logstash.logback.marker.Markers;
+import no.nav.common.utils.IdUtils;
+import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
+import org.slf4j.MDC;
+import org.slf4j.MarkerFactory;
 
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
+import static java.time.Duration.ofSeconds;
+import static java.util.Collections.singletonList;
+import static net.logstash.logback.marker.Markers.append;
+import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j
-public class KafkaConsumerRunnable implements Helsesjekk, Runnable {
+public class KafkaConsumerRunnable implements Runnable {
 
-    private KafkaConsumerService kafkaService;
-    private UnleashService unleashService;
-    private KafkaConfig.Topic topic;
-    private Optional<String> featureNavn;
-    private long lastThrownExceptionTime;
-    private Exception e;
-    private KafkaConsumer<String, String> kafkaConsumer;
+    private final KafkaConsumerService kafkaService;
+    private final UnleashService unleashService;
+    private final String topic;
+    private final Optional<String> featureNavn;
+    private final KafkaConsumer<String, String> consumer;
+    private final AtomicBoolean shutdown;
+    private final CountDownLatch shutdownLatch;
 
-    public KafkaConsumerRunnable(KafkaConsumerService kafkaService, UnleashService unleashService, KafkaConfig.Topic topic, Optional<String> featureNavn) {
+    public KafkaConsumerRunnable(KafkaConsumerService kafkaService,
+                                 UnleashService unleashService,
+                                 KafkaConfig.Topic topic,
+                                 Optional<String> featureNavn) {
+
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
-        this.topic = topic;
+        this.topic = topic.topic;
+        this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
         this.featureNavn = featureNavn;
-        this.kafkaConsumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
-        kafkaConsumer.subscribe(Collections.singletonList(topic.topic));
+        this.shutdown = new AtomicBoolean(false);
+        this.shutdownLatch = new CountDownLatch(1);
 
         JobUtils.runAsyncJob(this);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
     }
 
     @Override
     public void run() {
-        while (featureErPa()) {
-            try {
-                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(1L));
-                for (ConsumerRecord<String, String> record : records) {
-                    log.info("Behandler melding for aktorId: {}  på topic: " + record.topic());
-                    kafkaService.behandleKafkaMelding(record.value());
-                }
-            } catch (Exception e) {
-                this.e = e;
-                this.lastThrownExceptionTime = System.currentTimeMillis();
-                log.error("Feilet på {} : {}", topic.name(), e);
+        try {
+            consumer.subscribe(singletonList(topic));
+            while (featureErPa() && !shutdown.get()) {
+                ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
+                records.forEach(this::process);
             }
+        } catch (Exception e) {
+            String mld = String.format(
+                    "%s under poll() eller subscribe() for topic %s",
+                    e.getClass().getSimpleName(),
+                    topic
+            );
+            log.error(mld, e);
+        } finally {
+            consumer.close();
+            shutdownLatch.countDown();
+            log.info("Lukket konsument for topic {}", topic);
         }
     }
 
-    @Override
-    public void helsesjekk() {
-        if ((this.lastThrownExceptionTime + 60_000L) > System.currentTimeMillis()) {
-            throw new IllegalArgumentException("Kafka consumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
+    @SneakyThrows
+    public void shutdown() {
+        shutdown.set(true);
+        shutdownLatch.await();
+    }
+
+    private void process(ConsumerRecord<String, String> record) {
+        String correlationId = getCorrelationIdFromHeaders(record.headers());
+        MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId);
+
+        log.info(
+                "Behandler kafka-melding med key {} og offset {} på topic {}",
+                record.key(),
+                record.offset(),
+                record.topic()
+        );
+
+        try {
+            kafkaService.behandleKafkaMelding(record.value());
+        } catch (Exception e) {
+            String mld = String.format(
+                    "%s for key %s, og offset %s på topic %s",
+                    e.getClass().getSimpleName(),
+                    record.key(),
+                    record.offset(),
+                    record.topic()
+            );
+            log.error(mld, e);
         }
+        MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
     }
 
     private boolean featureErPa() {
         return this.featureNavn
-                .map(featureNavn -> unleashService.isEnabled(featureNavn))
+                .map(unleashService::isEnabled)
                 .orElse(false);
     }
 
-    @Override
-    public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
+    static String getCorrelationIdFromHeaders(Headers headers) {
+        return Optional.ofNullable(headers.lastHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME))
+                .map(Header::value)
+                .map(String::new)
+                .orElse(IdUtils.generateId());
     }
 
 }
