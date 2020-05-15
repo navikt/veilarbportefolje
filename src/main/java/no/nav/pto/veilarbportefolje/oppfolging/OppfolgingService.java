@@ -1,11 +1,12 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
@@ -16,7 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
+import static java.util.Collections.emptyList;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStatus.fromJson;
 
 @Slf4j
@@ -28,6 +34,7 @@ public class OppfolgingService implements KafkaConsumerService {
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
     private final UnleashService unleashService;
+    private final ExecutorService threadPool;
 
     public OppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elastic, VeilederService veilederService, NavKontorService navKontorService, ArbeidslisteService arbeidslisteService, UnleashService unleashService) {
         this.oppfolgingRepository = oppfolgingRepository;
@@ -36,6 +43,7 @@ public class OppfolgingService implements KafkaConsumerService {
         this.navKontorService = navKontorService;
         this.arbeidslisteService = arbeidslisteService;
         this.unleashService = unleashService;
+        this.threadPool = Executors.newFixedThreadPool(3);
     }
 
     @Override
@@ -71,21 +79,29 @@ public class OppfolgingService implements KafkaConsumerService {
         return !eksisterendeVeilederHarTilgangTilBruker(aktoerId);
     }
 
+    @SneakyThrows
     boolean eksisterendeVeilederHarTilgangTilBruker(AktoerId aktoerId) {
-        Optional<VeilederId> eksisterendeVeileder = oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
-                .map(info -> info.getVeileder())
-                .map(VeilederId::new);
 
-        if (!eksisterendeVeileder.isPresent()) {
-            return false;
-        }
+        CompletableFuture<Result<BrukerOppdatertInformasjon>> future = hentBrukerInfoAsync(aktoerId);
+        List<VeilederId> veilederePaaEnhet = hentVeilederePaaEnhet(aktoerId);
 
-        Result<List<VeilederId>> result = navKontorService.hentEnhetForBruker(aktoerId)
-                .mapOk(enhet -> veilederService.hentVeilederePaaEnhet(enhet));
+        Optional<VeilederId> eksisterendeVeileder = future.get()
+                .ok()
+                .map(BrukerOppdatertInformasjon::getVeileder)
+                .map(VeilederId::of);
 
-        return eksisterendeVeileder
-                .flatMap(veileder -> result.ok().map(veilederePaaEnhet -> veilederePaaEnhet.contains(veileder)))
-                .orElse(false);
+        return eksisterendeVeileder.isPresent() && veilederePaaEnhet.contains(eksisterendeVeileder.get());
+    }
+
+    private List<VeilederId> hentVeilederePaaEnhet(AktoerId aktoerId) {
+        return navKontorService.hentEnhetForBruker(aktoerId)
+                .mapOk(enhet -> veilederService.hentVeilederePaaEnhet(enhet))
+                .orElse(emptyList());
+    }
+
+    private CompletableFuture<Result<BrukerOppdatertInformasjon>> hentBrukerInfoAsync(AktoerId aktoerId) {
+        Supplier<Result<BrukerOppdatertInformasjon>> supplier = () -> oppfolgingRepository.hentOppfolgingData(aktoerId);
+        return CompletableFuture.supplyAsync(supplier, this.threadPool);
     }
 
     static boolean brukerenIkkeLengerErUnderOppfolging(OppfolgingStatus oppfolgingStatus) {
