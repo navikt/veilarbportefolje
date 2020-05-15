@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.Result;
 
 import static no.nav.json.JsonUtils.fromJson;
+import static no.nav.metrics.utils.MetricsUtils.timed;
 
 @Slf4j
 public class DialogService implements KafkaConsumerService {
@@ -27,9 +28,11 @@ public class DialogService implements KafkaConsumerService {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        DialogData melding = fromJson(kafkaMelding, DialogData.class);
-        dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
-        indekserBruker(AktoerId.of(melding.getAktorId()));
+        timed("portefolje.dialogservice.performace",()-> {
+            DialogData melding = fromJson(kafkaMelding, DialogData.class);
+            dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
+            indekserBruker(AktoerId.of(melding.getAktorId()));
+        });
     }
 
     private void indekserBruker (AktoerId aktoerId) {
