@@ -1,7 +1,10 @@
 package no.nav.pto.veilarbportefolje.feed;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static java.util.Arrays.asList;
 
 public class Utils {
 
@@ -9,4 +12,7 @@ public class Utils {
         return () -> fn.apply(arg);
     }
 
+    public static List<String> getCommaSeparatedUsers(String users) {
+        return asList(users.trim().toLowerCase().split(","));
+    }
 }
