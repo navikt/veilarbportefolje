@@ -28,11 +28,12 @@ public class DialogService implements KafkaConsumerService {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        timed("portefolje.dialogservice.performace",()-> {
+        long startTime = System.currentTimeMillis();
             DialogData melding = fromJson(kafkaMelding, DialogData.class);
             dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
             indekserBruker(AktoerId.of(melding.getAktorId()));
-        });
+        long endTime = System.currentTimeMillis();
+        log.info("Dialog service tog {} millisekunder att exekvera", (startTime-endTime));
     }
 
     private void indekserBruker (AktoerId aktoerId) {
