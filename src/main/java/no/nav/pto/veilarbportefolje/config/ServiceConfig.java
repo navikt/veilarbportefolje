@@ -54,8 +54,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public DialogService dialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
-        return new DialogService(dialogFeedRepository, elasticIndexer, aktoerService);
+    public DialogService dialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService, BrukerRepository brukerRepository) {
+        return new DialogService(dialogFeedRepository, elasticIndexer, aktoerService, brukerRepository);
     }
 
     @Bean

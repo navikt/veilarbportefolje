@@ -10,21 +10,6 @@ import static org.junit.Assert.assertTrue;
 public class OppfolgingUtilsTest {
 
     @Test
-    public void brukerSkalVaereUnderOppfolging() {
-        assertTrue(OppfolgingUtils.erBrukerUnderOppfolging("ARBS", "DUMMY", true));
-    }
-
-    @Test
-    public void brukerSkalVaereUnderOppfolging2() {
-        assertTrue(OppfolgingUtils.erBrukerUnderOppfolging("DUMMY", "DUMMY", true));
-    }
-
-    @Test
-    public void brukerSkalIKKEVaereUnderOppfolging1() {
-        assertFalse(OppfolgingUtils.erBrukerUnderOppfolging("DUMMY", "DUMMY", false));
-    }
-
-    @Test
     public void brukerTrengerVurdering() {
         assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "BKART"));
         assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "IVURD"));
