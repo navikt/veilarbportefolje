@@ -2,8 +2,6 @@ package no.nav.pto.veilarbportefolje.feed;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
-import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
-import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;

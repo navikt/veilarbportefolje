@@ -5,12 +5,13 @@ import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.mock.AktoerServiceMock;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,7 +44,9 @@ public class OppfolgingServiceTest {
                 veilederServiceMock,
                 navKontorServiceMock,
                 mock(ArbeidslisteService.class),
-                new UnleashServiceMock(false));
+                new UnleashServiceMock(false),
+                new AktoerServiceMock()
+        );
     }
 
     @Test
@@ -71,7 +74,7 @@ public class OppfolgingServiceTest {
         when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
                 .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
 
-        when(navKontorServiceMock.hentEnhetForBruker(any(AktoerId.class)))
+        when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.err(new IllegalStateException()));
 
         boolean result = oppfolgingService.eksisterendeVeilederHarTilgangTilBruker(TEST_ID);
@@ -83,7 +86,7 @@ public class OppfolgingServiceTest {
         when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
                 .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
 
-        when(navKontorServiceMock.hentEnhetForBruker(any(AktoerId.class)))
+        when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
@@ -98,7 +101,7 @@ public class OppfolgingServiceTest {
         when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
                 .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
 
-        when(navKontorServiceMock.hentEnhetForBruker(any(AktoerId.class)))
+        when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))

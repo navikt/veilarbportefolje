@@ -3,11 +3,12 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
@@ -28,14 +29,22 @@ public class OppfolgingService implements KafkaConsumerService {
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
     private final UnleashService unleashService;
+    private final AktoerService aktoerService;
 
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elastic, VeilederService veilederService, NavKontorService navKontorService, ArbeidslisteService arbeidslisteService, UnleashService unleashService) {
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository,
+                             ElasticIndexer elastic,
+                             VeilederService veilederService,
+                             NavKontorService navKontorService,
+                             ArbeidslisteService arbeidslisteService,
+                             UnleashService unleashService,
+                             AktoerService aktoerService) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
         this.veilederService = veilederService;
         this.navKontorService = navKontorService;
         this.arbeidslisteService = arbeidslisteService;
         this.unleashService = unleashService;
+        this.aktoerService = aktoerService;
     }
 
     @Override
@@ -48,7 +57,6 @@ public class OppfolgingService implements KafkaConsumerService {
 
         OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding);
         AktoerId aktoerId = oppfolgingStatus.getAktoerId();
-
         if (oppfolgingStatus.getStartDato() == null) {
             log.warn("Bruker {} har ikke startDato", aktoerId);
         }
@@ -80,7 +88,9 @@ public class OppfolgingService implements KafkaConsumerService {
             return false;
         }
 
-        Result<List<VeilederId>> result = navKontorService.hentEnhetForBruker(aktoerId)
+        Fnr fnr = aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException());
+
+        Result<List<VeilederId>> result = navKontorService.hentEnhetForBruker(fnr)
                 .mapOk(enhet -> veilederService.hentVeilederePaaEnhet(enhet));
 
         return eksisterendeVeileder

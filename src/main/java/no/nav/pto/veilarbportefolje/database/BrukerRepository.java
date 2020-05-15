@@ -242,12 +242,11 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
-    public Result<String> hentEnhetForBruker(AktoerId aktoerId) {
-        Supplier<String> query = () -> {
-            return select(db, VW_PORTEFOLJE_INFO, rs -> rs.getString("NAV_KONTOR"))
-                    .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                    .execute();
-        };
+    public Result<String> hentEnhetForBruker(Fnr fnr) {
+        Supplier<String> query = () -> select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
+                .column("NAV_KONTOR")
+                .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                .execute();
 
         return Result.of(query);
     }

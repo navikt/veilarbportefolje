@@ -7,19 +7,16 @@ import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.Pair;
-import no.nav.fasit.FasitUtils;
-import no.nav.fasit.ServiceUser;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
+import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -34,13 +31,13 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.common.utils.CollectionUtils.*;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
+import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Ignore
 @Slf4j
@@ -59,11 +56,6 @@ public class ElasticServiceIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-
-        ServiceUser user = FasitUtils.getServiceUser("veilarbelastic_user", APPLICATION_NAME);
-        System.setProperty(ELASTICSEARCH_USERNAME_PROPERTY, user.username);
-        System.setProperty(ELASTICSEARCH_PASSWORD_PROPERTY, user.password);
-        System.setProperty("FASIT_ENVIRONMENT_NAME", FasitUtils.getDefaultEnvironment());
 
         PepClient pepMock = mock(PepClient.class);
         when(pepMock.isSubjectAuthorizedToSeeEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
@@ -85,16 +77,15 @@ public class ElasticServiceIntegrationTest {
                 .build()
         );
 
-        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock, new UnleashServiceMock(true));
-
+        UnleashServiceMock unleashMock = new UnleashServiceMock(false);
+        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock, unleashMock);
         indexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 restClient,
                 elasticService,
-                mock(UnleashService.class)
+                unleashMock
         );
-
     }
 
     @Before
