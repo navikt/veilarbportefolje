@@ -18,6 +18,10 @@ public class Fnr {
         }
     }
 
+    public String getFnr() {
+        return fnr;
+    }
+
     public static Fnr of(String fnr) {
         return new Fnr(fnr);
     }

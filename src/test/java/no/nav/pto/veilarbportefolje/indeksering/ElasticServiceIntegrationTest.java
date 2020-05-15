@@ -10,14 +10,14 @@ import no.nav.common.utils.Pair;
 import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
+import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -35,12 +35,13 @@ import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.common.utils.CollectionUtils.*;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.*;
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
+import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Ignore
 @Slf4j

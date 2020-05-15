@@ -74,7 +74,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService) {
-        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService);
+    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService) {
+        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService);
     }
 }
