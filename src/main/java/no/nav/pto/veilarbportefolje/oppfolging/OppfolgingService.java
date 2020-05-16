@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -68,11 +69,15 @@ public class OppfolgingService implements KafkaConsumerService {
             }
         }
 
-        oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus)
-                .orElseThrowException();
+        MetricsUtils.timed(
+                "portefolje.oppfolging.oppdater",
+                () -> oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).orElseThrowException()
+        );
 
-        elastic.indekser(aktoerId)
-                .orElseThrowException();
+        MetricsUtils.timed(
+                "portefolje.oppfolging.indekser",
+                () -> elastic.indekser(aktoerId).orElseThrowException()
+        );
     }
 
     boolean eksisterendeVeilederHarIkkeTilgangTilBruker(AktoerId aktoerId) {
@@ -80,22 +85,38 @@ public class OppfolgingService implements KafkaConsumerService {
     }
 
     boolean eksisterendeVeilederHarTilgangTilBruker(AktoerId aktoerId) {
-        Optional<VeilederId> eksisterendeVeileder = oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
-                .map(info -> info.getVeileder())
-                .map(VeilederId::new);
+
+        Optional<VeilederId> eksisterendeVeileder = MetricsUtils.timed(
+                "portefolje.oppfolging.hentVeileder",
+                () -> oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
+                        .map(info -> info.getVeileder())
+                        .map(VeilederId::new)
+        );
 
         if (!eksisterendeVeileder.isPresent()) {
             return false;
         }
 
-        Fnr fnr = aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException());
+        Fnr fnr = MetricsUtils.timed(
+                "portefolje.oppfolging.hentFnr",
+                () -> aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException())
+        );
 
-        Result<List<VeilederId>> result = navKontorService.hentEnhetForBruker(fnr)
-                .mapOk(enhet -> veilederService.hentVeilederePaaEnhet(enhet));
+        Result<String> enhet = MetricsUtils.timed(
+                "portefolje.oppfolging.hentEnhet",
+                () -> navKontorService.hentEnhetForBruker(fnr)
+        );
 
-        return eksisterendeVeileder
-                .flatMap(veileder -> result.ok().map(veilederePaaEnhet -> veilederePaaEnhet.contains(veileder)))
-                .orElse(false);
+        if (enhet.isErr()) {
+            return false;
+        }
+
+        List<VeilederId> veilederePaaEnhet = MetricsUtils.timed(
+                "portefolje.oppfolging.hentVeileder",
+                () -> veilederService.hentVeilederePaaEnhet(enhet.ok().orElseThrow(IllegalStateException::new))
+        );
+
+        return veilederePaaEnhet.contains(eksisterendeVeileder.get());
     }
 
     static boolean brukerenIkkeLengerErUnderOppfolging(OppfolgingStatus oppfolgingStatus) {

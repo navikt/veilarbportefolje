@@ -49,7 +49,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
-import javax.ws.rs.client.Client;
 import java.util.Optional;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
@@ -218,8 +217,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public VeilederService veilederservice(Client restClient) {
-        return new VeilederService(restClient);
+    public VeilederService veilederservice() {
+        return new VeilederService();
     }
 
     @Bean(name = "transactionManager")
