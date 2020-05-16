@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService.brukerenIkkeLengerErUnderOppfolging;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,7 +83,7 @@ public class OppfolgingServiceTest {
     }
     
     @Test
-    public void skal_returnere_false_om_henting_av_veiledere_paa_enhet_feiler() {
+    public void skal_returnere_false_om_henting_av_veiledere_paa_enhet_returnerer_tom_liste() {
         when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
                 .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
 
@@ -90,7 +91,7 @@ public class OppfolgingServiceTest {
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
-                .thenThrow(new IllegalStateException());
+                .thenReturn(emptyList());
 
         boolean result = oppfolgingService.eksisterendeVeilederHarTilgangTilBruker(TEST_ID);
         assertThat(result).isFalse();

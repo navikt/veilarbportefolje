@@ -16,6 +16,7 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 

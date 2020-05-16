@@ -88,7 +88,6 @@ public class ApplicationConfig implements ApiApplication {
     public static final String VIRKSOMHET_ENHET_V1_URL_PROPERTY = "VIRKSOMHET_ENHET_V1_ENDPOINTURL";
     public static final String VEILARBOPPFOLGING_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
     public static final String VEILARBAKTIVITET_URL_PROPERTY = "VEILARBAKTIVITETAPI_URL";
-    public static final String VEILARBVEILEDER_URL_PROPERTY = "VEILARBVEILEDERAPI_URL";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
@@ -218,7 +217,7 @@ public class ApplicationConfig implements ApiApplication {
 
     @Bean
     public VeilederService veilederservice() {
-        return new VeilederService();
+        return new VeilederService(requireNamespace());
     }
 
     @Bean(name = "transactionManager")

@@ -53,7 +53,6 @@ public class MainTest {
         setProperty(VEILARBDIALOG_URL_PROPERTY, "http://localhost:8080/veilarbdialog/api");
         setProperty(VEILARBOPPFOLGING_URL_PROPERTY, "http://localhost:8080/veilarboppfolging/api");
         setProperty(VEILARBAKTIVITET_URL_PROPERTY, "http://localhost:8080/veilarbaktivitet/api");
-        setProperty(VEILARBVEILEDER_URL_PROPERTY, "http://localhost:8080/veilarbveileder/api");
 
         ServiceUser tiltakSftpUser = getServiceUser(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_ALIAS, APPLICATION_NAME);
         setProperty(VEILARBPORTEFOLJE_FILMOTTAK_SFTP_LOGIN_PASSWORD, tiltakSftpUser.getPassword());
