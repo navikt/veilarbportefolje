@@ -31,7 +31,7 @@ public class VeilederService {
 
     @Cacheable(VEILARBVEILEDER)
     public List<VeilederId> hentVeilederePaaEnhet(String enhet) {
-        String path = format("/enhet/%s/identer", enhet);
+        String path = format("/api/enhet/%s/identer", enhet);
 
         String ssoToken = SubjectHandler.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
 
