@@ -26,7 +26,7 @@ public class VeilederService {
     private final String url;
 
     public VeilederService(String namespace) {
-        url = format("http://veilarbveileder.%s.svc.nais.local/veilarbveileder/", namespace);
+        url = format("http://veilarbveileder.%s.svc.nais.local/veilarbveileder", namespace);
     }
 
     @Cacheable(VEILARBVEILEDER)
