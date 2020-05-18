@@ -23,7 +23,7 @@ public class KopierGR199FraArena {
 
     public void startOppdateringAvYtelser() {
         log.info("Indeksering: Starter oppdatering av ytelser...");
-        aktivitetService.tryUtledOgLagreAlleAktivitetstatuser();
+        aktivitetService.tryUtledOgLagreAlleAktivitetstatuser(); //TODO VARFÖR BEHÖVER MAN GÖRA DETTA VID INLÄSNING AV YTELSER?
 
         FilmottakFileUtils.hentYtelseFil()
                 .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs"))

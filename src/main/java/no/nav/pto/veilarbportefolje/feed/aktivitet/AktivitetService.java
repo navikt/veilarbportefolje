@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static io.vavr.control.Try.run;
+import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
@@ -28,8 +29,25 @@ public class AktivitetService {
         this.persistentOppdatering = persistentOppdatering;
     }
 
+    public void oppdaterAktiviteter(List<AktivitetDataFraFeed> data) {
+        List<AktivitetDataFraFeed> avtalteAktiviteter = data
+                .stream()
+                .filter(AktivitetDataFraFeed::isAvtalt)
+                .collect(toList());
+
+        avtalteAktiviteter.forEach(this::lagreAktivitetData);
+
+       List<AktoerId> aktoerIds = avtalteAktiviteter
+                .stream().map(AktivitetDataFraFeed::getAktorId)
+                .distinct()
+                .map(AktoerId::of)
+                .collect(toList());
+
+       utledOgIndekserAktivitetstatuserForAktoerid(aktoerIds);
+    }
+
     public void tryUtledOgLagreAlleAktivitetstatuser() {
-        utledOgLagreAlleAktivitetstatuser();
+        utledOgLagreAlleAktivitetstatuser(); // TODO VARFÖR KALLAR MAN TVÅ GÅNGER PÅ DENNA FUNKTION??
         aktivitetDAO.slettAktivitetDatoer();
 
         run(this::utledOgLagreAlleAktivitetstatuser)
@@ -58,4 +76,18 @@ public class AktivitetService {
         List<AktivitetBrukerOppdatering> aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerIds, aktoerService, aktivitetDAO);
         return persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(aktivitetBrukerOppdateringer);
     }
+
+    private void lagreAktivitetData(AktivitetDataFraFeed aktivitet) {
+        try {
+            if (aktivitet.isHistorisk()) {
+                aktivitetDAO.deleteById(aktivitet.getAktivitetId());
+            } else {
+                aktivitetDAO.upsertAktivitet(aktivitet);
+            }
+        } catch (Exception e) {
+            String message = String.format("Kunne ikke lagre aktivitetdata fra feed for aktivitetid %s", aktivitet.getAktivitetId());
+            log.error(message, e);
+        }
+    }
+
 }
