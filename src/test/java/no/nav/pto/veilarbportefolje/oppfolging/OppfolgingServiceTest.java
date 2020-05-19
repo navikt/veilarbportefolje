@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.when;
 public class OppfolgingServiceTest {
 
     private final static AktoerId TEST_ID = AktoerId.of("testId");
+    private final static VeilederId TEST_VEILEDER_ID = VeilederId.of("testVeilederId");
 
     private static OppfolgingService oppfolgingService;
     private VeilederService veilederServiceMock;
@@ -61,16 +63,7 @@ public class OppfolgingServiceTest {
         assertThat(result).isTrue();
     }
 
-    @Test
-    public void skal_returnere_false_om_vi_ikke_kan_hente_oppfolging_data_ved_sjekk_pa_eksisterende_veileder_sin_tilgang() {
-        when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
-                .thenReturn(Result.err(new IllegalStateException()));
-
-        boolean result = oppfolgingService.eksisterendeVeilederHarTilgangTilBruker(TEST_ID);
-        assertThat(result).isFalse();
-    }
-
-    @Test
+    @Test(expected = RuntimeException.class)
     public void skal_returnere_false_om_bruker_ikke_har_nav_kontor() {
         when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
                 .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
@@ -78,14 +71,13 @@ public class OppfolgingServiceTest {
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.err(new IllegalStateException()));
 
-        boolean result = oppfolgingService.eksisterendeVeilederHarTilgangTilBruker(TEST_ID);
-        assertThat(result).isFalse();
+        oppfolgingService.veilederHarTilgangTilBruker(TEST_VEILEDER_ID,TEST_ID);
     }
     
     @Test
     public void skal_returnere_false_om_henting_av_veiledere_paa_enhet_returnerer_tom_liste() {
         when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
-                .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
+                .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder(TEST_VEILEDER_ID.getVeilederId())));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
@@ -93,7 +85,7 @@ public class OppfolgingServiceTest {
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(emptyList());
 
-        boolean result = oppfolgingService.eksisterendeVeilederHarTilgangTilBruker(TEST_ID);
+        boolean result = oppfolgingService.veilederHarTilgangTilBruker(TEST_VEILEDER_ID,TEST_ID);
         assertThat(result).isFalse();
     }
 
@@ -108,7 +100,7 @@ public class OppfolgingServiceTest {
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(singletonList(VeilederId.of("testVeilederId")));
 
-        boolean result = oppfolgingService.eksisterendeVeilederHarTilgangTilBruker(TEST_ID);
+        boolean result = oppfolgingService.veilederHarTilgangTilBruker(TEST_VEILEDER_ID,TEST_ID);
         assertThat(result).isTrue();
     }
 }

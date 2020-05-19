@@ -16,7 +16,6 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,11 +62,9 @@ public class OppfolgingService implements KafkaConsumerService {
             log.warn("Bruker {} har ikke startDato", aktoerId);
         }
 
-        if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) || eksisterendeVeilederHarIkkeTilgangTilBruker(aktoerId)) {
-            Result<Integer> result = arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
-            if (result.isErr()) {
-                log.error("Kunne ikke slette arbeidsliste for bruker {}", aktoerId);
-            }
+        Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);
+        if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) || eksisterendeVeilederHarIkkeTilgangTilEnhet(aktoerId, eksisterendeVeileder)) {
+            slettArbeidsliste(aktoerId);
         }
 
         MetricsUtils.timed(
@@ -81,43 +78,44 @@ public class OppfolgingService implements KafkaConsumerService {
         );
     }
 
-    boolean eksisterendeVeilederHarIkkeTilgangTilBruker(AktoerId aktoerId) {
-        return !eksisterendeVeilederHarTilgangTilBruker(aktoerId);
+    private boolean eksisterendeVeilederHarIkkeTilgangTilEnhet(AktoerId aktoerId, Optional<VeilederId> eksisterendeVeileder) {
+        return eksisterendeVeileder.isPresent() && !veilederHarTilgangTilBruker(eksisterendeVeileder.get(), aktoerId);
     }
 
-    boolean eksisterendeVeilederHarTilgangTilBruker(AktoerId aktoerId) {
-
-        Optional<VeilederId> eksisterendeVeileder = MetricsUtils.timed(
-                "portefolje.oppfolging.hentVeileder",
-                () -> oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
-                        .map(info -> info.getVeileder())
-                        .map(VeilederId::new)
-        );
-
-        if (!eksisterendeVeileder.isPresent()) {
-            return false;
+    private void slettArbeidsliste(AktoerId aktoerId) {
+        Result<Integer> result = arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
+        if (result.isErr()) {
+            log.error("Kunne ikke slette arbeidsliste for bruker {}", aktoerId);
         }
+    }
+
+    boolean veilederHarTilgangTilBruker(VeilederId veilederId, AktoerId aktoerId) {
 
         Fnr fnr = MetricsUtils.timed(
                 "portefolje.oppfolging.hentFnr",
                 () -> aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException())
         );
 
-        Result<String> enhet = MetricsUtils.timed(
+        String enhet = MetricsUtils.timed(
                 "portefolje.oppfolging.hentEnhet",
-                () -> navKontorService.hentEnhetForBruker(fnr)
+                () -> navKontorService.hentEnhetForBruker(fnr).orElseThrowException()
         );
-
-        if (enhet.isErr()) {
-            return false;
-        }
 
         List<VeilederId> veilederePaaEnhet = MetricsUtils.timed(
                 "portefolje.oppfolging.hentVeileder",
-                () -> veilederService.hentVeilederePaaEnhet(enhet.ok().orElseThrow(IllegalStateException::new))
+                () -> veilederService.hentVeilederePaaEnhet(enhet)
         );
 
-        return veilederePaaEnhet.contains(eksisterendeVeileder.get());
+        return veilederePaaEnhet.contains(veilederId);
+    }
+
+    Optional<VeilederId> hentEksisterendeVeileder(AktoerId aktoerId) {
+        return  MetricsUtils.timed(
+                "portefolje.oppfolging.hentVeileder",
+                () -> oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
+                        .map(info -> info.getVeileder())
+                        .map(VeilederId::new)
+        );
     }
 
     static boolean brukerenIkkeLengerErUnderOppfolging(OppfolgingStatus oppfolgingStatus) {
