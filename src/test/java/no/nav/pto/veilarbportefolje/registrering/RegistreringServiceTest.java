@@ -41,7 +41,6 @@ public class RegistreringServiceTest {
 
     @Test
     public void testConsumer() {
-
         ArbeidssokerRegistrertEvent event1 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setBrukersSituasjon("Situasjon")

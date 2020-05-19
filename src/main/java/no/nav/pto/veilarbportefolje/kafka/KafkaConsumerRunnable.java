@@ -47,7 +47,7 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         this.shutdownLatch = new CountDownLatch(1);
 
         JobUtils.runAsyncJob(this);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
     @Override
