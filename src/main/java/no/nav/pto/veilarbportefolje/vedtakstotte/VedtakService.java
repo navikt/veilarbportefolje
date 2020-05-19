@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import static no.nav.json.JsonUtils.fromJson;
 
 @Slf4j
-public class VedtakService implements KafkaConsumerService {
+public class VedtakService implements KafkaConsumerService<String> {
 
     private VedtakStatusRepository vedtakStatusRepository;
     private ElasticIndexer elasticIndexer;

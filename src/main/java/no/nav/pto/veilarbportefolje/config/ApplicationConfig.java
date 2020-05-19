@@ -30,6 +30,7 @@ import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -150,22 +151,25 @@ public class ApplicationConfig implements ApiApplication {
         new KafkaConsumerRunnable(
                 vedtakService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
+                "veilarbportfolje-hent-data-fra-vedtakstotte"
         );
 
         new KafkaConsumerRunnable(
                 oppfolgingService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC,
-                Optional.of(KafkaConfig.KAFKA_OPPFOLGING_TOGGLE)
+                KafkaConfig.KAFKA_OPPFOLGING_TOGGLE
         );
 
         new KafkaConsumerRunnable(
                 dialogService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-                Optional.of("veilarbdialog.kafka")
+               "veilarbdialog.kafka"
         );
 
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");

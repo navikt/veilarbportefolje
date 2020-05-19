@@ -4,6 +4,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -24,28 +25,22 @@ import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupIn
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class KafkaConsumerRegistreringTest extends Thread {
+public class RegistreringServiceTest {
 
-    private MockConsumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
     private RegistreringRepository registreringRepository = new RegistreringRepository(new JdbcTemplate(setupInMemoryDatabase()));
     private static String AKTORID = "123456789";
-    private TopicPartition topicPartition = new TopicPartition("test-topic", 0);
     private ElasticIndexer elasticMock = mock(ElasticIndexer.class);
+    private RegistreringService registreringService;
 
     @Before
     public void setup(){
         System.setProperty("APP_ENVIRONMENT_NAME", "TEST-Q0");
-
-        kafkaConsumer.assign(Collections.singletonList(topicPartition));
-        kafkaConsumer.updateBeginningOffsets(new HashMap<TopicPartition, Long> (){{put (topicPartition, 0L);}});
-
-        UnleashServiceMock unleashMock = new UnleashServiceMock(true);
-        new KafkaConsumerRegistrering(new RegistreringService(registreringRepository, elasticMock), kafkaConsumer, unleashMock);
+       this.registreringService = new RegistreringService(registreringRepository, elasticMock);
     }
 
 
     @Test
-    public void testConsumer() throws InterruptedException {
+    public void testConsumer() {
 
         ArbeidssokerRegistrertEvent event1 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
@@ -59,19 +54,14 @@ public class KafkaConsumerRegistreringTest extends Thread {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
-                0L, AKTORID, event2));
-
-        kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
-                1L, AKTORID, event1));
-
-        Thread.sleep(2000); //VENTER PÅ SERVICEN FÅR BEHANDLET BEGGE MELDINGERNE
+        registreringService.behandleKafkaMelding(event1);
+        registreringService.behandleKafkaMelding(event2);
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event2);
 
     }
 
     @Test
-    public void skaHanteraAttRegisteringOpprettetErNullIDatabasen() throws InterruptedException {
+    public void skaHanteraAttRegisteringOpprettetErNullIDatabasen() {
 
         ArbeidssokerRegistrertEvent event1 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
@@ -88,10 +78,7 @@ public class KafkaConsumerRegistreringTest extends Thread {
                 .build();
 
 
-        kafkaConsumer.addRecord(new ConsumerRecord<>("test-topic", 0,
-                1L, AKTORID, kafkaMelding));
-
-        Thread.sleep(1000); //VENTER PÅ SERVICEN FÅR BEHANDLET MELDING
+        registreringService.behandleKafkaMelding(kafkaMelding);
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(kafkaMelding);
     }
 }

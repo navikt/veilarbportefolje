@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStatus.fromJson;
 
 @Slf4j
-public class OppfolgingService implements KafkaConsumerService {
+public class OppfolgingService implements KafkaConsumerService<String> {
 
     private final OppfolgingRepository oppfolgingRepository;
     private final ElasticIndexer elastic;

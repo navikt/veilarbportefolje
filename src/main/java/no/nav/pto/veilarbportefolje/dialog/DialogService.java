@@ -6,7 +6,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 
 import static no.nav.json.JsonUtils.fromJson;
 
-public class DialogService implements KafkaConsumerService {
+public class DialogService implements KafkaConsumerService<String> {
 
     private DialogFeedRepository dialogFeedRepository;
     private ElasticIndexer elasticIndexer;
