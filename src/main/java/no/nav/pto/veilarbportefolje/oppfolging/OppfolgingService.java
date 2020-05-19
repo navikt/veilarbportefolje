@@ -90,6 +90,7 @@ public class OppfolgingService implements KafkaConsumerService {
     }
 
     private void slettArbeidsliste(AktoerId aktoerId) {
+        log.info("Sletter arbeidsliste for bruker {}", aktoerId);
         Result<Integer> result = arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
         if (result.isErr()) {
             log.error("Kunne ikke slette arbeidsliste for bruker {}", aktoerId);
