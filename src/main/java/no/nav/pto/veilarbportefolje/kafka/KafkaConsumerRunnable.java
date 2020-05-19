@@ -57,6 +57,9 @@ public class KafkaConsumerRunnable implements Runnable {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
             }
+        } catch (NullPointerException npe) {
+            log.error("Kafka kastet NPE", npe);
+            System.exit(1);
         } catch (Exception e) {
             String mld = String.format(
                     "%s under poll() eller subscribe() for topic %s",
