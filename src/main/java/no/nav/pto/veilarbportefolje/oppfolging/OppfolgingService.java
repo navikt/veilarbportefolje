@@ -63,7 +63,12 @@ public class OppfolgingService implements KafkaConsumerService {
         }
 
         Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);
-        if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) || eksisterendeVeilederHarIkkeTilgangTilEnhet(aktoerId, eksisterendeVeileder)) {
+        Optional<VeilederId> nyVeileder = oppfolgingStatus.getVeilederId();
+
+        if (
+                brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) ||
+                eksisterendeVeilederHarIkkeTilgangTilEnhet(aktoerId, nyVeileder, eksisterendeVeileder)
+        ) {
             slettArbeidsliste(aktoerId);
         }
 
@@ -78,8 +83,10 @@ public class OppfolgingService implements KafkaConsumerService {
         );
     }
 
-    private boolean eksisterendeVeilederHarIkkeTilgangTilEnhet(AktoerId aktoerId, Optional<VeilederId> eksisterendeVeileder) {
-        return eksisterendeVeileder.isPresent() && !veilederHarTilgangTilBruker(eksisterendeVeileder.get(), aktoerId);
+    private boolean eksisterendeVeilederHarIkkeTilgangTilEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {
+        return nyVeileder.isPresent()
+               && eksisterendeVeileder.isPresent()
+               && !eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(eksisterendeVeileder.get(), aktoerId);
     }
 
     private void slettArbeidsliste(AktoerId aktoerId) {
@@ -89,7 +96,7 @@ public class OppfolgingService implements KafkaConsumerService {
         }
     }
 
-    boolean veilederHarTilgangTilBruker(VeilederId veilederId, AktoerId aktoerId) {
+    boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(VeilederId veilederId, AktoerId aktoerId) {
 
         Fnr fnr = MetricsUtils.timed(
                 "portefolje.oppfolging.hentFnr",
@@ -110,7 +117,7 @@ public class OppfolgingService implements KafkaConsumerService {
     }
 
     Optional<VeilederId> hentEksisterendeVeileder(AktoerId aktoerId) {
-        return  MetricsUtils.timed(
+        return MetricsUtils.timed(
                 "portefolje.oppfolging.hentVeileder",
                 () -> oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
                         .map(info -> info.getVeileder())

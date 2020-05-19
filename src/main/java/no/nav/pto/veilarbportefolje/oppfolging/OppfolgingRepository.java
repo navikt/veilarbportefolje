@@ -50,7 +50,7 @@ public class OppfolgingRepository {
         String aktoerId = dto.getAktoerId().aktoerId;
 
         Supplier<Boolean> query = () -> SqlUtils.upsert(db, "OPPFOLGING_DATA")
-                .set("VEILEDERIDENT", dto.getVeilederId().veilederId)
+                .set("VEILEDERIDENT", dto.getVeilederId().orElse(null))
                 .set("OPPDATERT_KILDESYSTEM", dto.getEndretTimestamp())
                 .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
                 .set("OPPFOLGING", safeToJaNei(dto.isOppfolging()))

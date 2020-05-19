@@ -47,6 +47,10 @@ public class Result<V> {
         return ok != null;
     }
 
+    public <U> U map(Function<Throwable, U> errorMapper, Function<V, U> okMapper) {
+        return err != null ? errorMapper.apply(err) : okMapper.apply(ok);
+    }
+
     public <U> Result<U> mapOk(Function<V, U> function) {
         return ok == null ? err(err) : Result.of(() -> function.apply(ok));
     }

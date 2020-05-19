@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.logstash.logback.marker.Markers;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
@@ -13,7 +12,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
-import org.slf4j.MarkerFactory;
 
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -21,7 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
-import static net.logstash.logback.marker.Markers.append;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j

@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -71,7 +70,7 @@ public class OppfolgingServiceTest {
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.err(new IllegalStateException()));
 
-        oppfolgingService.veilederHarTilgangTilBruker(TEST_VEILEDER_ID,TEST_ID);
+        oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(TEST_VEILEDER_ID,TEST_ID);
     }
     
     @Test
@@ -85,7 +84,7 @@ public class OppfolgingServiceTest {
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(emptyList());
 
-        boolean result = oppfolgingService.veilederHarTilgangTilBruker(TEST_VEILEDER_ID,TEST_ID);
+        boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(TEST_VEILEDER_ID,TEST_ID);
         assertThat(result).isFalse();
     }
 
@@ -100,7 +99,7 @@ public class OppfolgingServiceTest {
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(singletonList(VeilederId.of("testVeilederId")));
 
-        boolean result = oppfolgingService.veilederHarTilgangTilBruker(TEST_VEILEDER_ID,TEST_ID);
+        boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(TEST_VEILEDER_ID,TEST_ID);
         assertThat(result).isTrue();
     }
 }
