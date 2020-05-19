@@ -80,7 +80,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public KafkaAktivitetService kafkaAktivitetService(AktivitetService aktivitetService) {
-        return new KafkaAktivitetService(aktivitetService);
+    public KafkaAktivitetService kafkaAktivitetService(AktivitetService aktivitetService, UnleashService unleashService) {
+        return new KafkaAktivitetService(aktivitetService, unleashService);
     }
 }
