@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static java.lang.Boolean.TRUE;
@@ -48,18 +50,21 @@ public class OppfolgingRepository {
 
     public Result<AktoerId> oppdaterOppfolgingData(OppfolgingStatus dto) {
         String aktoerId = dto.getAktoerId().aktoerId;
+        String veilederId = dto.getVeilederId().map(id -> id.toString()).orElse(null);
 
-        Supplier<Boolean> query = () -> SqlUtils.upsert(db, "OPPFOLGING_DATA")
-                .set("VEILEDERIDENT", dto.getVeilederId().orElse(null))
-                .set("OPPDATERT_KILDESYSTEM", dto.getEndretTimestamp())
-                .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
-                .set("OPPFOLGING", safeToJaNei(dto.isOppfolging()))
-                .set("NY_FOR_VEILEDER", safeToJaNei(dto.isNyForVeileder()))
-                .set("MANUELL", safeToJaNei(dto.isManuell()))
-                .set("AKTOERID", aktoerId)
-                .set("STARTDATO", dto.getStartDato())
-                .where(WhereClause.equals("AKTOERID", aktoerId))
-                .execute();
+        Supplier<Boolean> query = () -> {
+            return SqlUtils.upsert(db, "OPPFOLGING_DATA")
+                    .set("VEILEDERIDENT", veilederId)
+                    .set("OPPDATERT_KILDESYSTEM", dto.getEndretTimestamp())
+                    .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
+                    .set("OPPFOLGING", safeToJaNei(dto.isOppfolging()))
+                    .set("NY_FOR_VEILEDER", safeToJaNei(dto.isNyForVeileder()))
+                    .set("MANUELL", safeToJaNei(dto.isManuell()))
+                    .set("AKTOERID", aktoerId)
+                    .set("STARTDATO", dto.getStartDato())
+                    .where(WhereClause.equals("AKTOERID", aktoerId))
+                    .execute();
+        };
 
         return Result.of(query).mapOk(_queryResult -> dto.getAktoerId());
     }
