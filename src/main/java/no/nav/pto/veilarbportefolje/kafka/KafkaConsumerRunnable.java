@@ -67,7 +67,10 @@ public class KafkaConsumerRunnable implements Runnable {
         } finally {
             consumer.close();
             shutdownLatch.countDown();
-            log.info("Lukket konsument for topic {}", topic);
+            if (featureErPa()) {
+                log.info("Lukket konsument for topic {}, avslutter...", topic);
+                System.exit(1);
+            }
         }
     }
 
