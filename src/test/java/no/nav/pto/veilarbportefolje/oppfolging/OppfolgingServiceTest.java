@@ -70,7 +70,7 @@ public class OppfolgingServiceTest {
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.err(new IllegalStateException()));
 
-        oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(TEST_VEILEDER_ID,TEST_ID);
+        oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID,TEST_ID);
     }
     
     @Test
@@ -84,7 +84,7 @@ public class OppfolgingServiceTest {
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(emptyList());
 
-        boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(TEST_VEILEDER_ID,TEST_ID);
+        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID,TEST_ID);
         assertThat(result).isFalse();
     }
 
@@ -99,7 +99,7 @@ public class OppfolgingServiceTest {
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(singletonList(VeilederId.of("testVeilederId")));
 
-        boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(TEST_VEILEDER_ID,TEST_ID);
+        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID,TEST_ID);
         assertThat(result).isTrue();
     }
 }

@@ -67,7 +67,7 @@ public class OppfolgingService implements KafkaConsumerService {
 
         if (
                 brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) ||
-                eksisterendeVeilederHarIkkeTilgangTilEnhet(aktoerId, nyVeileder, eksisterendeVeileder)
+                eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(aktoerId, nyVeileder, eksisterendeVeileder)
         ) {
             slettArbeidsliste(aktoerId);
         }
@@ -83,10 +83,10 @@ public class OppfolgingService implements KafkaConsumerService {
         );
     }
 
-    private boolean eksisterendeVeilederHarIkkeTilgangTilEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {
+    private boolean eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {
         return nyVeileder.isPresent()
                && eksisterendeVeileder.isPresent()
-               && !eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(eksisterendeVeileder.get(), aktoerId);
+               && !veilederHarTilgangTilBrukerensEnhet(eksisterendeVeileder.get(), aktoerId);
     }
 
     private void slettArbeidsliste(AktoerId aktoerId) {
@@ -96,7 +96,7 @@ public class OppfolgingService implements KafkaConsumerService {
         }
     }
 
-    boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(VeilederId veilederId, AktoerId aktoerId) {
+    boolean veilederHarTilgangTilBrukerensEnhet(VeilederId veilederId, AktoerId aktoerId) {
 
         Fnr fnr = MetricsUtils.timed(
                 "portefolje.oppfolging.hentFnr",
