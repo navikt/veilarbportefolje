@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 public class RegistreringService implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
     private RegistreringRepository registreringRepository;
@@ -36,9 +37,7 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     }
 
     private boolean erNyereRegistering(ArbeidssokerRegistrertEvent gjeldendeBrukerRegistrering, ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        ZonedDateTime registreringOpprettetDato = LocalDateTime.parse(gjeldendeBrukerRegistrering.getRegistreringOpprettet(), DateTimeFormatter.ISO_ZONED_DATE_TIME).atZone(ZoneId.systemDefault());
-        ZonedDateTime registeringsOpprettetDatoDatoFraKafka = LocalDateTime.parse(kafkaRegistreringMelding.getRegistreringOpprettet(), DateTimeFormatter.ISO_ZONED_DATE_TIME).atZone(ZoneId.systemDefault());
-        return registeringsOpprettetDatoDatoFraKafka.isAfter(registreringOpprettetDato);
+        return DateUtils.dateIfAfterAnotherDate(kafkaRegistreringMelding.getRegistreringOpprettet(), gjeldendeBrukerRegistrering.getRegistreringOpprettet());
     }
 
     private boolean harRegistreringsDato (ArbeidssokerRegistrertEvent brukerRegistrering) {

@@ -4,6 +4,7 @@ import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 public class ProfileringService implements KafkaConsumerService<ArbeidssokerProfilertEvent> {
     private ProfileringRepository profileringRepository;
@@ -15,8 +16,19 @@ public class ProfileringService implements KafkaConsumerService<ArbeidssokerProf
     }
 
     public void behandleKafkaMelding (ArbeidssokerProfilertEvent kafkaMelding) {
-        profileringRepository.upsertBrukerProfilering(kafkaMelding);
-        elasticIndexer.indekser(AktoerId.of(kafkaMelding.getAktorid()));
+
+        ArbeidssokerProfilertEvent brukerProfilering = profileringRepository.hentBrukerProfilering(AktoerId.of(kafkaMelding.getAktorid()));
+        if(brukerProfilering!= null) {
+            if(DateUtils.dateIfAfterAnotherDate(kafkaMelding.getProfileringGjennomfort(), brukerProfilering.getProfileringGjennomfort())) {
+                profileringRepository.updateBrukerProfilering(kafkaMelding);
+                elasticIndexer.indekser(AktoerId.of(kafkaMelding.getAktorid()));
+            }
+        } else {
+            profileringRepository.insertBrukerProfilering(kafkaMelding);
+            elasticIndexer.indekser(AktoerId.of(kafkaMelding.getAktorid()));
+
+        }
+
     }
 
 }

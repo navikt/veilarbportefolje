@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -19,20 +18,29 @@ import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 public class ProfileringRepository {
     private JdbcTemplate db;
-    private final String BRUKER_PROFILERING_TABELL = "BRUKER_PROFILERING";
+    public final String BRUKER_PROFILERING_TABELL = "BRUKER_PROFILERING";
 
     public ProfileringRepository(JdbcTemplate db) {
         this.db = db;
     }
 
 
-    public void upsertBrukerProfilering (ArbeidssokerProfilertEvent kafkaMelding) {
+    public void updateBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
       Timestamp timestamp = Timestamp.from(ZonedDateTime.parse(kafkaMelding.getProfileringGjennomfort()).toInstant());
-        SqlUtils.upsert(db, BRUKER_PROFILERING_TABELL)
+        SqlUtils.update(db, BRUKER_PROFILERING_TABELL)
                 .set("PROFILERING_RESULTAT", kafkaMelding.getProfilertTil().name())
                 .set("AKTOERID", kafkaMelding.getAktorid())
                 .set("PROFILERING_TIDSPUNKT", timestamp)
-                .where(WhereClause.equals("AKTOERID", kafkaMelding.getAktorid()))
+                .whereEquals("AKTOERID", kafkaMelding.getAktorid())
+                .execute();
+    }
+
+    public void insertBrukerProfilering (ArbeidssokerProfilertEvent kafkaMelding) {
+        Timestamp timestamp = Timestamp.from(ZonedDateTime.parse(kafkaMelding.getProfileringGjennomfort()).toInstant());
+        SqlUtils.insert(db, BRUKER_PROFILERING_TABELL)
+                .value("PROFILERING_RESULTAT", kafkaMelding.getProfilertTil().name())
+                .value("AKTOERID", kafkaMelding.getAktorid())
+                .value("PROFILERING_TIDSPUNKT", timestamp)
                 .execute();
     }
 
