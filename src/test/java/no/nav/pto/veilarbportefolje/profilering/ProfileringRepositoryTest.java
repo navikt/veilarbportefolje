@@ -24,7 +24,9 @@ public class ProfileringRepositoryTest {
 
     @Before
     public void setup() {
-        this.profileringRepository = new ProfileringRepository(new JdbcTemplate(setupInMemoryDatabase()));
+        JdbcTemplate jdbc = new JdbcTemplate(setupInMemoryDatabase());
+        jdbc.execute("TRUNCATE TABLE BRUKER_PROFILERING");
+        this.profileringRepository = new ProfileringRepository(jdbc);
     }
 
     @Test
