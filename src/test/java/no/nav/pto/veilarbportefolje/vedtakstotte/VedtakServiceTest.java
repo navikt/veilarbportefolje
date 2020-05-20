@@ -1,6 +1,10 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.mock.AktoerServiceMock;
+import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,7 +15,9 @@ import java.util.List;
 import static no.nav.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class VedtakServiceTest {
 
@@ -32,8 +38,10 @@ public class VedtakServiceTest {
     public void setup (){
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, mock(ElasticIndexer.class));
+        ElasticIndexer elasticIndexer = mock(ElasticIndexer.class);
+        this.vedtakService = new VedtakService(vedtakStatusRepository, elasticIndexer, new AktoerServiceMock());
 
+        when(elasticIndexer.indekser(any(AktoerId.class))).thenReturn(Result.ok(new OppfolgingsBruker()));
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
 
     }

@@ -38,7 +38,7 @@ public class ResultTest {
     @Test
     public void skal_mappe_til_nytt_result() {
         Result<Integer> oldResult = okResult();
-        Result<Double> newResult = oldResult.map(x -> x + 1.0);
+        Result<Double> newResult = oldResult.mapOk(x -> x + 1.0);
 
         assertThat(newResult.isOk()).isTrue();
 

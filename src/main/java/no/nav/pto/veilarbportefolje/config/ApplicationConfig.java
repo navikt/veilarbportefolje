@@ -1,11 +1,10 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
-import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProvider;
-import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.oidc.auth.OidcAuthenticatorConfig;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
@@ -37,7 +36,6 @@ import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
-import org.apache.yetus.audience.InterfaceStability;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,13 +51,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
-import javax.ws.rs.client.Client;
-
 import java.util.Optional;
-import java.util.concurrent.ForkJoinPool;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
-import static no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig.STS_OIDC_CONFIGURATION_URL_PROPERTY;
+import static no.nav.common.oidc.Constants.OPEN_AM_ID_TOKEN_COOKIE_NAME;
+import static no.nav.common.oidc.Constants.REFRESH_TOKEN_COOKIE_NAME;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.*;
@@ -94,13 +90,11 @@ public class ApplicationConfig implements ApiApplication {
     public static final String VIRKSOMHET_ENHET_V1_URL_PROPERTY = "VIRKSOMHET_ENHET_V1_ENDPOINTURL";
     public static final String VEILARBOPPFOLGING_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
     public static final String VEILARBAKTIVITET_URL_PROPERTY = "VEILARBAKTIVITETAPI_URL";
-    public static final String VEILARBDIALOG_URL_PROPERTY = "VEILARBDIALOGAPI_URL";
-    public static final String VEILARBVEILEDER_URL_PROPERTY = "VEILARBVEILEDERAPI_URL";
-    public static final String VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY = "VEILARBLOGIN_REDIRECT_URL_URL";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
+    public static final String SECURITYTOKENSERVICE_URL_PROPERTY_NAME = "SECURITYTOKENSERVICE_URL";
 
     @Inject
     private DataSource dataSource;
@@ -190,16 +184,35 @@ public class ApplicationConfig implements ApiApplication {
 
     @Override
     public void configure(ApiAppConfigurator apiAppConfigurator) {
-
-        SecurityTokenServiceOidcProvider securityTokenServiceOidcProvider = new SecurityTokenServiceOidcProvider(SecurityTokenServiceOidcProviderConfig.builder()
-                .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
-                .build());
-
         apiAppConfigurator
-                .sts()
                 .selfTests(KafkaConfig.getHelseSjekker())
-                .issoLogin()
-                .oidcProvider(securityTokenServiceOidcProvider);
+                .addOidcAuthenticator(createOpenAmAuthenticatorConfig())
+                .addOidcAuthenticator(createSystemUserAuthenticatorConfig())
+                .sts();
+    }
+
+    private OidcAuthenticatorConfig createOpenAmAuthenticatorConfig() {
+        String discoveryUrl = getRequiredProperty("OPENAM_DISCOVERY_URL");
+        String clientId = getRequiredProperty("VEILARBLOGIN_OPENAM_CLIENT_ID");
+        String refreshUrl = getRequiredProperty("VEILARBLOGIN_OPENAM_REFRESH_URL");
+
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(discoveryUrl)
+                .withClientId(clientId)
+                .withRefreshUrl(refreshUrl)
+                .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
+                .withIdTokenCookieName(OPEN_AM_ID_TOKEN_COOKIE_NAME)
+                .withIdentType(IdentType.InternBruker);
+    }
+
+    private OidcAuthenticatorConfig createSystemUserAuthenticatorConfig() {
+        String discoveryUrl = getRequiredProperty("SECURITY_TOKEN_SERVICE_DISCOVERY_URL");
+        String clientId = getRequiredProperty("SECURITY_TOKEN_SERVICE_CLIENT_ID");
+
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(discoveryUrl)
+                .withClientId(clientId)
+                .withIdentType(IdentType.Systemressurs);
     }
 
     @Bean
@@ -208,8 +221,8 @@ public class ApplicationConfig implements ApiApplication {
     }
 
     @Bean
-    public VeilederService veilederservice(Client restClient) {
-        return new VeilederService(restClient);
+    public VeilederService veilederservice() {
+        return new VeilederService(requireNamespace());
     }
 
     @Bean(name = "transactionManager")

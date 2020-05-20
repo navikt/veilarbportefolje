@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.kafka;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import java.util.Properties;
 
 import static java.time.Duration.ofSeconds;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
@@ -15,9 +14,7 @@ public class KafkaHelsesjekk implements Helsesjekk {
     private final String topic;
 
     public KafkaHelsesjekk(KafkaConfig.Topic topic) {
-        Properties properties = kafkaProperties();
-
-        this.consumer = new KafkaConsumer<>(properties);
+        this.consumer = new KafkaConsumer<>(kafkaProperties());
         this.topic = topic.topic;
     }
 

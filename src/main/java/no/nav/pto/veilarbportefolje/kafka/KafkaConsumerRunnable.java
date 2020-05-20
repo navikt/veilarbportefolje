@@ -53,14 +53,14 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     @Override
     public void run() {
         try {
-
             consumer.subscribe(singletonList(topic));
-            consumer.subscription().forEach(subscription -> log.info("Har subscribet til topic {}", subscription));
-
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
             }
+        } catch (NullPointerException npe) {
+            log.error("Kafka kastet NPE", npe);
+            System.exit(1);
         } catch (Exception e) {
             String mld = String.format(
                     "%s under poll() eller subscribe() for topic %s",
@@ -77,7 +77,6 @@ public class KafkaConsumerRunnable<T> implements Runnable {
 
     @SneakyThrows
     public void shutdown() {
-        log.info("kaller shutdown for topic {}", topic);
         shutdown.set(true);
         shutdownLatch.await();
     }

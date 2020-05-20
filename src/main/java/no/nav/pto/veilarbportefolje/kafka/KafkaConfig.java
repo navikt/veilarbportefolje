@@ -18,6 +18,7 @@ import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 public class KafkaConfig {
 
     public final static String KAFKA_OPPFOLGING_TOGGLE = "portefolje.kafka.oppfolging";
+    public final static String KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE = "portefolje.kafka.oppfolging_behandle_meldinger";
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + requireEnvironmentName()),
