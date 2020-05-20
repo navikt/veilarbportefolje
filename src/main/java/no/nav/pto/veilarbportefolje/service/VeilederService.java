@@ -1,44 +1,58 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.auth.SsoToken;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.util.Result;
+import no.nav.sbl.rest.RestUtils;
 import org.springframework.cache.annotation.Cacheable;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.core.GenericType;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VEILARBVEILEDER_URL_PROPERTY;
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static no.nav.pto.veilarbportefolje.config.CacheConfig.VEILARBVEILEDER;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Slf4j
 public class VeilederService {
-    private final Client restClient;
-    private final String host;
+    private final static String BEARER = "Bearer ";
+    private final static String SEPARATOR = " ";
 
-    public VeilederService(Client client) {
-        this.restClient = client;
-        host = getRequiredProperty(VEILARBVEILEDER_URL_PROPERTY).toLowerCase();
+    private final String url;
+
+    public VeilederService(String namespace) {
+        url = format("http://veilarbveileder.%s.svc.nais.local/veilarbveileder", namespace);
     }
 
     @Cacheable(VEILARBVEILEDER)
     public List<VeilederId> hentVeilederePaaEnhet(String enhet) {
-        log.info("henter identer for enhet: {}", enhet);
+        String path = format("/api/enhet/%s/identer", enhet);
 
-        List<String> strings = restClient
-                .target(String.format("%s/enhet/%s/identer", host, enhet))
-                .request()
-                .header(ACCEPT, APPLICATION_JSON)
-                .get(new GenericType<List<String>>() {
-                });
+        String ssoToken = SubjectHandler.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
 
-        return strings
-                .stream()
-                .map(VeilederId::new)
-                .collect(Collectors.toList());
+        Supplier<List<VeilederId>> httpCall = () -> RestUtils.withClient(client -> {
+            return client
+                    .target(url + path)
+                    .request()
+                    .header(AUTHORIZATION, BEARER + SEPARATOR + ssoToken)
+                    .get(new GenericType<List<String>>() {
+                    })
+                    .stream()
+                    .map(VeilederId::new)
+                    .collect(toList());
+        });
+
+        Result<List<VeilederId>> result = Result.of(httpCall);
+        if (result.err().isPresent()) {
+            log.error("Kall mot veilarbveileder feilet for enhet " + enhet, result.err().get());
+            return emptyList();
+        }
+
+        return result.ok().orElseThrow(IllegalStateException::new);
     }
 }

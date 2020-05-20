@@ -9,8 +9,8 @@ import java.util.Base64;
 import java.util.Objects;
 
 import static java.lang.System.getProperty;
-import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
-import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
+import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.SYSTEMUSER_PASSWORD;
+import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.SYSTEMUSER_USERNAME;
 
 @Slf4j
 public class AuthorizationUtils {

@@ -54,8 +54,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public DialogService dialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
-        return new DialogService(dialogFeedRepository, elasticIndexer, aktoerService);
+    public DialogService dialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService, BrukerRepository brukerRepository) {
+        return new DialogService(dialogFeedRepository, elasticIndexer, aktoerService, brukerRepository);
     }
 
     @Bean
@@ -74,7 +74,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService) {
-        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService);
+    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService) {
+        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService);
     }
 }

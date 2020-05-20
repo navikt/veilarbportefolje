@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -291,7 +292,12 @@ public class ElasticIndexer {
     }
 
     public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
-        Result<OppfolgingsBruker> result = brukerRepository.hentBruker(aktoerId);
+
+        Result<OppfolgingsBruker> result = MetricsUtils.timed(
+                "portefolje.indeks.hentBruker",
+                () -> brukerRepository.hentBruker(aktoerId)
+        );
+
         if (result.isErr()) {
             log.error("Kunne ikke hente bruker {} ", aktoerId);
             return result;
@@ -300,9 +306,22 @@ public class ElasticIndexer {
         OppfolgingsBruker bruker = result.orElseThrowException();
 
         if (erUnderOppfolging(bruker)) {
-            leggTilAktiviteter(bruker);
-            leggTilTiltak(bruker);
-            skrivTilIndeks(getAlias(), bruker);
+
+            MetricsUtils.timed(
+                    "portefolje.indeks.leggTilAktiviteter",
+                    () -> leggTilAktiviteter(bruker)
+            );
+
+            MetricsUtils.timed(
+                    "portefolje.indeks.leggTilTiltak",
+                    () -> leggTilTiltak(bruker)
+            );
+
+            MetricsUtils.timed(
+                    "portefolje.indeks.skrivTilIndeks",
+                    () -> skrivTilIndeks(getAlias(), bruker)
+            );
+
         } else {
             slettBruker(bruker);
         }

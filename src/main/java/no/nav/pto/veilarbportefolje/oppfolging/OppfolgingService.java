@@ -1,13 +1,15 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
@@ -28,14 +30,22 @@ public class OppfolgingService implements KafkaConsumerService {
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
     private final UnleashService unleashService;
+    private final AktoerService aktoerService;
 
-    public OppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elastic, VeilederService veilederService, NavKontorService navKontorService, ArbeidslisteService arbeidslisteService, UnleashService unleashService) {
+    public OppfolgingService(OppfolgingRepository oppfolgingRepository,
+                             ElasticIndexer elastic,
+                             VeilederService veilederService,
+                             NavKontorService navKontorService,
+                             ArbeidslisteService arbeidslisteService,
+                             UnleashService unleashService,
+                             AktoerService aktoerService) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
         this.veilederService = veilederService;
         this.navKontorService = navKontorService;
         this.arbeidslisteService = arbeidslisteService;
         this.unleashService = unleashService;
+        this.aktoerService = aktoerService;
     }
 
     @Override
@@ -48,44 +58,72 @@ public class OppfolgingService implements KafkaConsumerService {
 
         OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding);
         AktoerId aktoerId = oppfolgingStatus.getAktoerId();
-
         if (oppfolgingStatus.getStartDato() == null) {
             log.warn("Bruker {} har ikke startDato", aktoerId);
         }
 
-        if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) || eksisterendeVeilederHarIkkeTilgangTilBruker(aktoerId)) {
-            Result<Integer> result = arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
-            if (result.isErr()) {
-                log.error("Kunne ikke slette arbeidsliste for bruker {}", aktoerId);
-            }
+        Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);
+        Optional<VeilederId> nyVeileder = oppfolgingStatus.getVeilederId();
+
+        if (
+                brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus) ||
+                eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(aktoerId, nyVeileder, eksisterendeVeileder)
+        ) {
+            slettArbeidsliste(aktoerId);
         }
 
-        oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus)
-                .orElseThrowException();
+        MetricsUtils.timed(
+                "portefolje.oppfolging.oppdater",
+                () -> oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).orElseThrowException()
+        );
 
-        elastic.indekser(aktoerId)
-                .orElseThrowException();
+        MetricsUtils.timed(
+                "portefolje.oppfolging.indekser",
+                () -> elastic.indekser(aktoerId).orElseThrowException()
+        );
     }
 
-    boolean eksisterendeVeilederHarIkkeTilgangTilBruker(AktoerId aktoerId) {
-        return !eksisterendeVeilederHarTilgangTilBruker(aktoerId);
+    boolean eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {
+        return nyVeileder.isPresent()
+               && eksisterendeVeileder.isPresent()
+               && !veilederHarTilgangTilBrukerensEnhet(eksisterendeVeileder.get(), aktoerId);
     }
 
-    boolean eksisterendeVeilederHarTilgangTilBruker(AktoerId aktoerId) {
-        Optional<VeilederId> eksisterendeVeileder = oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
-                .map(info -> info.getVeileder())
-                .map(VeilederId::new);
-
-        if (!eksisterendeVeileder.isPresent()) {
-            return false;
+    private void slettArbeidsliste(AktoerId aktoerId) {
+        log.info("Sletter arbeidsliste for bruker {}", aktoerId);
+        Result<Integer> result = arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
+        if (result.isErr()) {
+            log.error("Kunne ikke slette arbeidsliste for bruker {}", aktoerId);
         }
+    }
 
-        Result<List<VeilederId>> result = navKontorService.hentEnhetForBruker(aktoerId)
-                .mapOk(enhet -> veilederService.hentVeilederePaaEnhet(enhet));
+    boolean veilederHarTilgangTilBrukerensEnhet(VeilederId veilederId, AktoerId aktoerId) {
 
-        return eksisterendeVeileder
-                .flatMap(veileder -> result.ok().map(veilederePaaEnhet -> veilederePaaEnhet.contains(veileder)))
-                .orElse(false);
+        Fnr fnr = MetricsUtils.timed(
+                "portefolje.oppfolging.hentFnr",
+                () -> aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException())
+        );
+
+        String enhet = MetricsUtils.timed(
+                "portefolje.oppfolging.hentEnhet",
+                () -> navKontorService.hentEnhetForBruker(fnr).orElseThrowException()
+        );
+
+        List<VeilederId> veilederePaaEnhet = MetricsUtils.timed(
+                "portefolje.oppfolging.hentVeileder",
+                () -> veilederService.hentVeilederePaaEnhet(enhet)
+        );
+
+        return veilederePaaEnhet.contains(veilederId);
+    }
+
+    Optional<VeilederId> hentEksisterendeVeileder(AktoerId aktoerId) {
+        return MetricsUtils.timed(
+                "portefolje.oppfolging.hentVeileder",
+                () -> oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
+                        .map(info -> info.getVeileder())
+                        .map(VeilederId::new)
+        );
     }
 
     static boolean brukerenIkkeLengerErUnderOppfolging(OppfolgingStatus oppfolgingStatus) {
