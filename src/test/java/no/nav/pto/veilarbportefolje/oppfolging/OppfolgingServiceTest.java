@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import io.vavr.control.Try;
 import lombok.val;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -8,12 +9,15 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.mock.AktoerServiceMock;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -31,23 +35,23 @@ public class OppfolgingServiceTest {
 
     private static OppfolgingService oppfolgingService;
     private VeilederService veilederServiceMock;
-    private OppfolgingRepository repositoryMock;
     private NavKontorService navKontorServiceMock;
+    private AktoerService aktoerServiceMock;
 
     @Before
     public void setUp() {
-        repositoryMock = mock(OppfolgingRepository.class);
         veilederServiceMock = mock(VeilederService.class);
         navKontorServiceMock = mock(NavKontorService.class);
+        aktoerServiceMock = mock(AktoerService.class);
 
         oppfolgingService = new OppfolgingService(
-                repositoryMock,
+                mock(OppfolgingRepository.class),
                 mock(ElasticIndexer.class),
                 veilederServiceMock,
                 navKontorServiceMock,
                 mock(ArbeidslisteService.class),
                 new UnleashServiceMock(false),
-                new AktoerServiceMock()
+                aktoerServiceMock
         );
     }
 
@@ -63,35 +67,35 @@ public class OppfolgingServiceTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void skal_returnere_false_om_bruker_ikke_har_nav_kontor() {
-        when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
-                .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
+    public void skal_kaste_exception_om_bruker_ikke_har_nav_kontor() {
+        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
+                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.err(new IllegalStateException()));
 
-        oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID,TEST_ID);
+        oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
     }
-    
+
     @Test
     public void skal_returnere_false_om_henting_av_veiledere_paa_enhet_returnerer_tom_liste() {
-        when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
-                .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder(TEST_VEILEDER_ID.getVeilederId())));
-
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(emptyList());
 
-        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID,TEST_ID);
+        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
+                .thenReturn(Try.success(Fnr.of("10101010101")));
+
+        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
         assertThat(result).isFalse();
     }
 
     @Test
     public void skal_returnere_true_om_eksisterende_veileder_har_tilgang_til_enhet() {
-        when(repositoryMock.hentOppfolgingData(any(AktoerId.class)))
-                .thenReturn(Result.ok(new BrukerOppdatertInformasjon().setVeileder("testVeilederId")));
+        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
+                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
@@ -99,7 +103,79 @@ public class OppfolgingServiceTest {
         when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(singletonList(VeilederId.of("testVeilederId")));
 
-        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID,TEST_ID);
+        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
         assertThat(result).isTrue();
     }
+
+    @Test
+    public void skal_returnere_false_om_ny_veileder_ikke_eksisterer() {
+        boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(
+                TEST_ID,
+                Optional.empty(),
+                Optional.of(TEST_VEILEDER_ID)
+        );
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    public void skal_returnere_false_om_det_ikke_finnes_en_eksisterende_veileder() {
+        boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(
+                TEST_ID,
+                Optional.of(TEST_VEILEDER_ID),
+                Optional.empty()
+        );
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    public void eksisterende_veileder_skal_ikke_ha_tilgang_til_brukerens_enhet() {
+        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
+                .thenReturn(Try.success(Fnr.of("10101010101")));
+
+        when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
+                .thenReturn(Result.ok("testEnhetId"));
+
+        when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
+                .thenReturn(Arrays.asList(VeilederId.of("1"), VeilederId.of("2"), VeilederId.of("3")));
+
+        boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(
+                TEST_ID,
+                Optional.of(TEST_VEILEDER_ID),
+                Optional.of(VeilederId.of("eksisterendeVeileder"))
+        );
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void skal_ikke_ha_tilgang_til_brukerens_enhet() {
+        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
+                .thenReturn(Try.success(Fnr.of("10101010101")));
+
+        when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
+                .thenReturn(Result.ok("testEnhetId"));
+
+        when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
+                .thenReturn(Arrays.asList(VeilederId.of("1"), VeilederId.of("2"), VeilederId.of("3")));
+
+        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    public void skal_ha_tilgang_til_brukerens_enhet() {
+        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
+                .thenReturn(Try.success(Fnr.of("10101010101")));
+
+        when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
+                .thenReturn(Result.ok("testEnhetId"));
+
+        when(veilederServiceMock.hentVeilederePaaEnhet(anyString()))
+                .thenReturn(Arrays.asList(VeilederId.of("1"), VeilederId.of("2"), VeilederId.of("3"), TEST_VEILEDER_ID));
+
+        boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
+        assertThat(result).isTrue();
+    }
+
 }

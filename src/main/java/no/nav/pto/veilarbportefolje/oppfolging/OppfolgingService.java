@@ -83,7 +83,7 @@ public class OppfolgingService implements KafkaConsumerService {
         );
     }
 
-    private boolean eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {
+    boolean eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {
         return nyVeileder.isPresent()
                && eksisterendeVeileder.isPresent()
                && !veilederHarTilgangTilBrukerensEnhet(eksisterendeVeileder.get(), aktoerId);
