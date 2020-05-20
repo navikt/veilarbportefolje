@@ -1,8 +1,11 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -20,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
 public class KafkaConsumerRunnable implements Runnable {
@@ -31,6 +35,7 @@ public class KafkaConsumerRunnable implements Runnable {
     private final KafkaConsumer<String, String> consumer;
     private final AtomicBoolean shutdown;
     private final CountDownLatch shutdownLatch;
+    private final Counter counter;
 
     public KafkaConsumerRunnable(KafkaConsumerService kafkaService,
                                  UnleashService unleashService,
@@ -47,6 +52,8 @@ public class KafkaConsumerRunnable implements Runnable {
 
         JobUtils.runAsyncJob(this);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
+
+        counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
     }
 
     @Override
@@ -90,6 +97,8 @@ public class KafkaConsumerRunnable implements Runnable {
                 record.offset(),
                 record.topic()
         );
+
+        counter.increment();
 
         try {
             kafkaService.behandleKafkaMelding(record.value());
