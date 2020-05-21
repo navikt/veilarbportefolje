@@ -8,11 +8,12 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.Result;
+import org.apache.kafka.common.protocol.types.Field;
 
 import static no.nav.json.JsonUtils.fromJson;
 
 @Slf4j
-public class VedtakService implements KafkaConsumerService {
+public class VedtakService implements KafkaConsumerService<String> {
 
     private VedtakStatusRepository vedtakStatusRepository;
     private ElasticIndexer elasticIndexer;

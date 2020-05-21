@@ -22,7 +22,7 @@ import java.util.Optional;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStatus.fromJson;
 
 @Slf4j
-public class OppfolgingService implements KafkaConsumerService {
+public class OppfolgingService implements KafkaConsumerService<String> {
 
     private final OppfolgingRepository oppfolgingRepository;
     private final ElasticIndexer elastic;
