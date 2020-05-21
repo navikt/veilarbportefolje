@@ -23,9 +23,12 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
+        /*
         if(!unleashService.isEnabled("portefolje.behandle.kafkamelding")) {
             return;
         }
+
+         */
         ObjectMapper objectMapper = JsonProvider.createObjectMapper();
         try {
             List<AktivitetDataFraFeed> aktivitetData = objectMapper.readValue(kafkaMelding, objectMapper.getTypeFactory().constructParametricType(List.class, AktivitetDataFraFeed.class));

@@ -169,7 +169,7 @@ public class ApplicationConfig implements ApiApplication {
                 kafkaAktivitetService,
                 unleashService,
                 KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                Optional.of("portefolje.kafka.aktiviteter")
+                Optional.of("veilarbaktivitet.kafka")
         );
 
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
