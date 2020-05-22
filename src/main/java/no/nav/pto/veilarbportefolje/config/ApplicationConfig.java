@@ -145,6 +145,13 @@ public class ApplicationConfig implements ApiApplication {
         }
 
         new KafkaConsumerRunnable(
+                kafkaAktivitetService,
+                unleashService,
+                KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
+                Optional.of("veilarbaktivitet.kafka")
+        );
+
+        new KafkaConsumerRunnable(
                 vedtakService,
                 unleashService,
                 KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
@@ -164,14 +171,6 @@ public class ApplicationConfig implements ApiApplication {
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
                 Optional.of("veilarbdialog.kafka")
         );
-
-        new KafkaConsumerRunnable(
-                kafkaAktivitetService,
-                unleashService,
-                KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                Optional.of("veilarbaktivitet.kafka")
-        );
-
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");

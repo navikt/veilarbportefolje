@@ -15,6 +15,7 @@ import java.util.List;
 public class KafkaAktivitetService implements KafkaConsumerService<String> {
     AktivitetService aktivitetService;
     UnleashService unleashService;
+    ObjectMapper objectMapper = JsonProvider.createObjectMapper();
 
     public KafkaAktivitetService (AktivitetService aktivitetService, UnleashService unleashService) {
         this.aktivitetService = aktivitetService;
@@ -29,11 +30,14 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
         }
 
          */
-        ObjectMapper objectMapper = JsonProvider.createObjectMapper();
+
         try {
+            long startTime = System.currentTimeMillis();
             log.info("Inne i aktivitetmelding");
             List<AktivitetDataFraFeed> aktivitetData = objectMapper.readValue(kafkaMelding, objectMapper.getTypeFactory().constructParametricType(List.class, AktivitetDataFraFeed.class));
             aktivitetService.oppdaterAktiviteter(aktivitetData);
+            long endTime = System.currentTimeMillis();
+            log.info("Oppdater aktiviteter tog {} millisekunder att exekvera", (endTime-startTime));
         } catch (JsonProcessingException e) {
             log.error("Kunde ikke deserialisera kafka aktivitetmelding: {}", kafkaMelding);
         }
