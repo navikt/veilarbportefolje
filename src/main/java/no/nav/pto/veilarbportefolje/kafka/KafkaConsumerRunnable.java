@@ -65,7 +65,7 @@ public class KafkaConsumerRunnable implements Runnable {
                 records.forEach(this::process);
             }
         } catch (NullPointerException npe) {
-            log.error("Kafka kastet NPE", npe);
+            log.error("Kafka kastet NPE på topic {}", topic, npe);
             System.exit(1);
         } catch (Exception e) {
             String mld = String.format(
