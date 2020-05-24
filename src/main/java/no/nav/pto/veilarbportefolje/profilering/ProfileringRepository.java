@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.profilering;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +27,7 @@ public class ProfileringRepository {
 
 
     public void updateBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
-      Timestamp timestamp = Timestamp.from(ZonedDateTime.parse(kafkaMelding.getProfileringGjennomfort()).toInstant());
+        Timestamp timestamp = Timestamp.from(ZonedDateTime.parse(kafkaMelding.getProfileringGjennomfort()).toInstant());
         SqlUtils.update(db, BRUKER_PROFILERING_TABELL)
                 .set("PROFILERING_RESULTAT", kafkaMelding.getProfilertTil().name())
                 .set("AKTOERID", kafkaMelding.getAktorid())
@@ -40,6 +41,16 @@ public class ProfileringRepository {
         SqlUtils.insert(db, BRUKER_PROFILERING_TABELL)
                 .value("PROFILERING_RESULTAT", kafkaMelding.getProfilertTil().name())
                 .value("AKTOERID", kafkaMelding.getAktorid())
+                .value("PROFILERING_TIDSPUNKT", timestamp)
+                .execute();
+    }
+
+    public void insertProfileringFraArena (OppfolgingsBruker oppfolgingsBruker) {
+        Timestamp timestamp = Timestamp.valueOf("1970-01-01 00:00:00.000");
+        String profilering = oppfolgingsBruker.getKvalifiseringsgruppekode().equals("BKART") ? "OPPGITT_HINDRINGER" : "ANTATT_GODE_MULIGHETER";
+        SqlUtils.insert(db, BRUKER_PROFILERING_TABELL)
+                .value("PROFILERING_RESULTAT", profilering)
+                .value("AKTOERID", oppfolgingsBruker.getAktoer_id())
                 .value("PROFILERING_TIDSPUNKT", timestamp)
                 .execute();
     }

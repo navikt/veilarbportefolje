@@ -28,9 +28,9 @@ import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringRepository;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
-import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
@@ -132,6 +132,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private VedtakService vedtakService;
 
+    @Inject
+    private ProfileringRepository profileringRepository;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -174,6 +177,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingRepository), "/internal/reset_feed_oppfolging");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
         leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
+        leggTilServlet(servletContext, new PopulerProfileringFraArenaServlet(brukerRepository, profileringRepository), "/internal/slett_aktivitet");
     }
 
     private Boolean skipDbMigration() {
