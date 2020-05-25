@@ -177,7 +177,7 @@ public class ApplicationConfig implements ApiApplication {
         leggTilServlet(servletContext, new ResetOppfolgingFeedServlet(oppfolgingRepository), "/internal/reset_feed_oppfolging");
         leggTilServlet(servletContext, new ResetAktivitetFeedServlet(brukerRepository), "/internal/reset_feed_aktivitet");
         leggTilServlet(servletContext, new SlettAktivitetServlet(aktivitetDAO, elasticIndexer), "/internal/slett_aktivitet");
-        leggTilServlet(servletContext, new PopulerProfileringFraArenaServlet(brukerRepository, profileringRepository), "/internal/slett_aktivitet");
+        leggTilServlet(servletContext, new PopulerProfileringFraArenaServlet(brukerRepository, profileringRepository), "/internal/populer_profilering");
     }
 
     private Boolean skipDbMigration() {

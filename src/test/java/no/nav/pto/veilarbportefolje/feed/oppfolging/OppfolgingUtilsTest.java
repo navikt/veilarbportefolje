@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
+import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
 import org.junit.Test;
 
@@ -45,5 +46,15 @@ public class OppfolgingUtilsTest {
     @Test
     public void brukerUtenIServOgUkjentKodeHarIkkeVurderingsBehov() {
         assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "VURDU", null)).isNull();
+    }
+
+    @Test
+    public void brukerMedOppgittHindringerHarAEVBehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.OPPGITT_HINDRINGER.name())).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
+    }
+
+    @Test
+    public void brukerMedAntattGodeMuligheterHarIkkeVurderingsBehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.ANTATT_GODE_MULIGHETER.name())).isEqualTo(VurderingsBehov.IKKE_VURDERT);
     }
 }
