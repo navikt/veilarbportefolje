@@ -215,13 +215,15 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public List<OppfolgingsBruker> hentBrukereUtenVedtak() {
+    public List<OppfolgingsBruker> hentBrukereUtenProfilering() {
         db.setFetchSize(1000);
 
         return SqlUtils
                 .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
-                .where(WhereClause.isNotNull("AKTOERID").and(WhereClause.equals("KVALIFISERINGSGRUPPEKODE", "IVURD").or(WhereClause.equals("KVALIFISERINGSGRUPPEKODE", "BKART"))))
+                .where(WhereClause.isNotNull("AKTOERID")
+                        .and(WhereClause.equals("KVALIFISERINGSGRUPPEKODE", "IVURD").or(WhereClause.equals("KVALIFISERINGSGRUPPEKODE", "BKART")))
+                        .and(WhereClause.isNull("PROFILERING_RESULTAT")))
                 .executeToList()
                 .stream()
                 .filter(Objects::nonNull)

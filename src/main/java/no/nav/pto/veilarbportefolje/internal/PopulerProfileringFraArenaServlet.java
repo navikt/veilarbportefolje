@@ -24,7 +24,7 @@ public class PopulerProfileringFraArenaServlet extends HttpServlet {
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
-            List<OppfolgingsBruker> brukareUtenVedtakFraArena =  brukerRepository.hentBrukereUtenVedtak();
+            List<OppfolgingsBruker> brukareUtenVedtakFraArena =  brukerRepository.hentBrukereUtenProfilering();
             CollectionUtils.partition(brukareUtenVedtakFraArena, 1000).forEach(partion -> {
                 partion.forEach(oppfolgingsBruker -> profileringRepository.insertProfileringFraArena(oppfolgingsBruker));
             });
