@@ -1,11 +1,9 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Gauge;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
-import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -65,7 +63,7 @@ public class KafkaConsumerRunnable implements Runnable {
                 records.forEach(this::process);
             }
         } catch (NullPointerException npe) {
-            log.error("Kafka kastet NPE", npe);
+            log.error("Kafka kastet NPE på topic {}", topic, npe);
             System.exit(1);
         } catch (Exception e) {
             String mld = String.format(

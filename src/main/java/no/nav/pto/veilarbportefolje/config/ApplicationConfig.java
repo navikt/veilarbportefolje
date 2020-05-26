@@ -8,6 +8,7 @@ import no.nav.common.oidc.auth.OidcAuthenticatorConfig;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
+import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.YtelserServlet;
@@ -130,6 +131,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private VedtakService vedtakService;
 
+    @Inject
+    private KafkaAktivitetService kafkaAktivitetService;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -139,6 +143,13 @@ public class ApplicationConfig implements ApiApplication {
             flyway.setDataSource(dataSource);
             flyway.migrate();
         }
+
+        new KafkaConsumerRunnable(
+                kafkaAktivitetService,
+                unleashService,
+                KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
+                Optional.of("portefolje.kafka.aktiviteter")
+        );
 
         new KafkaConsumerRunnable(
                 vedtakService,
@@ -160,7 +171,6 @@ public class ApplicationConfig implements ApiApplication {
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
                 Optional.of("veilarbdialog.kafka")
         );
-
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");

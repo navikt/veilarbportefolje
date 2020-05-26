@@ -7,6 +7,7 @@ import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.pto.veilarbportefolje.feed.OidcFeedOutInterceptor;
 import no.nav.pto.veilarbportefolje.feed.Utils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -56,8 +57,9 @@ public class AktiviteterfeedConfig {
     @Bean
     public AktivitetFeedHandler aktivitetFeedHandler(BrukerRepository brukerRepository,
                                                      AktivitetService aktivitetService,
-                                                     AktivitetDAO aktivitetDAO) {
-        return new AktivitetFeedHandler(brukerRepository, aktivitetService, aktivitetDAO);
+                                                     UnleashService unleashService
+                                                     ) {
+        return new AktivitetFeedHandler(brukerRepository, aktivitetService, unleashService);
     }
 
     private static String sisteEndring(AktivitetDAO aktivitetDAO) {

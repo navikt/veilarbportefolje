@@ -8,8 +8,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 
-public class RegistreringService {
+public class RegistreringService implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
     private RegistreringRepository registreringRepository;
     private ElasticIndexer elasticIndexer;
 

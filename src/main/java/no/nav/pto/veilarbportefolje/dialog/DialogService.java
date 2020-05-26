@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import static no.nav.json.JsonUtils.fromJson;
 
 @Slf4j
-public class DialogService implements KafkaConsumerService {
+public class DialogService implements KafkaConsumerService<String> {
 
     private DialogFeedRepository dialogFeedRepository;
     private ElasticIndexer elasticIndexer;

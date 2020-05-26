@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-public interface KafkaConsumerService {
+public interface KafkaConsumerService<T> {
 
-    void behandleKafkaMelding(String kafkaMelding);
+    void behandleKafkaMelding(T kafkaMelding);
 }

@@ -275,7 +275,7 @@ public class ElasticIndexer {
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
         } else {
-            log.warn("Feil ved sletting av bruker med aktoerId {}", bruker.getAktoer_id());
+            log.warn("Feil ved sletting av bruker med aktoerId {} og personId {}", bruker.getAktoer_id(), bruker.getPerson_id());
         }
     }
 
@@ -284,7 +284,7 @@ public class ElasticIndexer {
         CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
 
         future.exceptionally(e -> {
-            log.warn("Klarte ikke indeksere", e);
+            log.warn("Klarte ikke indeksere for bruker" + aktoerId, e);
             return null;
         });
 
