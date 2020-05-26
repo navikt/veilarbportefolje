@@ -148,7 +148,7 @@ public class ApplicationConfig implements ApiApplication {
                 kafkaAktivitetService,
                 unleashService,
                 KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                Optional.of("veilarbaktivitet.kafka")
+                Optional.of("portefolje.kafka.aktiviteter")
         );
 
         new KafkaConsumerRunnable(

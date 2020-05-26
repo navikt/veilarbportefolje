@@ -41,7 +41,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     @Override
     public void call(String lastEntry, List<AktivitetDataFraFeed> data) {
-        if(this.unleashService.isEnabled("portefolje.kafka.aktiviteter")) {
+        if(!this.unleashService.isEnabled("portefolje.kafka.aktiviteter")) {
             log.info("Konsumerer fra kafka-aktivitet-topic");
             return;
         }

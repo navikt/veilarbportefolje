@@ -1,11 +1,9 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Gauge;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
-import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -60,9 +58,7 @@ public class KafkaConsumerRunnable implements Runnable {
     public void run() {
         try {
             consumer.subscribe(singletonList(topic));
-            boolean featureErPa = featureErPa();
-            log.info("Feature {} er på {}", this.featureNavn.get(), featureErPa);
-            while (featureErPa && !shutdown.get()) {
+            while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
             }
