@@ -266,7 +266,7 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public void slettBruker(OppfolgingsBruker bruker) {
+    public Result<OppfolgingsBruker> slettBruker(OppfolgingsBruker bruker) {
 
         DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
                 .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
@@ -274,9 +274,15 @@ public class ElasticIndexer {
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
         if (response.getDeleted() == 1) {
             log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
-        } else {
-            log.warn("Feil ved sletting av bruker med aktoerId {} og personId {}", bruker.getAktoer_id(), bruker.getPerson_id());
+            return Result.ok(bruker);
         }
+
+        if (response.getVersionConflicts() > 0) {
+            log.error("Versjonkonflikt ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+        } else {
+            log.warn("Ukjent feil ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+        }
+        return Result.err(new RuntimeException());
     }
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
@@ -424,7 +430,12 @@ public class ElasticIndexer {
             log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
         }
 
-        log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
+        if (response.getItems().length != oppfolgingsBrukere.size()) {
+            log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
+        }
+
+        List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+        log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
     }
 
     public Try<UpdateResponse> oppdaterBruker(Tuple2<Fnr, XContentBuilder> tupleAvFnrOgJson) {
