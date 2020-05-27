@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -57,7 +58,6 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils.filtrerBrukertiltak;
-import static no.nav.pto.veilarbportefolje.util.LogUtils.logErrorWithStacktrace;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
@@ -268,21 +268,28 @@ public class ElasticIndexer {
     @SneakyThrows
     public Result<OppfolgingsBruker> slettBruker(OppfolgingsBruker bruker) {
 
-        DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
-                .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
+        List<Integer> backoffs = Arrays.asList(500, 1000, 3000, 0);
 
-        BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+        for (Integer backoff : backoffs) {
 
-        if (response.getDeleted() == 1) {
-            log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
-            return Result.ok(bruker);
-        } else if (response.getVersionConflicts() > 0) {
-            logErrorWithStacktrace(bruker, "Versjonskonflikt");
-        } else if (!response.getBulkFailures().isEmpty()) {
-            String mld = format("Sletting: bulk failures for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
-            response.getBulkFailures().forEach(failure -> log.error(mld, failure.getCause()));
-        } else {
-            logErrorWithStacktrace(bruker, "Sletting:Ukjent feil");
+            DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
+                    .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
+
+            try {
+                BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+                if (response.getDeleted() == 1) {
+                    log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+                    return Result.ok(bruker);
+                }
+            } catch (ElasticsearchStatusException e) {
+                String mld = format("ElasticsearchStatusException for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                log.warn(mld, e);
+                Thread.sleep(backoff);
+            } catch (Exception e) {
+                String mld = format("Sletting feilet for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                log.error(mld, e);
+                return Result.err(e);
+            }
         }
 
         return Result.err(new RuntimeException());
