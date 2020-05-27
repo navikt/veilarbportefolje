@@ -41,12 +41,17 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     @Override
     public void call(String lastEntry, List<AktivitetDataFraFeed> data) {
-        log.info("AktivitetfeedDebug data: {}", data);
+        if(!unleashService.isEnabled("portefolje.kafka.aktiviteter")) {
+            log.info("AktivitetfeedDebug data: {}", data);
 
-        aktivitetService.oppdaterAktiviteter(data);
 
-        Timestamp lastEntryId = timestampFromISO8601(lastEntry);
-        lastEntryIdAsMillisSinceEpoch = lastEntryId.getTime();
-        brukerRepository.setAktiviteterSistOppdatert(lastEntryId);
+            aktivitetService.oppdaterAktiviteter(data);
+
+            Timestamp lastEntryId = timestampFromISO8601(lastEntry);
+            lastEntryIdAsMillisSinceEpoch = lastEntryId.getTime();
+            brukerRepository.setAktiviteterSistOppdatert(lastEntryId);
+        } else {
+            log.info("Konsumerer aktiviter på aapen-fo-endringPaaAktivitet-v1");
+        }
     }
 }
