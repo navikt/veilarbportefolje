@@ -274,21 +274,19 @@ public class ElasticIndexer {
                 .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+
         if (response.getDeleted() == 1) {
             log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
             return Result.ok(bruker);
-        }
-
-        if (response.getVersionConflicts() > 0) {
+        } else if (response.getVersionConflicts() > 0) {
             log.error("Sletting: Versjonkonflikt for bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
-        }
-
-        if (!response.getBulkFailures().isEmpty()) {
+        } else if (!response.getBulkFailures().isEmpty()) {
             String mld = format("Sletting: bulk failures for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
             response.getBulkFailures().forEach(failure -> log.error(mld, failure.getCause()));
+        } else {
+            log.error("Sletting: ukjent feil ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
         }
 
-        log.warn("Ukjent feil ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
         return Result.err(new RuntimeException());
     }
 
