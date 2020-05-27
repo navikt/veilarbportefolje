@@ -26,7 +26,6 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -40,7 +39,6 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
-import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.nio.charset.Charset;
@@ -48,7 +46,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -60,6 +57,7 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils.filtrerBrukertiltak;
+import static no.nav.pto.veilarbportefolje.util.LogUtils.logErrorWithStacktrace;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
@@ -279,12 +277,12 @@ public class ElasticIndexer {
             log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
             return Result.ok(bruker);
         } else if (response.getVersionConflicts() > 0) {
-            log.error("Sletting: Versjonkonflikt for bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+            logErrorWithStacktrace(bruker, "Versjonskonflikt");
         } else if (!response.getBulkFailures().isEmpty()) {
             String mld = format("Sletting: bulk failures for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
             response.getBulkFailures().forEach(failure -> log.error(mld, failure.getCause()));
         } else {
-            log.error("Sletting: ukjent feil ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+            logErrorWithStacktrace(bruker, "Sletting:Ukjent feil");
         }
 
         return Result.err(new RuntimeException());
