@@ -290,7 +290,7 @@ public class ElasticIndexer {
         CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
 
         future.exceptionally(e -> {
-            log.warn("Klarte ikke indeksere for bruker" + aktoerId, e);
+            log.warn("Klarte ikke indeksere for bruker " + aktoerId, e);
             return null;
         });
 
