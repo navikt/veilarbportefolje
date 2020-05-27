@@ -26,6 +26,7 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -39,6 +40,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.nio.charset.Charset;
@@ -210,7 +212,7 @@ public class ElasticIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
 
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toList());
 
         log.info("Deltaindeksering: hentet ut {} oppdaterte brukere {}", brukere.size(), aktoerIder);
 
@@ -225,7 +227,7 @@ public class ElasticIndexer {
 
             List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
                     .filter(UnderOppfolgingRegler::erUnderOppfolging)
-                    .collect(Collectors.toList());
+                    .collect(toList());
 
             if (!brukereFortsattUnderOppfolging.isEmpty()) {
                 log.info("Deltaindeksering: Legger til aktiviteter");
@@ -272,16 +274,19 @@ public class ElasticIndexer {
                 .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
         BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+
         if (response.getDeleted() == 1) {
-            log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
+            log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
             return Result.ok(bruker);
+        } else if (response.getVersionConflicts() > 0) {
+            log.error("Sletting: Versjonkonflikt for bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+        } else if (!response.getBulkFailures().isEmpty()) {
+            String mld = format("Sletting: bulk failures for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+            response.getBulkFailures().forEach(failure -> log.error(mld, failure.getCause()));
+        } else {
+            log.error("Sletting: ukjent feil ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
         }
 
-        if (response.getVersionConflicts() > 0) {
-            log.error("Versjonkonflikt ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
-        } else {
-            log.warn("Ukjent feil ved sletting av bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
-        }
         return Result.err(new RuntimeException());
     }
 
