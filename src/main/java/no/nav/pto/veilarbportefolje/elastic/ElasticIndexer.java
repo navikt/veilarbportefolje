@@ -268,7 +268,7 @@ public class ElasticIndexer {
     @SneakyThrows
     public Result<OppfolgingsBruker> slettBruker(OppfolgingsBruker bruker) {
 
-        List<Integer> backoffs = Arrays.asList(500, 1000, 3000, 0);
+        List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
 
         for (Integer backoff : backoffs) {
 
