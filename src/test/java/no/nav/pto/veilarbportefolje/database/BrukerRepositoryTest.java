@@ -84,7 +84,7 @@ public class BrukerRepositoryTest {
 
         brukerdata.toUpsertQuery(jdbcTemplate).execute();
 
-        brukerRepository.setHarDeltCvMedNav(id);
+        brukerRepository.setHarDeltCvMedNav(id, true);
 
         String result = SqlUtils.select(jdbcTemplate, "BRUKER_DATA", rs -> rs.getString("HAR_DELT_CV"))
                 .column("*")

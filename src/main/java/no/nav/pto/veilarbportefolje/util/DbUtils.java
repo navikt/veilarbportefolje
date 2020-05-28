@@ -152,6 +152,10 @@ public class DbUtils {
         return bool ? "1" : "0";
     }
 
+    public static String boolToJaNei(boolean bool) {
+        return bool ? "J" : "N";
+    }
+
     public static String numberToString(BigDecimal bd) {
         return String.valueOf(bd.intValue());
     }

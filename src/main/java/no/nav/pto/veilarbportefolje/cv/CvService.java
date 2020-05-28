@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.util.Result;
 import org.joda.time.DateTime;
 
 import java.time.Instant;
@@ -44,7 +45,7 @@ public class CvService implements KafkaConsumerService<Cv> {
         }
 
         antallBrukereSomHarDeltCv.increment();
-        brukerRepository.setHarDeltCvMedNav(aktoerId).orElseThrowException();
+        brukerRepository.setHarDeltCvMedNav(aktoerId, true).orElseThrowException();
         elasticIndexer.indekser(aktoerId).orElseThrowException();
     }
 
@@ -55,5 +56,9 @@ public class CvService implements KafkaConsumerService<Cv> {
         return registreringOpprettet
                 .map(registeringsDato -> registeringsDato.isBefore(cvSistEndret))
                 .orElse(false);
+    }
+
+    public Result<Integer> setHarDeltCvTilNei(AktoerId aktoerId) {
+        return brukerRepository.setHarDeltCvMedNav(aktoerId, false);
     }
 }
