@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -31,8 +32,20 @@ public class Result<V> {
         return new Result<>(throwable, null);
     }
 
+    public static <V> Result<V> err(String message) {
+        return new Result<>(new RuntimeException(message), null);
+    }
+
     public Optional<Throwable> err() {
         return Optional.ofNullable(err);
+    }
+
+    public void onError(Consumer<Throwable> consumer) {
+        consumer.accept(err);
+    }
+
+    public void onOk(Consumer<V> consumer) {
+        consumer.accept(ok);
     }
 
     public Optional<V> ok() {
@@ -47,27 +60,31 @@ public class Result<V> {
         return ok != null;
     }
 
-    public <U> U map(Function<Throwable, U> errorMapper, Function<V, U> okMapper) {
-        return err != null ? errorMapper.apply(err) : okMapper.apply(ok);
+    public <U> Result<U> andThen(Function<V, Result<U>> function) {
+        return err != null ? err(err) : function.apply(ok);
     }
 
-    public <U> Result<U> mapOk(Function<V, U> function) {
-        return ok == null ? err(err) : Result.of(() -> function.apply(ok));
+    public <U> Result<U> map(Function<V, U> function) {
+        return err != null ? err(err) : Result.of(() -> function.apply(ok));
+    }
+
+    public <U> Result<U> map(Supplier<U> supplier) {
+        return err != null ? err(err) : Result.of(supplier);
     }
 
     public Result<V> mapError(Function<Throwable, Result<V>> function) {
-        return ok == null ? function.apply(err) : ok(ok) ;
+        return err != null ? function.apply(err) : ok(ok);
     }
 
     public V orElse(V value) {
-        return ok == null ? value : ok;
+        return err != null ? value : ok;
     }
 
     public V orElseThrowException() {
-        if (err == null) {
-            return ok;
+        if (err != null) {
+            throw new RuntimeException(err);
         }
-        throw new RuntimeException(err);
+        return ok;
     }
 
     @Override

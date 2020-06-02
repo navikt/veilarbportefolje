@@ -11,17 +11,15 @@ import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 
-import java.util.concurrent.CompletableFuture;
-
 import static no.nav.json.JsonUtils.fromJson;
 
 @Slf4j
 public class DialogService implements KafkaConsumerService<String> {
 
-    private DialogFeedRepository dialogFeedRepository;
-    private ElasticIndexer elasticIndexer;
-    private AktoerService aktoerService;
-    private BrukerRepository brukerRepository;
+    private final DialogFeedRepository dialogFeedRepository;
+    private final ElasticIndexer elasticIndexer;
+    private final AktoerService aktoerService;
+    private final BrukerRepository brukerRepository;
 
 
     public DialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService, BrukerRepository brukerRepository) {
@@ -32,17 +30,25 @@ public class DialogService implements KafkaConsumerService<String> {
     }
 
     @Override
-    public void behandleKafkaMelding(String kafkaMelding) {
+    public Result<String> behandleKafkaMelding(String kafkaMelding) {
         DialogData melding = fromJson(kafkaMelding, DialogData.class);
-        dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
-        aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId()))
-                .onSuccess(this::indekserBruker);
+        Result<Fnr> result = Result.of(() -> {
+            dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
+            return aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId()))
+                    .getOrElseThrow(() -> new IllegalStateException());
+        });
+
+        return result
+                .andThen(this::indekserBruker)
+                .map(b -> b.getAktoer_id());
     }
 
-    private void indekserBruker (Fnr fnr) {
+    private Result<OppfolgingsBruker> indekserBruker(Fnr fnr) {
         Result<OppfolgingsBruker> oppfolgingsBrukerResult = brukerRepository.hentBruker(fnr);
-        if(UnderOppfolgingRegler.erUnderOppfolging(oppfolgingsBrukerResult)) {
-            elasticIndexer.indekser(fnr);
+        if (UnderOppfolgingRegler.erUnderOppfolging(oppfolgingsBrukerResult)) {
+            return elasticIndexer.indekser(fnr);
         }
+        return Result.err("Indeksering feilet");
     }
+
 }

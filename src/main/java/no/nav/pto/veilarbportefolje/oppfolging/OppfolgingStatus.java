@@ -27,15 +27,14 @@ public class OppfolgingStatus {
 
 
         JSONObject json = new JSONObject(payload);
-        Optional<VeilederId> maybeVeileder = Result.of(() -> json.getString("veileder"))
-                .map(
-                        t -> Optional.empty(),
-                        v -> Optional.of(VeilederId.of(v))
-                );
+        Optional<VeilederId> veilederId =
+                Result.of(() -> json.getString("veileder"))
+                        .map(veileder -> Optional.of(VeilederId.of(veileder)))
+                        .orElse(Optional.empty());
 
         return OppfolgingStatus.builder()
                 .aktoerId(AktoerId.of(json.getString("aktoerid")))
-                .veilederId(maybeVeileder)
+                .veilederId(veilederId)
                 .oppfolging(json.getBoolean("oppfolging"))
                 .nyForVeileder(json.getBoolean("nyForVeileder"))
                 .manuell(json.getBoolean("manuell"))

@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.pto.veilarbportefolje.util.Result;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -24,27 +24,21 @@ import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
-public class KafkaConsumerRunnable implements Runnable {
+public class KafkaConsumerRunnable<T> implements Runnable {
 
-    private final KafkaConsumerService kafkaService;
-    private final UnleashService unleashService;
+    private final KafkaConsumerService<T> kafkaService;
     private final String topic;
-    private final Optional<String> featureNavn;
-    private final KafkaConsumer<String, String> consumer;
+    private final KafkaConsumer<String, T> consumer;
     private final AtomicBoolean shutdown;
     private final CountDownLatch shutdownLatch;
     private final Counter counter;
+    private final Counter errorCounter;
 
-    public KafkaConsumerRunnable(KafkaConsumerService kafkaService,
-                                 UnleashService unleashService,
-                                 KafkaConfig.Topic topic,
-                                 Optional<String> featureNavn) {
+    public KafkaConsumerRunnable(KafkaConsumerService<T> kafkaService, KafkaConfig.Topic topic) {
 
         this.kafkaService = kafkaService;
-        this.unleashService = unleashService;
         this.topic = topic.topic;
         this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
-        this.featureNavn = featureNavn;
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
@@ -52,19 +46,26 @@ public class KafkaConsumerRunnable implements Runnable {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
 
         counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
+        errorCounter = Counter.builder(topic.topic + "-records_failed").register(getMeterRegistry());
     }
 
     @Override
     public void run() {
         try {
             consumer.subscribe(singletonList(topic));
-            while (featureErPa() && !shutdown.get()) {
-                ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
-                records.forEach(this::process);
+            while (!shutdown.get()) {
+                ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
+                records.forEach(record -> {
+                    Result<T> result = this.process(record);
+                    if (result.isErr()) {
+                        errorCounter.increment();
+                        return;
+                    }
+
+                    consumer.commitAsync(); // Eller hur?
+                    counter.increment();
+                });
             }
-        } catch (NullPointerException npe) {
-            log.error("Kafka kastet NPE på topic {}", topic, npe);
-            System.exit(1);
         } catch (Exception e) {
             String mld = String.format(
                     "%s under poll() eller subscribe() for topic %s",
@@ -85,7 +86,7 @@ public class KafkaConsumerRunnable implements Runnable {
         shutdownLatch.await();
     }
 
-    private void process(ConsumerRecord<String, String> record) {
+    private Result<T> process(ConsumerRecord<String, T> record) {
         String correlationId = getCorrelationIdFromHeaders(record.headers());
         MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId);
 
@@ -96,27 +97,20 @@ public class KafkaConsumerRunnable implements Runnable {
                 record.topic()
         );
 
-        counter.increment();
-
-        try {
-            kafkaService.behandleKafkaMelding(record.value());
-        } catch (Exception e) {
+        Result<T> result = kafkaService.behandleKafkaMelding(record.value());
+        result.onError(t -> {
             String mld = String.format(
                     "%s for key %s, og offset %s på topic %s",
-                    e.getClass().getSimpleName(),
+                    t.getClass().getSimpleName(),
                     record.key(),
                     record.offset(),
                     record.topic()
             );
-            log.error(mld, e);
-        }
-        MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
-    }
+            log.error(mld, t);
+        });
 
-    private boolean featureErPa() {
-        return this.featureNavn
-                .map(unleashService::isEnabled)
-                .orElse(false);
+        MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
+        return result;
     }
 
     static String getCorrelationIdFromHeaders(Headers headers) {

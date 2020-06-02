@@ -50,10 +50,11 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
     @Override
     @Transactional
-    public void behandleKafkaMelding(String kafkaMelding) {
+    public Result<String> behandleKafkaMelding(String kafkaMelding) {
         if (!unleashService.isEnabled(KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
-            log.info("Ingorerer melding fra kafka");
-            return;
+            String mld = "Ingorerer melding fra kafka";
+            log.info(mld);
+            return Result.err(mld);
         }
 
         OppfolgingStatus oppfolgingStatus = fromJson(kafkaMelding);
@@ -72,15 +73,17 @@ public class OppfolgingService implements KafkaConsumerService<String> {
             slettArbeidsliste(aktoerId);
         }
 
-        MetricsUtils.timed(
-                "portefolje.oppfolging.oppdater",
-                () -> oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).orElseThrowException()
-        );
-
-        MetricsUtils.timed(
-                "portefolje.oppfolging.indekser",
-                () -> elastic.indekser(aktoerId).orElseThrowException()
-        );
+        return Result.of(() -> {
+            MetricsUtils.timed(
+                    "portefolje.oppfolging.oppdater",
+                    () -> oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).orElseThrowException()
+            );
+            MetricsUtils.timed(
+                    "portefolje.oppfolging.indekser",
+                    () -> elastic.indekser(aktoerId).orElseThrowException()
+            );
+            return kafkaMelding;
+        });
     }
 
     boolean eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {

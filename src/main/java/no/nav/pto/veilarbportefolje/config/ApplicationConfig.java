@@ -144,33 +144,11 @@ public class ApplicationConfig implements ApiApplication {
             flyway.migrate();
         }
 
-        new KafkaConsumerRunnable(
-                kafkaAktivitetService,
-                unleashService,
-                KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                Optional.of("portefolje.kafka.aktiviteter")
-        );
+        new KafkaConsumerRunnable<>(kafkaAktivitetService, KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC);
+        new KafkaConsumerRunnable<>(vedtakService, KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC);
+        new KafkaConsumerRunnable<>(oppfolgingService, KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC);
+        new KafkaConsumerRunnable<>(dialogService, KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC);
 
-        new KafkaConsumerRunnable(
-                vedtakService,
-                unleashService,
-                KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
-        );
-
-        new KafkaConsumerRunnable(
-                oppfolgingService,
-                unleashService,
-                KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC,
-                Optional.of(KafkaConfig.KAFKA_OPPFOLGING_TOGGLE)
-        );
-
-        new KafkaConsumerRunnable(
-                dialogService,
-                unleashService,
-                KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-                Optional.of("veilarbdialog.kafka")
-        );
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");

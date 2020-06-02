@@ -66,7 +66,7 @@ public class OppfolgingRepository {
                     .execute();
         };
 
-        return Result.of(query).mapOk(_queryResult -> dto.getAktoerId());
+        return Result.of(query).map(() -> dto.getAktoerId());
     }
 
 

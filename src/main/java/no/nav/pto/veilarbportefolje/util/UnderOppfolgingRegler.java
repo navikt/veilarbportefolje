@@ -28,7 +28,7 @@ public class UnderOppfolgingRegler {
 
     public static boolean erUnderOppfolging(Result<OppfolgingsBruker> bruker) {
         return bruker
-                .mapOk(UnderOppfolgingRegler::erUnderOppfolging)
+                .map(UnderOppfolgingRegler::erUnderOppfolging)
                 .orElse(false);
     }
 
