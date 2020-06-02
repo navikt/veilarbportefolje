@@ -22,17 +22,10 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        /*
         if(!unleashService.isEnabled("portefolje.behandle.kafkamelding")) {
             return;
         }
-
-         */
-        long startTime = System.currentTimeMillis();
-        log.info("Inne i aktivitetmelding");
         AktivitetDataFraFeed aktivitetData = fromJson(kafkaMelding, AktivitetDataFraFeed.class);
         aktivitetService.oppdaterAktiviteter(Collections.singletonList(aktivitetData));
-        long endTime = System.currentTimeMillis();
-        log.info("Oppdater aktiviteter tog {} millisekunder att exekvera", (endTime - startTime));
     }
 }

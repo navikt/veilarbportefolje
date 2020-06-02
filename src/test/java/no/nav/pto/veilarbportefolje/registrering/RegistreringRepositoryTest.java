@@ -34,7 +34,7 @@ public class RegistreringRepositoryTest {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringRepository.insertBrukerRegistrering(event);
+        registreringRepository.upsertBrukerRegistrering(event);
 
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event);
     }
@@ -47,7 +47,7 @@ public class RegistreringRepositoryTest {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringRepository.insertBrukerRegistrering(event1);
+        registreringRepository.upsertBrukerRegistrering(event1);
 
         ArbeidssokerRegistrertEvent event2 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
@@ -55,7 +55,7 @@ public class RegistreringRepositoryTest {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringRepository.oppdaterBrukerRegistring(event2);
+        registreringRepository.upsertBrukerRegistrering(event2);
 
         assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event2);
     }
