@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import io.micrometer.core.instrument.Counter;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Cv;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -18,7 +17,6 @@ import java.util.Optional;
 
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
-@Slf4j
 public class CvService implements KafkaConsumerService<Cv> {
 
     private final RegistreringService registreringService;

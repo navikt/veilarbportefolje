@@ -68,8 +68,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer) {
-        return new RegistreringService(registreringRepository, elasticIndexer);
+    public RegistreringService registreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService, BrukerRepository brukerRepository) {
+        return new RegistreringService(registreringRepository, elasticIndexer, aktoerService, brukerRepository);
     }
 
     @Bean

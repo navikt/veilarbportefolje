@@ -23,9 +23,9 @@ public class RegistreringRepository {
         this.db = db;
     }
 
-    public void insertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
+    public void upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         Timestamp timestamp = Optional.ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
-                .map(registreringOpprettet ->Timestamp.from((ZonedDateTime.parse(registreringOpprettet).toInstant())))
+                .map(registreringOpprettet -> Timestamp.from((ZonedDateTime.parse(registreringOpprettet).toInstant())))
                 .orElse(null);
 
         SqlUtils.upsert(db, BRUKER_REGISTRERING_TABELL)
@@ -37,15 +37,6 @@ public class RegistreringRepository {
                 .execute();
     }
 
-    public void oppdaterBrukerRegistring(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        Timestamp timestamp = Timestamp.from((ZonedDateTime.parse(kafkaRegistreringMelding.getRegistreringOpprettet()).toInstant()));
-        SqlUtils.update(db, BRUKER_REGISTRERING_TABELL)
-                .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
-                .set("REGISTRERING_OPPRETTET", timestamp)
-                .set("KAFKA_MELDING_MOTTATT", new Timestamp(System.currentTimeMillis()))
-                .whereEquals("AKTOERID", kafkaRegistreringMelding.getAktorid())
-                .execute();
-    }
 
     public ArbeidssokerRegistrertEvent hentBrukerRegistrering(AktoerId aktoerId) {
         return SqlUtils.select(db, BRUKER_REGISTRERING_TABELL, RegistreringRepository::mapTilArbeidssokerRegistrertEvent)
