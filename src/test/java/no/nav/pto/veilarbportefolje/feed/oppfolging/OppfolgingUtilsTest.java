@@ -11,50 +11,60 @@ import static org.junit.Assert.assertTrue;
 public class OppfolgingUtilsTest {
 
     @Test
-    public void brukerTrengerVurdering() {
+    public void bruker_trenger_vurdering() {
         assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "BKART"));
         assertTrue(OppfolgingUtils.trengerVurdering("IARBS", "IVURD"));
     }
     @Test
-    public void brukerMedISERVTrengerIkkeVurdering() {
+    public void bruker_med_iserv_trenger_ikke_vurdering() {
         assertFalse(OppfolgingUtils.trengerVurdering("ISERV", "IVURD"));
         assertFalse(OppfolgingUtils.trengerVurdering("ISERV", "BKART"));
     }
 
     @Test
-    public void brukerUtenBKART_IVURD_trengerIkkeVurdering() {
+    public void bruker_uten_bkart_ivurd_trenger_ikke_vurdering() {
         assertFalse(OppfolgingUtils.trengerVurdering("IARBS", "VURDU"));
     }
 
     @Test
-    public void brukerMedIServHarIkkeVurderingsBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "BKART", null)).isNull();
-        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "IVURD", null)).isNull();
-        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "VURDU", null)).isNull();
+    public void bruker_med_iserv_har_ikke_vurderingsbehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "BKART", null, false)).isNull();
+        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "IVURD", null, false)).isNull();
+        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "VURDU", null, false)).isNull();
     }
 
     @Test
     public void brukerUtenIServOgBKARTHarAEVBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "BKART", null)).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "BKART", null, false)).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
     }
 
     @Test
-    public void brukerUtenIServOgIVURDTHarAEVBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "IVURD", null)).isEqualTo(VurderingsBehov.IKKE_VURDERT);
+    public void bruker_uten_iserv_og_ivurd_har_aevbehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "IVURD", null, false)).isEqualTo(VurderingsBehov.IKKE_VURDERT);
     }
 
     @Test
-    public void brukerUtenIServOgUkjentKodeHarIkkeVurderingsBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "VURDU", null)).isNull();
+    public void bruker_uten_iserv_og_ukjent_kode_har_ikke_vurderingsbehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "VURDU", null, false)).isNull();
     }
 
     @Test
-    public void brukerMedOppgittHindringerHarAEVBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.OPPGITT_HINDRINGER.name())).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
+    public void bruker_med_oppgitt_hindringer_har_aevbehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.OPPGITT_HINDRINGER.name(), false)).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
     }
 
     @Test
-    public void brukerMedAntattGodeMuligheterHarIkkeVurderingsBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.ANTATT_GODE_MULIGHETER.name())).isEqualTo(VurderingsBehov.IKKE_VURDERT);
+    public void bruker_med_antatt_gode_muligheter_har_ikke_vurderingsbehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.ANTATT_GODE_MULIGHETER.name(), false)).isEqualTo(VurderingsBehov.IKKE_VURDERT);
+    }
+
+    @Test
+    public void bruker_med_profilering_antatt_gode_muligheter_har_vurderingbehov_gode_muligheter() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.ANTATT_GODE_MULIGHETER.name(), true)).isEqualTo(VurderingsBehov.ANTATT_GODE_MULIGHETER);
+    }
+
+    @Test
+    public void bruker_med_profilering_oppgitt_hindringer_har_vurderingbehov_opgitt_hindringer() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.OPPGITT_HINDRINGER.name(), true)).isEqualTo(VurderingsBehov.OPPGITT_HINDRINGER);
     }
 }

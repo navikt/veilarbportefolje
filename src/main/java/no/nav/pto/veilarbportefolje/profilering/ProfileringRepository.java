@@ -25,6 +25,7 @@ public class ProfileringRepository {
         this.db = db;
     }
 
+    //TODO SLETT PROFILERINGSRESULTAT NÅR EN BRUKARE FÅR VEDTAK 14a???
 
     public void upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
         Timestamp timestamp = DateUtils.zonedDateStringToTimestamp(kafkaMelding.getProfileringGjennomfort());

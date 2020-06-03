@@ -86,8 +86,7 @@ public class ElasticService {
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(this::setTrengerVurdering)
-                .map(Bruker::of)
+                .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -98,7 +97,7 @@ public class ElasticService {
         ElasticSearchResponse response = search(request, indexAlias, ElasticSearchResponse.class);
 
         return response.getHits().getHits().stream()
-                .map(hit -> Bruker.of(hit.get_source()))
+                .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa()))
                 .collect(toList());
     }
 
@@ -144,13 +143,6 @@ public class ElasticService {
     private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
         return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
-    }
-
-    private OppfolgingsBruker setTrengerVurdering(OppfolgingsBruker oppfolgingsBruker) {
-      if(erVedtakstottePilotPa()) {
-          return oppfolgingsBruker;
-      }
-      return oppfolgingsBruker.setTrenger_revurdering(false);
     }
 
 
