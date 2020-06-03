@@ -68,8 +68,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService, BrukerRepository brukerRepository) {
-        return new RegistreringService(registreringRepository, elasticIndexer, aktoerService, brukerRepository);
+    public RegistreringService registreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+        return new RegistreringService(registreringRepository, elasticIndexer, aktoerService);
     }
 
     @Bean
@@ -93,7 +93,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ProfileringService profileringService(ProfileringRepository profileringRepository, ElasticIndexer elasticIndexer) {
-        return new ProfileringService(profileringRepository, elasticIndexer);
+    public ProfileringService profileringService(ProfileringRepository profileringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+        return new ProfileringService(profileringRepository, elasticIndexer, aktoerService);
     }
 }
