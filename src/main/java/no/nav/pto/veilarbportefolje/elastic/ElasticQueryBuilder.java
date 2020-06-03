@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import lombok.val;
 import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
@@ -11,7 +10,6 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
-import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
@@ -29,6 +27,7 @@ import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
+import static org.apache.commons.lang3.StringUtils.truncate;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
@@ -240,11 +239,22 @@ public class ElasticQueryBuilder {
             case IKKE_PERMITTERTE_ETTER_NIENDE_MARS:
                 queryBuilder = byggIkkePermittertFilter();
                 break;
+            case HAR_DELT_CV:
+                queryBuilder = byggCvFilter(true);
+                break;
+            case HAR_IKKE_DELT_CV:
+                queryBuilder = byggCvFilter(false);
+                break;
             default:
                 throw new IllegalStateException();
 
         }
         return queryBuilder;
+    }
+
+    private static QueryBuilder byggCvFilter(boolean harDeltCv) {
+        return boolQuery()
+                .must(matchQuery("har_delt_cv", harDeltCv));
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere

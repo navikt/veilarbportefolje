@@ -7,6 +7,7 @@ import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -44,6 +45,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private VeilederService veilederService;
     private Transactor transactor;
     private final UnleashService unleashService;
+    private final CvService cvService;
 
     @Inject
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
@@ -51,7 +53,9 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                                  ElasticIndexer elasticIndexer,
                                  OppfolgingRepository oppfolgingRepository,
                                  VeilederService veilederService,
-                                 Transactor transactor, UnleashService unleashService) {
+                                 Transactor transactor,
+                                 CvService cvService,
+                                 UnleashService unleashService) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
@@ -59,10 +63,10 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.veilederService = veilederService;
         this.transactor = transactor;
         this.unleashService = unleashService;
+        this.cvService = cvService;
 
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
         this.timer = MetricsFactory.createTimer("veilarbportefolje.veiledertilordning");
-
     }
 
     private static BigDecimal getLastEntry() {
@@ -125,6 +129,10 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         Try<BrukerOppdatertInformasjon> hentOppfolgingData = oppfolgingRepository.retrieveOppfolgingData(aktoerId);
 
         boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
+
+        if (brukerErIkkeUnderOppfolging(oppfolgingData)) {
+            cvService.setHarDeltCvTilNei(aktoerId);
+        }
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {

@@ -1,7 +1,9 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
@@ -76,8 +78,18 @@ public class ServiceConfig {
     }
 
     @Bean
-    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService) {
-        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService);
+    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService, CvService cvService) {
+        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService, cvService);
+    }
+
+    @Bean
+    public KafkaAktivitetService kafkaAktivitetService(AktivitetService aktivitetService, UnleashService unleashService) {
+        return new KafkaAktivitetService(aktivitetService, unleashService);
+    }
+
+    @Bean
+    public CvService cvService(RegistreringService registreringService, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
+        return new CvService(registreringService, brukerRepository, elasticIndexer);
     }
 
     @Bean

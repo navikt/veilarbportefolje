@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -46,7 +47,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -210,7 +210,7 @@ public class ElasticIndexer {
 
         List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
 
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(Collectors.toList());
+        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toList());
 
         log.info("Deltaindeksering: hentet ut {} oppdaterte brukere {}", brukere.size(), aktoerIder);
 
@@ -225,7 +225,7 @@ public class ElasticIndexer {
 
             List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
                     .filter(UnderOppfolgingRegler::erUnderOppfolging)
-                    .collect(Collectors.toList());
+                    .collect(toList());
 
             if (!brukereFortsattUnderOppfolging.isEmpty()) {
                 log.info("Deltaindeksering: Legger til aktiviteter");
@@ -266,17 +266,33 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public void slettBruker(OppfolgingsBruker bruker) {
+    public Result<OppfolgingsBruker> slettBruker(OppfolgingsBruker bruker) {
 
-        DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
-                .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
+        List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
 
-        BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
-        if (response.getDeleted() == 1) {
-            log.info("Slettet bruker med aktorId {} og personId {} fra indeks {}", bruker.getAktoer_id(), bruker.getPerson_id(), getAlias());
-        } else {
-            log.warn("Feil ved sletting av bruker med aktoerId {}", bruker.getAktoer_id());
+        for (Integer backoff : backoffs) {
+
+            DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
+                    .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
+
+            try {
+                BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+                if (response.getDeleted() == 1) {
+                    log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+                    return Result.ok(bruker);
+                }
+            } catch (ElasticsearchStatusException e) {
+                String mld = format("ElasticsearchStatusException for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                log.warn(mld, e);
+                Thread.sleep(backoff);
+            } catch (Exception e) {
+                String mld = format("Sletting feilet for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                log.error(mld, e);
+                return Result.err(e);
+            }
         }
+
+        return Result.err(new RuntimeException());
     }
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
@@ -284,7 +300,8 @@ public class ElasticIndexer {
         CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
 
         future.exceptionally(e -> {
-            log.warn("Klarte ikke indeksere", e);
+            RuntimeException wrappedException = new RuntimeException(e);
+            log.warn("Feil under asynkron indeksering av bruker " + aktoerId, wrappedException);
             return null;
         });
 
@@ -424,7 +441,12 @@ public class ElasticIndexer {
             log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
         }
 
-        log.info("Skrev {} brukere til indeks", oppfolgingsBrukere.size());
+        if (response.getItems().length != oppfolgingsBrukere.size()) {
+            log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
+        }
+
+        List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+        log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
     }
 
     public Try<UpdateResponse> oppdaterBruker(Tuple2<Fnr, XContentBuilder> tupleAvFnrOgJson) {

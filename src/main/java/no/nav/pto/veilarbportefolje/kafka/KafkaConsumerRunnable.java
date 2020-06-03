@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import io.micrometer.core.instrument.Counter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
@@ -20,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
 public class KafkaConsumerRunnable<T> implements Runnable {
@@ -27,12 +29,13 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     private final KafkaConsumerService<T> kafkaService;
     private final UnleashService unleashService;
     private final String topic;
-    private final String featureNavn;
     private final KafkaConsumer<String, T> consumer;
+    private final String featureNavn;
     private final AtomicBoolean shutdown;
     private final CountDownLatch shutdownLatch;
+    private final Counter counter;
 
-    public KafkaConsumerRunnable(KafkaConsumerService kafkaService,
+    public KafkaConsumerRunnable(KafkaConsumerService<T> kafkaService,
                                  UnleashService unleashService,
                                  Properties kafkaProperties,
                                  KafkaConfig.Topic topic,
@@ -47,19 +50,22 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         this.shutdownLatch = new CountDownLatch(1);
 
         JobUtils.runAsyncJob(this);
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
+
+        counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
     }
 
     @Override
     public void run() {
         try {
+            log.info("Starter konsument for {}", topic);
             consumer.subscribe(singletonList(topic));
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
             }
         } catch (NullPointerException npe) {
-            log.error("Kafka kastet NPE", npe);
+            log.error("Kafka kastet NPE på topic {}", topic, npe);
             System.exit(1);
         } catch (Exception e) {
             String mld = String.format(
@@ -91,6 +97,8 @@ public class KafkaConsumerRunnable<T> implements Runnable {
                 record.offset(),
                 record.topic()
         );
+
+        counter.increment();
 
         try {
             kafkaService.behandleKafkaMelding(record.value());
