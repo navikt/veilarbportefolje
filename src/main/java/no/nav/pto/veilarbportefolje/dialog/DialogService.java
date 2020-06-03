@@ -39,7 +39,7 @@ public class DialogService implements KafkaConsumerService<String> {
                 .onSuccess(this::indekserBruker);
     }
 
-    private void indekserBruker (Fnr fnr) {
+    private void indekserBruker(Fnr fnr) {
         Result<OppfolgingsBruker> oppfolgingsBrukerResult = brukerRepository.hentBruker(fnr);
         if(UnderOppfolgingRegler.erUnderOppfolging(oppfolgingsBrukerResult)) {
             elasticIndexer.indekser(fnr);
