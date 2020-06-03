@@ -15,6 +15,8 @@ import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringRepository;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
@@ -88,5 +90,10 @@ public class ServiceConfig {
     @Bean
     public CvService cvService(RegistreringService registreringService, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
         return new CvService(registreringService, brukerRepository, elasticIndexer);
+    }
+
+    @Bean
+    public ProfileringService profileringService(ProfileringRepository profileringRepository, ElasticIndexer elasticIndexer) {
+        return new ProfileringService(profileringRepository, elasticIndexer);
     }
 }

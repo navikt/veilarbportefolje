@@ -81,4 +81,5 @@ public class OppfolgingsBruker {
     boolean trenger_revurdering;
     boolean er_sykmeldt_med_arbeidsgiver;
     String brukers_situasjon;
+    String profilering_resultat;
 }

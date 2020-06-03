@@ -79,6 +79,7 @@ public class Bruker {
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
         String sikkerhetstiltak = bruker.getSikkerhetstiltak();
+        String profileringResultat = bruker.getProfilering_resultat();
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
         String brukersSitasjon = bruker.getBrukers_situasjon();
@@ -90,7 +91,7 @@ public class Bruker {
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(bruker.isTrenger_vurdering())
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
-                .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode))
+                .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat))
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
                 .setVeilederId(bruker.getVeileder_id())

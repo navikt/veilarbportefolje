@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
-import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -15,6 +14,7 @@ import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,21 +29,22 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     private final KafkaConsumerService<T> kafkaService;
     private final UnleashService unleashService;
     private final String topic;
-    private final Optional<String> featureNavn;
     private final KafkaConsumer<String, T> consumer;
+    private final String featureNavn;
     private final AtomicBoolean shutdown;
     private final CountDownLatch shutdownLatch;
     private final Counter counter;
 
     public KafkaConsumerRunnable(KafkaConsumerService<T> kafkaService,
                                  UnleashService unleashService,
+                                 Properties kafkaProperties,
                                  KafkaConfig.Topic topic,
-                                 Optional<String> featureNavn) {
+                                 String featureNavn) {
 
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
         this.topic = topic.topic;
-        this.consumer = new KafkaConsumer<>(KafkaProperties.kafkaProperties());
+        this.consumer = new KafkaConsumer<>(kafkaProperties);
         this.featureNavn = featureNavn;
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
@@ -115,9 +116,7 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     }
 
     private boolean featureErPa() {
-        return this.featureNavn
-                .map(unleashService::isEnabled)
-                .orElse(false);
+        return unleashService.isEnabled(this.featureNavn);
     }
 
     static String getCorrelationIdFromHeaders(Headers headers) {

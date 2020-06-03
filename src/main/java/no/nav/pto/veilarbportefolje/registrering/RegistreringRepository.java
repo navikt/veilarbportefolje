@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,7 +26,7 @@ public class RegistreringRepository {
 
     public void upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         Timestamp timestamp = Optional.ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
-                .map(registreringOpprettet -> Timestamp.from((ZonedDateTime.parse(registreringOpprettet).toInstant())))
+                .map(DateUtils::zonedDateStringToTimestamp)
                 .orElse(null);
 
         SqlUtils.upsert(db, BRUKER_REGISTRERING_TABELL)

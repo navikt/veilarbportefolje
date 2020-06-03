@@ -30,7 +30,9 @@ import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringRepository;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext;
@@ -51,7 +53,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
-import java.util.Optional;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.common.oidc.Constants.OPEN_AM_ID_TOKEN_COOKIE_NAME;
@@ -151,36 +152,41 @@ public class ApplicationConfig implements ApiApplication {
         new KafkaConsumerRunnable<>(
                 kafkaAktivitetService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                Optional.of("portefolje.kafka.aktiviteter")
+                "portefolje.kafka.aktiviteter"
         );
 
         new KafkaConsumerRunnable<>(
                 vedtakService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
+                "veilarbportfolje-hent-data-fra-vedtakstotte"
         );
 
         new KafkaConsumerRunnable<>(
                 oppfolgingService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC,
-                Optional.of(KafkaConfig.KAFKA_OPPFOLGING_TOGGLE)
+                KafkaConfig.KAFKA_OPPFOLGING_TOGGLE
         );
 
         new KafkaConsumerRunnable<>(
                 dialogService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-                Optional.of("veilarbdialog.kafka")
+               "veilarbdialog.kafka"
         );
 
         new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
+                KafkaProperties.kafkaMedAvroProperties(),
                 KafkaConfig.Topic.CV_ENDRET_TOPIC,
-                Optional.of("veilarbportefolje.kafka.cv.killswitch")
+                "veilarbportefolje.kafka.cv.killswitch"
         );
 
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");

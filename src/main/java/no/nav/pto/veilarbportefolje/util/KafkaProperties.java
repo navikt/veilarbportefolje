@@ -7,7 +7,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import java.util.HashMap;
+import java.util.Properties;
 
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -19,8 +19,8 @@ public class KafkaProperties {
     private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
 
-    public static HashMap<String, Object> kafkaProperties() {
-        HashMap<String, Object>  props = new HashMap<> ();
+    public static Properties kafkaProperties() {
+        Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
@@ -35,14 +35,13 @@ public class KafkaProperties {
         return props;
     }
 
-    public static HashMap<String, Object> avroProperties() {
+    public static Properties kafkaMedAvroProperties() {
         final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
-        HashMap<String, Object> props = KafkaProperties.kafkaProperties();
+        Properties props = KafkaProperties.kafkaProperties();
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL);
         return props;
     }
-
 }

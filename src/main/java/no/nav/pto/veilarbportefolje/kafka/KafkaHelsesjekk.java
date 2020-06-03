@@ -4,8 +4,6 @@ import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
-import java.util.HashMap;
-
 import static java.time.Duration.ofSeconds;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 import static no.nav.pto.veilarbportefolje.util.KafkaProperties.kafkaProperties;

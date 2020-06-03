@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
+import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
 import org.junit.Test;
 
@@ -27,23 +28,33 @@ public class OppfolgingUtilsTest {
 
     @Test
     public void brukerMedIServHarIkkeVurderingsBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "BKART")).isNull();
-        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "IVURD")).isNull();
-        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "VURDU")).isNull();
+        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "BKART", null)).isNull();
+        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "IVURD", null)).isNull();
+        assertThat(OppfolgingUtils.vurderingsBehov("ISERV", "VURDU", null)).isNull();
     }
 
     @Test
     public void brukerUtenIServOgBKARTHarAEVBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "BKART")).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "BKART", null)).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
     }
 
     @Test
     public void brukerUtenIServOgIVURDTHarAEVBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "IVURD")).isEqualTo(VurderingsBehov.IKKE_VURDERT);
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "IVURD", null)).isEqualTo(VurderingsBehov.IKKE_VURDERT);
     }
 
     @Test
     public void brukerUtenIServOgUkjentKodeHarIkkeVurderingsBehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "VURDU")).isNull();
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "VURDU", null)).isNull();
+    }
+
+    @Test
+    public void brukerMedOppgittHindringerHarAEVBehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.OPPGITT_HINDRINGER.name())).isEqualTo(VurderingsBehov.ARBEIDSEVNE_VURDERING);
+    }
+
+    @Test
+    public void brukerMedAntattGodeMuligheterHarIkkeVurderingsBehov() {
+        assertThat(OppfolgingUtils.vurderingsBehov("IARBS", "dontcare", ProfilertTil.ANTATT_GODE_MULIGHETER.name())).isEqualTo(VurderingsBehov.IKKE_VURDERT);
     }
 }
