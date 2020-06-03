@@ -22,7 +22,7 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if(!unleashService.isEnabled("portefolje.behandle.kafkamelding")) {
+        if(!unleashService.isEnabled("portefolje.behandle.aktivitet.kafkamelding")) {
             return;
         }
         AktivitetDataFraFeed aktivitetData = fromJson(kafkaMelding, AktivitetDataFraFeed.class);
