@@ -100,7 +100,11 @@
             <artifactId>ojdbc8</artifactId>
         </dependency>
 
-        <!--AVRO OG AVROSKJEMAS -->
+        <!--AVRO-->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
@@ -111,15 +115,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!--AVRO SCHEMAS-->
         <dependency>
             <groupId>no.nav.arbeid</groupId>
             <artifactId>veilarbregistrering-skjema</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
+            <groupId>no.nav.arbeid.pam</groupId>
+            <artifactId>pam-cv-avro-cvmeldinger</artifactId>
+            <version>1.20200507-0fcd6db8</version>
         </dependency>
-
 
         <!--FELLESBIBLIOTEKER-->
         <dependency>

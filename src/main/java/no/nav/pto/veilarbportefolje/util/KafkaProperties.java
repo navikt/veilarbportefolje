@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
@@ -32,4 +34,15 @@ public class KafkaProperties {
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
     }
+
+    public static HashMap<String, Object> avroProperties() {
+        final String KAFKA_SCHEMAS_URL = getRequiredProperty("KAFKA_SCHEMAS_URL");
+        HashMap<String, Object> props = KafkaProperties.kafkaProperties();
+        props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
+        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+        props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL);
+        return props;
+    }
+
 }

@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.YtelserServlet;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakServlet;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
@@ -134,6 +135,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private KafkaAktivitetService kafkaAktivitetService;
 
+    @Inject
+    private CvService cvService;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
@@ -144,33 +148,41 @@ public class ApplicationConfig implements ApiApplication {
             flyway.migrate();
         }
 
-        new KafkaConsumerRunnable(
+        new KafkaConsumerRunnable<>(
                 kafkaAktivitetService,
                 unleashService,
                 KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
                 Optional.of("portefolje.kafka.aktiviteter")
         );
 
-        new KafkaConsumerRunnable(
+        new KafkaConsumerRunnable<>(
                 vedtakService,
                 unleashService,
                 KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
                 Optional.of("veilarbportfolje-hent-data-fra-vedtakstotte")
         );
 
-        new KafkaConsumerRunnable(
+        new KafkaConsumerRunnable<>(
                 oppfolgingService,
                 unleashService,
                 KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC,
                 Optional.of(KafkaConfig.KAFKA_OPPFOLGING_TOGGLE)
         );
 
-        new KafkaConsumerRunnable(
+        new KafkaConsumerRunnable<>(
                 dialogService,
                 unleashService,
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
                 Optional.of("veilarbdialog.kafka")
         );
+
+        new KafkaConsumerRunnable<>(
+                cvService,
+                unleashService,
+                KafkaConfig.Topic.CV_ENDRET_TOPIC,
+                Optional.of("veilarbportefolje.kafka.cv.killswitch")
+        );
+
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");

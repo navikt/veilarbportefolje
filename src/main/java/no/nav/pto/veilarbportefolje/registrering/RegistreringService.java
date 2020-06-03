@@ -4,12 +4,11 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 import no.nav.pto.veilarbportefolje.domene.Fnr;
+import java.util.Optional;
+
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
@@ -35,6 +34,12 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
         registreringRepository.upsertBrukerRegistrering(kafkaRegistreringMelding);
         aktoerService.hentFnrFraAktorId(aktoerId)
                 .onSuccess(this::indekserBruker);
+    }
+
+    public Optional<ZonedDateTime> hentRegistreringOpprettet(AktoerId aktoerId) {
+        ArbeidssokerRegistrertEvent event = registreringRepository.hentBrukerRegistrering(aktoerId);
+        ZonedDateTime registreringOpprettet = ZonedDateTime.parse(event.getRegistreringOpprettet());
+        return Optional.ofNullable(registreringOpprettet);
     }
 
     private void indekserBruker(Fnr fnr) {

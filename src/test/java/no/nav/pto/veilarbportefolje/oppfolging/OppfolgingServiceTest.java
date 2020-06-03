@@ -2,13 +2,16 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import io.vavr.control.Try;
 import lombok.val;
+import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
@@ -25,8 +28,7 @@ import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService.brukeren
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class OppfolgingServiceTest {
 
@@ -37,22 +39,57 @@ public class OppfolgingServiceTest {
     private VeilederService veilederServiceMock;
     private NavKontorService navKontorServiceMock;
     private AktoerService aktoerServiceMock;
+    private CvService cvService;
+    private OppfolgingRepository opppfolgingRepositoryMock;
+    private ArbeidslisteService arbeidslisteMock;
+    private ElasticIndexer elasticMock;
 
     @Before
     public void setUp() {
         veilederServiceMock = mock(VeilederService.class);
         navKontorServiceMock = mock(NavKontorService.class);
         aktoerServiceMock = mock(AktoerService.class);
+        cvService = mock(CvService.class);
+        opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
 
+        arbeidslisteMock = mock(ArbeidslisteService.class);
+        elasticMock = mock(ElasticIndexer.class);
         oppfolgingService = new OppfolgingService(
-                mock(OppfolgingRepository.class),
-                mock(ElasticIndexer.class),
+                opppfolgingRepositoryMock,
+                elasticMock,
                 veilederServiceMock,
                 navKontorServiceMock,
-                mock(ArbeidslisteService.class),
-                new UnleashServiceMock(false),
-                aktoerServiceMock
+                arbeidslisteMock,
+                new UnleashServiceMock(true),
+                aktoerServiceMock,
+                cvService);
+
+        when(arbeidslisteMock.deleteArbeidslisteForAktoerId(any(AktoerId.class))).thenReturn(Result.ok(1));
+        when(opppfolgingRepositoryMock.hentOppfolgingData(any(AktoerId.class))).thenReturn(Result.of(() -> brukerInfo()));
+        when(opppfolgingRepositoryMock.oppdaterOppfolgingData(any(OppfolgingStatus.class))).thenReturn(Result.ok(AktoerId.of("testId")));
+        when(elasticMock.indekser(any(AktoerId.class))).thenReturn(Result.ok(new OppfolgingsBruker()));
+    }
+
+    @Test
+    public void skal_sette_cv_delt_til_nei_om_bruker_ikke_lenger_er_under_oppfolging() {
+
+        oppfolgingService.behandleKafkaMelding(""
+                                               + "{ "
+                                               + "\"aktoerid\": \"00000000000\", "
+                                               + "\"oppfolging\": false,"
+                                               + "\"veileder\": null,"
+                                               + "\"nyForVeileder\": false,"
+                                               + "\"endretTimestamp\": \"2020-05-05T00:00:00+02:00\","
+                                               + "\"startDato\": \"2020-05-05T00:00:00+02:00\","
+                                               + "\"manuell\": false "
+                                               + "}"
         );
+
+        verify(cvService, times(1)).setHarDeltCvTilNei(any(AktoerId.class));
+    }
+
+    private BrukerOppdatertInformasjon brukerInfo() {
+        return new BrukerOppdatertInformasjon().setVeileder("Z000000");
     }
 
     @Test
