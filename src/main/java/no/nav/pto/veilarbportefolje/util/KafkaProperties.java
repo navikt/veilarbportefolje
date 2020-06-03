@@ -5,6 +5,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.Properties;
@@ -44,4 +45,11 @@ public class KafkaProperties {
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL);
         return props;
     }
+
+    public static Properties pamAvroProperties() {
+        Properties props = KafkaProperties.kafkaMedAvroProperties();
+        props.put(KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
+        return props;
+    }
+
 }

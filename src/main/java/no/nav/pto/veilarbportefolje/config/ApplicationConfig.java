@@ -184,7 +184,7 @@ public class ApplicationConfig implements ApiApplication {
         new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
-                KafkaProperties.kafkaMedAvroProperties(),
+                KafkaProperties.pamAvroProperties(),
                 KafkaConfig.Topic.CV_ENDRET_TOPIC,
                 "veilarbportefolje.kafka.cv.killswitch"
         );
