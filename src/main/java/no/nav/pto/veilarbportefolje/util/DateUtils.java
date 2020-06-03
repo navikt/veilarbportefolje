@@ -116,11 +116,4 @@ public class DateUtils {
         simpleDateFormat.setLenient(false);
         return simpleDateFormat;
     }
-
-
-    public static boolean dateIfAfterAnotherDate(String date1, String date2) {
-        ZonedDateTime zonedDateTimeA = LocalDateTime.parse(date1, DateTimeFormatter.ISO_ZONED_DATE_TIME).atZone(ZoneId.systemDefault());
-        ZonedDateTime zonedDateTimeB = LocalDateTime.parse(date2, DateTimeFormatter.ISO_ZONED_DATE_TIME).atZone(ZoneId.systemDefault());
-        return zonedDateTimeA.isAfter(zonedDateTimeB);
-    }
 }
