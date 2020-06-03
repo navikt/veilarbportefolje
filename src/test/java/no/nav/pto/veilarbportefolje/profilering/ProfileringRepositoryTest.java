@@ -30,27 +30,27 @@ public class ProfileringRepositoryTest {
     }
 
     @Test
-    public void skallInserteBrukerOppdatering() {
+    public void skall_inserte_bruker_profilering() {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
                 .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now().minusDays(30), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        profileringRepository.insertBrukerProfilering(event1);
+        profileringRepository.upsertBrukerProfilering(event1);
         assertThat(profileringRepository.hentBrukerProfilering(AktoerId.of(AKTORID))).isEqualTo(event1);
 
     }
 
     @Test
-    public void skallIpdateOppdatering() {
+    public void skall_oppdatere_profilering() {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
                 .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now().minusDays(30), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        profileringRepository.insertBrukerProfilering(event1);
+        profileringRepository.upsertBrukerProfilering(event1);
 
         ArbeidssokerProfilertEvent event2 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
@@ -58,7 +58,7 @@ public class ProfileringRepositoryTest {
                 .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        profileringRepository.updateBrukerProfilering(event2);
+        profileringRepository.upsertBrukerProfilering(event2);
         assertThat(profileringRepository.hentBrukerProfilering(AktoerId.of(AKTORID1))).isEqualTo(event2);
 
     }
