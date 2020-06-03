@@ -50,5 +50,3 @@ spec:
   env:
     - name: JAVA_OPTS
       value: "-Xms2048m -Xmx8096m"
-    - name: KAFKA_SCHEMAS_URL
-      value: https://kafka-schema-registry.nais.preprod.local

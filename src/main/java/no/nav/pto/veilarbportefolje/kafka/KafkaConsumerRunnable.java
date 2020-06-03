@@ -24,18 +24,18 @@ import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
-public class KafkaConsumerRunnable implements Runnable {
+public class KafkaConsumerRunnable<T> implements Runnable {
 
-    private final KafkaConsumerService kafkaService;
+    private final KafkaConsumerService<T> kafkaService;
     private final UnleashService unleashService;
     private final String topic;
     private final Optional<String> featureNavn;
-    private final KafkaConsumer<String, String> consumer;
+    private final KafkaConsumer<String, T> consumer;
     private final AtomicBoolean shutdown;
     private final CountDownLatch shutdownLatch;
     private final Counter counter;
 
-    public KafkaConsumerRunnable(KafkaConsumerService kafkaService,
+    public KafkaConsumerRunnable(KafkaConsumerService<T> kafkaService,
                                  UnleashService unleashService,
                                  KafkaConfig.Topic topic,
                                  Optional<String> featureNavn) {
@@ -59,7 +59,7 @@ public class KafkaConsumerRunnable implements Runnable {
         try {
             consumer.subscribe(singletonList(topic));
             while (featureErPa() && !shutdown.get()) {
-                ConsumerRecords<String, String> records = consumer.poll(ofSeconds(1));
+                ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
             }
         } catch (NullPointerException npe) {
@@ -85,7 +85,7 @@ public class KafkaConsumerRunnable implements Runnable {
         shutdownLatch.await();
     }
 
-    private void process(ConsumerRecord<String, String> record) {
+    private void process(ConsumerRecord<String, T> record) {
         String correlationId = getCorrelationIdFromHeaders(record.headers());
         MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId);
 

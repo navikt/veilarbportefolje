@@ -5,6 +5,7 @@ import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedHandler;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
@@ -71,7 +72,8 @@ public class OppfolgingerfeedConfig {
                                                                           OppfolgingRepository oppfolgingRepository,
                                                                           VeilederService veilederService,
                                                                           Transactor transactor,
-                                                                          UnleashService unleashService) {
+                                                                          UnleashService unleashService,
+                                                                          CvService cvService) {
         return new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
@@ -79,6 +81,7 @@ public class OppfolgingerfeedConfig {
                 oppfolgingRepository,
                 veilederService,
                 transactor,
+                cvService,
                 unleashService
         );
     }

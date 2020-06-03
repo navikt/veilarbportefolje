@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 
@@ -33,6 +35,12 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
         registreringRepository.insertBrukerRegistrering(kafkaRegistreringMelding);
         elasticIndexer.indekserAsynkront(aktoerId);
 
+    }
+
+    public Optional<ZonedDateTime> hentRegistreringOpprettet(AktoerId aktoerId) {
+        ArbeidssokerRegistrertEvent event = registreringRepository.hentBrukerRegistrering(aktoerId);
+        ZonedDateTime registreringOpprettet = ZonedDateTime.parse(event.getRegistreringOpprettet());
+        return Optional.ofNullable(registreringOpprettet);
     }
 
     private boolean erNyereRegistering(ArbeidssokerRegistrertEvent gjeldendeBrukerRegistrering, ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
