@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.profilering;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -27,7 +27,7 @@ public class ProfileringRepository {
 
 
     public void upsertBrukerProfilering(ArbeidssokerProfilertEvent kafkaMelding) {
-        Timestamp timestamp = Timestamp.from(ZonedDateTime.parse(kafkaMelding.getProfileringGjennomfort()).toInstant());
+        Timestamp timestamp = DateUtils.zonedDateStringToTimestamp(kafkaMelding.getProfileringGjennomfort());
         SqlUtils.upsert(db, BRUKER_PROFILERING_TABELL)
                 .set("PROFILERING_RESULTAT", kafkaMelding.getProfilertTil().name())
                 .set("AKTOERID", kafkaMelding.getAktorid())

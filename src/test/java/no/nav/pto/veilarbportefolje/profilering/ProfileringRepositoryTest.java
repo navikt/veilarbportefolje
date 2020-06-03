@@ -30,7 +30,7 @@ public class ProfileringRepositoryTest {
     }
 
     @Test
-    public void skall_inserte_bruker_profilering() {
+    public void skal_inserte_bruker_profilering() {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
@@ -43,7 +43,7 @@ public class ProfileringRepositoryTest {
     }
 
     @Test
-    public void skall_oppdatere_profilering() {
+    public void skal_oppdatere_profilering() {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID1)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
