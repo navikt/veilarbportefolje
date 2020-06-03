@@ -53,7 +53,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
-import java.util.Optional;
 
 import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.common.oidc.Constants.OPEN_AM_ID_TOKEN_COOKIE_NAME;
@@ -156,8 +155,9 @@ public class ApplicationConfig implements ApiApplication {
         new KafkaConsumerRunnable<>(
                 kafkaAktivitetService,
                 unleashService,
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                Optional.of("portefolje.kafka.aktiviteter")
+                "portefolje.kafka.aktiviteter"
         );
 
         new KafkaConsumerRunnable<>(
@@ -187,8 +187,9 @@ public class ApplicationConfig implements ApiApplication {
         new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
+                KafkaProperties.kafkaMedAvroProperties(),
                 KafkaConfig.Topic.CV_ENDRET_TOPIC,
-                Optional.of("veilarbportefolje.kafka.cv.killswitch")
+                "veilarbportefolje.kafka.cv.killswitch"
         );
 
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");

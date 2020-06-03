@@ -1,23 +1,17 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
-import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.util.EnvironmentUtils;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.*;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.util.KafkaProperties.avroProperties;
 import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.Q;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 
@@ -48,20 +42,14 @@ public class KafkaConfig {
         return topics.stream().map(topic -> new KafkaHelsesjekk(topic)).collect(toList());
     }
 
-
-    // Disse to ska flyttas in i ApplicationConfig???
     @Bean
-    public Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer() {
-        Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer = new KafkaConsumer<>(avroProperties());
-        kafkaRegistreringConsumer.subscribe(Collections.singletonList(Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC.topic));
-        return kafkaRegistreringConsumer;
     public KafkaConsumerRunnable kafkaConsumerRegistrering(RegistreringService registreringService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable<ArbeidssokerRegistrertEvent>(registreringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC, "veilarbportfolje.registrering");
+        return new KafkaConsumerRunnable<>(registreringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC, "veilarbportfolje.registrering");
     }
 
     @Bean
     public KafkaConsumerRunnable kafkaConsumeProfilering(ProfileringService profileringService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable<ArbeidssokerProfilertEvent>(profileringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_PROFILERING_CONSUMER_TOPIC, "veilarbportfolje.profilering");
+        return new KafkaConsumerRunnable<>(profileringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_PROFILERING_CONSUMER_TOPIC, "veilarbportfolje.profilering");
     }
 
     private static String getCvTopicVersion() {

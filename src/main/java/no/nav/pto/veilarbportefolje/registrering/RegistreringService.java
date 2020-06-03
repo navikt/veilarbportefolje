@@ -7,6 +7,9 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 public class RegistreringService implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
     private RegistreringRepository registreringRepository;
     private ElasticIndexer elasticIndexer;
@@ -38,6 +41,12 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
 
     private boolean harRegistreringsDato (ArbeidssokerRegistrertEvent brukerRegistrering) {
         return brukerRegistrering != null && brukerRegistrering.getRegistreringOpprettet() != null;
+    }
+
+    public Optional<ZonedDateTime> hentRegistreringOpprettet(AktoerId aktoerId) {
+        ArbeidssokerRegistrertEvent event = registreringRepository.hentBrukerRegistrering(aktoerId);
+        ZonedDateTime registreringOpprettet = ZonedDateTime.parse(event.getRegistreringOpprettet());
+        return Optional.ofNullable(registreringOpprettet);
     }
 
 }
