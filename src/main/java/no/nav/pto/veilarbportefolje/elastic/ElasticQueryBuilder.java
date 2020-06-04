@@ -58,7 +58,8 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
         byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
-        byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
+
+        queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbProfil.contains("HAR_DELT_CV")));
 
         if (filtervalg.harYtelsefilter()) {
 
@@ -239,22 +240,11 @@ public class ElasticQueryBuilder {
             case IKKE_PERMITTERTE_ETTER_NIENDE_MARS:
                 queryBuilder = byggIkkePermittertFilter();
                 break;
-            case HAR_DELT_CV:
-                queryBuilder = byggCvFilter(true);
-                break;
-            case HAR_IKKE_DELT_CV:
-                queryBuilder = byggCvFilter(false);
-                break;
             default:
                 throw new IllegalStateException();
 
         }
         return queryBuilder;
-    }
-
-    private static QueryBuilder byggCvFilter(boolean harDeltCv) {
-        return boolQuery()
-                .must(matchQuery("har_delt_cv", harDeltCv));
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
