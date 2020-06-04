@@ -15,7 +15,7 @@ public class Filtervalg {
     public List<Brukerstatus> ferdigfilterListe;
     public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
-    public List<Kjonn> kjonn = new ArrayList<>();
+    public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
     public List<Hovedmal> hovedmal = new ArrayList<>();
@@ -35,7 +35,7 @@ public class Filtervalg {
         return harFerdigFilter() ||
                 harYtelsefilter() ||
                 !alder.isEmpty() ||
-                !kjonn.isEmpty() ||
+                harKjonnfilter() ||
                 !fodselsdagIMnd.isEmpty() ||
                 !innsatsgruppe.isEmpty() ||
                 !formidlingsgruppe.isEmpty() ||
@@ -62,6 +62,10 @@ public class Filtervalg {
 
     public boolean harYtelsefilter() {
         return ytelse != null;
+    }
+
+    public boolean harKjonnfilter() {
+        return kjonn != null;
     }
 
     public boolean harAktivitetFilter() {
