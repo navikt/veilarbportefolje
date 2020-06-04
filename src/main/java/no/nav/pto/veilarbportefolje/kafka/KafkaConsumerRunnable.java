@@ -69,6 +69,8 @@ public class KafkaConsumerRunnable<T> implements Runnable {
                         .map(topic -> topic.partition())
                         .map(partition -> new TopicPartition(topic, partition))
                         .collect(toList());
+
+                log.info("Spoler tilbake til begynnelsen for topic " + topic);
                 consumer.seekToBeginning(partitions);
             }
             while (featureErPa() && !shutdown.get()) {
