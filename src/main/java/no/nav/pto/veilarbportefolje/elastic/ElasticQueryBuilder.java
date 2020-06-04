@@ -59,7 +59,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
         byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
 
-        queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.contains("HAR_DELT_CV")));
+        queryBuilder.filter(matchQuery("har_delt_cv", "HAR_DELT_CV".equals(filtervalg.cvJobbprofil)));
 
         if (filtervalg.harYtelsefilter()) {
 
