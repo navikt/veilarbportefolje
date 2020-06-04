@@ -29,7 +29,7 @@ public class Filtervalg {
     public String navnEllerFnrQuery;
     public List<String> registreringstype = new ArrayList<>();
     public List<String> arbeidslisteKategori = new ArrayList<>();
-    public List<String> cvJobbprofil = new ArrayList<>();
+    public CVjobbprofil cvJobbprofil;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -53,7 +53,7 @@ public class Filtervalg {
     }
 
     public boolean harCvFilter() {
-        return cvJobbprofil != null && !cvJobbprofil.isEmpty();
+        return cvJobbprofil != null;
     }
 
     private boolean harFerdigFilter() {

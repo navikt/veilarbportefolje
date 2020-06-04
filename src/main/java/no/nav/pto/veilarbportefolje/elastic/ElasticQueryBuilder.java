@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
@@ -48,7 +49,6 @@ public class ElasticQueryBuilder {
         List<Integer> fodseldagIMndQuery = filtervalg.fodselsdagIMnd.stream().map(Integer::parseInt).collect(toList());
 
         byggManuellFilter(fodseldagIMndQuery, queryBuilder, "fodselsdag_i_mnd");
-        byggManuellFilter(filtervalg.kjonn, queryBuilder, "kjonn");
         byggManuellFilter(filtervalg.innsatsgruppe, queryBuilder, "kvalifiseringsgruppekode");
         byggManuellFilter(filtervalg.hovedmal, queryBuilder, "hovedmaalkode");
         byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, "formidlingsgruppekode");
@@ -59,15 +59,20 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
         byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
 
-        queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.contains("HAR_DELT_CV")));
-
         if (filtervalg.harYtelsefilter()) {
-
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.ytelse.underytelser.forEach(
                     ytelse -> queryBuilder.must(subQuery.should(matchQuery("ytelse", ytelse.name())))
             );
+        }
 
+        if (filtervalg.harKjonnfilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            queryBuilder.must(subQuery.should(matchQuery("kjonn", filtervalg.kjonn.name())));
+        }
+
+        if (filtervalg.harCvFilter()) {
+            queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
         }
 
         if (filtervalg.harAktivitetFilter()) {
@@ -230,7 +235,7 @@ public class ElasticQueryBuilder {
                 queryBuilder = byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
                 break;
             case UNDER_VURDERING:
-                if(erVedtakstottePilotPa) {
+                if (erVedtakstottePilotPa) {
                     queryBuilder = existsQuery("vedtak_status");
                     break;
                 }
@@ -249,7 +254,7 @@ public class ElasticQueryBuilder {
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     static QueryBuilder byggTrengerVurderingFilter(boolean erVedtakstottePilotPa) {
-        if(erVedtakstottePilotPa) {
+        if (erVedtakstottePilotPa) {
             return boolQuery()
                     .must(matchQuery("trenger_vurdering", true))
                     .mustNot(existsQuery("vedtak_status"));
@@ -260,7 +265,7 @@ public class ElasticQueryBuilder {
     }
 
     static QueryBuilder byggErSykmeldtMedArbeidsgiverFilter(boolean erVedtakstottePilotPa) {
-        if(erVedtakstottePilotPa) {
+        if (erVedtakstottePilotPa) {
             return boolQuery()
                     .must(matchQuery("er_sykmeldt_med_arbeidsgiver", true))
                     .mustNot(existsQuery("vedtak_status"));
@@ -410,7 +415,7 @@ public class ElasticQueryBuilder {
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
                                 mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name())
-                                ));
+                        ));
     }
 
     private static KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
@@ -418,7 +423,7 @@ public class ElasticQueryBuilder {
                 .must(filtrereVeilederOgEnhet)
                 .must(termQuery("trenger_vurdering", true));
 
-        if(vedtakstottePilotErPa) {
+        if (vedtakstottePilotErPa) {
             boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
         }
 
@@ -430,7 +435,7 @@ public class ElasticQueryBuilder {
                 .must(filtrereVeilederOgEnhet)
                 .must(termQuery("er_sykmeldt_med_arbeidsgiver", true));
 
-        if(vedtakstottePilotErPa) {
+        if (vedtakstottePilotErPa) {
             boolQueryBuilder.mustNot(existsQuery("vedtak_status"));
         }
 
