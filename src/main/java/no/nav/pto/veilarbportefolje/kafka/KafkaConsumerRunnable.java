@@ -9,10 +9,12 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -20,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
@@ -60,6 +63,14 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         try {
             log.info("Starter konsument for {}", topic);
             consumer.subscribe(singletonList(topic));
+
+            if (unleashService.isEnabled(featureNavn + "_rewind")) {
+                List<TopicPartition> partitions = consumer.partitionsFor(topic).stream()
+                        .map(topic -> topic.partition())
+                        .map(partition -> new TopicPartition(topic, partition))
+                        .collect(toList());
+                consumer.seekToBeginning(partitions);
+            }
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
