@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import io.micrometer.core.instrument.Counter;
-import no.nav.arbeid.cv.avro.Cv;
+import no.nav.arbeid.cv.avro.Melding;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
-public class CvService implements KafkaConsumerService<Cv> {
+public class CvService implements KafkaConsumerService<Melding> {
 
     private final RegistreringService registreringService;
     private final BrukerRepository brukerRepository;
@@ -34,10 +34,10 @@ public class CvService implements KafkaConsumerService<Cv> {
     }
 
     @Override
-    public void behandleKafkaMelding(Cv cv) {
-        AktoerId aktoerId = AktoerId.of(cv.getAktoerId());
+    public void behandleKafkaMelding(Melding melding) {
+        AktoerId aktoerId = AktoerId.of(melding.getAktoerId());
         Optional<ZonedDateTime> registreringOpprettet = registreringService.hentRegistreringOpprettet(aktoerId);
-        if (!harDeltCvMedNav(cv.getSistEndret(), registreringOpprettet)) {
+        if (!harDeltCvMedNav(melding.getSistEndret(), registreringOpprettet)) {
             antallBrukereSomIkkeHarDeltCv.increment();
             return;
         }
