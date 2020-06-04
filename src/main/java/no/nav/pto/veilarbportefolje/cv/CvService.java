@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.cv;
 
-import io.micrometer.core.instrument.Counter;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -15,22 +14,18 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
+import static no.nav.metrics.MetricsFactory.createEvent;
 
 public class CvService implements KafkaConsumerService<Melding> {
 
     private final RegistreringService registreringService;
     private final BrukerRepository brukerRepository;
     private final ElasticIndexer elasticIndexer;
-    private final Counter antallBrukereSomIkkeHarDeltCv;
-    private final Counter antallBrukereSomHarDeltCv;
 
     public CvService(RegistreringService registreringService, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
         this.registreringService = registreringService;
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
-        antallBrukereSomIkkeHarDeltCv = Counter.builder("portefolje_har_ikke_delt_cv").register(getMeterRegistry());
-        antallBrukereSomHarDeltCv = Counter.builder("portefolje_har_delt_cv").register(getMeterRegistry());
     }
 
     @Override
@@ -38,11 +33,11 @@ public class CvService implements KafkaConsumerService<Melding> {
         AktoerId aktoerId = AktoerId.of(melding.getAktoerId());
         Optional<ZonedDateTime> registreringOpprettet = registreringService.hentRegistreringOpprettet(aktoerId);
         if (!harDeltCvMedNav(melding.getSistEndret(), registreringOpprettet)) {
-            antallBrukereSomIkkeHarDeltCv.increment();
+            createEvent("portefolje_har_ikke_delt_cv").report();
             return;
         }
 
-        antallBrukereSomHarDeltCv.increment();
+        createEvent("portefolje_har_delt_cv").report();
         brukerRepository.setHarDeltCvMedNav(aktoerId, true).orElseThrowException();
         elasticIndexer.indekser(aktoerId).orElseThrowException();
     }
