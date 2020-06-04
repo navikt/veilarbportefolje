@@ -2,18 +2,17 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 public class RegistreringService implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
-    private RegistreringRepository registreringRepository;
-    private ElasticIndexer elasticIndexer;
-    private AktoerService aktoerService;
+    private final RegistreringRepository registreringRepository;
+    private final ElasticIndexer elasticIndexer;
+    private final AktoerService aktoerService;
 
     public RegistreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
         this.registreringRepository = registreringRepository;
@@ -29,8 +28,9 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     }
 
     public Optional<ZonedDateTime> hentRegistreringOpprettet(AktoerId aktoerId) {
-        ArbeidssokerRegistrertEvent event = registreringRepository.hentBrukerRegistrering(aktoerId);
-        ZonedDateTime registreringOpprettet = ZonedDateTime.parse(event.getRegistreringOpprettet());
-        return Optional.ofNullable(registreringOpprettet);
+        return registreringRepository
+                .hentBrukerRegistrering(aktoerId)
+                .map(ArbeidssokerRegistrertEvent::getRegistreringOpprettet)
+                .map(ZonedDateTime::parse);
     }
 }

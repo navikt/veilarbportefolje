@@ -15,6 +15,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 public class RegistreringRepository {
 
     private JdbcTemplate db;
@@ -25,7 +27,7 @@ public class RegistreringRepository {
     }
 
     public void upsertBrukerRegistrering(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        Timestamp timestamp = Optional.ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
+        Timestamp timestamp = ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
                 .map(DateUtils::zonedDateStringToTimestamp)
                 .orElse(null);
 
@@ -39,11 +41,13 @@ public class RegistreringRepository {
     }
 
 
-    public ArbeidssokerRegistrertEvent hentBrukerRegistrering(AktoerId aktoerId) {
-        return SqlUtils.select(db, BRUKER_REGISTRERING_TABELL, RegistreringRepository::mapTilArbeidssokerRegistrertEvent)
-                .column("*")
-                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                .execute();
+    public Optional<ArbeidssokerRegistrertEvent> hentBrukerRegistrering(AktoerId aktoerId) {
+        return ofNullable(
+                SqlUtils.select(db, BRUKER_REGISTRERING_TABELL, RegistreringRepository::mapTilArbeidssokerRegistrertEvent)
+                        .column("*")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
+        );
     }
 
     //TODO LYTTE PÅ AVSLUTTOPPFOLGINGFEEDEN OG SLETT BRUKEREN PGA DATAMINIMERING OSV MORRO
@@ -53,8 +57,8 @@ public class RegistreringRepository {
                 .execute();
     }
 
-    private static ArbeidssokerRegistrertEvent mapTilArbeidssokerRegistrertEvent (ResultSet rs) throws SQLException {
-        String registreringOpprettet = Optional.ofNullable(rs.getTimestamp("REGISTRERING_OPPRETTET"))
+    private static ArbeidssokerRegistrertEvent mapTilArbeidssokerRegistrertEvent(ResultSet rs) throws SQLException {
+        String registreringOpprettet = ofNullable(rs.getTimestamp("REGISTRERING_OPPRETTET"))
                 .map(registreringDato -> ZonedDateTime.of(registreringDato.toLocalDateTime(), ZoneId.systemDefault()))
                 .map(zonedDateRegistreringDato -> zonedDateRegistreringDato.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
                 .orElse(null);
