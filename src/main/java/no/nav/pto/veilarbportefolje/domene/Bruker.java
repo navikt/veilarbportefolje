@@ -74,7 +74,7 @@ public class Bruker {
     boolean trengerRevurdering;
     boolean erPermittertEtterNiendeMars;
 
-    public static Bruker of(OppfolgingsBruker bruker) {
+    public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
@@ -83,15 +83,15 @@ public class Bruker {
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
         String brukersSitasjon = bruker.getBrukers_situasjon();
-
+        boolean trengerVurdering = bruker.isTrenger_vurdering();
 
         return new Bruker()
                 .setFnr(bruker.getFnr())
                 .setNyForEnhet(bruker.isNy_for_enhet())
                 .setNyForVeileder(bruker.isNy_for_veileder())
-                .setTrengerVurdering(bruker.isTrenger_vurdering())
+                .setTrengerVurdering(trengerVurdering)
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
-                .setVurderingsBehov(vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat))
+                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat, erVedtakstottePilotPa) : null)
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
                 .setVeilederId(bruker.getVeileder_id())
@@ -127,7 +127,7 @@ public class Bruker {
                 .setVedtakStatus(bruker.getVedtak_status())
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
-                .setTrengerRevurdering(bruker.isTrenger_revurdering())
+                .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
                 .setErPermittertEtterNiendeMars(erPermittertEtterNiondeMars(oppfolgingStartDato, brukersSitasjon))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
@@ -168,5 +168,12 @@ public class Bruker {
 
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
+    }
+
+    private static boolean trengerRevurdering(OppfolgingsBruker oppfolgingsBruker, boolean erVedtakstottePilotPa) {
+        if(erVedtakstottePilotPa) {
+            return oppfolgingsBruker.isTrenger_revurdering();
+        }
+        return false;
     }
 }

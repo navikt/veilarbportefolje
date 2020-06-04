@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
-import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +16,8 @@ public class OppfolgingUtils {
         return veileder == null || veileder.isEmpty();
     }
 
+
+    //TODO BRUK PROFILERINGSRESULTAT
     public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return false;
@@ -35,21 +36,27 @@ public class OppfolgingUtils {
         return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
     }
 
-    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat) {
+    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat, boolean erVedtakstottePilotPa) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return null;
         }
 
         //kvalifiseringsgruppekodeTilVurdering brukes fordi inte alla brukare har aktorId og dærmed inte har profileringsresultat
-        return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat))
+        return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat, erVedtakstottePilotPa))
                 .orElse(kvalifiseringsgruppekodeTilVurdering(kvalifiseringsgruppekode));
     }
 
 
-    private static VurderingsBehov profileringsResultatTilVurdering (String profileringsResultat) {
+    private static VurderingsBehov profileringsResultatTilVurdering (String profileringsResultat, boolean erVedtakstottePilotPa) {
         return Optional.ofNullable(profileringsResultat)
                 .map(ProfilertTil::valueOf)
-                .map(profilertTil -> profilertTil.equals(ProfilertTil.OPPGITT_HINDRINGER) ? VurderingsBehov.ARBEIDSEVNE_VURDERING : VurderingsBehov.IKKE_VURDERT)
+                .map(profilertTil -> {
+                    if(erVedtakstottePilotPa) {
+                        return VurderingsBehov.valueOf(profilertTil.name());
+                    } else {
+                        return profilertTil.equals(ProfilertTil.OPPGITT_HINDRINGER) ? VurderingsBehov.ARBEIDSEVNE_VURDERING : VurderingsBehov.IKKE_VURDERT;
+                    }
+                })
                 .orElse(null);
     }
 
