@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -14,6 +15,7 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -62,17 +64,8 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     public void run() {
         try {
             log.info("Starter konsument for {}", topic);
-            consumer.subscribe(singletonList(topic));
+            consumer.subscribe(singletonList(topic), getRebalanceListener());
 
-            if (unleashService.isEnabled(featureNavn + "_rewind")) {
-                List<TopicPartition> partitions = consumer.partitionsFor(topic).stream()
-                        .map(topic -> topic.partition())
-                        .map(partition -> new TopicPartition(topic, partition))
-                        .collect(toList());
-
-                log.info("Spoler tilbake til begynnelsen for topic " + topic);
-                consumer.seekToBeginning(partitions);
-            }
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
@@ -130,6 +123,24 @@ public class KafkaConsumerRunnable<T> implements Runnable {
 
     private boolean featureErPa() {
         return unleashService.isEnabled(this.featureNavn);
+    }
+
+    private ConsumerRebalanceListener getRebalanceListener() {
+        return new ConsumerRebalanceListener() {
+
+            @Override
+            public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+
+            }
+
+            @Override
+            public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+                if (unleashService.isEnabled(featureNavn + "_rewind")) {
+                    log.info("Spoler tilbake til begynnelsen for topic " + topic);
+                    consumer.seekToBeginning(partitions);
+                }
+            }
+        };
     }
 
     static String getCorrelationIdFromHeaders(Headers headers) {
