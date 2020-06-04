@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
@@ -36,7 +37,10 @@ public class RegistreringRepositoryTest {
 
         registreringRepository.upsertBrukerRegistrering(event);
 
-        assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event);
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+
+        assertThat(registrering.isPresent());
+        assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event);
     }
 
     @Test
@@ -57,7 +61,10 @@ public class RegistreringRepositoryTest {
 
         registreringRepository.upsertBrukerRegistrering(event2);
 
-        assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event2);
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+
+        assertThat(registrering.isPresent());
+        assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 
 

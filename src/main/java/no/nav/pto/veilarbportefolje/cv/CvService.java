@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 import static no.nav.metrics.MetricsFactory.createEvent;
 
+@Slf4j
 public class CvService implements KafkaConsumerService<Melding> {
 
     private final RegistreringService registreringService;
@@ -32,6 +34,7 @@ public class CvService implements KafkaConsumerService<Melding> {
     public void behandleKafkaMelding(Melding melding) {
         AktoerId aktoerId = AktoerId.of(melding.getAktoerId());
         Optional<ZonedDateTime> registreringOpprettet = registreringService.hentRegistreringOpprettet(aktoerId);
+
         if (!harDeltCvMedNav(melding.getSistEndret(), registreringOpprettet)) {
             createEvent("portefolje_har_ikke_delt_cv").report();
             return;
