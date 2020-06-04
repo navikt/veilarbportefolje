@@ -15,7 +15,7 @@ public class Filtervalg {
     public List<Brukerstatus> ferdigfilterListe;
     public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
-    public List<Kjonn> kjonn;
+    public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
     public List<Hovedmal> hovedmal = new ArrayList<>();
