@@ -45,11 +45,4 @@ public class KafkaProperties {
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, KAFKA_SCHEMAS_URL);
         return props;
     }
-
-    public static Properties pamAvroProperties() {
-        Properties props = KafkaProperties.kafkaMedAvroProperties();
-        props.put(KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
-        return props;
-    }
-
 }
