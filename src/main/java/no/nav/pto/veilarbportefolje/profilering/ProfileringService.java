@@ -1,32 +1,59 @@
 package no.nav.pto.veilarbportefolje.profilering;
 
+import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
-import no.nav.pto.veilarbportefolje.util.Result;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
+import static org.elasticsearch.client.RequestOptions.DEFAULT;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
+
+@Slf4j
 public class ProfileringService implements KafkaConsumerService<ArbeidssokerProfilertEvent> {
-    private ProfileringRepository profileringRepository;
-    private ElasticIndexer elasticIndexer;
-    private AktoerService aktoerService;
+    private final ProfileringRepository profileringRepository;
+    private final RestHighLevelClient client;
+    private final AktoerService aktoerService;
 
-    public ProfileringService(ProfileringRepository profileringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+    public ProfileringService(ProfileringRepository profileringRepository, RestHighLevelClient client, AktoerService aktoerService) {
         this.profileringRepository = profileringRepository;
-        this.elasticIndexer = elasticIndexer;
+        this.client = client;
         this.aktoerService = aktoerService;
     }
 
     public void behandleKafkaMelding (ArbeidssokerProfilertEvent kafkaMelding) {
         profileringRepository.upsertBrukerProfilering(kafkaMelding);
-        AktoerId aktoerId = AktoerId.of(kafkaMelding.getAktorid());
-        Result<OppfolgingsBruker> oppfolgingsBrukerResult = elasticIndexer.indekser(aktoerId);
+        aktoerService.hentFnrFraAktorId(AktoerId.of(kafkaMelding.getAktorid()))
+                .onSuccess(fnr -> oppdaterElasticMedProfileringData(fnr, kafkaMelding));
+    }
 
-        if(oppfolgingsBrukerResult.isErr()) {
-            aktoerService.hentFnrFraAktorId(aktoerId)
-                    .onSuccess(elasticIndexer::indekser);
-        }
+    private XContentBuilder mapTilRegistreringJson(ArbeidssokerProfilertEvent kafkaMelding) {
+        return Try.of(() ->
+                jsonBuilder()
+                        .startObject()
+                        .field("profilering_resultat", kafkaMelding.getProfilertTil().name())
+                        .field("aktoer_id", kafkaMelding.getAktorid())
+                        .endObject())
+                .get();
+    }
+
+    private void oppdaterElasticMedProfileringData(Fnr fnr, ArbeidssokerProfilertEvent arbeidssokerProfilertEvent) {
+        XContentBuilder registreringJson = mapTilRegistreringJson(arbeidssokerProfilertEvent);
+        UpdateRequest updateRequest = new UpdateRequest()
+                .index(getAlias())
+                .type("_doc")
+                .id(fnr.getFnr())
+                .retryOnConflict(1)
+                .doc(registreringJson);
+
+        Try.of(()-> client.update(updateRequest, DEFAULT))
+                .onFailure(err -> log.error("Feil vid skrivning til indeks vid profilering melding", err));
     }
 }

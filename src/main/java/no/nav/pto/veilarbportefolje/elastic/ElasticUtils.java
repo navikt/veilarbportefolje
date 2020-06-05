@@ -54,7 +54,7 @@ public class ElasticUtils {
         return "Basic "  + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 
-    static String getAlias() {
+    public static String getAlias() {
         return String.format("brukerindeks_%s", EnvironmentUtils.requireNamespace());
     }
 

@@ -26,6 +26,7 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -68,8 +69,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
-        return new RegistreringService(registreringRepository, elasticIndexer, aktoerService);
+    public RegistreringService registreringService(RegistreringRepository registreringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService) {
+        return new RegistreringService(registreringRepository, restHighLevelClient, aktoerService);
     }
 
     @Bean
@@ -93,7 +94,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ProfileringService profileringService(ProfileringRepository profileringRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
-        return new ProfileringService(profileringRepository, elasticIndexer, aktoerService);
+    public ProfileringService profileringService(ProfileringRepository profileringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService) {
+        return new ProfileringService(profileringRepository, restHighLevelClient, aktoerService);
     }
 }
