@@ -481,6 +481,7 @@ public class ElasticIndexer {
                         .index(getAlias())
                         .type("_doc")
                         .id(bruker.getFnr())
+                        .retryOnConflict(5)
                         .doc(toJson(bruker)))
                 .get();
 
