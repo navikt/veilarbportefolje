@@ -44,7 +44,11 @@ public class Result<V> {
     }
 
     public boolean isOk() {
-        return ok != null;
+        return err == null;
+    }
+
+    public boolean isEmpty() {
+        return !Optional.ofNullable(ok).isPresent();
     }
 
     public <U> U map(Function<Throwable, U> errorMapper, Function<V, U> okMapper) {
@@ -52,11 +56,11 @@ public class Result<V> {
     }
 
     public <U> Result<U> mapOk(Function<V, U> function) {
-        return ok == null ? err(err) : Result.of(() -> function.apply(ok));
+        return err != null ? err(err) : Result.of(() -> function.apply(ok));
     }
 
     public Result<V> mapError(Function<Throwable, Result<V>> function) {
-        return ok == null ? function.apply(err) : ok(ok) ;
+        return err != null ? function.apply(err) : ok(ok) ;
     }
 
     public V orElse(V value) {
@@ -67,7 +71,7 @@ public class Result<V> {
         if (err == null) {
             return ok;
         }
-        throw new RuntimeException(err);
+        throw new IllegalStateException(err);
     }
 
     @Override

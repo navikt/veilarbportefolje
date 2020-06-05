@@ -88,8 +88,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public CvService cvService(RegistreringService registreringService, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
-        return new CvService(registreringService, brukerRepository, elasticIndexer);
+    public CvService cvService(OppfolgingRepository oppfolgingRepository, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
+        return new CvService(brukerRepository,oppfolgingRepository, elasticIndexer);
     }
 
     @Bean
