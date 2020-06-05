@@ -4,6 +4,7 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,6 +33,28 @@ public class OppfolgingRepositoryTest {
         DataSource ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
         oppfolgingRepository = new OppfolgingRepository(db);
+    }
+
+    @Test
+    public void skal_hente_oppfolging_startet() {
+        db.execute("TRUNCATE TABLE OPPFOLGING_DATA");
+        BrukerOppdatertInformasjon info = testBrukerInfo(Timestamp.from(Instant.now()));
+        oppfolgingRepository.oppdaterOppfolgingData(info);
+
+        Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(AKTOR_ID);
+        assertThat(result.isOk(), is(true));
+        assertThat(result.isEmpty(), is(false));
+        assertThat(result.isErr(), is(false));
+    }
+
+    @Test
+    public void skal_hente_oppfolging_startet_som_er_tom() {
+        db.execute("TRUNCATE TABLE OPPFOLGING_DATA");
+        Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(AKTOR_ID);
+
+        assertThat(result.isOk(), is(true));
+        assertThat(result.isEmpty(), is(true));
+        assertThat(result.isErr(), is(false));
     }
 
     @Test
@@ -95,7 +118,9 @@ public class OppfolgingRepositoryTest {
                 .setOppfolging(true)
                 .setNyForVeileder(true)
                 .setVeileder(VEILEDER_ID)
+                .setStartDato(Timestamp.from(Instant.now()))
                 .setEndretTimestamp(tildeltTidspunkt)
                 .setManuell(true);
     }
+
 }

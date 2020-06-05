@@ -6,36 +6,45 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.util.Result;
-import org.joda.time.DateTime;
 
+import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Optional;
 
 import static no.nav.metrics.MetricsFactory.createEvent;
 
 @Slf4j
 public class CvService implements KafkaConsumerService<Melding> {
 
-    private final RegistreringService registreringService;
     private final BrukerRepository brukerRepository;
+    private final OppfolgingRepository oppfolgingRepository;
     private final ElasticIndexer elasticIndexer;
 
-    public CvService(RegistreringService registreringService, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
-        this.registreringService = registreringService;
+    public CvService(
+            BrukerRepository brukerRepository,
+            OppfolgingRepository oppfolgingRepository,
+            ElasticIndexer elasticIndexer
+    ) {
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
+        this.oppfolgingRepository = oppfolgingRepository;
     }
 
     @Override
     public void behandleKafkaMelding(Melding melding) {
         AktoerId aktoerId = AktoerId.of(melding.getAktoerId());
-        Optional<ZonedDateTime> registreringOpprettet = registreringService.hentRegistreringOpprettet(aktoerId);
 
-        if (!harDeltCvMedNav(melding.getSistEndret(), registreringOpprettet)) {
+        Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(aktoerId);
+        if (result.isErr() || result.isEmpty()) {
+            createEvent("portefolje_har_ikke_delt_cv").report();
+            return;
+        }
+
+        Instant oppfolgingStartet = result.orElseThrowException().toInstant();
+        Instant cvSistEndret = melding.getSistEndret().toDate().toInstant();
+
+        if (!harDeltCvMedNav(oppfolgingStartet, cvSistEndret)) {
             createEvent("portefolje_har_ikke_delt_cv").report();
             return;
         }
@@ -45,13 +54,8 @@ public class CvService implements KafkaConsumerService<Melding> {
         elasticIndexer.indekser(aktoerId).orElseThrowException();
     }
 
-    static boolean harDeltCvMedNav(DateTime sistEndret, Optional<ZonedDateTime> registreringOpprettet) {
-        long unixTime = sistEndret.toInstant().getMillis();
-        ZonedDateTime cvSistEndret = Instant.ofEpochMilli(unixTime).atZone(ZoneId.of("Europe/Oslo"));
-
-        return registreringOpprettet
-                .map(registeringsDato -> registeringsDato.isBefore(cvSistEndret))
-                .orElse(false);
+    static boolean harDeltCvMedNav(Instant oppfolgingStartet, Instant cvSistEndret) {
+        return oppfolgingStartet.isBefore(cvSistEndret);
     }
 
     public Result<Integer> setHarDeltCvTilNei(AktoerId aktoerId) {
