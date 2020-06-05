@@ -49,6 +49,8 @@ public class CvService implements KafkaConsumerService<Melding> {
         Instant oppfolgingStartet = result.orElseThrowException().toInstant();
         Instant cvSistEndret = melding.getSistEndret().toDate().toInstant();
 
+        log.info("Bruker {} startet oppfølging {} og endret sist cv {}", aktoerId.aktoerId, oppfolgingStartet, cvSistEndret);
+
         if (!harDeltCvMedNav(oppfolgingStartet, cvSistEndret)) {
             createEvent("portefolje_har_ikke_delt_cv").report();
             return;
