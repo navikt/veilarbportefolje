@@ -449,16 +449,6 @@ public class ElasticIndexer {
         log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
     }
 
-    public Try<UpdateResponse> oppdaterBruker(Tuple2<Fnr, XContentBuilder> tupleAvFnrOgJson) {
-        UpdateRequest updateRequest = new UpdateRequest()
-                .index(getAlias())
-                .type("_doc")
-                .id(tupleAvFnrOgJson._1.toString())
-                .doc(tupleAvFnrOgJson._2);
-
-        return Try.of(() -> client.update(updateRequest, DEFAULT));
-    }
-
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
         skrivTilIndeks(indeksNavn, Collections.singletonList(oppfolgingsBruker));
     }
@@ -483,6 +473,19 @@ public class ElasticIndexer {
         if (brukere.size() > BATCH_SIZE_LIMIT) {
             throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
         }
+    }
+
+    public void oppdaterBrukerDoc(OppfolgingsBruker oppfolgingsBruker) {
+        UpdateRequest updateRequest =  Optional.of(oppfolgingsBruker)
+                .map(bruker -> new UpdateRequest()
+                        .index(getAlias())
+                        .type("_doc")
+                        .id(bruker.getFnr())
+                        .doc(toJson(bruker)))
+                .get();
+
+        Try.of(()-> client.update(updateRequest, DEFAULT))
+                .onFailure(err -> log.error("Kunne ikke oppdaterBruker ", err));
     }
 
     private void leggTilTiltak(List<OppfolgingsBruker> brukere) {

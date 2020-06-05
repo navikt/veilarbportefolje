@@ -2,11 +2,11 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
-import no.nav.pto.veilarbportefolje.util.Result;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -23,14 +23,17 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     }
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
-        AktoerId aktoerId = AktoerId.of(kafkaRegistreringMelding.getAktorid());
         registreringRepository.upsertBrukerRegistrering(kafkaRegistreringMelding);
-        Result<OppfolgingsBruker> oppfolgingsBrukerResult = elasticIndexer.indekser(aktoerId);
+        aktoerService.hentFnrFraAktorId(AktoerId.of(kafkaRegistreringMelding.getAktorid()))
+                .onSuccess(tryFnr -> upsertBrukerIndeks(tryFnr, kafkaRegistreringMelding));
+    }
 
-        if(oppfolgingsBrukerResult.isErr()) {
-            aktoerService.hentFnrFraAktorId(aktoerId)
-                    .onSuccess(elasticIndexer::indekser);
-        }
+    private void upsertBrukerIndeks(Fnr fnr, ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
+        OppfolgingsBruker oppfolgingsBruker = new OppfolgingsBruker()
+                .setBrukers_situasjon(kafkaRegistreringMelding.getBrukersSituasjon())
+                .setFnr(fnr.getFnr());
+
+        elasticIndexer.oppdaterBrukerDoc(oppfolgingsBruker);
     }
 
     public Optional<ZonedDateTime> hentRegistreringOpprettet(AktoerId aktoerId) {

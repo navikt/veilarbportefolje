@@ -2,11 +2,15 @@ package no.nav.pto.veilarbportefolje.profilering;
 
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.Result;
+
+import java.io.IOException;
+import java.util.Optional;
 
 public class ProfileringService implements KafkaConsumerService<ArbeidssokerProfilertEvent> {
     private ProfileringRepository profileringRepository;
@@ -21,12 +25,15 @@ public class ProfileringService implements KafkaConsumerService<ArbeidssokerProf
 
     public void behandleKafkaMelding (ArbeidssokerProfilertEvent kafkaMelding) {
         profileringRepository.upsertBrukerProfilering(kafkaMelding);
-        AktoerId aktoerId = AktoerId.of(kafkaMelding.getAktorid());
-        Result<OppfolgingsBruker> oppfolgingsBrukerResult = elasticIndexer.indekser(aktoerId);
+        aktoerService.hentFnrFraAktorId(AktoerId.of(kafkaMelding.getAktorid()))
+                    .onSuccess(tryFnr -> upsertBrukerIndeks(tryFnr, kafkaMelding));
+    }
 
-        if(oppfolgingsBrukerResult.isErr()) {
-            aktoerService.hentFnrFraAktorId(aktoerId)
-                    .onSuccess(elasticIndexer::indekser);
-        }
+    private void upsertBrukerIndeks(Fnr fnr, ArbeidssokerProfilertEvent kafkaMelding) {
+        OppfolgingsBruker oppfolgingsBruker = new OppfolgingsBruker()
+                .setProfilering_resultat(kafkaMelding.getProfilertTil().name())
+                .setFnr(fnr.getFnr());
+
+        elasticIndexer.oppdaterBrukerDoc(oppfolgingsBruker);
     }
 }
