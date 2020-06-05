@@ -31,11 +31,8 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -473,19 +470,6 @@ public class ElasticIndexer {
         if (brukere.size() > BATCH_SIZE_LIMIT) {
             throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i oracle db", BATCH_SIZE_LIMIT));
         }
-    }
-
-    public void oppdaterBrukerDoc(OppfolgingsBruker oppfolgingsBruker) {
-        UpdateRequest updateRequest =  Optional.of(oppfolgingsBruker)
-                .map(bruker -> new UpdateRequest()
-                        .index(getAlias())
-                        .type("_doc")
-                        .id(bruker.getFnr())
-                        .doc(toJson(bruker)))
-                .get();
-
-        Try.of(()-> client.update(updateRequest, DEFAULT))
-                .onFailure(err -> log.error("Kunne ikke oppdaterBruker ", err));
     }
 
     private void leggTilTiltak(List<OppfolgingsBruker> brukere) {
