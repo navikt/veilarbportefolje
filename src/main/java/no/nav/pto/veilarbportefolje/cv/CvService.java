@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
+import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -33,6 +34,10 @@ public class CvService implements KafkaConsumerService<Melding> {
 
     @Override
     public void behandleKafkaMelding(Melding melding) {
+        if (melding.getMeldingstype() == Meldingstype.SLETT) {
+            return;
+        }
+
         AktoerId aktoerId = AktoerId.of(melding.getAktoerId());
 
         Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(aktoerId);
