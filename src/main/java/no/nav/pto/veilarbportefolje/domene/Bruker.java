@@ -74,7 +74,7 @@ public class Bruker {
     boolean trengerRevurdering;
     boolean erPermittertEtterNiendeMars;
 
-    public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa) {
+    public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa, boolean profileringsJobbFraRegistreringErFerdigt) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
@@ -91,7 +91,7 @@ public class Bruker {
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(trengerVurdering)
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
-                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat, erVedtakstottePilotPa) : null)
+                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat, erVedtakstottePilotPa, profileringsJobbFraRegistreringErFerdigt) : null)
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
                 .setVeilederId(bruker.getVeileder_id())
