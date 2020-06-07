@@ -42,7 +42,7 @@ public class CvService implements KafkaConsumerService<Melding> {
 
         Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(aktoerId);
         if (result.isErr() || result.isEmpty()) {
-            createEvent("portefolje_har_ikke_delt_cv").report();
+            log.info("Kunne ikke hente startdato for oppfølging for bruker {}", aktoerId);
             return;
         }
 
@@ -52,10 +52,12 @@ public class CvService implements KafkaConsumerService<Melding> {
         log.info("Bruker {} startet oppfølging {} og endret sist cv {}", aktoerId.aktoerId, oppfolgingStartet, cvSistEndret);
 
         if (!harDeltCvMedNav(oppfolgingStartet, cvSistEndret)) {
+            log.info("Bruker {} har ikke delt cv med nav", aktoerId);
             createEvent("portefolje_har_ikke_delt_cv").report();
             return;
         }
 
+        log.info("Bruker {} har delt cv med nav", aktoerId.aktoerId);
         createEvent("portefolje_har_delt_cv").report();
         brukerRepository.setHarDeltCvMedNav(aktoerId, true).orElseThrowException();
         elasticIndexer.indekser(aktoerId).orElseThrowException();
