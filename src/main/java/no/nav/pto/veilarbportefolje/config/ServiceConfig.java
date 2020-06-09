@@ -69,8 +69,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService) {
-        return new RegistreringService(registreringRepository, restHighLevelClient, aktoerService);
+    public RegistreringService registreringService(RegistreringRepository registreringRepository) {
+        return new RegistreringService(registreringRepository);
     }
 
     @Bean
@@ -94,7 +94,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ProfileringService profileringService(ProfileringRepository profileringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService, UnleashService unleashService) {
-        return new ProfileringService(profileringRepository, restHighLevelClient, aktoerService, unleashService);
+    public ProfileringService profileringService(ProfileringRepository profileringRepository) {
+        return new ProfileringService(profileringRepository);
     }
 }
