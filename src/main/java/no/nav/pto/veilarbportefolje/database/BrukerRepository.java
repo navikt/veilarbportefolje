@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
@@ -83,8 +84,8 @@ public class BrukerRepository {
         log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
 
         String sql = "SELECT * FROM"
-                + " VW_PORTEFOLJE_INFO"
-                + " WHERE FODSELSNR IN (:fnr)";
+                     + " VW_PORTEFOLJE_INFO"
+                     + " WHERE FODSELSNR IN (:fnr)";
 
         List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
                 sql,
@@ -99,18 +100,18 @@ public class BrukerRepository {
 
     public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
         String sql = "SELECT FODSELSNR "
-                + "FROM (SELECT "
-                + "BRUKER.FODSELSNR, "
-                + "rownum rn "
-                + "FROM ( "
-                + "SELECT * "
-                + "FROM OPPFOLGINGSBRUKER "
-                + "ORDER BY FODSELSNR "
-                + ") "
-                + "BRUKER "
-                + "WHERE rownum <= :to "
-                + ")"
-                + "WHERE rn > :from ";
+                     + "FROM (SELECT "
+                     + "BRUKER.FODSELSNR, "
+                     + "rownum rn "
+                     + "FROM ( "
+                     + "SELECT * "
+                     + "FROM OPPFOLGINGSBRUKER "
+                     + "ORDER BY FODSELSNR "
+                     + ") "
+                     + "BRUKER "
+                     + "WHERE rownum <= :to "
+                     + ")"
+                     + "WHERE rn > :from ";
 
         Map<String, Integer> parameters = mapOf(
                 Pair.of("from", fromExclusive),
@@ -163,9 +164,9 @@ public class BrukerRepository {
 
     private String countOppfolgingsBrukereSql() {
         return "SELECT COUNT(*) FROM VW_PORTEFOLJE_INFO " +
-                "WHERE FORMIDLINGSGRUPPEKODE = 'ARBS' " +
-                "OR OPPFOLGING = 'J' " +
-                "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
+               "WHERE FORMIDLINGSGRUPPEKODE = 'ARBS' " +
+               "OR OPPFOLGING = 'J' " +
+               "OR (FORMIDLINGSGRUPPEKODE = 'IARBS' AND KVALIFISERINGSGRUPPEKODE IN ('BATT', 'BFORM', 'VARIG', 'IKVAL', 'VURDU', 'OPPFI'))";
     }
 
     public List<OppfolgingsBruker> hentOppdaterteBrukere() {
@@ -453,12 +454,12 @@ public class BrukerRepository {
     private String getPersonIdsFromFnrsSQL() {
         return
                 "SELECT " +
-                        "person_id, " +
-                        "fodselsnr " +
-                        "FROM " +
-                        "OPPFOLGINGSBRUKER " +
-                        "WHERE " +
-                        "fodselsnr in (:fnrs)";
+                "person_id, " +
+                "fodselsnr " +
+                "FROM " +
+                "OPPFOLGINGSBRUKER " +
+                "WHERE " +
+                "fodselsnr in (:fnrs)";
     }
 
     private String retrieveBrukerdataSQL() {
@@ -499,5 +500,14 @@ public class BrukerRepository {
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
+    }
+
+    public Result<Integer> setHarDeltCvMedNav(AktoerId aktoerId, boolean harDelt) {
+        Supplier<Integer> query = () -> SqlUtils.update(db, "BRUKER_DATA")
+                .set("HAR_DELT_CV", DbUtils.boolToJaNei(harDelt))
+                .whereEquals("AKTOERID", aktoerId.toString())
+                .execute();
+
+        return Result.of(query);
     }
 }

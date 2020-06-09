@@ -1,9 +1,10 @@
 package no.nav.pto.veilarbportefolje.feed.oppfolging;
 
+import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
-import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 
@@ -15,6 +16,8 @@ public class OppfolgingUtils {
         return veileder == null || veileder.isEmpty();
     }
 
+
+    //TODO BRUK PROFILERINGSRESULTAT
     public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return false;
@@ -33,10 +36,32 @@ public class OppfolgingUtils {
         return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
     }
 
-    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
+    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat, boolean erVedtakstottePilotPa, boolean profileringsJobbFraRegistreringErFerdigt) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return null;
-        } else if ("IVURD".equals(kvalifiseringsgruppekode)) {
+        }
+
+        //kvalifiseringsgruppekodeTilVurdering brukes fordi inte alla brukare har aktorId og dærmed inte har profileringsresultat
+        return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat, erVedtakstottePilotPa, profileringsJobbFraRegistreringErFerdigt))
+                .orElse(kvalifiseringsgruppekodeTilVurdering(kvalifiseringsgruppekode));
+    }
+
+
+    private static VurderingsBehov profileringsResultatTilVurdering (String profileringsResultat, boolean erVedtakstottePilotPa, boolean profileringsJobbFraRegistreringErFerdigt) {
+        return Optional.ofNullable(profileringsResultat)
+                .map(ProfilertTil::valueOf)
+                .map(profilertTil -> {
+                    if(erVedtakstottePilotPa && profileringsJobbFraRegistreringErFerdigt) {
+                        return VurderingsBehov.valueOf(profilertTil.name());
+                    } else {
+                        return profilertTil.equals(ProfilertTil.OPPGITT_HINDRINGER) ? VurderingsBehov.ARBEIDSEVNE_VURDERING : VurderingsBehov.IKKE_VURDERT;
+                    }
+                })
+                .orElse(null);
+    }
+
+    private static VurderingsBehov kvalifiseringsgruppekodeTilVurdering (String kvalifiseringsgruppekode) {
+        if ("IVURD".equals(kvalifiseringsgruppekode)) {
             return VurderingsBehov.IKKE_VURDERT;
         } else if ("BKART".equals(kvalifiseringsgruppekode)) {
             return VurderingsBehov.ARBEIDSEVNE_VURDERING;

@@ -6,11 +6,11 @@ import no.nav.pto.veilarbportefolje.database.*;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.DataSourceFactory;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
@@ -114,6 +114,10 @@ public class DatabaseConfig {
         return new RegistreringRepository(jdbcTemplate);
     }
 
+    @Bean
+    public ProfileringRepository profileringRepository(JdbcTemplate jdbcTemplate) {
+        return new ProfileringRepository(jdbcTemplate);
+    }
 
     @Bean
     public Pingable dbPinger(final JdbcTemplate db) {

@@ -22,6 +22,7 @@ public class VedtakService implements KafkaConsumerService<String> {
     public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
         this.vedtakStatusRepository = vedtakStatusRepository;
         this.elasticIndexer = elasticIndexer;
+        this.aktoerService = aktoerService;
     }
 
     public void behandleKafkaMelding(String melding) {

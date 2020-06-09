@@ -116,4 +116,8 @@ public class DateUtils {
         simpleDateFormat.setLenient(false);
         return simpleDateFormat;
     }
+
+    public static Timestamp zonedDateStringToTimestamp(CharSequence zonedDateString) {
+       return Timestamp.from((ZonedDateTime.parse(zonedDateString).toInstant()));
+    }
 }

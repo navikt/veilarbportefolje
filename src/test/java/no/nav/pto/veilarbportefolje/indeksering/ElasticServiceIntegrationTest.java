@@ -509,7 +509,7 @@ public class ElasticServiceIntegrationTest {
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setKjonn(listOf(Kjonn.K));
+                .setKjonn(Kjonn.K);
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,

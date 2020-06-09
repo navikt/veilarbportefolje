@@ -79,7 +79,9 @@ public class DbUtils {
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
                 .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
-                .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus));
+                .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
+                .setHar_delt_cv(parseJaNei(rs.getString("HAR_DELT_CV"), "HAR_DELT_CV"))
+                .setProfilering_resultat(rs.getString("profilering_resultat"));
 
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
@@ -149,6 +151,10 @@ public class DbUtils {
 
     public static String boolTo0OR1(boolean bool) {
         return bool ? "1" : "0";
+    }
+
+    public static String boolToJaNei(boolean bool) {
+        return bool ? "J" : "N";
     }
 
     public static String numberToString(BigDecimal bd) {

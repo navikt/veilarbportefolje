@@ -15,7 +15,7 @@ public class Filtervalg {
     public List<Brukerstatus> ferdigfilterListe;
     public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
-    public List<Kjonn> kjonn = new ArrayList<>();
+    public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppe = new ArrayList<>();
     public List<Hovedmal> hovedmal = new ArrayList<>();
@@ -29,12 +29,13 @@ public class Filtervalg {
     public String navnEllerFnrQuery;
     public List<String> registreringstype = new ArrayList<>();
     public List<String> arbeidslisteKategori = new ArrayList<>();
+    public CVjobbprofil cvJobbprofil;
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
                 harYtelsefilter() ||
                 !alder.isEmpty() ||
-                !kjonn.isEmpty() ||
+                harKjonnfilter() ||
                 !fodselsdagIMnd.isEmpty() ||
                 !innsatsgruppe.isEmpty() ||
                 !formidlingsgruppe.isEmpty() ||
@@ -46,8 +47,13 @@ public class Filtervalg {
                 !hovedmal.isEmpty() ||
                 !registreringstype.isEmpty() ||
                 !arbeidslisteKategori.isEmpty() ||
+                harCvFilter() ||
                 harManuellBrukerStatus() ||
                 harNavnEllerFnrQuery();
+    }
+
+    public boolean harCvFilter() {
+        return cvJobbprofil != null;
     }
 
     private boolean harFerdigFilter() {
@@ -56,6 +62,10 @@ public class Filtervalg {
 
     public boolean harYtelsefilter() {
         return ytelse != null;
+    }
+
+    public boolean harKjonnfilter() {
+        return kjonn != null;
     }
 
     public boolean harAktivitetFilter() {

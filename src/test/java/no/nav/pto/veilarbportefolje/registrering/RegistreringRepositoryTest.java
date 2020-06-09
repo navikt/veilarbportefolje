@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
@@ -34,9 +35,12 @@ public class RegistreringRepositoryTest {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringRepository.insertBrukerRegistrering(event);
+        registreringRepository.upsertBrukerRegistrering(event);
 
-        assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event);
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+
+        assertThat(registrering.isPresent());
+        assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event);
     }
 
     @Test
@@ -47,7 +51,7 @@ public class RegistreringRepositoryTest {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringRepository.insertBrukerRegistrering(event1);
+        registreringRepository.upsertBrukerRegistrering(event1);
 
         ArbeidssokerRegistrertEvent event2 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
@@ -55,9 +59,12 @@ public class RegistreringRepositoryTest {
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
-        registreringRepository.oppdaterBrukerRegistring(event2);
+        registreringRepository.upsertBrukerRegistrering(event2);
 
-        assertThat(registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID))).isEqualTo(event2);
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+
+        assertThat(registrering.isPresent());
+        assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 
 

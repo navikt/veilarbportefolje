@@ -33,16 +33,13 @@ public class DialogService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        long startTime = System.currentTimeMillis();
         DialogData melding = fromJson(kafkaMelding, DialogData.class);
-        CompletableFuture.runAsync(()-> dialogFeedRepository.oppdaterDialogInfoForBruker(melding));
-        CompletableFuture.supplyAsync(()-> aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId())))
-                .thenAccept(tryFnr -> tryFnr.onSuccess(this::indekserBruker));
-        long endTime = System.currentTimeMillis();
-        log.info("Dialog service async tog {} millisekunder att exekvera", (startTime-endTime));
+        dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
+        aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId()))
+                .onSuccess(this::indekserBruker);
     }
 
-    private void indekserBruker (Fnr fnr) {
+    private void indekserBruker(Fnr fnr) {
         Result<OppfolgingsBruker> oppfolgingsBrukerResult = brukerRepository.hentBruker(fnr);
         if(UnderOppfolgingRegler.erUnderOppfolging(oppfolgingsBrukerResult)) {
             elasticIndexer.indekser(fnr);

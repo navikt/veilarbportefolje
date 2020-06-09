@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.feed.aktivitet;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -19,6 +20,8 @@ public class AktivitetDataFraFeed implements Comparable<AktivitetDataFraFeed> {
     Timestamp endretDato;
 
     String aktivitetType;
+
+    @JsonProperty("aktivitetStatus")
     String status;
     boolean avtalt;
     boolean historisk;

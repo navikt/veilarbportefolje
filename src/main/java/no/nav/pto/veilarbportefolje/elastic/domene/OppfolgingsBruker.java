@@ -25,6 +25,7 @@ public class OppfolgingsBruker {
     String hovedmaalkode;
     String sikkerhetstiltak;
     String diskresjonskode;
+    boolean har_delt_cv;
     boolean egen_ansatt;
     boolean er_doed;
     String doed_fra_dato;
@@ -80,4 +81,5 @@ public class OppfolgingsBruker {
     boolean trenger_revurdering;
     boolean er_sykmeldt_med_arbeidsgiver;
     String brukers_situasjon;
+    String profilering_resultat;
 }

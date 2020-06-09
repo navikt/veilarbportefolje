@@ -24,7 +24,7 @@
         <elastic.version>6.5.2</elastic.version>
         <confluent.version>5.0.2</confluent.version>
         <avro.version>1.8.2</avro.version>
-        <veilarbregistrering.skjema.version>1.202003170935-7f8835e</veilarbregistrering.skjema.version>
+        <veilarbregistrering.skjema.version>1.202004301354-b728b07</veilarbregistrering.skjema.version>
     </properties>
 
     <dependencyManagement>
@@ -100,7 +100,11 @@
             <artifactId>ojdbc8</artifactId>
         </dependency>
 
-        <!--AVRO OG AVROSKJEMAS -->
+        <!--AVRO-->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
@@ -111,15 +115,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!--AVRO SCHEMAS-->
         <dependency>
             <groupId>no.nav.arbeid</groupId>
             <artifactId>veilarbregistrering-skjema</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
+            <groupId>no.nav.arbeid.pam</groupId>
+            <artifactId>pam-cv-avro-cvmeldinger</artifactId>
+            <version>1.20200507-0fcd6db8</version>
         </dependency>
-
 
         <!--FELLESBIBLIOTEKER-->
         <dependency>

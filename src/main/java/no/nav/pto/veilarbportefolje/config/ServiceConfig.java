@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
@@ -14,6 +15,8 @@ import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringRepository;
+import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
@@ -23,6 +26,7 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -65,8 +69,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer) {
-        return new RegistreringService(registreringRepository, elasticIndexer);
+    public RegistreringService registreringService(RegistreringRepository registreringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService) {
+        return new RegistreringService(registreringRepository, restHighLevelClient, aktoerService);
     }
 
     @Bean
@@ -75,12 +79,22 @@ public class ServiceConfig {
     }
 
     @Bean
-    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService) {
-        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService);
+    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService, CvService cvService) {
+        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService, cvService);
     }
 
     @Bean
     public KafkaAktivitetService kafkaAktivitetService(AktivitetService aktivitetService, UnleashService unleashService) {
         return new KafkaAktivitetService(aktivitetService, unleashService);
+    }
+
+    @Bean
+    public CvService cvService(OppfolgingRepository oppfolgingRepository, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
+        return new CvService(brukerRepository,oppfolgingRepository, elasticIndexer);
+    }
+
+    @Bean
+    public ProfileringService profileringService(ProfileringRepository profileringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService, UnleashService unleashService) {
+        return new ProfileringService(profileringRepository, restHighLevelClient, aktoerService, unleashService);
     }
 }
