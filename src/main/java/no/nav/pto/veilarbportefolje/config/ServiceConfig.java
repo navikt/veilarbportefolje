@@ -94,7 +94,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ProfileringService profileringService(ProfileringRepository profileringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService) {
-        return new ProfileringService(profileringRepository, restHighLevelClient, aktoerService);
+    public ProfileringService profileringService(ProfileringRepository profileringRepository, RestHighLevelClient restHighLevelClient, AktoerService aktoerService, UnleashService unleashService) {
+        return new ProfileringService(profileringRepository, restHighLevelClient, aktoerService, unleashService);
     }
 }

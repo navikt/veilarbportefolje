@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -21,17 +22,21 @@ public class ProfileringService implements KafkaConsumerService<ArbeidssokerProf
     private final ProfileringRepository profileringRepository;
     private final RestHighLevelClient client;
     private final AktoerService aktoerService;
+    private final UnleashService unleashService;
 
-    public ProfileringService(ProfileringRepository profileringRepository, RestHighLevelClient client, AktoerService aktoerService) {
+    public ProfileringService(ProfileringRepository profileringRepository, RestHighLevelClient client, AktoerService aktoerService, UnleashService unleashService) {
         this.profileringRepository = profileringRepository;
         this.client = client;
         this.aktoerService = aktoerService;
+        this.unleashService = unleashService;
     }
 
     public void behandleKafkaMelding (ArbeidssokerProfilertEvent kafkaMelding) {
         profileringRepository.upsertBrukerProfilering(kafkaMelding);
-        aktoerService.hentFnrFraAktorId(AktoerId.of(kafkaMelding.getAktorid()))
-                .onSuccess(fnr -> oppdaterElasticMedProfileringData(fnr, kafkaMelding));
+        if(this.harKonsumertAlleMeldinger()) {
+            aktoerService.hentFnrFraAktorId(AktoerId.of(kafkaMelding.getAktorid()))
+                    .onSuccess(fnr -> oppdaterElasticMedProfileringData(fnr, kafkaMelding));
+        }
     }
 
     private XContentBuilder mapTilRegistreringJson(ArbeidssokerProfilertEvent kafkaMelding) {
@@ -55,5 +60,9 @@ public class ProfileringService implements KafkaConsumerService<ArbeidssokerProf
 
         Try.of(()-> client.update(updateRequest, DEFAULT))
                 .onFailure(err -> log.error("Feil vid skrivning til indeks vid profilering melding", err));
+    }
+
+    public boolean harKonsumertAlleMeldinger () {
+        return this.unleashService.isEnabled("veilarbportefolje.publiseringAvProfileringsHistorikk");
     }
 }
