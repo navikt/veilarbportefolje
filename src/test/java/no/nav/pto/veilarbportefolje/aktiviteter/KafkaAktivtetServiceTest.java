@@ -13,8 +13,6 @@ import static no.nav.json.JsonUtils.fromJson;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class KafkaAktivtetServiceTest {
-
-    @Test
     public void skal_deserialisere_kafka_payload() {
         String aktivitetKafkaMelding = "{" +
                 "\"aktivitetId\":\"144136\"," +

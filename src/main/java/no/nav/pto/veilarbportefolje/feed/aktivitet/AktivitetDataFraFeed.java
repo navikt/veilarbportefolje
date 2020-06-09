@@ -20,8 +20,6 @@ public class AktivitetDataFraFeed implements Comparable<AktivitetDataFraFeed> {
     Timestamp endretDato;
 
     String aktivitetType;
-
-    @JsonProperty("aktivitetStatus")
     String status;
     boolean avtalt;
     boolean historisk;
