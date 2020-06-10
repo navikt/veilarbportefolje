@@ -20,29 +20,17 @@ public class DialogService implements KafkaConsumerService<String> {
 
     private DialogFeedRepository dialogFeedRepository;
     private ElasticIndexer elasticIndexer;
-    private AktoerService aktoerService;
-    private BrukerRepository brukerRepository;
 
 
-    public DialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService, BrukerRepository brukerRepository) {
+    public DialogService(DialogFeedRepository dialogFeedRepository, ElasticIndexer elasticIndexer) {
         this.dialogFeedRepository = dialogFeedRepository;
         this.elasticIndexer = elasticIndexer;
-        this.aktoerService = aktoerService;
-        this.brukerRepository = brukerRepository;
     }
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         DialogData melding = fromJson(kafkaMelding, DialogData.class);
         dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
-        aktoerService.hentFnrFraAktorId(AktoerId.of(melding.getAktorId()))
-                .onSuccess(this::indekserBruker);
-    }
-
-    private void indekserBruker(Fnr fnr) {
-        Result<OppfolgingsBruker> oppfolgingsBrukerResult = brukerRepository.hentBruker(fnr);
-        if(UnderOppfolgingRegler.erUnderOppfolging(oppfolgingsBrukerResult)) {
-            elasticIndexer.indekser(fnr);
-        }
+        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
     }
 }
