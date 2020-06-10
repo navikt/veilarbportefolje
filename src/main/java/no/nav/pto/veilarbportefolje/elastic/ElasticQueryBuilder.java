@@ -59,6 +59,8 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
         byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
 
+        byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
+
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.ytelse.underytelser.forEach(
