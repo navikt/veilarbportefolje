@@ -1,5 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import no.nav.pto.veilarbportefolje.aktviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktviteter.AktivitetTypeData;
+import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDataFraFeed;
 import org.junit.Test;
 
@@ -13,6 +16,7 @@ import static no.nav.json.JsonUtils.fromJson;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class KafkaAktivtetServiceTest {
+    @Test
     public void skal_deserialisere_kafka_payload() {
         String aktivitetKafkaMelding = "{" +
                 "\"aktivitetId\":\"144136\"," +
@@ -32,18 +36,19 @@ public class KafkaAktivtetServiceTest {
         ZonedDateTime zonedDateTime2 = LocalDateTime.parse("2020-05-28T09:47:42.48+02:00",
                 ISO_ZONED_DATE_TIME).atZone(ZoneId.of("Europe/Oslo"));
 
-        AktivitetDataFraFeed aktivitetDataFraFeed = new AktivitetDataFraFeed()
-                .setAktivitetId("144136")
-                .setAktorId("123456789")
-                .setFraDato(Timestamp.from(zonedDateTime.toInstant()))
-                .setTilDato(null)
-                .setEndretDato(Timestamp.from(zonedDateTime2.toInstant()))
-                .setAktivitetType("IJOBB")
-                .setStatus("FULLFORT")
-                .setAvtalt(true)
-                .setHistorisk(false);
+        KafkaAktivitetMelding aktivitetDataFraKafka = KafkaAktivitetMelding.builder()
+                .aktivitetId("144136")
+                .aktorId("123456789")
+                .fraDato(Timestamp.from(zonedDateTime.toInstant()))
+                .tilDato(null)
+                .endretDato(Timestamp.from(zonedDateTime2.toInstant()))
+                .aktivitetType(AktivitetTypeData.IJOBB)
+                .aktivitetStatus(AktivitetStatus.FULLFORT)
+                .avtalt(true)
+                .historisk(false)
+                .build();
 
-        assertThat(fromJson(aktivitetKafkaMelding,AktivitetDataFraFeed.class)).isEqualTo(aktivitetDataFraFeed);
+        assertThat(fromJson(aktivitetKafkaMelding, KafkaAktivitetMelding.class)).isEqualTo(aktivitetDataFraKafka);
 
     }
 }
