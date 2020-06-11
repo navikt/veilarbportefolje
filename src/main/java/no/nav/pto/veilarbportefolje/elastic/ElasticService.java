@@ -86,7 +86,7 @@ public class ElasticService {
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa(), profileringsJobbFraRegistreringErFerdigt()))
+                .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -97,7 +97,7 @@ public class ElasticService {
         ElasticSearchResponse response = search(request, indexAlias, ElasticSearchResponse.class);
 
         return response.getHits().getHits().stream()
-                .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa(), profileringsJobbFraRegistreringErFerdigt()))
+                .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa()))
                 .collect(toList());
     }
 
@@ -150,7 +150,4 @@ public class ElasticService {
         return unleashService.isEnabled("pto.vedtaksstotte.pilot");
     }
 
-    private boolean profileringsJobbFraRegistreringErFerdigt() {
-        return unleashService.isEnabled("veilarbportefolje.publiseringAvProfileringsHistorikk");
-    }
 }

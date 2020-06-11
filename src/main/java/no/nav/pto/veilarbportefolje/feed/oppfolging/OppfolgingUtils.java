@@ -36,22 +36,22 @@ public class OppfolgingUtils {
         return INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) && vedtakStatus != null;
     }
 
-    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat, boolean erVedtakstottePilotPa, boolean profileringsJobbFraRegistreringErFerdigt) {
+    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat, boolean erVedtakstottePilotPa) {
         if ("ISERV".equals(formidlingsgruppekode)) {
             return null;
         }
 
         //kvalifiseringsgruppekodeTilVurdering brukes fordi inte alla brukare har aktorId og dærmed inte har profileringsresultat
-        return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat, erVedtakstottePilotPa, profileringsJobbFraRegistreringErFerdigt))
+        return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat, erVedtakstottePilotPa))
                 .orElse(kvalifiseringsgruppekodeTilVurdering(kvalifiseringsgruppekode));
     }
 
 
-    private static VurderingsBehov profileringsResultatTilVurdering (String profileringsResultat, boolean erVedtakstottePilotPa, boolean profileringsJobbFraRegistreringErFerdigt) {
+    private static VurderingsBehov profileringsResultatTilVurdering (String profileringsResultat, boolean erVedtakstottePilotPa) {
         return Optional.ofNullable(profileringsResultat)
                 .map(ProfilertTil::valueOf)
                 .map(profilertTil -> {
-                    if(erVedtakstottePilotPa && profileringsJobbFraRegistreringErFerdigt) {
+                    if(erVedtakstottePilotPa) {
                         return VurderingsBehov.valueOf(profilertTil.name());
                     } else {
                         return profilertTil.equals(ProfilertTil.OPPGITT_HINDRINGER) ? VurderingsBehov.ARBEIDSEVNE_VURDERING : VurderingsBehov.IKKE_VURDERT;

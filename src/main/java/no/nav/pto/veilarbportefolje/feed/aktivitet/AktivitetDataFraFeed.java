@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.feed.aktivitet;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
