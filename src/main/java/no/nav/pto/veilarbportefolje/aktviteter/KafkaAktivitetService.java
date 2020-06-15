@@ -26,12 +26,14 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
         if(!unleashService.isEnabled("portefolje.behandle.aktivitet.kafkamelding")) {
             return;
         }
+        log.info("Mottok aktivitetmelding: {}", kafkaMelding);
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
+
         aktivitetService.oppdaterAktiviteter(Collections.singletonList(mapTilAktivitetDataFraFeed(aktivitetData)));
     }
 
 
-    private AktivitetDataFraFeed mapTilAktivitetDataFraFeed (KafkaAktivitetMelding kafkaAktivitetMelding) {
+    public static AktivitetDataFraFeed mapTilAktivitetDataFraFeed (KafkaAktivitetMelding kafkaAktivitetMelding) {
         return new AktivitetDataFraFeed()
                 .setAktivitetId(kafkaAktivitetMelding.getAktivitetId())
                 .setAktorId(kafkaAktivitetMelding.getAktorId())
