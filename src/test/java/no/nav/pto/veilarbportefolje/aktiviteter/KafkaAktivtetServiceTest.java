@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import no.nav.pto.veilarbportefolje.aktviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktviteter.AktivitetTypeData;
 import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDataFraFeed;
 import org.junit.Test;
 
@@ -85,46 +84,6 @@ public class KafkaAktivtetServiceTest {
                 .setHistorisk(false);
 
         assertThat(fromJson(aktivitetKafkaMelding, AktivitetDataFraFeed.class)).isEqualTo(aktivitetDataFraFeed);
-
-    }
-
-    @Test
-    public void skal_mappe_kafkaaktivitet_til_aktivitetdata() {
-
-        ZonedDateTime fraDato = LocalDateTime.parse("2020-07-09T12:00:00+02:00",
-                ISO_ZONED_DATE_TIME).atZone(ZoneId.of("Europe/Oslo"));
-
-        ZonedDateTime tilDato = LocalDateTime.parse("2020-07-28T09:47:42.48+02:00",
-                ISO_ZONED_DATE_TIME).atZone(ZoneId.of("Europe/Oslo"));
-
-        ZonedDateTime endretDato = LocalDateTime.parse("2020-07-14T09:47:42.48+02:00",
-                ISO_ZONED_DATE_TIME).atZone(ZoneId.of("Europe/Oslo"));
-
-        KafkaAktivitetMelding aktivitetDataFraKafka = KafkaAktivitetMelding.builder()
-                .aktivitetId("144136")
-                .aktorId("123456789")
-                .fraDato(Timestamp.from(fraDato.toInstant()))
-                .tilDato(Timestamp.from(tilDato.toInstant()))
-                .endretDato(Timestamp.from(endretDato.toInstant()))
-                .aktivitetType(AktivitetTypeData.IJOBB)
-                .aktivitetStatus(AktivitetStatus.FULLFORT)
-                .avtalt(true)
-                .historisk(false)
-                .build();
-
-        AktivitetDataFraFeed aktivitetDataFraFeed = new AktivitetDataFraFeed()
-                .setAktivitetId("144136")
-                .setAktorId("123456789")
-                .setFraDato(Timestamp.from(fraDato.toInstant()))
-                .setTilDato(Timestamp.from(tilDato.toInstant()))
-                .setEndretDato(Timestamp.from(endretDato.toInstant()))
-                .setAktivitetType(AktivitetTypeData.IJOBB.name())
-                .setStatus(AktivitetStatus.FULLFORT.name())
-                .setAvtalt(true)
-                .setHistorisk(false);
-
-
-        assertThat(KafkaAktivitetService.mapTilAktivitetDataFraFeed(aktivitetDataFraKafka)).isEqualTo(aktivitetDataFraFeed);
 
     }
 
