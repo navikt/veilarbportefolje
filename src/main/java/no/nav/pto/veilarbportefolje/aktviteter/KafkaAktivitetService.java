@@ -7,7 +7,9 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Optional;
 
 import static no.nav.json.JsonUtils.fromJson;
 
@@ -28,7 +30,7 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
         }
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
 
-        if(!aktivitetData.isAvtalt() || aktivitetData.getEndretDato() == null) {
+        if(skallIkkeOppdatereAktivitet(aktivitetData)) {
             return;
         }
 
@@ -37,16 +39,27 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
 
 
     public static AktivitetDataFraFeed mapTilAktivitetDataFraFeed (KafkaAktivitetMelding kafkaAktivitetMelding) {
+        Timestamp endretDato = Optional.ofNullable(kafkaAktivitetMelding.getEndretDato())
+                .map(dato -> Timestamp.from(dato.toInstant()))
+                .orElse(Timestamp.valueOf(LocalDateTime.now()));
 
         return new AktivitetDataFraFeed()
                 .setAktivitetId(kafkaAktivitetMelding.getAktivitetId())
                 .setAktorId(kafkaAktivitetMelding.getAktorId())
                 .setFraDato(Timestamp.from(kafkaAktivitetMelding.getFraDato().toInstant()))
                 .setTilDato(Timestamp.from(kafkaAktivitetMelding.getTilDato().toInstant()))
-                .setEndretDato(Timestamp.from(kafkaAktivitetMelding.getEndretDato().toInstant()))
+                .setEndretDato(endretDato)
                 .setAktivitetType(kafkaAktivitetMelding.getAktivitetType().name())
                 .setStatus(kafkaAktivitetMelding.getAktivitetStatus().name())
                 .setHistorisk(kafkaAktivitetMelding.isHistorisk())
                 .setAvtalt(kafkaAktivitetMelding.isAvtalt());
+    }
+
+    private boolean skallIkkeOppdatereAktivitet(KafkaAktivitetMelding aktivitetData) {
+        return !aktivitetData.isAvtalt() || erEnNyOpprettetAktivitet(aktivitetData);
+    }
+
+    private boolean erEnNyOpprettetAktivitet(KafkaAktivitetMelding aktivitetData) {
+        return aktivitetData.getEndretDato() == null;
     }
 }
