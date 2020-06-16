@@ -72,7 +72,7 @@ public class KafkaAktivtetServiceTest {
         ZonedDateTime zonedDateTime2 = LocalDateTime.parse("2020-05-28T09:47:42.48+02:00",
                 ISO_ZONED_DATE_TIME).atZone(ZoneId.of("Europe/Oslo"));
 
-        AktivitetDataFraFeed aktivitetDataFraKafka = new AktivitetDataFraFeed()
+        AktivitetDataFraFeed aktivitetDataFraFeed = new AktivitetDataFraFeed()
                 .setAktivitetId("144136")
                 .setAktorId("123456789")
                 .setFraDato(Timestamp.from(zonedDateTime.toInstant()))
@@ -83,7 +83,8 @@ public class KafkaAktivtetServiceTest {
                 .setAvtalt(true)
                 .setHistorisk(false);
 
-        assertThat(fromJson(aktivitetKafkaMelding, AktivitetDataFraFeed.class)).isEqualTo(aktivitetDataFraKafka);
+        assertThat(fromJson(aktivitetKafkaMelding, AktivitetDataFraFeed.class)).isEqualTo(aktivitetDataFraFeed);
 
     }
+
 }
