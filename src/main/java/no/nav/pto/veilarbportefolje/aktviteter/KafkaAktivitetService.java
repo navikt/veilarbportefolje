@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static no.nav.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 
 @Slf4j
 public class KafkaAktivitetService implements KafkaConsumerService<String> {
@@ -46,8 +47,8 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
         return new AktivitetDataFraFeed()
                 .setAktivitetId(kafkaAktivitetMelding.getAktivitetId())
                 .setAktorId(kafkaAktivitetMelding.getAktorId())
-                .setFraDato(Timestamp.from(kafkaAktivitetMelding.getFraDato().toInstant()))
-                .setTilDato(Timestamp.from(kafkaAktivitetMelding.getTilDato().toInstant()))
+                .setFraDato(dateToTimestamp(kafkaAktivitetMelding.getFraDato()))
+                .setTilDato(dateToTimestamp(kafkaAktivitetMelding.getTilDato()))
                 .setEndretDato(endretDato)
                 .setAktivitetType(kafkaAktivitetMelding.getAktivitetType().name())
                 .setStatus(kafkaAktivitetMelding.getAktivitetStatus().name())
