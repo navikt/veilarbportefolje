@@ -7,6 +7,7 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.config.Feature;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -30,6 +31,7 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -58,6 +60,7 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticIndexer {
@@ -263,33 +266,44 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public Result<OppfolgingsBruker> slettBruker(OppfolgingsBruker bruker) {
+    public void slettBruker(OppfolgingsBruker bruker) {
 
-        List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
+        if (unleashService.isEnabled(Feature.MARKER_SOM_SLETTET)) {
 
-        for (Integer backoff : backoffs) {
+            UpdateRequest updateRequest = new UpdateRequest();
+            updateRequest.index(getAlias());
+            updateRequest.type("_doc");
+            updateRequest.id(bruker.getFnr());
+            updateRequest.doc(jsonBuilder()
+                    .startObject()
+                    .field("oppfolging", false)
+                    .endObject()
+            );
 
-            DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
-                    .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
+            client.update(updateRequest, DEFAULT);
 
-            try {
-                BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
-                if (response.getDeleted() == 1) {
-                    log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
-                    return Result.ok(bruker);
+        } else {
+            List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
+
+            for (Integer backoff : backoffs) {
+                DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
+                        .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
+
+                try {
+                    BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+                    if (response.getDeleted() == 1) {
+                        log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+                    }
+                } catch (ElasticsearchStatusException e) {
+                    String mld = format("ElasticsearchStatusException for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                    log.warn(mld, e);
+                    Thread.sleep(backoff);
+                } catch (Exception e) {
+                    String mld = format("Sletting feilet for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                    log.error(mld, e);
                 }
-            } catch (ElasticsearchStatusException e) {
-                String mld = format("ElasticsearchStatusException for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
-                log.warn(mld, e);
-                Thread.sleep(backoff);
-            } catch (Exception e) {
-                String mld = format("Sletting feilet for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
-                log.error(mld, e);
-                return Result.err(e);
             }
         }
-
-        return Result.err(new RuntimeException());
     }
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
