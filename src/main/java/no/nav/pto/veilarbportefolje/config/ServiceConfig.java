@@ -31,6 +31,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinf
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.restHighLevelClient;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 
 @Configuration
@@ -102,7 +103,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ElasticServiceV2 elasticServiceV2(RestHighLevelClient restHighLevelClient) {
-        return new ElasticServiceV2(restHighLevelClient, getAlias());
+    public ElasticServiceV2 elasticServiceV2() {
+        return new ElasticServiceV2(restHighLevelClient(), getAlias());
     }
 }

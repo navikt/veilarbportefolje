@@ -48,6 +48,7 @@ public class ElasticService {
 
         int from = Optional.ofNullable(fra).orElse(0);
         int size = Optional.ofNullable(antall).orElse(9999);
+
         searchSourceBuilder.from(from);
         searchSourceBuilder.size(size);
 

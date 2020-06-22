@@ -40,6 +40,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -269,19 +270,7 @@ public class ElasticIndexer {
     public void slettBruker(OppfolgingsBruker bruker) {
 
         if (unleashService.isEnabled(Feature.MARKER_SOM_SLETTET)) {
-
-            UpdateRequest updateRequest = new UpdateRequest();
-            updateRequest.index(getAlias());
-            updateRequest.type("_doc");
-            updateRequest.id(bruker.getFnr());
-            updateRequest.doc(jsonBuilder()
-                    .startObject()
-                    .field("oppfolging", false)
-                    .endObject()
-            );
-
-            client.update(updateRequest, DEFAULT);
-
+            updateOppfolgingTilFalse(bruker);
         } else {
             List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
 
@@ -304,6 +293,20 @@ public class ElasticIndexer {
                 }
             }
         }
+    }
+
+    private void updateOppfolgingTilFalse(OppfolgingsBruker bruker) throws IOException {
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.index(getAlias());
+        updateRequest.type("_doc");
+        updateRequest.id(bruker.getFnr());
+        updateRequest.doc(jsonBuilder()
+                .startObject()
+                .field("oppfolging", false)
+                .endObject()
+        );
+
+        client.update(updateRequest, DEFAULT);
     }
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
@@ -439,7 +442,7 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
+    public BulkResponse skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
@@ -458,6 +461,8 @@ public class ElasticIndexer {
 
         List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
         log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+
+        return response;
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
