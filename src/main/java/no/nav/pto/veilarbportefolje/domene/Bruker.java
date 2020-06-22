@@ -8,11 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils;
-import no.nav.pto.veilarbportefolje.registrering.DinSituasjonSvar;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -72,7 +70,6 @@ public class Bruker {
     String vedtakStatus;
     LocalDateTime vedtakStatusEndret;
     boolean trengerRevurdering;
-    boolean erPermittertEtterNiendeMars;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa) {
 
@@ -82,7 +79,6 @@ public class Bruker {
         String profileringResultat = bruker.getProfilering_resultat();
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
-        String brukersSitasjon = bruker.getBrukers_situasjon();
         boolean trengerVurdering = bruker.isTrenger_vurdering();
 
         return new Bruker()
@@ -128,7 +124,6 @@ public class Bruker {
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
-                .setErPermittertEtterNiendeMars(erPermittertEtterNiondeMars(oppfolgingStartDato, brukersSitasjon))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
@@ -155,15 +150,6 @@ public class Bruker {
         }
         aktiviteter.put(type, utlopsdato);
         return this;
-    }
-
-    private static boolean erPermittertEtterNiondeMars(LocalDateTime oppfolgingStartDato, String brukersSitasjon ) {
-        if(brukersSitasjon != null && oppfolgingStartDato !=null ) {
-            boolean oppfolgingStartDatoErEtterNiende = oppfolgingStartDato.isAfter(LocalDate.of(2020, 3, 10).atStartOfDay());
-            boolean erPermittert = DinSituasjonSvar.valueOf(brukersSitasjon).equals(DinSituasjonSvar.ER_PERMITTERT);
-            return oppfolgingStartDatoErEtterNiende && erPermittert;
-        }
-            return false;
     }
 
     public boolean erKonfidensiell() {
