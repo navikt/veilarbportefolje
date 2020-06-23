@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktviteter;
 
 public enum AktivitetTypeData {
-    EGENAKTIVITET,
-    JOBBSOEKING,
+    EGEN,
+    STILLING,
     SOKEAVTALE,
     IJOBB,
     BEHANDLING,
