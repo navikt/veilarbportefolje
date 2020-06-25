@@ -67,7 +67,10 @@ public class OppfolgingService implements KafkaConsumerService<String> {
         }
 
         if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus)) {
-            cvService.setHarDeltCvTilNei(aktoerId);
+            Result<Integer> result = cvService.setHarDeltCvTilNei(aktoerId);
+            if (result.err().isPresent()) {
+                log.error("Kunne ikke sette har delt cv til nei for bruker " + aktoerId, result.err().get());
+            }
         }
 
         Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);

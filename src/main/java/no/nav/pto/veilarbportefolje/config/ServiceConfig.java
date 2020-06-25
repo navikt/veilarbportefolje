@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
@@ -26,7 +27,6 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -89,8 +89,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public CvService cvService(OppfolgingRepository oppfolgingRepository, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
-        return new CvService(brukerRepository,oppfolgingRepository, elasticIndexer);
+    public CvService cvService(BrukerRepository brukerRepository, ElasticServiceV2 elasticServiceV2) {
+        return new CvService(brukerRepository, elasticServiceV2);
     }
 
     @Bean

@@ -2,33 +2,37 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.util.Result;
+import org.elasticsearch.action.ActionResponse;
 
+import java.util.Optional;
+
+import static java.util.Optional.empty;
 import static no.nav.json.JsonUtils.fromJson;
 import static no.nav.metrics.MetricsFactory.createEvent;
-import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_SAMTYKKE;
+import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 
 @Slf4j
 public class CvService implements KafkaConsumerService<String> {
 
     private final BrukerRepository brukerRepository;
-    private final ElasticIndexer elasticIndexer;
+    private final ElasticServiceV2 elasticIndexer;
 
     public CvService(
             BrukerRepository brukerRepository,
-            ElasticIndexer elasticIndexer
+            ElasticServiceV2 elasticIndexer
     ) {
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
     }
 
     enum Ressurs {
-        CV_SAMTYKKE
+        CV_HJEMMEL
     }
 
     enum MeldingType {
@@ -38,7 +42,7 @@ public class CvService implements KafkaConsumerService<String> {
 
     @Value
     static class Melding {
-        AktoerId aktorId;
+        AktoerId aktoerId;
         Fnr fnr;
         MeldingType meldingType;
         Ressurs ressurs;
@@ -47,11 +51,10 @@ public class CvService implements KafkaConsumerService<String> {
     @Override
     public void behandleKafkaMelding(String payload) {
         Melding melding = fromJson(payload, Melding.class);
-        AktoerId aktorId = melding.getAktorId();
+        AktoerId aktorId = melding.getAktoerId();
 
-        if (melding.getRessurs() != CV_SAMTYKKE) {
+        if (melding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktorId);
-            return;
         }
 
         switch (melding.meldingType) {
@@ -59,15 +62,20 @@ public class CvService implements KafkaConsumerService<String> {
                 log.info("Bruker {} har delt cv med nav", aktorId);
                 brukerRepository.setHarDeltCvMedNav(aktorId, true).orElseThrowException();
                 createEvent("portefolje_har_delt_cv").report();
-                elasticIndexer.indekser(aktorId);
+                elasticIndexer.updateHarDeltCv(melding.getFnr(), true);
                 break;
             case SAMTYKKE_SLETTET:
+                log.info("Bruker {} har ikke delt cv med nav", aktorId);
                 brukerRepository.setHarDeltCvMedNav(aktorId, false).orElseThrowException();
-                elasticIndexer.indekser(aktorId);
+                createEvent("portefolje_har_ikke_delt_cv").report();
+                elasticIndexer.updateHarDeltCv(melding.getFnr(), false);
                 break;
             default:
                 log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktorId);
         }
+    }
 
+    public Result<Integer> setHarDeltCvTilNei(AktoerId aktoerId) {
+        return brukerRepository.setHarDeltCvMedNav(aktoerId, false);
     }
 }

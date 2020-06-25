@@ -1,0 +1,55 @@
+package no.nav.pto.veilarbportefolje.elastic;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.rest.RestStatus;
+import org.springframework.stereotype.Component;
+
+import javax.inject.Inject;
+
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
+import static org.elasticsearch.client.RequestOptions.DEFAULT;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
+@Slf4j
+@Component
+public class ElasticServiceV2 {
+
+    private RestHighLevelClient client;
+
+    @Inject
+    public ElasticServiceV2(RestHighLevelClient client) {
+        this.client = client;
+    }
+
+
+
+    @SneakyThrows
+    public void updateHarDeltCv(Fnr fnr, boolean harDeltCv) {
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.index(getAlias());
+        updateRequest.type("_doc");
+        updateRequest.id(fnr.getFnr());
+        updateRequest.doc(jsonBuilder()
+                .startObject()
+                .field("har_delt_cv", harDeltCv)
+                .endObject());
+
+        try {
+            client.update(updateRequest, DEFAULT);
+        } catch (ElasticsearchException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                log.info("Kunne ikke finne dokument ved oppdatering av cv");
+            }
+        }
+    }
+}
