@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.*;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;

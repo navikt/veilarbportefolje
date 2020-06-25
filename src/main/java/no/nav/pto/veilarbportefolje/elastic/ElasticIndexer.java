@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import io.vavr.Tuple2;
-import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
@@ -12,8 +10,8 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
@@ -54,7 +52,7 @@ import static no.nav.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils.filtrerBrukertiltak;
+import static no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;

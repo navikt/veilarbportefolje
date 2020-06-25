@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils;
+import no.nav.pto.veilarbportefolje.feedconsumer.oppfolging.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.apache.commons.lang3.text.WordUtils;
@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils.isNyForEnhet;
+import static no.nav.pto.veilarbportefolje.feedconsumer.oppfolging.OppfolgingUtils.isNyForEnhet;
 
 @Slf4j
 public class DbUtils {

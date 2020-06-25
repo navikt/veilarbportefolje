@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktviteter;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDataFraFeed;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDataFraFeed;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 

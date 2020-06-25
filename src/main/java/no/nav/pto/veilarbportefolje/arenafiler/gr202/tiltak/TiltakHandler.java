@@ -8,9 +8,9 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivit
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 
 import javax.inject.Inject;
@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.AKTIVITETER_SFTP;
 import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.*;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;

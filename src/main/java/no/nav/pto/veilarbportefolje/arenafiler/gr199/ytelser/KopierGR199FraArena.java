@@ -2,11 +2,10 @@ package no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetService;
 
 import javax.inject.Inject;
 
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.LOPENDEYTELSER_SFTP;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j

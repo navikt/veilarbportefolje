@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import no.nav.pto.veilarbportefolje.aktviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktviteter.AktivitetTypeData;
 import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDataFraFeed;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDataFraFeed;
 import org.junit.Test;
 
 import java.sql.Timestamp;

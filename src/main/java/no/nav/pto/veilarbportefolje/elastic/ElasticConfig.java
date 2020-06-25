@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.config.ServiceConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
