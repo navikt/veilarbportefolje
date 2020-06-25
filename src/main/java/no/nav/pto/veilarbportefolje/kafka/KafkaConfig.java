@@ -27,7 +27,7 @@ public class KafkaConfig {
         OPPFOLGING_CONSUMER_TOPIC("aapen-fo-endringPaaOppfolgingStatus-v1-" + requireEnvironmentName()),
         KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + requireEnvironmentName()),
         KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v1-" + requireEnvironmentName()),
-        CV_ENDRET_TOPIC("arbeid-pam-cv-endret-" + getCvTopicVersion() + "-" + requireEnvironmentName()),
+        PAM_SAMTYKKE_ENDRET_V1("aapen-pam-samtykke-endret-v1"),
         KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + requireEnvironmentName());
 
         final String topic;
@@ -45,18 +45,5 @@ public class KafkaConfig {
     @Bean
     public KafkaConsumerRunnable kafkaConsumerRegistrering(RegistreringService registreringService, UnleashService unleashService) {
         return new KafkaConsumerRunnable<>(registreringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC, "veilarbportfolje.registrering");
-    }
-
-    @Bean
-    public KafkaConsumerRunnable kafkaConsumeProfilering(ProfileringService profileringService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable<>(profileringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_PROFILERING_CONSUMER_TOPIC, "veilarbportfolje.profilering");
-    }
-
-    private static String getCvTopicVersion() {
-        if (EnvironmentUtils.isEnvironmentClass(Q)) {
-            return "v4";
-        }else {
-            return "v5";
-        }
     }
 }

@@ -30,7 +30,6 @@ import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
-import no.nav.pto.veilarbportefolje.profilering.ProfileringRepository;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
@@ -184,8 +183,8 @@ public class ApplicationConfig implements ApiApplication {
         new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
-                KafkaProperties.kafkaMedAvroProperties(),
-                KafkaConfig.Topic.CV_ENDRET_TOPIC,
+                KafkaProperties.kafkaProperties(),
+                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
                 "veilarbportefolje.kafka.cv.killswitch"
         );
 
