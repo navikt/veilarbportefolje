@@ -97,7 +97,6 @@ public class IntegrationTest {
         jdbcTemplate.execute("TRUNCATE TABLE DIALOG");
         jdbcTemplate.execute("TRUNCATE TABLE ENHETTILTAK");
         jdbcTemplate.execute("TRUNCATE TABLE KRR");
-        jdbcTemplate.execute("TRUNCATE TABLE METADATA");
         jdbcTemplate.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         jdbcTemplate.execute("TRUNCATE TABLE OPPFOLGING_DATA");
         jdbcTemplate.execute("TRUNCATE TABLE VEDTAKSTATUS_DATA");
