@@ -68,7 +68,7 @@ public class ElasticServiceIntegrationTest {
         VeilederService veilederServiceMock = mock(VeilederService.class);
         when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
 
-        RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
+        RestHighLevelClient restClient = ElasticUtils.createClient(ElasticClientConfig.builder()
                 .username("")
                 .password("")
                 .hostname("localhost")

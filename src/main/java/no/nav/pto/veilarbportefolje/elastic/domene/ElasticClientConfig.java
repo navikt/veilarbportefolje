@@ -11,5 +11,6 @@ public class ElasticClientConfig {
     String hostname;
     int port;
     String scheme;
+    boolean disableSecurity;
 }
 

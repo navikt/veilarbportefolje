@@ -1,5 +1,6 @@
-package no.nav.pto.veilarbportefolje.config;
+package no.nav.pto.veilarbportefolje;
 
+import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -8,27 +9,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class LocalJndiContextConfig {
+public class TestUtil {
 
     public static final String HSQL_URL = "jdbc:hsqldb:mem:portefolje";
-/*
-    public static SingleConnectionDataSource setupDataSourceWithCredentials(DbCredentials dbCredentials) {
-        SingleConnectionDataSource ds = new SingleConnectionDataSource();
-        ds.setUrl(dbCredentials.getUrl());
-        ds.setUsername(dbCredentials.getUsername());
-        ds.setPassword(dbCredentials.getPassword());
-        ds.setSuppressClose(true);
-        if(dbCredentials.getUrl().contains("hsqldb")) {
-            setHsqlToOraSyntax(ds);
-        }
-        if(!dbCredentials.getUrl().contains("oracle")) {
-            // Migrere databaser så lenge vi ikke går mot en database i et felles miljø.
-            // Antar inntil videre at dette kan oppnås ved å utelukke oracle-databaser.
-            migrateDb(ds);
-        }
-
-        return ds;
-    }*/
 
     public static SingleConnectionDataSource setupInMemoryDatabase() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
