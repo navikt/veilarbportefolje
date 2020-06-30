@@ -7,8 +7,6 @@ import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
 import org.springframework.scheduling.annotation.Scheduled;
-
-import javax.inject.Inject;
 import java.util.Optional;
 
 @Slf4j
@@ -22,7 +20,6 @@ public class IndekseringScheduler {
 
     private KrrService krrService;
 
-    @Inject
     public IndekseringScheduler(no.nav.pto.veilarbportefolje.elastic.ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
         this.elasticIndexer = elasticIndexer;
         this.tiltakHandler = tiltakHandler;

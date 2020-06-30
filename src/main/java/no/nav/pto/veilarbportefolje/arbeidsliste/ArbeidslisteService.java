@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -8,24 +10,30 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.Result;
-
-import javax.inject.Inject;
-
-import static no.nav.metrics.MetricsFactory.createEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ArbeidslisteService {
-
-    @Inject
     private AktoerService aktoerService;
-
-    @Inject
     private ArbeidslisteRepository arbeidslisteRepository;
-
-    @Inject
     private BrukerRepository brukerRepository;
-
-    @Inject
     private ElasticIndexer elasticIndexer;
+    private MetricsClient metricsClient;
+
+    @Autowired
+    public ArbeidslisteService(
+            AktoerService aktoerService,
+            ArbeidslisteRepository arbeidslisteRepository,
+            BrukerRepository brukerRepository,
+            ElasticIndexer elasticIndexer,
+            MetricsClient metricsClient) {
+        this.aktoerService = aktoerService;
+        this.arbeidslisteRepository = arbeidslisteRepository;
+        this.brukerRepository = brukerRepository;
+        this.elasticIndexer = elasticIndexer;
+        this.metricsClient = metricsClient;
+
+    }
+
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
         return hentAktoerId(fnr).map(this::getArbeidsliste).get();
@@ -37,7 +45,7 @@ public class ArbeidslisteService {
 
     public Try<AktoerId> createArbeidsliste(ArbeidslisteDTO data) {
 
-        createEvent("arbeidsliste.opprettet").report();
+        metricsClient.report((new Event("arbeidsliste.opprettet")));
 
         Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
         if (aktoerId.isFailure()) {

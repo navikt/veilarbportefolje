@@ -1,10 +1,9 @@
 package no.nav.pto.veilarbportefolje.feed.producer;
 
 import lombok.Builder;
+import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.feed.common.*;
 import no.nav.pto.veilarbportefolje.feed.exception.InvalidUrlException;
-import no.nav.pto.veilarbportefolje.feed.util.MetricsUtils;
-import no.nav.sbl.rest.RestUtils;
 import org.slf4j.Logger;
 
 import javax.ws.rs.client.Client;
@@ -54,7 +53,6 @@ public class FeedProducer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
                 .collect(Collectors.toList());
 
         if (pageElements.size() > pageSize) {
-            MetricsUtils.metricEvent("fetchnotlimited", feedname);
             LOG.warn("Provider retrieved more than <pageSize> elements in response to {} for feed {}", request, feedname);
             LOG.info("This can lead to excessive resource consumption by the producer...");
         }
@@ -66,7 +64,6 @@ public class FeedProducer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
                 .count();
 
         if (pageElements.size() != antallUnikeIder) {
-            MetricsUtils.metricEvent("duplicateid", feedname);
             LOG.warn("Found duplicate IDs in response to {} for feed {}", request, feedname);
             LOG.info("This can lead to excessive network usage between the producer and its consumers...");
         }

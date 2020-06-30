@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
+import no.nav.pto.veilarbportefolje.auth.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetFiltervalg;

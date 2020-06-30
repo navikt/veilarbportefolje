@@ -11,8 +11,10 @@ import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.UpsertQuery;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
@@ -23,14 +25,16 @@ import static java.util.stream.Collectors.*;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
 @Slf4j
+@Repository
 public class AktivitetDAO {
 
     private static final String AKTIVITETER = "AKTIVITETER";
     private static final String AKTIVITETID = "AKTIVITETID";
 
-    private JdbcTemplate db;
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final JdbcTemplate db;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
+    @Autowired
     public AktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;

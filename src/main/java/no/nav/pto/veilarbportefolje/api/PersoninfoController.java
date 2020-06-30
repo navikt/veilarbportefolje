@@ -1,35 +1,35 @@
 package no.nav.pto.veilarbportefolje.api;
 
-import io.swagger.annotations.Api;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.database.PersonRepository;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Personinfo;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Api(value = "Personinfo")
-@Path("/personinfo")
-@Component
+@RestController
+@RequestMapping("/api/personinfo")
 @Produces(APPLICATION_JSON)
 public class PersoninfoController {
-    private PepClient pepClient;
-    private PersonRepository personRepository;
+    private final AuthService authService;
+    private final PersonRepository personRepository;
 
-    @Inject
-    public PersoninfoController(PepClient pepClient, PersonRepository personRepository) {
-        this.pepClient = pepClient;
+    @Autowired
+    public PersoninfoController(AuthService authService, PersonRepository personRepository) {
+        this.authService = authService;
         this.personRepository = personRepository;
     }
 
-    @GET
-    @Path("/{fnr}")
-    public Personinfo hentPersoninfo(@PathParam("fnr") String fnr) {
-        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+    @GetMapping("/{fnr}")
+    public Personinfo hentPersoninfo(@PathVariable("fnr") String fnr) {
+        authService.tilgangTilBruker(fnr);
         return personRepository.hentPersoninfoForFnr(Fnr.of(fnr))
                 .orElseThrow(() -> new NotFoundException("Kunne ikke finne personinfo for: " + fnr));
     }

@@ -2,10 +2,6 @@ package no.nav.pto.veilarbportefolje.util;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.SsoToken;
-import no.nav.common.auth.Subject;
-import no.nav.common.auth.SubjectHandler;
-
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.util.function.Supplier;
@@ -27,10 +23,5 @@ public class RestUtils {
                         },
                         (entity) -> Response.status(OK).entity(entity).build()
                 );
-    }
-
-    public static String getSsoToken() {
-        Subject subject = SubjectHandler.getSubject().orElseThrow(IllegalStateException::new);
-        return subject.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
     }
 }

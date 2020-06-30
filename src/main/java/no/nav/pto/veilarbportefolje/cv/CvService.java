@@ -3,33 +3,40 @@ package no.nav.pto.veilarbportefolje.cv;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.util.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 
-import static no.nav.metrics.MetricsFactory.createEvent;
-
 @Slf4j
+@Service
 public class CvService implements KafkaConsumerService<Melding> {
 
     private final BrukerRepository brukerRepository;
     private final OppfolgingRepository oppfolgingRepository;
     private final ElasticIndexer elasticIndexer;
+    private final MetricsClient metricsClient;
 
+    @Autowired
     public CvService(
             BrukerRepository brukerRepository,
             OppfolgingRepository oppfolgingRepository,
-            ElasticIndexer elasticIndexer
+            ElasticIndexer elasticIndexer,
+            MetricsClient metricsClient
     ) {
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
         this.oppfolgingRepository = oppfolgingRepository;
+        this.metricsClient = metricsClient;
     }
 
     @Override
@@ -53,12 +60,12 @@ public class CvService implements KafkaConsumerService<Melding> {
 
         if (!harDeltCvMedNav(oppfolgingStartet, cvSistEndret)) {
             log.info("Bruker {} har ikke delt cv med nav", aktoerId);
-            createEvent("portefolje_har_ikke_delt_cv").report();
+            metricsClient.report(new Event("portefolje_har_ikke_delt_cv"));
             return;
         }
 
         log.info("Bruker {} har delt cv med nav", aktoerId.aktoerId);
-        createEvent("portefolje_har_delt_cv").report();
+        metricsClient.report(new Event("portefolje_har_delt_cv"));
         brukerRepository.setHarDeltCvMedNav(aktoerId, true).orElseThrowException();
         elasticIndexer.indekser(aktoerId).orElseThrowException();
     }

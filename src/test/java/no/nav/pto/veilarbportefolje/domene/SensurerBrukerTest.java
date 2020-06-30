@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 
-import no.nav.pto.veilarbportefolje.abac.PepClient;
+import no.nav.pto.veilarbportefolje.auth.PepClient;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;

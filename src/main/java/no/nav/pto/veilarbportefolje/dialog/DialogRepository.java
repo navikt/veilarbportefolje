@@ -5,7 +5,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -14,10 +16,12 @@ import java.util.Date;
 import java.util.Objects;
 
 @Slf4j
-public class DialogFeedRepository {
-    private JdbcTemplate db;
+@Repository
+public class DialogRepository {
+    private final JdbcTemplate db;
 
-    public DialogFeedRepository(JdbcTemplate db) {
+    @Autowired
+    public DialogRepository(JdbcTemplate db) {
         this.db = db;
     }
 
@@ -28,17 +32,17 @@ public class DialogFeedRepository {
         return new Timestamp(date.toInstant().toEpochMilli());
     }
 
-    public void oppdaterDialogInfoForBruker(DialogData dialog) {
+    public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
         SqlUtils.upsert(db, "DIALOG")
-            .set("VENTER_PA_BRUKER", toTimestamp(dialog.getTidspunktEldsteVentende()))
-            .set("VENTER_PA_NAV", toTimestamp(dialog.getTidspunktEldsteUbehandlede()))
-            .set("OPPDATERT_KILDESYSTEM", toTimestamp(dialog.getSisteEndring()))
-            .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
-            .set("AKTOERID", dialog.getAktorId())
-            .where(WhereClause.equals("AKTOERID", dialog.getAktorId())).execute();
+                .set("VENTER_PA_BRUKER", toTimestamp(dialog.getTidspunktEldsteVentende()))
+                .set("VENTER_PA_NAV", toTimestamp(dialog.getTidspunktEldsteUbehandlede()))
+                .set("OPPDATERT_KILDESYSTEM", toTimestamp(dialog.getSisteEndring()))
+                .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
+                .set("AKTOERID", dialog.getAktorId())
+                .where(WhereClause.equals("AKTOERID", dialog.getAktorId())).execute();
     }
 
-    public Try<DialogData> retrieveDialogData(String aktoerId) {
+    public Try<Dialogdata> retrieveDialogData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT * FROM DIALOG WHERE AKTOERID = ?",
                 new Object[] {aktoerId},
@@ -47,16 +51,11 @@ public class DialogFeedRepository {
     }
 
     @SneakyThrows
-    private DialogData mapToDialogData(ResultSet rs, int i) {
-        return new DialogData()
+    private Dialogdata mapToDialogData(ResultSet rs, int i) {
+        return new Dialogdata()
                 .setAktorId(rs.getString("AKTOERID"))
                 .setSisteEndring(rs.getTimestamp("OPPDATERT_KILDESYSTEM"))
                 .setTidspunktEldsteUbehandlede(rs.getTimestamp("VENTER_PA_NAV"))
                 .setTidspunktEldsteVentende(rs.getTimestamp("VENTER_PA_BRUKER"));
-    }
-
-    public void updateDialogFeedTimestamp(Timestamp timestamp) {
-        log.info("Oppdaterer sist oppdatert timestamp for dialog: {}", timestamp);
-        SqlUtils.update(db, "METADATA").set("dialogaktor_sist_oppdatert", timestamp).execute();
     }
 }

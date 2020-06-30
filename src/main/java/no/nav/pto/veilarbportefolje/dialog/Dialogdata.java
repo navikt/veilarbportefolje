@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class DialogData  {
+public class Dialogdata {
     public String aktorId;
     public Date sisteEndring;
     public Date tidspunktEldsteVentende;

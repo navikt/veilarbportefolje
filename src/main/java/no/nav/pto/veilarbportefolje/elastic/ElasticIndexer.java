@@ -2,10 +2,10 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.CollectionUtils;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
-import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -15,7 +15,6 @@ import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -35,8 +34,8 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
-
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -48,7 +47,6 @@ import static java.time.LocalDateTime.now;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static no.nav.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
@@ -59,6 +57,7 @@ import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
 @Slf4j
+@Component
 public class ElasticIndexer {
 
     final static int BATCH_SIZE = 1000;
@@ -74,13 +73,16 @@ public class ElasticIndexer {
 
     private UnleashService unleashService;
 
-    @Inject
+    private MetricsClient metricsClient;
+
+    @Autowired
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient client,
             ElasticService elasticService,
-            UnleashService unleashService
+            UnleashService unleashService,
+            MetricsClient metricsClient
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
@@ -88,6 +90,7 @@ public class ElasticIndexer {
         this.client = client;
         this.elasticService = elasticService;
         this.unleashService = unleashService;
+        this.metricsClient = metricsClient;
     }
 
     @SneakyThrows
@@ -240,9 +243,9 @@ public class ElasticIndexer {
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
         int antall = brukere.size();
-        Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
+        Event event = new Event("es.deltaindeksering.fullfort");
         event.addFieldToReport("es.antall.oppdateringer", antall);
-        event.report();
+        metricsClient.report(event);
     }
 
     @SneakyThrows
@@ -318,7 +321,7 @@ public class ElasticIndexer {
         OppfolgingsBruker bruker = result.orElseThrowException();
 
         if (erUnderOppfolging(bruker)) {
-
+            metricsClient
             MetricsUtils.timed(
                     "portefolje.indeks.leggTilAktiviteter",
                     () -> leggTilAktiviteter(bruker)

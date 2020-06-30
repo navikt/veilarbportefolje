@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.oidc.SystemUserTokenProvider;
-import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
-import no.nav.sbl.rest.RestUtils;
+import no.nav.common.rest.client.RestClient;
+import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,14 +10,13 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import java.io.IOException;
 
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class ClientConfig {
 
     @Bean
     public Client client() {
-        Client client = RestUtils.createClient();
+        OkHttpClient client = RestClient.baseClient();
         client.register(new SystemUserOidcTokenProviderFilter());
         return client;
     }

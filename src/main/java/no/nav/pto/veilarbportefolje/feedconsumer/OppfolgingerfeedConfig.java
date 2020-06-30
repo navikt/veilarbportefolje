@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.feedconsumer;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumer;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig;
@@ -13,7 +14,6 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

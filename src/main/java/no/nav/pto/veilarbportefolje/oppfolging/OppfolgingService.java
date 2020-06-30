@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.metrics.utils.MetricsUtils;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

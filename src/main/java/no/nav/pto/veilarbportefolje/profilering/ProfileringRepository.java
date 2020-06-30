@@ -6,7 +6,9 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,10 +19,12 @@ import java.time.ZonedDateTime;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
+@Repository
 public class ProfileringRepository {
     private JdbcTemplate db;
     public final String BRUKER_PROFILERING_TABELL = "BRUKER_PROFILERING";
 
+    @Autowired
     public ProfileringRepository(JdbcTemplate db) {
         this.db = db;
     }

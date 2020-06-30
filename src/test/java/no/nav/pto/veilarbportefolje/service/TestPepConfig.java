@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.service;
 
-import no.nav.pto.veilarbportefolje.abac.PepClient;
-import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
+import no.nav.pto.veilarbportefolje.auth.PepClient;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

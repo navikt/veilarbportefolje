@@ -1,17 +1,17 @@
 package no.nav.pto.veilarbportefolje.aktviteter;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDataFraFeed;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
-import static no.nav.json.JsonUtils.fromJson;
+import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 
 @Slf4j

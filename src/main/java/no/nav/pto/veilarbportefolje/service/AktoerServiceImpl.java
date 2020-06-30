@@ -2,17 +2,15 @@ package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dialogarena.aktor.AktorService;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.sbl.jdbc.Transactor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-
-import javax.inject.Inject;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,19 +22,9 @@ import static no.nav.pto.veilarbportefolje.util.JobUtils.runAsyncJobOnLeader;
 @Slf4j
 public class AktoerServiceImpl implements AktoerService {
 
-    @Inject
-    private AktorService aktorService;
-
-    @Inject
+    private AktorregisterClient aktorregisterClient;
     private JdbcTemplate db;
-
-    @Inject
     private BrukerRepository brukerRepository;
-
-    @Inject
-    private Transactor transactor;
-
-    @Inject
     private ElasticIndexer elasticIndexer;
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
@@ -71,7 +59,7 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     private PersonId getPersonIdFromFnr(AktoerId aktoerId) {
-        Fnr fnr = hentFnrFraAktorId(aktoerId).get();
+        Fnr fnr = hentFnrFraAktorId(aktoerId);
         PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
         AktoerId nyAktorIdForPersonId = hentAktoeridFraFnr(fnr).get();
 
@@ -92,11 +80,12 @@ public class AktoerServiceImpl implements AktoerService {
     }
 
     @Deprecated
-    public Try<Fnr> hentFnrFraAktorId(AktoerId aktoerId) {
-        return Try.of(() -> aktorService.getFnr(aktoerId.toString()).orElseThrow(IllegalStateException::new)).map(Fnr::of);
+    public Fnr hentFnrFraAktorId(AktoerId aktoerId) {
+        return Fnr.of(aktorregisterClient.hentFnr(aktoerId.toString()));
     }
 
-    private void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
+    @Transactional
+    void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
         if (personId == null) {
             return;
         }
@@ -104,10 +93,8 @@ public class AktoerServiceImpl implements AktoerService {
         if (!aktoerId.equals(aktoerIdFraTPS)) {
             brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
         } else {
-            transactor.inTransaction(() -> {
-                brukerRepository.setGjeldeneFlaggTilNull(personId);
-                brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
-            });
+            brukerRepository.setGjeldeneFlaggTilNull(personId);
+            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
 
 

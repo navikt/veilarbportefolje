@@ -4,7 +4,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.*;
-import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -63,7 +63,7 @@ public class DatabaseConfigTest {
     public OppfolgingRepository OppfolgingFeedRepository(JdbcTemplate db){ return new OppfolgingRepository(db); }
 
     @Bean
-    public DialogFeedRepository dialogFeedRepository(JdbcTemplate db) { return new DialogFeedRepository(db); }
+    public DialogRepository dialogFeedRepository(JdbcTemplate db) { return new DialogRepository(db); }
 
     @Bean
     public TiltakRepository tiltakRepository() { return new TiltakRepository(); }

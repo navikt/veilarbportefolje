@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.api;
+package no.nav.pto.veilarbportefolje.auth;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
@@ -20,7 +20,7 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
+import static no.nav.common.utils.StringUtils.nullOrEmpty;
 
 public class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
@@ -52,30 +52,30 @@ public class ValideringsRegler {
             "arbeidslistekategori"
             );
 
-    static void sjekkEnhet(String enhet) {
+    public static void sjekkEnhet(String enhet) {
         test("enhet", enhet, enhet.matches("\\d{4}"));
     }
 
 
-    static void sjekkVeilederIdent(String veilederIdent, boolean optional) {
+    public static void sjekkVeilederIdent(String veilederIdent, boolean optional) {
 
         test("veilederident", veilederIdent, optional || veilederIdent.matches("[A-Z]\\d{6}"));
     }
 
-    static void sjekkFiltervalg(Filtervalg filtervalg) {
+    public static void sjekkFiltervalg(Filtervalg filtervalg) {
         test("filtervalg", filtervalg, filtervalg::valider);
     }
 
-    static void sjekkSortering(String sortDirection, String sortField) {
+    public static void sjekkSortering(String sortDirection, String sortField) {
         test("sortDirection", sortDirection, sortDirs.contains(sortDirection));
         test("sortField", sortField, sortFields.contains(sortField));
     }
 
-    static void harYtelsesFilter(Filtervalg filtervalg) {
+    public static void harYtelsesFilter(Filtervalg filtervalg) {
         test("ytelsesfilter", filtervalg.ytelse, filtervalg.ytelse != null);
     }
 
-    static void sjekkFnr(String fnr) {
+    public static void sjekkFnr(String fnr) {
         test("fnr", fnr, fnr.matches("\\d{11}"));
     }
 

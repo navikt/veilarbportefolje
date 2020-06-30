@@ -1,18 +1,19 @@
 package no.nav.pto.veilarbportefolje.api;
 
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.brukerdialog.security.domain.IdentType;
-import no.nav.common.auth.SubjectHandler;
+import no.nav.common.auth.subject.IdentType;
+import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.OppfolgingEnhetDTO;
 import no.nav.pto.veilarbportefolje.domene.OppfolgingEnhetPageDTO;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,29 +22,28 @@ import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
-import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
+import static no.nav.common.auth.subject.IdentType.InternBruker;
+import static no.nav.common.auth.subject.IdentType.Systemressurs;
 
 @Slf4j
-@Api(value = "OppfolgingEnhet")
-@Path("/oppfolgingenhet")
-@Component
+@RestController
+@RequestMapping("/api/oppfolgingenhet")
 @Produces(APPLICATION_JSON)
 public class OppfolgingenhetController {
 
     static final int PAGE_SIZE_MAX = 1000;
     private static final int PAGE_NUMBER_MAX = 500_000;
 
-    private BrukerRepository brukerRepository;
-    private AktoerService aktoerService;
+    private final BrukerRepository brukerRepository;
+    private final AktoerService aktoerService;
 
-    @Inject
+    @Autowired
     public OppfolgingenhetController(BrukerRepository brukerRepository, AktoerService aktoerService) {
         this.brukerRepository = brukerRepository;
         this.aktoerService = aktoerService;
     }
 
-    @GET
+    @GetMapping
     public OppfolgingEnhetPageDTO getOppfolgingEnhet(@DefaultValue("1") @QueryParam("page_number") int pageNumber, @DefaultValue("10") @QueryParam("page_size") int pageSize) {
 
         autoriserBruker();

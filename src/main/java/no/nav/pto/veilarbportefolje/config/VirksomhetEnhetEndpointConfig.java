@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.sbl.dialogarena.common.cxf.CXFClient;
+import no.nav.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.virksomhet.tjenester.enhet.v1.Enhet;
@@ -11,8 +11,6 @@ import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VIRKSOMHET_ENHET_V1_URL_PROPERTY;
 import static no.nav.pto.veilarbportefolje.util.PingUtils.ping;
-import static no.nav.metrics.MetricsFactory.createTimerProxyForWebService;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class VirksomhetEnhetEndpointConfig {

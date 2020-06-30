@@ -1,8 +1,5 @@
 package no.nav.pto.veilarbportefolje.config;
 
-
-import no.nav.metrics.aspects.CountAspect;
-import no.nav.metrics.aspects.TimerAspect;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

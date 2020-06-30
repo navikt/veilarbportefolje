@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({
         EnhetController.class,
-        OppfolgingenhetController.class,
         PersoninfoController.class,
         VeilederController.class,
         ArbeidsListeController.class,

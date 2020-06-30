@@ -1,11 +1,9 @@
 package no.nav.pto.veilarbportefolje.api;
 
 
-import no.nav.brukerdialog.security.context.SubjectRule;
-import no.nav.common.auth.Subject;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,8 +13,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.HashMap;
 
-import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
-import static no.nav.common.auth.SsoToken.oidcToken;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,7 +25,7 @@ public class EnhetControllerTest {
     private ElasticIndexer elasticIndexer;
 
     @Mock
-    private PepClient pepClient;
+    private AuthService authService;
 
     @InjectMocks
     private EnhetController enhetController;

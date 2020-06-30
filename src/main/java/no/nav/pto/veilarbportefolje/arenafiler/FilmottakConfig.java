@@ -10,19 +10,13 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
-import no.nav.sbl.dialogarena.types.Pingable;
-import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.apache.commons.vfs2.FileObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.xml.bind.UnmarshalException;
-import java.io.FileNotFoundException;
 import java.util.UUID;
 
-import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
-import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class FilmottakConfig {

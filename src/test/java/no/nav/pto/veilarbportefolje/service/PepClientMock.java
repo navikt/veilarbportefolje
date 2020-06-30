@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.service;
 
-import no.nav.pto.veilarbportefolje.abac.PepClient;
+import no.nav.pto.veilarbportefolje.auth.PepClient;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 
 public class PepClientMock implements PepClient {

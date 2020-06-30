@@ -4,6 +4,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import no.nav.pto.veilarbportefolje.feed.common.*;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.rest.RestUtils;
+import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -31,7 +32,7 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     private final Ping.PingMetadata pingMetadata;
     private int lastResponseHash;
 
-    private static final Client REST_CLIENT = RestUtils.createClient();
+    private static final Client REST_CLIENT = RestClient();
 
     public FeedConsumer(FeedConsumerConfig<DOMAINOBJECT> config) {
         String feedName = config.feedName;

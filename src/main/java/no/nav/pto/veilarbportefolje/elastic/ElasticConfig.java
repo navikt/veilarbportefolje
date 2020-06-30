@@ -5,7 +5,7 @@ import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.config.ServiceConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
+import no.nav.pto.veilarbportefolje.auth.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.http.HttpHost;
@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Import;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 @Import({

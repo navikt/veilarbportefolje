@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.service;
 
-import no.nav.pto.veilarbportefolje.abac.PepClientImpl;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;

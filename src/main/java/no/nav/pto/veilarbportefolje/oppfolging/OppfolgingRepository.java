@@ -8,9 +8,9 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.inject.Inject;
+import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -21,11 +21,12 @@ import static java.lang.Boolean.TRUE;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
+@Repository
 public class OppfolgingRepository {
 
-    private JdbcTemplate db;
+    private final JdbcTemplate db;
 
-    @Inject
+    @Autowired
     public OppfolgingRepository(JdbcTemplate db) {
         this.db = db;
     }

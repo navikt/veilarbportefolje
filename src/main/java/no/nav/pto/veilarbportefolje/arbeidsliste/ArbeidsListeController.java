@@ -1,60 +1,63 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import io.swagger.annotations.Api;
-import io.vavr.collection.List;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.SubjectHandler;
-import no.nav.pto.veilarbportefolje.api.TilgangsRegler;
-import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.*;
-import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
+import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
-import static no.nav.pto.veilarbportefolje.api.ValideringsRegler.validerArbeidsliste;
+import static no.nav.pto.veilarbportefolje.auth.ValideringsRegler.validerArbeidsliste;
 
 @Slf4j
-@Api(value = "arbeidsliste")
-@Path("/arbeidsliste/")
-@Component
+@RestController
+@RequestMapping("/api/arbeidsliste")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeController {
+    private final ArbeidslisteService arbeidslisteService;
+    private final AktoerService aktoerService;
+    private final AuthService authService;
 
-    @Inject
-    private ArbeidslisteService arbeidslisteService;
+    @Autowired
+    public ArbeidsListeController (
+            ArbeidslisteService arbeidslisteService,
+            AktoerService aktoerService,
+            AuthService authService
+    ) {
+        this.arbeidslisteService = arbeidslisteService;
+        this.aktoerService = aktoerService;
+        this.authService = authService;
 
-    @Inject
-    private AktoerService aktoerService;
+    }
 
-    @Inject
-    private PepClient pepClient;
 
-    @POST
-    public Response opprettArbeidsListe(java.util.List<ArbeidslisteRequest> arbeidsliste) {
-        TilgangsRegler.tilgangTilOppfolging(pepClient);
+    @PostMapping
+    public Response opprettArbeidsListe(List<ArbeidslisteRequest> arbeidsliste) {
+        authService.tilgangTilOppfolging();
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
-        if (tilgangErrors.length() > 0) {
-            return RestResponse.of(tilgangErrors.toJavaList()).forbidden();
+        if (tilgangErrors.size() > 0) {
+            return RestResponse.of(tilgangErrors).forbidden();
         }
 
         RestResponse<String> response = new RestResponse<>(new ArrayList<>(), new ArrayList<>());
@@ -71,18 +74,17 @@ public class ArbeidsListeController {
         return response.data.isEmpty() ? response.badRequest() : response.created();
     }
 
-    @GET
-    @Path("{fnr}/")
-    public Arbeidsliste getArbeidsListe(@PathParam("fnr") String fnrString) {
+    @GetMapping("{fnr}/")
+    public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
 
-        String innloggetVeileder = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
+        String innloggetVeileder = authService.getInnloggetVeilederIdent().getVeilederId();
 
         Fnr fnr = new Fnr(fnrString);
         Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(fnr);
 
         boolean harVeilederTilgang = arbeidslisteService.hentEnhet(fnr)
-                .map(enhet -> pepClient.tilgangTilEnhet(innloggetVeileder, enhet))
+                .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
                 .getOrElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
@@ -90,15 +92,14 @@ public class ArbeidsListeController {
                 .toJavaOptional()
                 .orElse(emptyArbeidsliste())
                 .setIsOppfolgendeVeileder(aktoerId.map(id ->
-                    arbeidslisteService.erVeilederForBruker(id, VeilederId.of(innloggetVeileder))).get())
+                        arbeidslisteService.erVeilederForBruker(id, VeilederId.of(innloggetVeileder))).get())
                 .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
-    @POST
-    @Path("{fnr}/")
-    public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnr) {
+    @PostMapping("{fnr}/")
+    public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
@@ -113,9 +114,8 @@ public class ArbeidsListeController {
         return Response.status(CREATED).entity(arbeidsliste).build();
     }
 
-    @PUT
-    @Path("{fnr}/")
-    public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathParam("fnr") String fnrString) {
+    @PutMapping("{fnr}/")
+    public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
         Fnr fnr = new Fnr(fnrString);
         sjekkTilgangTilEnhet(fnr);
@@ -130,12 +130,11 @@ public class ArbeidsListeController {
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
                         fnr,
-                        VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new))));
+                        authService.getInnloggetVeilederIdent()));
     }
 
-    @DELETE
-    @Path("{fnr}/")
-    public Arbeidsliste deleteArbeidsliste(@PathParam("fnr") String fnr) {
+    @DeleteMapping("{fnr}/")
+    public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
@@ -146,11 +145,10 @@ public class ArbeidsListeController {
                 .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
     }
 
-    @POST
-    @Path("/delete")
+    @PostMapping("/delete")
     public Response deleteArbeidslisteListe(java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         return createResponse(() -> {
-            TilgangsRegler.tilgangTilOppfolging(pepClient);
+            authService.tilgangTilOppfolging();
 
             java.util.List<String> feiledeFnrs = new ArrayList<>();
             java.util.List<String> okFnrs = new ArrayList<>();
@@ -160,8 +158,8 @@ public class ArbeidsListeController {
                     .map(data -> new Fnr(data.getFnr()))
                     .collect(Collectors.toList());
 
-            Validation<java.util.List<Fnr>, java.util.List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
-            Validation<String, java.util.List<Fnr>> veilederForBrukere = TilgangsRegler.erVeilederForBrukere(arbeidslisteService, fnrs);
+            Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
+            Validation<String, List<Fnr>> veilederForBrukere = authService.erVeilederForBrukere(arbeidslisteService, fnrs);
             if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
                 throw new BadRequestException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
             }
@@ -188,24 +186,26 @@ public class ArbeidsListeController {
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
         String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new WebApplicationException("Kunne ikke hente enhet for denne brukeren", BAD_GATEWAY));
-        TilgangsRegler.tilgangTilEnhet(pepClient, enhet);
+        authService.tilgangTilEnhet(enhet);
     }
 
     private ArbeidslisteDTO data(ArbeidslisteRequest body, Fnr fnr) {
         Timestamp frist = nullOrEmpty(body.getFrist()) ? null : Timestamp.from(Instant.parse(body.getFrist()));
         return new ArbeidslisteDTO(fnr)
-                .setVeilederId(VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new)))
+                .setVeilederId(authService.getInnloggetVeilederIdent())
                 .setOverskrift(body.getOverskrift())
                 .setKommentar(body.getKommentar())
                 .setKategori(Arbeidsliste.Kategori.valueOf(body.getKategori()))
                 .setFrist(frist);
     }
 
-    private List<String> getTilgangErrors(java.util.List<ArbeidslisteRequest> arbeidsliste) {
-        return List.ofAll(arbeidsliste)
-                .map(bruker -> TilgangsRegler.erVeilederForBruker(arbeidslisteService, bruker.getFnr()))
+    private List<String> getTilgangErrors(List<ArbeidslisteRequest> arbeidsliste) {
+        return arbeidsliste
+                .stream()
+                .map(bruker -> authService.erVeilederForBruker(arbeidslisteService, bruker.getFnr()))
                 .filter(Validation::isInvalid)
-                .map(Validation::getError);
+                .map(Validation::getError)
+                .collect(Collectors.toList());
     }
 
     private RestResponse<AktoerId> opprettArbeidsliste(ArbeidslisteRequest arbeidslisteRequest) {
@@ -228,16 +228,16 @@ public class ArbeidsListeController {
     }
 
     private void validerOppfolgingOgBruker(String fnr) {
-        TilgangsRegler.tilgangTilOppfolging(pepClient);
+        authService.tilgangTilOppfolging();
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        TilgangsRegler.tilgangTilBruker(pepClient, fnr);
+        authService.tilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
             throw new BadRequestException(validateFnr.getError());
         }
     }
 
     private void validerErVeilederForBruker(String fnr) {
-        Validation<String, Fnr> validateVeileder = TilgangsRegler.erVeilederForBruker(arbeidslisteService, fnr);
+        Validation<String, Fnr> validateVeileder = authService.erVeilederForBruker(arbeidslisteService, fnr);
         if (validateVeileder.isInvalid()) {
             throw new ForbiddenException(validateVeileder.getError());
         }
