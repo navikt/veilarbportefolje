@@ -12,6 +12,8 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import static no.nav.json.JsonUtils.fromJson;
 import static no.nav.metrics.MetricsFactory.createEvent;
 import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
+import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.P;
+import static no.nav.sbl.util.EnvironmentUtils.isEnvironmentClass;
 
 @Slf4j
 public class CvService implements KafkaConsumerService<String> {
@@ -53,6 +55,13 @@ public class CvService implements KafkaConsumerService<String> {
 
         if (melding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktorId);
+            return;
+        }
+
+        if (melding.getFnr() == null) {
+            if (isEnvironmentClass(P)) {
+                log.error("Bruker {} har ikke fnr i melding fra samtykke-topic", aktorId);
+            }
             return;
         }
 
