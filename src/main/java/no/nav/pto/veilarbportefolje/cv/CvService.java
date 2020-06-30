@@ -17,14 +17,14 @@ import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 public class CvService implements KafkaConsumerService<String> {
 
     private final BrukerRepository brukerRepository;
-    private final ElasticServiceV2 elasticIndexer;
+    private final ElasticServiceV2 elasticServiceV2;
 
     public CvService(
             BrukerRepository brukerRepository,
-            ElasticServiceV2 elasticIndexer
+            ElasticServiceV2 elasticServiceV2
     ) {
         this.brukerRepository = brukerRepository;
-        this.elasticIndexer = elasticIndexer;
+        this.elasticServiceV2 = elasticServiceV2;
     }
 
     enum Ressurs {
@@ -61,13 +61,13 @@ public class CvService implements KafkaConsumerService<String> {
                 log.info("Bruker {} har delt cv med nav", aktorId);
                 brukerRepository.setHarDeltCvMedNav(aktorId, true).orElseThrowException();
                 createEvent("portefolje_har_delt_cv").report();
-                elasticIndexer.updateHarDeltCv(melding.getFnr(), true);
+                elasticServiceV2.updateHarDeltCv(melding.getFnr(), true);
                 break;
             case SAMTYKKE_SLETTET:
                 log.info("Bruker {} har ikke delt cv med nav", aktorId);
                 brukerRepository.setHarDeltCvMedNav(aktorId, false).orElseThrowException();
                 createEvent("portefolje_har_ikke_delt_cv").report();
-                elasticIndexer.updateHarDeltCv(melding.getFnr(), false);
+                elasticServiceV2.updateHarDeltCv(melding.getFnr(), false);
                 break;
             default:
                 log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktorId);

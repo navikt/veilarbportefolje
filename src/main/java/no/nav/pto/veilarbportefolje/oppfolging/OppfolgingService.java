@@ -40,7 +40,9 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                              NavKontorService navKontorService,
                              ArbeidslisteService arbeidslisteService,
                              UnleashService unleashService,
-                             AktoerService aktoerService, CvService cvService) {
+                             AktoerService aktoerService,
+                             CvService cvService
+    ) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
         this.veilederService = veilederService;
