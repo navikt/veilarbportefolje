@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
@@ -31,10 +30,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinf
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import({ElasticConfig.class})
 public class ServiceConfig {
 
     @Bean

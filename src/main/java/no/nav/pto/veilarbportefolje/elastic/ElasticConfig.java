@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
-import no.nav.pto.veilarbportefolje.config.ServiceConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
@@ -19,10 +18,7 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
-@Import({
-        DatabaseConfig.class,
-        ServiceConfig.class
-})
+@Import({DatabaseConfig.class})
 public class ElasticConfig {
 
     public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
