@@ -8,11 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.util.Result;
-import org.elasticsearch.action.ActionResponse;
 
-import java.util.Optional;
-
-import static java.util.Optional.empty;
 import static no.nav.json.JsonUtils.fromJson;
 import static no.nav.metrics.MetricsFactory.createEvent;
 import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
@@ -32,7 +28,9 @@ public class CvService implements KafkaConsumerService<String> {
     }
 
     enum Ressurs {
-        CV_HJEMMEL
+        CV_HJEMMEL,
+        CV_GENERELL,
+        ARBEIDSGIVER_GENERELL
     }
 
     enum MeldingType {
@@ -55,6 +53,7 @@ public class CvService implements KafkaConsumerService<String> {
 
         if (melding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktorId);
+            return;
         }
 
         switch (melding.meldingType) {

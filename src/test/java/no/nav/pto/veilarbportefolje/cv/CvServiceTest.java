@@ -75,6 +75,70 @@ public class CvServiceTest extends IntegrationTest {
     }
 
     @Test
+    public void skal_ikke_behandle_meldinger_som_har_meldingstype_arbeidsgiver_generell() {
+        final AktoerId aktoerId = insertBrukerMedDeltCv(false);
+        Fnr fnr = Fnr.of("00000000001");
+
+        String document = new JSONObject()
+                .put("fnr", fnr.toString())
+                .put("har_delt_cv", false)
+                .toString();
+
+        IndexResponse indexResponse = createDocument(fnr, document);
+        assertThat(indexResponse.status().getStatus()).isEqualTo(201);
+
+        String payload = new JSONObject()
+                .put("aktoerId", aktoerId)
+                .put("fnr", fnr)
+                .put("meldingType", "SAMTYKKE_OPPRETTET")
+                .put("ressurs", "ARBEIDSGIVER_GENERELL")
+                .toString();
+
+        cvService.behandleKafkaMelding(payload);
+
+        String harDeltCvDatabaseVerdi = harDeltCvFraDatabase(aktoerId);
+        assertThat(harDeltCvDatabaseVerdi).isEqualTo("N");
+
+        GetResponse getResponse = fetchDocument(fnr);
+        assertThat(getResponse.isExists()).isTrue();
+
+        boolean harDeltCv = (boolean) getResponse.getSourceAsMap().get("har_delt_cv");
+        assertThat(harDeltCv).isFalse();
+    }
+
+    @Test
+    public void skal_ikke_behandle_meldinger_som_har_meldingstype_cv_generell() {
+        final AktoerId aktoerId = insertBrukerMedDeltCv(false);
+        Fnr fnr = Fnr.of("00000000001");
+
+        String document = new JSONObject()
+                .put("fnr", fnr.toString())
+                .put("har_delt_cv", false)
+                .toString();
+
+        IndexResponse indexResponse = createDocument(fnr, document);
+        assertThat(indexResponse.status().getStatus()).isEqualTo(201);
+
+        String payload = new JSONObject()
+                .put("aktoerId", aktoerId)
+                .put("fnr", fnr)
+                .put("meldingType", "SAMTYKKE_OPPRETTET")
+                .put("ressurs", "CV_GENERELL")
+                .toString();
+
+        cvService.behandleKafkaMelding(payload);
+
+        String harDeltCvDatabaseVerdi = harDeltCvFraDatabase(aktoerId);
+        assertThat(harDeltCvDatabaseVerdi).isEqualTo("N");
+
+        GetResponse getResponse = fetchDocument(fnr);
+        assertThat(getResponse.isExists()).isTrue();
+
+        boolean harDeltCv = (boolean) getResponse.getSourceAsMap().get("har_delt_cv");
+        assertThat(harDeltCv).isFalse();
+    }
+
+    @Test
     public void skal_ignorere_tilfeller_hvor_dokumentet_ikke_finnes_i_elastic() {
         final AktoerId aktoerId = insertBrukerMedDeltCv(false);
         Fnr fnr = Fnr.of("00000000000");
