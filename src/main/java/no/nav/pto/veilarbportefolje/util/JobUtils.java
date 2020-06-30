@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
 import static java.net.InetAddress.getLocalHost;
-import static no.nav.common.leaderelection.LeaderElection.isNotLeader;
 import static no.nav.common.utils.IdUtils.generateId;
 
 public class JobUtils {
@@ -21,7 +20,7 @@ public class JobUtils {
     private static String MDC_JOB_ID = "jobId";
 
     public static Optional<RunningJob> runAsyncJobOnLeader(Runnable runnable) {
-        if (isNotLeader()) {
+        if (isLeader()) {
             return Optional.empty();
         }
         RunningJob runningJob = runAsyncJob(runnable);

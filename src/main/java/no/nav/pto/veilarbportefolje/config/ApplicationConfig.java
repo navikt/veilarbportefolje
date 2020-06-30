@@ -5,6 +5,9 @@ import no.nav.common.abac.VeilarbPep;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.subject.IdentType;
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.aktorregister.AktorregisterHttpClient;
+import no.nav.common.client.aktorregister.CachedAktorregisterClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.featuretoggle.UnleashServiceConfig;
 import no.nav.common.utils.Credentials;
@@ -56,9 +59,7 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @Import({
         AbacContext.class,
         DatabaseConfig.class,
-        VirksomhetEnhetEndpointConfig.class,
         ServiceConfig.class,
-        ExternalServiceConfig.class,
         FilmottakConfig.class,
         CacheConfig.class,
         FeedConfig.class,
@@ -245,5 +246,13 @@ public class ApplicationConfig {
                 properties.getAbacUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
+    }
+
+    @Bean
+    public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider tokenProvider) {
+        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
+                properties.getAktorregisterUrl(), APPLICATION_NAME, tokenProvider::getSystemUserToken
+        );
+        return new CachedAktorregisterClient(aktorregisterClient);
     }
 }

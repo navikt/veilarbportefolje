@@ -2,22 +2,17 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.selftest.Helsesjekk;
-import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 import java.time.Duration;
-import java.util.Date;
-
-import static no.nav.pto.veilarbportefolje.util.KafkaProperties.KAFKA_BROKERS;
 
 @Slf4j
-public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
+public class KafkaConsumerRegistrering implements Runnable {
     private Consumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer;
     private RegistreringService registreringService;
     private UnleashService unleashService;
@@ -48,18 +43,6 @@ public class KafkaConsumerRegistrering implements Helsesjekk, Runnable {
                 log.error("Feilet ved behandling av kafka-registrering-melding", e);
             }
         }
-    }
-
-    @Override
-    public void helsesjekk() {
-        if ((this.lastThrownExceptionTime + 60_000L) > System.currentTimeMillis()) {
-            throw new IllegalArgumentException("Kafka registreringsconsumer feilet " + new Date(this.lastThrownExceptionTime), this.e);
-        }
-    }
-
-    @Override
-    public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
     }
 
     private boolean registreringFeature() {

@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.pto.veilarbportefolje.api.EnhetController;
-import no.nav.pto.veilarbportefolje.api.OppfolgingenhetController;
 import no.nav.pto.veilarbportefolje.api.PersoninfoController;
 import no.nav.pto.veilarbportefolje.api.VeilederController;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidsListeController;

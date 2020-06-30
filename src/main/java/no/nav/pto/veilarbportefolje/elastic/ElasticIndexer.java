@@ -202,7 +202,9 @@ public class ElasticIndexer {
             throw new IllegalStateException(message);
         }
 
-        FunksjonelleMetrikker.oppdaterAntallBrukere();
+        Event event = new Event("portefolje.antall.brukere");
+        event.addFieldToReport("antall_brukere", ElasticUtils.getCount());
+        metricsClient.report(event);
 
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
 

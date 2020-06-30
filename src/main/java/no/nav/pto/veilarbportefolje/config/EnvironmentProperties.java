@@ -11,4 +11,5 @@ public class EnvironmentProperties {
 
     private String abacUrl;
     private String dbUrl;
+    private String aktorregisterUrl;
 }

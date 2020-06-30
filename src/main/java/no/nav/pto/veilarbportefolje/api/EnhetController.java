@@ -46,10 +46,10 @@ public class EnhetController {
     @PostMapping("/{enhet}/portefolje")
     public Response hentPortefoljeForEnhet(
             @PathVariable("enhet") String enhet,
-            @QueryParam("fra") Integer fra,
-            @QueryParam("antall") Integer antall,
-            @QueryParam("sortDirection") String sortDirection,
-            @QueryParam("sortField") String sortField,
+            @RequestParam("fra") Integer fra,
+            @RequestParam("antall") Integer antall,
+            @RequestParam("sortDirection") String sortDirection,
+            @RequestParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
         return createResponse(() -> {

@@ -22,9 +22,11 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @EnableTransactionManagement
 public class DatabaseConfig {
 
-    @Autowired
     private EnvironmentProperties environmentProperties;
 
+    public DatabaseConfig (EnvironmentProperties environmentProperties) {
+        this.environmentProperties = environmentProperties;
+    }
 
     @Bean
     public DataSource dataSource() {

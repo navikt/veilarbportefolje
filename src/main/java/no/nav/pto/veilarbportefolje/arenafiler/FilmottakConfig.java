@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 import org.apache.commons.vfs2.FileObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

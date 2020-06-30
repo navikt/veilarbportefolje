@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY;
-import static no.nav.pto.veilarbportefolje.util.PingUtils.ping;
+import static no.nav.pto.veilarbportefolje.util.HealthCheckUtils.ping;
 
 @Configuration
 public class DigitalKontaktinformasjonConfig {

@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;

@@ -4,7 +4,6 @@ import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

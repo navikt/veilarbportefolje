@@ -43,11 +43,11 @@ public class VeilederController {
     @PostMapping("/{veilederident}/portefolje")
     public Response hentPortefoljeForVeileder(
             @PathVariable("veilederident") String veilederIdent,
-            @QueryParam("enhet") String enhet,
-            @QueryParam("fra") Integer fra,
-            @QueryParam("antall") Integer antall,
-            @QueryParam("sortDirection") String sortDirection,
-            @QueryParam("sortField") String sortField,
+            @RequestParam("enhet") String enhet,
+            @RequestParam("fra") Integer fra,
+            @RequestParam("antall") Integer antall,
+            @RequestParam("sortDirection") String sortDirection,
+            @RequestParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
         return createResponse(() -> {
@@ -78,7 +78,7 @@ public class VeilederController {
     }
 
     @GetMapping("/{veilederident}/statustall")
-    public Response hentStatusTall(@PathVariable("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
+    public Response hentStatusTall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         return createResponse(() -> {
             Event event = new Event("minoversiktportefolje.statustall.lastet");
             metricsClient.report(event);
@@ -91,7 +91,7 @@ public class VeilederController {
     }
 
     @GetMapping("/{veilederident}/arbeidsliste")
-    public Response hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @QueryParam("enhet") String enhet) {
+    public Response hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         return createResponse(() -> {
             Event event = new Event("minoversiktportefolje.arbeidsliste.lastet");
             metricsClient.report(event);
