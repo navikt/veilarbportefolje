@@ -19,6 +19,7 @@ public class VeilarbportefoljeApp {
         System.setProperty(StsSecurityConstants.SYSTEMUSER_USERNAME, serviceUser.username);
         System.setProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
         */
+        System.setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging");
         SpringApplication.run(VeilarbportefoljeApp.class, args);
     }
 

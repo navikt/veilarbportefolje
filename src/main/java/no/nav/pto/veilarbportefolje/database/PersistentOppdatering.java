@@ -8,8 +8,9 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -19,16 +20,19 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+@Service
 public class PersistentOppdatering {
+    private final ElasticIndexer elasticIndexer;
+    private final BrukerRepository brukerRepository;
+    private final AktivitetDAO aktivitetDAO;
 
-    @Inject
-    private ElasticIndexer elasticIndexer;
+    @Autowired
+    public PersistentOppdatering(ElasticIndexer elasticIndexer, BrukerRepository brukerRepository, AktivitetDAO aktivitetDAO){
+        this.elasticIndexer = elasticIndexer;
+        this.brukerRepository = brukerRepository;
+        this.aktivitetDAO = aktivitetDAO;
+    }
 
-    @Inject
-    private BrukerRepository brukerRepository;
-
-    @Inject
-    private AktivitetDAO aktivitetDAO;
 
     public CompletableFuture<Void> lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);

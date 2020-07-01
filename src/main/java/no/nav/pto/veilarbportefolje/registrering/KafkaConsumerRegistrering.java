@@ -16,8 +16,6 @@ public class KafkaConsumerRegistrering implements Runnable {
     private Consumer<String, ArbeidssokerRegistrertEvent> kafkaConsumer;
     private RegistreringService registreringService;
     private UnleashService unleashService;
-    private long lastThrownExceptionTime;
-    private Exception e;
 
     public KafkaConsumerRegistrering(RegistreringService registreringService, Consumer<String, ArbeidssokerRegistrertEvent> kafkaRegistreringConsumer, UnleashService unleashService) {
         this.registreringService = registreringService;
@@ -38,8 +36,6 @@ public class KafkaConsumerRegistrering implements Runnable {
                     registreringService.behandleKafkaMelding(record.value());
                 }
             } catch (Exception e) {
-                this.e = e;
-                this.lastThrownExceptionTime = System.currentTimeMillis();
                 log.error("Feilet ved behandling av kafka-registrering-melding", e);
             }
         }

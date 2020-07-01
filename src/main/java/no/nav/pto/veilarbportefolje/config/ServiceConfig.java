@@ -32,66 +32,6 @@ import org.springframework.context.annotation.Configuration;
 public class ServiceConfig {
 
     @Bean
-    public PersistentOppdatering persistentOppdatering() {
-        return new PersistentOppdatering();
-    }
-
-    @Bean
-    public ArbeidslisteService arbeidslisteService() {
-        return new ArbeidslisteService();
-    }
-
-    @Bean
-    public AktivitetService aktivitetService(AktoerService aktoerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering) {
-        return new AktivitetService(aktoerService, aktivitetDAO, persistentOppdatering);
-    }
-
-    @Bean
-    public TiltakService tiltakService() {
-        return new TiltakService();
-    }
-
-    @Bean
-    public KrrService krrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 dkif) {
-        return new KrrService(krrRepository, dkif);
-    }
-
-    @Bean
-    public DialogService dialogService(DialogRepository dialogRepository, ElasticIndexer elasticIndexer) {
-        return new DialogService(dialogRepository, elasticIndexer);
-    }
-
-    @Bean
-    public VedtakService vedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
-        return new VedtakService(vedtakStatusRepository, elasticIndexer, aktoerService);
-    }
-
-    @Bean
-    public RegistreringService registreringService(RegistreringRepository registreringRepository) {
-        return new RegistreringService(registreringRepository);
-    }
-
-    @Bean
-    public NavKontorService navKontorService(BrukerRepository brukerRepository) {
-        return new NavKontorService(brukerRepository);
-    }
-
-    @Bean
-    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService, CvService cvService) {
-        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService, cvService);
-    }
-
-    @Bean
-    public KafkaAktivitetService kafkaAktivitetService(AktivitetService aktivitetService, UnleashService unleashService) {
-        return new KafkaAktivitetService(aktivitetService, unleashService);
-    }
-
-    @Bean
-    public CvService cvService(OppfolgingRepository oppfolgingRepository, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
-        return new CvService(brukerRepository,oppfolgingRepository, elasticIndexer);
-    }
-
-    @Bean
     public ProfileringService profileringService(ProfileringRepository profileringRepository) {
         return new ProfileringService(profileringRepository);
     }

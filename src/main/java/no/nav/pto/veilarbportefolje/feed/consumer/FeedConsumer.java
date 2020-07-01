@@ -1,23 +1,26 @@
 package no.nav.pto.veilarbportefolje.feed.consumer;
 
+import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import no.nav.common.rest.client.RestClient;
+import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.feed.common.*;
+import no.nav.pto.veilarbportefolje.feedconsumer.OidcFeedOutInterceptor;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
-
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -33,13 +36,19 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     private final Ping.PingMetadata pingMetadata;
     private int lastResponseHash;
 
-    private static final OkHttpClient REST_CLIENT = RestClient.baseClient();
+    private final OkHttpClient restClient;
 
     public FeedConsumer(FeedConsumerConfig<DOMAINOBJECT> config) {
         String feedName = config.feedName;
         String host = config.host;
 
         this.config = config;
+        OkHttpClient.Builder clientBuilder = RestClient.baseClientBuilder();
+
+        this.config.interceptors.forEach(clientBuilder::addInterceptor);
+
+        this.restClient = clientBuilder.build();
+
         this.pingMetadata = new Ping.PingMetadata(getTargetUrl(), String.format("feed-consumer av '%s'", feedName), false);
 
         createScheduledJob(feedName, host, config.pollingConfig, runWithLock(feedName, this::poll));
@@ -70,11 +79,9 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
 
         Entity<FeedWebhookRequest> entity = Entity.entity(body, APPLICATION_JSON_TYPE);
 
-        Invocation.Builder request = REST_CLIENT
+        Invocation.Builder request = restClient
                 .target(asUrl(this.config.host, "feed", this.config.feedName, "webhook"))
                 .request();
-
-        config.interceptors.forEach(interceptor -> interceptor.apply(request));
 
         Response response = request
                 .buildPut(entity)
@@ -91,48 +98,37 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     public synchronized Response poll() {
         Response response = fetchChanges();
 
-        if (response.getStatus() != 200) {
-            LOG.warn("Endepunkt for polling av feed returnerte feilkode {}", response.getStatus());
-        } else {
-            ParameterizedType type = new FeedParameterizedType(this.config.domainobject);
-            FeedResponse<DOMAINOBJECT> entity = response.readEntity(new GenericType<>(type));
-            List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
-            if (elements != null && !elements.isEmpty()) {
-                List<DOMAINOBJECT> data = elements
-                        .stream()
-                        .map(FeedElement::getElement)
-                        .collect(Collectors.toList());
+        ParameterizedType type = new FeedParameterizedType(this.config.domainobject);
+        FeedResponse<DOMAINOBJECT> entity = RestUtils.presponse.body(new GenericType<>(type));
+        List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
+        if (elements != null && !elements.isEmpty()) {
+            List<DOMAINOBJECT> data = elements
+                    .stream()
+                    .map(FeedElement::getElement)
+                    .collect(Collectors.toList());
 
-                if (!(entity.hashCode() == lastResponseHash)) {
-                    this.config.callback.call(entity.getNextPageId(), data);
-                }
-                this.lastResponseHash = entity.hashCode();
+            if (!(entity.hashCode() == lastResponseHash)) {
+                this.config.callback.call(entity.getNextPageId(), data);
             }
+            this.lastResponseHash = entity.hashCode();
         }
+
 
         return response;
     }
 
-        Response fetchChanges() {
+    @SneakyThrows
+    Response fetchChanges() {
         String lastEntry = this.config.lastEntrySupplier.get();
-        HttpUrl.Builder httpBuilder = HttpUrl.parse(getTargetUrl()).newBuilder();
+        HttpUrl.Builder httpBuilder = Objects.requireNonNull(HttpUrl.parse(getTargetUrl())).newBuilder();
         httpBuilder.addQueryParameter(QUERY_PARAM_ID, lastEntry);
         httpBuilder.addQueryParameter(QUERY_PARAM_PAGE_SIZE, String.valueOf(this.config.pageSize));
 
         Request request = new Request.Builder().url(httpBuilder.build()).build();
-
-
-        Invocation.Builder request = REST_CLIENT
-                .target(getTargetUrl())
-                .queryParam(QUERY_PARAM_ID, lastEntry)
-                .queryParam(QUERY_PARAM_PAGE_SIZE, this.config.pageSize)
-                .request();
-
-        config.interceptors.forEach(interceptor -> interceptor.apply(request));
-
-        return request
-                .buildGet()
-                .invoke();
+        try (okhttp3.Response response = restClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            return response;
+        }
     }
 
     private String getTargetUrl() {

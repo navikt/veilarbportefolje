@@ -8,8 +8,10 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
@@ -20,18 +22,27 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.util.JobUtils.runAsyncJobOnLeader;
 
 @Slf4j
+@Service
 public class AktoerService {
 
-    private AktorregisterClient aktorregisterClient;
-    private JdbcTemplate db;
-    private BrukerRepository brukerRepository;
-    private ElasticIndexer elasticIndexer;
+    private final AktorregisterClient aktorregisterClient;
+    private final JdbcTemplate db;
+    private final BrukerRepository brukerRepository;
+    private final ElasticIndexer elasticIndexer;
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM OPPFOLGING_DATA "
             + "WHERE OPPFOLGING = 'J' "
             + "AND AKTOERID NOT IN "
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
+
+    @Autowired
+    public AktoerService(AktorregisterClient aktorregisterClient, JdbcTemplate db, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer){
+        this.aktorregisterClient = aktorregisterClient;
+        this.db = db;
+        this.brukerRepository = brukerRepository;
+        this.elasticIndexer = elasticIndexer;
+    }
 
 
     @Scheduled(cron = "0 0/5 * * * *")

@@ -11,9 +11,10 @@ import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.ForbiddenException;
@@ -25,7 +26,7 @@ import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-@Component
+@Service
 public class AuthService {
 
     private final Pep veilarbPep;
@@ -89,7 +90,7 @@ public class AuthService {
 
     public  List<Bruker> sensurerBrukere(List<Bruker> brukere) {
         return brukere.stream()
-                .map( bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker))
+                .map(this::fjernKonfidensiellInfoDersomIkkeTilgang)
                 .collect(toList());
     }
 

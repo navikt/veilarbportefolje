@@ -1,14 +1,16 @@
 package no.nav.pto.veilarbportefolje.profilering;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
-@Slf4j
+@Service
 public class ProfileringService implements KafkaConsumerService<ArbeidssokerProfilertEvent> {
     private final ProfileringRepository profileringRepository;
 
+    @Autowired
     public ProfileringService(ProfileringRepository profileringRepository) {
         this.profileringRepository = profileringRepository;
     }

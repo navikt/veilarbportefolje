@@ -5,6 +5,8 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDataFraFeed;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -15,10 +17,12 @@ import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 
 @Slf4j
+@Service
 public class KafkaAktivitetService implements KafkaConsumerService<String> {
-    AktivitetService aktivitetService;
-    UnleashService unleashService;
+    private final AktivitetService aktivitetService;
+    private final UnleashService unleashService;
 
+    @Autowired
     public KafkaAktivitetService (AktivitetService aktivitetService, UnleashService unleashService) {
         this.aktivitetService = aktivitetService;
         this.unleashService = unleashService;

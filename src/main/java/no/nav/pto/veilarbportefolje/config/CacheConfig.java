@@ -32,7 +32,6 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
         config.addCache(TILGANG_TIL_ENHET_CACHE);
-        config.addCache(ABAC_CACHE);
         config.addCache(VEILARBVEILEDER_CACHE);
         return new EhCacheCacheManager(net.sf.ehcache.CacheManager.newInstance(config));
     }

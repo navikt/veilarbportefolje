@@ -11,8 +11,10 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
@@ -26,11 +28,10 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
 import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.*;
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Slf4j
+@Service
 public class TiltakHandler {
 
     private final TiltakRepository tiltakrepository;
@@ -38,7 +39,9 @@ public class TiltakHandler {
     private final BrukerRepository brukerRepository;
     private final AktoerService aktoerService;
 
-    @Inject
+    static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
+
+    @Autowired
     public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
         this.aktoerService = aktoerService;
         this.tiltakrepository = tiltakRepository;
@@ -47,7 +50,7 @@ public class TiltakHandler {
     }
 
     public static Timestamp getDatoFilter() {
-        return AktivitetUtils.parseDato(getRequiredProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY));
+        return AktivitetUtils.parseDato(ARENA_AKTIVITET_DATOFILTER);
     }
 
     public void startOppdateringAvTiltakIDatabasen() {

@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.auth;
+package no.nav.pto.veilarbportefolje.util;
 
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;

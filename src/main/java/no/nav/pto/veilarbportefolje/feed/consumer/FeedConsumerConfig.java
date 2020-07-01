@@ -5,6 +5,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.pto.veilarbportefolje.feed.common.FeedAuthorizationModule;
 import no.nav.pto.veilarbportefolje.feed.common.OutInterceptor;
+import okhttp3.Interceptor;
 import org.quartz.ScheduleBuilder;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class FeedConsumerConfig<DOMAINOBJECT> {
     public final WebhookScheduleCreator webhookPollingConfig;
 
     FeedCallback<DOMAINOBJECT> callback;
-    List<OutInterceptor> interceptors = new ArrayList<>();
+    List<Interceptor> interceptors = new ArrayList<>();
     FeedAuthorizationModule authorizationModule = (feedname) -> true;
     int pageSize;
 
@@ -53,7 +54,7 @@ public class FeedConsumerConfig<DOMAINOBJECT> {
         return this;
     }
 
-    public FeedConsumerConfig<DOMAINOBJECT> interceptors(List<OutInterceptor> interceptors) {
+    public FeedConsumerConfig<DOMAINOBJECT> interceptors(List<Interceptor> interceptors) {
         this.interceptors = interceptors;
         return this;
     }

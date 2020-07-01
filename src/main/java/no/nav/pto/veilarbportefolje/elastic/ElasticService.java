@@ -1,13 +1,13 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.auth.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.json.JsonUtils;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -28,13 +28,13 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Component
 public class ElasticService {
-    RestHighLevelClient client;
+    RestHighLevelClient restHighLevelClient;
     PepClient pepClient;
     VeilederService veilederService;
     UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
-        this.client = client;
+    public ElasticService(RestHighLevelClient restHighLevelClient, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
+        this.restHighLevelClient = restHighLevelClient;
         this.pepClient = pepClient;
         this.veilederService = veilederService;
         this.unleashService = unleashService;
@@ -136,7 +136,7 @@ public class ElasticService {
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 

@@ -4,7 +4,7 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.ValideringsRegler;
+import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
@@ -26,7 +26,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.*;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
-import static no.nav.pto.veilarbportefolje.auth.ValideringsRegler.validerArbeidsliste;
+import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 
 @Slf4j
 @RestController

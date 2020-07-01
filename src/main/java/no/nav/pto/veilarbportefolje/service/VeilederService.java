@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.service;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.SubjectHandler;
@@ -30,7 +31,8 @@ public class VeilederService {
     }
 
     @Cacheable(VEILARBVEILEDER)
-    public List<VeilederId> hentVeilederePaaEnhet(String enhet) throws IOException {
+    @SneakyThrows
+    public List<VeilederId> hentVeilederePaaEnhet(String enhet) {
         String path = format("/api/enhet/%s/identer", enhet);
 
         String ssoToken = SubjectHandler.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
@@ -42,7 +44,7 @@ public class VeilederService {
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponseOrThrow(response, clazz);
+            return RestUtils.parseJsonResponseArrayOrThrow(response, VeilederId.class);
         }
     }
 }

@@ -10,9 +10,12 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStatus.fromJson;
 
+@Service
 @Slf4j
 public class OppfolgingService implements KafkaConsumerService<String> {
 
@@ -32,6 +36,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
     private final AktoerService aktoerService;
     private final CvService cvService;
 
+    @Autowired
     public OppfolgingService(OppfolgingRepository oppfolgingRepository,
                              ElasticIndexer elastic,
                              VeilederService veilederService,

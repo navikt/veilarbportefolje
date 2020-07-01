@@ -3,9 +3,11 @@ package no.nav.pto.veilarbportefolje.feedconsumer.aktivitet;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -14,13 +16,14 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
+@Service
 public class AktivitetService {
 
-    private AktoerService aktoerService;
-    private AktivitetDAO aktivitetDAO;
-    private PersistentOppdatering persistentOppdatering;
+    private final AktoerService aktoerService;
+    private final AktivitetDAO aktivitetDAO;
+    private final PersistentOppdatering persistentOppdatering;
 
-    @Inject
+    @Autowired
     public AktivitetService(AktoerService aktoerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering) {
         this.aktivitetDAO = aktivitetDAO;
         this.aktoerService = aktoerService;

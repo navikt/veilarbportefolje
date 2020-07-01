@@ -18,13 +18,12 @@ import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 
 import static java.math.BigDecimal.valueOf;
 import static java.util.Collections.singletonList;
+import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig.*;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VEILARBOPPFOLGING_URL_PROPERTY;
 import static no.nav.pto.veilarbportefolje.feedconsumer.FeedConfig.*;

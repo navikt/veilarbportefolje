@@ -1,23 +1,29 @@
 package no.nav.pto.veilarbportefolje.feedconsumer;
 
-import no.nav.common.oidc.SystemUserTokenProvider;
-import no.nav.pto.veilarbportefolje.feed.common.OutInterceptor;
-import no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants;
 
-import javax.ws.rs.client.Invocation;
+import no.nav.common.sts.SystemUserTokenProvider;
+import okhttp3.Interceptor;
+import okhttp3.Request;
+import okhttp3.Response;
+import java.io.IOException;
 
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+public class OidcFeedOutInterceptor implements Interceptor {
 
-public class OidcFeedOutInterceptor implements OutInterceptor {
+    private SystemUserTokenProvider systemUserTokenProvider;
 
-    String discoveryUrl = getRequiredProperty("SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL");
-    String username = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
-    String password = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
-    private SystemUserTokenProvider systemUserTokenProvider =
-            new SystemUserTokenProvider(discoveryUrl, username, password);
+    public OidcFeedOutInterceptor(SystemUserTokenProvider systemUserTokenProvider) {
+        this.systemUserTokenProvider = systemUserTokenProvider;
+    }
 
     @Override
-    public void apply(Invocation.Builder builder) {
-        builder.header("Authorization", "Bearer " + systemUserTokenProvider.getSystemUserAccessToken());
+    public Response intercept(Chain chain) throws IOException {
+        Request request = chain.request();
+        Request newRequest;
+
+        newRequest = request.newBuilder()
+                .addHeader("Authorization", "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .build();
+
+        return chain.proceed(newRequest);
     }
 }
