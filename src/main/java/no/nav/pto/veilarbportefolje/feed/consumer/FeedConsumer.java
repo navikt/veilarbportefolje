@@ -1,10 +1,11 @@
 package no.nav.pto.veilarbportefolje.feed.consumer;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import no.nav.common.rest.client.RestClient;
 import no.nav.pto.veilarbportefolje.feed.common.*;
-import no.nav.sbl.dialogarena.types.Pingable;
-import no.nav.sbl.rest.RestUtils;
-import org.elasticsearch.client.RestClient;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -32,7 +33,7 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     private final Ping.PingMetadata pingMetadata;
     private int lastResponseHash;
 
-    private static final Client REST_CLIENT = RestClient();
+    private static final OkHttpClient REST_CLIENT = RestClient.baseClient();
 
     public FeedConsumer(FeedConsumerConfig<DOMAINOBJECT> config) {
         String feedName = config.feedName;
@@ -112,8 +113,15 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
         return response;
     }
 
-    Response fetchChanges() {
+        Response fetchChanges() {
         String lastEntry = this.config.lastEntrySupplier.get();
+        HttpUrl.Builder httpBuilder = HttpUrl.parse(getTargetUrl()).newBuilder();
+        httpBuilder.addQueryParameter(QUERY_PARAM_ID, lastEntry);
+        httpBuilder.addQueryParameter(QUERY_PARAM_PAGE_SIZE, String.valueOf(this.config.pageSize));
+
+        Request request = new Request.Builder().url(httpBuilder.build()).build();
+
+
         Invocation.Builder request = REST_CLIENT
                 .target(getTargetUrl())
                 .queryParam(QUERY_PARAM_ID, lastEntry)

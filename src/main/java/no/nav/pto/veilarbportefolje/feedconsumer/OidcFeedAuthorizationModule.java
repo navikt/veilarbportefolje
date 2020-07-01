@@ -5,6 +5,7 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.pto.veilarbportefolje.feed.common.FeedAuthorizationModule;
 import java.util.List;
 
+import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.pto.veilarbportefolje.feedconsumer.Utils.getCommaSeparatedUsers;
 public class OidcFeedAuthorizationModule implements FeedAuthorizationModule {
 

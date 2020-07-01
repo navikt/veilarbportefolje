@@ -56,20 +56,6 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @EnableAspectJAutoProxy
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
-@Import({
-        AbacContext.class,
-        DatabaseConfig.class,
-        ServiceConfig.class,
-        FilmottakConfig.class,
-        CacheConfig.class,
-        FeedConfig.class,
-        ClientConfig.class,
-        DigitalKontaktinformasjonConfig.class,
-        ScheduledErrorHandler.class,
-        ElasticConfig.class,
-        ControllerConfig.class,
-        KafkaConfig.class
-})
 public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
@@ -127,7 +113,7 @@ public class ApplicationConfig {
     private CvService cvService;
 
     public void startup(ServletContext servletContext) {
-        setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging", PUBLIC);
+        setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging");
 
         new KafkaConsumerRunnable<>(
                 kafkaAktivitetService,
