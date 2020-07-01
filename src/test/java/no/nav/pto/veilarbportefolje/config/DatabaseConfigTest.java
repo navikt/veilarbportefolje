@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
@@ -25,7 +26,7 @@ public class DatabaseConfigTest {
 
     @Bean
     public DataSource hsqldbDataSource() {
-      return LocalJndiContextConfig.setupInMemoryDatabase();
+      return TestUtil.setupInMemoryDatabase();
     }
 
 

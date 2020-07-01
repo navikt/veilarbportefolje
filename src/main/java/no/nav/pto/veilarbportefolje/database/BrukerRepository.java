@@ -33,8 +33,8 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.database.Tabell.*;
-import static no.nav.pto.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
+import static no.nav.pto.veilarbportefolje.database.Table.*;
+import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
@@ -68,7 +68,7 @@ public class BrukerRepository {
         db.setFetchSize(10_000);
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -175,12 +175,12 @@ public class BrukerRepository {
         db.setFetchSize(1000);
 
         Timestamp sistIndeksert = SqlUtils
-                .select(db, Tabell.METADATA, rs -> rs.getTimestamp(SIST_INDEKSERT_ES))
+                .select(db, Table.METADATA, rs -> rs.getTimestamp(SIST_INDEKSERT_ES))
                 .column(SIST_INDEKSERT_ES)
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
+                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
@@ -209,7 +209,7 @@ public class BrukerRepository {
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()

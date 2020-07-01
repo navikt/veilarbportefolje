@@ -32,7 +32,6 @@ public class AktivitetDAOTest {
 
     private void insertoppfolgingsbrukerTestData() {
         try {
-            jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-aktoerid-to-personid-testdata.sql"), UTF_8)));
             jdbcTemplate.execute(Joiner.on("\n").join(IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-tiltak.sql"), UTF_8)));
         } catch (IOException e) {
             e.printStackTrace();

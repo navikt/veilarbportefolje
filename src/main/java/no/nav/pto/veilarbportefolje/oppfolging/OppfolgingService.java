@@ -43,7 +43,9 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                              NavKontorService navKontorService,
                              ArbeidslisteService arbeidslisteService,
                              UnleashService unleashService,
-                             AktoerService aktoerService, CvService cvService) {
+                             AktoerService aktoerService,
+                             CvService cvService
+    ) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
         this.veilederService = veilederService;
@@ -70,7 +72,10 @@ public class OppfolgingService implements KafkaConsumerService<String> {
         }
 
         if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus)) {
-            cvService.setHarDeltCvTilNei(aktoerId);
+            Result<Integer> result = cvService.setHarDeltCvTilNei(aktoerId);
+            if (result.err().isPresent()) {
+                log.error("Kunne ikke sette har delt cv til nei for bruker " + aktoerId, result.err().get());
+            }
         }
 
         Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);

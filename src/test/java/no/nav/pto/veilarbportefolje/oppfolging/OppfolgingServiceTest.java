@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import io.vavr.control.Try;
 import lombok.val;
-import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
@@ -15,7 +14,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -35,24 +34,22 @@ public class OppfolgingServiceTest {
     private final static VeilederId TEST_VEILEDER_ID = VeilederId.of("testVeilederId");
 
     private static OppfolgingService oppfolgingService;
-    private VeilederService veilederServiceMock;
-    private NavKontorService navKontorServiceMock;
-    private AktoerService aktoerServiceMock;
-    private CvService cvService;
-    private OppfolgingRepository opppfolgingRepositoryMock;
-    private ArbeidslisteService arbeidslisteMock;
-    private ElasticIndexer elasticMock;
+    private static VeilederService veilederServiceMock;
+    private static NavKontorService navKontorServiceMock;
+    private static AktoerService aktoerServiceMock;
+    private static CvService cvService;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         veilederServiceMock = mock(VeilederService.class);
         navKontorServiceMock = mock(NavKontorService.class);
         aktoerServiceMock = mock(AktoerService.class);
         cvService = mock(CvService.class);
-        opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
 
-        arbeidslisteMock = mock(ArbeidslisteService.class);
-        elasticMock = mock(ElasticIndexer.class);
+        OppfolgingRepository opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
+        ArbeidslisteService arbeidslisteMock = mock(ArbeidslisteService.class);
+        ElasticIndexer elasticMock = mock(ElasticIndexer.class);
+
         oppfolgingService = new OppfolgingService(
                 opppfolgingRepositoryMock,
                 elasticMock,
@@ -61,12 +58,14 @@ public class OppfolgingServiceTest {
                 arbeidslisteMock,
                 new UnleashServiceMock(true),
                 aktoerServiceMock,
-                cvService);
+                cvService
+        );
 
         when(arbeidslisteMock.deleteArbeidslisteForAktoerId(any(AktoerId.class))).thenReturn(Result.ok(1));
         when(opppfolgingRepositoryMock.hentOppfolgingData(any(AktoerId.class))).thenReturn(Result.of(() -> brukerInfo()));
         when(opppfolgingRepositoryMock.oppdaterOppfolgingData(any(OppfolgingStatus.class))).thenReturn(Result.ok(AktoerId.of("testId")));
         when(elasticMock.indekser(any(AktoerId.class))).thenReturn(Result.ok(new OppfolgingsBruker()));
+        when(cvService.setHarDeltCvTilNei(any(AktoerId.class))).thenReturn(Result.ok(1));
     }
 
     @Test
@@ -87,7 +86,7 @@ public class OppfolgingServiceTest {
         verify(cvService, times(1)).setHarDeltCvTilNei(any(AktoerId.class));
     }
 
-    private BrukerOppdatertInformasjon brukerInfo() {
+    private static BrukerOppdatertInformasjon brukerInfo() {
         return new BrukerOppdatertInformasjon().setVeileder("Z000000");
     }
 

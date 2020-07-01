@@ -9,7 +9,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 
 public class VedtaksStatusRepositoryTest {
 
