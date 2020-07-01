@@ -1,13 +1,12 @@
-package no.nav.pto.veilarbportefolje.api;
+package no.nav.pto.veilarbportefolje.controller;
 
-import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
+import no.nav.common.metrics.Event;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,31 +20,30 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
 
 @RestController
-@RequestMapping("/api/enhet")
+@RequestMapping("/api/veileder")
 @Produces(APPLICATION_JSON)
-public class EnhetController {
+public class VeilederController {
 
-    private final ElasticIndexer elasticIndexer;
-    private final AuthService authService;
-    private final TiltakService tiltakService;
-    private final MetricsClient metricsClient;
+    private ElasticIndexer elasticIndexer;
+    private AuthService authService;
+    private MetricsClient metricsClient;
 
     @Autowired
-    public EnhetController(
-            ElasticIndexer indekseringService,
+    public VeilederController(
+            ElasticIndexer elasticIndexer,
             AuthService authService,
-            MetricsClient metricsClient,
-            TiltakService tiltakService) {
-        this.elasticIndexer = indekseringService;
-        this.tiltakService = tiltakService;
+            MetricsClient metricsClient
+    ) {
+
+        this.elasticIndexer = elasticIndexer;
         this.authService = authService;
         this.metricsClient = metricsClient;
     }
 
-
-    @PostMapping("/{enhet}/portefolje")
-    public Response hentPortefoljeForEnhet(
-            @PathVariable("enhet") String enhet,
+    @PostMapping("/{veilederident}/portefolje")
+    public Response hentPortefoljeForVeileder(
+            @PathVariable("veilederident") String veilederIdent,
+            @RequestParam("enhet") String enhet,
             @RequestParam("fra") Integer fra,
             @RequestParam("antall") Integer antall,
             @RequestParam("sortDirection") String sortDirection,
@@ -53,6 +51,7 @@ public class EnhetController {
             Filtervalg filtervalg) {
 
         return createResponse(() -> {
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
             ValideringsRegler.sjekkEnhet(enhet);
             ValideringsRegler.sjekkSortering(sortDirection, sortField);
             ValideringsRegler.sjekkFiltervalg(filtervalg);
@@ -62,7 +61,7 @@ public class EnhetController {
             String ident = authService.getInnloggetVeilederIdent().getVeilederId();
             String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-            BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+            BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
             List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
             Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -70,7 +69,7 @@ public class EnhetController {
                     enhet,
                     Optional.ofNullable(fra).orElse(0));
 
-            Event event = new Event("enhetsportefolje.lastet");
+            Event event = new Event("minoversiktportefolje.lastet");
             event.addFieldToReport("identhash", identHash);
             metricsClient.report(event);
 
@@ -78,35 +77,30 @@ public class EnhetController {
         });
     }
 
-
-    @GetMapping("/{enhet}/portefoljestorrelser")
-    public Response hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
+    @GetMapping("/{veilederident}/statustall")
+    public Response hentStatusTall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         return createResponse(() -> {
+            Event event = new Event("minoversiktportefolje.statustall.lastet");
+            metricsClient.report(event);
             ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
             authService.tilgangTilEnhet(enhet);
 
-            return elasticIndexer.hentPortefoljestorrelser(enhet);
+            return elasticIndexer.hentStatusTallForVeileder(enhet, veilederIdent);
         });
     }
 
-    @GetMapping("/{enhet}/statustall")
-    public Response hentStatusTall(@PathVariable("enhet") String enhet) {
+    @GetMapping("/{veilederident}/arbeidsliste")
+    public Response hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         return createResponse(() -> {
+            Event event = new Event("minoversiktportefolje.arbeidsliste.lastet");
+            metricsClient.report(event);
             ValideringsRegler.sjekkEnhet(enhet);
+            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
             authService.tilgangTilEnhet(enhet);
 
-            return elasticIndexer.hentStatusTallForPortefolje(enhet);
+            return elasticIndexer.hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet);
         });
     }
 
-    @GetMapping("/{enhet}/tiltak")
-    public Response hentTiltak(@PathVariable("enhet") String enhet) {
-        return createResponse(() -> {
-            ValideringsRegler.sjekkEnhet(enhet);
-            authService.tilgangTilEnhet(enhet);
-
-            return tiltakService.hentEnhettiltak(enhet)
-                    .getOrElse(new EnhetTiltak());
-        });
-    }
 }

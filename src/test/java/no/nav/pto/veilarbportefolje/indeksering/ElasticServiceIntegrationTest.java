@@ -16,7 +16,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
@@ -64,10 +64,10 @@ public class ElasticServiceIntegrationTest {
         when(pepMock.isSubjectAuthorizedToSeeKode6(PRIVILEGED_TOKEN)).thenReturn(true);
         when(pepMock.isSubjectAuthorizedToSeeKode7(PRIVILEGED_TOKEN)).thenReturn(true);
 
-        VeilederService veilederServiceMock = mock(VeilederService.class);
-        when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
+        VeilarbVeilederClient veilarbVeilederClientMock = mock(VeilarbVeilederClient.class);
+        when(veilarbVeilederClientMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
 
-        RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
+        RestHighLevelClient restClient = ElasticUtils.createClient(ElasticClientConfig.builder()
                 .username("")
                 .password("")
                 .hostname("localhost")
@@ -77,7 +77,7 @@ public class ElasticServiceIntegrationTest {
         );
 
         UnleashServiceMock unleashMock = new UnleashServiceMock(false);
-        elasticService = new ElasticService(restClient, pepMock, veilederServiceMock, unleashMock);
+        elasticService = new ElasticService(restClient, pepMock, veilarbVeilederClientMock, unleashMock);
         indexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),

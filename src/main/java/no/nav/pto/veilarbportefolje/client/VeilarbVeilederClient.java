@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.service;
+package no.nav.pto.veilarbportefolje.client;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.cache.annotation.Cacheable;
-import java.io.IOException;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -19,14 +18,14 @@ import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static no.nav.pto.veilarbportefolje.config.CacheConfig.VEILARBVEILEDER;
 
 @Slf4j
-public class VeilederService {
+public class VeilarbVeilederClient {
     private final static String BEARER = "Bearer ";
     private final static String SEPARATOR = " ";
 
     private final String url;
     private final OkHttpClient client = RestClient.baseClient();
 
-    public VeilederService(String namespace) {
+    public VeilarbVeilederClient(String namespace, OkHttpClient client) {
         url = format("http://veilarbveileder.%s.svc.nais.local/veilarbveileder", namespace);
     }
 

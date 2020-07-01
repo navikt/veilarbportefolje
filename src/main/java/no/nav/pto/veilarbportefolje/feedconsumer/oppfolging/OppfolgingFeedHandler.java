@@ -13,7 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.jdbc.Transactor;
 
@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Comparator.naturalOrder;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE;
 
 @Slf4j
@@ -39,7 +38,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
     private OppfolgingRepository oppfolgingRepository;
-    private VeilederService veilederService;
+    private VeilarbVeilederClient veilarbVeilederClient;
     private Transactor transactor;
     private final UnleashService unleashService;
     private final CvService cvService;
@@ -49,7 +48,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
                                  BrukerRepository brukerRepository,
                                  ElasticIndexer elasticIndexer,
                                  OppfolgingRepository oppfolgingRepository,
-                                 VeilederService veilederService,
+                                 VeilarbVeilederClient veilarbVeilederClient,
                                  Transactor transactor,
                                  CvService cvService,
                                  UnleashService unleashService) {
@@ -57,7 +56,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
         this.oppfolgingRepository = oppfolgingRepository;
-        this.veilederService = veilederService;
+        this.veilarbVeilederClient = veilarbVeilederClient;
         this.transactor = transactor;
         this.unleashService = unleashService;
         this.cvService = cvService;
@@ -155,7 +154,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         return brukerRepository
                 .retrievePersonid(aktoerId)
                 .flatMap(brukerRepository::retrieveEnhet)
-                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet).contains(veilederId))
+                .map(enhet -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet).contains(veilederId))
                 .getOrElse(false);
     }
 }

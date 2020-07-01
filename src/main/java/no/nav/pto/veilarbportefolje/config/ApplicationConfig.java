@@ -1,17 +1,9 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPep;
-import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.subject.IdentType;
-import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.client.aktorregister.AktorregisterHttpClient;
-import no.nav.common.client.aktorregister.CachedAktorregisterClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.featuretoggle.UnleashServiceConfig;
-import no.nav.common.metrics.InfluxClient;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -20,11 +12,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,8 +20,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
-
-import static no.nav.common.utils.EnvironmentUtils.requireNamespace;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
 
@@ -86,12 +72,6 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public VeilederService veilederservice() {
-        return new VeilederService(requireNamespace());
-    }
-
-
-    @Bean
     public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.resolveFromEnvironment());
     }
@@ -109,30 +89,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public Pep veilarbPep(EnvironmentProperties properties) {
-        Credentials serviceUserCredentials = getCredentials("service_user");
-        return new VeilarbPep(
-                properties.getAbacUrl(), serviceUserCredentials.username,
-                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
-        );
-    }
-
-    @Bean
     public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
         return new NaisSystemUserTokenProvider(properties.getStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
-    }
-
-    @Bean
-    public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider tokenProvider) {
-        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
-                properties.getAktorregisterUrl(), APPLICATION_NAME, tokenProvider::getSystemUserToken
-        );
-        return new CachedAktorregisterClient(aktorregisterClient);
-    }
-
-    @Bean
-    public MetricsClient metricsClient() {
-        return new InfluxClient();
     }
 }

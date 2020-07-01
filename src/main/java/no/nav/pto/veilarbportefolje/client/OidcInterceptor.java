@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.feedconsumer;
+package no.nav.pto.veilarbportefolje.client;
 
 
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -7,11 +7,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 import java.io.IOException;
 
-public class OidcFeedOutInterceptor implements Interceptor {
+public class OidcInterceptor implements Interceptor {
 
     private SystemUserTokenProvider systemUserTokenProvider;
 
-    public OidcFeedOutInterceptor(SystemUserTokenProvider systemUserTokenProvider) {
+    public OidcInterceptor(SystemUserTokenProvider systemUserTokenProvider) {
         this.systemUserTokenProvider = systemUserTokenProvider;
     }
 

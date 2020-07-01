@@ -1,49 +1,30 @@
 package no.nav.pto.veilarbportefolje.elastic;
+import no.nav.common.health.HealthCheck;
+import no.nav.common.health.HealthCheckResult;
+import org.springframework.stereotype.Service;
 
-import lombok.SneakyThrows;
-import no.nav.apiapp.selftest.Helsesjekk;
-import no.nav.apiapp.selftest.HelsesjekkMetadata;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.stereotype.Component;
-
-import javax.inject.Inject;
-
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getElasticHostname;
-
-@Component
-public class ElasticSelftest implements Helsesjekk {
-
-    RestHighLevelClient client;
+@Service
+public class ElasticSelftest implements HealthCheck {
 
     private static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
-
-    @Inject
-
-    public ElasticSelftest(RestHighLevelClient client) {
-        this.client = client;
-    }
-
-    @Override
-    @SneakyThrows
-    public void helsesjekk() {
-        long antallDokumenter = ElasticUtils.getCount();
-        if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {
-            String feilmelding = String.format("Antall dokumenter i elastic (%s) er mindre enn forventet antall (%s)", antallDokumenter, FORVENTET_MINIMUM_ANTALL_DOKUMENTER);
-            throw new RuntimeException(feilmelding);
-        }
-
-
-    }
-
-    @Override
+    /*
     public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata(
+        return new (
                 "elasticsearch helsesjekk",
                 String.format("http://%s/%s", getElasticHostname(), getAlias()),
                 String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER),
                 false
         );
     }
+     */
 
+    @Override
+    public HealthCheckResult checkHealth() {
+        long antallDokumenter = ElasticUtils.getCount();
+        if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {
+            String feilmelding = String.format("Antall dokumenter i elastic (%s) er mindre enn forventet antall (%s)", antallDokumenter, FORVENTET_MINIMUM_ANTALL_DOKUMENTER);
+            HealthCheckResult.unhealthy("Feil mot elastic search", new RuntimeException(feilmelding));
+        }
+        return HealthCheckResult.healthy();
+    }
 }

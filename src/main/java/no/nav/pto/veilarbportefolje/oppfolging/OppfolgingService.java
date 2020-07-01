@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -12,7 +13,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,29 +30,34 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
     private final OppfolgingRepository oppfolgingRepository;
     private final ElasticIndexer elastic;
-    private final VeilederService veilederService;
+    private final VeilarbVeilederClient veilarbVeilederClient;
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
     private final UnleashService unleashService;
     private final AktoerService aktoerService;
     private final CvService cvService;
+    private final MetricsClient metricsClient;
 
     @Autowired
     public OppfolgingService(OppfolgingRepository oppfolgingRepository,
                              ElasticIndexer elastic,
-                             VeilederService veilederService,
+                             VeilarbVeilederClient veilarbVeilederClient,
                              NavKontorService navKontorService,
                              ArbeidslisteService arbeidslisteService,
                              UnleashService unleashService,
-                             AktoerService aktoerService, CvService cvService) {
+                             AktoerService aktoerService,
+                             CvService cvService,
+                             MetricsClient metricsClient
+    ) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
-        this.veilederService = veilederService;
+        this.veilarbVeilederClient = veilarbVeilederClient;
         this.navKontorService = navKontorService;
         this.arbeidslisteService = arbeidslisteService;
         this.unleashService = unleashService;
         this.aktoerService = aktoerService;
         this.cvService = cvService;
+        this.metricsClient = metricsClient;
     }
 
     @Override
@@ -70,7 +76,10 @@ public class OppfolgingService implements KafkaConsumerService<String> {
         }
 
         if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus)) {
-            cvService.setHarDeltCvTilNei(aktoerId);
+            Result<Integer> result = cvService.setHarDeltCvTilNei(aktoerId);
+            if (result.err().isPresent()) {
+                log.error("Kunne ikke sette har delt cv til nei for bruker " + aktoerId, result.err().get());
+            }
         }
 
         Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);
@@ -122,7 +131,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
         List<VeilederId> veilederePaaEnhet = MetricsUtils.timed(
                 "portefolje.oppfolging.hentVeileder",
-                () -> veilederService.hentVeilederePaaEnhet(enhet)
+                () -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet)
         );
 
         return veilederePaaEnhet.contains(veilederId);

@@ -2,21 +2,17 @@ package no.nav.pto.veilarbportefolje.feed.consumer;
 
 import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import no.nav.common.rest.client.RestClient;
+import no.nav.common.json.JsonMapper;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.feed.common.*;
-import no.nav.pto.veilarbportefolje.feedconsumer.OidcFeedOutInterceptor;
 import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.GenericType;
-import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.time.Instant;
 import java.util.List;
@@ -29,27 +25,17 @@ import static no.nav.pto.veilarbportefolje.feed.consumer.FeedPoller.createSchedu
 import static no.nav.pto.veilarbportefolje.feed.util.UrlUtils.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> implements Pingable, Authorization, ApplicationListener<ContextClosedEvent> {
+public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> implements Authorization, ApplicationListener<ContextClosedEvent> {
     private static final Logger LOG = getLogger(FeedConsumer.class);
 
     private final FeedConsumerConfig<DOMAINOBJECT> config;
-    private final Ping.PingMetadata pingMetadata;
     private int lastResponseHash;
-
-    private final OkHttpClient restClient;
 
     public FeedConsumer(FeedConsumerConfig<DOMAINOBJECT> config) {
         String feedName = config.feedName;
         String host = config.host;
 
         this.config = config;
-        OkHttpClient.Builder clientBuilder = RestClient.baseClientBuilder();
-
-        this.config.interceptors.forEach(clientBuilder::addInterceptor);
-
-        this.restClient = clientBuilder.build();
-
-        this.pingMetadata = new Ping.PingMetadata(getTargetUrl(), String.format("feed-consumer av '%s'", feedName), false);
 
         createScheduledJob(feedName, host, config.pollingConfig, runWithLock(feedName, this::poll));
         createScheduledJob(feedName + "/webhook", host, config.webhookPollingConfig, this::registerWebhook);
@@ -69,37 +55,35 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
         return true;
     }
 
-    public void addCallback(FeedCallback callback) {
-        this.config.callback(callback);
-    }
-
+    @SneakyThrows
     void registerWebhook() {
         String callbackUrl = callbackUrl(this.config.webhookPollingConfig.apiRootPath, this.config.feedName);
         FeedWebhookRequest body = new FeedWebhookRequest().setCallbackUrl(callbackUrl);
 
         Entity<FeedWebhookRequest> entity = Entity.entity(body, APPLICATION_JSON_TYPE);
 
-        Invocation.Builder request = restClient
-                .target(asUrl(this.config.host, "feed", this.config.feedName, "webhook"))
-                .request();
+        Request request = new Request.Builder()
+                .url(asUrl(this.config.host, "feed", this.config.feedName, "webhook"))
+                .build();
 
-        Response response = request
-                .buildPut(entity)
-                .invoke();
+        try (Response response = this.config.client.newCall(request).execute()) {
 
-        int responseStatus = response.getStatus();
-        if (responseStatus == 201) {
-            LOG.info("Webhook opprettet hos produsent!");
-        } else if (responseStatus != 200) {
-            LOG.warn("Endepunkt for opprettelse av webhook returnerte feilkode {}", responseStatus);
+            int responseStatus = response.code();
+            if (responseStatus == 201) {
+                LOG.info("Webhook opprettet hos produsent!");
+            } else if (responseStatus != 200) {
+                LOG.warn("Endepunkt for opprettelse av webhook returnerte feilkode {}", responseStatus);
+            }
         }
     }
 
+    @SneakyThrows
     public synchronized Response poll() {
         Response response = fetchChanges();
 
-        ParameterizedType type = new FeedParameterizedType(this.config.domainobject);
-        FeedResponse<DOMAINOBJECT> entity = RestUtils.presponse.body(new GenericType<>(type));
+        RestUtils.throwIfNotSuccessful(response);
+
+        FeedResponse entity = RestUtils.parseJsonResponse(response, FeedResponse.class).get();
         List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
         if (elements != null && !elements.isEmpty()) {
             List<DOMAINOBJECT> data = elements
@@ -118,35 +102,20 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     }
 
     @SneakyThrows
-    Response fetchChanges() {
+    public Response fetchChanges() {
         String lastEntry = this.config.lastEntrySupplier.get();
         HttpUrl.Builder httpBuilder = Objects.requireNonNull(HttpUrl.parse(getTargetUrl())).newBuilder();
         httpBuilder.addQueryParameter(QUERY_PARAM_ID, lastEntry);
         httpBuilder.addQueryParameter(QUERY_PARAM_PAGE_SIZE, String.valueOf(this.config.pageSize));
 
         Request request = new Request.Builder().url(httpBuilder.build()).build();
-        try (okhttp3.Response response = restClient.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
+        try (okhttp3.Response response = this.config.client.newCall(request).execute()) {
             return response;
         }
     }
 
     private String getTargetUrl() {
         return asUrl(this.config.host, "feed", this.config.feedName);
-    }
-
-    @Override
-    public Ping ping() {
-        try {
-            int status = fetchChanges().getStatus();
-            if (status == 200) {
-                return Ping.lyktes(pingMetadata);
-            } else {
-                return Ping.feilet(pingMetadata, "HTTP status " + status);
-            }
-        } catch (Throwable e) {
-            return Ping.feilet(pingMetadata, e);
-        }
     }
 
     @Override

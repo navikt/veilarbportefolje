@@ -5,7 +5,7 @@ import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumer;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.feedconsumer.OidcFeedOutInterceptor;
+import no.nav.pto.veilarbportefolje.client.OidcInterceptor;
 import no.nav.pto.veilarbportefolje.feedconsumer.Utils;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.Bean;
@@ -49,7 +49,7 @@ public class AktiviteterfeedConfig {
                 .callback(callback)
                 .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider(dataSource), 10000)
-                .interceptors(singletonList(new OidcFeedOutInterceptor()));
+                .interceptors(singletonList(new OidcInterceptor()));
 
         return new FeedConsumer<>(config);
     }

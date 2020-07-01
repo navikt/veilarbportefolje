@@ -1,77 +1,93 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.arbeid.cv.avro.Melding;
-import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 
 @Slf4j
 @Service
-public class CvService implements KafkaConsumerService<Melding> {
+public class CvService implements KafkaConsumerService<String> {
 
     private final BrukerRepository brukerRepository;
-    private final OppfolgingRepository oppfolgingRepository;
-    private final ElasticIndexer elasticIndexer;
+    private final ElasticServiceV2 elasticServiceV2;
     private final MetricsClient metricsClient;
 
     @Autowired
     public CvService(
             BrukerRepository brukerRepository,
-            OppfolgingRepository oppfolgingRepository,
-            ElasticIndexer elasticIndexer,
+            ElasticServiceV2 elasticServiceV2,
             MetricsClient metricsClient
     ) {
         this.brukerRepository = brukerRepository;
-        this.elasticIndexer = elasticIndexer;
-        this.oppfolgingRepository = oppfolgingRepository;
+        this.elasticServiceV2 = elasticServiceV2;
         this.metricsClient = metricsClient;
     }
 
-    @Override
-    public void behandleKafkaMelding(Melding melding) {
-        if (melding.getMeldingstype() == Meldingstype.SLETT) {
-            return;
-        }
-
-        AktoerId aktoerId = AktoerId.of(melding.getAktoerId());
-
-        Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(aktoerId);
-        if (result.isErr() || result.isEmpty()) {
-            log.info("Kunne ikke hente startdato for oppfølging for bruker {}", aktoerId);
-            return;
-        }
-
-        Instant oppfolgingStartet = result.orElseThrowException().toInstant();
-        Instant cvSistEndret = melding.getSistEndret().toDate().toInstant();
-
-        log.info("Bruker {} startet oppfølging {} og endret sist cv {}", aktoerId.aktoerId, oppfolgingStartet, cvSistEndret);
-
-        if (!harDeltCvMedNav(oppfolgingStartet, cvSistEndret)) {
-            log.info("Bruker {} har ikke delt cv med nav", aktoerId);
-            metricsClient.report(new Event("portefolje_har_ikke_delt_cv"));
-            return;
-        }
-
-        log.info("Bruker {} har delt cv med nav", aktoerId.aktoerId);
-        metricsClient.report(new Event("portefolje_har_delt_cv"));
-        brukerRepository.setHarDeltCvMedNav(aktoerId, true).orElseThrowException();
-        elasticIndexer.indekser(aktoerId).orElseThrowException();
+    enum Ressurs {
+        CV_HJEMMEL,
+        CV_GENERELL,
+        ARBEIDSGIVER_GENERELL
     }
 
-    static boolean harDeltCvMedNav(Instant oppfolgingStartet, Instant cvSistEndret) {
-        return oppfolgingStartet.isBefore(cvSistEndret);
+    enum MeldingType {
+        SAMTYKKE_OPPRETTET,
+        SAMTYKKE_SLETTET
+    }
+
+    @Value
+    static class Melding {
+        AktoerId aktoerId;
+        Fnr fnr;
+        MeldingType meldingType;
+        Ressurs ressurs;
+    }
+
+    @Override
+    public void behandleKafkaMelding(String payload) {
+        Melding melding = fromJson(payload, Melding.class);
+        AktoerId aktorId = melding.getAktoerId();
+
+        if (melding.getRessurs() != CV_HJEMMEL) {
+            log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktorId);
+            return;
+        }
+
+        if (melding.getFnr() == null) {
+            if (EnvironmentUtils.isProduction().orElse(false)) {
+                log.error("Bruker {} har ikke fnr i melding fra samtykke-topic", aktorId);
+            }
+            return;
+        }
+
+        switch (melding.meldingType) {
+            case SAMTYKKE_OPPRETTET:
+                log.info("Bruker {} har delt cv med nav", aktorId);
+                brukerRepository.setHarDeltCvMedNav(aktorId, true).orElseThrowException();
+                metricsClient.report(new Event("portefolje_har_delt_cv"));
+                elasticServiceV2.updateHarDeltCv(melding.getFnr(), true);
+                break;
+            case SAMTYKKE_SLETTET:
+                log.info("Bruker {} har ikke delt cv med nav", aktorId);
+                brukerRepository.setHarDeltCvMedNav(aktorId, false).orElseThrowException();
+                metricsClient.report(new Event("portefolje_har_ikke_delt_cv"));
+                elasticServiceV2.updateHarDeltCv(melding.getFnr(), false);
+                break;
+            default:
+                log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktorId);
+        }
     }
 
     public Result<Integer> setHarDeltCvTilNei(AktoerId aktoerId) {

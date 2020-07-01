@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.api;
+package no.nav.pto.veilarbportefolje.controller;
 
 
 import no.nav.pto.veilarbportefolje.auth.AuthService;

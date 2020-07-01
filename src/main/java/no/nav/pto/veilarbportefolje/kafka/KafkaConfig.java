@@ -30,7 +30,7 @@ public class KafkaConfig {
         OPPFOLGING_CONSUMER_TOPIC("aapen-fo-endringPaaOppfolgingStatus-v1-" + EnvironmentUtils.getNamespace()),
         KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + EnvironmentUtils.getNamespace()),
         KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v1-" + EnvironmentUtils.getNamespace()),
-        CV_ENDRET_TOPIC("arbeid-pam-cv-endret-" + getCvTopicVersion() + "-" + EnvironmentUtils.getNamespace()),
+        PAM_SAMTYKKE_ENDRET_V1("aapen-pam-samtykke-endret-v1"),
         KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + EnvironmentUtils.getNamespace());
 
         final String topic;
@@ -115,18 +115,10 @@ public class KafkaConfig {
                 cvService,
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
-                KafkaConfig.Topic.CV_ENDRET_TOPIC,
+                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
                 "veilarbportefolje.kafka.cv.killswitch"
         );
     }
 
 
-
-    private static String getCvTopicVersion() {
-        if (EnvironmentUtils.isDevelopment().orElse(true)) {
-            return "v4";
-        } else {
-            return "v5";
-        }
-    }
 }

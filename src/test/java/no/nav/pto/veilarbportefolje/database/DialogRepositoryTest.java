@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Timestamp;
 import java.time.Instant;
 
-import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 

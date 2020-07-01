@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.Instant;
 
-import static no.nav.pto.veilarbportefolje.config.LocalJndiContextConfig.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository.safeToJaNei;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;

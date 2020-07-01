@@ -12,7 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class OppfolgingFeedHandlerTest {
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
     private OppfolgingRepository oppfolgingRepository;
-    private VeilederService veilederService;
+    private VeilarbVeilederClient veilarbVeilederClient;
     private CvService cvService;
 
     private OppfolgingFeedHandler oppfolgingFeedHandler;
@@ -61,7 +61,7 @@ public class OppfolgingFeedHandlerTest {
         brukerRepository = mock(BrukerRepository.class);
         elasticIndexer = mock(ElasticIndexer.class);
         oppfolgingRepository = mock(OppfolgingRepository.class);
-        veilederService = mock(VeilederService.class);
+        veilarbVeilederClient = mock(VeilarbVeilederClient.class);
         cvService = mock(CvService.class);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
@@ -69,7 +69,7 @@ public class OppfolgingFeedHandlerTest {
                 brukerRepository,
                 elasticIndexer,
                 oppfolgingRepository,
-                veilederService,
+                veilarbVeilederClient,
                 new TestTransactor(),
                 cvService,
                 new UnleashServiceMock(false)
@@ -178,14 +178,14 @@ public class OppfolgingFeedHandlerTest {
     private void givenBrukerHarVeilderFraAnnenEnhet() {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
         when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
-        when(veilederService.hentVeilederePaaEnhet(any())).thenReturn(Collections.singletonList(VeilederId.of("whatever")));
+        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(Collections.singletonList(VeilederId.of("whatever")));
 
     }
 
     private void givenBrukerHarVeilderFraSammeEnhet() {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
         when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
-        when(veilederService.hentVeilederePaaEnhet(any()))
+        when(veilarbVeilederClient.hentVeilederePaaEnhet(any()))
                 .thenReturn(Collections.singletonList(VeilederId.of(eksisterendeInformasjon.getVeileder())));
 
     }

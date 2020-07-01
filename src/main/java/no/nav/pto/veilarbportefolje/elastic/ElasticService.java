@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.auth.PepClient;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -30,13 +30,13 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 public class ElasticService {
     RestHighLevelClient restHighLevelClient;
     PepClient pepClient;
-    VeilederService veilederService;
+    VeilarbVeilederClient veilarbVeilederClient;
     UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
+    public ElasticService(RestHighLevelClient restHighLevelClient, PepClient pepClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService) {
         this.restHighLevelClient = restHighLevelClient;
         this.pepClient = pepClient;
-        this.veilederService = veilederService;
+        this.veilarbVeilederClient = veilarbVeilederClient;
         this.unleashService = unleashService;
     }
 
@@ -57,7 +57,7 @@ public class ElasticService {
             boolQuery.filter(termQuery("veileder_id", veilederIdent.get()));
         }
 
-        List<String> veiledereMedTilgangTilEnhet = veilederService.hentVeilederePaaEnhet(enhetId).stream()
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId).stream()
                 .map(VeilederId::getVeilederId)
                 .collect(toList());
 
@@ -110,7 +110,7 @@ public class ElasticService {
     }
 
     public StatusTall hentStatusTallForEnhet(String enhetId, String indexAlias) {
-        List<String> veilederPaaEnhet = veilederService.hentVeilederePaaEnhet(enhetId).stream()
+        List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId).stream()
                 .map(VeilederId::toString)
                 .collect(toList());
 

@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -40,8 +41,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public VeilederService veilederService() {
-        return mock(VeilederService.class);
+    public VeilarbVeilederClient veilederService() {
+        return mock(VeilarbVeilederClient.class);
     }
 
 
