@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
@@ -32,7 +31,6 @@ public class OppfolgingService implements KafkaConsumerService<String> {
     private final ArbeidslisteService arbeidslisteService;
     private final UnleashService unleashService;
     private final AktoerService aktoerService;
-    private final CvService cvService;
 
     public OppfolgingService(OppfolgingRepository oppfolgingRepository,
                              ElasticIndexer elastic,
@@ -40,8 +38,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                              NavKontorService navKontorService,
                              ArbeidslisteService arbeidslisteService,
                              UnleashService unleashService,
-                             AktoerService aktoerService,
-                             CvService cvService
+                             AktoerService aktoerService
     ) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.elastic = elastic;
@@ -50,7 +47,6 @@ public class OppfolgingService implements KafkaConsumerService<String> {
         this.arbeidslisteService = arbeidslisteService;
         this.unleashService = unleashService;
         this.aktoerService = aktoerService;
-        this.cvService = cvService;
     }
 
     @Override
@@ -66,13 +62,6 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
         if (oppfolgingStatus.getStartDato() == null) {
             log.warn("Bruker {} har ikke startDato", aktoerId);
-        }
-
-        if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus)) {
-            Result<Integer> result = cvService.setHarDeltCvTilNei(aktoerId);
-            if (result.err().isPresent()) {
-                log.error("Kunne ikke sette har delt cv til nei for bruker " + aktoerId, result.err().get());
-            }
         }
 
         Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);
@@ -94,6 +83,16 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                 "portefolje.oppfolging.indekser",
                 () -> elastic.indekser(aktoerId).orElseThrowException()
         );
+    }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
     }
 
     boolean eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {

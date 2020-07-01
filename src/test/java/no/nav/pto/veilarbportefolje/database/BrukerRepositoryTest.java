@@ -4,8 +4,6 @@ import com.google.common.base.Joiner;
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -69,28 +67,6 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
-    }
-
-    @Test
-    public void skal_insert_bruker_har_delt_cv_med_nav() {
-        String aktoerId = "testId";
-        String personId = "personId";
-
-        AktoerId id = AktoerId.of(aktoerId);
-        Brukerdata brukerdata = new Brukerdata();
-        brukerdata.setAktoerid(aktoerId);
-        brukerdata.setPersonid(personId);
-
-        brukerdata.toUpsertQuery(jdbcTemplate).execute();
-
-        brukerRepository.setHarDeltCvMedNav(id, true);
-
-        String result = SqlUtils.select(jdbcTemplate, "BRUKER_DATA", rs -> rs.getString("HAR_DELT_CV"))
-                .column("*")
-                .where(WhereClause.equals("AKTOERID", aktoerId))
-                .execute();
-
-        assertThat(result).isEqualTo("J");
     }
 
     @Test

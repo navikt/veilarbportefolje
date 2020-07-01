@@ -16,4 +16,14 @@ public class ProfileringService implements KafkaConsumerService<ArbeidssokerProf
     public void behandleKafkaMelding (ArbeidssokerProfilertEvent kafkaMelding) {
         profileringRepository.upsertBrukerProfilering(kafkaMelding);
     }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
+    }
 }

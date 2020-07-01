@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
@@ -500,14 +499,5 @@ public class BrukerRepository {
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
-    }
-
-    public Result<Integer> setHarDeltCvMedNav(AktoerId aktoerId, boolean harDelt) {
-        Supplier<Integer> query = () -> SqlUtils.update(db, "BRUKER_DATA")
-                .set("HAR_DELT_CV", DbUtils.boolToJaNei(harDelt))
-                .whereEquals("AKTOERID", aktoerId.toString())
-                .execute();
-
-        return Result.of(query);
     }
 }

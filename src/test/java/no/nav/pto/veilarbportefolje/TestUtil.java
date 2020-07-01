@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje;
 
 import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -8,6 +9,10 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestUtil {
 
@@ -26,6 +31,13 @@ public class TestUtil {
         return ds;
     }
 
+    public static UnleashService createUnleashMock() {
+        UnleashService unleash = mock(UnleashService.class);
+        when(unleash.isEnabled(anyString())).thenReturn(true);
+        return unleash;
+    }
+
+
     private static void migrateDb(DriverManagerDataSource ds) {
         Flyway flyway = new Flyway();
         flyway.setSkipDefaultResolvers(true);
@@ -33,6 +45,7 @@ public class TestUtil {
         flyway.setDataSource(ds);
         flyway.migrate();
     }
+
 
     private static void setHsqlToOraSyntax(SingleConnectionDataSource ds) {
         try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {

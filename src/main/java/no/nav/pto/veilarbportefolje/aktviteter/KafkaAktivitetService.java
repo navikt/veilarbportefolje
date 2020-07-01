@@ -38,6 +38,16 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
         aktivitetService.oppdaterAktiviteter(Collections.singletonList(mapTilAktivitetDataFraFeed(aktivitetData)));
     }
 
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
+    }
+
 
     public static AktivitetDataFraFeed mapTilAktivitetDataFraFeed (KafkaAktivitetMelding kafkaAktivitetMelding) {
         Timestamp endretDato = Optional.ofNullable(kafkaAktivitetMelding.getEndretDato())

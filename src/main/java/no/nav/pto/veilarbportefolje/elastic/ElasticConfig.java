@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
@@ -44,8 +45,8 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, PepClient pepClient, VeilederService veilederService, UnleashService unleashService, CvService cvService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), pepClient, veilederService, unleashService);
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService,unleashService);
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService,unleashService, cvService);
     }
 }

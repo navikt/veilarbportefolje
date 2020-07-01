@@ -1,10 +1,8 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import no.nav.sbl.util.EnvironmentUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.Q;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 
 @Configuration

@@ -1,17 +1,9 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
-import no.nav.pto.veilarbportefolje.util.Result;
-import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
-
-import java.util.concurrent.CompletableFuture;
 
 import static no.nav.json.JsonUtils.fromJson;
 
@@ -32,5 +24,15 @@ public class DialogService implements KafkaConsumerService<String> {
         DialogData melding = fromJson(kafkaMelding, DialogData.class);
         dialogFeedRepository.oppdaterDialogInfoForBruker(melding);
         elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+    }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
     }
 }
