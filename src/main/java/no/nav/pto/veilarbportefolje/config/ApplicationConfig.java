@@ -181,7 +181,7 @@ public class ApplicationConfig implements ApiApplication {
         );
 
         new KafkaConsumerRunnable<>(
-                dialogService,
+                cvService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
