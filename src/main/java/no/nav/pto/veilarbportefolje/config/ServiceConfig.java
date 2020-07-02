@@ -92,8 +92,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public CvService cvService(ElasticServiceV2 elasticServiceV2) {
-        return new CvService(elasticServiceV2);
+    public CvService cvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService) {
+        return new CvService(elasticServiceV2, aktoerService);
     }
 
     @Bean

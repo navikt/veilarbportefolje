@@ -4,6 +4,7 @@ import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
@@ -21,6 +22,7 @@ import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic.PAM_SAMTYKKE_
 import static no.nav.sbl.util.EnvironmentUtils.APP_ENVIRONMENT_NAME_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.T;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class CvKafkaConsumerTest extends IntegrationTest {
     private static CvService cvService;
@@ -31,7 +33,7 @@ public class CvKafkaConsumerTest extends IntegrationTest {
         System.setProperty(APP_ENVIRONMENT_NAME_PROPERTY_NAME, valueOf(T));
 
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktoerService.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,
