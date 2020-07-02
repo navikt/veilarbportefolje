@@ -31,6 +31,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
+
 @Configuration
 public class ServiceConfig {
 
@@ -80,8 +82,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService, CvService cvService) {
-        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService, cvService);
+    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService) {
+        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService);
     }
 
     @Bean
@@ -90,8 +92,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public CvService cvService(BrukerRepository brukerRepository, ElasticServiceV2 elasticServiceV2) {
-        return new CvService(brukerRepository, elasticServiceV2);
+    public CvService cvService(ElasticServiceV2 elasticServiceV2) {
+        return new CvService(elasticServiceV2);
     }
 
     @Bean
@@ -101,6 +103,6 @@ public class ServiceConfig {
 
     @Bean
     public ElasticServiceV2 elasticServiceV2(RestHighLevelClient restHighLevelClient) {
-        return new ElasticServiceV2(restHighLevelClient);
+        return new ElasticServiceV2(restHighLevelClient, getAlias());
     }
 }

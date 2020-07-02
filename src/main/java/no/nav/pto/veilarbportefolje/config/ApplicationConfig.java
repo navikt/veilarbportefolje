@@ -180,14 +180,6 @@ public class ApplicationConfig implements ApiApplication {
                "veilarbdialog.kafka"
         );
 
-        new KafkaConsumerRunnable<>(
-                cvService,
-                unleashService,
-                KafkaProperties.kafkaProperties(),
-                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
-                "veilarbportefolje.kafka.cv.killswitch"
-        );
-
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
         leggTilServlet(servletContext, new TiltakServlet(tiltakHandler), "/internal/oppdater_tiltak");
         leggTilServlet(servletContext, new YtelserServlet(kopierGR199FraArena), "/internal/oppdater_ytelser");

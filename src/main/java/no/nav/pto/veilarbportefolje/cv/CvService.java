@@ -2,12 +2,12 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.util.Result;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.json.JsonUtils.fromJson;
 import static no.nav.metrics.MetricsFactory.createEvent;
@@ -17,17 +17,8 @@ import static no.nav.sbl.util.EnvironmentUtils.isEnvironmentClass;
 
 @Slf4j
 public class CvService implements KafkaConsumerService<String> {
-
-    private final BrukerRepository brukerRepository;
     private final ElasticServiceV2 elasticServiceV2;
-
-    public CvService(
-            BrukerRepository brukerRepository,
-            ElasticServiceV2 elasticServiceV2
-    ) {
-        this.brukerRepository = brukerRepository;
-        this.elasticServiceV2 = elasticServiceV2;
-    }
+    private final AtomicBoolean rewind;
 
     enum Ressurs {
         CV_HJEMMEL,
@@ -46,6 +37,21 @@ public class CvService implements KafkaConsumerService<String> {
         Fnr fnr;
         MeldingType meldingType;
         Ressurs ressurs;
+    }
+
+    public CvService(ElasticServiceV2 elasticServiceV2) {
+        this.elasticServiceV2 = elasticServiceV2;
+        this.rewind = new AtomicBoolean();
+    }
+
+    @Override
+    public boolean shouldRewind() {
+        return rewind.get();
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+        this.rewind.set(rewind);
     }
 
     @Override
@@ -68,22 +74,16 @@ public class CvService implements KafkaConsumerService<String> {
         switch (melding.meldingType) {
             case SAMTYKKE_OPPRETTET:
                 log.info("Bruker {} har delt cv med nav", aktorId);
-                brukerRepository.setHarDeltCvMedNav(aktorId, true).orElseThrowException();
                 createEvent("portefolje_har_delt_cv").report();
                 elasticServiceV2.updateHarDeltCv(melding.getFnr(), true);
                 break;
             case SAMTYKKE_SLETTET:
                 log.info("Bruker {} har ikke delt cv med nav", aktorId);
-                brukerRepository.setHarDeltCvMedNav(aktorId, false).orElseThrowException();
                 createEvent("portefolje_har_ikke_delt_cv").report();
                 elasticServiceV2.updateHarDeltCv(melding.getFnr(), false);
                 break;
             default:
                 log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktorId);
         }
-    }
-
-    public Result<Integer> setHarDeltCvTilNei(AktoerId aktoerId) {
-        return brukerRepository.setHarDeltCvMedNav(aktoerId, false);
     }
 }

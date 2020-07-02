@@ -5,13 +5,12 @@ import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
-import no.nav.pto.veilarbportefolje.cv.CvService;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedHandler;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedHandler;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
@@ -72,8 +71,7 @@ public class OppfolgingerfeedConfig {
                                                                           OppfolgingRepository oppfolgingRepository,
                                                                           VeilederService veilederService,
                                                                           Transactor transactor,
-                                                                          UnleashService unleashService,
-                                                                          CvService cvService) {
+                                                                          UnleashService unleashService) {
         return new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
@@ -81,7 +79,6 @@ public class OppfolgingerfeedConfig {
                 oppfolgingRepository,
                 veilederService,
                 transactor,
-                cvService,
                 unleashService
         );
     }

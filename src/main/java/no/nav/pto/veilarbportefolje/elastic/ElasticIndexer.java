@@ -7,6 +7,7 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -29,8 +30,6 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -59,7 +58,6 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticIndexer {
@@ -77,13 +75,16 @@ public class ElasticIndexer {
 
     private UnleashService unleashService;
 
+    private CvService cvService;
+
     @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient client,
             ElasticService elasticService,
-            UnleashService unleashService
+            UnleashService unleashService,
+            CvService cvService
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
@@ -91,6 +92,7 @@ public class ElasticIndexer {
         this.client = client;
         this.elasticService = elasticService;
         this.unleashService = unleashService;
+        this.cvService = cvService;
     }
 
     @SneakyThrows
@@ -102,7 +104,7 @@ public class ElasticIndexer {
             gammelHovedIndeksering();
         }
 
-
+        cvService.setRewind(true);
     }
 
     private void gammelHovedIndeksering() {
