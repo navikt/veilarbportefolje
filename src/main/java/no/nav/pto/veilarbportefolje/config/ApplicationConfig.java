@@ -15,6 +15,11 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
+<<<<<<< HEAD
+=======
+import no.nav.pto.veilarbportefolje.service.VeilederService;
+import no.nav.pto.veilarbportefolje.util.KafkaProperties;
+>>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +48,10 @@ public class ApplicationConfig {
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
     public static final String SECURITYTOKENSERVICE_URL_PROPERTY_NAME = "SECURITYTOKENSERVICE_URL";
 
+<<<<<<< HEAD
     /*
+=======
+>>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
 
     private OidcAuthenticatorConfig createOpenAmAuthenticatorConfig() {
         String discoveryUrl = getRequiredProperty("OPENAM_DISCOVERY_URL");
