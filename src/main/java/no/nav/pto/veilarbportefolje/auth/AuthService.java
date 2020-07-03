@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +42,7 @@ public class AuthService {
         test("oppfølgingsbruker", getInnloggetVeilederIdent(), veilarbPep.harVeilederTilgangTilModia(veilederToken));
     }
 
+    @Cacheable(TILGANG)
     public void tilgangTilEnhet(String enhet) {
         String veilederId = getInnloggetVeilederIdent().getVeilederId();
         test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));

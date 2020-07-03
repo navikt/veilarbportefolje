@@ -1,6 +1,10 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import static io.micrometer.prometheus.PrometheusConfig.DEFAULT;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +22,15 @@ import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSi
 public class MetricsReporter {
 
     private ElasticIndexer elasticIndexer;
+    private MeterRegistry meterRegistry = new ProtectedPrometheusMeterRegistry();
 
     public MetricsReporter(ElasticIndexer elasticIndexer) {
         this.elasticIndexer = elasticIndexer;
 
-        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
-        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
-        Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", MetricsReporter::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
-        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", MetricsReporter::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
+        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register();
+        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(meterRegistry);
+        Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", MetricsReporter::sjekkArenaYtelserSistOppdatert).register(meterRegistry);
+        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", MetricsReporter::sjekkArenaAktiviteterSistOppdatert).register(meterRegistry);
     }
 
     public static long sjekkArenaYtelserSistOppdatert() {
@@ -51,5 +56,16 @@ public class MetricsReporter {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         return LocalDateTime.parse(dato + "_" + klokkeslett, formatter);
+    }
+
+    private static class ProtectedPrometheusMeterRegistry extends PrometheusMeterRegistry {
+        public ProtectedPrometheusMeterRegistry() {
+            super(DEFAULT);
+        }
+
+        @Override
+        public void close() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
-import no.nav.common.auth.subject.IdentType;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.featuretoggle.UnleashServiceConfig;
 import no.nav.common.leaderelection.LeaderElectionClient;
@@ -15,23 +13,17 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
-<<<<<<< HEAD
-=======
-import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.pto.veilarbportefolje.util.KafkaProperties;
->>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
 
 @EnableScheduling
-@EnableAspectJAutoProxy
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 public class ApplicationConfig {
@@ -48,36 +40,7 @@ public class ApplicationConfig {
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
     public static final String SECURITYTOKENSERVICE_URL_PROPERTY_NAME = "SECURITYTOKENSERVICE_URL";
 
-<<<<<<< HEAD
-    /*
-=======
->>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
 
-    private OidcAuthenticatorConfig createOpenAmAuthenticatorConfig() {
-        String discoveryUrl = getRequiredProperty("OPENAM_DISCOVERY_URL");
-        String clientId = getRequiredProperty("VEILARBLOGIN_OPENAM_CLIENT_ID");
-        String refreshUrl = getRequiredProperty("VEILARBLOGIN_OPENAM_REFRESH_URL");
-
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(discoveryUrl)
-                .withClientId(clientId)
-                .withRefreshUrl(refreshUrl)
-                .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
-                .withIdTokenCookieName(OPEN_AM_ID_TOKEN_COOKIE_NAME)
-                .withIdentType(IdentType.InternBruker);
-    }
-
-    private OidcAuthenticatorConfig createSystemUserAuthenticatorConfig() {
-        String discoveryUrl = getRequiredProperty("SECURITY_TOKEN_SERVICE_DISCOVERY_URL");
-        String clientId = getRequiredProperty("SECURITY_TOKEN_SERVICE_CLIENT_ID");
-
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(discoveryUrl)
-                .withClientId(clientId)
-                .withIdentType(IdentType.Systemressurs);
-    }
-    */
-    
     @Bean
     public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
         return new MetricsReporter(elasticIndexer);

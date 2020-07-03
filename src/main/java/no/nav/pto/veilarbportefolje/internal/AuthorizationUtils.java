@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Objects;
 
+import static no.nav.common.utils.NaisUtils.getCredentials;
+
 
 @Slf4j
 public class AuthorizationUtils {
@@ -19,7 +21,7 @@ public class AuthorizationUtils {
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
     public static boolean isBasicAuthAuthorized(HttpServletRequest request) {
-        Credentials srvBrukere =
+        Credentials srvBrukere = getCredentials("service_user");
         String auth = request.getHeader(AUTHORIZATION);
         if (Objects.isNull(auth) || !auth.toLowerCase().startsWith("basic ")) {
             return false;
@@ -30,7 +32,7 @@ public class AuthorizationUtils {
 
         String username = basicAuthDecoded.split(":")[0].toLowerCase();
         String password = basicAuthDecoded.split(":")[1];
-        return username.equals(srvUsername) && password.equals(srvPassword);
+        return username.equals(srvBrukere.username) && password.equals(srvBrukere.password);
     }
 
     public static void writeUnauthorized(HttpServletResponse resp) throws IOException {
