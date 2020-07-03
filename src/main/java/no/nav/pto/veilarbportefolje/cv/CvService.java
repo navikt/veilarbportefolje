@@ -18,6 +18,8 @@ import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 public class CvService implements KafkaConsumerService<String> {
     private final ElasticServiceV2 elasticServiceV2;
     private final AktoerService aktoerService;
+    private final CvRepository cvRepository;
+
     private final AtomicBoolean rewind;
 
     enum Ressurs {
@@ -39,9 +41,10 @@ public class CvService implements KafkaConsumerService<String> {
         Ressurs ressurs;
     }
 
-    public CvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService) {
+    public CvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService, CvRepository cvRepository) {
         this.elasticServiceV2 = elasticServiceV2;
         this.aktoerService = aktoerService;
+        this.cvRepository = cvRepository;
         this.rewind = new AtomicBoolean();
     }
 
@@ -71,11 +74,13 @@ public class CvService implements KafkaConsumerService<String> {
             case SAMTYKKE_OPPRETTET:
                 log.info("Bruker {} har delt cv med nav", aktorId);
                 createEvent("portefolje_har_delt_cv").report();
+                cvRepository.upsert(aktorId, fnr, true);
                 elasticServiceV2.updateHarDeltCv(fnr, true);
                 break;
             case SAMTYKKE_SLETTET:
                 log.info("Bruker {} har ikke delt cv med nav", aktorId);
                 createEvent("portefolje_har_ikke_delt_cv").report();
+                cvRepository.upsert(aktorId, fnr, false);
                 elasticServiceV2.updateHarDeltCv(fnr, false);
                 break;
             default:

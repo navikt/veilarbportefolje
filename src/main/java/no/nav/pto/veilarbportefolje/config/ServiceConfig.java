@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
+import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
@@ -92,8 +93,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public CvService cvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService) {
-        return new CvService(elasticServiceV2, aktoerService);
+    public CvService cvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService, CvRepository cvRepository) {
+        return new CvService(elasticServiceV2, aktoerService, cvRepository);
     }
 
     @Bean

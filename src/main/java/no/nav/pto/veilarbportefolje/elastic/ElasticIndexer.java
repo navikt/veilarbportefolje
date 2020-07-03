@@ -95,21 +95,13 @@ public class ElasticIndexer {
         this.cvService = cvService;
     }
 
-    public void startIndeksering() {
-        startIndeksering(false);
-    }
-
     @SneakyThrows
-    public void startIndeksering(boolean onlyRewind) {
-        if (!onlyRewind) {
-            if (unleashService.isEnabled("portefolje.ny_hovedindeksering")) {
-                nyHovedIndekseringMedPaging();
-            } else {
-                gammelHovedIndeksering();
-            }
+    public void startIndeksering() {
+        if (unleashService.isEnabled("portefolje.ny_hovedindeksering")) {
+            nyHovedIndekseringMedPaging();
+        } else {
+            gammelHovedIndeksering();
         }
-
-        cvService.setRewind(true);
     }
 
     private void gammelHovedIndeksering() {

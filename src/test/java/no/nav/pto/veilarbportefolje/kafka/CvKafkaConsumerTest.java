@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -33,7 +34,7 @@ public class CvKafkaConsumerTest extends IntegrationTest {
         System.setProperty(APP_ENVIRONMENT_NAME_PROPERTY_NAME, valueOf(T));
 
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktoerService.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktoerService.class), mock(CvRepository.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,

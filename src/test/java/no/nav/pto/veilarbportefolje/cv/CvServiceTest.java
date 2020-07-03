@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import io.vavr.control.Try;
+import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -10,31 +11,46 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.TABLE_NAME;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CvServiceTest extends IntegrationTest {
+    private static JdbcTemplate jdbcTemplate;
+    private static CvRepository cvRepository;
+
     private CvService cvService;
     private String indexName;
 
     private AktoerService aktoerServiceMock;
 
+    @BeforeClass
+    public static void beforeClass() {
+        SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
+        jdbcTemplate = new JdbcTemplate(ds);
+        cvRepository = new CvRepository(jdbcTemplate);
+    }
+
     @Before
     public void setUp() {
         indexName = generateId();
         aktoerServiceMock = mock(AktoerService.class);
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), aktoerServiceMock);
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), aktoerServiceMock, cvRepository);
         createIndex(indexName);
     }
 
     @After
     public void tearDown() {
         deleteIndex(indexName);
+        jdbcTemplate.execute("TRUNCATE TABLE " + TABLE_NAME);
     }
 
     @Test
@@ -68,7 +84,7 @@ public class CvServiceTest extends IntegrationTest {
     }
 
     @Test
-    public void skal_oppdatere_dokumentet_i_elastic() {
+    public void skal_oppdatere_dokumentet_i_db_og_elastic() {
         Fnr fnr = Fnr.of("00000000000");
 
         String document = new JSONObject()
@@ -79,14 +95,18 @@ public class CvServiceTest extends IntegrationTest {
         IndexResponse indexResponse = createDocument(indexName, fnr, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
+        String aktoerId = "1";
         String payload = new JSONObject()
-                .put("aktoerId", "00000000000")
+                .put("aktoerId", aktoerId)
                 .put("fnr", fnr)
                 .put("meldingType", "SAMTYKKE_OPPRETTET")
                 .put("ressurs", "CV_HJEMMEL")
                 .toString();
 
         cvService.behandleKafkaMelding(payload);
+
+        String harDeltCvDb = cvRepository.harDeltCv(AktoerId.of(aktoerId));
+        assertThat(harDeltCvDb).isEqualTo("J");
 
         GetResponse getResponse = fetchDocument(indexName, fnr);
         assertThat(getResponse.isExists()).isTrue();

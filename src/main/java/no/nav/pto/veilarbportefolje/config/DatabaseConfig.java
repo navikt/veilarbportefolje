@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.database.*;
@@ -117,6 +118,11 @@ public class DatabaseConfig {
     @Bean
     public ProfileringRepository profileringRepository(JdbcTemplate jdbcTemplate) {
         return new ProfileringRepository(jdbcTemplate);
+    }
+
+    @Bean
+    public CvRepository cvRepository(JdbcTemplate jdbcTemplate) {
+        return new CvRepository(jdbcTemplate);
     }
 
     @Bean
