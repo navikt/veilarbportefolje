@@ -128,6 +128,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
+                log.info("Sletter arbeidsliste for bruker {}", aktoerId);
                 arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
             }
             oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
