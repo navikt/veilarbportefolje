@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.service;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -29,6 +30,7 @@ public class AktoerService {
     private final JdbcTemplate db;
     private final BrukerRepository brukerRepository;
     private final ElasticIndexer elasticIndexer;
+    private final LeaderElectionClient leaderElectionClient;
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM OPPFOLGING_DATA "
@@ -37,17 +39,18 @@ public class AktoerService {
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
 
     @Autowired
-    public AktoerService(AktorregisterClient aktorregisterClient, JdbcTemplate db, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer){
+    public AktoerService(AktorregisterClient aktorregisterClient, JdbcTemplate db, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer, LeaderElectionClient leaderElectionClient){
         this.aktorregisterClient = aktorregisterClient;
         this.db = db;
         this.brukerRepository = brukerRepository;
         this.elasticIndexer = elasticIndexer;
+        this.leaderElectionClient = leaderElectionClient;
     }
 
 
     @Scheduled(cron = "0 0/5 * * * *")
     private void scheduledOppdaterAktoerTilPersonIdMapping() {
-        runAsyncJobOnLeader(this::mapAktorId);
+        runAsyncJobOnLeader(this::mapAktorId, leaderElectionClient);
     }
 
     void mapAktorId() {

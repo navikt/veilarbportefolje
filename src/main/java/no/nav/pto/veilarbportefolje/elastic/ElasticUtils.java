@@ -25,8 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import static no.nav.common.utils.EnvironmentUtils.resolveHostName;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.*;
 
 @Slf4j
 public class ElasticUtils {
@@ -119,7 +118,7 @@ public class ElasticUtils {
     }
 
     static String getAuthHeaderValue() {
-        String auth = VEILARBELASTIC_USERNAME + ":" + VEILARBELASTIC_PASSWORD;
+        String auth = vaultCredentials.username + ":" + vaultCredentials.password;
         return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 

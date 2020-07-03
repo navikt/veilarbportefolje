@@ -4,6 +4,8 @@ import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.subject.IdentType;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.featuretoggle.UnleashServiceConfig;
+import no.nav.common.leaderelection.LeaderElectionClient;
+import no.nav.common.leaderelection.LeaderElectionHttpClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -41,6 +43,7 @@ public class ApplicationConfig {
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
     public static final String SECURITYTOKENSERVICE_URL_PROPERTY_NAME = "SECURITYTOKENSERVICE_URL";
 
+    /*
 
     private OidcAuthenticatorConfig createOpenAmAuthenticatorConfig() {
         String discoveryUrl = getRequiredProperty("OPENAM_DISCOVERY_URL");
@@ -65,7 +68,8 @@ public class ApplicationConfig {
                 .withClientId(clientId)
                 .withIdentType(IdentType.Systemressurs);
     }
-
+    */
+    
     @Bean
     public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
         return new MetricsReporter(elasticIndexer);
@@ -77,8 +81,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public IndekseringScheduler indekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
-        return new IndekseringScheduler(elasticIndexer, tiltakHandler, kopierGR199FraArena, krrService);
+    public IndekseringScheduler indekseringScheduler(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService, LeaderElectionClient leaderElectionClient) {
+        return new IndekseringScheduler(elasticIndexer, tiltakHandler, kopierGR199FraArena, krrService, leaderElectionClient);
     }
 
     @Bean
@@ -92,5 +96,10 @@ public class ApplicationConfig {
     public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
         return new NaisSystemUserTokenProvider(properties.getStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
+    }
+
+    @Bean
+    public LeaderElectionClient leaderElectionClient() {
+        return new LeaderElectionHttpClient();
     }
 }

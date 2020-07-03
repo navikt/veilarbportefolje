@@ -12,7 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
+import no.nav.pto.veilarbportefolje.metrikker.MetricsUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import org.apache.commons.io.IOUtils;
@@ -28,16 +28,12 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -49,6 +45,7 @@ import static java.time.LocalDateTime.now;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
@@ -57,32 +54,23 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
-@Component
 public class ElasticIndexer {
 
     final static int BATCH_SIZE = 1000;
     final static int BATCH_SIZE_LIMIT = 1000;
-
     private final ElasticService elasticService;
+    private final RestHighLevelClient restHighLevelClient;
+    private final AktivitetDAO aktivitetDAO;
+    private final BrukerRepository brukerRepository;
+    private final UnleashService unleashService;
+    private final MetricsClient metricsClient;
 
-    private RestHighLevelClient client;
-
-    private AktivitetDAO aktivitetDAO;
-
-    private BrukerRepository brukerRepository;
-
-    private UnleashService unleashService;
-
-    private MetricsClient metricsClient;
-
-    @Autowired
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
-            RestHighLevelClient client,
+            RestHighLevelClient restHighLevelClient,
             ElasticService elasticService,
             UnleashService unleashService,
             MetricsClient metricsClient
@@ -90,7 +78,7 @@ public class ElasticIndexer {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
-        this.client = client;
+        this.restHighLevelClient = restHighLevelClient;
         this.elasticService = elasticService;
         this.unleashService = unleashService;
         this.metricsClient = metricsClient;
@@ -248,9 +236,8 @@ public class ElasticIndexer {
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
         int antall = brukere.size();
-        Event event = new Event("es.deltaindeksering.fullfort");
-        event.addFieldToReport("es.antall.oppdateringer", antall);
-        metricsClient.report(event);
+
+        metricsClient.report(new Event("es.deltaindeksering.fullfort").addFieldToReport("es.antall.oppdateringer", antall));
     }
 
     @SneakyThrows
@@ -258,7 +245,7 @@ public class ElasticIndexer {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(getAlias());
 
-        boolean exists = client.indices().exists(request, DEFAULT);
+        boolean exists = restHighLevelClient.indices().exists(request, DEFAULT);
         return !exists;
     }
 
@@ -279,7 +266,7 @@ public class ElasticIndexer {
                     .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
             try {
-                BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+                BulkByScrollResponse response = restHighLevelClient.deleteByQuery(deleteQuery, DEFAULT);
                 if (response.getDeleted() == 1) {
                     log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
                     return Result.ok(bruker);
@@ -315,7 +302,8 @@ public class ElasticIndexer {
 
         Result<OppfolgingsBruker> result = MetricsUtils.timed(
                 "portefolje.indeks.hentBruker",
-                () -> brukerRepository.hentBruker(aktoerId)
+                () -> brukerRepository.hentBruker(aktoerId),
+                metricsClient
         );
 
         if (result.isErr()) {
@@ -326,20 +314,22 @@ public class ElasticIndexer {
         OppfolgingsBruker bruker = result.orElseThrowException();
 
         if (erUnderOppfolging(bruker)) {
-            metricsClient
             MetricsUtils.timed(
                     "portefolje.indeks.leggTilAktiviteter",
-                    () -> leggTilAktiviteter(bruker)
+                    () -> leggTilAktiviteter(bruker),
+                    metricsClient
             );
 
             MetricsUtils.timed(
                     "portefolje.indeks.leggTilTiltak",
-                    () -> leggTilTiltak(bruker)
+                    () -> leggTilTiltak(bruker),
+                    metricsClient
             );
 
             MetricsUtils.timed(
                     "portefolje.indeks.skrivTilIndeks",
-                    () -> skrivTilIndeks(getAlias(), bruker)
+                    () -> skrivTilIndeks(getAlias(), bruker),
+                    metricsClient
             );
 
         } else {
@@ -381,7 +371,7 @@ public class ElasticIndexer {
     @SneakyThrows
     public Optional<String> hentGammeltIndeksNavn() {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(getAlias());
-        GetAliasesResponse response = client.indices().getAlias(getAliasRequest, DEFAULT);
+        GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
     }
 
@@ -392,7 +382,7 @@ public class ElasticIndexer {
                 .alias(getAlias());
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
-        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke legge til alias {}", getAlias());
@@ -415,7 +405,7 @@ public class ElasticIndexer {
                 .addAliasAction(removeAliasAction)
                 .addAliasAction(addAliasAction);
 
-        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke oppdatere alias {}", getAlias());
@@ -424,7 +414,7 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public void slettGammelIndeks(String gammelIndeks) {
-        AcknowledgedResponse response = client.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
+        AcknowledgedResponse response = restHighLevelClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
         if (!response.isAcknowledged()) {
             log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
         }
@@ -438,7 +428,7 @@ public class ElasticIndexer {
                 .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
                 .forEach(bulk::add);
 
-        BulkResponse response = client.bulk(bulk, DEFAULT);
+        BulkResponse response = restHighLevelClient.bulk(bulk, DEFAULT);
 
         if (response.hasFailures()) {
             log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
@@ -463,7 +453,7 @@ public class ElasticIndexer {
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
 
-        CreateIndexResponse response = client.indices().create(request, DEFAULT);
+        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();

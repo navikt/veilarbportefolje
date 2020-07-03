@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import no.nav.common.leaderelection.LeaderElectionClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -19,8 +20,8 @@ public class JobUtils {
 
     private static String MDC_JOB_ID = "jobId";
 
-    public static Optional<RunningJob> runAsyncJobOnLeader(Runnable runnable) {
-        if (isLeader()) {
+    public static Optional<RunningJob> runAsyncJobOnLeader(Runnable runnable, LeaderElectionClient leaderElectionClient) {
+        if (leaderElectionClient.isLeader()) {
             return Optional.empty();
         }
         RunningJob runningJob = runAsyncJob(runnable);

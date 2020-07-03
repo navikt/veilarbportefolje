@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class OidcInterceptor implements Interceptor {
 
-    private SystemUserTokenProvider systemUserTokenProvider;
+    private final SystemUserTokenProvider systemUserTokenProvider;
 
     public OidcInterceptor(SystemUserTokenProvider systemUserTokenProvider) {
         this.systemUserTokenProvider = systemUserTokenProvider;

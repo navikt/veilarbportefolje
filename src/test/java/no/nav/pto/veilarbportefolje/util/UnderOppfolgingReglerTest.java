@@ -6,8 +6,8 @@ import org.junit.Test;
 
 import java.util.Set;
 
-import static no.nav.common.utils.CollectionUtils.listOf;
-import static no.nav.common.utils.CollectionUtils.setOf;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.setOf;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 

@@ -1,40 +1,35 @@
 package no.nav.pto.veilarbportefolje.krr;
 
 import no.nav.common.cxf.CXFClient;
+import no.nav.common.health.HealthCheckResult;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.UUID;
-
-import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY;
-import static no.nav.pto.veilarbportefolje.util.HealthCheckUtils.ping;
 
 @Configuration
 public class DigitalKontaktinformasjonConfig {
 
-    private static String URL = getRequiredProperty(DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY);
-
     @Bean
-    public DigitalKontaktinformasjonV1 dkifV1() {
-        return digitalKontaktinformasjon();
+    public DigitalKontaktinformasjonV1 dkifV1(EnvironmentProperties environmentProperties) {
+        return digitalKontaktinformasjon(environmentProperties.getDifiUrl());
     }
 
-    @Bean
-    public Pingable dkifV1Ping() {
-        PingMetadata metadata = new PingMetadata(
-                UUID.randomUUID().toString(),
-                "DKIF_V1 via " + URL,
-                "Ping av DKIF_V1. Henter reservasjon fra KRR.",
-                false
-        );
-        return () -> ping(() -> digitalKontaktinformasjon().ping(), metadata);
-    }
-
-    private DigitalKontaktinformasjonV1 digitalKontaktinformasjon() {
+    private DigitalKontaktinformasjonV1 digitalKontaktinformasjon(String difiUrl) {
         return new CXFClient<>(DigitalKontaktinformasjonV1.class)
-                .address(URL)
+                .address(difiUrl)
                 .configureStsForSystemUser()
                 .build();
+    }
+
+
+    public static HealthCheckResult dkifV1Ping(DigitalKontaktinformasjonV1 dkifV1) {
+        try {
+            dkifV1.ping();
+            return HealthCheckResult.healthy();
+        } catch (Exception e) {
+            return HealthCheckResult.unhealthy("Feil mot difi", e);
+        }
     }
 }

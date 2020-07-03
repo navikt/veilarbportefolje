@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +14,11 @@ import java.io.IOException;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 @Slf4j
+@WebServlet(
+        name = "PopulerKrr",
+        description = "Hent krr fra difi",
+        urlPatterns = {"/internal/populer_krr"}
+)
 public class PopulerKrrServlet extends HttpServlet {
 
     private KrrService krrService;

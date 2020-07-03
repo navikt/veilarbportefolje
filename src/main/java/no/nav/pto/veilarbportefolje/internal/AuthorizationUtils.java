@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.internal;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.utils.Credentials;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -8,9 +9,6 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Objects;
 
-import static java.lang.System.getProperty;
-import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.SYSTEMUSER_PASSWORD;
-import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.SYSTEMUSER_USERNAME;
 
 @Slf4j
 public class AuthorizationUtils {
@@ -21,6 +19,7 @@ public class AuthorizationUtils {
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
     public static boolean isBasicAuthAuthorized(HttpServletRequest request) {
+        Credentials srvBrukere =
         String auth = request.getHeader(AUTHORIZATION);
         if (Objects.isNull(auth) || !auth.toLowerCase().startsWith("basic ")) {
             return false;
@@ -31,9 +30,6 @@ public class AuthorizationUtils {
 
         String username = basicAuthDecoded.split(":")[0].toLowerCase();
         String password = basicAuthDecoded.split(":")[1];
-        String srvUsername = getProperty(SYSTEMUSER_USERNAME).toLowerCase();
-        String srvPassword = getProperty(SYSTEMUSER_PASSWORD);
-
         return username.equals(srvUsername) && password.equals(srvPassword);
     }
 

@@ -12,7 +12,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
-import static no.nav.json.JsonUtils.fromJson;
+import static no.nav.common.json.JsonUtils.fromJson;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class KafkaAktivtetServiceTest {

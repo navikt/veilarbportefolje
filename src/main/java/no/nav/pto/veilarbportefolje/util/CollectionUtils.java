@@ -2,8 +2,7 @@ package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.common.utils.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CollectionUtils {
     public static <K, V> Map<K, V> mapOf(Pair<K,V>... varargs) {
@@ -14,4 +13,17 @@ public class CollectionUtils {
         }
         return map;
     }
+    public static <T> List<T> listOf(T... varargs) {
+        return Arrays.asList(varargs);
+    }
+
+    public static <T> List<T> listOf(T singleton) {
+        return Collections.singletonList(singleton);
+    }
+
+    public static <T> Set<T> setOf(T... varargs) {
+        List<T> list = Arrays.asList(varargs);
+        return new HashSet<>(list);
+    }
+
 }

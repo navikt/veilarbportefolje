@@ -3,8 +3,9 @@ package no.nav.pto.veilarbportefolje.internal;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,11 +17,16 @@ import java.util.Optional;
 import static no.nav.pto.veilarbportefolje.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
+@WebServlet(
+        name = " ResetOppfolgingFeed",
+        description = "Spoler tilbake oppfolgingsfeeden",
+        urlPatterns = {"/internal/reset_feed_oppfolging"}
+)
 public class ResetOppfolgingFeedServlet extends HttpServlet {
 
-    private OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepository oppfolgingRepository;
 
-    @Inject
+    @Autowired
     public ResetOppfolgingFeedServlet(OppfolgingRepository oppfolgingRepository) {
         this.oppfolgingRepository = oppfolgingRepository;
     }

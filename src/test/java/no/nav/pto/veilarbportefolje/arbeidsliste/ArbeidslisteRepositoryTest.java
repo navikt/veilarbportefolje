@@ -1,13 +1,10 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +12,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Instant;
 
@@ -25,10 +21,8 @@ import static org.junit.Assert.*;
 @ContextConfiguration(classes = { ApplicationConfigTest.class})
 public class ArbeidslisteRepositoryTest {
 
-    @Inject
     private ArbeidslisteRepository repo;
 
-    @Inject
     private JdbcTemplate jdbcTemplate;
 
     private ArbeidslisteDTO data;

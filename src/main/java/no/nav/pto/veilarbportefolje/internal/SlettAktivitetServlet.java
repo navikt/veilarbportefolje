@@ -5,17 +5,25 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
+@WebServlet(
+        name = "SlettAktivitet",
+        description = "Sletter aktivitet fra databasen",
+        urlPatterns = {"/internal/slett_aktivitet"}
+)
 public class SlettAktivitetServlet extends HttpServlet {
 
-    private AktivitetDAO database;
-    private ElasticIndexer elasticIndexer;
+    private final AktivitetDAO database;
+    private final ElasticIndexer elasticIndexer;
 
+    @Autowired
     public SlettAktivitetServlet(AktivitetDAO database, ElasticIndexer elasticIndexer) {
         this.database = database;
         this.elasticIndexer = elasticIndexer;

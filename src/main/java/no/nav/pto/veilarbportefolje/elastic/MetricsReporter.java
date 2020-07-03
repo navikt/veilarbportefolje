@@ -2,19 +2,14 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.leaderelection.LeaderElection;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import static java.util.Arrays.asList;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.AKTIVITETER_SFTP;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.LOPENDEYTELSER_SFTP;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 
@@ -24,7 +19,6 @@ public class MetricsReporter {
 
     private ElasticIndexer elasticIndexer;
 
-    @Inject
     public MetricsReporter(ElasticIndexer elasticIndexer) {
         this.elasticIndexer = elasticIndexer;
 

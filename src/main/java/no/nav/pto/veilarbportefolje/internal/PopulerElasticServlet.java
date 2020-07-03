@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +14,11 @@ import javax.servlet.http.HttpServletResponse;
 import static no.nav.pto.veilarbportefolje.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
+@WebServlet(
+        name = "PopulerElasticServlet",
+        description = "Indeksering uten hente filer fra arena",
+        urlPatterns = {"/internal/populer_elastic"}
+)
 public class PopulerElasticServlet extends HttpServlet {
 
     private ElasticIndexer elasticIndexer;

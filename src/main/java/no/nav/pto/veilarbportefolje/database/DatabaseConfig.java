@@ -62,27 +62,13 @@ public class DatabaseConfig {
         return new DataSourceTransactionManager(dataSource);
     }
 
-    /*
-    @Bean
-    public Pingable dbPinger(final JdbcTemplate db) {
-        PingMetadata metadata = new PingMetadata(
-                UUID.randomUUID().toString(),
-                "N/A",
-                "Database for portefolje",
-                true
-        );
-
-        return () -> {
-            try {
-                db.queryForList("select count(1) from dual");
-                return Pingable.Ping.lyktes(metadata);
-            } catch (Exception e) {
-                return Pingable.Ping.feilet(metadata, e);
-            }
-        };
+    public static HealthCheckResult dbPinger(final JdbcTemplate db) {
+        try {
+            db.queryForList("select count(1) from dual");
+            return HealthCheckResult.healthy();
+        } catch (Exception e) {
+            return HealthCheckResult.unhealthy("Feil mot databasen", e);
+        }
     }
-
-
-     */
 
 }
