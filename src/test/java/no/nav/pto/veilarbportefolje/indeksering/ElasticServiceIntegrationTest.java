@@ -10,6 +10,7 @@ import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
@@ -68,7 +69,7 @@ public class ElasticServiceIntegrationTest {
         VeilederService veilederServiceMock = mock(VeilederService.class);
         when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
 
-        RestHighLevelClient restClient = ElasticConfig.createClient(ElasticClientConfig.builder()
+        RestHighLevelClient restClient = ElasticUtils.createClient(ElasticClientConfig.builder()
                 .username("")
                 .password("")
                 .hostname("localhost")
@@ -84,7 +85,8 @@ public class ElasticServiceIntegrationTest {
                 mock(BrukerRepository.class),
                 restClient,
                 elasticService,
-                unleashMock
+                unleashMock,
+                mock(CvService.class)
         );
     }
 

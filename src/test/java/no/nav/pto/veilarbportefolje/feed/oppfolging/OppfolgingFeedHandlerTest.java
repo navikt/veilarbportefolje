@@ -4,7 +4,6 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -49,7 +48,6 @@ public class OppfolgingFeedHandlerTest {
     private ElasticIndexer elasticIndexer;
     private OppfolgingRepository oppfolgingRepository;
     private VeilederService veilederService;
-    private CvService cvService;
 
     private OppfolgingFeedHandler oppfolgingFeedHandler;
 
@@ -62,7 +60,6 @@ public class OppfolgingFeedHandlerTest {
         elasticIndexer = mock(ElasticIndexer.class);
         oppfolgingRepository = mock(OppfolgingRepository.class);
         veilederService = mock(VeilederService.class);
-        cvService = mock(CvService.class);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
@@ -71,7 +68,6 @@ public class OppfolgingFeedHandlerTest {
                 oppfolgingRepository,
                 veilederService,
                 new TestTransactor(),
-                cvService,
                 new UnleashServiceMock(false)
         );
 

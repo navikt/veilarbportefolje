@@ -3,12 +3,14 @@ package no.nav.pto.veilarbportefolje.config;
 import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
+import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;
@@ -29,6 +31,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinf
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 
 @Configuration
 public class ServiceConfig {
@@ -79,8 +83,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService, CvService cvService) {
-        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService, cvService);
+    public OppfolgingService oppfolgingService(OppfolgingRepository oppfolgingRepository, ElasticIndexer elasticIndexer, VeilederService veilederService, NavKontorService navKontorService, UnleashService unleashService, AktoerService aktoerService) {
+        return new OppfolgingService(oppfolgingRepository, elasticIndexer, veilederService, navKontorService, arbeidslisteService(), unleashService, aktoerService);
     }
 
     @Bean
@@ -89,12 +93,17 @@ public class ServiceConfig {
     }
 
     @Bean
-    public CvService cvService(OppfolgingRepository oppfolgingRepository, BrukerRepository brukerRepository, ElasticIndexer elasticIndexer) {
-        return new CvService(brukerRepository,oppfolgingRepository, elasticIndexer);
+    public CvService cvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService, CvRepository cvRepository) {
+        return new CvService(elasticServiceV2, aktoerService, cvRepository);
     }
 
     @Bean
     public ProfileringService profileringService(ProfileringRepository profileringRepository) {
         return new ProfileringService(profileringRepository);
+    }
+
+    @Bean
+    public ElasticServiceV2 elasticServiceV2(RestHighLevelClient restHighLevelClient) {
+        return new ElasticServiceV2(restHighLevelClient, getAlias());
     }
 }

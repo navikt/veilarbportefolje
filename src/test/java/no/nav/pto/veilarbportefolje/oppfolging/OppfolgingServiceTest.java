@@ -2,10 +2,8 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import io.vavr.control.Try;
 import lombok.val;
-import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -16,7 +14,7 @@ import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.Result;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -28,7 +26,8 @@ import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService.brukeren
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class OppfolgingServiceTest {
 
@@ -36,24 +35,20 @@ public class OppfolgingServiceTest {
     private final static VeilederId TEST_VEILEDER_ID = VeilederId.of("testVeilederId");
 
     private static OppfolgingService oppfolgingService;
-    private VeilederService veilederServiceMock;
-    private NavKontorService navKontorServiceMock;
-    private AktoerService aktoerServiceMock;
-    private CvService cvService;
-    private OppfolgingRepository opppfolgingRepositoryMock;
-    private ArbeidslisteService arbeidslisteMock;
-    private ElasticIndexer elasticMock;
+    private static VeilederService veilederServiceMock;
+    private static NavKontorService navKontorServiceMock;
+    private static AktoerService aktoerServiceMock;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         veilederServiceMock = mock(VeilederService.class);
         navKontorServiceMock = mock(NavKontorService.class);
         aktoerServiceMock = mock(AktoerService.class);
-        cvService = mock(CvService.class);
-        opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
 
-        arbeidslisteMock = mock(ArbeidslisteService.class);
-        elasticMock = mock(ElasticIndexer.class);
+        OppfolgingRepository opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
+        ArbeidslisteService arbeidslisteMock = mock(ArbeidslisteService.class);
+        ElasticIndexer elasticMock = mock(ElasticIndexer.class);
+
         oppfolgingService = new OppfolgingService(
                 opppfolgingRepositoryMock,
                 elasticMock,
@@ -61,8 +56,8 @@ public class OppfolgingServiceTest {
                 navKontorServiceMock,
                 arbeidslisteMock,
                 new UnleashServiceMock(true),
-                aktoerServiceMock,
-                cvService);
+                aktoerServiceMock
+        );
 
         when(arbeidslisteMock.deleteArbeidslisteForAktoerId(any(AktoerId.class))).thenReturn(Result.ok(1));
         when(opppfolgingRepositoryMock.hentOppfolgingData(any(AktoerId.class))).thenReturn(Result.of(() -> brukerInfo()));
@@ -70,25 +65,7 @@ public class OppfolgingServiceTest {
         when(elasticMock.indekser(any(AktoerId.class))).thenReturn(Result.ok(new OppfolgingsBruker()));
     }
 
-    @Test
-    public void skal_sette_cv_delt_til_nei_om_bruker_ikke_lenger_er_under_oppfolging() {
-
-        oppfolgingService.behandleKafkaMelding(""
-                                               + "{ "
-                                               + "\"aktoerid\": \"00000000000\", "
-                                               + "\"oppfolging\": false,"
-                                               + "\"veileder\": null,"
-                                               + "\"nyForVeileder\": false,"
-                                               + "\"endretTimestamp\": \"2020-05-05T00:00:00+02:00\","
-                                               + "\"startDato\": \"2020-05-05T00:00:00+02:00\","
-                                               + "\"manuell\": false "
-                                               + "}"
-        );
-
-        verify(cvService, times(1)).setHarDeltCvTilNei(any(AktoerId.class));
-    }
-
-    private BrukerOppdatertInformasjon brukerInfo() {
+    private static BrukerOppdatertInformasjon brukerInfo() {
         return new BrukerOppdatertInformasjon().setVeileder("Z000000");
     }
 

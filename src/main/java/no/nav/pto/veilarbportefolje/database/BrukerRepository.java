@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
@@ -32,8 +31,8 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.utils.CollectionUtils.mapOf;
-import static no.nav.pto.veilarbportefolje.database.Tabell.*;
-import static no.nav.pto.veilarbportefolje.database.Tabell.Kolonner.SIST_INDEKSERT_ES;
+import static no.nav.pto.veilarbportefolje.database.Table.*;
+import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
@@ -66,7 +65,7 @@ public class BrukerRepository {
         db.setFetchSize(10_000);
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -173,12 +172,12 @@ public class BrukerRepository {
         db.setFetchSize(1000);
 
         Timestamp sistIndeksert = SqlUtils
-                .select(db, Tabell.METADATA, rs -> rs.getTimestamp(SIST_INDEKSERT_ES))
+                .select(db, Table.METADATA, rs -> rs.getTimestamp(SIST_INDEKSERT_ES))
                 .column(SIST_INDEKSERT_ES)
                 .execute();
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
+                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
@@ -207,7 +206,7 @@ public class BrukerRepository {
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
 
         return SqlUtils
-                .select(db, Tabell.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()
@@ -500,14 +499,5 @@ public class BrukerRepository {
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
-    }
-
-    public Result<Integer> setHarDeltCvMedNav(AktoerId aktoerId, boolean harDelt) {
-        Supplier<Integer> query = () -> SqlUtils.update(db, "BRUKER_DATA")
-                .set("HAR_DELT_CV", DbUtils.boolToJaNei(harDelt))
-                .whereEquals("AKTOERID", aktoerId.toString())
-                .execute();
-
-        return Result.of(query);
     }
 }

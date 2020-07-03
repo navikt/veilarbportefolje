@@ -42,15 +42,15 @@ public class AktoerServiceTest {
 
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         db.execute("TRUNCATE TABLE BRUKER_DATA");
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("TRUNCATE TABLE AKTOERID_TO_PERSONID");
     }
 
-    @Test
     @Ignore
-    public void skalFinnePersonIdFraDatabase() throws Exception {
+    @Test
+    public void skalFinnePersonIdFraDatabase() {
         when(aktorService.getFnr(anyString())).thenReturn(ofNullable(FNR_FRA_SOAP_TJENESTE));
         when(aktorService.getAktorId(anyString())).thenReturn(ofNullable(AKTOERID_FRA_SOAP_TJENESTE));
 

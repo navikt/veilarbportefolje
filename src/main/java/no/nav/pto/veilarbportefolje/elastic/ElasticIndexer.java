@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import io.vavr.Tuple2;
-import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.CollectionUtils;
@@ -9,6 +7,7 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -76,13 +75,16 @@ public class ElasticIndexer {
 
     private UnleashService unleashService;
 
+    private CvService cvService;
+
     @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient client,
             ElasticService elasticService,
-            UnleashService unleashService
+            UnleashService unleashService,
+            CvService cvService
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
@@ -90,18 +92,16 @@ public class ElasticIndexer {
         this.client = client;
         this.elasticService = elasticService;
         this.unleashService = unleashService;
+        this.cvService = cvService;
     }
 
     @SneakyThrows
     public void startIndeksering() {
-
         if (unleashService.isEnabled("portefolje.ny_hovedindeksering")) {
             nyHovedIndekseringMedPaging();
         } else {
             gammelHovedIndeksering();
         }
-
-
     }
 
     private void gammelHovedIndeksering() {
