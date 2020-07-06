@@ -2,10 +2,12 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.config.Feature;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.Script;
@@ -16,6 +18,7 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import javax.management.Query;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +30,9 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static org.apache.commons.lang3.StringUtils.isNumeric;
-import static org.apache.commons.lang3.StringUtils.truncate;
+import static org.apache.commons.lang3.StringUtils.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.filters;
 import static org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator.KeyedFilter;
@@ -344,6 +347,17 @@ public class ElasticQueryBuilder {
         );
     }
 
+    static SearchSourceBuilder byggArbeidslisteQueryV2(String enhetId, String veilederId) {
+        return new SearchSourceBuilder().query(
+                boolQuery()
+                        .must(termQuery("oppfolging", true))
+                        .must(termQuery("enhet_id", enhetId))
+                        .must(termQuery("veileder_id", veilederId))
+                        .must(termQuery("arbeidsliste_aktiv", true))
+        );
+    }
+
+
     static SearchSourceBuilder byggPortefoljestorrelserQuery(String enhetId) {
         String name = "portefoljestorrelser";
 
@@ -360,14 +374,49 @@ public class ElasticQueryBuilder {
                 );
     }
 
+    static SearchSourceBuilder byggPortefoljestorrelserQueryV2(String enhetId) {
+        String name = "portefoljestorrelser";
+
+        return new SearchSourceBuilder()
+                .size(0)
+                .query(termQuery("oppfolging", true))
+                .aggregation(
+                        filter(
+                                name,
+                                termQuery("enhet_id", enhetId))
+                                .subAggregation(AggregationBuilders
+                                        .terms(name)
+                                        .field("veileder_id")
+                                        .size(9999)
+                                        .order(BucketOrder.key(true))
+                                )
+                );
+    }
 
     static SearchSourceBuilder byggStatusTallForEnhetQuery(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder enhetQuery = boolQuery().must(termQuery("enhet_id", enhetId));
         return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
     }
 
+    static SearchSourceBuilder byggStatusTallForEnhetQueryV2(String enhetId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+        BoolQueryBuilder enhetQuery = boolQuery()
+                .must(termQuery("oppfolging", true))
+                .must(termQuery("enhet_id", enhetId));
+
+        return byggStatusTallQuery(enhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
+    }
+
     static SearchSourceBuilder byggStatusTallForVeilederQuery(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
+                .must(termQuery("enhet_id", enhetId))
+                .must(termQuery("veileder_id", veilederId));
+
+        return byggStatusTallQuery(veilederOgEnhetQuery, veiledereMedTilgangTilEnhet, vedtakstottePilotErPa);
+    }
+
+    static SearchSourceBuilder byggStatusTallForVeilederQueryV2(String enhetId, String veilederId, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+        BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
+                .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId))
                 .must(termQuery("veileder_id", veilederId));
 

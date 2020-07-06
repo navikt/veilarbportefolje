@@ -28,10 +28,10 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.restHighLevelClient;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 
 @Configuration
@@ -103,7 +103,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ElasticServiceV2 elasticServiceV2(RestHighLevelClient restHighLevelClient) {
-        return new ElasticServiceV2(restHighLevelClient, getAlias());
+    public ElasticServiceV2 elasticServiceV2() {
+        return new ElasticServiceV2(restHighLevelClient(), getAlias());
     }
 }
