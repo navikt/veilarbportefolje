@@ -1,13 +1,13 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
+import no.nav.json.JsonUtils;
+import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.config.Feature;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.json.JsonUtils;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -19,7 +19,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Component;
 
-import javax.naming.directory.SearchControls;
 import java.util.List;
 import java.util.Optional;
 
@@ -135,8 +134,8 @@ public class ElasticService {
 
         SearchSourceBuilder request =
                 unleashService.isEnabled(Feature.MARKER_SOM_SLETTET) ?
-                        byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa) :
-                        byggStatusTallForEnhetQueryV2(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
+                        byggStatusTallForEnhetQueryV2(enhetId, veilederPaaEnhet, vedtakstottePilotErPa):
+                        byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -146,8 +145,8 @@ public class ElasticService {
     public FacetResults hentPortefoljestorrelser(String enhetId, String indexAlias) {
         SearchSourceBuilder request =
                 unleashService.isEnabled(Feature.MARKER_SOM_SLETTET) ?
-                        byggPortefoljestorrelserQuery(enhetId) :
-                        byggPortefoljestorrelserQueryV2(enhetId);
+                        byggPortefoljestorrelserQueryV2(enhetId) :
+                        byggPortefoljestorrelserQuery(enhetId);
 
         PortefoljestorrelserResponse response = search(request, indexAlias, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
