@@ -271,7 +271,7 @@ public class BrukerRepository {
                             .where(WhereClause.equals("PERSON_ID", personId.toString()))
                             .execute();
                 }
-        ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId " + personId.toString(), e));
+        ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()));
     }
 
     public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
