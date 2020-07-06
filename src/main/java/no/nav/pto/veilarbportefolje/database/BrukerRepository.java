@@ -272,8 +272,7 @@ public class BrukerRepository {
                             .execute();
                 }
         )
-                .onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()))
-                .onSuccess(enhet -> log.info("Hentet enhet {} for personId {}", enhet, personId));
+                .onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()));
     }
 
     public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
@@ -307,8 +306,7 @@ public class BrukerRepository {
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
         )
-                .onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e))
-                .onSuccess(personId -> log.info("Fant personId {} for aktoerId {}", personId, aktoerId.toString()));
+                .onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e));
     }
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
