@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.service.VeilederService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Comparator.naturalOrder;
+import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE;
 
@@ -34,7 +36,9 @@ import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_OPPFOLGING_BE
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
 
+    private static final String MDC_KEY = "oppfolging_data";
     private static final String FEED_NAME = "oppfolging";
+
     private static BigDecimal lastEntry;
     private final Timer timer;
     private ArbeidslisteService arbeidslisteService;
@@ -76,8 +80,10 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             log.info("Oppdateringer for oppfølgingsstatus blir behandlet via kafka");
             return;
         }
-        
+
+
         timer.start();
+        MDC.put(MDC_KEY, generateId());
         log.info("OppfolgingerfeedDebug data: {}", data);
 
         try {
@@ -112,6 +118,8 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         } catch (Exception e) {
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
             log.error(message, e);
+        } finally {
+            MDC.remove(MDC_KEY);
         }
     }
 
