@@ -53,7 +53,6 @@ public class VeilederService {
             return emptyList();
         }
 
-        result.ok().ifPresent(veiledere -> log.info("Enhet {} har veiledere {}", enhet, veiledere));
         return result.ok().orElseThrow(IllegalStateException::new);
     }
 }
