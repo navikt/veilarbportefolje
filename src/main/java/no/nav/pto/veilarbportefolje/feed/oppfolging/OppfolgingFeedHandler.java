@@ -151,7 +151,9 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         return brukerRepository
                 .retrievePersonid(aktoerId)
                 .flatMap(brukerRepository::retrieveEnhet)
-                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet).contains(veilederId))
+                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet))
+                .peek(veilederePaaEnhet -> log.info("Veiledere på enhet {}: Veileder som sjekkes for tilgang: {} ", veilederePaaEnhet, veilederId.toString()))
+                .map(veilederePaaEnhet -> veilederePaaEnhet.contains(veilederId))
                 .getOrElse(false);
     }
 }
