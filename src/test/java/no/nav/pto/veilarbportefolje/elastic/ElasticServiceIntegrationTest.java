@@ -263,6 +263,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                         new OppfolgingsBruker()
                                 .setFnr(randomFnr())
                                 .setVeileder_id(id)
+                                .setOppfolging(true)
                                 .setEnhet_id(TEST_ENHET)
                 )
                 .collect(toList());
