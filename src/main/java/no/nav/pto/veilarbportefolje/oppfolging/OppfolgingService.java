@@ -3,11 +3,11 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.service.NavKontorService;
@@ -52,7 +52,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
     @Override
     @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (!unleashService.isEnabled(KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
+        if (!unleashService.isEnabled(FeatureToggle.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER)) {
             log.info("Ingorerer melding fra kafka");
             return;
         }

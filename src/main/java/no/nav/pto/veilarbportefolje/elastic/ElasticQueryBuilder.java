@@ -2,12 +2,10 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.config.Feature;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.Script;
@@ -18,7 +16,6 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import javax.management.Query;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;

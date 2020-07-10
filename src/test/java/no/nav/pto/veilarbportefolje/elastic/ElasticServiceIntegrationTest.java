@@ -9,7 +9,7 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.config.Feature;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -67,7 +67,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
         VeilederService veilederServiceMock = mockVeilederService();
 
         UnleashService unleashMock = mock(UnleashService.class);
-        when(unleashMock.isEnabled(Feature.MARKER_SOM_SLETTET)).thenReturn(true);
+        when(unleashMock.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)).thenReturn(true);
 
         elasticService = new ElasticService(ELASTIC_CLIENT, pepMock, veilederServiceMock, unleashMock);
         elasticIndexer = new ElasticIndexer(
