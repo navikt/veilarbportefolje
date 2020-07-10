@@ -153,7 +153,7 @@ public class ApplicationConfig implements ApiApplication {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                "portefolje.kafka.aktiviteter"
+                FeatureToggle.KAFKA_AKTIVITETER
         );
 
         new KafkaConsumerRunnable<>(
@@ -161,7 +161,7 @@ public class ApplicationConfig implements ApiApplication {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                "veilarbportfolje-hent-data-fra-vedtakstotte"
+                FeatureToggle.KAFKA_VEDTAKSTOTTE
         );
 
         new KafkaConsumerRunnable<>(
@@ -169,7 +169,7 @@ public class ApplicationConfig implements ApiApplication {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.OPPFOLGING_CONSUMER_TOPIC,
-                KafkaConfig.KAFKA_OPPFOLGING_TOGGLE
+                FeatureToggle.KAFKA_OPPFOLGING
         );
 
         new KafkaConsumerRunnable<>(
@@ -177,7 +177,7 @@ public class ApplicationConfig implements ApiApplication {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-               "veilarbdialog.kafka"
+                FeatureToggle.KAFKA_VEILARBDIALOG
         );
 
         new KafkaConsumerRunnable<>(
@@ -185,7 +185,7 @@ public class ApplicationConfig implements ApiApplication {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
-                "veilarbportefolje.kafka.cv.killswitch"
+                FeatureToggle.KAFKA_CV
         );
 
         leggTilServlet(servletContext, new ArenaFilerIndekseringServlet(elasticIndexer, tiltakHandler, kopierGR199FraArena), "/internal/totalhovedindeksering");
