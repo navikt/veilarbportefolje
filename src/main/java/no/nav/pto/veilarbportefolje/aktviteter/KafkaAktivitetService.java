@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.aktviteter;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDataFraFeed;
 import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
@@ -26,7 +27,7 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if(!unleashService.isEnabled("portefolje.behandle.aktivitet.kafkamelding")) {
+        if(!unleashService.isEnabled(FeatureToggle.KAFKA_AKTIVITETER_BEHANDLE_MELDINGER)) {
             return;
         }
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);

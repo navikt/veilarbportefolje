@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.feed.aktivitet;
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.consumer.FeedCallback;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
@@ -41,7 +42,7 @@ public class AktivitetFeedHandler implements FeedCallback<AktivitetDataFraFeed> 
 
     @Override
     public void call(String lastEntry, List<AktivitetDataFraFeed> data) {
-        if(!unleashService.isEnabled("portefolje.behandle.aktivitet.kafkamelding")) {
+        if(!unleashService.isEnabled(FeatureToggle.KAFKA_AKTIVITETER_BEHANDLE_MELDINGER)) {
             log.info("AktivitetfeedDebug data: {}", data);
 
 

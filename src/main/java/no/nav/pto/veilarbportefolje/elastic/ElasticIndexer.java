@@ -7,7 +7,7 @@ import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.config.Feature;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -101,7 +101,7 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public void startIndeksering() {
-        if (unleashService.isEnabled("portefolje.ny_hovedindeksering")) {
+        if (unleashService.isEnabled(FeatureToggle.HOVEDINDEKSERING_MED_PAGING)) {
             nyHovedIndekseringMedPaging();
         } else {
             gammelHovedIndeksering();
@@ -269,7 +269,7 @@ public class ElasticIndexer {
     @SneakyThrows
     public void slettBruker(OppfolgingsBruker bruker) {
 
-        if (unleashService.isEnabled(Feature.MARKER_SOM_SLETTET)) {
+        if (unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)) {
             updateOppfolgingTilFalse(bruker);
         } else {
             List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);

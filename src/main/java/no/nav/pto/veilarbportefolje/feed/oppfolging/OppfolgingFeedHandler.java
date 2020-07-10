@@ -7,6 +7,7 @@ import no.nav.fo.feed.consumer.FeedCallback;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -30,7 +31,6 @@ import java.util.concurrent.CompletableFuture;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
-import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
@@ -76,7 +76,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
 
-        if (unleashService.isEnabled(KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
+        if (unleashService.isEnabled(FeatureToggle.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER)) {
             log.info("Oppdateringer for oppfølgingsstatus blir behandlet via kafka");
             return;
         }

@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import no.nav.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.abac.PepClient;
-import no.nav.pto.veilarbportefolje.config.Feature;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
@@ -54,7 +54,7 @@ public class ElasticService {
         BoolQueryBuilder boolQuery = boolQuery();
         boolQuery.must(matchQuery("enhet_id", enhetId));
 
-        if (unleashService.isEnabled(Feature.MARKER_SOM_SLETTET)) {
+        if (unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)) {
             boolQuery.must(matchQuery("oppfolging", true));
         }
 
@@ -101,7 +101,7 @@ public class ElasticService {
     public List<Bruker> hentBrukereMedArbeidsliste(String veilederId, String enhetId, String indexAlias) {
 
         SearchSourceBuilder request =
-                unleashService.isEnabled(Feature.MARKER_SOM_SLETTET) ?
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggArbeidslisteQueryV2(enhetId, veilederId) :
                         byggArbeidslisteQuery(enhetId, veilederId);
 
@@ -116,7 +116,7 @@ public class ElasticService {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
 
         SearchSourceBuilder request =
-                unleashService.isEnabled(Feature.MARKER_SOM_SLETTET) ?
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggStatusTallForVeilederQueryV2(enhetId, veilederId, emptyList(), vedtakstottePilotErPa) :
                         byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
 
@@ -133,7 +133,7 @@ public class ElasticService {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
 
         SearchSourceBuilder request =
-                unleashService.isEnabled(Feature.MARKER_SOM_SLETTET) ?
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggStatusTallForEnhetQueryV2(enhetId, veilederPaaEnhet, vedtakstottePilotErPa):
                         byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
 
@@ -144,7 +144,7 @@ public class ElasticService {
 
     public FacetResults hentPortefoljestorrelser(String enhetId, String indexAlias) {
         SearchSourceBuilder request =
-                unleashService.isEnabled(Feature.MARKER_SOM_SLETTET) ?
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggPortefoljestorrelserQueryV2(enhetId) :
                         byggPortefoljestorrelserQuery(enhetId);
 
@@ -170,6 +170,6 @@ public class ElasticService {
 
 
     private boolean erVedtakstottePilotPa() {
-        return unleashService.isEnabled("pto.vedtaksstotte.pilot");
+        return unleashService.isEnabled(FeatureToggle.VEDTAKSTOTTE_PILOT);
     }
 }
