@@ -2,8 +2,10 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetBrukerOppdatering;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.PersonId;

@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.UtdanningaktivitetTyper;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 import org.junit.Before;
 import org.junit.Test;

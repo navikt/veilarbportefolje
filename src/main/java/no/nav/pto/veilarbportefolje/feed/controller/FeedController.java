@@ -24,7 +24,7 @@ public class FeedController {
     private Map<String, FeedConsumer> consumers = new HashMap<>();
 
 
-    public <DOMAINOBJECT extends Comparable<DOMAINOBJECT>> FeedController addFeed(String clientFeedname, FeedConsumer<DOMAINOBJECT> consumer) {
+    public <DOMAINOBJECT extends Comparable<DOMAINOBJECT>> FeedController addFeed(String clientFeedname, FeedConsumer consumer) {
         LOG.info("ny feed-klient. navn={}", clientFeedname);
         consumers.put(clientFeedname, consumer);
         return this;

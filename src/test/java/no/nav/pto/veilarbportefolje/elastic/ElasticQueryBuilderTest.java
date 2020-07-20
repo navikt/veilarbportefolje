@@ -3,13 +3,14 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.utils.Pair;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetFiltervalg;
+import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -17,11 +18,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static no.nav.common.utils.CollectionUtils.listOf;
-import static no.nav.common.utils.CollectionUtils.mapOf;
-import static no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetFiltervalg.NEI;
+import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.mapOf;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -29,8 +30,10 @@ import static org.elasticsearch.search.sort.SortOrder.ASC;
 
 public class ElasticQueryBuilderTest {
 
-    @Rule
-    public SystemPropertiesRule rule = new SystemPropertiesRule().setProperty("FASIT_ENVIRONMENT_NAME", "test");
+    @BeforeClass
+    public static void beforeAll() {
+        System.setProperty("FASIT_ENVIRONMENT_NAME", "test");
+    }
 
 
     @Test

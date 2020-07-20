@@ -2,16 +2,16 @@ package no.nav.pto.veilarbportefolje.feed.common;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import org.jetbrains.annotations.NotNull;
 
 @Data
 @Accessors(chain = true)
-public class FeedElement<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> implements Comparable<FeedElement<DOMAINOBJECT>>{
+public class FeedElement implements Comparable<FeedElement>{
     protected String id;
-    protected DOMAINOBJECT element;
+    protected BrukerOppdatertInformasjon element;
 
-    @Override
-    public int compareTo(FeedElement<DOMAINOBJECT> other) {
+    public int compareTo(FeedElement other) {
         return element.compareTo(other.getElement());
     }
-
 }

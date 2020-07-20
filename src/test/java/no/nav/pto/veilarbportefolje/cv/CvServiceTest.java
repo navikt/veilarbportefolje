@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -16,6 +17,7 @@ import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_DATA.*;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class CvServiceTest extends IntegrationTest {
 
@@ -25,7 +27,8 @@ public class CvServiceTest extends IntegrationTest {
     public static void beforeAll() {
         cvService = new CvService(
                 new BrukerRepository(jdbcTemplate, null),
-                new ElasticServiceV2(elasticClient)
+                new ElasticServiceV2(elasticClient),
+                mock(MetricsClient.class)
         );
     }
 

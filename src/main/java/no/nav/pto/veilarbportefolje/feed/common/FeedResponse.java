@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode
-public class FeedResponse<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> {
+public class FeedResponse {
     String nextPageId;
-    List<FeedElement<DOMAINOBJECT>> elements;
+    List<FeedElement> elements;
 }

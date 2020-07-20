@@ -1,16 +1,15 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.*;
+import no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock;
+import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import static org.mockito.Mockito.mock;
 
@@ -26,28 +25,21 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public AktoerService aktoerService() {
-        return new AktoerServiceImpl();
+    public AktorregisterClient aktorregisterClient() {
+        return new AktorregisterClientMock();
     }
-
-    @Bean
-    public AktivitetDAO aktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new AktivitetDAO(db, namedParameterJdbcTemplate);
-    }
-
-    @Bean
-    public PersistentOppdatering persistentOppdatering() {
-        return new PersistentOppdatering();
-    }
-
-    @Bean
-    public VeilarbVeilederClient veilederService() {
-        return mock(VeilarbVeilederClient.class);
-    }
-
 
     @Bean
     public LockingTaskExecutor lockingTaskExecutor() {
         return mock(LockingTaskExecutor.class);
     }
+
+    @Bean
+    public UnleashService unleashService() {
+        return mock(UnleashService.class);
+    }
+
+    @Bean
+    public MetricsClient metricsClient() { return new MetricsClientMock(); }
+
 }

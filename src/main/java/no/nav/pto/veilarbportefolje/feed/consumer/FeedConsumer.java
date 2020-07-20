@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.feed.consumer;
 
 import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import no.nav.common.json.JsonMapper;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.feed.common.*;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.GenericType;
-import java.lang.reflect.ParameterizedType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -25,13 +23,13 @@ import static no.nav.pto.veilarbportefolje.feed.consumer.FeedPoller.createSchedu
 import static no.nav.pto.veilarbportefolje.feed.util.UrlUtils.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> implements Authorization, ApplicationListener<ContextClosedEvent> {
+public class FeedConsumer implements Authorization, ApplicationListener<ContextClosedEvent> {
     private static final Logger LOG = getLogger(FeedConsumer.class);
 
-    private final FeedConsumerConfig<DOMAINOBJECT> config;
+    private final FeedConsumerConfig config;
     private int lastResponseHash;
 
-    public FeedConsumer(FeedConsumerConfig<DOMAINOBJECT> config) {
+    public FeedConsumer(FeedConsumerConfig config) {
         String feedName = config.feedName;
         String host = config.host;
 
@@ -79,30 +77,6 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
 
     @SneakyThrows
     public synchronized Response poll() {
-        Response response = fetchChanges();
-
-        RestUtils.throwIfNotSuccessful(response);
-
-        FeedResponse entity = RestUtils.parseJsonResponse(response, FeedResponse.class).get();
-        List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
-        if (elements != null && !elements.isEmpty()) {
-            List<DOMAINOBJECT> data = elements
-                    .stream()
-                    .map(FeedElement::getElement)
-                    .collect(Collectors.toList());
-
-            if (!(entity.hashCode() == lastResponseHash)) {
-                this.config.callback.call(entity.getNextPageId(), data);
-            }
-            this.lastResponseHash = entity.hashCode();
-        }
-
-
-        return response;
-    }
-
-    @SneakyThrows
-    public Response fetchChanges() {
         String lastEntry = this.config.lastEntrySupplier.get();
         HttpUrl.Builder httpBuilder = Objects.requireNonNull(HttpUrl.parse(getTargetUrl())).newBuilder();
         httpBuilder.addQueryParameter(QUERY_PARAM_ID, lastEntry);
@@ -110,6 +84,20 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
 
         Request request = new Request.Builder().url(httpBuilder.build()).build();
         try (okhttp3.Response response = this.config.client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            FeedResponse feedResponse = RestUtils.parseJsonResponse(response, FeedResponse.class).orElseThrow(() -> new RuntimeException("Kunde ikke desirealisera oppfolgingsfeedobjektet"));
+            List<FeedElement> elements = feedResponse.getElements();
+            if (elements!=null && !elements.isEmpty()) {
+                List<BrukerOppdatertInformasjon> data = elements
+                        .stream()
+                        .map(FeedElement::getElement)
+                        .collect(Collectors.toList());
+
+                if (!(response.hashCode() == lastResponseHash)) {
+                    this.config.callback.call(feedResponse.getNextPageId(), data);
+                }
+                this.lastResponseHash = response.hashCode();
+            }
             return response;
         }
     }

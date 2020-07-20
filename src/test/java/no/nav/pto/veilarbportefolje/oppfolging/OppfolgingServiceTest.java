@@ -1,7 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import io.vavr.control.Try;
 import lombok.val;
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
@@ -11,7 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.service.NavKontorService;
+import no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.BeforeClass;
@@ -36,14 +37,14 @@ public class OppfolgingServiceTest {
     private static OppfolgingService oppfolgingService;
     private static VeilarbVeilederClient veilarbVeilederClientMock;
     private static NavKontorService navKontorServiceMock;
-    private static AktoerService aktoerServiceMock;
+    private static AktorregisterClient aktoerServiceMock;
     private static CvService cvService;
 
     @BeforeClass
     public static void setUp() {
         veilarbVeilederClientMock = mock(VeilarbVeilederClient.class);
         navKontorServiceMock = mock(NavKontorService.class);
-        aktoerServiceMock = mock(AktoerService.class);
+        aktoerServiceMock = new AktorregisterClientMock();
         cvService = mock(CvService.class);
 
         OppfolgingRepository opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
@@ -58,7 +59,8 @@ public class OppfolgingServiceTest {
                 arbeidslisteMock,
                 new UnleashServiceMock(true),
                 aktoerServiceMock,
-                cvService
+                cvService,
+                mock(MetricsClient.class)
         );
 
         when(arbeidslisteMock.deleteArbeidslisteForAktoerId(any(AktoerId.class))).thenReturn(Result.ok(1));
@@ -103,8 +105,6 @@ public class OppfolgingServiceTest {
 
     @Test(expected = RuntimeException.class)
     public void skal_kaste_exception_om_bruker_ikke_har_nav_kontor() {
-        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
-                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.err(new IllegalStateException()));
@@ -120,17 +120,12 @@ public class OppfolgingServiceTest {
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(anyString()))
                 .thenReturn(emptyList());
 
-        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
-                .thenReturn(Try.success(Fnr.of("10101010101")));
-
         boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
         assertThat(result).isFalse();
     }
 
     @Test
     public void skal_returnere_true_om_eksisterende_veileder_har_tilgang_til_enhet() {
-        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
-                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
@@ -165,8 +160,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void eksisterende_veileder_skal_ikke_ha_tilgang_til_brukerens_enhet() {
-        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
-                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
@@ -185,8 +178,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void skal_ikke_ha_tilgang_til_brukerens_enhet() {
-        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
-                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));
@@ -200,8 +191,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void skal_ha_tilgang_til_brukerens_enhet() {
-        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
-                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));

@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Personinfo;
+import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -2,10 +2,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-<<<<<<< HEAD
-=======
-import no.nav.common.rest.client.RestClient;
->>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.CountResponse;
@@ -29,12 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import static no.nav.common.utils.EnvironmentUtils.resolveHostName;
-<<<<<<< HEAD
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.*;
-=======
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
->>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
 
 @Slf4j
 public class ElasticUtils {
@@ -101,11 +92,7 @@ public class ElasticUtils {
     @SneakyThrows
     public static long getCount() {
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
-<<<<<<< HEAD
         OkHttpClient client =  no.nav.common.rest.client.RestClient.baseClient();
-=======
-        OkHttpClient client = RestClient.baseClient();
->>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
 
         Request request = new Request.Builder()
                 .url(url)
@@ -114,15 +101,9 @@ public class ElasticUtils {
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-<<<<<<< HEAD
            return RestUtils.parseJsonResponse(response, CountResponse.class)
                    .map(CountResponse::getCount)
                    .orElse(0L);
-=======
-           return  RestUtils.parseJsonResponse(response, CountResponse.class)
-                   .map(CountResponse::getCount)
-                   .get();
->>>>>>> 8e6104206d2c3db1266862aa3a77000ff430366a
         }
     }
 

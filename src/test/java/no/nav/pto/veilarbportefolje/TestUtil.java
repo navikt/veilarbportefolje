@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje;
 
-import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -22,16 +21,18 @@ public class TestUtil {
 
         setHsqlToOraSyntax(ds);
         migrateDb(ds);
-
         return ds;
     }
 
     private static void migrateDb(DriverManagerDataSource ds) {
-        Flyway flyway = new Flyway();
-        flyway.setSkipDefaultResolvers(true);
-        flyway.setResolvers(new MergeMigrationResolver());
-        flyway.setDataSource(ds);
+        Flyway flyway =  Flyway
+                .configure()
+                .locations("testmigration")
+                .dataSource(ds)
+                .load();
+
         flyway.migrate();
+
     }
 
     private static void setHsqlToOraSyntax(SingleConnectionDataSource ds) {

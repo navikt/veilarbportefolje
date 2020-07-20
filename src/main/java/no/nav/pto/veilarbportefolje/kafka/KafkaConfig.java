@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.pto.veilarbportefolje.aktviteter.KafkaAktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;

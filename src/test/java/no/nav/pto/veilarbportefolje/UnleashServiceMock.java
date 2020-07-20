@@ -1,9 +1,8 @@
 package no.nav.pto.veilarbportefolje;
 
-import lombok.Value;
 import no.finn.unleash.strategy.Strategy;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.featuretoggle.UnleashServiceConfig;
 
 import java.util.Map;
 

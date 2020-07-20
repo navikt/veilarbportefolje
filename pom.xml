@@ -15,12 +15,8 @@
     <version>1</version>
     <packaging>war</packaging>
 
-    <build>
-        <finalName>veilarbportefolje</finalName>
-    </build>
-
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <common.version>2.2020.06.11_14.39-d002eb745d69</common.version>
         <common1.version>1.2020.05.06_16.29-028d26fc1c42</common1.version>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
@@ -31,7 +27,29 @@
         <veilarbregistrering.skjema.version>1.202004301354-b728b07</veilarbregistrering.skjema.version>
         <flyway.version>6.5.0</flyway.version>
         <prometheus.version>0.4.0</prometheus.version>
+        <cxf.xjc.jvmArgs>--add-modules java.activation,java.xml.bind,java.xml.ws --add-exports=java.xml.bind/com.sun.xml.internal.bind.v2.runtime=ALL-UNNAMED --add-exports=jdk.xml.dom/org.w3c.dom.html=ALL-UNNAMED --add-exports=java.xml/com.sun.org.apache.xerces.internal.impl.xs=ALL-UNNAMED --add-exports=java.xml.bind/com.sun.xml.internal.bind.marshaller=ALL-UNNAMED --add-opens java.xml.ws/javax.xml.ws.wsaddressing=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED</cxf.xjc.jvmArgs>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>--add-exports</arg>
+                        <arg>java.xml/com.sun.org.apache.xerces.internal.jaxp.datatype=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+        <finalName>veilarbportefolje</finalName>
+    </build>
 
     <dependencies>
         <!-- Spring Boot -->
@@ -386,7 +404,6 @@
             <version>${prometheus.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
@@ -403,11 +420,6 @@
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
             <version>2.22.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

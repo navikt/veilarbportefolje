@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -11,8 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
-import no.nav.pto.veilarbportefolje.service.NavKontorService;
+import no.nav.pto.veilarbportefolje.metrikker.MetricsUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
     private final UnleashService unleashService;
-    private final AktoerService aktoerService;
+    private final AktorregisterClient aktorregisterClient;
     private final CvService cvService;
     private final MetricsClient metricsClient;
 
@@ -45,7 +45,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                              NavKontorService navKontorService,
                              ArbeidslisteService arbeidslisteService,
                              UnleashService unleashService,
-                             AktoerService aktoerService,
+                             AktorregisterClient aktorregisterClient,
                              CvService cvService,
                              MetricsClient metricsClient
     ) {
@@ -55,7 +55,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
         this.navKontorService = navKontorService;
         this.arbeidslisteService = arbeidslisteService;
         this.unleashService = unleashService;
-        this.aktoerService = aktoerService;
+        this.aktorregisterClient = aktorregisterClient;
         this.cvService = cvService;
         this.metricsClient = metricsClient;
     }
@@ -94,12 +94,14 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
         MetricsUtils.timed(
                 "portefolje.oppfolging.oppdater",
-                () -> oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).orElseThrowException()
+                () -> oppfolgingRepository.oppdaterOppfolgingData(oppfolgingStatus).orElseThrowException(),
+                metricsClient
         );
 
         MetricsUtils.timed(
                 "portefolje.oppfolging.indekser",
-                () -> elastic.indekser(aktoerId).orElseThrowException()
+                () -> elastic.indekser(aktoerId).orElseThrowException(),
+                metricsClient
         );
     }
 
@@ -121,17 +123,20 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
         Fnr fnr = MetricsUtils.timed(
                 "portefolje.oppfolging.hentFnr",
-                () -> aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException())
+                () -> Fnr.of(aktorregisterClient.hentFnr(aktoerId.toString())),
+                metricsClient
         );
 
         String enhet = MetricsUtils.timed(
                 "portefolje.oppfolging.hentEnhet",
-                () -> navKontorService.hentEnhetForBruker(fnr).orElseThrowException()
+                () -> navKontorService.hentEnhetForBruker(fnr).orElseThrowException(),
+                metricsClient
         );
 
         List<VeilederId> veilederePaaEnhet = MetricsUtils.timed(
                 "portefolje.oppfolging.hentVeileder",
-                () -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet)
+                () -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet),
+                metricsClient
         );
 
         return veilederePaaEnhet.contains(veilederId);
@@ -142,7 +147,8 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                 "portefolje.oppfolging.hentVeileder",
                 () -> oppfolgingRepository.hentOppfolgingData(aktoerId).ok()
                         .map(info -> info.getVeileder())
-                        .map(VeilederId::new)
+                        .map(VeilederId::new),
+                metricsClient
         );
     }
 

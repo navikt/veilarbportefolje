@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -36,17 +36,17 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @Consumes(APPLICATION_JSON)
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
-    private final AktoerService aktoerService;
+    private final AktorregisterClient aktorregisterClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeController (
             ArbeidslisteService arbeidslisteService,
-            AktoerService aktoerService,
+            AktorregisterClient aktorregisterClient,
             AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
-        this.aktoerService = aktoerService;
+        this.aktorregisterClient = aktorregisterClient;
         this.authService = authService;
 
     }
@@ -81,7 +81,7 @@ public class ArbeidsListeController {
         String innloggetVeileder = authService.getInnloggetVeilederIdent().getVeilederId();
 
         Fnr fnr = new Fnr(fnrString);
-        Try<AktoerId> aktoerId = aktoerService.hentAktoeridFraFnr(fnr);
+        Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
 
         boolean harVeilederTilgang = arbeidslisteService.hentEnhet(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
@@ -159,7 +159,7 @@ public class ArbeidsListeController {
                     .collect(Collectors.toList());
 
             Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
-            Validation<String, List<Fnr>> veilederForBrukere = authService.erVeilederForBrukere(arbeidslisteService, fnrs);
+            Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
             if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
                 throw new BadRequestException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
             }
@@ -202,7 +202,7 @@ public class ArbeidsListeController {
     private List<String> getTilgangErrors(List<ArbeidslisteRequest> arbeidsliste) {
         return arbeidsliste
                 .stream()
-                .map(bruker -> authService.erVeilederForBruker(arbeidslisteService, bruker.getFnr()))
+                .map(bruker -> arbeidslisteService.erVeilederForBruker(bruker.getFnr()))
                 .filter(Validation::isInvalid)
                 .map(Validation::getError)
                 .collect(Collectors.toList());
@@ -237,7 +237,7 @@ public class ArbeidsListeController {
     }
 
     private void validerErVeilederForBruker(String fnr) {
-        Validation<String, Fnr> validateVeileder = authService.erVeilederForBruker(arbeidslisteService, fnr);
+        Validation<String, Fnr> validateVeileder = arbeidslisteService.erVeilederForBruker(fnr);
         if (validateVeileder.isInvalid()) {
             throw new ForbiddenException(validateVeileder.getError());
         }

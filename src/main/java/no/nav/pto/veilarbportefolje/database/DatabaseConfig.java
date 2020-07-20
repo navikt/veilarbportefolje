@@ -2,12 +2,10 @@ package no.nav.pto.veilarbportefolje.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.flywaydb.core.Flyway;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,7 +15,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.util.UUID;
 
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
@@ -41,8 +38,7 @@ public class DatabaseConfig {
         config.setMaximumPoolSize(300);
         DataSource dataSource = new HikariDataSource(config);
 
-        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
-        flyway.migrate();
+        migrateDb(dataSource);
 
         return dataSource;
     }
@@ -69,6 +65,16 @@ public class DatabaseConfig {
         } catch (Exception e) {
             return HealthCheckResult.unhealthy("Feil mot databasen", e);
         }
+    }
+
+
+    private static void migrateDb(DataSource dataSource) {
+        Flyway flyway = Flyway
+                .configure()
+                .dataSource(dataSource)
+                .load();
+
+        flyway.migrate();
     }
 
 }

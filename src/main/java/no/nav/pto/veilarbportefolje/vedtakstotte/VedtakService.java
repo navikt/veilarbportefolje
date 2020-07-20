@@ -1,12 +1,12 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 import no.nav.pto.veilarbportefolje.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,10 +19,10 @@ public class VedtakService implements KafkaConsumerService<String> {
 
     private final VedtakStatusRepository vedtakStatusRepository;
     private final ElasticIndexer elasticIndexer;
-    private final AktoerService aktoerService;
+    private final AktorregisterClient aktoerService;
 
     @Autowired
-    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktoerService aktoerService) {
+    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, AktorregisterClient aktoerService) {
         this.vedtakStatusRepository = vedtakStatusRepository;
         this.elasticIndexer = elasticIndexer;
         this.aktoerService = aktoerService;
@@ -72,7 +72,7 @@ public class VedtakService implements KafkaConsumerService<String> {
     private void indekserBruker (AktoerId aktoerId) {
         Result<OppfolgingsBruker> result = elasticIndexer.indekser(aktoerId)
                 .mapError(err -> {
-                            Fnr fnr = aktoerService.hentFnrFraAktorId(aktoerId);
+                            Fnr fnr = Fnr.of(aktoerService.hentFnr(aktoerId.toString()));
                             return elasticIndexer.indekser(fnr);
                         }
                 );

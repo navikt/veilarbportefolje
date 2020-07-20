@@ -22,25 +22,14 @@ import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSi
 public class MetricsReporter {
 
     private ElasticIndexer elasticIndexer;
-    private MeterRegistry meterRegistry = new ProtectedPrometheusMeterRegistry();
+    private static MeterRegistry prometheusMeterRegistry = new ProtectedPrometheusMeterRegistry();
 
     public MetricsReporter(ElasticIndexer elasticIndexer) {
         this.elasticIndexer = elasticIndexer;
 
-        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register();
-        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(meterRegistry);
-        Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", MetricsReporter::sjekkArenaYtelserSistOppdatert).register(meterRegistry);
-        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", MetricsReporter::sjekkArenaAktiviteterSistOppdatert).register(meterRegistry);
-    }
+        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
+        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
 
-    public static long sjekkArenaYtelserSistOppdatert() {
-        Long millis = getLastModifiedTimeInMillis(LOPENDEYTELSER_SFTP).getOrElseThrow(() -> new RuntimeException());
-        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
-    }
-
-    public static long sjekkArenaAktiviteterSistOppdatert() {
-        Long millis = getLastModifiedTimeInMillis(AKTIVITETER_SFTP).getOrElseThrow(() -> new RuntimeException());
-        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }
 
     private Number sjekkIndeksSistOpprettet() {
@@ -58,7 +47,11 @@ public class MetricsReporter {
         return LocalDateTime.parse(dato + "_" + klokkeslett, formatter);
     }
 
-    private static class ProtectedPrometheusMeterRegistry extends PrometheusMeterRegistry {
+    public static MeterRegistry getMeterRegistry() {
+        return prometheusMeterRegistry;
+    }
+
+    public static class ProtectedPrometheusMeterRegistry extends PrometheusMeterRegistry {
         public ProtectedPrometheusMeterRegistry() {
             super(DEFAULT);
         }

@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.UtdanningaktivitetTyper;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils.etterFilterDato;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.etterFilterDato;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.not;
 
 public class TiltakUtils {

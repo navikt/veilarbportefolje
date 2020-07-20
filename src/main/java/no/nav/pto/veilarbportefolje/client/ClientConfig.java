@@ -49,7 +49,7 @@ public class ClientConfig {
 
     @Bean
     public VeilarbVeilederClient veilarbVeilederClient(OkHttpClient client) {
-        return new VeilarbVeilederClient(requireNamespace(), client);
+        return new VeilarbVeilederClient(client);
     }
 
     @Bean

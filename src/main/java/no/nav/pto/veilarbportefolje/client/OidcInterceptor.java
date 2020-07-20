@@ -18,9 +18,7 @@ public class OidcInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
-        Request newRequest;
-
-        newRequest = request.newBuilder()
+        Request newRequest = request.newBuilder()
                 .addHeader("Authorization", "Bearer " + systemUserTokenProvider.getSystemUserToken())
                 .build();
 

@@ -89,6 +89,8 @@ public class ArbeidslisteRepository {
         ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
 
+    //TODO SLETTE EN AV DISSE DELETE METODER???
+
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
         return Try.of(
                 () -> {
@@ -101,8 +103,6 @@ public class ArbeidslisteRepository {
                 .onSuccess((aktoerid) -> log.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
                 .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db", e));
     }
-
-    //TODO SLETTE EN AV DISSE DELETE METODER???
 
     public Result<Integer> deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
         Supplier<Integer> query = () -> {

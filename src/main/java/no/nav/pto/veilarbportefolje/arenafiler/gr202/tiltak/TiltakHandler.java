@@ -1,22 +1,31 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
+import io.micrometer.core.instrument.Gauge;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.health.HealthCheckResult;
+import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
+import no.nav.pto.veilarbportefolje.arenafiler.ArenaFilType;
+import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.feedconsumer.aktivitet.AktivitetUtils;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
+import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import org.apache.commons.vfs2.FileObject;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,26 +36,54 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.*;
 import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.*;
+import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j
-@Service
 public class TiltakHandler {
 
     private final TiltakRepository tiltakrepository;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
-    private final AktoerService aktoerService;
+    private final PersonIdService personIdService;
+    private final EnvironmentProperties environmentProperties;
 
     static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
 
-    @Autowired
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, AktoerService aktoerService, BrukerRepository brukerRepository) {
-        this.aktoerService = aktoerService;
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, PersonIdService personIdService, BrukerRepository brukerRepository, EnvironmentProperties environmentProperties) {
+        this.personIdService = personIdService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
+        this.environmentProperties = environmentProperties;
+        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", this::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
+    }
+
+    public FilmottakConfig.SftpConfig lopendeAktiviteter() {
+        return new FilmottakConfig.SftpConfig(environmentProperties.getArenaPaagaaendeAktiviteterUrl(),
+                environmentProperties.getArenaFilmottakSFTPUsername(),
+                environmentProperties.getArenaFilmottakSFTPPassword(),
+                ArenaFilType.GR_199_TILTAK);
+    }
+
+    public long sjekkArenaAktiviteterSistOppdatert() {
+        Long millis = getLastModifiedTimeInMillis(lopendeAktiviteter()).getOrElseThrow(() -> new RuntimeException());
+        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
+    }
+
+    public HealthCheckResult sftpTiltakPing(Try<FileObject> hentTiltaksFil) {
+        FileObject ytelseFil = hentTiltaksFil.getOrElseThrow(() -> new RuntimeException());
+        Try<LoependeYtelser> ytelser = FilmottakFileUtils.unmarshallLoependeYtelserFil(ytelseFil);
+        if (ytelser.isFailure()) {
+            return innlesingAvFilFeilet(environmentProperties.getArenaPaagaaendeAktiviteterUrl());
+        }
+        return HealthCheckResult.healthy();
+    }
+
+    public Try<FileObject> hentTiltaksFil() {
+        return FilmottakFileUtils.hentFil(lopendeAktiviteter());
     }
 
     public static Timestamp getDatoFilter() {
@@ -56,7 +93,7 @@ public class TiltakHandler {
     public void startOppdateringAvTiltakIDatabasen() {
         log.info("Indeksering: Starter oppdatering av tiltak fra Arena...");
 
-        FilmottakFileUtils.hentTiltaksFil()
+        this.hentTiltaksFil()
                 .onFailure(log(log, "Kunne ikke hente tiltaksfil"))
                 .flatMap(FilmottakFileUtils::unmarshallTiltakFil)
                 .onFailure(log(log, "Kunne ikke unmarshalle tiltaksfilen"))
@@ -109,7 +146,7 @@ public class TiltakHandler {
                 .forEach(brukereBatch -> {
 
                     List<Fnr> fnrs = brukereBatch.toJavaStream().map(Bruker::getPersonident).map(Fnr::of).collect(toList());
-                    Map<Fnr, Optional<PersonId>> personidsMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> personidsMap = personIdService.hentPersonidsForFnrs(fnrs);
                     List<PersonId> personIds = personidsMap.values().stream()
                             .filter(Optional::isPresent)
                             .map(Optional::get).collect(toList());
@@ -243,7 +280,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = personIdService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
@@ -263,7 +300,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = personIdService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
@@ -283,7 +320,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = aktoerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = personIdService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {

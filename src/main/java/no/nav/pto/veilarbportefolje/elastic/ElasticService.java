@@ -6,7 +6,6 @@ import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
-import no.nav.pto.veilarbportefolje.auth.PepClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -16,7 +15,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,16 +26,15 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
-@Component
+@Service
 public class ElasticService {
     RestHighLevelClient restHighLevelClient;
-    PepClient pepClient;
     VeilarbVeilederClient veilarbVeilederClient;
     UnleashService unleashService;
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, PepClient pepClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService) {
+    @Autowired
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService) {
         this.restHighLevelClient = restHighLevelClient;
-        this.pepClient = pepClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.unleashService = unleashService;
     }
