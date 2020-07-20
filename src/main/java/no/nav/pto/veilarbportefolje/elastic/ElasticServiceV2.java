@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -19,23 +18,26 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 @Service
 public class ElasticServiceV2 {
 
+    private final String alias;
     private RestHighLevelClient restHighLevelClient;
 
-    @Autowired
-    public ElasticServiceV2(RestHighLevelClient restHighLevelClient) {
-        this.restHighLevelClient = restHighLevelClient;
+    @Inject
+    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, String alias) {
+        this.client = restHighLevelClient;
+        this.alias = alias;
     }
 
     @SneakyThrows
     public void updateHarDeltCv(Fnr fnr, boolean harDeltCv) {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(getAlias());
+        updateRequest.index(alias);
         updateRequest.type("_doc");
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
                 .startObject()
                 .field("har_delt_cv", harDeltCv)
-                .endObject());
+                .endObject()
+        );
 
         try {
             restHighLevelClient.update(updateRequest, DEFAULT);

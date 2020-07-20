@@ -28,4 +28,14 @@ public class DialogService implements KafkaConsumerService<String> {
         dialogRepository.oppdaterDialogInfoForBruker(melding);
         elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
     }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
+    }
 }

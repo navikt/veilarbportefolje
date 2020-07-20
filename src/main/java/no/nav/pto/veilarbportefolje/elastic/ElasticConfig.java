@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.database.DatabaseConfig;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.auth.PepClient;
@@ -15,22 +16,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import static no.nav.common.utils.NaisUtils.getCredentials;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
+import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 @Import({DatabaseConfig.class})
 public class ElasticConfig {
 
-
-    static final Credentials vaultCredentials = getCredentials("vault", "VEILARBELASTIC_USERNAME", "VEILARBELASTIC_PASSWORD");
-    public static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
-    //public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
-    //public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
+    public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
+    public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
 
     private static ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
-            .username(vaultCredentials.username)
-            .password(vaultCredentials.password)
+            .username(VEILARBELASTIC_USERNAME)
+            .password(VEILARBELASTIC_PASSWORD)
             .hostname(getElasticHostname())
             .port(getElasticPort())
             .scheme(getElasticScheme())
@@ -51,9 +51,8 @@ public class ElasticConfig {
         return HealthCheckResult.healthy();
     }
 
-    @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, MetricsClient metricsClient) {
+
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, MetricsClient metricsClient, CvService cvService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), veilarbVeilederClient, unleashService);
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService, unleashService, metricsClient);
-    }
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService, unleashService, metricsClient, cvService);
 }

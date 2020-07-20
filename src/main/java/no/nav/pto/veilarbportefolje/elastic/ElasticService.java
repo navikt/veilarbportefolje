@@ -45,11 +45,16 @@ public class ElasticService {
 
         int from = Optional.ofNullable(fra).orElse(0);
         int size = Optional.ofNullable(antall).orElse(9999);
+
         searchSourceBuilder.from(from);
         searchSourceBuilder.size(size);
 
         BoolQueryBuilder boolQuery = boolQuery();
         boolQuery.must(matchQuery("enhet_id", enhetId));
+
+        if (unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)) {
+            boolQuery.must(matchQuery("oppfolging", true));
+        }
 
         boolean kallesFraMinOversikt = veilederIdent.isPresent() && StringUtils.isNotBlank(veilederIdent.get());
         if (kallesFraMinOversikt) {
@@ -61,7 +66,7 @@ public class ElasticService {
                 .collect(toList());
 
         if (filtervalg.harAktiveFilter()) {
-            boolean erVedtakstottePilotPa =erVedtakstottePilotPa();
+            boolean erVedtakstottePilotPa = erVedtakstottePilotPa();
             filtervalg.ferdigfilterListe.forEach(
                     filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa))
             );
@@ -92,7 +97,12 @@ public class ElasticService {
     }
 
     public List<Bruker> hentBrukereMedArbeidsliste(String veilederId, String enhetId, String indexAlias) {
-        SearchSourceBuilder request = byggArbeidslisteQuery(enhetId, veilederId);
+
+        SearchSourceBuilder request =
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
+                        byggArbeidslisteQueryV2(enhetId, veilederId) :
+                        byggArbeidslisteQuery(enhetId, veilederId);
+
         ElasticSearchResponse response = search(request, indexAlias, ElasticSearchResponse.class);
 
         return response.getHits().getHits().stream()
@@ -102,7 +112,12 @@ public class ElasticService {
 
     public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId, String indexAlias) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
-        SearchSourceBuilder request = byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
+
+        SearchSourceBuilder request =
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
+                        byggStatusTallForVeilederQueryV2(enhetId, veilederId, emptyList(), vedtakstottePilotErPa) :
+                        byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
+
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
@@ -115,15 +130,22 @@ public class ElasticService {
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
 
-        SearchSourceBuilder request = byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
+        SearchSourceBuilder request =
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
+                        byggStatusTallForEnhetQueryV2(enhetId, veilederPaaEnhet, vedtakstottePilotErPa):
+                        byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
+
         StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId, String indexAlias) {
+        SearchSourceBuilder request =
+                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
+                        byggPortefoljestorrelserQueryV2(enhetId) :
+                        byggPortefoljestorrelserQuery(enhetId);
 
-        SearchSourceBuilder request = byggPortefoljestorrelserQuery(enhetId);
         PortefoljestorrelserResponse response = search(request, indexAlias, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
@@ -146,7 +168,6 @@ public class ElasticService {
 
 
     private boolean erVedtakstottePilotPa() {
-        return unleashService.isEnabled("pto.vedtaksstotte.pilot");
+        return unleashService.isEnabled(FeatureToggle.VEDTAKSTOTTE_PILOT);
     }
-
 }

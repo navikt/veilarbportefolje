@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.IdUtils;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
@@ -43,7 +44,7 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     public KafkaConsumerRunnable(KafkaConsumerService<T> kafkaService,
                                  UnleashService unleashService,
                                  Properties kafkaProperties,
-                                 KafkaConfig.Topic topic,
+                                 Topic topic,
                                  String featureNavn) {
 
         this.kafkaService = kafkaService;
@@ -69,9 +70,12 @@ public class KafkaConsumerRunnable<T> implements Runnable {
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
+                if (kafkaService.shouldRewind()) {
+                    this.rewind();
+                }
             }
         } catch (NullPointerException npe) {
-            log.error("Kafka kastet NPE på topic {}", topic, npe);
+            log.error("Unleash kastet NPE på topic {}", topic, npe);
             System.exit(1);
         } catch (Exception e) {
             String mld = String.format(
@@ -91,6 +95,20 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     public void shutdown() {
         shutdown.set(true);
         shutdownLatch.await();
+    }
+
+    private void rewind() {
+        String topicName = this.topic;
+
+        List<TopicPartition> partitions =
+                consumer.partitionsFor(topicName)
+                        .stream()
+                        .map(partition -> new TopicPartition(topicName, partition.partition()))
+                        .collect(toList());
+
+        log.info("Spoler tilbake topic {}", topicName);
+        consumer.seekToBeginning(partitions);
+        kafkaService.setRewind(false);
     }
 
     private void process(ConsumerRecord<String, T> record) {

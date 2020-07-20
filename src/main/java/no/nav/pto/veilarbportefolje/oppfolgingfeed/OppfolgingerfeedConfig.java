@@ -13,7 +13,8 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedHandler;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.sbl.jdbc.Transactor;
 import okhttp3.OkHttpClient;
@@ -75,8 +76,7 @@ public class OppfolgingerfeedConfig {
                                                                           OppfolgingRepository oppfolgingRepository,
                                                                           VeilarbVeilederClient veilarbVeilederClient,
                                                                           Transactor transactor,
-                                                                          UnleashService unleashService,
-                                                                          CvService cvService) {
+                                                                          UnleashService unleashService) {
         return new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
@@ -84,7 +84,6 @@ public class OppfolgingerfeedConfig {
                 oppfolgingRepository,
                 veilarbVeilederClient,
                 transactor,
-                cvService,
                 unleashService
         );
     }

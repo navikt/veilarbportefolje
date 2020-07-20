@@ -7,6 +7,8 @@ import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
+import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -28,12 +30,16 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
+
+import javax.inject.Inject;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -67,13 +73,17 @@ public class ElasticIndexer {
     private final UnleashService unleashService;
     private final MetricsClient metricsClient;
 
+    private CvService cvService;
+
+    @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
             ElasticService elasticService,
             UnleashService unleashService,
-            MetricsClient metricsClient
+            MetricsClient metricsClient,
+            CvService cvService
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
@@ -81,19 +91,17 @@ public class ElasticIndexer {
         this.restHighLevelClient = restHighLevelClient;
         this.elasticService = elasticService;
         this.unleashService = unleashService;
+        this.cvService = cvService;
         this.metricsClient = metricsClient;
     }
 
     @SneakyThrows
     public void startIndeksering() {
-
-        if (unleashService.isEnabled("portefolje.ny_hovedindeksering")) {
+        if (unleashService.isEnabled(FeatureToggle.HOVEDINDEKSERING_MED_PAGING)) {
             nyHovedIndekseringMedPaging();
         } else {
             gammelHovedIndeksering();
         }
-
-
     }
 
     private void gammelHovedIndeksering() {
@@ -256,33 +264,46 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public Result<OppfolgingsBruker> slettBruker(OppfolgingsBruker bruker) {
+    public void slettBruker(OppfolgingsBruker bruker) {
 
-        List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
+        if (unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)) {
+            updateOppfolgingTilFalse(bruker);
+        } else {
+            List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
 
-        for (Integer backoff : backoffs) {
+            for (Integer backoff : backoffs) {
+                DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
+                        .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
-            DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
-                    .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
-
-            try {
-                BulkByScrollResponse response = restHighLevelClient.deleteByQuery(deleteQuery, DEFAULT);
-                if (response.getDeleted() == 1) {
-                    log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
-                    return Result.ok(bruker);
+                try {
+                    BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+                    if (response.getDeleted() == 1) {
+                        log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
+                    }
+                } catch (ElasticsearchStatusException e) {
+                    String mld = format("ElasticsearchStatusException for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                    log.warn(mld, e);
+                    Thread.sleep(backoff);
+                } catch (Exception e) {
+                    String mld = format("Sletting feilet for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
+                    log.error(mld, e);
                 }
-            } catch (ElasticsearchStatusException e) {
-                String mld = format("ElasticsearchStatusException for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
-                log.warn(mld, e);
-                Thread.sleep(backoff);
-            } catch (Exception e) {
-                String mld = format("Sletting feilet for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
-                log.error(mld, e);
-                return Result.err(e);
             }
         }
+    }
 
-        return Result.err(new RuntimeException());
+    private void updateOppfolgingTilFalse(OppfolgingsBruker bruker) throws IOException {
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.index(getAlias());
+        updateRequest.type("_doc");
+        updateRequest.id(bruker.getFnr());
+        updateRequest.doc(jsonBuilder()
+                .startObject()
+                .field("oppfolging", false)
+                .endObject()
+        );
+
+        client.update(updateRequest, DEFAULT);
     }
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
@@ -421,7 +442,7 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
+    public BulkResponse skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
@@ -440,6 +461,8 @@ public class ElasticIndexer {
 
         List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
         log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+
+        return response;
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {

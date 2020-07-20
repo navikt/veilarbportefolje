@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -42,7 +43,7 @@ public class KafkaConsumerRegistrering implements Runnable {
     }
 
     private boolean registreringFeature() {
-        return unleashService.isEnabled("veilarbportfolje.registrering");
+        return unleashService.isEnabled(FeatureToggle.KAFKA_REGISTRERING);
     }
 
 }

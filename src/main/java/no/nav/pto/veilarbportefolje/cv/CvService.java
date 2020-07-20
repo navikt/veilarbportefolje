@@ -2,17 +2,13 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
-import no.nav.common.utils.EnvironmentUtils;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.util.Result;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import no.nav.pto.veilarbportefolje.service.AktoerService;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
@@ -20,21 +16,12 @@ import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 @Slf4j
 @Service
 public class CvService implements KafkaConsumerService<String> {
-
-    private final BrukerRepository brukerRepository;
     private final ElasticServiceV2 elasticServiceV2;
+    private final AktoerService aktoerService;
+    private final CvRepository cvRepository;
     private final MetricsClient metricsClient;
 
-    @Autowired
-    public CvService(
-            BrukerRepository brukerRepository,
-            ElasticServiceV2 elasticServiceV2,
-            MetricsClient metricsClient
-    ) {
-        this.brukerRepository = brukerRepository;
-        this.elasticServiceV2 = elasticServiceV2;
-        this.metricsClient = metricsClient;
-    }
+    private final AtomicBoolean rewind;
 
     enum Ressurs {
         CV_HJEMMEL,
@@ -55,6 +42,23 @@ public class CvService implements KafkaConsumerService<String> {
         Ressurs ressurs;
     }
 
+    public CvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService, CvRepository cvRepository) {
+        this.elasticServiceV2 = elasticServiceV2;
+        this.aktoerService = aktoerService;
+        this.cvRepository = cvRepository;
+        this.rewind = new AtomicBoolean();
+    }
+
+    @Override
+    public boolean shouldRewind() {
+        return rewind.get();
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+        this.rewind.set(rewind);
+    }
+
     @Override
     public void behandleKafkaMelding(String payload) {
         Melding melding = fromJson(payload, Melding.class);
@@ -65,32 +69,28 @@ public class CvService implements KafkaConsumerService<String> {
             return;
         }
 
-        if (melding.getFnr() == null) {
-            if (EnvironmentUtils.isProduction().orElse(false)) {
-                log.error("Bruker {} har ikke fnr i melding fra samtykke-topic", aktorId);
-            }
-            return;
-        }
+        Fnr fnr = melding.getFnr() == null ? hentFnrFraAktoerTjenesten(melding.getAktoerId()) : melding.getFnr();
 
         switch (melding.meldingType) {
             case SAMTYKKE_OPPRETTET:
                 log.info("Bruker {} har delt cv med nav", aktorId);
-                brukerRepository.setHarDeltCvMedNav(aktorId, true).orElseThrowException();
                 metricsClient.report(new Event("portefolje_har_delt_cv"));
-                elasticServiceV2.updateHarDeltCv(melding.getFnr(), true);
+                cvRepository.upsert(aktorId, fnr, true);
+                elasticServiceV2.updateHarDeltCv(fnr, true);
                 break;
             case SAMTYKKE_SLETTET:
                 log.info("Bruker {} har ikke delt cv med nav", aktorId);
-                brukerRepository.setHarDeltCvMedNav(aktorId, false).orElseThrowException();
                 metricsClient.report(new Event("portefolje_har_ikke_delt_cv"));
-                elasticServiceV2.updateHarDeltCv(melding.getFnr(), false);
+                cvRepository.upsert(aktorId, fnr, false);
+                elasticServiceV2.updateHarDeltCv(fnr, false);
                 break;
             default:
                 log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktorId);
         }
     }
 
-    public Result<Integer> setHarDeltCvTilNei(AktoerId aktoerId) {
-        return brukerRepository.setHarDeltCvMedNav(aktoerId, false);
+    private Fnr hentFnrFraAktoerTjenesten(AktoerId aktoerId) {
+        log.info("Henter fnr fra aktoertjenesten for bruker {}...", aktoerId);
+        return aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException());
     }
 }

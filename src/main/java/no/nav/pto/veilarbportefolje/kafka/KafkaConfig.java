@@ -17,12 +17,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 
 @Configuration
 public class KafkaConfig {
-
-    public final static String KAFKA_OPPFOLGING_TOGGLE = "portefolje.kafka.oppfolging";
-    public final static String KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE = "portefolje.kafka.oppfolging_behandle_meldinger";
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + EnvironmentUtils.getNamespace()),

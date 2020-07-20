@@ -274,7 +274,8 @@ public class BrukerRepository {
                             .where(WhereClause.equals("PERSON_ID", personId.toString()))
                             .execute();
                 }
-        ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
+        )
+                .onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()));
     }
 
     public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
@@ -307,7 +308,8 @@ public class BrukerRepository {
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
-        ).onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e));
+        )
+                .onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e));
     }
 
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
@@ -502,14 +504,5 @@ public class BrukerRepository {
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
-    }
-
-    public Result<Integer> setHarDeltCvMedNav(AktoerId aktoerId, boolean harDelt) {
-        Supplier<Integer> query = () -> SqlUtils.update(db, "BRUKER_DATA")
-                .set("HAR_DELT_CV", DbUtils.boolToJaNei(harDelt))
-                .whereEquals("AKTOERID", aktoerId.toString())
-                .execute();
-
-        return Result.of(query);
     }
 }

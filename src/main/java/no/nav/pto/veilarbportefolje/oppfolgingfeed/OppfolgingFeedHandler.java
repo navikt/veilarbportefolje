@@ -8,7 +8,7 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.sbl.jdbc.Transactor;
+import org.slf4j.MDC;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,13 +27,18 @@ import java.util.Optional;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE;
+import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback {
 
 
+    private static final String MDC_KEY = "oppfolging_data";
     private static final String FEED_NAME = "oppfolging";
+
     private static BigDecimal lastEntry;
+    private final Timer timer;
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
@@ -40,7 +46,6 @@ public class OppfolgingFeedHandler implements FeedCallback {
     private VeilarbVeilederClient veilarbVeilederClient;
     private Transactor transactor;
     private final UnleashService unleashService;
-    private final CvService cvService;
 
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
@@ -48,7 +53,6 @@ public class OppfolgingFeedHandler implements FeedCallback {
                                  OppfolgingRepository oppfolgingRepository,
                                  VeilarbVeilederClient veilarbVeilederClient,
                                  Transactor transactor,
-                                 CvService cvService,
                                  UnleashService unleashService) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
@@ -57,10 +61,9 @@ public class OppfolgingFeedHandler implements FeedCallback {
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.transactor = transactor;
         this.unleashService = unleashService;
-        this.cvService = cvService;
 
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
-
+        this.timer = MetricsFactory.createTimer("veilarbportefolje.veiledertilordning");
     }
 
     private static BigDecimal getLastEntry() {
@@ -70,11 +73,14 @@ public class OppfolgingFeedHandler implements FeedCallback {
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
 
-        if (unleashService.isEnabled(KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
+        if (unleashService.isEnabled(FeatureToggle.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER)) {
             log.info("Oppdateringer for oppfølgingsstatus blir behandlet via kafka");
             return;
         }
 
+
+        timer.start();
+        MDC.put(MDC_KEY, generateId());
         log.info("OppfolgingerfeedDebug data: {}", data);
 
         try {
@@ -85,7 +91,19 @@ public class OppfolgingFeedHandler implements FeedCallback {
                 }
                 oppdaterOppfolgingData(info);
 
-                elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+                CompletableFuture<Void> future = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+
+                future.thenRun(() -> {
+
+                    Duration timeElapsed = DateUtils.calculateTimeElapsed(info.getEndretTimestamp().toInstant());
+                    MetricsFactory
+                            .createEvent("portefolje.feed_time_elapsed_oppfolging")
+                            .addFieldToReport("time_elapsed", timeElapsed.toMillis())
+                            .report();
+
+                    timer.stop();
+                    timer.report();
+                });
 
             });
 
@@ -97,6 +115,8 @@ public class OppfolgingFeedHandler implements FeedCallback {
         } catch (Exception e) {
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
             log.error(message, e);
+        } finally {
+            MDC.remove(MDC_KEY);
         }
     }
 
@@ -111,12 +131,9 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
         boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
 
-        if (brukerErIkkeUnderOppfolging(oppfolgingData)) {
-            cvService.setHarDeltCvTilNei(aktoerId);
-        }
-
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
+                log.info("Sletter arbeidsliste for bruker {}", aktoerId);
                 arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
             }
             oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
@@ -139,7 +156,9 @@ public class OppfolgingFeedHandler implements FeedCallback {
         return brukerRepository
                 .retrievePersonid(aktoerId)
                 .flatMap(brukerRepository::retrieveEnhet)
-                .map(enhet -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet).contains(veilederId))
+                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet))
+                .peek(veilederePaaEnhet -> log.info("Veileder: {} Veileder på enhet: {}", veilederId, veilederePaaEnhet))
+                .map(veilederePaaEnhet -> veilederePaaEnhet.contains(veilederId))
                 .getOrElse(false);
     }
 }

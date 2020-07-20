@@ -33,7 +33,6 @@ public class ElasticUtils {
     public static final String NAIS_LOADBALANCED_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
     public static final String NAIS_INTERNAL_CLUSTER_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
 
-
     private static int SOCKET_TIMEOUT = 120_000;
     private static int CONNECT_TIMEOUT = 60_000;
 

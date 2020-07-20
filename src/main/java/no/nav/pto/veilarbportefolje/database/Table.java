@@ -13,6 +13,14 @@ public class Table {
         public static final String TABLE_NAME = "BRUKER_DATA";
         public static final String PERSONID = "PERSONID";
         public static final String AKTOERID = "AKTOERID";
-        public static final String HAR_DELT_CV = "HAR_DELT_CV";
     }
+
+    public static final class BRUKER_CV {
+        public static final String TABLE_NAME = "BRUKER_CV";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String FNR = "FNR";
+        public static final String HAR_DELT_CV = "HAR_DELT_CV";
+        public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
+    }
+
 }

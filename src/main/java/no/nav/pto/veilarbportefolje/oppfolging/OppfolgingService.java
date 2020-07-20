@@ -5,12 +5,11 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.metrikker.MetricsUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -35,7 +34,6 @@ public class OppfolgingService implements KafkaConsumerService<String> {
     private final ArbeidslisteService arbeidslisteService;
     private final UnleashService unleashService;
     private final AktorregisterClient aktorregisterClient;
-    private final CvService cvService;
     private final MetricsClient metricsClient;
 
     @Autowired
@@ -46,7 +44,6 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                              ArbeidslisteService arbeidslisteService,
                              UnleashService unleashService,
                              AktorregisterClient aktorregisterClient,
-                             CvService cvService,
                              MetricsClient metricsClient
     ) {
         this.oppfolgingRepository = oppfolgingRepository;
@@ -56,14 +53,13 @@ public class OppfolgingService implements KafkaConsumerService<String> {
         this.arbeidslisteService = arbeidslisteService;
         this.unleashService = unleashService;
         this.aktorregisterClient = aktorregisterClient;
-        this.cvService = cvService;
         this.metricsClient = metricsClient;
     }
 
     @Override
     @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (!unleashService.isEnabled(KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE)) {
+        if (!unleashService.isEnabled(FeatureToggle.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER)) {
             log.info("Ingorerer melding fra kafka");
             return;
         }
@@ -73,13 +69,6 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
         if (oppfolgingStatus.getStartDato() == null) {
             log.warn("Bruker {} har ikke startDato", aktoerId);
-        }
-
-        if (brukerenIkkeLengerErUnderOppfolging(oppfolgingStatus)) {
-            Result<Integer> result = cvService.setHarDeltCvTilNei(aktoerId);
-            if (result.err().isPresent()) {
-                log.error("Kunne ikke sette har delt cv til nei for bruker " + aktoerId, result.err().get());
-            }
         }
 
         Optional<VeilederId> eksisterendeVeileder = hentEksisterendeVeileder(aktoerId);
@@ -103,6 +92,16 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                 () -> elastic.indekser(aktoerId).orElseThrowException(),
                 metricsClient
         );
+    }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
     }
 
     boolean eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(AktoerId aktoerId, Optional<VeilederId> nyVeileder, Optional<VeilederId> eksisterendeVeileder) {

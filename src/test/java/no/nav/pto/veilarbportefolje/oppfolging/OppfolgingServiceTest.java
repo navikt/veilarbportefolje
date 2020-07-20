@@ -5,7 +5,6 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -27,7 +26,8 @@ import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService.brukeren
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class OppfolgingServiceTest {
 
@@ -38,13 +38,12 @@ public class OppfolgingServiceTest {
     private static VeilarbVeilederClient veilarbVeilederClientMock;
     private static NavKontorService navKontorServiceMock;
     private static AktorregisterClient aktoerServiceMock;
-    private static CvService cvService;
 
     @BeforeClass
     public static void setUp() {
         veilarbVeilederClientMock = mock(VeilarbVeilederClient.class);
         navKontorServiceMock = mock(NavKontorService.class);
-        aktoerServiceMock = new AktorregisterClientMock();
+        aktoerServiceMock = mock(AktorregisterClient.class);
         cvService = mock(CvService.class);
 
         OppfolgingRepository opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
@@ -58,8 +57,7 @@ public class OppfolgingServiceTest {
                 navKontorServiceMock,
                 arbeidslisteMock,
                 new UnleashServiceMock(true),
-                aktoerServiceMock,
-                cvService,
+                aktoerServiceMock
                 mock(MetricsClient.class)
         );
 
@@ -67,25 +65,6 @@ public class OppfolgingServiceTest {
         when(opppfolgingRepositoryMock.hentOppfolgingData(any(AktoerId.class))).thenReturn(Result.of(() -> brukerInfo()));
         when(opppfolgingRepositoryMock.oppdaterOppfolgingData(any(OppfolgingStatus.class))).thenReturn(Result.ok(AktoerId.of("testId")));
         when(elasticMock.indekser(any(AktoerId.class))).thenReturn(Result.ok(new OppfolgingsBruker()));
-        when(cvService.setHarDeltCvTilNei(any(AktoerId.class))).thenReturn(Result.ok(1));
-    }
-
-    @Test
-    public void skal_sette_cv_delt_til_nei_om_bruker_ikke_lenger_er_under_oppfolging() {
-
-        oppfolgingService.behandleKafkaMelding(""
-                                               + "{ "
-                                               + "\"aktoerid\": \"00000000000\", "
-                                               + "\"oppfolging\": false,"
-                                               + "\"veileder\": null,"
-                                               + "\"nyForVeileder\": false,"
-                                               + "\"endretTimestamp\": \"2020-05-05T00:00:00+02:00\","
-                                               + "\"startDato\": \"2020-05-05T00:00:00+02:00\","
-                                               + "\"manuell\": false "
-                                               + "}"
-        );
-
-        verify(cvService, times(1)).setHarDeltCvTilNei(any(AktoerId.class));
     }
 
     private static BrukerOppdatertInformasjon brukerInfo() {
@@ -160,6 +139,8 @@ public class OppfolgingServiceTest {
 
     @Test
     public void eksisterende_veileder_skal_ikke_ha_tilgang_til_brukerens_enhet() {
+        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class)))
+                .thenReturn(Try.success(Fnr.of("10101010101")));
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));

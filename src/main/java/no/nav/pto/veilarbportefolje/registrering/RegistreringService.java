@@ -19,4 +19,14 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         registreringRepository.upsertBrukerRegistrering(kafkaRegistreringMelding);
     }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
+    }
 }

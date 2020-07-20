@@ -51,6 +51,16 @@ public class VedtakService implements KafkaConsumerService<String> {
         }
     }
 
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
+    }
+
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
         indekserBruker(AktoerId.of(melding.getAktorId()));
