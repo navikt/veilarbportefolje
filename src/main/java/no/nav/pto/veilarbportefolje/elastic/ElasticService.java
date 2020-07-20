@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;

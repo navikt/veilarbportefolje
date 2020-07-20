@@ -4,17 +4,15 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.client.OidcInterceptor;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumer;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingFeedHandler;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.sbl.jdbc.Transactor;
 import okhttp3.OkHttpClient;
@@ -71,12 +69,12 @@ public class OppfolgingerfeedConfig {
 
     @Bean
     public FeedCallback oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
-                                                                          BrukerRepository brukerRepository,
-                                                                          ElasticIndexer elasticIndexer,
-                                                                          OppfolgingRepository oppfolgingRepository,
-                                                                          VeilarbVeilederClient veilarbVeilederClient,
-                                                                          Transactor transactor,
-                                                                          UnleashService unleashService) {
+                                              BrukerRepository brukerRepository,
+                                              ElasticIndexer elasticIndexer,
+                                              OppfolgingRepository oppfolgingRepository,
+                                              VeilarbVeilederClient veilarbVeilederClient,
+                                              Transactor transactor,
+                                              UnleashService unleashService) {
         return new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,

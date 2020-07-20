@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje;
 
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.common.featuretoggle.UnleashService;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;

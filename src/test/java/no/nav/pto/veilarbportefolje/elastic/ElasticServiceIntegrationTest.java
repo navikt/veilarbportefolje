@@ -3,28 +3,23 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.common.abac.Pep;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Pair;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
-import no.nav.pto.veilarbportefolje.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.jetbrains.annotations.NotNull;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.*;
 
 import java.time.Instant;
@@ -33,7 +28,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
@@ -59,24 +53,23 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
     private static ElasticService elasticService;
     private static ElasticIndexer elasticIndexer;
 
-    @Rule
-    public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER_0, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
 
     @BeforeClass
     public static void setUp() {
-        PepClient pepMock = mockPep();
-        VeilederService veilederServiceMock = mockVeilederService();
+
+        VeilarbVeilederClient veilederServiceMock = mockVeilederService();
 
         UnleashService unleashMock = mock(UnleashService.class);
         when(unleashMock.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)).thenReturn(true);
 
-        elasticService = new ElasticService(ELASTIC_CLIENT, pepMock, veilederServiceMock, unleashMock);
+        elasticService = new ElasticService(ELASTIC_CLIENT, veilederServiceMock, unleashMock);
         elasticIndexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 ELASTIC_CLIENT,
                 elasticService,
                 unleashMock,
+                mock(MetricsClient.class),
                 mock(CvService.class)
         );
     }
@@ -466,11 +459,8 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         skrivBrukereTilTestindeks(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
 
-        val unprivelegedSubject = new Subject(UNPRIVILEGED_TOKEN, InternBruker, oidcToken(UNPRIVILEGED_TOKEN, emptyMap()));
 
-        val response = SubjectHandler.withSubject(
-                unprivelegedSubject,
-                () -> elasticService.hentBrukere(
+        val response = elasticService.hentBrukere(
                         TEST_ENHET,
                         Optional.of(TEST_VEILEDER_0),
                         "asc",
@@ -479,7 +469,6 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                         null,
                         null,
                         TEST_INDEX
-                )
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -908,21 +897,21 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
     }
 
     @NotNull
-    private static VeilederService mockVeilederService() {
-        VeilederService veilederServiceMock = mock(VeilederService.class);
+    private static VeilarbVeilederClient mockVeilederService() {
+        VeilarbVeilederClient veilederServiceMock = mock(VeilarbVeilederClient.class);
         when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
         return veilederServiceMock;
     }
 
     @NotNull
-    private static PepClient mockPep() {
-        PepClient pepMock = mock(PepClient.class);
-        when(pepMock.isSubjectAuthorizedToSeeEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.isSubjectAuthorizedToSeeKode6(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.isSubjectAuthorizedToSeeKode7(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.isSubjectAuthorizedToSeeEgenAnsatt(PRIVILEGED_TOKEN)).thenReturn(true);
-        when(pepMock.isSubjectAuthorizedToSeeKode6(PRIVILEGED_TOKEN)).thenReturn(true);
-        when(pepMock.isSubjectAuthorizedToSeeKode7(PRIVILEGED_TOKEN)).thenReturn(true);
+    private static Pep mockPep() {
+        Pep pepMock = mock(Pep.class);
+        when(pepMock.harVeilederTilgangTilEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilKode6(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilKode7(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilEgenAnsatt(PRIVILEGED_TOKEN)).thenReturn(true);
+        when(pepMock.harVeilederTilgangTilKode6(PRIVILEGED_TOKEN)).thenReturn(true);
+        when(pepMock.harVeilederTilgangTilKode7(PRIVILEGED_TOKEN)).thenReturn(true);
         return pepMock;
     }
 

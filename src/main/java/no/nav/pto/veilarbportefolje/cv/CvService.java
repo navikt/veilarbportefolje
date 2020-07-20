@@ -2,11 +2,15 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,7 +21,7 @@ import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 @Service
 public class CvService implements KafkaConsumerService<String> {
     private final ElasticServiceV2 elasticServiceV2;
-    private final AktoerService aktoerService;
+    private final AktorregisterClient aktorregisterClient;
     private final CvRepository cvRepository;
     private final MetricsClient metricsClient;
 
@@ -42,10 +46,12 @@ public class CvService implements KafkaConsumerService<String> {
         Ressurs ressurs;
     }
 
-    public CvService(ElasticServiceV2 elasticServiceV2, AktoerService aktoerService, CvRepository cvRepository) {
+    @Autowired
+    public CvService(ElasticServiceV2 elasticServiceV2, AktorregisterClient aktorregisterClient, CvRepository cvRepository, MetricsClient metricsClient) {
         this.elasticServiceV2 = elasticServiceV2;
-        this.aktoerService = aktoerService;
+        this.aktorregisterClient = aktorregisterClient;
         this.cvRepository = cvRepository;
+        this.metricsClient = metricsClient;
         this.rewind = new AtomicBoolean();
     }
 
@@ -91,6 +97,6 @@ public class CvService implements KafkaConsumerService<String> {
 
     private Fnr hentFnrFraAktoerTjenesten(AktoerId aktoerId) {
         log.info("Henter fnr fra aktoertjenesten for bruker {}...", aktoerId);
-        return aktoerService.hentFnrFraAktorId(aktoerId).getOrElseThrow(() -> new IllegalStateException());
+        return Fnr.of(aktorregisterClient.hentFnr(aktoerId.toString()));
     }
 }

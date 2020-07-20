@@ -1,11 +1,12 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
@@ -14,14 +15,12 @@ import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
 
-import static java.lang.String.valueOf;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.stream;
+import static no.nav.common.utils.EnvironmentUtils.NAIS_NAMESPACE_PROPERTY_NAME;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.TestUtil.createUnleashMock;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1;
-import static no.nav.sbl.util.EnvironmentUtils.APP_ENVIRONMENT_NAME_PROPERTY_NAME;
-import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.T;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -31,10 +30,10 @@ public class CvKafkaConsumerTest extends IntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        System.setProperty(APP_ENVIRONMENT_NAME_PROPERTY_NAME, valueOf(T));
+        System.setProperty(NAIS_NAMESPACE_PROPERTY_NAME, "T");
 
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktoerService.class), mock(CvRepository.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT), mock(AktorregisterClient.class), mock(CvRepository.class), mock(MetricsClient.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,

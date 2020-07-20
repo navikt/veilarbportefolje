@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -18,13 +19,13 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 @Service
 public class ElasticServiceV2 {
 
-    private final String alias;
+    private String alias;
     private RestHighLevelClient restHighLevelClient;
 
-    @Inject
-    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, String alias) {
-        this.client = restHighLevelClient;
-        this.alias = alias;
+    @Autowired
+    public ElasticServiceV2(RestHighLevelClient restHighLevelClient) {
+        this.restHighLevelClient = restHighLevelClient;
+        this.alias = getAlias();
     }
 
     @SneakyThrows

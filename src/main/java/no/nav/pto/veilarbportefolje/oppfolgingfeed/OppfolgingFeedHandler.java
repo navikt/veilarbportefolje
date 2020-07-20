@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
-import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
@@ -26,9 +25,7 @@ import java.util.Optional;
 
 import static java.util.Comparator.naturalOrder;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
-import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER_TOGGLE;
 import static no.nav.common.utils.IdUtils.generateId;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback {
@@ -38,7 +35,6 @@ public class OppfolgingFeedHandler implements FeedCallback {
     private static final String FEED_NAME = "oppfolging";
 
     private static BigDecimal lastEntry;
-    private final Timer timer;
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
@@ -63,7 +59,6 @@ public class OppfolgingFeedHandler implements FeedCallback {
         this.unleashService = unleashService;
 
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
-        this.timer = MetricsFactory.createTimer("veilarbportefolje.veiledertilordning");
     }
 
     private static BigDecimal getLastEntry() {
@@ -79,7 +74,6 @@ public class OppfolgingFeedHandler implements FeedCallback {
         }
 
 
-        timer.start();
         MDC.put(MDC_KEY, generateId());
         log.info("OppfolgingerfeedDebug data: {}", data);
 
@@ -91,20 +85,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
                 }
                 oppdaterOppfolgingData(info);
 
-                CompletableFuture<Void> future = elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
-
-                future.thenRun(() -> {
-
-                    Duration timeElapsed = DateUtils.calculateTimeElapsed(info.getEndretTimestamp().toInstant());
-                    MetricsFactory
-                            .createEvent("portefolje.feed_time_elapsed_oppfolging")
-                            .addFieldToReport("time_elapsed", timeElapsed.toMillis())
-                            .report();
-
-                    timer.stop();
-                    timer.report();
-                });
-
+                elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
             });
 
             finnMaxFeedId(data).ifPresent(id -> {
@@ -156,7 +137,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
         return brukerRepository
                 .retrievePersonid(aktoerId)
                 .flatMap(brukerRepository::retrieveEnhet)
-                .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet))
+                .map(enhet -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet))
                 .peek(veilederePaaEnhet -> log.info("Veileder: {} Veileder på enhet: {}", veilederId, veilederePaaEnhet))
                 .map(veilederePaaEnhet -> veilederePaaEnhet.contains(veilederId))
                 .getOrElse(false);

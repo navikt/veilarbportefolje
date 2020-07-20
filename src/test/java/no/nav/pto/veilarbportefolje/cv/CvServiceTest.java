@@ -1,11 +1,12 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import io.vavr.control.Try;
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.json.JSONObject;
@@ -16,10 +17,11 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import static no.nav.common.utils.EnvironmentUtils.NAIS_NAMESPACE_PROPERTY_NAME;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.TABLE_NAME;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,10 +32,11 @@ public class CvServiceTest extends IntegrationTest {
     private CvService cvService;
     private String indexName;
 
-    private AktoerService aktoerServiceMock;
+    private AktorregisterClient aktorregisterClient;
 
     @BeforeClass
     public static void beforeClass() {
+        System.setProperty(NAIS_NAMESPACE_PROPERTY_NAME, "T");
         SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
         jdbcTemplate = new JdbcTemplate(ds);
         cvRepository = new CvRepository(jdbcTemplate);
@@ -42,8 +45,8 @@ public class CvServiceTest extends IntegrationTest {
     @Before
     public void setUp() {
         indexName = generateId();
-        aktoerServiceMock = mock(AktoerService.class);
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), aktoerServiceMock, cvRepository);
+        aktorregisterClient = mock(AktorregisterClient.class);
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT), aktorregisterClient, cvRepository, mock(MetricsClient.class));
         createIndex(indexName);
     }
 
@@ -57,7 +60,7 @@ public class CvServiceTest extends IntegrationTest {
     public void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {
         Fnr fnr = Fnr.of("00000000000");
 
-        when(aktoerServiceMock.hentFnrFraAktorId(any(AktoerId.class))).thenReturn(Try.of(() -> fnr));
+        when(aktorregisterClient.hentFnr(anyString())).thenReturn(fnr.getFnr());
 
         String document = new JSONObject()
                 .put("fnr", fnr.toString())

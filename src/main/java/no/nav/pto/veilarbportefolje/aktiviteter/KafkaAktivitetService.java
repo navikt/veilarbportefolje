@@ -13,19 +13,15 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 @Service
 public class KafkaAktivitetService implements KafkaConsumerService<String> {
     private final AktivitetService aktivitetService;
-    private final UnleashService unleashService;
 
     @Autowired
-    public KafkaAktivitetService (AktivitetService aktivitetService, UnleashService unleashService) {
+    public KafkaAktivitetService (AktivitetService aktivitetService) {
         this.aktivitetService = aktivitetService;
-        this.unleashService = unleashService;
     }
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if(!unleashService.isEnabled("portefolje.behandle.aktivitet.kafkamelding")) {
-            return;
-        }
+
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
 
         if(skallIkkeOppdatereAktivitet(aktivitetData)) {
@@ -33,6 +29,16 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
         }
 
         aktivitetService.oppdaterAktiviteter(aktivitetData);
+    }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
     }
 
     private boolean skallIkkeOppdatereAktivitet(KafkaAktivitetMelding aktivitetData) {

@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.feed.common;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import org.jetbrains.annotations.NotNull;
 
 @Data
 @Accessors(chain = true)

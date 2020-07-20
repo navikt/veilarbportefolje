@@ -38,7 +38,6 @@ import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
@@ -60,6 +59,7 @@ import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOpp
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticIndexer {
@@ -73,9 +73,8 @@ public class ElasticIndexer {
     private final UnleashService unleashService;
     private final MetricsClient metricsClient;
 
-    private CvService cvService;
+    private final CvService cvService;
 
-    @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
@@ -276,7 +275,7 @@ public class ElasticIndexer {
                         .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
                 try {
-                    BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+                    BulkByScrollResponse response = restHighLevelClient.deleteByQuery(deleteQuery, DEFAULT);
                     if (response.getDeleted() == 1) {
                         log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
                     }
@@ -303,7 +302,7 @@ public class ElasticIndexer {
                 .endObject()
         );
 
-        client.update(updateRequest, DEFAULT);
+        restHighLevelClient.update(updateRequest, DEFAULT);
     }
 
     public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {

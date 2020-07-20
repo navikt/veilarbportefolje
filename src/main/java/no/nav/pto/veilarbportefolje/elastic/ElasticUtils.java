@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.CountResponse;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
@@ -25,7 +26,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import static no.nav.common.utils.EnvironmentUtils.resolveHostName;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.*;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
 
 @Slf4j
 public class ElasticUtils {
@@ -117,7 +119,7 @@ public class ElasticUtils {
     }
 
     static String getAuthHeaderValue() {
-        String auth = vaultCredentials.username + ":" + vaultCredentials.password;
+        String auth = VEILARBELASTIC_USERNAME + ":" + VEILARBELASTIC_PASSWORD;
         return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 

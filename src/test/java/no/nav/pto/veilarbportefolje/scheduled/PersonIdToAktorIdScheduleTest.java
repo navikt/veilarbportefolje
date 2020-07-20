@@ -5,6 +5,7 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock;
 import no.nav.pto.veilarbportefolje.service.PersonIdService;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,10 +35,15 @@ public class PersonIdToAktorIdScheduleTest {
     public void setUp() {
 
         db = new JdbcTemplate(setupInMemoryDatabase());
-        aktorregisterClient = mock(AktorregisterClient.class);
+        aktorregisterClient = new AktorregisterClientMock();
+
         brukerRepository = new BrukerRepository(db, null);
         personIdService = new PersonIdService(brukerRepository, aktorregisterClient);
-        scheduler = new PersonIdToAktorIdSchedule(personIdService, db, mock(ElasticIndexer.class), mock(LeaderElectionClient.class));
+
+        LeaderElectionClient leaderElectionClient = mock(LeaderElectionClient.class);
+        scheduler = new PersonIdToAktorIdSchedule(personIdService, db, mock(ElasticIndexer.class), leaderElectionClient);
+
+        when(leaderElectionClient.isLeader()).thenReturn(true);
 
     }
 
@@ -49,11 +55,14 @@ public class PersonIdToAktorIdScheduleTest {
                 .value("OPPFOLGING", "J")
                 .execute();
 
+        insert(db, "OPPFOLGINGSBRUKER")
+                .value("FODSELSNR", FNR)
+                .value("PERSON_ID", PERSON_ID)
+                .execute();
+
         //assert no mappings exist
         assertThat(getMappedPersonidFromDb(AKTOER_ID).isFailure(), is(true));
 
-        when(aktorregisterClient.hentAktorId(AKTOER_ID)).thenReturn(FNR);
-        when(aktorregisterClient.hentFnr(FNR)).thenReturn((AKTOER_ID));
         scheduler.mapAktorId();
 
         Try<String> mappedPersonid = getMappedPersonidFromDb(AKTOER_ID);

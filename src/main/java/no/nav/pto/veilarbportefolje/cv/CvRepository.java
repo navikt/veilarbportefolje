@@ -4,7 +4,9 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 
@@ -12,10 +14,12 @@ import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.*;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
+@Repository
 public class CvRepository {
 
-    JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
+    @Autowired
     public CvRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }

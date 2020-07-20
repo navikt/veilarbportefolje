@@ -1,13 +1,11 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic;
-import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,6 +17,7 @@ import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -26,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 

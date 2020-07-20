@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
@@ -17,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 
 @Configuration
 public class KafkaConfig {
@@ -50,7 +50,7 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
                 Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC,
-                "veilarbportfolje.registrering");
+                FeatureToggle.KAFKA_REGISTRERING);
     }
 
     @Bean
@@ -60,7 +60,7 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
                 Topic.KAFKA_PROFILERING_CONSUMER_TOPIC,
-                "veilarbportfolje.profilering");
+                FeatureToggle.KAFKA_PROFILERING);
     }
 
     @Bean
@@ -70,7 +70,7 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                "portefolje.kafka.aktiviteter"
+                FeatureToggle.KAFKA_AKTIVITETER
         );
     }
 
@@ -81,7 +81,7 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                "veilarbportfolje-hent-data-fra-vedtakstotte"
+                FeatureToggle.KAFKA_VEDTAKSTOTTE
         );
     }
 
@@ -92,7 +92,7 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 Topic.OPPFOLGING_CONSUMER_TOPIC,
-                KAFKA_OPPFOLGING_TOGGLE
+                FeatureToggle.KAFKA_OPPFOLGING
         );
     }
 
@@ -103,7 +103,7 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-                "veilarbdialog.kafka"
+                FeatureToggle.KAFKA_VEILARBDIALOG
         );
     }
 
@@ -114,7 +114,7 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
                 KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
-                "veilarbportefolje.kafka.cv.killswitch"
+                FeatureToggle.KAFKA_CV
         );
     }
 
