@@ -42,6 +42,11 @@ public class ElasticConfig {
         return createClient(defaultConfig);
     }
 
+    @Bean
+    public ElasticServiceV2 elasticServiceV2 (RestHighLevelClient restHighLevelClient) {
+        return new ElasticServiceV2(restHighLevelClient, getAlias());
+    }
+
     public static HealthCheckResult checkHealth() {
         long antallDokumenter = ElasticUtils.getCount();
         if (antallDokumenter < FORVENTET_MINIMUM_ANTALL_DOKUMENTER) {

@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutionException;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.stream;
-import static no.nav.common.utils.EnvironmentUtils.NAIS_NAMESPACE_PROPERTY_NAME;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.TestUtil.createUnleashMock;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1;
@@ -30,10 +29,8 @@ public class CvKafkaConsumerTest extends IntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        System.setProperty(NAIS_NAMESPACE_PROPERTY_NAME, "T");
-
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT), mock(AktorregisterClient.class), mock(CvRepository.class), mock(MetricsClient.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktorregisterClient.class), mock(CvRepository.class), mock(MetricsClient.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,

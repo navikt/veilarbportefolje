@@ -43,7 +43,7 @@ public class OppfolgingServiceTest {
     public static void setUp() {
         veilarbVeilederClientMock = mock(VeilarbVeilederClient.class);
         navKontorServiceMock = mock(NavKontorService.class);
-        aktoerServiceMock = mock(AktorregisterClient.class);
+        aktoerServiceMock = new AktorregisterClientMock();
 
         OppfolgingRepository opppfolgingRepositoryMock = mock(OppfolgingRepository.class);
         ArbeidslisteService arbeidslisteMock = mock(ArbeidslisteService.class);
@@ -138,8 +138,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void eksisterende_veileder_skal_ikke_ha_tilgang_til_brukerens_enhet() {
-        when(aktoerServiceMock.hentFnr(anyString()))
-                .thenReturn("10101010101");
 
         when(navKontorServiceMock.hentEnhetForBruker(any(Fnr.class)))
                 .thenReturn(Result.ok("testEnhetId"));

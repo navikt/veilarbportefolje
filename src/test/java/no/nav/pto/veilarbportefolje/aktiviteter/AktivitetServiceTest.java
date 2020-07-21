@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -68,19 +67,13 @@ public class AktivitetServiceTest {
         when(aktivitetDAO.getDistinctAktoerIdsFromAktivitet()).thenReturn(aktoerids);
 
         when(aktivitetDAO.getAktiviteterForAktoerid(any(AktoerId.class))).thenAnswer(invocationOnMock -> {
-            List<String> aktorer = (ArrayList<String>) invocationOnMock.getArguments()[0];
-            return aktorer
-                    .stream()
-                    .map(aktoer -> {
-                        AktivitetDTO aktivitet = new AktivitetDTO()
-                                .setTilDato(Timestamp.from(Instant.now()))
-                                .setFraDato(Timestamp.from(Instant.now()))
-                                .setAktivitetType(aktivitettype)
-                                .setStatus(ikkeFullfortStatus);
-                        return new AktoerAktiviteter(aktoer).setAktiviteter(singletonList(aktivitet));
-                    })
-                    .collect(Collectors.toList());
-        });
+                    AktoerId aktoer = (AktoerId) invocationOnMock.getArguments()[0];
+                    return new AktoerAktiviteter(aktoer.toString()).setAktiviteter(singletonList(new AktivitetDTO()
+                            .setTilDato(Timestamp.from(Instant.now()))
+                            .setFraDato(Timestamp.from(Instant.now()))
+                            .setAktivitetType(aktivitettype)
+                            .setStatus(ikkeFullfortStatus)));
+                });
 
         when(personIdService
                 .hentPersonidFraAktoerid(any(AktoerId.class)))
@@ -88,7 +81,7 @@ public class AktivitetServiceTest {
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 
-        verify(persistentOppdatering, times((int) Math.ceil((float) antallPersoner / 1000))).lagreBrukeroppdateringerIDB(captor.capture());
+        verify(persistentOppdatering, times(antallPersoner)).lagreBrukeroppdateringerIDB(captor.capture());
 
         List<String> capturedAktoerids = captor.getAllValues()
                 .stream()

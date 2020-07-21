@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.cv;
 
-import io.vavr.control.Try;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
@@ -36,7 +35,6 @@ public class CvServiceTest extends IntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        System.setProperty(NAIS_NAMESPACE_PROPERTY_NAME, "T");
         SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
         jdbcTemplate = new JdbcTemplate(ds);
         cvRepository = new CvRepository(jdbcTemplate);
@@ -46,7 +44,7 @@ public class CvServiceTest extends IntegrationTest {
     public void setUp() {
         indexName = generateId();
         aktorregisterClient = mock(AktorregisterClient.class);
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT), aktorregisterClient, cvRepository, mock(MetricsClient.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), aktorregisterClient, cvRepository, mock(MetricsClient.class));
         createIndex(indexName);
     }
 
@@ -69,6 +67,8 @@ public class CvServiceTest extends IntegrationTest {
 
         IndexResponse indexResponse = createDocument(indexName, fnr, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
+
+        GetResponse getResponse1 = fetchDocument(indexName, fnr);
 
         String payload = new JSONObject()
                 .put("aktoerId", "00000000000")

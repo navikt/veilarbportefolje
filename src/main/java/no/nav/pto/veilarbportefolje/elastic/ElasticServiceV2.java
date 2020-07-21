@@ -7,25 +7,18 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
-@Service
 public class ElasticServiceV2 {
 
     private String alias;
     private RestHighLevelClient restHighLevelClient;
 
-    @Autowired
-    public ElasticServiceV2(RestHighLevelClient restHighLevelClient) {
+    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, String alias) {
         this.restHighLevelClient = restHighLevelClient;
-        this.alias = getAlias();
+        this.alias = alias;
     }
 
     @SneakyThrows

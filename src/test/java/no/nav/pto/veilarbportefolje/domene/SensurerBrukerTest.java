@@ -29,58 +29,57 @@ public class SensurerBrukerTest {
     @Test
     public void skalIkkeSeKode6Bruker() {
         when(pep.harVeilederTilgangTilKode6(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = authService.sensurerBrukere(kode6Bruker());
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere.get(0));
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(),"X123456");
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeKode7Bruker() {
         when(pep.harVeilederTilgangTilKode7(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = authService.sensurerBrukere(kode7Bruker());
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere.get(0));
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(),"X123456");
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeEgenAnsatt() {
         when(pep.harVeilederTilgangTilEgenAnsatt(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = authService.sensurerBrukere(egenAnsatt());
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere.get(0));
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(),"X123456");
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalSeKode6Bruker() {
         when(pep.harVeilederTilgangTilKode6(eq("X123456"))).thenReturn(true);
-        List<Bruker> filtrerteBrukere = authService.sensurerBrukere(kode6Bruker());
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnKode6");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvKode6");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(),"X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode6");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode6");
     }
 
     @Test
     public void skalSeKode7Bruker() {
         when(pep.harVeilederTilgangTilKode7(eq("X123456"))).thenReturn(true);
-        List<Bruker> filtrerteBrukere = authService.sensurerBrukere(kode7Bruker());
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnKode7");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvKode7");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), "X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode7");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode7");
     }
 
     @Test
     public void skalSeEgenAnsatt() {
         when(pep.harVeilederTilgangTilEgenAnsatt(eq("X123456"))).thenReturn(true);
-        List<Bruker> filtrerteBrukere = authService.sensurerBrukere(egenAnsatt());
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvEgenAnsatt");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), "X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvEgenAnsatt");
     }
 
     @Test
     public void skalSeIkkeKonfidensiellBruker() {
-        when(pep.harVeilederTilgangTilKode7(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = authService.sensurerBrukere(ikkeKonfidensiellBruker());
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnIkkeKonfidensiellBruker");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker(), "X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnIkkeKonfidensiellBruker");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
     }
 
 
@@ -90,43 +89,35 @@ public class SensurerBrukerTest {
         assertThat(bruker.getFornavn()).isEqualTo("");
     }
 
-    private List<Bruker> kode6Bruker() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker kode6Bruker() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode6")
                 .setFornavn("fornavnKode6")
-                .setDiskresjonskode("6"));
-        return brukere;
+                .setDiskresjonskode("6");
     }
 
-    private List<Bruker> kode7Bruker() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker kode7Bruker() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode7")
                 .setFornavn("fornavnKode7")
-                .setDiskresjonskode("7"));
-        return brukere;
+                .setDiskresjonskode("7");
     }
 
-    private List<Bruker> egenAnsatt() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker egenAnsatt() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvEgenAnsatt")
                 .setFornavn("fornavnKodeEgenAnsatt")
-                .setEgenAnsatt(true));
-        return brukere;
+                .setEgenAnsatt(true);
     }
 
-    private List<Bruker> ikkeKonfidensiellBruker() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker ikkeKonfidensiellBruker() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvIkkeKonfidensiellBruker")
-                .setFornavn("fornavnIkkeKonfidensiellBruker"));
-        return brukere;
+                .setFornavn("fornavnIkkeKonfidensiellBruker");
     }
 
 

@@ -78,7 +78,7 @@ public class ArbeidsListeController {
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
 
-        String innloggetVeileder = authService.getInnloggetVeilederIdent().getVeilederId();
+        String innloggetVeileder = AuthService.getInnloggetVeilederIdent().getVeilederId();
 
         Fnr fnr = new Fnr(fnrString);
         Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));

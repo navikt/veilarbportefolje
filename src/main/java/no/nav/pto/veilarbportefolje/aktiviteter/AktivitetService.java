@@ -40,7 +40,7 @@ public class AktivitetService {
     }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
-        utledOgLagreAlleAktivitetstatuser(); // TODO VARFÖR KALLAR MAN TVÅ GÅNGER PÅ DENNA FUNKTION??
+        utledOgLagreAlleAktivitetstatuser(); // TODO VARFÖR KALLAR MAN 2 GÅNGER PÅ DENNA FUNKTION??
         aktivitetDAO.slettAktivitetDatoer();
 
         run(this::utledOgLagreAlleAktivitetstatuser)
@@ -63,8 +63,8 @@ public class AktivitetService {
         aktoerider.forEach(aktoerId -> {
             AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktoerId.of(aktoerId));
             AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, personIdService);
-            persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(aktivitetBrukerOppdateringer));
-
+            Optional.ofNullable(aktivitetBrukerOppdateringer)
+                    .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(aktivitetBrukerOppdateringer)));
         });
 
     }

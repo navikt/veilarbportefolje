@@ -7,10 +7,11 @@ import no.nav.pto.veilarbportefolje.domene.*;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -38,8 +39,9 @@ public class AktivitetDAOTest {
 
     @Before
     public void init() {
-        jdbcTemplate = new JdbcTemplate(setupInMemoryDatabase());
-        aktivitetDAO = new AktivitetDAO(jdbcTemplate, null);
+        DataSource dataSource = setupInMemoryDatabase();
+        jdbcTemplate = new JdbcTemplate(dataSource);
+        aktivitetDAO = new AktivitetDAO(jdbcTemplate, new NamedParameterJdbcTemplate(dataSource));
 
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table brukerstatus_aktiviteter");

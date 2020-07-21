@@ -28,8 +28,7 @@ public class AuthService {
     }
 
     public void tilgangTilOppfolging() {
-        String veilederToken = getInnloggetBrukerToken();
-        AuthUtils.test("oppfølgingsbruker", getInnloggetVeilederIdent(), veilarbPep.harVeilederTilgangTilModia(veilederToken));
+        AuthUtils.test("oppfølgingsbruker", getInnloggetVeilederIdent(), veilarbPep.harVeilederTilgangTilModia(getInnloggetBrukerToken()));
     }
 
     @Cacheable(TILGANG_TIL_ENHET)
@@ -42,23 +41,25 @@ public class AuthService {
         return veilarbPep.harVeilederTilgangTilEnhet(veilederId, enhet);
     }
 
+    //TODO ER DETTA RIKTIGT ??
     public void tilgangTilBruker(String fnr) {
         AuthUtils.test("tilgangTilBruker", fnr, veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AbacPersonId.fnr(fnr)));
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
+        String veilederIdent = getInnloggetVeilederIdent().getVeilederId();
         return brukere.stream()
-                .map(this::fjernKonfidensiellInfoDersomIkkeTilgang)
+                .map(bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent))
                 .collect(toList());
     }
 
-    private Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker) {
+    public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker, String veilederIdent) {
         if(!bruker.erKonfidensiell()) {
             return bruker;
         }
 
         String diskresjonskode = bruker.getDiskresjonskode();
-        String veilederIdent = getInnloggetVeilederIdent().getVeilederId();
+
 
         if("6".equals(diskresjonskode) && !veilarbPep.harVeilederTilgangTilKode6(veilederIdent)) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);

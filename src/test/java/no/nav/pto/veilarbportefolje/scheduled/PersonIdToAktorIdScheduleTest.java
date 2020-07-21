@@ -35,6 +35,7 @@ public class PersonIdToAktorIdScheduleTest {
     public void setUp() {
 
         db = new JdbcTemplate(setupInMemoryDatabase());
+        db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         aktorregisterClient = new AktorregisterClientMock();
 
         brukerRepository = new BrukerRepository(db, null);
