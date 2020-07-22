@@ -2,11 +2,13 @@ package no.nav.pto.veilarbportefolje.controller;
 
 
 import no.nav.common.abac.Pep;
+import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.junit.Before;
@@ -15,7 +17,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Optional;
+
 
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static org.mockito.Mockito.*;
@@ -28,8 +32,6 @@ public class EnhetControllerTest {
     private EnhetController enhetController;
     private Pep pep;
 
-    @Rule
-   // public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token", new HashMap<>())));
     @Before
     public void initController() {
         elasticIndexer = mock(ElasticIndexer.class);
@@ -40,10 +42,11 @@ public class EnhetControllerTest {
 
     @Test
     public void skalHentPortefoljeFraIndeksDersomTilgang() throws Exception {
-        when(pep.harVeilederTilgangTilOppfolging(anyString())).thenReturn(true);
-
-        enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg());
-
+        when(pep.harVeilederTilgangTilModia(anyString())).thenReturn(true);
+        when(pep.harVeilederTilgangTilEnhet(anyString(), anyString())).thenReturn(true);
+        SubjectHandler.withSubject(
+                new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
+                () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg()));
         verify(elasticIndexer, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
