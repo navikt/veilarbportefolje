@@ -93,7 +93,7 @@ public class ElasticUtils {
     @SneakyThrows
     public static long getCount() {
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
-        OkHttpClient client =  no.nav.common.rest.client.RestClient.baseClient();
+        OkHttpClient client = no.nav.common.rest.client.RestClient.baseClient();
 
         Request request = new Request.Builder()
                 .url(url)

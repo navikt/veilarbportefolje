@@ -73,8 +73,8 @@ public class TiltakHandler {
         return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }
 
-    public HealthCheckResult sftpTiltakPing(Try<FileObject> hentTiltaksFil) {
-        FileObject ytelseFil = hentTiltaksFil.getOrElseThrow(() -> new RuntimeException());
+    public HealthCheckResult sftpTiltakPing() {
+        FileObject ytelseFil = hentTiltaksFil().getOrElseThrow(() -> new RuntimeException());
         Try<LoependeYtelser> ytelser = FilmottakFileUtils.unmarshallLoependeYtelserFil(ytelseFil);
         if (ytelser.isFailure()) {
             return innlesingAvFilFeilet(environmentProperties.getArenaPaagaaendeAktiviteterUrl());

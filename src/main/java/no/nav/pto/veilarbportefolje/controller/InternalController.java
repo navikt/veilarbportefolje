@@ -1,13 +1,19 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import no.nav.common.abac.Pep;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestUtils;
 import no.nav.common.health.selftest.SelftTestCheckResult;
 import no.nav.common.health.selftest.SelftestHtmlGenerator;
+import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.database.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
+import no.nav.pto.veilarbportefolje.kafka.KafkaHelsesjekk;
 import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +29,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
@@ -33,12 +41,30 @@ public class InternalController {
     private List<SelfTestCheck> selftestChecks;
 
     @Autowired
-    public InternalController(DigitalKontaktinformasjonV1 dkifV1, JdbcTemplate db) {
-        this.selftestChecks = Arrays.asList(
-                new SelfTestCheck(  String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, ElasticConfig::checkHealth),
+    public InternalController(
+            DigitalKontaktinformasjonV1 dkifV1,
+            JdbcTemplate db,
+            TiltakHandler tiltakHandler,
+            KopierGR199FraArena kopierGR199FraArena,
+            AktorregisterClient aktorregisterClient,
+            Pep veilarbPep
+    ) {
+        List<SelfTestCheck> diverseSelftTester = Arrays.asList(
+                new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, ElasticConfig::checkHealth),
                 new SelfTestCheck("Database for portefolje", true, () -> DatabaseConfig.dbPinger(db)),
-                new SelfTestCheck("Ping av DKIF_V1. Henter reservasjon fra KRR.", false, ()-> DigitalKontaktinformasjonConfig.dkifV1Ping(dkifV1))
+                new SelfTestCheck("Ping av DKIF_V1. Henter reservasjon fra KRR.", false, () -> DigitalKontaktinformasjonConfig.dkifV1Ping(dkifV1)),
+                new SelfTestCheck("Sjekker henting av fil over sftp", true, tiltakHandler::sftpTiltakPing),
+                new SelfTestCheck("Sjekker henting av fil over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing),
+                new SelfTestCheck("Aktorregister", true, aktorregisterClient),
+                new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient())
         );
+
+        List<SelfTestCheck> kafkaSelftTester = Arrays.stream(KafkaConfig.Topic.values())
+                .map(topic -> new SelfTestCheck("Sjekker at vi får kontakt med partisjonene for " + topic, false, new KafkaHelsesjekk(topic)))
+                .collect(Collectors.toList());
+
+        this.selftestChecks = Stream.concat(diverseSelftTester.stream(), kafkaSelftTester.stream())
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/isReady")
