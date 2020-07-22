@@ -13,7 +13,6 @@
     <groupId>no.nav.pto</groupId>
     <artifactId>veilarbportefolje</artifactId>
     <version>1</version>
-    <packaging>war</packaging>
 
     <properties>
         <java.version>11</java.version>
@@ -27,7 +26,6 @@
         <veilarbregistrering.skjema.version>1.202004301354-b728b07</veilarbregistrering.skjema.version>
         <flyway.version>6.5.0</flyway.version>
         <prometheus.version>0.4.0</prometheus.version>
-        <cxf.xjc.jvmArgs>--add-modules java.activation,java.xml.bind,java.xml.ws --add-exports=java.xml.bind/com.sun.xml.internal.bind.v2.runtime=ALL-UNNAMED --add-exports=jdk.xml.dom/org.w3c.dom.html=ALL-UNNAMED --add-exports=java.xml/com.sun.org.apache.xerces.internal.impl.xs=ALL-UNNAMED --add-exports=java.xml.bind/com.sun.xml.internal.bind.marshaller=ALL-UNNAMED --add-opens java.xml.ws/javax.xml.ws.wsaddressing=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED</cxf.xjc.jvmArgs>
     </properties>
 
     <build>
