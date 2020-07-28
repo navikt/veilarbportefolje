@@ -109,7 +109,7 @@ public class OppfolgingServiceTest {
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(anyString()))
-                .thenReturn(singletonList(VeilederId.of("testVeilederId")));
+                .thenReturn(singletonList("testVeilederId"));
 
         boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
         assertThat(result).isTrue();
@@ -143,7 +143,7 @@ public class OppfolgingServiceTest {
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(anyString()))
-                .thenReturn(Arrays.asList(VeilederId.of("1"), VeilederId.of("2"), VeilederId.of("3")));
+                .thenReturn(Arrays.asList("1", "2", "3"));
 
         boolean result = oppfolgingService.eksisterendeVeilederHarIkkeTilgangTilBrukerensEnhet(
                 TEST_ID,
@@ -161,7 +161,7 @@ public class OppfolgingServiceTest {
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(anyString()))
-                .thenReturn(Arrays.asList(VeilederId.of("1"), VeilederId.of("2"), VeilederId.of("3")));
+                .thenReturn(Arrays.asList("1", "2", "3"));
 
         boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
         assertThat(result).isFalse();
@@ -174,7 +174,7 @@ public class OppfolgingServiceTest {
                 .thenReturn(Result.ok("testEnhetId"));
 
         when(veilarbVeilederClientMock.hentVeilederePaaEnhet(anyString()))
-                .thenReturn(Arrays.asList(VeilederId.of("1"), VeilederId.of("2"), VeilederId.of("3"), TEST_VEILEDER_ID));
+                .thenReturn(Arrays.asList("1", "2", "3", "testVeilederId"));
 
         boolean result = oppfolgingService.veilederHarTilgangTilBrukerensEnhet(TEST_VEILEDER_ID, TEST_ID);
         assertThat(result).isTrue();

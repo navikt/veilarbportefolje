@@ -899,7 +899,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
     @NotNull
     private static VeilarbVeilederClient mockVeilederService() {
         VeilarbVeilederClient veilederServiceMock = mock(VeilarbVeilederClient.class);
-        when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
+        when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf((TEST_VEILEDER_0)));
         return veilederServiceMock;
     }
 

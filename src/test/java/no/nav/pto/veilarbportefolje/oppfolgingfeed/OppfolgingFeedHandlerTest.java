@@ -174,7 +174,7 @@ public class OppfolgingFeedHandlerTest {
     private void givenBrukerHarVeilderFraAnnenEnhet() {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
         when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
-        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(Collections.singletonList(VeilederId.of("whatever")));
+        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(Collections.singletonList("whatever"));
 
     }
 
@@ -182,7 +182,7 @@ public class OppfolgingFeedHandlerTest {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
         when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
         when(veilarbVeilederClient.hentVeilederePaaEnhet(any()))
-                .thenReturn(Collections.singletonList(VeilederId.of(eksisterendeInformasjon.getVeileder())));
+                .thenReturn(Collections.singletonList((eksisterendeInformasjon.getVeileder())));
 
     }
 
