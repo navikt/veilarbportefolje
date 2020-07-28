@@ -13,12 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
 
 @RestController
 @RequestMapping("/api/enhet")

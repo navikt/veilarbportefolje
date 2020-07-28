@@ -5,20 +5,17 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.feed.common.*;
-import okhttp3.HttpUrl;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
-import javax.ws.rs.client.Entity;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.feed.consumer.FeedPoller.createScheduledJob;
 import static no.nav.pto.veilarbportefolje.feed.util.UrlUtils.*;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -56,12 +53,14 @@ public class FeedConsumer implements Authorization, ApplicationListener<ContextC
     @SneakyThrows
     void registerWebhook() {
         String callbackUrl = callbackUrl(this.config.webhookPollingConfig.apiRootPath, this.config.feedName);
-        FeedWebhookRequest body = new FeedWebhookRequest().setCallbackUrl(callbackUrl);
 
-        Entity<FeedWebhookRequest> entity = Entity.entity(body, APPLICATION_JSON_TYPE);
+        FeedWebhookRequest body = new FeedWebhookRequest().setCallbackUrl(callbackUrl);
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody requestBody = RequestBody.create(JSON, toJson(body));
 
         Request request = new Request.Builder()
                 .url(asUrl(this.config.host, "feed", this.config.feedName, "webhook"))
+                .put(requestBody)
                 .build();
 
         try (Response response = this.config.client.newCall(request).execute()) {

@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.*;
@@ -99,7 +100,7 @@ public class ArbeidsListeController {
     }
 
     @PostMapping("{fnr}/")
-    public Response opprettArbeidsListe(ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
+    public Arbeidsliste opprettArbeidsListe(ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
@@ -111,7 +112,9 @@ public class ArbeidsListeController {
         Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
-        return Response.status(CREATED).entity(arbeidsliste).build();
+
+
+        return arbeidsliste;
     }
 
     @PutMapping("{fnr}/")

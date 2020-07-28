@@ -11,7 +11,10 @@ import org.springframework.cache.annotation.Cacheable;
 import java.util.List;
 import static java.lang.String.format;
 import static no.nav.common.utils.EnvironmentUtils.requireNamespace;
+import static no.nav.pto.veilarbportefolje.client.RestClientUtils.authHeaderMedInnloggetBruker;
+import static no.nav.pto.veilarbportefolje.client.RestClientUtils.createBearerToken;
 import static no.nav.pto.veilarbportefolje.config.CacheConfig.VEILARBVEILEDER;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 public class VeilarbVeilederClient {
@@ -31,6 +34,7 @@ public class VeilarbVeilederClient {
 
         Request request  = new Request.Builder()
                 .url(url + path)
+                .header(AUTHORIZATION,  createBearerToken(authHeaderMedInnloggetBruker()))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
