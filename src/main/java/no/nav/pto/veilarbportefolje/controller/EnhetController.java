@@ -48,7 +48,7 @@ public class EnhetController {
             @RequestParam("antall") Integer antall,
             @RequestParam("sortDirection") String sortDirection,
             @RequestParam("sortField") String sortField,
-            Filtervalg filtervalg) {
+            @RequestBody Filtervalg filtervalg) {
 
         ValideringsRegler.sjekkEnhet(enhet);
         ValideringsRegler.sjekkSortering(sortDirection, sortField);

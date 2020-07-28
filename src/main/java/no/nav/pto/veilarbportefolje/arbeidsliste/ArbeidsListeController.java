@@ -54,7 +54,7 @@ public class ArbeidsListeController {
 
 
     @PostMapping
-    public Response opprettArbeidsListe(List<ArbeidslisteRequest> arbeidsliste) {
+    public Response opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
         authService.tilgangTilOppfolging();
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
         if (tilgangErrors.size() > 0) {
@@ -100,7 +100,7 @@ public class ArbeidsListeController {
     }
 
     @PostMapping("{fnr}/")
-    public Arbeidsliste opprettArbeidsListe(ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
+    public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
@@ -118,7 +118,7 @@ public class ArbeidsListeController {
     }
 
     @PutMapping("{fnr}/")
-    public Arbeidsliste oppdaterArbeidsListe(ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
+    public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
         Fnr fnr = new Fnr(fnrString);
         sjekkTilgangTilEnhet(fnr);
@@ -149,7 +149,7 @@ public class ArbeidsListeController {
     }
 
     @PostMapping("/delete")
-    public Response deleteArbeidslisteListe(java.util.List<ArbeidslisteRequest> arbeidslisteData) {
+    public Response deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         return createResponse(() -> {
             authService.tilgangTilOppfolging();
 

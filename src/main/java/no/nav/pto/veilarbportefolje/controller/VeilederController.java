@@ -48,7 +48,7 @@ public class VeilederController {
             @RequestParam("antall") Integer antall,
             @RequestParam("sortDirection") String sortDirection,
             @RequestParam("sortField") String sortField,
-            Filtervalg filtervalg) {
+            @RequestBody Filtervalg filtervalg) {
 
 
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
