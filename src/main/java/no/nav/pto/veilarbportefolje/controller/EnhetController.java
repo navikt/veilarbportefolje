@@ -44,7 +44,7 @@ public class EnhetController {
 
 
     @PostMapping("/{enhet}/portefolje")
-    public Response hentPortefoljeForEnhet(
+    public Portefolje hentPortefoljeForEnhet(
             @PathVariable("enhet") String enhet,
             @RequestParam("fra") Integer fra,
             @RequestParam("antall") Integer antall,
@@ -52,61 +52,54 @@ public class EnhetController {
             @RequestParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
-        return createResponse(() -> {
-            ValideringsRegler.sjekkEnhet(enhet);
-            ValideringsRegler.sjekkSortering(sortDirection, sortField);
-            ValideringsRegler.sjekkFiltervalg(filtervalg);
-            authService.tilgangTilOppfolging();
-            authService.tilgangTilEnhet(enhet);
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkSortering(sortDirection, sortField);
+        ValideringsRegler.sjekkFiltervalg(filtervalg);
+        authService.tilgangTilOppfolging();
+        authService.tilgangTilEnhet(enhet);
 
-            String ident = authService.getInnloggetVeilederIdent().getVeilederId();
-            String identHash = DigestUtils.md5Hex(ident).toUpperCase();
+        String ident = AuthService.getInnloggetVeilederIdent().getVeilederId();
+        String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-            BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
+        BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
-            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
-                    sensurerteBrukereSublist,
-                    enhet,
-                    Optional.ofNullable(fra).orElse(0));
+        Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
+                sensurerteBrukereSublist,
+                enhet,
+                Optional.ofNullable(fra).orElse(0));
 
-            Event event = new Event("enhetsportefolje.lastet");
-            event.addFieldToReport("identhash", identHash);
-            metricsClient.report(event);
+        Event event = new Event("enhetsportefolje.lastet");
+        event.addFieldToReport("identhash", identHash);
+        metricsClient.report(event);
 
-            return portefolje;
-        });
+        return portefolje;
     }
 
 
     @GetMapping("/{enhet}/portefoljestorrelser")
-    public Response hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
-        return createResponse(() -> {
-            ValideringsRegler.sjekkEnhet(enhet);
-            authService.tilgangTilEnhet(enhet);
+    public FacetResults hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        authService.tilgangTilEnhet(enhet);
 
-            return elasticIndexer.hentPortefoljestorrelser(enhet);
-        });
+        return elasticIndexer.hentPortefoljestorrelser(enhet);
     }
 
     @GetMapping("/{enhet}/statustall")
-    public Response hentStatusTall(@PathVariable("enhet") String enhet) {
-        return createResponse(() -> {
-            ValideringsRegler.sjekkEnhet(enhet);
-            authService.tilgangTilEnhet(enhet);
+    public StatusTall hentStatusTall(@PathVariable("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        authService.tilgangTilEnhet(enhet);
 
-            return elasticIndexer.hentStatusTallForPortefolje(enhet);
-        });
+        return elasticIndexer.hentStatusTallForPortefolje(enhet);
+
     }
 
     @GetMapping("/{enhet}/tiltak")
-    public Response hentTiltak(@PathVariable("enhet") String enhet) {
-        return createResponse(() -> {
-            ValideringsRegler.sjekkEnhet(enhet);
-            authService.tilgangTilEnhet(enhet);
+    public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        authService.tilgangTilEnhet(enhet);
 
-            return tiltakService.hentEnhettiltak(enhet)
-                    .getOrElse(new EnhetTiltak());
-        });
+        return tiltakService.hentEnhettiltak(enhet)
+                .getOrElse(new EnhetTiltak());
     }
 }

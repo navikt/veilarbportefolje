@@ -41,7 +41,7 @@ public class VeilederController {
     }
 
     @PostMapping("/{veilederident}/portefolje")
-    public Response hentPortefoljeForVeileder(
+    public Portefolje hentPortefoljeForVeileder(
             @PathVariable("veilederident") String veilederIdent,
             @RequestParam("enhet") String enhet,
             @RequestParam("fra") Integer fra,
@@ -50,57 +50,52 @@ public class VeilederController {
             @RequestParam("sortField") String sortField,
             Filtervalg filtervalg) {
 
-        return createResponse(() -> {
-            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-            ValideringsRegler.sjekkEnhet(enhet);
-            ValideringsRegler.sjekkSortering(sortDirection, sortField);
-            ValideringsRegler.sjekkFiltervalg(filtervalg);
-            authService.tilgangTilOppfolging();
-            authService.tilgangTilEnhet(enhet);
 
-            String ident = authService.getInnloggetVeilederIdent().getVeilederId();
-            String identHash = DigestUtils.md5Hex(ident).toUpperCase();
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkSortering(sortDirection, sortField);
+        ValideringsRegler.sjekkFiltervalg(filtervalg);
+        authService.tilgangTilOppfolging();
+        authService.tilgangTilEnhet(enhet);
 
-            BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
-            List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
+        String ident = authService.getInnloggetVeilederIdent().getVeilederId();
+        String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-            Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
-                    sensurerteBrukereSublist,
-                    enhet,
-                    Optional.ofNullable(fra).orElse(0));
+        BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
+        List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
-            Event event = new Event("minoversiktportefolje.lastet");
-            event.addFieldToReport("identhash", identHash);
-            metricsClient.report(event);
+        Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
+                sensurerteBrukereSublist,
+                enhet,
+                Optional.ofNullable(fra).orElse(0));
 
-            return portefolje;
-        });
+        Event event = new Event("minoversiktportefolje.lastet");
+        event.addFieldToReport("identhash", identHash);
+        metricsClient.report(event);
+
+        return portefolje;
     }
 
     @GetMapping("/{veilederident}/statustall")
-    public Response hentStatusTall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
-        return createResponse(() -> {
-            Event event = new Event("minoversiktportefolje.statustall.lastet");
-            metricsClient.report(event);
-            ValideringsRegler.sjekkEnhet(enhet);
-            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-            authService.tilgangTilEnhet(enhet);
+    public StatusTall hentStatusTall(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
+        Event event = new Event("minoversiktportefolje.statustall.lastet");
+        metricsClient.report(event);
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+        authService.tilgangTilEnhet(enhet);
 
-            return elasticIndexer.hentStatusTallForVeileder(enhet, veilederIdent);
-        });
+        return elasticIndexer.hentStatusTallForVeileder(enhet, veilederIdent);
     }
 
     @GetMapping("/{veilederident}/arbeidsliste")
-    public Response hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
-        return createResponse(() -> {
-            Event event = new Event("minoversiktportefolje.arbeidsliste.lastet");
-            metricsClient.report(event);
-            ValideringsRegler.sjekkEnhet(enhet);
-            ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
-            authService.tilgangTilEnhet(enhet);
+    public List<Bruker>  hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
+        Event event = new Event("minoversiktportefolje.arbeidsliste.lastet");
+        metricsClient.report(event);
+        ValideringsRegler.sjekkEnhet(enhet);
+        ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
+        authService.tilgangTilEnhet(enhet);
 
-            return elasticIndexer.hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet);
-        });
+        return elasticIndexer.hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet);
     }
 
 }

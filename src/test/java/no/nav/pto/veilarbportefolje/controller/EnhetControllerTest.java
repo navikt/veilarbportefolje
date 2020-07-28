@@ -7,6 +7,7 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.junit.Before;
@@ -37,9 +38,11 @@ public class EnhetControllerTest {
     }
 
     @Test
-    public void skalHentPortefoljeFraIndeksDersomTilgang() throws Exception {
+    public void skal_hent_portefolje_fra_indeks_dersom_tilgang() {
         when(pep.harVeilederTilgangTilModia(anyString())).thenReturn(true);
         when(pep.harVeilederTilgangTilEnhet(anyString(), anyString())).thenReturn(true);
+        when(elasticIndexer.hentBrukere(any(), any(), any(), any() , any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+
         SubjectHandler.withSubject(
                 new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg()));
@@ -47,9 +50,11 @@ public class EnhetControllerTest {
     }
 
     @Test
-    public void skalHenteHelePortefoljeFraIndeksDersomManMangleAntall() throws Exception {
+    public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_antall() {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(true);
+        when(elasticIndexer.hentBrukere(any(), any(), any(), any() , any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+
         SubjectHandler.withSubject(
                 new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg()));
@@ -57,9 +62,11 @@ public class EnhetControllerTest {
     }
 
     @Test
-    public void skalHenteHelePortefoljeFraIndeksDersomManMangleFra() throws Exception {
+    public void skal_hente_hele_portefolje_fra_indeks_dersom_man_mangle_fra() {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(true);
+        when(elasticIndexer.hentBrukere(any(), any(), any(), any() , any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
+
         SubjectHandler.withSubject(
                 new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
                 () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg()));
