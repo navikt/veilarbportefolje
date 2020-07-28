@@ -62,9 +62,7 @@ public class ElasticService {
             boolQuery.filter(termQuery("veileder_id", veilederIdent.get()));
         }
 
-        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId).stream()
-                .map(VeilederId::getVeilederId)
-                .collect(toList());
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
         if (filtervalg.harAktiveFilter()) {
             boolean erVedtakstottePilotPa = erVedtakstottePilotPa();
@@ -125,9 +123,7 @@ public class ElasticService {
     }
 
     public StatusTall hentStatusTallForEnhet(String enhetId, String indexAlias) {
-        List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId).stream()
-                .map(VeilederId::toString)
-                .collect(toList());
+        List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
 

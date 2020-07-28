@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -132,7 +131,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
     }
 
     public boolean veilederHarTilgangTilEnhet(AktoerId aktoerId, BrukerOppdatertInformasjon oppfolgingData) {
-        VeilederId veilederId = VeilederId.of(oppfolgingData.getVeileder());
+        String veilederId = oppfolgingData.getVeileder();
         return brukerRepository
                 .retrievePersonid(aktoerId)
                 .flatMap(brukerRepository::retrieveEnhet)

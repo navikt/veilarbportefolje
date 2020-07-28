@@ -30,7 +30,7 @@ public class VeilarbVeilederClient {
 
     @Cacheable(VEILARBVEILEDER)
     @SneakyThrows
-    public List<VeilederId> hentVeilederePaaEnhet(String enhet) {
+    public List<String> hentVeilederePaaEnhet(String enhet) {
         String path = format("/api/enhet/%s/identer", enhet);
 
         String ssoToken = SubjectHandler.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
@@ -42,7 +42,7 @@ public class VeilarbVeilederClient {
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponseArrayOrThrow(response, VeilederId.class);
+            return RestUtils.parseJsonResponseArrayOrThrow(response, String.class);
         }
     }
 }
