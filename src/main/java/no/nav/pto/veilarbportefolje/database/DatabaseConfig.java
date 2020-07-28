@@ -53,9 +53,14 @@ public class DatabaseConfig {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
-    @Bean(name = "transactionManager")
+    @Bean
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean
+    public Transactor transactor(PlatformTransactionManager transactionManager) {
+        return new Transactor(transactionManager);
     }
 
     public static HealthCheckResult dbPinger(final JdbcTemplate db) {

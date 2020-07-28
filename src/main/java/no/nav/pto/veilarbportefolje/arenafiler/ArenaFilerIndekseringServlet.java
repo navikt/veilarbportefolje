@@ -1,10 +1,12 @@
-package no.nav.pto.veilarbportefolje.internal;
+package no.nav.pto.veilarbportefolje.arenafiler;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.util.AuthorizationUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,18 +30,20 @@ public class ArenaFilerIndekseringServlet extends HttpServlet {
     private final TiltakHandler tiltakHandler;
 
     private final KopierGR199FraArena kopierGR199FraArena;
+    private Credentials serviceUserCredentials;
 
     @Autowired
-    public ArenaFilerIndekseringServlet(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena) {
+    public ArenaFilerIndekseringServlet(ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, Credentials serviceUserCredentials) {
         this.elasticIndexer = elasticIndexer;
         this.tiltakHandler = tiltakHandler;
         this.kopierGR199FraArena = kopierGR199FraArena;
+        this.serviceUserCredentials = serviceUserCredentials;
     }
 
     @Override
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-        if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
+        if (AuthorizationUtils.isBasicAuthAuthorized(req, serviceUserCredentials)) {
             RunningJob runningJob = runAsyncJob(
                     () -> {
                         try {

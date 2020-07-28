@@ -1,9 +1,11 @@
-package no.nav.pto.veilarbportefolje.internal;
+package no.nav.pto.veilarbportefolje.krr;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.krr.KrrService;
+import no.nav.common.utils.Credentials;
+import no.nav.pto.veilarbportefolje.util.AuthorizationUtils;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,14 +24,17 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 public class PopulerKrrServlet extends HttpServlet {
 
     private KrrService krrService;
+    private Credentials serviceUserCredentials;
 
-    public PopulerKrrServlet(KrrService krrService) {
+    @Autowired
+    public PopulerKrrServlet(KrrService krrService, Credentials serviceUserCredentials) {
+        this.serviceUserCredentials = serviceUserCredentials;
         this.krrService = krrService;
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (AuthorizationUtils.isBasicAuthAuthorized(req)) {
+        if (AuthorizationUtils.isBasicAuthAuthorized(req, serviceUserCredentials)) {
 
             RunningJob runningJob = JobUtils.runAsyncJob(krrService::hentDigitalKontaktInformasjonBolk);
             resp.getWriter().write(String.format("Startet oppdatering av reservesjonsdata fra krr (via dkif) med jobId %s på pod %s", runningJob.getJobId(), runningJob.getPodName()));

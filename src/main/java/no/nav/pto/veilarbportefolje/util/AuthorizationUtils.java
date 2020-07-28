@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.internal;
+package no.nav.pto.veilarbportefolje.util;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Credentials;
@@ -20,8 +20,7 @@ public class AuthorizationUtils {
     static final String AUTHORIZATION = "Authorization";
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
-    public static boolean isBasicAuthAuthorized(HttpServletRequest request) {
-        Credentials srvBrukere = getCredentials("service_user");
+    public static boolean isBasicAuthAuthorized(HttpServletRequest request, Credentials srvBrukere) {
         String auth = request.getHeader(AUTHORIZATION);
         if (Objects.isNull(auth) || !auth.toLowerCase().startsWith("basic ")) {
             return false;

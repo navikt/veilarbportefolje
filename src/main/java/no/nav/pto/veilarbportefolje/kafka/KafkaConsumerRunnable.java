@@ -16,7 +16,6 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
-import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

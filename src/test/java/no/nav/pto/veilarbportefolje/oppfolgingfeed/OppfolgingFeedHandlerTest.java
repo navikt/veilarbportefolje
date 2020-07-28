@@ -2,9 +2,10 @@ package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
-import no.nav.pto.veilarbportefolje.UnleashServiceMock;
+import no.nav.pto.veilarbportefolje.mock.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
@@ -12,7 +13,6 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Metrics;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;

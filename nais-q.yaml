@@ -39,7 +39,7 @@ spec:
     timeout: 10
   prometheus:
     enabled: true
-    path: veilarbportefolje/internal/metrics
+    path: veilarbportefolje/internal/prometheus
   resources:
     limits:
       cpu: "4"

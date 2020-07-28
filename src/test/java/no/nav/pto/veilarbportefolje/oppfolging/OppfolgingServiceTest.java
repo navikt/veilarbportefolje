@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.val;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.UnleashServiceMock;
+import no.nav.pto.veilarbportefolje.mock.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;

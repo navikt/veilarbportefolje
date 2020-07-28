@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
 import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
@@ -15,7 +15,6 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.sbl.jdbc.Transactor;
 import org.slf4j.MDC;
 
 import java.math.BigDecimal;

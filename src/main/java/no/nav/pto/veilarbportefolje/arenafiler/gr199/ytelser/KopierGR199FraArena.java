@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser;
 
 import io.micrometer.core.instrument.Gauge;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.core.instrument.Metrics;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import org.apache.commons.vfs2.FileObject;
 
 import java.time.Instant;

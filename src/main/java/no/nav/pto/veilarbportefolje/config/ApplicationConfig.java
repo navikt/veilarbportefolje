@@ -29,13 +29,8 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarbportefolje";
-    public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
-    public static final String DIGITAL_KONTAKINFORMASJON_V1_URL_PROPERTY = "VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL";
-    public static final String VIRKSOMHET_ENHET_V1_URL_PROPERTY = "VIRKSOMHET_ENHET_V1_ENDPOINTURL";
     public static final String VEILARBOPPFOLGING_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
-    public static final String VEILARBAKTIVITET_URL_PROPERTY = "VEILARBAKTIVITETAPI_URL";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
-    public static final String SKIP_DB_MIGRATION_PROPERTY = "SKIP_DB_MIGRATION";
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
     public static final String SECURITYTOKENSERVICE_URL_PROPERTY_NAME = "SECURITYTOKENSERVICE_URL";
@@ -64,8 +59,14 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties) {
+    public Credentials serviceUserCredentials() {
         Credentials serviceUserCredentials = getCredentials("service_user");
+        return serviceUserCredentials;
+    }
+
+
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
         return new NaisSystemUserTokenProvider(properties.getStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
     }
 

@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje;
+package no.nav.pto.veilarbportefolje.mock;
 
 import no.finn.unleash.strategy.Strategy;
 import no.nav.common.featuretoggle.UnleashService;
@@ -12,10 +12,10 @@ public class UnleashServiceMock extends UnleashService {
 
     public UnleashServiceMock(boolean isEnabled) {
         super(UnleashServiceConfig.builder()
-                .unleashApiUrl("http://test")
-                .applicationName("test")
-                .build(),
-                new Strategy() {
+                        .unleashApiUrl("http://test")
+                        .applicationName("test")
+                        .build(),
+        new Strategy() {
             @Override
             public String getName() {
                 return null;
