@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.database.DatabaseConfig;
+import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.cv.CvService;

@@ -1,28 +1,52 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import lombok.SneakyThrows;
-import org.flywaydb.core.api.Location;
-import org.flywaydb.core.api.ResourceProvider;
-import org.flywaydb.core.api.configuration.Configuration;
-import org.flywaydb.core.api.resolver.Context;
-import org.flywaydb.core.api.resolver.MigrationResolver;
+import org.flywaydb.core.api.resolver.BaseMigrationResolver;
 import org.flywaydb.core.api.resolver.ResolvedMigration;
-import org.flywaydb.core.internal.parser.ParsingContext;
+import org.flywaydb.core.internal.dbsupport.DbSupport;
+import org.flywaydb.core.internal.dbsupport.DbSupportFactory;
 import org.flywaydb.core.internal.resolver.ResolvedMigrationComparator;
 import org.flywaydb.core.internal.resolver.sql.SqlMigrationResolver;
-import org.flywaydb.core.internal.resource.LoadableResource;
-import org.flywaydb.core.internal.sqlscript.SqlScriptExecutorFactory;
-import org.flywaydb.core.internal.sqlscript.SqlScriptFactory;
+import org.flywaydb.core.internal.util.Location;
+import org.flywaydb.core.internal.util.PlaceholderReplacer;
+import org.flywaydb.core.internal.util.scanner.Scanner;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-public class MergeMigrationResolver implements MigrationResolver {
+public class MergeMigrationResolver extends BaseMigrationResolver {
+    private DbSupport dbSupport;
+    private Scanner scanner;
+    private PlaceholderReplacer placeholderReplacer;
     private ResolvedMigrationComparator comparator = new ResolvedMigrationComparator();
+
     private String[] mergeLocations = new String[]{"testmigration", "db/migration"};
 
 
+    @SneakyThrows
+    public void init() {
+        scanner = new Scanner(Thread.currentThread().getContextClassLoader());
+        placeholderReplacer = new PlaceholderReplacer(flywayConfiguration.getPlaceholders(),
+                flywayConfiguration.getPlaceholderPrefix(),
+                flywayConfiguration.getPlaceholderSuffix());
+        dbSupport = DbSupportFactory.createDbSupport(flywayConfiguration.getDataSource().getConnection(), false);
+    }
+
+    @Override
+    public List<ResolvedMigration> resolveMigrations() {
+        init();
+
+        List<ResolvedMigration> migrations = new ArrayList<>();
+
+        for (String locationStr : mergeLocations) {
+            Location location = new Location(locationStr);
+            SqlMigrationResolver res = new SqlMigrationResolver(dbSupport, scanner, location, placeholderReplacer,
+                    "UTF-8", "V", "R", "__", ".sql");
+            migrations.addAll(res.resolveMigrations());
+        }
+
+        return mergeDuplicateMigrations(migrations);
+    }
 
     private List<ResolvedMigration> mergeDuplicateMigrations(List<ResolvedMigration> migrations){
         List<ResolvedMigration> newMigrationsList = new ArrayList<>();
@@ -46,21 +70,4 @@ public class MergeMigrationResolver implements MigrationResolver {
     }
 
 
-    public Collection<ResolvedMigration> resolveMigrations(Context context) {
-        List<ResolvedMigration> migrations = new ArrayList<>();
-        /*
-        for (String locationStr : mergeLocations) {
-            Location location = new Location(locationStr);
-            SqlMigrationResolver res = new SqlMigrationResolver(
-                    context.getConfiguration().getResourceProvider(),
-                    context.getConfiguration()
-           /*SqlMigrationResolver res = new SqlMigrationResolver(dbSupport, scanner, location, placeholderReplacer,
-                    "UTF-8", "V", "R", "__", ".sql");
-            migrations.addAll(res.resolveMigrations());
-            }
-         */
-
-
-        return mergeDuplicateMigrations(migrations);
-    }
 }

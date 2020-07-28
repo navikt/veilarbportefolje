@@ -1,10 +1,11 @@
-package no.nav.pto.veilarbportefolje.database;
+package no.nav.pto.veilarbportefolje.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.database.Transactor;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,12 +75,8 @@ public class DatabaseConfig {
 
 
     private static void migrateDb(DataSource dataSource) {
-        Flyway flyway = Flyway
-                .configure()
-                .dataSource(dataSource)
-                .load();
-
+        Flyway flyway = new Flyway();
+        flyway.setDataSource(dataSource);
         flyway.migrate();
     }
-
 }
