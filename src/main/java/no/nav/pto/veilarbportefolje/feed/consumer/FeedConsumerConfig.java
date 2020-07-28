@@ -29,7 +29,6 @@ public class FeedConsumerConfig {
     public OkHttpClient client;
 
     FeedCallback callback;
-    List<Interceptor> interceptors = new ArrayList<>();
     FeedAuthorizationModule authorizationModule = (feedname) -> true;
     int pageSize;
 
@@ -54,11 +53,6 @@ public class FeedConsumerConfig {
 
     public FeedConsumerConfig authorizatioModule(FeedAuthorizationModule authorizationModule) {
         this.authorizationModule = authorizationModule;
-        return this;
-    }
-
-    public FeedConsumerConfig  interceptors(List<Interceptor> interceptors) {
-        this.interceptors = interceptors;
         return this;
     }
 

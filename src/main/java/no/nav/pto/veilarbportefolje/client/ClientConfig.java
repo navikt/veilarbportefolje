@@ -8,31 +8,18 @@ import no.nav.common.client.aktorregister.AktorregisterHttpClient;
 import no.nav.common.client.aktorregister.CachedAktorregisterClient;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.ws.rs.client.ClientRequestContext;
-import java.io.IOException;
-
-import static no.nav.common.utils.EnvironmentUtils.requireNamespace;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 
 
 @Configuration
 public class ClientConfig {
-
-    @Bean
-    public OkHttpClient client(SystemUserTokenProvider systemUserTokenProvider) {
-       return RestClient.baseClientBuilder()
-                .addInterceptor(new OidcInterceptor(systemUserTokenProvider))
-                .build();
-    }
 
     @Bean
     public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider tokenProvider) {
@@ -48,8 +35,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public VeilarbVeilederClient veilarbVeilederClient(OkHttpClient client) {
-        return new VeilarbVeilederClient(client);
+    public VeilarbVeilederClient veilarbVeilederClient() {
+        return new VeilarbVeilederClient();
     }
 
     @Bean

@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.client.OidcInterceptor;
@@ -49,7 +50,6 @@ public class OppfolgingerfeedConfig {
     public FeedConsumer brukerOppdatertInformasjonFeedConsumer(
             JdbcTemplate db,
             SystemUserTokenProvider systemUserTokenProvider,
-            OkHttpClient client,
             FeedCallback callback) {
         BaseConfig<BrukerOppdatertInformasjon> baseConfig = new BaseConfig<>(
                 BrukerOppdatertInformasjon.class,
@@ -60,11 +60,12 @@ public class OppfolgingerfeedConfig {
 
         SimpleWebhookPollingConfig webhookPollingConfig = new SimpleWebhookPollingConfig(10, FEED_API_ROOT);
 
+        OkHttpClient client = RestClient.baseClientBuilder().addInterceptor(new OidcInterceptor(systemUserTokenProvider)).build();
+
         FeedConsumerConfig config = new FeedConsumerConfig(baseConfig, new SimplePollingConfig(FEED_POLLING_INTERVAL_IN_SECONDS), webhookPollingConfig)
                 .callback(callback)
                 .pageSize(FEED_PAGE_SIZE)
                 .lockProvider(lockProvider, 10000)
-                .interceptors(singletonList(new OidcInterceptor(systemUserTokenProvider)))
                 .restClient(client)
                 .authorizatioModule(new OidcFeedAuthorizationModule());
         return new FeedConsumer(config);
