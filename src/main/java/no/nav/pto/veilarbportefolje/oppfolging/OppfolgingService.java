@@ -128,13 +128,13 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                 metricsClient
         );
 
-        List<VeilederId> veilederePaaEnhet = MetricsUtils.timed(
+        List<String> veilederePaaEnhet = MetricsUtils.timed(
                 "portefolje.oppfolging.hentVeileder",
                 () -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet),
                 metricsClient
         );
 
-        return veilederePaaEnhet.contains(veilederId);
+        return veilederePaaEnhet.contains(veilederId.getVeilederId());
     }
 
     Optional<VeilederId> hentEksisterendeVeileder(AktoerId aktoerId) {
