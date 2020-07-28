@@ -28,7 +28,7 @@ import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStatus.fromJson;
 public class OppfolgingService implements KafkaConsumerService<String> {
 
     private final OppfolgingRepository oppfolgingRepository;
-    private final ElasticIndexer elastic;
+    private final ElasticIndexer elasticIndexer;
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final NavKontorService navKontorService;
     private final ArbeidslisteService arbeidslisteService;
@@ -38,7 +38,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
     @Autowired
     public OppfolgingService(OppfolgingRepository oppfolgingRepository,
-                             ElasticIndexer elastic,
+                             ElasticIndexer elasticIndexer,
                              VeilarbVeilederClient veilarbVeilederClient,
                              NavKontorService navKontorService,
                              ArbeidslisteService arbeidslisteService,
@@ -47,7 +47,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
                              MetricsClient metricsClient
     ) {
         this.oppfolgingRepository = oppfolgingRepository;
-        this.elastic = elastic;
+        this.elasticIndexer = elasticIndexer;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.navKontorService = navKontorService;
         this.arbeidslisteService = arbeidslisteService;
@@ -89,7 +89,7 @@ public class OppfolgingService implements KafkaConsumerService<String> {
 
         MetricsUtils.timed(
                 "portefolje.oppfolging.indekser",
-                () -> elastic.indekser(aktoerId).orElseThrowException(),
+                () -> elasticIndexer.indekser(aktoerId).orElseThrowException(),
                 metricsClient
         );
     }
