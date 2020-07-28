@@ -38,11 +38,6 @@ public class KafkaConfig {
         }
     }
 
-    public static List<KafkaHelsesjekk> getHelseSjekker() {
-        List<Topic> topics = Arrays.asList(Topic.values());
-        return topics.stream().map(topic -> new KafkaHelsesjekk(topic)).collect(toList());
-    }
-
     @Bean
     public KafkaConsumerRunnable kafkaConsumerRegistrering(RegistreringService registreringService, UnleashService unleashService) {
         return new KafkaConsumerRunnable<>(
@@ -82,17 +77,6 @@ public class KafkaConfig {
                 KafkaProperties.kafkaProperties(),
                 Topic.VEDTAK_STATUS_ENDRING_TOPIC,
                 FeatureToggle.KAFKA_VEDTAKSTOTTE
-        );
-    }
-
-    @Bean
-    public KafkaConsumerRunnable kafkaOppfolgingConsumer(OppfolgingService oppfolgingService, UnleashService unleashService) {
-        return new KafkaConsumerRunnable<>(
-                oppfolgingService,
-                unleashService,
-                KafkaProperties.kafkaProperties(),
-                Topic.OPPFOLGING_CONSUMER_TOPIC,
-                FeatureToggle.KAFKA_OPPFOLGING
         );
     }
 
