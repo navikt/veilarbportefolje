@@ -2,26 +2,28 @@ package no.nav.pto.veilarbportefolje.util;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import java.util.function.Supplier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import static javax.ws.rs.core.Response.Status.OK;
+import java.util.function.Supplier;
 
 @Slf4j
 public class RestUtils {
-    public static Response createResponse(Supplier<Object> supplier) {
-        return Try.ofSupplier(supplier)
+    public static ResponseEntity createResponse(Supplier<Object> supplier) {
+        return (ResponseEntity) Try.ofSupplier(supplier)
                 .toEither()
                 .fold(
                         (throwable) -> {
-                            if (throwable instanceof WebApplicationException) {
+                            //TODO VAD ER MOTSVARIGHETEN I SPRING
+                            /*if (throwable instanceof WebApplicationException) {
                                 return ((WebApplicationException) throwable).getResponse();
                             }
+
+                             */
                             log.warn("Exception ved restkall", throwable);
-                            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
                         },
-                        (entity) -> Response.status(OK).entity(entity).build()
+                        (entity) -> ResponseEntity.status(HttpStatus.OK).body(entity)
                 );
     }
 }

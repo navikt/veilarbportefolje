@@ -11,11 +11,11 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,8 +24,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.*;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
 import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
@@ -33,8 +31,6 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @Slf4j
 @RestController
 @RequestMapping("/api/arbeidsliste")
-@Produces(APPLICATION_JSON)
-@Consumes(APPLICATION_JSON)
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final AktorregisterClient aktorregisterClient;
@@ -54,7 +50,7 @@ public class ArbeidsListeController {
 
 
     @PostMapping
-    public Response opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
+    public ResponseEntity opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {
         authService.tilgangTilOppfolging();
         List<String> tilgangErrors = getTilgangErrors(arbeidsliste);
         if (tilgangErrors.size() > 0) {
@@ -145,11 +141,11 @@ public class ArbeidsListeController {
         return arbeidslisteService
                 .deleteArbeidsliste(new Fnr(fnr))
                 .map((a) -> emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
-                .getOrElseThrow(() -> new WebApplicationException("Kunne ikke slette. Fant ikke arbeidsliste for bruker", BAD_REQUEST));
+                .getOrElseThrow(() -> new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
     }
 
     @PostMapping("/delete")
-    public Response deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
+    public ResponseEntity deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
         return createResponse(() -> {
             authService.tilgangTilOppfolging();
 
@@ -164,7 +160,7 @@ public class ArbeidsListeController {
             Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
             Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
             if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
-                throw new BadRequestException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+                throw new IllegalStateException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
             }
 
             validerFnrs.get()
@@ -181,14 +177,14 @@ public class ArbeidsListeController {
                     );
 
             if (feiledeFnrs.size() == fnrs.size()) {
-                throw new InternalServerErrorException();
+                throw new IllegalStateException();
             }
             return RestResponse.of(okFnrs, feiledeFnrs);
         });
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new WebApplicationException("Kunne ikke hente enhet for denne brukeren", BAD_GATEWAY));
+        String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
         authService.tilgangTilEnhet(enhet);
     }
 
@@ -235,14 +231,14 @@ public class ArbeidsListeController {
         Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
         authService.tilgangTilBruker(fnr);
         if (validateFnr.isInvalid()) {
-            throw new BadRequestException(validateFnr.getError());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
 
     private void validerErVeilederForBruker(String fnr) {
         Validation<String, Fnr> validateVeileder = arbeidslisteService.erVeilederForBruker(fnr);
         if (validateVeileder.isInvalid()) {
-            throw new ForbiddenException(validateVeileder.getError());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 }
