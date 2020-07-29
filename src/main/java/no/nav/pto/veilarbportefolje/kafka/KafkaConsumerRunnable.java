@@ -16,6 +16,7 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
+import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -55,11 +56,17 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
-        JobUtils.runAsyncJob(this);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
-
         counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
+
     }
+
+    @PostConstruct
+    public void konsumerKafkaMeldinger() {
+        JobUtils.runAsyncJob(this);
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+
+    }
+
 
     @Override
     public void run() {
