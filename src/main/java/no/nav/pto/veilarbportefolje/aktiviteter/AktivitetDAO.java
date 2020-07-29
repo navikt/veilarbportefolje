@@ -82,7 +82,6 @@ public class AktivitetDAO {
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
         UpsertQuery query = SqlUtils.upsert(db, "AKTIVITETER")
-                .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
                 .set("AKTOERID", aktivitet.getAktorId())
                 .set("AKTIVITETTYPE", aktivitet.getAktivitetType().name().toLowerCase())
                 .set("AVTALT", aktivitet.isAvtalt())
@@ -90,7 +89,8 @@ public class AktivitetDAO {
                 .set("TILDATO", aktivitet.getTilDato())
                 .set("OPPDATERTDATO", aktivitet.getEndretDato())
                 .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
-                .set("AKTIVITETID", aktivitet.getAktivitetId());
+                .set("AKTIVITETID", aktivitet.getAktivitetId())
+                .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()));
 
                log.info("db-query " + query.toString());
 

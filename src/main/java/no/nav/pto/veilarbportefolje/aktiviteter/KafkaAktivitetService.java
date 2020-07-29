@@ -23,6 +23,7 @@ public class KafkaAktivitetService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
 
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
+        log.info("aktivitetmelding", kafkaMelding);
 
         if(skallIkkeOppdatereAktivitet(aktivitetData)) {
             return;
