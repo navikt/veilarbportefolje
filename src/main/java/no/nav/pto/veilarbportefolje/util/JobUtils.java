@@ -9,7 +9,9 @@ import java.lang.invoke.MethodHandles;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static java.net.InetAddress.getLocalHost;
 import static no.nav.common.utils.IdUtils.generateId;
@@ -29,6 +31,13 @@ public class JobUtils {
     }
 
     public static RunningJob runAsyncJob(Runnable runnable) {
+        return runAsyncJobHelperFunc(runnable, Executors.newSingleThreadExecutor());
+    }
+
+    public static RunningJob runAsyncJob(Runnable runnable, long delaySeconds) {
+        return runAsyncJobHelperFunc(runnable, CompletableFuture.delayedExecutor(delaySeconds, TimeUnit.SECONDS));
+    }
+    public static RunningJob runAsyncJobHelperFunc(Runnable runnable, Executor executor) {
         String jobId = generateId();
 
         CompletableFuture<Void> future = CompletableFuture.runAsync(
@@ -37,7 +46,7 @@ public class JobUtils {
                     runnable.run();
                     MDC.remove(MDC_JOB_ID);
                 },
-                Executors.newSingleThreadExecutor()
+                executor
         );
 
         String podName;

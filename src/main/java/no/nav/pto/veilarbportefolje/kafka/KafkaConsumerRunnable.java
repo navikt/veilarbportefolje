@@ -56,14 +56,9 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
-        counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
-
-    }
-
-    @PostConstruct
-    public void konsumerKafkaMeldinger() {
-        JobUtils.runAsyncJob(this);
+        JobUtils.runAsyncJob(this, 5L);
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+        counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
 
     }
 
