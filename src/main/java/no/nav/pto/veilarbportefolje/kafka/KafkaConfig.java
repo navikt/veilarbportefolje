@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
@@ -14,22 +13,19 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
-import java.util.List;
 
-import static java.util.stream.Collectors.toList;
 
 @Configuration
 public class KafkaConfig {
 
     public enum Topic {
-        VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + EnvironmentUtils.getNamespace()),
-        DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + EnvironmentUtils.getNamespace()),
-        OPPFOLGING_CONSUMER_TOPIC("aapen-fo-endringPaaOppfolgingStatus-v1-" + EnvironmentUtils.getNamespace()),
-        KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + EnvironmentUtils.getNamespace()),
-        KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v1-" + EnvironmentUtils.getNamespace()),
+        VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + EnvironmentUtils.getNamespace().orElseThrow(()-> new RuntimeException("Fante ikke namespace"))),
+        DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + EnvironmentUtils.getNamespace().orElseThrow(()-> new RuntimeException("Fante ikke namespace"))),
+        OPPFOLGING_CONSUMER_TOPIC("aapen-fo-endringPaaOppfolgingStatus-v1-" + EnvironmentUtils.getNamespace().orElseThrow(()-> new RuntimeException("Fante ikke namespace"))),
+        KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + EnvironmentUtils.getNamespace().orElseThrow(()-> new RuntimeException("Fante ikke namespace"))),
+        KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v1-" + EnvironmentUtils.getNamespace().orElseThrow(()-> new RuntimeException("Fante ikke namespace"))),
         PAM_SAMTYKKE_ENDRET_V1("aapen-pam-samtykke-endret-v1"),
-        KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + EnvironmentUtils.getNamespace());
+        KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + EnvironmentUtils.getNamespace().orElseThrow(()-> new RuntimeException("Fante ikke namespace")));
 
         final String topic;
 
