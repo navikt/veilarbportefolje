@@ -5,11 +5,10 @@ import no.nav.common.auth.subject.SubjectHandler;
 
 public class RestClientUtils {
 
-        public static String authHeaderMedInnloggetBruker() {
-            return SubjectHandler.getSsoToken()
-                    .map(SsoToken::getToken)
+        public static String authHeaderMedSystemBruker() {
+            return SubjectHandler.getSsoToken(SsoToken.Type.OIDC)
                     .map(RestClientUtils::createBearerToken)
-                    .orElseThrow(() -> new RuntimeException("Fant ikke token til innlogget bruker"));
+                    .orElseThrow(IllegalStateException::new);
         }
 
         public static String createBearerToken(String token) {

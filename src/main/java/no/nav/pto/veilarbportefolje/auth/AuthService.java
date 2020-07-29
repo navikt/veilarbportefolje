@@ -4,15 +4,11 @@ import io.vavr.Tuple;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.AbacPersonId;
 import no.nav.common.abac.domain.request.ActionId;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.config.CacheConfig.TILGANG_TIL_ENHET;
@@ -28,26 +24,26 @@ public class AuthService {
     }
 
     public void tilgangTilOppfolging() {
-        AuthUtils.test("oppfølgingsbruker", getInnloggetVeilederIdent(), veilarbPep.harVeilederTilgangTilModia(getInnloggetBrukerToken()));
+        AuthUtils.test("oppfølgingsbruker", AuthUtils.getInnloggetVeilederIdent(), veilarbPep.harVeilederTilgangTilModia(AuthUtils.getInnloggetBrukerToken()));
     }
 
-    @Cacheable(TILGANG_TIL_ENHET)
     public void tilgangTilEnhet(String enhet) {
-        String veilederId = getInnloggetVeilederIdent().getVeilederId();
+        String veilederId = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
         AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
     }
 
+    @Cacheable(TILGANG_TIL_ENHET)
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
         return veilarbPep.harVeilederTilgangTilEnhet(veilederId, enhet);
     }
 
     //TODO ER DETTA RIKTIGT ??
     public void tilgangTilBruker(String fnr) {
-        AuthUtils.test("tilgangTilBruker", fnr, veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AbacPersonId.fnr(fnr)));
+        AuthUtils.test("tilgangTilBruker", fnr, veilarbPep.harTilgangTilPerson(AuthUtils.getInnloggetBrukerToken(), ActionId.READ, AbacPersonId.fnr(fnr)));
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
-        String veilederIdent = getInnloggetVeilederIdent().getVeilederId();
+        String veilederIdent = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
         return brukere.stream()
                 .map(bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent))
                 .collect(toList());
@@ -74,17 +70,4 @@ public class AuthService {
 
     }
 
-    public static String getInnloggetBrukerToken() {
-        return SubjectHandler
-                .getSsoToken()
-                .map(SsoToken::getToken)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is missing"));
-    }
-
-    public static VeilederId getInnloggetVeilederIdent() {
-        return SubjectHandler
-                .getIdent()
-                .map(VeilederId::of)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is missing from subject"));
-    }
 }

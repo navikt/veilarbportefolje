@@ -4,6 +4,7 @@ import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -56,7 +57,7 @@ public class EnhetController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        String ident = AuthService.getInnloggetVeilederIdent().getVeilederId();
+        String ident = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
         BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);

@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.controller;
 
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -12,12 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
 
 @RestController
 @RequestMapping("/api/veileder")
@@ -58,7 +57,7 @@ public class VeilederController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        String ident = authService.getInnloggetVeilederIdent().getVeilederId();
+        String ident = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
         BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);

@@ -168,12 +168,12 @@ public class AktivitetDAO {
         return SqlUtils.upsert(db, "AKTIVITETER")
             .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
             .set("AKTOERID", aktivitet.getAktorId())
-            .set("AKTIVITETTYPE", aktivitet.getAktivitetType().toString().toLowerCase())
+            .set("AKTIVITETTYPE", aktivitet.getAktivitetType().name().toLowerCase())
             .set("AVTALT", aktivitet.isAvtalt())
             .set("FRADATO", aktivitet.getFraDato())
             .set("TILDATO", aktivitet.getTilDato())
             .set("OPPDATERTDATO", aktivitet.getEndretDato())
-            .set("STATUS", aktivitet.getAktivitetStatus().toString().toLowerCase())
+            .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
             .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
 

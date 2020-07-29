@@ -5,7 +5,7 @@ import io.vavr.control.Validation;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -116,7 +116,7 @@ public class ArbeidslisteService {
     }
 
     public Validation<String, Fnr> erVeilederForBruker(String fnr) {
-        VeilederId veilederId = AuthService.getInnloggetVeilederIdent();
+        VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
 
         Boolean erVeilederForBruker =
                 ValideringsRegler

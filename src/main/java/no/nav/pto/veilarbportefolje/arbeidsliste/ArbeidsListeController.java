@@ -5,6 +5,7 @@ import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -75,7 +76,7 @@ public class ArbeidsListeController {
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
 
-        String innloggetVeileder = AuthService.getInnloggetVeilederIdent().getVeilederId();
+        String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
 
         Fnr fnr = new Fnr(fnrString);
         Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
@@ -129,7 +130,7 @@ public class ArbeidsListeController {
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
                         fnr,
-                        authService.getInnloggetVeilederIdent()));
+                        AuthUtils.getInnloggetVeilederIdent()));
     }
 
     @DeleteMapping("{fnr}/")
@@ -191,7 +192,7 @@ public class ArbeidsListeController {
     private ArbeidslisteDTO data(ArbeidslisteRequest body, Fnr fnr) {
         Timestamp frist = nullOrEmpty(body.getFrist()) ? null : Timestamp.from(Instant.parse(body.getFrist()));
         return new ArbeidslisteDTO(fnr)
-                .setVeilederId(authService.getInnloggetVeilederIdent())
+                .setVeilederId(AuthUtils.getInnloggetVeilederIdent())
                 .setOverskrift(body.getOverskrift())
                 .setKommentar(body.getKommentar())
                 .setKategori(Arbeidsliste.Kategori.valueOf(body.getKategori()))

@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.Cacheable;
 import java.util.List;
 import static java.lang.String.format;
 import static no.nav.common.utils.EnvironmentUtils.requireNamespace;
+import static no.nav.pto.veilarbportefolje.client.RestClientUtils.authHeaderMedSystemBruker;
 import static no.nav.pto.veilarbportefolje.config.CacheConfig.VEILARBVEILEDER;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -33,10 +34,9 @@ public class VeilarbVeilederClient {
     public List<String> hentVeilederePaaEnhet(String enhet) {
         String path = format("/api/enhet/%s/identer", enhet);
 
-        String ssoToken = SubjectHandler.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
 
         Request request  = new Request.Builder()
-                .header(AUTHORIZATION, "Bearer " + ssoToken)
+                .header(AUTHORIZATION, authHeaderMedSystemBruker())
                 .url(url + path)
                 .build();
 
