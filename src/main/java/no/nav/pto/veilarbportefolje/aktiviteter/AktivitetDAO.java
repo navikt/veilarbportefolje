@@ -81,7 +81,20 @@ public class AktivitetDAO {
     }
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
-        getAktivitetUpsertQuery(this.db, aktivitet).execute();
+        UpsertQuery query = SqlUtils.upsert(db, "AKTIVITETER")
+                .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
+                .set("AKTOERID", aktivitet.getAktorId())
+                .set("AKTIVITETTYPE", aktivitet.getAktivitetType().name().toLowerCase())
+                .set("AVTALT", aktivitet.isAvtalt())
+                .set("FRADATO", aktivitet.getFraDato())
+                .set("TILDATO", aktivitet.getTilDato())
+                .set("OPPDATERTDATO", aktivitet.getEndretDato())
+                .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
+                .set("AKTIVITETID", aktivitet.getAktivitetId());
+
+               log.info("db-query " + query.toString());
+
+                query.execute();
     }
 
     public void deleteById(String aktivitetid) {
@@ -162,19 +175,6 @@ public class AktivitetDAO {
                 (Timestamp) row.get("TILDATO"))
             )
             .collect(toList());
-    }
-
-    private static UpsertQuery getAktivitetUpsertQuery(JdbcTemplate db, KafkaAktivitetMelding aktivitet) {
-        return SqlUtils.upsert(db, "AKTIVITETER")
-            .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()))
-            .set("AKTOERID", aktivitet.getAktorId())
-            .set("AKTIVITETTYPE", aktivitet.getAktivitetType().name().toLowerCase())
-            .set("AVTALT", aktivitet.isAvtalt())
-            .set("FRADATO", aktivitet.getFraDato())
-            .set("TILDATO", aktivitet.getTilDato())
-            .set("OPPDATERTDATO", aktivitet.getEndretDato())
-            .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
-            .set("AKTIVITETID", aktivitet.getAktivitetId());
     }
 
     public void slettAktivitetDatoer() {

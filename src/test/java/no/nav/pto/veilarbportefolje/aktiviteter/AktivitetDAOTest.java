@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -108,7 +109,7 @@ public class AktivitetDAOTest {
     public void skalSetteInnAktivitet() {
         KafkaAktivitetMelding aktivitet = new KafkaAktivitetMelding()
                 .setAktivitetId("aktivitetid")
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
                 .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
@@ -118,9 +119,13 @@ public class AktivitetDAOTest {
 
         aktivitetDAO.upsertAktivitet(aktivitet);
 
-        String status = (String) jdbcTemplate.queryForList("select * from aktiviteter where aktivitetid='aktivitetid'").get(0).get("status");
+        Map<String, Object> aktivitetFraDB = jdbcTemplate.queryForList("select * from aktiviteter where aktivitetid='aktivitetid'").get(0);
+
+        String status = (String) aktivitetFraDB.get("status");
+        String type = (String) aktivitetFraDB.get("aktivitettype");
 
         assertThat(status).isEqualToIgnoringCase(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES.name());
+        assertThat(type).isEqualToIgnoringCase(KafkaAktivitetMelding.AktivitetTypeData.EGEN.name());
     }
 
     @Test
