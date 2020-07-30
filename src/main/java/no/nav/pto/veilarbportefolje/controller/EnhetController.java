@@ -5,9 +5,9 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +24,18 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 public class EnhetController {
 
-    private final ElasticIndexer elasticIndexer;
+    private final ElasticService elasticService;
     private final AuthService authService;
     private final TiltakService tiltakService;
     private final MetricsClient metricsClient;
 
     @Autowired
     public EnhetController(
-            ElasticIndexer indekseringService,
+            ElasticService elasticService,
             AuthService authService,
             MetricsClient metricsClient,
             TiltakService tiltakService) {
-        this.elasticIndexer = indekseringService;
+        this.elasticService = elasticService;
         this.tiltakService = tiltakService;
         this.authService = authService;
         this.metricsClient = metricsClient;
@@ -60,7 +60,7 @@ public class EnhetController {
         String ident = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-        BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -81,7 +81,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticIndexer.hentPortefoljestorrelser(enhet);
+        return elasticService.hentPortefoljestorrelser(enhet);
     }
 
     @GetMapping("/{enhet}/statustall")
@@ -89,7 +89,7 @@ public class EnhetController {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticIndexer.hentStatusTallForPortefolje(enhet);
+        return elasticService.hentStatusTallForEnhet(enhet);
 
     }
 

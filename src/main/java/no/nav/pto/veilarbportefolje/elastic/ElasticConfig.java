@@ -56,10 +56,14 @@ public class ElasticConfig {
         return HealthCheckResult.healthy();
     }
 
+    @Bean
+    public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService) {
+        return new ElasticService(restHighLevelClient, veilarbVeilederClient, unleashService, getAlias());
+    }
+
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, MetricsClient metricsClient, CvService cvService) {
-        ElasticService elasticService = new ElasticService(restHighLevelClient(), veilarbVeilederClient, unleashService);
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService, unleashService, metricsClient, cvService, getAlias());
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, UnleashService unleashService, MetricsClient metricsClient, RestHighLevelClient restHighLevelClient) {
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, unleashService, metricsClient, getAlias());
     }
 }

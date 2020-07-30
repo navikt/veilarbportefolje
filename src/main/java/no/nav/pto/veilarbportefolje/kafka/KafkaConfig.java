@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
@@ -55,9 +55,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaAktivitetConsumer(KafkaAktivitetService kafkaAktivitetService, UnleashService unleashService) {
+    public KafkaConsumerRunnable kafkaAktivitetConsumer(AktivitetService aktivitetService, UnleashService unleashService) {
         return new KafkaConsumerRunnable<>(
-                kafkaAktivitetService,
+                aktivitetService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
                 Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,

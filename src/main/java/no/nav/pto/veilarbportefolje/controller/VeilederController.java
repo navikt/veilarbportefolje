@@ -3,9 +3,9 @@ package no.nav.pto.veilarbportefolje.controller;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.common.metrics.Event;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -23,18 +23,18 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 public class VeilederController {
 
-    private ElasticIndexer elasticIndexer;
+    private ElasticService elasticService;
     private AuthService authService;
     private MetricsClient metricsClient;
 
     @Autowired
     public VeilederController(
-            ElasticIndexer elasticIndexer,
+            ElasticService elasticIndexer,
             AuthService authService,
             MetricsClient metricsClient
     ) {
 
-        this.elasticIndexer = elasticIndexer;
+        this.elasticService = elasticIndexer;
         this.authService = authService;
         this.metricsClient = metricsClient;
     }
@@ -60,7 +60,7 @@ public class VeilederController {
         String ident = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-        BrukereMedAntall brukereMedAntall = elasticIndexer.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -83,7 +83,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticIndexer.hentStatusTallForVeileder(enhet, veilederIdent);
+        return elasticService.hentStatusTallForVeileder(enhet, veilederIdent);
     }
 
     @GetMapping("/{veilederident}/arbeidsliste")
@@ -94,7 +94,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticIndexer.hentBrukereMedArbeidsliste(VeilederId.of(veilederIdent), enhet);
+        return elasticService.hentBrukereMedArbeidsliste(veilederIdent, enhet);
     }
 
 }

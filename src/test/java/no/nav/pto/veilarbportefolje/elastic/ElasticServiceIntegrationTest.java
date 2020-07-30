@@ -10,7 +10,6 @@ import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -30,7 +29,6 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
@@ -63,16 +61,14 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
         UnleashService unleashMock = mock(UnleashService.class);
         when(unleashMock.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)).thenReturn(true);
 
-        elasticService = new ElasticService(ELASTIC_CLIENT, veilederServiceMock, unleashMock);
+        elasticService = new ElasticService(ELASTIC_CLIENT, veilederServiceMock, unleashMock, TEST_INDEX);
         elasticIndexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 ELASTIC_CLIENT,
-                elasticService,
                 unleashMock,
                 mock(MetricsClient.class),
-                mock(CvService.class),
-                generateId()
+                TEST_INDEX
         );
     }
 
@@ -116,8 +112,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 new Filtervalg(),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
 
@@ -152,8 +147,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filtervalg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
@@ -198,7 +192,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setFerdigfilterListe(listOf(UTLOPTE_AKTIVITETER))
                 .setVeiledere(listOf(TEST_VEILEDER_0, TEST_VEILEDER_1));
 
-        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
 
         assertThat(response.getAntall()).isEqualTo(2);
 
@@ -231,7 +225,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
         skrivBrukereTilTestindeks(brukere);
 
         val filtervalg = new Filtervalg().setFerdigfilterListe(listOf(UFORDELTE_BRUKERE));
-        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
 
         assertThat(response.getAntall()).isEqualTo(2);
     }
@@ -265,7 +259,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .collect(toList());
 
         skrivBrukereTilTestindeks(brukere);
-        FacetResults portefoljestorrelser = elasticService.hentPortefoljestorrelser(TEST_ENHET, TEST_INDEX);
+        FacetResults portefoljestorrelser = elasticService.hentPortefoljestorrelser(TEST_ENHET);
 
         assertThat(facetResultCountForVeileder(veilederId1, portefoljestorrelser)).isEqualTo(4L);
         assertThat(facetResultCountForVeileder(veilederId2, portefoljestorrelser)).isEqualTo(3L);
@@ -294,7 +288,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         skrivBrukereTilTestindeks(brukerMedArbeidsliste, brukerUtenArbeidsliste);
 
-        List<Bruker> brukereMedArbeidsliste = elasticService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET, TEST_INDEX);
+        List<Bruker> brukereMedArbeidsliste = elasticService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(brukereMedArbeidsliste.size()).isEqualTo(1);
     }
 
@@ -332,7 +326,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         skrivBrukereTilTestindeks(testBruker1, testBruker2, inaktivBruker);
 
-        val statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET, TEST_INDEX);
+        val statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1);
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2);
@@ -361,7 +355,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         skrivBrukereTilTestindeks(brukerMedVeileder, brukerUtenVeileder);
 
-        val statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET, TEST_INDEX);
+        val statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 
@@ -391,8 +385,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "arbeidslistekategori",
                 new Filtervalg(),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         List<Bruker> brukere = brukereMedAntall.getBrukere();
@@ -436,8 +429,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -469,8 +461,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                         "ikke_satt",
                         new Filtervalg(),
                         null,
-                        null,
-                        TEST_INDEX
+                        null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -505,14 +496,13 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(listOf(UFORDELTE_BRUKERE)),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
-        StatusTall statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET, TEST_INDEX);
+        StatusTall statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.ufordelteBrukere).isEqualTo(1);
     }
 
@@ -545,8 +535,8 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
+
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -582,8 +572,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -619,8 +608,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -683,8 +671,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
@@ -728,8 +715,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -772,8 +758,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
@@ -818,8 +803,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -864,8 +848,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(2);

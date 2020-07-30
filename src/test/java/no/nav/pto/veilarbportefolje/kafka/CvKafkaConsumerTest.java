@@ -24,7 +24,6 @@ public class CvKafkaConsumerTest extends IntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        System.setProperty("NAIS_NAMESPACE", "test");
 
         indexName = generateId();
         cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktorregisterClient.class), mock(CvRepository.class), mock(MetricsClient.class));

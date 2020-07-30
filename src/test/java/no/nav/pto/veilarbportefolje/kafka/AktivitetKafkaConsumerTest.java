@@ -6,7 +6,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
@@ -45,7 +44,7 @@ import static org.mockito.Mockito.when;
 
 public class AktivitetKafkaConsumerTest extends IntegrationTest {
 
-    private static KafkaAktivitetService kafkaAktivitetService;
+    private static AktivitetService aktivitetService;
     private static AktivitetDAO aktivitetDAO;
     private static JdbcTemplate jdbcTemplate;
     private static String indexName;
@@ -59,7 +58,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        System.setProperty("NAIS_NAMESPACE", "test");
+
         DataSource dataSource = TestUtil.setupInMemoryDatabase();
         jdbcTemplate = new JdbcTemplate(dataSource);
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
@@ -71,13 +70,13 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
 
         personIdService = mock(PersonIdService.class);
 
-        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(ElasticService.class), mock(UnleashService.class), mock(MetricsClient.class), mock(CvService.class), indexName), brukerRepository, aktivitetDAO);
+        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(UnleashService.class), mock(MetricsClient.class), indexName), brukerRepository, aktivitetDAO);
 
-        kafkaAktivitetService = new KafkaAktivitetService(new AktivitetService(aktivitetDAO, persistentOppdatering, personIdService));
+        aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, personIdService);
 
 
         new KafkaConsumerRunnable<>(
-                kafkaAktivitetService,
+                aktivitetService,
                 createUnleashMock(),
                 getKafkaConsumerProperties(),
                 KAFKA_AKTIVITER_CONSUMER_TOPIC,

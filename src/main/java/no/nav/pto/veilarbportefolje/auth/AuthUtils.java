@@ -18,7 +18,7 @@ public class AuthUtils {
     }
     static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new ForbiddenException(format("sjekk av %s feilet, %s", navn, data));
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, format("sjekk av %s feilet, %s", navn, data));
         }
     }
 

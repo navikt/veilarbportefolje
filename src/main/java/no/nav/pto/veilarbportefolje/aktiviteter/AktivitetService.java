@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.PersonIdService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.vavr.control.Try.run;
+import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
 @Service
-public class AktivitetService {
+public class AktivitetService implements KafkaConsumerService<String> {
 
     private final PersonIdService personIdService;
     private final AktivitetDAO aktivitetDAO;
@@ -30,13 +32,20 @@ public class AktivitetService {
         this.persistentOppdatering = persistentOppdatering;
     }
 
-    public void oppdaterAktiviteter(KafkaAktivitetMelding data) {
 
-        this.lagreAktivitetData(data);
+    @Override
+    public void behandleKafkaMelding(String kafkaMelding) {
 
-        AktoerId aktoerId = AktoerId.of(data.getAktorId());
+        KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
 
-        utledOgIndekserAktivitetstatuserForAktoerid(aktoerId);
+        if(skallIkkeOppdatereAktivitet(aktivitetData)) {
+            log.info("ignorer aktivitet melding");
+            return;
+        }
+
+        lagreAktivitetData(aktivitetData);
+
+        utledOgIndekserAktivitetstatuserForAktoerid(AktoerId.of(aktivitetData.getAktorId()));
     }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
@@ -64,7 +73,7 @@ public class AktivitetService {
             AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktoerId.of(aktoerId));
             AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, personIdService);
             Optional.ofNullable(aktivitetBrukerOppdateringer)
-                    .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(aktivitetBrukerOppdateringer)));
+                    .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(oppdatering)));
         });
 
     }
@@ -87,5 +96,24 @@ public class AktivitetService {
             log.error(message, e);
         }
     }
+
+    @Override
+    public boolean shouldRewind() {
+        return false;
+    }
+
+    @Override
+    public void setRewind(boolean rewind) {
+
+    }
+
+    private boolean skallIkkeOppdatereAktivitet(KafkaAktivitetMelding aktivitetData) {
+        return !aktivitetData.isAvtalt() || erEnNyOpprettetAktivitet(aktivitetData);
+    }
+
+    private boolean erEnNyOpprettetAktivitet(KafkaAktivitetMelding aktivitetData) {
+        return aktivitetData.getEndretDato() == null;
+    }
+
 
 }

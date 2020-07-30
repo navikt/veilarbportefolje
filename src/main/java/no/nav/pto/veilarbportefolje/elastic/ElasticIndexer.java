@@ -66,14 +66,11 @@ public class ElasticIndexer {
 
     final static int BATCH_SIZE = 1000;
     final static int BATCH_SIZE_LIMIT = 1000;
-    private final ElasticService elasticService;
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final UnleashService unleashService;
     private final MetricsClient metricsClient;
-
-    private final CvService cvService;
 
     private String indexName;
 
@@ -81,19 +78,15 @@ public class ElasticIndexer {
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
-            ElasticService elasticService,
             UnleashService unleashService,
             MetricsClient metricsClient,
-            CvService cvService,
             String indexName
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
-        this.elasticService = elasticService;
         this.unleashService = unleashService;
-        this.cvService = cvService;
         this.metricsClient = metricsClient;
         this.indexName = indexName;
     }
@@ -352,7 +345,7 @@ public class ElasticIndexer {
 
             MetricsUtils.timed(
                     "portefolje.indeks.skrivTilIndeks",
-                    () -> skrivTilIndeks(getAlias(), bruker),
+                    () -> skrivTilIndeks(indexName, bruker),
                     metricsClient
             );
 
@@ -555,24 +548,4 @@ public class ElasticIndexer {
         leggTilAktiviteter(Collections.singletonList(bruker));
     }
 
-
-    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-        return elasticService.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, fra, antall, getAlias());
-    }
-
-    public StatusTall hentStatusTallForPortefolje(String enhet) {
-        return elasticService.hentStatusTallForEnhet(enhet, getAlias());
-    }
-
-    public FacetResults hentPortefoljestorrelser(String enhetId) {
-        return elasticService.hentPortefoljestorrelser(enhetId, getAlias());
-    }
-
-    public StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent) {
-        return elasticService.hentStatusTallForVeileder(veilederIdent, enhet, getAlias());
-    }
-
-    public List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
-        return elasticService.hentBrukereMedArbeidsliste(veilederId.getVeilederId(), enhet, getAlias());
-    }
 }

@@ -42,6 +42,7 @@ public class IntegrationTest {
     protected final static Producer<String, String> KAFKA_PRODUCER;
 
     static {
+        System.setProperty("NAIS_NAMESPACE", "test");
         ELASTICSEARCH_CONTAINER = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + ELASTICSEARCH_VERSION);
         ELASTICSEARCH_CONTAINER.start();
         ELASTIC_CLIENT = new RestHighLevelClient(builder(create(ELASTICSEARCH_CONTAINER.getHttpHostAddress())));
