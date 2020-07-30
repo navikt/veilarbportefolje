@@ -41,12 +41,7 @@ public class PersistentOppdatering {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
         log.error("liste med personids " + toJson(personIds));
-        CompletableFuture<Void> f = runAsync(() -> elasticIndexer.indekserBrukere(personIds));
-        f.exceptionally(e -> {
-            RuntimeException wrappedException = new RuntimeException(e);
-            log.warn("Feil under asynkron indeksering av bruker " + personIds.get(0).personId, wrappedException);
-            return null;
-        });
+        elasticIndexer.indekserBrukere(personIds);
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {

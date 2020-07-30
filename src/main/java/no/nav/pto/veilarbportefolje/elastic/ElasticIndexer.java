@@ -32,6 +32,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -378,12 +379,12 @@ public class ElasticIndexer {
 
     public void indekserBrukere(List<PersonId> personIds) {
         CollectionUtils.partition(personIds, BATCH_SIZE).forEach(batch -> {
-            log.error("batchen som ska skrivas " + toJson(batch));
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
-            log.error("brukere som ska skrivas " + toJson(brukere));
-            skrivTilIndeks(indexName, brukere);
+            BulkResponse response = skrivTilIndeks(indexName, brukere);
+
+            log.error("response fra elasticsearch " + toJson(response));
         });
     }
 
