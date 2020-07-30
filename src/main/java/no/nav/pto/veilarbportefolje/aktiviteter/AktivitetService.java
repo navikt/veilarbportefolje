@@ -39,7 +39,6 @@ public class AktivitetService implements KafkaConsumerService<String> {
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
 
         if(skallIkkeOppdatereAktivitet(aktivitetData)) {
-            log.info("ignorer aktivitet melding");
             return;
         }
 

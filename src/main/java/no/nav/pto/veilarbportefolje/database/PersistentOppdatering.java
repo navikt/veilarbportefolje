@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
@@ -21,6 +22,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @Service
+@Slf4j
 public class PersistentOppdatering {
     private final ElasticIndexer elasticIndexer;
     private final BrukerRepository brukerRepository;
@@ -34,11 +36,16 @@ public class PersistentOppdatering {
     }
 
 
-    public CompletableFuture<Void> lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
+    public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
 
-        return runAsync(() -> elasticIndexer.indekserBrukere(personIds));
+        CompletableFuture<Void> f = runAsync(() -> elasticIndexer.indekserBrukere(personIds));
+        f.exceptionally(e -> {
+            RuntimeException wrappedException = new RuntimeException(e);
+            log.warn("Feil under asynkron indeksering av bruker " + personIds.get(0).personId, wrappedException);
+            return null;
+        });
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {
