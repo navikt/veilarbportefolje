@@ -60,6 +60,6 @@ public class ElasticConfig {
     @Bean
     public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, MetricsClient metricsClient, CvService cvService) {
         ElasticService elasticService = new ElasticService(restHighLevelClient(), veilarbVeilederClient, unleashService);
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService, unleashService, metricsClient, cvService);
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), elasticService, unleashService, metricsClient, cvService, getAlias());
     }
 }

@@ -75,6 +75,8 @@ public class ElasticIndexer {
 
     private final CvService cvService;
 
+    private String indexName;
+
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
@@ -82,7 +84,8 @@ public class ElasticIndexer {
             ElasticService elasticService,
             UnleashService unleashService,
             MetricsClient metricsClient,
-            CvService cvService
+            CvService cvService,
+            String indexName
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
@@ -92,6 +95,7 @@ public class ElasticIndexer {
         this.unleashService = unleashService;
         this.cvService = cvService;
         this.metricsClient = metricsClient;
+        this.indexName = indexName;
     }
 
     @SneakyThrows
@@ -384,7 +388,7 @@ public class ElasticIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
-            skrivTilIndeks(getAlias(), brukere);
+            skrivTilIndeks(indexName, brukere);
         });
     }
 

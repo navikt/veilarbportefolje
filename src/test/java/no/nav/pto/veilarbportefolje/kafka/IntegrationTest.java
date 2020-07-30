@@ -1,9 +1,10 @@
-package no.nav.pto.veilarbportefolje.cv;
+package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
@@ -20,7 +21,10 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
+import static java.lang.System.currentTimeMillis;
 import static no.nav.pto.veilarbportefolje.elastic.Constant.ELASTICSEARCH_VERSION;
 import static org.apache.http.HttpHost.create;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
@@ -94,6 +98,33 @@ public class IntegrationTest {
     public static void createIndex(String indexName) {
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexName);
         ELASTIC_CLIENT.indices().create(createIndexRequest, DEFAULT);
+    }
+
+
+    public static void populateKafkaTopic(String topic, String key ,String payload) {
+
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, payload);
+
+        try {
+            KAFKA_PRODUCER.send(record).get();
+        } catch (InterruptedException | ExecutionException ignored) {
+            throw new RuntimeException();
+        }
+    }
+
+
+    public static void pollUntilHarOppdatertIElastic(Supplier<Boolean> func) {
+        long t0 = currentTimeMillis();
+
+        while (func.get()) {
+            if (timeout(t0)) {
+                throw new RuntimeException();
+            }
+        }
+    }
+
+    private static boolean timeout(long t0) {
+        return currentTimeMillis() - t0 > 10_000;
     }
 
 }

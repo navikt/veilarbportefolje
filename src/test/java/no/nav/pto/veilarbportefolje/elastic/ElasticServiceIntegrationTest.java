@@ -11,7 +11,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
-import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
+import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
@@ -70,7 +71,8 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 elasticService,
                 unleashMock,
                 mock(MetricsClient.class),
-                mock(CvService.class)
+                mock(CvService.class),
+                generateId()
         );
     }
 
