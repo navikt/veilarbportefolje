@@ -24,13 +24,14 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
 @Slf4j
 @Repository
 public class AktivitetDAO {
 
-    private static final String AKTIVITETER = "AKTIVITETER";
+    public static final String AKTIVITETER = "AKTIVITETER";
     private static final String AKTIVITETID = "AKTIVITETID";
 
     private final JdbcTemplate db;
@@ -60,7 +61,7 @@ public class AktivitetDAO {
 
     public AktoerAktiviteter getAktiviteterForAktoerid(AktoerId aktoerid) {
 
-        List<AktivitetDTO> queryResult = SqlUtils.select(db, "AKTIVITETER", AktivitetDAO::mapToAktivitetDTO)
+        List<AktivitetDTO> queryResult = SqlUtils.select(db, AKTIVITETER, AktivitetDAO::mapToAktivitetDTO)
                 .column("AKTOERID")
                 .column("AKTIVITETTYPE")
                 .column("STATUS")
@@ -74,27 +75,24 @@ public class AktivitetDAO {
 
     private static AktivitetDTO mapToAktivitetDTO(ResultSet res) throws SQLException {
         return new AktivitetDTO()
-            .setAktivitetType(res.getString("AKTIVITETTYPE"))
-            .setStatus(res.getString("STATUS"))
-            .setFraDato(res.getTimestamp("FRADATO"))
-            .setTilDato(res.getTimestamp("TILDATO"));
+                .setAktivitetType(res.getString("AKTIVITETTYPE"))
+                .setStatus(res.getString("STATUS"))
+                .setFraDato(res.getTimestamp("FRADATO"))
+                .setTilDato(res.getTimestamp("TILDATO"));
     }
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
-        UpsertQuery query = SqlUtils.upsert(db, "AKTIVITETER")
+        SqlUtils.upsert(db, AKTIVITETER)
                 .set("AKTOERID", aktivitet.getAktorId())
                 .set("AKTIVITETTYPE", aktivitet.getAktivitetType().name().toLowerCase())
                 .set("AVTALT", aktivitet.isAvtalt())
-                .set("FRADATO", aktivitet.getFraDato())
-                .set("TILDATO", aktivitet.getTilDato())
-                .set("OPPDATERTDATO", aktivitet.getEndretDato())
+                .set("FRADATO", dateToTimestamp(aktivitet.getFraDato()))
+                .set("TILDATO", dateToTimestamp(aktivitet.getTilDato()))
+                .set("OPPDATERTDATO", dateToTimestamp(aktivitet.getEndretDato()))
                 .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
-                .set("AKTIVITETID", aktivitet.getAktivitetId())
-                .where(WhereClause.equals("AKTIVITETID", aktivitet.getAktivitetId()));
-
-               log.info("db-query " + query.toString());
-
-                query.execute();
+                .set(AKTIVITETID, aktivitet.getAktivitetId())
+                .where(WhereClause.equals(AKTIVITETID, aktivitet.getAktivitetId()))
+                .execute();
     }
 
     public void deleteById(String aktivitetid) {
@@ -124,8 +122,8 @@ public class AktivitetDAO {
 
     public void insertOrUpdateAktivitetStatus(List<AktivitetStatus> aktivitetStatuses, Collection<Tuple2<PersonId, String>> finnesIdb) {
         Map<Boolean, List<AktivitetStatus>> eksisterendeStatuser = aktivitetStatuses
-            .stream()
-            .collect(groupingBy((data) -> finnesIdb.contains(Tuple.of(data.getPersonid(), data.getAktivitetType()))));
+                .stream()
+                .collect(groupingBy((data) -> finnesIdb.contains(Tuple.of(data.getPersonid(), data.getAktivitetType()))));
 
         AktivitetStatus.batchUpdate(this.db, eksisterendeStatuser.getOrDefault(true, emptyList()));
 
@@ -142,22 +140,22 @@ public class AktivitetDAO {
         params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
 
         return namedParameterJdbcTemplate
-            .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
-            .stream()
-            .map(AktivitetDAO::mapAktivitetStatus)
-            .filter(aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType()))
-            .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
-                (oldValue, newValue) -> {
-                    oldValue.addAll(newValue);
-                    return oldValue;
-                }));
+                .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
+                .stream()
+                .map(AktivitetDAO::mapAktivitetStatus)
+                .filter(aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType()))
+                .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
+                        (oldValue, newValue) -> {
+                            oldValue.addAll(newValue);
+                            return oldValue;
+                        }));
     }
 
     public List<String> getDistinctAktoerIdsFromAktivitet() {
         return db.queryForList("SELECT DISTINCT AKTOERID FROM AKTIVITETER")
-            .stream()
-            .map(map -> (String) map.get("AKTOERID"))
-            .collect(toList());
+                .stream()
+                .map(map -> (String) map.get("AKTOERID"))
+                .collect(toList());
 
     }
 
@@ -167,14 +165,14 @@ public class AktivitetDAO {
         params.put("fnrs", fnrs.stream().map(Fnr::toString).collect(toList()));
 
         return namedParameterJdbcTemplate
-            .queryForList(hentBrukertiltakForListeAvFnrSQL(), params)
-            .stream()
-            .map(row -> Brukertiltak.of(
-                Fnr.of((String) row.get("FNR")),
-                (String) row.get("TILTAK"),
-                (Timestamp) row.get("TILDATO"))
-            )
-            .collect(toList());
+                .queryForList(hentBrukertiltakForListeAvFnrSQL(), params)
+                .stream()
+                .map(row -> Brukertiltak.of(
+                        Fnr.of((String) row.get("FNR")),
+                        (String) row.get("TILTAK"),
+                        (Timestamp) row.get("TILDATO"))
+                )
+                .collect(toList());
     }
 
     public void slettAktivitetDatoer() {
@@ -188,30 +186,30 @@ public class AktivitetDAO {
 
     private String hentBrukertiltakForListeAvFnrSQL() {
         return "SELECT " +
-            "TILTAKSKODE AS TILTAK, " +
-            "FODSELSNR as FNR, " +
-            "TILDATO " +
-            "FROM BRUKERTILTAK " +
-            "WHERE FODSELSNR in(:fnrs)";
+                "TILTAKSKODE AS TILTAK, " +
+                "FODSELSNR as FNR, " +
+                "TILDATO " +
+                "FROM BRUKERTILTAK " +
+                "WHERE FODSELSNR in(:fnrs)";
     }
 
     private String getAktivitetStatuserForListOfPersonIds() {
         return
-            "SELECT " +
-                "PERSONID, " +
-                "AKTOERID, " +
-                "AKTIVITETTYPE, " +
-                "STATUS, " +
-                "NESTE_UTLOPSDATO, " +
-                "NESTE_STARTDATO " +
-                "FROM " +
-                "BRUKERSTATUS_AKTIVITETER " +
-                "WHERE " +
-                "PERSONID in (:personids)";
+                "SELECT " +
+                        "PERSONID, " +
+                        "AKTOERID, " +
+                        "AKTIVITETTYPE, " +
+                        "STATUS, " +
+                        "NESTE_UTLOPSDATO, " +
+                        "NESTE_STARTDATO " +
+                        "FROM " +
+                        "BRUKERSTATUS_AKTIVITETER " +
+                        "WHERE " +
+                        "PERSONID in (:personids)";
     }
 
     public static AktivitetStatus mapAktivitetStatus (Map<String, Object> row) {
-      return new AktivitetStatus()
+        return new AktivitetStatus()
                 .setPersonid(PersonId.of((String) row.get("PERSONID")))
                 .setAktoerid(AktoerId.of((String) row.get("AKTOERID")))
                 .setAktivitetType((String) row.get("AKTIVITETTYPE"))
