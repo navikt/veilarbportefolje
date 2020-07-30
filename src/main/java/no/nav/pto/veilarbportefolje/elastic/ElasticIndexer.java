@@ -382,9 +382,7 @@ public class ElasticIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
-            BulkResponse response = skrivTilIndeks(indexName, brukere);
-
-            log.error("response fra elasticsearch " + toJson(response));
+            skrivTilIndeks(indexName, brukere);
         });
     }
 
@@ -448,20 +446,27 @@ public class ElasticIndexer {
                 .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
                 .forEach(bulk::add);
 
-        BulkResponse response = restHighLevelClient.bulk(bulk, DEFAULT);
+        try {
+            BulkResponse response = restHighLevelClient.bulk(bulk, DEFAULT);
+            if (response.hasFailures()) {
+                log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
+            }
 
-        if (response.hasFailures()) {
-            log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
+            if (response.getItems().length != oppfolgingsBrukere.size()) {
+                log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
+            }
+
+            List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+            log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+
+            return response;
+
+        } catch (IOException e) {
+                log.error("Bulkerrorrrr " + e);
         }
+        return null;
 
-        if (response.getItems().length != oppfolgingsBrukere.size()) {
-            log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
-        }
 
-        List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
-        log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
-
-        return response;
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {

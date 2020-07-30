@@ -40,8 +40,7 @@ public class PersistentOppdatering {
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
-        log.error("liste med personids " + toJson(personIds));
-        elasticIndexer.indekserBrukere(personIds);
+        runAsync(() -> elasticIndexer.indekserBrukere(personIds));
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {
