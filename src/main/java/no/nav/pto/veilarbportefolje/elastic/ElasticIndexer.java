@@ -378,6 +378,7 @@ public class ElasticIndexer {
 
     public void indekserBrukere(List<PersonId> personIds) {
         CollectionUtils.partition(personIds, BATCH_SIZE).forEach(batch -> {
+            log.error("batchen som ska skrivas " + toJson(batch));
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);

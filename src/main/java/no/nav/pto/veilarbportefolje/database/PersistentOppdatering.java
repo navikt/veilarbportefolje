@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static no.nav.common.json.JsonUtils.toJson;
 
 @Service
 @Slf4j
@@ -39,6 +40,7 @@ public class PersistentOppdatering {
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
+        log.error("liste med personids " + toJson(personIds));
         CompletableFuture<Void> f = runAsync(() -> elasticIndexer.indekserBrukere(personIds));
         f.exceptionally(e -> {
             RuntimeException wrappedException = new RuntimeException(e);
