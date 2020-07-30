@@ -381,6 +381,7 @@ public class ElasticIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
+            log.error("brukere som ska skrivas " + toJson(brukere));
             skrivTilIndeks(indexName, brukere);
         });
     }

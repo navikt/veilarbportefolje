@@ -39,7 +39,6 @@ public class PersistentOppdatering {
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
-        log.warn("Indekser personid "+ personIds.get(0).personId);
         CompletableFuture<Void> f = runAsync(() -> elasticIndexer.indekserBrukere(personIds));
         f.exceptionally(e -> {
             RuntimeException wrappedException = new RuntimeException(e);
