@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
@@ -12,15 +13,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.*;
 import java.util.List;
 import java.util.Optional;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/veileder")
-@Produces(APPLICATION_JSON)
 public class VeilederController {
 
     private ElasticService elasticService;
@@ -83,7 +81,7 @@ public class VeilederController {
         ValideringsRegler.sjekkVeilederIdent(veilederIdent, false);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticService.hentStatusTallForVeileder(enhet, veilederIdent);
+        return elasticService.hentStatusTallForVeileder(veilederIdent, enhet);
     }
 
     @GetMapping("/{veilederident}/arbeidsliste")

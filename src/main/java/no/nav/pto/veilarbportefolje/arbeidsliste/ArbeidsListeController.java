@@ -72,7 +72,7 @@ public class ArbeidsListeController {
         return response.data.isEmpty() ? response.badRequest() : response.created();
     }
 
-    @GetMapping("{fnr}/")
+    @GetMapping("{fnr}")
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
 
@@ -96,7 +96,7 @@ public class ArbeidsListeController {
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
     }
 
-    @PostMapping("{fnr}/")
+    @PostMapping("{fnr}")
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
@@ -114,7 +114,7 @@ public class ArbeidsListeController {
         return arbeidsliste;
     }
 
-    @PutMapping("{fnr}/")
+    @PutMapping("{fnr}")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
         Fnr fnr = new Fnr(fnrString);
@@ -133,7 +133,7 @@ public class ArbeidsListeController {
                         AuthUtils.getInnloggetVeilederIdent()));
     }
 
-    @DeleteMapping("{fnr}/")
+    @DeleteMapping("{fnr}")
     public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);

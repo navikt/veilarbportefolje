@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Comparator.naturalOrder;
+import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 import static no.nav.common.utils.IdUtils.generateId;
 
@@ -29,7 +30,6 @@ import static no.nav.common.utils.IdUtils.generateId;
 public class OppfolgingFeedHandler implements FeedCallback {
 
 
-    private static final String MDC_KEY = "oppfolging_data";
     private static final String FEED_NAME = "oppfolging";
 
     private static BigDecimal lastEntry;
@@ -72,7 +72,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
         }
 
 
-        MDC.put(MDC_KEY, generateId());
+        MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, generateId());
         log.info("OppfolgingerfeedDebug data: {}", data);
 
         try {
@@ -95,7 +95,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
             log.error(message, e);
         } finally {
-            MDC.remove(MDC_KEY);
+            MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
         }
     }
 
