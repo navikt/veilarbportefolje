@@ -87,7 +87,7 @@ public class VeilederController {
     }
 
     @GetMapping("/{veilederident}/arbeidsliste")
-    public List<Bruker>  hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
+    public List<Bruker> hentArbeidsliste(@PathVariable("veilederident") String veilederIdent, @RequestParam("enhet") String enhet) {
         Event event = new Event("minoversiktportefolje.arbeidsliste.lastet");
         metricsClient.report(event);
         ValideringsRegler.sjekkEnhet(enhet);

@@ -443,7 +443,10 @@ public class ElasticIndexer {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
-                .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
+                .map(bruker -> {
+                    log.info("BRUKER " + toJson(bruker));
+                    return new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON);
+                })
                 .forEach(bulk::add);
 
         try {
