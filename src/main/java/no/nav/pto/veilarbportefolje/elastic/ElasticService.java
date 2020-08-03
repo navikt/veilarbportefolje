@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
@@ -25,6 +26,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+@Slf4j
 public class ElasticService {
     RestHighLevelClient restHighLevelClient;
     VeilarbVeilederClient veilarbVeilederClient;
@@ -116,6 +118,7 @@ public class ElasticService {
                         byggStatusTallForVeilederQueryV2(enhetId, veilederId, emptyList(), vedtakstottePilotErPa) :
                         byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
 
+        log.info("indeksnavn", indeksNavn);
         StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
