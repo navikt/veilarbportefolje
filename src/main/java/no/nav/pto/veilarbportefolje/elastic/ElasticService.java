@@ -146,9 +146,7 @@ public class ElasticService {
                         byggPortefoljestorrelserQueryV2(enhetId) :
                         byggPortefoljestorrelserQuery(enhetId);
 
-        log.info("indeksnavn  " + indeksNavn);
-        log.info("alias navn  " + getAlias());
-        PortefoljestorrelserResponse response = search(request, getAlias(), PortefoljestorrelserResponse.class);
+        PortefoljestorrelserResponse response = search(request, indeksNavn, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
     }

@@ -36,14 +36,14 @@ public class ElasticConfig {
             .scheme(getElasticScheme())
             .build();
 
-
-    public RestHighLevelClient restHighLevelClient() {
+    @Bean
+    public static RestHighLevelClient restHighLevelClient() {
         return createClient(defaultConfig);
     }
 
     @Bean
-    public ElasticServiceV2 elasticServiceV2 () {
-        return new ElasticServiceV2(restHighLevelClient(), getAlias());
+    public ElasticServiceV2 elasticServiceV2 (RestHighLevelClient restHighLevelClient) {
+        return new ElasticServiceV2(restHighLevelClient, getAlias());
     }
 
     public static HealthCheckResult checkHealth() {
@@ -62,7 +62,7 @@ public class ElasticConfig {
 
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, UnleashService unleashService, MetricsClient metricsClient) {
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient(), unleashService, metricsClient, getAlias());
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, UnleashService unleashService, MetricsClient metricsClient, RestHighLevelClient restHighLevelClient) {
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, unleashService, metricsClient, getAlias());
     }
 }
