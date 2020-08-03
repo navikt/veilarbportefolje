@@ -449,26 +449,19 @@ public class ElasticIndexer {
                 })
                 .forEach(bulk::add);
 
-        try {
-            BulkResponse response = restHighLevelClient.bulk(bulk, DEFAULT);
-            if (response.hasFailures()) {
-                log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
-            }
-
-            if (response.getItems().length != oppfolgingsBrukere.size()) {
-                log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
-            }
-
-            List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
-            log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
-
-            return response;
-
-        } catch (IOException e) {
-                log.error("Bulkerrorrrr " + e);
+        BulkResponse response = restHighLevelClient.bulk(bulk, DEFAULT);
+        if (response.hasFailures()) {
+            log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
         }
-        return null;
 
+        if (response.getItems().length != oppfolgingsBrukere.size()) {
+            log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
+        }
+
+        List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+        log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+
+        return response;
 
     }
 

@@ -24,10 +24,8 @@ import java.util.Optional;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
-@Slf4j
 public class ElasticService {
     RestHighLevelClient restHighLevelClient;
     VeilarbVeilederClient veilarbVeilederClient;
@@ -119,7 +117,6 @@ public class ElasticService {
                         byggStatusTallForVeilederQueryV2(enhetId, veilederId, emptyList(), vedtakstottePilotErPa) :
                         byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
 
-        log.info("indeksnavn  " + indeksNavn);
         StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
@@ -129,7 +126,6 @@ public class ElasticService {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
-        log.info("indeksnavn  " + indeksNavn);
         SearchSourceBuilder request =
                 unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggStatusTallForEnhetQueryV2(enhetId, veilederPaaEnhet, vedtakstottePilotErPa):

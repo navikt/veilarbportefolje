@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static no.nav.common.json.JsonUtils.toJson;
 
 @Service
 @Slf4j
@@ -40,7 +39,14 @@ public class PersistentOppdatering {
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
-        runAsync(() -> elasticIndexer.indekserBrukere(personIds));
+        CompletableFuture<Void> future = runAsync(() -> elasticIndexer.indekserBrukere(personIds));
+
+        future.exceptionally(e -> {
+            RuntimeException wrappedException = new RuntimeException(e);
+            log.warn("Feil under asynkron indeksering vid kafka melding " +  wrappedException);
+            return null;
+        });
+
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {
