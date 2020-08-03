@@ -13,6 +13,7 @@ Følgende data aggregeres:
 * Dialoger fra `veilarbdialog` (aktivitetsplan) via REST-feed
 * Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via REST-feed
 
+
 ## Hvordan bygge
 
 Kjør `mvn clean install`
