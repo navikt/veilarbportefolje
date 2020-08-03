@@ -308,8 +308,7 @@ public class ElasticIndexer {
         CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
 
         future.exceptionally(e -> {
-            RuntimeException wrappedException = new RuntimeException(e);
-            log.warn("Feil under asynkron indeksering av bruker " + aktoerId, wrappedException);
+            log.warn("Feil under asynkron indeksering av bruker " + aktoerId, e);
             return null;
         });
 

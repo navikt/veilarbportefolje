@@ -42,8 +42,7 @@ public class PersistentOppdatering {
         CompletableFuture<Void> future = runAsync(() -> elasticIndexer.indekserBrukere(personIds));
 
         future.exceptionally(e -> {
-            RuntimeException wrappedException = new RuntimeException(e);
-            log.warn("Feil under asynkron indeksering vid kafka melding " +  wrappedException);
+            log.warn("Feil under asynkron indeksering vid kafka melding " +  e);
             return null;
         });
 
