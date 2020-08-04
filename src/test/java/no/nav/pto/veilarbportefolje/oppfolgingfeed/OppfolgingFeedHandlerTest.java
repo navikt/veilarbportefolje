@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
+import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
 import no.nav.pto.veilarbportefolje.mock.UnleashServiceMock;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -68,6 +69,7 @@ public class OppfolgingFeedHandlerTest {
                 oppfolgingRepository,
                 veilarbVeilederClient,
                 new TestTransactor(),
+                new LeaderElectionClientMock(),
                 new UnleashServiceMock(false)
         );
 

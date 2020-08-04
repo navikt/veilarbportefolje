@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.feed.consumer;
 
 import lombok.SneakyThrows;
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.feed.common.*;
@@ -111,14 +110,9 @@ public class FeedConsumer implements Authorization, ApplicationListener<ContextC
     }
 
     private Runnable runWithLock(String lockname, Runnable task) {
+
         return () -> {
-            if (this.config.lockExecutor == null) {
-                task.run();
-            } else {
-                Instant lockAtMostUntil = Instant.now().plusMillis(this.config.lockHoldingLimitInMilliSeconds);
-                LockConfiguration lockConfiguration = new LockConfiguration(lockname, lockAtMostUntil);
-                this.config.lockExecutor.executeWithLock(task, lockConfiguration);
-            }
+            task.run();
         };
     }
 }

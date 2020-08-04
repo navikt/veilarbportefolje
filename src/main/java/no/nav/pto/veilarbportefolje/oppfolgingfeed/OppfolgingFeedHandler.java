@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -40,6 +41,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
     private VeilarbVeilederClient veilarbVeilederClient;
     private Transactor transactor;
     private final UnleashService unleashService;
+    private final LeaderElectionClient leaderElectionClient;
 
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
@@ -47,6 +49,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
                                  OppfolgingRepository oppfolgingRepository,
                                  VeilarbVeilederClient veilarbVeilederClient,
                                  Transactor transactor,
+                                 LeaderElectionClient leaderElectionClient,
                                  UnleashService unleashService) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
@@ -55,6 +58,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.transactor = transactor;
         this.unleashService = unleashService;
+        this.leaderElectionClient = leaderElectionClient;
 
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
     }
@@ -71,6 +75,9 @@ public class OppfolgingFeedHandler implements FeedCallback {
             return;
         }
 
+        if(!leaderElectionClient.isLeader()) {
+            return;
+        }
 
         MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, generateId());
         log.info("OppfolgingerfeedDebug data: {}", data);

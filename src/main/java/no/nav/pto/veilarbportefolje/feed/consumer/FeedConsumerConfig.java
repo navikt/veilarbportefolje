@@ -1,17 +1,10 @@
 package no.nav.pto.veilarbportefolje.feed.consumer;
 
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.feed.common.FeedAuthorizationModule;
-import no.nav.pto.veilarbportefolje.feed.common.OutInterceptor;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import org.quartz.ScheduleBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
@@ -31,10 +24,6 @@ public class FeedConsumerConfig {
     FeedCallback callback;
     FeedAuthorizationModule authorizationModule = (feedname) -> true;
     int pageSize;
-
-    LockingTaskExecutor lockExecutor;
-    int lockHoldingLimitInMilliSeconds;
-
 
     public FeedConsumerConfig(BaseConfig<BrukerOppdatertInformasjon> baseConfig, ScheduleCreator pollingConfig) {
         this(baseConfig, pollingConfig, null);
@@ -69,16 +58,6 @@ public class FeedConsumerConfig {
 
     public FeedConsumerConfig pageSize(int pageSize) {
         this.pageSize = pageSize;
-        return this;
-    }
-
-    public FeedConsumerConfig lockProvider(LockProvider lockProvider, int lockHoldingLimitInMilliSeconds) {
-        return lockExecutor(new DefaultLockingTaskExecutor(lockProvider), lockHoldingLimitInMilliSeconds);
-    }
-
-    public FeedConsumerConfig lockExecutor(LockingTaskExecutor lockExecutor, int lockHoldingLimitInMilliSeconds) {
-        this.lockExecutor = lockExecutor;
-        this.lockHoldingLimitInMilliSeconds = lockHoldingLimitInMilliSeconds;
         return this;
     }
 
