@@ -41,26 +41,4 @@ public class ElasticServiceV2 {
             }
         }
     }
-
-    @SneakyThrows
-    public void updateDialog(Fnr fnr, boolean harDeltCv) {
-        UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias);
-        updateRequest.type("_doc");
-        updateRequest.id(fnr.getFnr());
-        updateRequest.doc(jsonBuilder()
-                .startObject()
-                .field("venterpasvarfrabruker", harDeltCv)
-                .field("venterpasvarfranav", harDeltCv)
-                .endObject()
-        );
-
-        try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
-        } catch (ElasticsearchException e) {
-            if (e.status() == RestStatus.NOT_FOUND) {
-                log.info("Kunne ikke finne dokument ved oppdatering av cv");
-            }
-        }
-    }
 }
