@@ -208,9 +208,6 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
-
-        log.error("henter bruker " + toJson(ids));
-
         return SqlUtils
                 .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
