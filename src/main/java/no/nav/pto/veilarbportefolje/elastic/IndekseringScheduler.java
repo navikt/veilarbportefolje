@@ -64,6 +64,7 @@ public class IndekseringScheduler {
     // Kjører hvert minutt
     @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
+        log.info("Starter deltaindeksering");
         JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering, leaderElectionClient);
     }
 
