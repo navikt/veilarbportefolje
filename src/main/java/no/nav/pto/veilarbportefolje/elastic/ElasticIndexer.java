@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.ElasticsearchStatusException;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -303,17 +304,9 @@ public class ElasticIndexer {
         restHighLevelClient.update(updateRequest, DEFAULT);
     }
 
-    public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
+    public void indekserAsynkront(AktoerId aktoerId) {
 
-        CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
-
-        future.exceptionally(e -> {
-            RuntimeException wrappedException = new RuntimeException(e);
-            log.warn("Feil under asynkron indeksering av bruker " + aktoerId, wrappedException);
-            return null;
-        });
-
-        return future;
+        indekser(aktoerId);
     }
 
     public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
@@ -439,7 +432,7 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public BulkResponse skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
+    public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
@@ -449,19 +442,28 @@ public class ElasticIndexer {
                 })
                 .forEach(bulk::add);
 
-        BulkResponse response = restHighLevelClient.bulk(bulk, DEFAULT);
-        if (response.hasFailures()) {
-            log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
-        }
+       restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<BulkResponse>() {
+            @Override
+            public void onResponse(BulkResponse bulkItemResponses) {
+                if (bulkItemResponses.hasFailures()) {
+                    log.warn("Klart ikke å skrive til indeks: {}", bulkItemResponses.buildFailureMessage());
+                }
 
-        if (response.getItems().length != oppfolgingsBrukere.size()) {
-            log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
-        }
+                if (bulkItemResponses.getItems().length != oppfolgingsBrukere.size()) {
+                    log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
+                }
 
-        List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
-        log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+                List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+                log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
 
-        return response;
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                log.warn("Feil under asynkron indeksering av brukerere ", e);
+            }
+        });
+
 
     }
 

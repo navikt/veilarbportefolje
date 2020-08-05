@@ -39,13 +39,7 @@ public class PersistentOppdatering {
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
-        CompletableFuture<Void> future = runAsync(() -> elasticIndexer.indekserBrukere(personIds));
-
-        future.exceptionally(e -> {
-            RuntimeException wrappedException = new RuntimeException(e);
-            log.warn("Feil under asynkron indeksering vid kafka melding " +  wrappedException);
-            return null;
-        });
+        elasticIndexer.indekserBrukere(personIds);
 
     }
 

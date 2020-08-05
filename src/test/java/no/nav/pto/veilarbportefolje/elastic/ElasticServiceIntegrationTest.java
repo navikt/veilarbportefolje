@@ -39,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Slf4j
+@Ignore
 public class ElasticServiceIntegrationTest extends IntegrationTest {
 
     private static final String TEST_INDEX = createIndexName("test_index");
