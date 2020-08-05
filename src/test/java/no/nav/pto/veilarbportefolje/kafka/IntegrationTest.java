@@ -1,7 +1,10 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.SneakyThrows;
+import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.util.RestUtils;
+import org.apache.http.util.EntityUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -14,8 +17,11 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.json.JSONObject;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
@@ -102,6 +108,16 @@ public class IntegrationTest {
     }
 
 
+    @SneakyThrows
+    public static int countDocuments(String indexName) {
+        Request request = new Request("GET", indexName + "/_count");
+        Response response = ELASTIC_CLIENT.getLowLevelClient().performRequest(request);
+        String entity = EntityUtils.toString(response.getEntity());
+        return new JSONObject(entity).getInt("count");
+    }
+
+
+
     public static void populateKafkaTopic(String topic, String key ,String payload) {
 
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, payload);
@@ -125,7 +141,7 @@ public class IntegrationTest {
     }
 
     private static boolean timeout(long t0) {
-        return currentTimeMillis() - t0 > 10_000;
+        return currentTimeMillis() - t0 > 15_000;
     }
 
 }

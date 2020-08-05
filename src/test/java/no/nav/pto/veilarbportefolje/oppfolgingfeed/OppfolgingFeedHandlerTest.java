@@ -203,7 +203,7 @@ public class OppfolgingFeedHandlerTest {
     }
 
     private void thenOppfolgingDataErOppdatert() {
-        verify(elasticIndexer).indekserAsynkront(AKTOER_ID);
+        verify(elasticIndexer).indekser(AKTOER_ID);
         verify(oppfolgingRepository).oppdaterOppfolgingData(nyInformasjon);
     }
 

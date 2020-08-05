@@ -90,7 +90,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
                 }
                 oppdaterOppfolgingData(info);
 
-                elasticIndexer.indekserAsynkront(AktoerId.of(info.getAktoerid()));
+                elasticIndexer.indekser(AktoerId.of(info.getAktoerid()));
             });
 
             finnMaxFeedId(data).ifPresent(id -> {

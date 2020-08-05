@@ -47,7 +47,7 @@ public class PersonIdToAktorIdSchedule {
         aktoerIder.forEach((id) -> {
             AktoerId aktoerId = AktoerId.of(id);
             personIdService.hentPersonidFraAktoerid(aktoerId);
-            elasticIndexer.indekserAsynkront(aktoerId);
+            elasticIndexer.indekser(aktoerId);
         });
 
         log.info("Ferdig med mapping av [" + aktoerIder.size() + "] aktørider");
