@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
@@ -64,8 +65,8 @@ public class IndekseringScheduler {
     // Kjører hvert minutt
     @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
-        log.info("Starter deltaindeksering");
-        JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering, leaderElectionClient);
+        val job = JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering, leaderElectionClient);
+        log.info("Starter deltaindeksering " + job.get().getJobId());
     }
 
 }

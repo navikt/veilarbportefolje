@@ -23,7 +23,7 @@ public class JobUtils {
     private static String MDC_JOB_ID = "jobId";
 
     public static Optional<RunningJob> runAsyncJobOnLeader(Runnable runnable, LeaderElectionClient leaderElectionClient) {
-        if (leaderElectionClient.isLeader()) {
+        if (!leaderElectionClient.isLeader()) {
             return Optional.empty();
         }
         RunningJob runningJob = runAsyncJob(runnable);
