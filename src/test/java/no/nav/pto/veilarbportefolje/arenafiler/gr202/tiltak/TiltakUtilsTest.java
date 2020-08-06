@@ -1,6 +1,9 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
-import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
@@ -11,11 +14,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import static java.lang.System.setProperty;
 import static junit.framework.TestCase.assertTrue;
@@ -206,13 +210,13 @@ public class TiltakUtilsTest {
         return t;
     }
 
+    @SneakyThrows
     private XMLGregorianCalendar calendarOf(int year, int month, int day) {
-        XMLGregorianCalendar calendar = new XMLGregorianCalendarImpl();
-        calendar.setDay(day);
-        calendar.setMonth(month);
-        calendar.setYear(year);
-
-        return calendar;
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, (month-1)); // HACKS FORDI MONTH I GregorianCalendar er 0 indeksert
+        calendar.set(Calendar.DAY_OF_MONTH, day);
+        return DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
     }
 
     private boolean calendarEqual(Timestamp t1, Timestamp t2) {
