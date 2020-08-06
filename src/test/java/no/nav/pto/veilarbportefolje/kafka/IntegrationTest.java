@@ -141,7 +141,7 @@ public class IntegrationTest {
     }
 
     private static boolean timeout(long t0) {
-        return currentTimeMillis() - t0 > 15_000;
+        return currentTimeMillis() - t0 > 12_000;
     }
 
 }

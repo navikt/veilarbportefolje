@@ -31,13 +31,6 @@ public class JobUtils {
     }
 
     public static RunningJob runAsyncJob(Runnable runnable) {
-        return runAsyncJobHelperFunc(runnable, Executors.newSingleThreadExecutor());
-    }
-
-    public static RunningJob runAsyncJob(Runnable runnable, long delaySeconds) {
-        return runAsyncJobHelperFunc(runnable, CompletableFuture.delayedExecutor(delaySeconds, TimeUnit.SECONDS));
-    }
-    public static RunningJob runAsyncJobHelperFunc(Runnable runnable, Executor executor) {
         String jobId = generateId();
 
         CompletableFuture<Void> future = CompletableFuture.runAsync(
@@ -46,7 +39,7 @@ public class JobUtils {
                     runnable.run();
                     MDC.remove(MDC_JOB_ID);
                 },
-                executor
+                Executors.newSingleThreadExecutor()
         );
 
         String podName;
