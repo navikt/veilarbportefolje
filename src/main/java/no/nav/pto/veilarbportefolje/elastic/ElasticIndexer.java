@@ -319,6 +319,13 @@ public class ElasticIndexer {
 
         OppfolgingsBruker bruker = result.orElseThrowException();
 
+        try {
+            erUnderOppfolging(bruker);
+        }
+        catch (Exception e) {
+            log.error("Feil vid underoppfolgong " + bruker.getAktoer_id());
+        }
+
         if (erUnderOppfolging(bruker)) {
             MetricsUtils.timed(
                     "portefolje.indeks.leggTilAktiviteter",
@@ -434,27 +441,27 @@ public class ElasticIndexer {
                 .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
                 .forEach(bulk::add);
 
-       restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {
-           @Override
-           public void onResponse(BulkResponse bulkItemResponses) {
-               if (bulkItemResponses.hasFailures()) {
-                   log.warn("Klart ikke å skrive til indeks: {}", bulkItemResponses.buildFailureMessage());
-               }
+        restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {
+            @Override
+            public void onResponse(BulkResponse bulkItemResponses) {
+                if (bulkItemResponses.hasFailures()) {
+                    log.warn("Klart ikke å skrive til indeks: {}", bulkItemResponses.buildFailureMessage());
+                }
 
-               if (bulkItemResponses.getItems().length != oppfolgingsBrukere.size()) {
-                   log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
-               }
+                if (bulkItemResponses.getItems().length != oppfolgingsBrukere.size()) {
+                    log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
+                }
 
-               List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
-               log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+                List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+                log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
 
-           }
+            }
 
-           @Override
-           public void onFailure(Exception e) {
-               log.warn("Feil under asynkron indeksering av brukerere ", e);
-           }
-       });
+            @Override
+            public void onFailure(Exception e) {
+                log.warn("Feil under asynkron indeksering av brukerere ", e);
+            }
+        });
 
 
     }

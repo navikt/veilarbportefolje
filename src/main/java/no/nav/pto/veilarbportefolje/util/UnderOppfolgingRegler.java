@@ -23,7 +23,7 @@ public class UnderOppfolgingRegler {
     public static boolean erUnderOppfolging(OppfolgingsBruker bruker) {
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String servicegruppeKode = bruker.getKvalifiseringsgruppekode();
-        return erUnderOppfolging(formidlingsgruppekode, servicegruppeKode) || oppfolgingsFlaggErSatt(bruker);
+        return oppfolgingsFlaggErSatt(bruker) || erUnderOppfolging(formidlingsgruppekode, servicegruppeKode);
     }
 
     public static boolean erUnderOppfolging(Result<OppfolgingsBruker> bruker) {
