@@ -7,12 +7,10 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestUtils;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
