@@ -8,8 +8,11 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
+import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
 import java.util.Optional;
+
+import static no.nav.common.utils.IdUtils.generateId;
 
 @Slf4j
 public class IndekseringScheduler {
@@ -35,18 +38,20 @@ public class IndekseringScheduler {
     // Kjører hver dag kl 04:00
     @Scheduled(cron = "0 0 4 * * ?")
     public void indekserTiltakOgYtelser() {
-        Optional<RunningJob> maybeJob = JobUtils.runAsyncJobOnLeader(
-                () -> {
-                    try {
-                        kopierGR199FraArena.startOppdateringAvYtelser();
-                        tiltakHandler.startOppdateringAvTiltakIDatabasen();
-                    } finally {
-                        elasticIndexer.startIndeksering();
-                    }
-                },
-                leaderElectionClient
-        );
-        maybeJob.ifPresent(job -> log.info("Startet nattlig elastic av tiltak og ytelser med jobId {} på pod {}", job.getJobId(), job.getPodName()));
+        if(leaderElectionClient.isLeader()){
+            String jobId = generateId();
+            MDC.put("jobId", jobId);
+            log.info("Startet nattlig elastic av tiltak og ytelser med jobId {}", jobId);
+            try {
+
+                kopierGR199FraArena.startOppdateringAvYtelser();
+                tiltakHandler.startOppdateringAvTiltakIDatabasen();
+            } finally {
+                elasticIndexer.startIndeksering();
+                MDC.remove("jobId");
+            }
+        }
+
     }
 
     // Kjører hver dag kl 00:00
@@ -65,8 +70,9 @@ public class IndekseringScheduler {
     // Kjører hvert minutt
     @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
-        val job = JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering, leaderElectionClient);
-        log.info("Starter deltaindeksering " + job.get().getJobId());
+        if(leaderElectionClient.isLeader()) {
+            elasticIndexer.deltaindeksering();
+        }
     }
 
 }

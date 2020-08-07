@@ -8,7 +8,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.CollectionUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -32,6 +31,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -301,7 +301,17 @@ public class ElasticIndexer {
                 .endObject()
         );
 
-        restHighLevelClient.update(updateRequest, DEFAULT);
+        restHighLevelClient.updateAsync(updateRequest, DEFAULT, new ActionListener<>() {
+            @Override
+            public void onResponse(UpdateResponse updateResponse) {
+                log.info("Satte under oppfolging til false i elasticsearch" );
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                log.error("Feil vid oppdatering av bruker som ikke er under oppfolging ", e);
+            }
+        });
     }
 
     public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
