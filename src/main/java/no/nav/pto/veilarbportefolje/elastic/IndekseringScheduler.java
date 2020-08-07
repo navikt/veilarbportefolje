@@ -32,8 +32,8 @@ public class IndekseringScheduler {
         this.leaderElectionClient = leaderElectionClient;
     }
 
-    // Kjører hvert minutt
-    @Scheduled(cron = "0 * * * * *")
+    // Kjører hver dag kl 04:00
+    @Scheduled(cron = "0 0 4 * * ?")
     public void indekserTiltakOgYtelser() {
         Optional<RunningJob> maybeJob = JobUtils.runAsyncJobOnLeader(
                 () -> {
@@ -62,6 +62,8 @@ public class IndekseringScheduler {
         maybeJob.ifPresent(job -> log.info("Startet nattlig elastic av krr med jobId {} på pod {}", job.getJobId(), job.getPodName()));
     }
 
+    // Kjører hvert minutt
+    @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
         val job = JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering, leaderElectionClient);
         log.info("Starter deltaindeksering " + job.get().getJobId());
