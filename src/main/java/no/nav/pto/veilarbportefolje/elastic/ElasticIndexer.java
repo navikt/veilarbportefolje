@@ -323,7 +323,7 @@ public class ElasticIndexer {
             erUnderOppfolging(bruker);
         }
         catch (Exception e) {
-            log.error("Feil vid underoppfolgong " + bruker.getAktoer_id());
+            log.error("Feil vid underoppfolgong " + bruker);
         }
 
         if (erUnderOppfolging(bruker)) {
