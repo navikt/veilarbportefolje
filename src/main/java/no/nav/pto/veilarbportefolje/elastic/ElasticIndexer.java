@@ -318,7 +318,7 @@ public class ElasticIndexer {
         }
 
         OppfolgingsBruker bruker = result.orElseThrowException();
-
+        log.info("bruker " + bruker);
         try {
             erUnderOppfolging(bruker);
         }
