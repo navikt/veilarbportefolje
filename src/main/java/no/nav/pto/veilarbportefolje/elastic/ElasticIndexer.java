@@ -306,6 +306,8 @@ public class ElasticIndexer {
 
     public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
 
+        log.info("aktoer id " + aktoerId.aktoerId);
+
         Result<OppfolgingsBruker> result = MetricsUtils.timed(
                 "portefolje.indeks.hentBruker",
                 () -> brukerRepository.hentBruker(aktoerId),
