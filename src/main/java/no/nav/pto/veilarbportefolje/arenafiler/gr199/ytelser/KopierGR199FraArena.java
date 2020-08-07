@@ -73,6 +73,7 @@ public class KopierGR199FraArena {
         FileObject tiltakFil = this.hentYtelserFil().getOrElseThrow(() -> new RuntimeException());
         Try<TiltakOgAktiviteterForBrukere> tiltak = FilmottakFileUtils.unmarshallTiltakFil(tiltakFil);
         if (tiltak.isFailure()) {
+            log.error("innlesning av arenafil feil " + new RuntimeException(tiltak.getCause()));
             return innlesingAvFilFeilet(environmentProperties.getArenaLoependeYtelserUrl());
         } else {
             return HealthCheckResult.healthy();
