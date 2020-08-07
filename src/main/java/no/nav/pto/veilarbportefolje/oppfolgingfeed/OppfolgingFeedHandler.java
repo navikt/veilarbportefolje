@@ -82,8 +82,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
         MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, generateId());
         log.info("OppfolgingerfeedDebug data: {}", data);
 
-
-
+        try {
             data.forEach(info -> {
                 if (info.getStartDato() == null) {
                     log.warn("Bruker {} har ingen startdato", info.getAktoerid());
@@ -97,6 +96,12 @@ public class OppfolgingFeedHandler implements FeedCallback {
                 oppfolgingRepository.updateOppfolgingFeedId(id);
                 lastEntry = id;
             });
+        } catch (Exception e) {
+            String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
+            log.error(message, e);
+        } finally {
+            MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
+        }
     }
 
     static Optional<BigDecimal> finnMaxFeedId(List<BrukerOppdatertInformasjon> data) {
