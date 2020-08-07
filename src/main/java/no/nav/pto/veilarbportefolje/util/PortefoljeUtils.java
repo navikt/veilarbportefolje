@@ -2,11 +2,8 @@ package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.Portefolje;
-import no.nav.pto.veilarbportefolje.auth.PepClient;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 public class PortefoljeUtils {
 
