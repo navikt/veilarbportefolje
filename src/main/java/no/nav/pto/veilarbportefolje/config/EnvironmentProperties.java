@@ -23,5 +23,5 @@ public class EnvironmentProperties {
     private String azureAdDiscoveryUrl;
     private String azureAdClientId;
     private String openAmRefreshUrl;
-
+    private String soapStsUrl;
 }

@@ -2,29 +2,30 @@ package no.nav.pto.veilarbportefolje.util;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
-import no.nav.common.cxf.StsSecurityConstants;
+import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.Properties;
 
+import static no.nav.common.utils.NaisUtils.getCredentials;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 
 public class KafkaProperties {
 
     public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY);
-    private static final String USERNAME = EnvironmentUtils.getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
-    private static final String PASSWORD = EnvironmentUtils.getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
+    private static final Credentials serviceUserCredentials = getCredentials("service_user");
 
     public static Properties kafkaProperties() {
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
-        props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
+        props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + serviceUserCredentials.username + "\" password=\"" + serviceUserCredentials.password + "\";");
         props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
         props.put(MAX_POLL_RECORDS_CONFIG, 5);

@@ -1,11 +1,15 @@
 package no.nav.pto.veilarbportefolje.krr;
 
 import no.nav.common.cxf.CXFClient;
+import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
+import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import static no.nav.common.utils.NaisUtils.getCredentials;
 
 
 @Configuration
@@ -13,13 +17,16 @@ public class DigitalKontaktinformasjonConfig {
 
     @Bean
     public DigitalKontaktinformasjonV1 dkifV1(EnvironmentProperties environmentProperties) {
-        return digitalKontaktinformasjon(environmentProperties.getDifiUrl());
-    }
+        Credentials serviceUserCredentials = getCredentials("service_user");
+        StsConfig stsConfig = StsConfig.builder()
+                .url(environmentProperties.getSoapStsUrl())
+                .username(serviceUserCredentials.username)
+                .password(serviceUserCredentials.password)
+                .build();
 
-    private DigitalKontaktinformasjonV1 digitalKontaktinformasjon(String difiUrl) {
         return new CXFClient<>(DigitalKontaktinformasjonV1.class)
-                .address(difiUrl)
-                .configureStsForSystemUser()
+                .address(environmentProperties.getDifiUrl())
+                .configureStsForSystemUser(stsConfig)
                 .build();
     }
 
