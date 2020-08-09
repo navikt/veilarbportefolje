@@ -330,12 +330,9 @@ public class ElasticIndexer {
         }
 
         OppfolgingsBruker bruker = result.orElseThrowException();
-        log.info("bruker " + bruker);
-        try {
-            erUnderOppfolging(bruker);
-        }
-        catch (Exception e) {
-            log.error("Feil vid underoppfolgong " + bruker);
+
+        if(bruker == null) {
+            return Result.err(new NullPointerException("Fante ikke bruker med aktorid " + aktoerId));
         }
 
         if (erUnderOppfolging(bruker)) {
