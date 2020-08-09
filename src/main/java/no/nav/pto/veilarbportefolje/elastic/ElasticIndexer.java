@@ -45,11 +45,9 @@ import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
@@ -316,8 +314,6 @@ public class ElasticIndexer {
 
     public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
 
-        log.info("aktoer id " + aktoerId.aktoerId);
-
         Result<OppfolgingsBruker> result = MetricsUtils.timed(
                 "portefolje.indeks.hentBruker",
                 () -> brukerRepository.hentBruker(aktoerId),
@@ -332,7 +328,8 @@ public class ElasticIndexer {
         OppfolgingsBruker bruker = result.orElseThrowException();
 
         if(bruker == null) {
-            return Result.err(new NullPointerException("Fante ikke bruker med aktorid " + aktoerId));
+            log.error("Fante ikke bruker med aktorid " + aktoerId);
+            return Result.err(new NullPointerException());
         }
 
         if (erUnderOppfolging(bruker)) {
