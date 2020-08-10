@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.krr;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
@@ -13,6 +14,7 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 
 
 @Configuration
+@Slf4j
 public class DigitalKontaktinformasjonConfig {
 
     @Bean
@@ -36,6 +38,7 @@ public class DigitalKontaktinformasjonConfig {
             dkifV1.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
+            log.error("feil mot dkif " + e );
             return HealthCheckResult.unhealthy("Feil mot difi", e);
         }
     }
