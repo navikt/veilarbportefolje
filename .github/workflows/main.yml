@@ -43,6 +43,8 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Print maven version
+        run: mvn -v
       - name: Build maven artifacts
         run: mvn -s settings.xml -P github -Dgithub.token=${{ secrets.GITHUB_TOKEN }} -B package -D skipTests
       - name: Build and push Docker image
