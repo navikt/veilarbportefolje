@@ -38,7 +38,7 @@ public class DigitalKontaktinformasjonConfig {
             dkifV1.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
-            log.error("feil mot dkif " + e );
+            log.error("feil mot dkif " + new RuntimeException(e));
             return HealthCheckResult.unhealthy("Feil mot difi", e);
         }
     }
