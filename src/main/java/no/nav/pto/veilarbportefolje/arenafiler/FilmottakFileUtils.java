@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenafiler;
 
+import com.sun.xml.bind.v2.runtime.JAXBContextImpl;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
@@ -59,7 +60,7 @@ public class FilmottakFileUtils {
 
     static <T> Try<T> unmarshallFile(InputStream is, Class<T> declaredType) {
         return Try.of(() -> {
-            JAXBContext jaxb = JAXBContext.newInstance(declaredType.getPackage().getName());
+            JAXBContext jaxb = JAXBContextImpl.newInstance(declaredType.getPackage().getName());
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
             StreamSource source = new StreamSource(is);
             JAXBElement<T> jaxbElement = unmarshaller.unmarshal(source, declaredType);
