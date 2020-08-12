@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.arenafiler;
 
 import io.vavr.control.Try;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -12,7 +11,6 @@ import static org.junit.Assert.assertThat;
 
 public class KopierGR199FraArenaTest {
 
-    @Ignore
     @Test
     public void unmarshalling() {
         InputStream file = KopierGR199FraArenaTest.class.getResourceAsStream("/arena-vedtak.xml");

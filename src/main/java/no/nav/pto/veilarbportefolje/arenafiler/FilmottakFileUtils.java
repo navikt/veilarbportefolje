@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.arenafiler;
 
+import com.sun.xml.bind.v2.JAXBContextFactory;
 import io.vavr.control.Try;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
@@ -19,6 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+
 
 
 @Slf4j
@@ -57,9 +60,14 @@ public class FilmottakFileUtils {
         return Try.of(() -> fileObject.getContent().getInputStream()).flatMap(file -> unmarshallFile(file, LoependeYtelser.class));
     }
 
+    @SneakyThrows
     static <T> Try<T> unmarshallFile(InputStream is, Class<T> declaredType) {
+        JAXBContextFactory jaxbContextFactory = new JAXBContextFactory();
+        Class[] classes = {declaredType};
+        JAXBContext context = jaxbContextFactory.createContext(classes, null);
+
         return Try.of(() -> {
-            JAXBContext jaxb = JAXBContext.newInstance(declaredType.getPackage().getName());
+            JAXBContext jaxb = context.newInstance(declaredType.getPackage().getName());
             Unmarshaller unmarshaller = jaxb.createUnmarshaller();
             StreamSource source = new StreamSource(is);
             JAXBElement<T> jaxbElement = unmarshaller.unmarshal(source, declaredType);
