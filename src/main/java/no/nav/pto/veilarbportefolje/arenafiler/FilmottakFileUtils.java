@@ -10,11 +10,9 @@ import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.auth.StaticUserAuthenticator;
 import org.apache.commons.vfs2.impl.DefaultFileSystemConfigBuilder;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -23,6 +21,9 @@ import java.time.temporal.ChronoUnit;
 
 @Slf4j
 public class FilmottakFileUtils {
+
+    @Autowired
+    JAXBContextFactory jaxbContextFactory;
 
     public static Try<FileObject> hentFil(SftpConfig sftpConfig) {
         log.info("Starter henting av fil fra {}", sftpConfig.getUrl());
