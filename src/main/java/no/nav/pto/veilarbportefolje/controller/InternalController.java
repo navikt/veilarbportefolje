@@ -38,13 +38,7 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.FORVENTET_MINIM
 @RestController
 @RequestMapping("/internal")
 public class InternalController {
-
-    private final DigitalKontaktinformasjonV1 dkifV1;
-    private final JdbcTemplate db;
-    private final TiltakHandler tiltakHandler;
-    private final KopierGR199FraArena kopierGR199FraArena;
-    private final AktorregisterClient aktorregisterClient;
-    private final Pep veilarbPep;
+    private List<SelfTestCheck> selftestChecks;
 
     @Autowired
     public InternalController(
@@ -55,31 +49,6 @@ public class InternalController {
             AktorregisterClient aktorregisterClient,
             Pep veilarbPep
     ) {
-        this.dkifV1 = dkifV1;
-        this.db = db;
-        this.tiltakHandler = tiltakHandler;
-        this.kopierGR199FraArena = kopierGR199FraArena;
-        this.aktorregisterClient = aktorregisterClient;
-        this.veilarbPep = veilarbPep;
-    }
-
-    @GetMapping("/isReady")
-    public void isReady() {
-        List<HealthCheck> healthChecks = Collections.emptyList();
-
-        HealthCheckUtils.findFirstFailingCheck(healthChecks)
-                .ifPresent((failedCheck) -> {
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-                });
-    }
-
-    @GetMapping("/isAlive")
-    public void isAlive() {
-    }
-
-    @GetMapping("/selftest")
-    public ResponseEntity selftest() {
-
         List<SelfTestCheck> diverseSelftTester = Arrays.asList(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, ElasticConfig::checkHealth),
                 new SelfTestCheck("Database for portefolje", true, () -> DatabaseConfig.dbPinger(db)),
@@ -94,10 +63,25 @@ public class InternalController {
                 .map(topic -> new SelfTestCheck("Sjekker at vi får kontakt med partisjonene for " + topic, false, new KafkaHelsesjekk(topic)))
                 .collect(Collectors.toList());
 
-        List<SelfTestCheck> selftestChecks = Stream
-                .concat(diverseSelftTester.stream(), kafkaSelftTester.stream())
+        this.selftestChecks = Stream.concat(diverseSelftTester.stream(), kafkaSelftTester.stream())
                 .collect(Collectors.toList());
+    }
 
+    @GetMapping("/isReady")
+    public void isReady() {
+        List<HealthCheck> healthChecks = Collections.emptyList();
+
+        HealthCheckUtils.findFirstFailingCheck(healthChecks)
+                .ifPresent((failedCheck) -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+                });
+    }
+
+    @GetMapping("/isAlive")
+    public void isAlive() {}
+
+    @GetMapping("/selftest")
+    public ResponseEntity selftest() {
         List<SelftTestCheckResult> checkResults = checkAllParallel(selftestChecks);
         String html = SelftestHtmlGenerator.generate(checkResults);
         int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
