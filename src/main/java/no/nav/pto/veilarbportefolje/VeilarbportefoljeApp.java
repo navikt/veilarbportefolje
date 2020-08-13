@@ -13,7 +13,7 @@ public class VeilarbportefoljeApp {
 
     public static void main(String... args) {
         System.setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging");
-        System.setProperty(JAXB_CONTEXT_FACTORY, "org.eclipse.persistence.jaxb.JAXBContextFactory");
+        System.setProperty(JAXB_CONTEXT_FACTORY, "com.sun.xml.bind.v2.JAXBContextFactory");
 
         SpringApplication.run(VeilarbportefoljeApp.class, args);
     }

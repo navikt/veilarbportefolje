@@ -26,6 +26,7 @@
         <veilarbregistrering.skjema.version>1.202004301354-b728b07</veilarbregistrering.skjema.version>
         <flyway.version>4.0.3</flyway.version>
         <prometheus.version>0.4.0</prometheus.version>
+        <jaxb.version>2.3.1</jaxb.version>
     </properties>
 
     <build>
@@ -277,11 +278,13 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
+            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.moxy</artifactId>
-            <version>2.7.4</version>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${jaxb.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!--Diverse-->
