@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
+import static no.nav.common.health.selftest.SelfTestUtils.checkAll;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
 
 @RestController
@@ -82,7 +82,7 @@ public class InternalController {
 
     @GetMapping("/selftest")
     public ResponseEntity selftest() {
-        List<SelftTestCheckResult> checkResults = checkAllParallel(selftestChecks);
+        List<SelftTestCheckResult> checkResults = checkAll(selftestChecks);
         String html = SelftestHtmlGenerator.generate(checkResults);
         int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
 
