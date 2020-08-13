@@ -30,13 +30,12 @@ import java.util.concurrent.CompletableFuture;
 
 import static java.util.Comparator.naturalOrder;
 import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInformasjon> {
 
-
-    private static final String MDC_KEY = "oppfolging_data";
     private static final String FEED_NAME = "oppfolging";
 
     private static BigDecimal lastEntry;
@@ -83,7 +82,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
 
         timer.start();
-        MDC.put(MDC_KEY, generateId());
+        MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, generateId());
         log.info("OppfolgingerfeedDebug data: {}", data);
 
         try {
@@ -119,7 +118,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
             String message = "Feil ved behandling av oppfølgingsdata (oppfolging) fra feed for liste med brukere.";
             log.error(message, e);
         } finally {
-            MDC.remove(MDC_KEY);
+            MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
         }
     }
 
