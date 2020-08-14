@@ -1,9 +1,8 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import com.google.common.base.Joiner;
-import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 import io.vavr.collection.List;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.database.BrukerRepositoryTest;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
@@ -16,32 +15,32 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.inject.Inject;
+import javax.xml.datatype.DatatypeFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class TiltakRepositoryTest {
 
-    @Inject
     private JdbcTemplate jdbcTemplate;
-
-    @Inject
     private TiltakRepository tiltakRepository;
 
     @Before
     public void tomTabeller() {
+        jdbcTemplate = new JdbcTemplate(setupInMemoryDatabase());
+        tiltakRepository = new TiltakRepository(jdbcTemplate, null);
+
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table brukertiltak");
         jdbcTemplate.execute("truncate table enhettiltak");
@@ -61,6 +60,7 @@ public class TiltakRepositoryTest {
     }
 
     @Test
+    @SneakyThrows
     public void skalInserteBrukertiltak() {
         insertKodeverk();
         Bruker bruker = mock(Bruker.class);
@@ -68,7 +68,10 @@ public class TiltakRepositoryTest {
         Tiltaksaktivitet tiltaksaktivitet1 = new Tiltaksaktivitet();
         tiltaksaktivitet1.setTiltakstype("A");
         Periode periode1 = new Periode();
-        periode1.setTom(XMLGregorianCalendarImpl.createDateTime(2000, 6, 4, 16, 16, 16));
+
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.set(2000, 6, 4, 16, 16, 16);
+        periode1.setTom(DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar));
         tiltaksaktivitet1.setDeltakelsePeriode(periode1);
         when(bruker.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(
                 tiltaksaktivitet1

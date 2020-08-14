@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;

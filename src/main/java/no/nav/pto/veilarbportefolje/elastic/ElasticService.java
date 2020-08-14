@@ -1,14 +1,14 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
-import no.nav.json.JsonUtils;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -17,7 +17,6 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,21 +26,21 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
-@Component
 public class ElasticService {
-    RestHighLevelClient client;
-    PepClient pepClient;
-    VeilederService veilederService;
+    RestHighLevelClient restHighLevelClient;
+    VeilarbVeilederClient veilarbVeilederClient;
     UnleashService unleashService;
+    String indeksNavn;
 
-    public ElasticService(RestHighLevelClient client, PepClient pepClient, VeilederService veilederService, UnleashService unleashService) {
-        this.client = client;
-        this.pepClient = pepClient;
-        this.veilederService = veilederService;
+
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, String indeksNavn) {
+        this.restHighLevelClient = restHighLevelClient;
+        this.veilarbVeilederClient = veilarbVeilederClient;
         this.unleashService = unleashService;
+        this.indeksNavn = indeksNavn;
     }
 
-    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall, String indexAlias) {
+    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
@@ -63,9 +62,7 @@ public class ElasticService {
             boolQuery.filter(termQuery("veileder_id", veilederIdent.get()));
         }
 
-        List<String> veiledereMedTilgangTilEnhet = veilederService.hentVeilederePaaEnhet(enhetId).stream()
-                .map(VeilederId::getVeilederId)
-                .collect(toList());
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
         if (filtervalg.harAktiveFilter()) {
             boolean erVedtakstottePilotPa = erVedtakstottePilotPa();
@@ -86,7 +83,7 @@ public class ElasticService {
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
-        ElasticSearchResponse response = search(searchSourceBuilder, indexAlias, ElasticSearchResponse.class);
+        ElasticSearchResponse response = search(searchSourceBuilder, indeksNavn, ElasticSearchResponse.class);
         int totalHits = response.getHits().getTotal();
 
         List<Bruker> brukere = response.getHits().getHits().stream()
@@ -98,21 +95,21 @@ public class ElasticService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
-    public List<Bruker> hentBrukereMedArbeidsliste(String veilederId, String enhetId, String indexAlias) {
+    public List<Bruker> hentBrukereMedArbeidsliste(String veilederId, String enhetId) {
 
         SearchSourceBuilder request =
                 unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggArbeidslisteQueryV2(enhetId, veilederId) :
                         byggArbeidslisteQuery(enhetId, veilederId);
 
-        ElasticSearchResponse response = search(request, indexAlias, ElasticSearchResponse.class);
+        ElasticSearchResponse response = search(request, indeksNavn, ElasticSearchResponse.class);
 
         return response.getHits().getHits().stream()
                 .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa()))
                 .collect(toList());
     }
 
-    public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId, String indexAlias) {
+    public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
 
         SearchSourceBuilder request =
@@ -120,35 +117,32 @@ public class ElasticService {
                         byggStatusTallForVeilederQueryV2(enhetId, veilederId, emptyList(), vedtakstottePilotErPa) :
                         byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
 
-        StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
+        StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
     }
 
-    public StatusTall hentStatusTallForEnhet(String enhetId, String indexAlias) {
-        List<String> veilederPaaEnhet = veilederService.hentVeilederePaaEnhet(enhetId).stream()
-                .map(VeilederId::toString)
-                .collect(toList());
+    public StatusTall hentStatusTallForEnhet(String enhetId) {
+        List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
-
         SearchSourceBuilder request =
                 unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggStatusTallForEnhetQueryV2(enhetId, veilederPaaEnhet, vedtakstottePilotErPa):
                         byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
 
-        StatustallResponse response = search(request, indexAlias, StatustallResponse.class);
+        StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
     }
 
-    public FacetResults hentPortefoljestorrelser(String enhetId, String indexAlias) {
+    public FacetResults hentPortefoljestorrelser(String enhetId) {
         SearchSourceBuilder request =
                 unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
                         byggPortefoljestorrelserQueryV2(enhetId) :
                         byggPortefoljestorrelserQuery(enhetId);
 
-        PortefoljestorrelserResponse response = search(request, indexAlias, PortefoljestorrelserResponse.class);
+        PortefoljestorrelserResponse response = search(request, indeksNavn, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
     }
@@ -159,7 +153,7 @@ public class ElasticService {
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 

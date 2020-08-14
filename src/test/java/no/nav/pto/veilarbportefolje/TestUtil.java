@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje;
 
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -27,7 +27,6 @@ public class TestUtil {
 
         setHsqlToOraSyntax(ds);
         migrateDb(ds);
-
         return ds;
     }
 

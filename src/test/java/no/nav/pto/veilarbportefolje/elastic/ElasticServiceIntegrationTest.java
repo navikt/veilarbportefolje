@@ -3,25 +3,24 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.brukerdialog.security.context.SubjectRule;
-import no.nav.common.auth.Subject;
-import no.nav.common.auth.SubjectHandler;
+import no.nav.common.abac.Pep;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Pair;
-import no.nav.pto.veilarbportefolje.abac.PepClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.cv.CvService;
-import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
+import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.service.VeilederService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.jetbrains.annotations.NotNull;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import org.junit.*;
 
 import java.time.Instant;
@@ -30,15 +29,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
-import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
-import static no.nav.common.auth.SsoToken.oidcToken;
-import static no.nav.common.utils.CollectionUtils.*;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -58,25 +54,23 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
     private static ElasticService elasticService;
     private static ElasticIndexer elasticIndexer;
 
-    @Rule
-    public SubjectRule subjectRule = new SubjectRule(new Subject(TEST_VEILEDER_0, InternBruker, oidcToken(PRIVILEGED_TOKEN, emptyMap())));
 
     @BeforeClass
     public static void setUp() {
-        PepClient pepMock = mockPep();
-        VeilederService veilederServiceMock = mockVeilederService();
+
+        VeilarbVeilederClient veilederServiceMock = mockVeilederService();
 
         UnleashService unleashMock = mock(UnleashService.class);
         when(unleashMock.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)).thenReturn(true);
 
-        elasticService = new ElasticService(ELASTIC_CLIENT, pepMock, veilederServiceMock, unleashMock);
+        elasticService = new ElasticService(ELASTIC_CLIENT, veilederServiceMock, unleashMock, TEST_INDEX);
         elasticIndexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 ELASTIC_CLIENT,
-                elasticService,
                 unleashMock,
-                mock(CvService.class)
+                mock(MetricsClient.class),
+                TEST_INDEX
         );
     }
 
@@ -113,6 +107,8 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         skrivBrukereTilTestindeks(brukere);
 
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < brukere.size());
+
         BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -120,8 +116,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 new Filtervalg(),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
 
@@ -148,7 +143,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         skrivBrukereTilTestindeks(brukere);
 
+
+
         val filtervalg = new Filtervalg().setFerdigfilterListe(listOf(I_AVTALT_AKTIVITET));
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < brukere.size());
+
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -156,9 +155,9 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filtervalg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
+
 
         assertThat(response.getAntall()).isEqualTo(2);
 
@@ -202,7 +201,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setFerdigfilterListe(listOf(UTLOPTE_AKTIVITETER))
                 .setVeiledere(listOf(TEST_VEILEDER_0, TEST_VEILEDER_1));
 
-        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < brukere.size());
+
+        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
+
 
         assertThat(response.getAntall()).isEqualTo(2);
 
@@ -234,8 +237,10 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         skrivBrukereTilTestindeks(brukere);
 
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) <brukere.size());
+
         val filtervalg = new Filtervalg().setFerdigfilterListe(listOf(UFORDELTE_BRUKERE));
-        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null, TEST_INDEX);
+        val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
 
         assertThat(response.getAntall()).isEqualTo(2);
     }
@@ -269,7 +274,10 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .collect(toList());
 
         skrivBrukereTilTestindeks(brukere);
-        FacetResults portefoljestorrelser = elasticService.hentPortefoljestorrelser(TEST_ENHET, TEST_INDEX);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < brukere.size());
+
+        FacetResults portefoljestorrelser = elasticService.hentPortefoljestorrelser(TEST_ENHET);
 
         assertThat(facetResultCountForVeileder(veilederId1, portefoljestorrelser)).isEqualTo(4L);
         assertThat(facetResultCountForVeileder(veilederId2, portefoljestorrelser)).isEqualTo(3L);
@@ -295,10 +303,12 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                         .setVeileder_id(TEST_VEILEDER_0)
                         .setEnhet_id(TEST_ENHET)
                         .setArbeidsliste_aktiv(false);
+        val liste = List.of(brukerMedArbeidsliste, brukerUtenArbeidsliste);
 
-        skrivBrukereTilTestindeks(brukerMedArbeidsliste, brukerUtenArbeidsliste);
+        skrivBrukereTilTestindeks(liste);
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
-        List<Bruker> brukereMedArbeidsliste = elasticService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET, TEST_INDEX);
+        List<Bruker> brukereMedArbeidsliste = elasticService.hentBrukereMedArbeidsliste(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(brukereMedArbeidsliste.size()).isEqualTo(1);
     }
 
@@ -333,10 +343,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setFormidlingsgruppekode("ISERV");
 
+        val liste = List.of(testBruker1, testBruker2, inaktivBruker);
+        skrivBrukereTilTestindeks(liste);
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
-        skrivBrukereTilTestindeks(testBruker1, testBruker2, inaktivBruker);
-
-        val statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET, TEST_INDEX);
+        val statustall = elasticService.hentStatusTallForVeileder(TEST_VEILEDER_0, TEST_ENHET);
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isEqualTo(0);
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1);
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2);
@@ -363,9 +374,12 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        skrivBrukereTilTestindeks(brukerMedVeileder, brukerUtenVeileder);
+        val liste = List.of(brukerMedVeileder, brukerUtenVeileder);
+        skrivBrukereTilTestindeks(liste);
 
-        val statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET, TEST_INDEX);
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
+
+        val statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
     }
 
@@ -386,7 +400,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setArbeidsliste_aktiv(true)
                 .setArbeidsliste_kategori(Arbeidsliste.Kategori.LILLA.name());
 
+        val liste = listOf(blaBruker, lillaBruker);
+
         skrivBrukereTilTestindeks(blaBruker, lillaBruker);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -395,8 +413,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "arbeidslistekategori",
                 new Filtervalg(),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         List<Bruker> brukere = brukereMedAntall.getBrukere();
@@ -426,7 +443,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setNy_for_enhet(true)
                 .setTrenger_vurdering(false);
 
-        skrivBrukereTilTestindeks(nyForEnhet, ikkeNyForEnhet);
+
+        val liste = listOf(nyForEnhet, ikkeNyForEnhet);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         List<Brukerstatus> ferdigFiltere = listOf(
                 NYE_BRUKERE,
@@ -440,8 +461,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(ferdigFiltere),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -463,22 +483,20 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setEnhet_id("NEGA_$testEnhet")
                 .setVeileder_id("NEGA_$testVeileder");
 
-        skrivBrukereTilTestindeks(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
+        val liste = listOf(brukerVeilederHarTilgangTil, brukerVeilederIkkeHarTilgangTil);
+        skrivBrukereTilTestindeks(liste);
 
-        val unprivelegedSubject = new Subject(UNPRIVILEGED_TOKEN, InternBruker, oidcToken(UNPRIVILEGED_TOKEN, emptyMap()));
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
-        val response = SubjectHandler.withSubject(
-                unprivelegedSubject,
-                () -> elasticService.hentBrukere(
+
+        val response = elasticService.hentBrukere(
                         TEST_ENHET,
                         Optional.of(TEST_VEILEDER_0),
                         "asc",
                         "ikke_satt",
                         new Filtervalg(),
                         null,
-                        null,
-                        TEST_INDEX
-                )
+                        null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -503,8 +521,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setNy_for_enhet(false);
 
+        val liste = listOf(brukerMedUfordeltStatus, brukerMedFordeltStatus);
+        skrivBrukereTilTestindeks(liste);
 
-        skrivBrukereTilTestindeks(brukerMedFordeltStatus, brukerMedUfordeltStatus);
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
+
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -513,14 +534,13 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 new Filtervalg().setFerdigfilterListe(listOf(UFORDELTE_BRUKERE)),
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
         assertThat(veilederExistsInResponse(LITE_PRIVILEGERT_VEILEDER, response)).isTrue();
 
-        StatusTall statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET, TEST_INDEX);
+        StatusTall statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.ufordelteBrukere).isEqualTo(1);
     }
 
@@ -540,11 +560,15 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        skrivBrukereTilTestindeks(testBruker1, testBruker2);
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setFodselsdagIMnd(listOf("7"));
+
+        val liste = listOf(testBruker1, testBruker2);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -553,8 +577,8 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
+
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -577,11 +601,16 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setKjonn("K");
 
-        skrivBrukereTilTestindeks(mann, kvinne);
+        val liste = listOf(kvinne, mann);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setKjonn(Kjonn.K);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) <= 0);
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -590,8 +619,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -614,7 +642,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name());
 
-        skrivBrukereTilTestindeks(brukerMedAAP, brukerUtenAAP);
+
+        val liste = listOf(brukerMedAAP, brukerUtenAAP);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
@@ -627,8 +659,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -673,12 +704,10 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setRettighetsgruppekode(Rettighetsgruppe.AAP.name())
                 .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name());
 
-        skrivBrukereTilTestindeks(
-                brukerMedDagpengerMedPermittering,
-                brukerMedPermitteringFiskeindustri,
-                brukerMedAAP,
-                brukerMedAnnenVeileder
-        );
+        val liste = listOf(brukerMedDagpengerMedPermittering, brukerMedPermitteringFiskeindustri, brukerMedAAP, brukerMedAnnenVeileder);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
@@ -691,8 +720,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
@@ -723,7 +751,11 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        skrivBrukereTilTestindeks(brukerMedSokeAvtale, brukerMedBehandling, brukerMedUtenAktiviteter);
+
+        val liste = listOf(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
@@ -736,8 +768,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -767,12 +798,16 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        skrivBrukereTilTestindeks(brukerMedSokeAvtale, brukerMedBehandling, brukerMedUtenAktiviteter);
+        val liste = listOf(brukerMedSokeAvtale, brukerMedUtenAktiviteter, brukerMedBehandling);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(mapOf(Pair.of("SOKEAVTALE", AktivitetFiltervalg.NEI)));
 
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) <= 0);
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
@@ -780,8 +815,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
@@ -813,11 +847,16 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        skrivBrukereTilTestindeks(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
+        val liste = listOf(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setAktiviteter(mapOf(Pair.of("TILTAK", JA)));
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) <= 0);
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -826,8 +865,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
@@ -859,7 +897,10 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
 
-        skrivBrukereTilTestindeks(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
+        val liste = listOf(brukerMedTiltak, brukerMedBehandling, brukerUtenAktiviteter);
+        skrivBrukereTilTestindeks(liste);
+
+        pollUntilHarOppdatertIElastic(()-> countDocuments(TEST_INDEX) < liste.size());
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
@@ -872,8 +913,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 "ikke_satt",
                 filterValg,
                 null,
-                null,
-                TEST_INDEX
+                null
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
@@ -903,25 +943,36 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
     @SneakyThrows
     private void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
         elasticIndexer.skrivTilIndeks(TEST_INDEX, listOf(brukere));
-        ELASTIC_CLIENT.indices().refresh(new RefreshRequest(TEST_INDEX), RequestOptions.DEFAULT);
+        ELASTIC_CLIENT.indices().refreshAsync(new RefreshRequest(TEST_INDEX), RequestOptions.DEFAULT, new ActionListener<RefreshResponse>() {
+            @Override
+            public void onResponse(RefreshResponse refreshResponse) {
+                log.info("refreshed");
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                log.error("noe gikk galt her " + e);
+
+            }
+        });
     }
 
     @NotNull
-    private static VeilederService mockVeilederService() {
-        VeilederService veilederServiceMock = mock(VeilederService.class);
-        when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf(VeilederId.of(TEST_VEILEDER_0)));
+    private static VeilarbVeilederClient mockVeilederService() {
+        VeilarbVeilederClient veilederServiceMock = mock(VeilarbVeilederClient.class);
+        when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf((TEST_VEILEDER_0)));
         return veilederServiceMock;
     }
 
     @NotNull
-    private static PepClient mockPep() {
-        PepClient pepMock = mock(PepClient.class);
-        when(pepMock.isSubjectAuthorizedToSeeEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.isSubjectAuthorizedToSeeKode6(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.isSubjectAuthorizedToSeeKode7(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.isSubjectAuthorizedToSeeEgenAnsatt(PRIVILEGED_TOKEN)).thenReturn(true);
-        when(pepMock.isSubjectAuthorizedToSeeKode6(PRIVILEGED_TOKEN)).thenReturn(true);
-        when(pepMock.isSubjectAuthorizedToSeeKode7(PRIVILEGED_TOKEN)).thenReturn(true);
+    private static Pep mockPep() {
+        Pep pepMock = mock(Pep.class);
+        when(pepMock.harVeilederTilgangTilEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilKode6(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilKode7(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilEgenAnsatt(PRIVILEGED_TOKEN)).thenReturn(true);
+        when(pepMock.harVeilederTilgangTilKode6(PRIVILEGED_TOKEN)).thenReturn(true);
+        when(pepMock.harVeilederTilgangTilKode7(PRIVILEGED_TOKEN)).thenReturn(true);
         return pepMock;
     }
 

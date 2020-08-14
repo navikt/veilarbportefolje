@@ -4,6 +4,7 @@ package no.nav.pto.veilarbportefolje.util;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -21,9 +22,14 @@ public class UnderOppfolgingRegler {
     }
 
     public static boolean erUnderOppfolging(OppfolgingsBruker bruker) {
-        String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
-        String servicegruppeKode = bruker.getKvalifiseringsgruppekode();
-        return erUnderOppfolging(formidlingsgruppekode, servicegruppeKode) || oppfolgingsFlaggErSatt(bruker);
+        Optional<String> formidlingsgruppekode = Optional.ofNullable(bruker.getFormidlingsgruppekode());
+        Optional<String> servicegruppeKode = Optional.ofNullable(bruker.getKvalifiseringsgruppekode());
+
+        boolean erUnderOppfolgingIArena = false;
+        if(servicegruppeKode.isPresent() && formidlingsgruppekode.isPresent()) {
+            erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppekode.get(), servicegruppeKode.get());
+        }
+        return oppfolgingsFlaggErSatt(bruker) || erUnderOppfolgingIArena;
     }
 
     public static boolean erUnderOppfolging(Result<OppfolgingsBruker> bruker) {

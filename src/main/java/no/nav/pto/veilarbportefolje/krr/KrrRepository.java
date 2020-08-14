@@ -4,9 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.KrrDTO;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.InsertBatchQuery;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
-import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +16,15 @@ import java.util.function.Consumer;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
+@Repository
 public class KrrRepository {
 
-    @Inject
-    JdbcTemplate db;
+    private final JdbcTemplate db;
+
+    @Autowired
+    public KrrRepository(JdbcTemplate db) {
+        this.db = db;
+    }
 
     public void slettKrrInformasjon(){
         log.info("Starter sletting av data i KRR tabell");

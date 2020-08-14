@@ -39,7 +39,7 @@ spec:
     timeout: 10
   prometheus:
     enabled: true
-    path: veilarbportefolje/internal/metrics
+    path: veilarbportefolje/internal/prometheus
   resources:
     limits:
       cpu: "4"
@@ -49,4 +49,4 @@ spec:
       memory: 4Gi
   env:
     - name: JAVA_OPTS
-      value: "-Xms2048m -Xmx8096m"
+      value: "-Xms4098m -Xmx8096m"

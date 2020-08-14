@@ -1,14 +1,14 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static javax.ws.rs.core.Response.Status.*;
 
 @Value
 public class RestResponse<T> {
@@ -49,27 +49,27 @@ public class RestResponse<T> {
 
     public boolean containsError() { return !error.isEmpty(); }
 
-    public Response ok() {
-        return createResponse(OK);
+    public ResponseEntity ok() {
+        return createResponse(HttpStatus.OK);
     }
 
-    public Response created() {
-        return createResponse(CREATED);
+    public ResponseEntity created() {
+        return createResponse(HttpStatus.CREATED);
     }
 
-    public Response forbidden() {
-        return createResponse(FORBIDDEN);
+    public ResponseEntity forbidden() {
+        return createResponse(HttpStatus.FORBIDDEN);
     }
 
-    public Response badRequest() {
-        return createResponse(BAD_REQUEST);
+    public ResponseEntity badRequest() {
+        return createResponse(HttpStatus.BAD_REQUEST);
     }
 
-    public Response notFound() {
-        return createResponse(NOT_FOUND);
+    public ResponseEntity notFound() {
+        return createResponse(HttpStatus.NOT_FOUND);
     }
 
-    private Response createResponse(Response.Status status) {
-        return Response.status(status).entity(this).build();
+    private ResponseEntity createResponse(HttpStatus status) {
+        return ResponseEntity.status(status).body(this);
     }
 }

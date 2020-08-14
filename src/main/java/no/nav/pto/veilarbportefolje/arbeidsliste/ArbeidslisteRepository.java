@@ -8,10 +8,11 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -22,17 +23,21 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.sbl.sql.SqlUtils.*;
 
 @Slf4j
+@Repository
 public class ArbeidslisteRepository {
 
     private static final String DELETE_FROM_ARBEIDSLISTE_SQL = "delete from arbeidsliste where aktoerid = :aktoerid";
-
-    @Inject
-    private JdbcTemplate db;
-
-    @Inject
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
     public static final String ARBEIDSLISTE = "ARBEIDSLISTE";
+
+    private final JdbcTemplate db;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    @Autowired
+    public ArbeidslisteRepository (JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.db = db;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
+
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
@@ -83,6 +88,8 @@ public class ArbeidslisteRepository {
                 }
         ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
+
+    //TODO SLETTE EN AV DISSE DELETE METODER???
 
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
         return Try.of(

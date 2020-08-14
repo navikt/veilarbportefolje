@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 
 import java.util.Set;
 

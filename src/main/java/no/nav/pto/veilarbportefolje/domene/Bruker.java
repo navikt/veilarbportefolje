@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils;
+import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-import static no.nav.common.utils.CollectionUtils.toList;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.toList;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.isFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.feed.oppfolging.OppfolgingUtils.vurderingsBehov;
+import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Slf4j

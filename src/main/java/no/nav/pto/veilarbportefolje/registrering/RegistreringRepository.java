@@ -5,7 +5,9 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,11 +19,14 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
+@Repository
 public class RegistreringRepository {
 
-    private JdbcTemplate db;
     private final String BRUKER_REGISTRERING_TABELL = "BRUKER_REGISTRERING";
 
+    private final JdbcTemplate db;
+
+    @Autowired
     public RegistreringRepository(JdbcTemplate db) {
         this.db = db;
     }
