@@ -137,9 +137,7 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
-                log.info("Bruker er ikke under oppfolging {}" , brukerErIkkeUnderOppfolging);
-                log.info("Eksisterande veileder har ikke tilgang til enhet {}" , eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet);
-                log.info("Sletter arbeidsliste for bruker {}", aktoerId);
+                log.info("Sletter arbeidsliste for bruker {}, under oppfolging {}, har ikke tilgang til enhet {} ", aktoerId, brukerErIkkeUnderOppfolging, eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet);
                 arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
             }
             oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
@@ -161,11 +159,11 @@ public class OppfolgingFeedHandler implements FeedCallback<BrukerOppdatertInform
         VeilederId veilederId = VeilederId.of(oppfolgingData.getVeileder());
         return brukerRepository
                 .retrievePersonid(aktoerId)
-                .peek(personId -> log.info("PersonId er {}" , personId))
+                .peek(personId -> log.info("PersonId er {}, {}" , personId, aktoerId))
                 .flatMap(brukerRepository::retrieveEnhet)
-                .peek(enhet -> log.info("Enhet {}" , enhet))
+                .peek(enhet -> log.info("Enhet {}, {} " , enhet, aktoerId))
                 .map(enhet -> veilederService.hentVeilederePaaEnhet(enhet))
-                .peek(veilederePaaEnhet -> log.info("Veileder: {} Veileder på enhet: {}", veilederId, veilederePaaEnhet))
+                .peek(veilederePaaEnhet -> log.info("AktoerId {}, Veileder: {} Veileder på enhet: {}", veilederId, veilederePaaEnhet, aktoerId))
                 .map(veilederePaaEnhet -> veilederePaaEnhet.contains(veilederId))
                 .getOrElse(false);
     }
