@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,12 +34,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static no.nav.common.health.selftest.SelfTestUtils.checkAll;
+import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
 
 @RestController
 @RequestMapping("/internal")
 public class InternalController {
-    private List<SelfTestCheck> selftestChecks;
+
+    private List<SelfTestCheck> syncSelfTestChecks;
+    private List<SelfTestCheck> asyncSelfTestChecks;
 
     @Autowired
     public InternalController(
@@ -49,21 +53,27 @@ public class InternalController {
             AktorregisterClient aktorregisterClient,
             Pep veilarbPep
     ) {
-        List<SelfTestCheck> diverseSelftTester = Arrays.asList(
+        List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, ElasticConfig::checkHealth),
                 new SelfTestCheck("Database for portefolje", true, () -> DatabaseConfig.dbPinger(db)),
-                new SelfTestCheck("Ping av DKIF_V1. Henter reservasjon fra KRR.", false, () -> DigitalKontaktinformasjonConfig.dkifV1Ping(dkifV1)),
-                new SelfTestCheck("Sjekker henting av fil over sftp", true, tiltakHandler::sftpTiltakPing),
-                new SelfTestCheck("Sjekker henting av fil over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing),
                 new SelfTestCheck("Aktorregister", true, aktorregisterClient),
                 new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient())
+        );
+
+        List<SelfTestCheck> syncSelftester = List.of(
+                new SelfTestCheck("Sjekker henting av fil over sftp", true, tiltakHandler::sftpTiltakPing),
+                new SelfTestCheck("Sjekker henting av fil over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing),
+                new SelfTestCheck("Ping av DKIF_V1. Henter reservasjon fra KRR.", false, () -> DigitalKontaktinformasjonConfig.dkifV1Ping(dkifV1))
         );
 
         List<SelfTestCheck> kafkaSelftTester = Arrays.stream(KafkaConfig.Topic.values())
                 .map(topic -> new SelfTestCheck("Sjekker at vi får kontakt med partisjonene for " + topic, false, new KafkaHelsesjekk(topic)))
                 .collect(Collectors.toList());
 
-        this.selftestChecks = Stream.concat(diverseSelftTester.stream(), kafkaSelftTester.stream())
+        this.syncSelfTestChecks = Stream.concat(syncSelftester.stream(), kafkaSelftTester.stream())
+                .collect(Collectors.toList());
+
+        this.asyncSelfTestChecks = Stream.concat(asyncSelftester.stream(), kafkaSelftTester.stream())
                 .collect(Collectors.toList());
     }
 
@@ -78,13 +88,20 @@ public class InternalController {
     }
 
     @GetMapping("/isAlive")
-    public void isAlive() {}
+    public void isAlive() {
+    }
 
     @GetMapping("/selftest")
     public ResponseEntity selftest() {
-        List<SelftTestCheckResult> checkResults = checkAll(selftestChecks);
-        String html = SelftestHtmlGenerator.generate(checkResults);
-        int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
+        List<SelftTestCheckResult> checkAsyncResults = checkAllParallel(asyncSelfTestChecks);
+        List<SelftTestCheckResult> checkSyncResult = checkAll(syncSelfTestChecks);
+
+        List<SelftTestCheckResult> results = new ArrayList<>();
+        results.addAll(checkAsyncResults);
+        results.addAll(checkSyncResult);
+
+        String html = SelftestHtmlGenerator.generate(results);
+        int status = SelfTestUtils.findHttpStatusCode(results, true);
 
         return ResponseEntity
                 .status(status)
