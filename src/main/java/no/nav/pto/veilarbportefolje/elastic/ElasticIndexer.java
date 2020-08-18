@@ -2,24 +2,23 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.CollectionUtils;
-import no.nav.metrics.Event;
-import no.nav.metrics.MetricsFactory;
-import no.nav.metrics.utils.MetricsUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.metrikker.FunksjonelleMetrikker;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.metrikker.MetricsUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.ElasticsearchStatusException;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -32,31 +31,30 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static no.nav.json.JsonUtils.toJson;
+import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils.filtrerBrukertiltak;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
@@ -68,35 +66,29 @@ public class ElasticIndexer {
 
     final static int BATCH_SIZE = 1000;
     final static int BATCH_SIZE_LIMIT = 1000;
+    private final RestHighLevelClient restHighLevelClient;
+    private final AktivitetDAO aktivitetDAO;
+    private final BrukerRepository brukerRepository;
+    private final UnleashService unleashService;
+    private final MetricsClient metricsClient;
 
-    private final ElasticService elasticService;
+    private String indexName;
 
-    private RestHighLevelClient client;
-
-    private AktivitetDAO aktivitetDAO;
-
-    private BrukerRepository brukerRepository;
-
-    private UnleashService unleashService;
-
-    private CvService cvService;
-
-    @Inject
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
-            RestHighLevelClient client,
-            ElasticService elasticService,
+            RestHighLevelClient restHighLevelClient,
             UnleashService unleashService,
-            CvService cvService
+            MetricsClient metricsClient,
+            String indexName
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
-        this.client = client;
-        this.elasticService = elasticService;
+        this.restHighLevelClient = restHighLevelClient;
         this.unleashService = unleashService;
-        this.cvService = cvService;
+        this.metricsClient = metricsClient;
+        this.indexName = indexName;
     }
 
     @SneakyThrows
@@ -205,7 +197,9 @@ public class ElasticIndexer {
             throw new IllegalStateException(message);
         }
 
-        FunksjonelleMetrikker.oppdaterAntallBrukere();
+        Event event = new Event("portefolje.antall.brukere");
+        event.addFieldToReport("antall_brukere", ElasticUtils.getCount());
+        metricsClient.report(event);
 
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
 
@@ -246,9 +240,8 @@ public class ElasticIndexer {
         brukerRepository.oppdaterSistIndeksertElastic(timestamp);
 
         int antall = brukere.size();
-        Event event = MetricsFactory.createEvent("es.deltaindeksering.fullfort");
-        event.addFieldToReport("es.antall.oppdateringer", antall);
-        event.report();
+
+        metricsClient.report(new Event("es.deltaindeksering.fullfort").addFieldToReport("es.antall.oppdateringer", antall));
     }
 
     @SneakyThrows
@@ -256,7 +249,7 @@ public class ElasticIndexer {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(getAlias());
 
-        boolean exists = client.indices().exists(request, DEFAULT);
+        boolean exists = restHighLevelClient.indices().exists(request, DEFAULT);
         return !exists;
     }
 
@@ -279,7 +272,7 @@ public class ElasticIndexer {
                         .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
 
                 try {
-                    BulkByScrollResponse response = client.deleteByQuery(deleteQuery, DEFAULT);
+                    BulkByScrollResponse response = restHighLevelClient.deleteByQuery(deleteQuery, DEFAULT);
                     if (response.getDeleted() == 1) {
                         log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
                     }
@@ -306,27 +299,25 @@ public class ElasticIndexer {
                 .endObject()
         );
 
-        client.update(updateRequest, DEFAULT);
-    }
+        restHighLevelClient.updateAsync(updateRequest, DEFAULT, new ActionListener<>() {
+            @Override
+            public void onResponse(UpdateResponse updateResponse) {
+                log.info("Satte under oppfolging til false i elasticsearch" );
+            }
 
-    public CompletableFuture<Void> indekserAsynkront(AktoerId aktoerId) {
-
-        CompletableFuture<Void> future = runAsync(() -> indekser(aktoerId));
-
-        future.exceptionally(e -> {
-            RuntimeException wrappedException = new RuntimeException(e);
-            log.warn("Feil under asynkron indeksering av bruker " + aktoerId, wrappedException);
-            return null;
+            @Override
+            public void onFailure(Exception e) {
+                log.error("Feil vid oppdatering av bruker som ikke er under oppfolging ", e);
+            }
         });
-
-        return future;
     }
 
     public Result<OppfolgingsBruker> indekser(AktoerId aktoerId) {
 
         Result<OppfolgingsBruker> result = MetricsUtils.timed(
                 "portefolje.indeks.hentBruker",
-                () -> brukerRepository.hentBruker(aktoerId)
+                () -> brukerRepository.hentBruker(aktoerId),
+                metricsClient
         );
 
         if (result.isErr()) {
@@ -336,21 +327,28 @@ public class ElasticIndexer {
 
         OppfolgingsBruker bruker = result.orElseThrowException();
 
-        if (erUnderOppfolging(bruker)) {
+        if(bruker == null) {
+            log.error("Fante ikke bruker med aktorid " + aktoerId);
+            return Result.err(new NullPointerException());
+        }
 
+        if (erUnderOppfolging(bruker)) {
             MetricsUtils.timed(
                     "portefolje.indeks.leggTilAktiviteter",
-                    () -> leggTilAktiviteter(bruker)
+                    () -> leggTilAktiviteter(bruker),
+                    metricsClient
             );
 
             MetricsUtils.timed(
                     "portefolje.indeks.leggTilTiltak",
-                    () -> leggTilTiltak(bruker)
+                    () -> leggTilTiltak(bruker),
+                    metricsClient
             );
 
             MetricsUtils.timed(
                     "portefolje.indeks.skrivTilIndeks",
-                    () -> skrivTilIndeks(getAlias(), bruker)
+                    () -> skrivTilIndeks(indexName, bruker),
+                    metricsClient
             );
 
         } else {
@@ -385,14 +383,14 @@ public class ElasticIndexer {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
-            skrivTilIndeks(getAlias(), brukere);
+            skrivTilIndeks(indexName, brukere);
         });
     }
 
     @SneakyThrows
     public Optional<String> hentGammeltIndeksNavn() {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(getAlias());
-        GetAliasesResponse response = client.indices().getAlias(getAliasRequest, DEFAULT);
+        GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
     }
 
@@ -403,7 +401,7 @@ public class ElasticIndexer {
                 .alias(getAlias());
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
-        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke legge til alias {}", getAlias());
@@ -426,7 +424,7 @@ public class ElasticIndexer {
                 .addAliasAction(removeAliasAction)
                 .addAliasAction(addAliasAction);
 
-        AcknowledgedResponse response = client.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke oppdatere alias {}", getAlias());
@@ -435,34 +433,43 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public void slettGammelIndeks(String gammelIndeks) {
-        AcknowledgedResponse response = client.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
+        AcknowledgedResponse response = restHighLevelClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
         if (!response.isAcknowledged()) {
             log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
         }
     }
 
     @SneakyThrows
-    public BulkResponse skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
+    public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
                 .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
                 .forEach(bulk::add);
 
-        BulkResponse response = client.bulk(bulk, DEFAULT);
+        restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {
+            @Override
+            public void onResponse(BulkResponse bulkItemResponses) {
+                if (bulkItemResponses.hasFailures()) {
+                    log.warn("Klart ikke å skrive til indeks: {}", bulkItemResponses.buildFailureMessage());
+                }
 
-        if (response.hasFailures()) {
-            log.warn("Klart ikke å skrive til indeks: {}", response.buildFailureMessage());
-        }
+                if (bulkItemResponses.getItems().length != oppfolgingsBrukere.size()) {
+                    log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
+                }
 
-        if (response.getItems().length != oppfolgingsBrukere.size()) {
-            log.warn("Antall faktiske adds og antall brukere som skulle oppdateres er ulike");
-        }
+                List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
+                log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
 
-        List<String> aktoerIds = oppfolgingsBrukere.stream().map(bruker -> bruker.getAktoer_id()).collect(toList());
-        log.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+            }
 
-        return response;
+            @Override
+            public void onFailure(Exception e) {
+                log.warn("Feil under asynkron indeksering av brukerere ", e);
+            }
+        });
+
+
     }
 
     public void skrivTilIndeks(String indeksNavn, OppfolgingsBruker oppfolgingsBruker) {
@@ -476,7 +483,7 @@ public class ElasticIndexer {
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
 
-        CreateIndexResponse response = client.indices().create(request, DEFAULT);
+        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();
@@ -552,28 +559,4 @@ public class ElasticIndexer {
         leggTilAktiviteter(Collections.singletonList(bruker));
     }
 
-
-    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-        return elasticService.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, fra, antall, getAlias());
-    }
-
-    public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg) {
-        return elasticService.hentBrukere(enhetId, veilederIdent, sortOrder, sortField, filtervalg, null, null, getAlias());
-    }
-
-    public StatusTall hentStatusTallForPortefolje(String enhet) {
-        return elasticService.hentStatusTallForEnhet(enhet, getAlias());
-    }
-
-    public FacetResults hentPortefoljestorrelser(String enhetId) {
-        return elasticService.hentPortefoljestorrelser(enhetId, getAlias());
-    }
-
-    public StatusTall hentStatusTallForVeileder(String enhet, String veilederIdent) {
-        return elasticService.hentStatusTallForVeileder(veilederIdent, enhet, getAlias());
-    }
-
-    public List<Bruker> hentBrukereMedArbeidsliste(VeilederId veilederId, String enhet) {
-        return elasticService.hentBrukereMedArbeidsliste(veilederId.getVeilederId(), enhet, getAlias());
-    }
 }

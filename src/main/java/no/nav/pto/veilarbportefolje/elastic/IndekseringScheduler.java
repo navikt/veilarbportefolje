@@ -1,15 +1,18 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.krr.KrrService;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
+import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
-
-import javax.inject.Inject;
 import java.util.Optional;
+
+import static no.nav.common.utils.IdUtils.generateId;
 
 @Slf4j
 public class IndekseringScheduler {
@@ -22,28 +25,33 @@ public class IndekseringScheduler {
 
     private KrrService krrService;
 
-    @Inject
-    public IndekseringScheduler(no.nav.pto.veilarbportefolje.elastic.ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService) {
+    private LeaderElectionClient leaderElectionClient;
+
+    public IndekseringScheduler(no.nav.pto.veilarbportefolje.elastic.ElasticIndexer elasticIndexer, TiltakHandler tiltakHandler, KopierGR199FraArena kopierGR199FraArena, KrrService krrService, LeaderElectionClient leaderElectionClient) {
         this.elasticIndexer = elasticIndexer;
         this.tiltakHandler = tiltakHandler;
         this.kopierGR199FraArena = kopierGR199FraArena;
         this.krrService = krrService;
+        this.leaderElectionClient = leaderElectionClient;
     }
 
     // Kjører hver dag kl 04:00
     @Scheduled(cron = "0 0 4 * * ?")
     public void indekserTiltakOgYtelser() {
-        Optional<RunningJob> maybeJob = JobUtils.runAsyncJobOnLeader(
-                () -> {
-                    try {
-                        kopierGR199FraArena.startOppdateringAvYtelser();
-                        tiltakHandler.startOppdateringAvTiltakIDatabasen();
-                    } finally {
-                        elasticIndexer.startIndeksering();
-                    }
-                }
-        );
-        maybeJob.ifPresent(job -> log.info("Startet nattlig elastic av tiltak og ytelser med jobId {} på pod {}", job.getJobId(), job.getPodName()));
+        if(leaderElectionClient.isLeader()){
+            String jobId = generateId();
+            MDC.put("jobId", jobId);
+            log.info("Startet nattlig elastic av tiltak og ytelser med jobId {}", jobId);
+            try {
+
+                kopierGR199FraArena.startOppdateringAvYtelser();
+                tiltakHandler.startOppdateringAvTiltakIDatabasen();
+            } finally {
+                elasticIndexer.startIndeksering();
+                MDC.remove("jobId");
+            }
+        }
+
     }
 
     // Kjører hver dag kl 00:00
@@ -53,7 +61,8 @@ public class IndekseringScheduler {
                 () -> {
                     krrService.hentDigitalKontaktInformasjonBolk();
                     elasticIndexer.startIndeksering();
-                }
+                },
+                leaderElectionClient
         );
         maybeJob.ifPresent(job -> log.info("Startet nattlig elastic av krr med jobId {} på pod {}", job.getJobId(), job.getPodName()));
     }
@@ -61,7 +70,9 @@ public class IndekseringScheduler {
     // Kjører hvert minutt
     @Scheduled(cron = "0 * * * * *")
     public void deltaindeksering() {
-        JobUtils.runAsyncJobOnLeader(elasticIndexer::deltaindeksering);
+        if(leaderElectionClient.isLeader()) {
+            elasticIndexer.deltaindeksering();
+        }
     }
 
 }

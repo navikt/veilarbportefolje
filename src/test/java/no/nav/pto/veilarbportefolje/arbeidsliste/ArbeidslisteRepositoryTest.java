@@ -1,34 +1,29 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
+import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.inject.Inject;
+import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.Instant;
 
 import static org.junit.Assert.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ApplicationConfigTest.class})
 public class ArbeidslisteRepositoryTest {
 
-    @Inject
     private ArbeidslisteRepository repo;
 
-    @Inject
     private JdbcTemplate jdbcTemplate;
 
     private ArbeidslisteDTO data;
@@ -36,6 +31,11 @@ public class ArbeidslisteRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
+        DataSource dataSource = TestUtil.setupInMemoryDatabase();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+        repo = new ArbeidslisteRepository(jdbcTemplate, new NamedParameterJdbcTemplate(dataSource));
+
         data = new ArbeidslisteDTO(new Fnr("01010101010"))
                 .setAktoerId(AktoerId.of("22222222"))
                 .setVeilederId(VeilederId.of("X11111"))

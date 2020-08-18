@@ -1,27 +1,33 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.rest.client.RestUtils;
+import no.nav.common.utils.Credentials;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.CountResponse;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
-import no.nav.sbl.rest.RestUtils;
-import no.nav.sbl.util.EnvironmentUtils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.RestClient;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
+import static no.nav.common.utils.EnvironmentUtils.resolveHostName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
-import static no.nav.sbl.util.EnvironmentUtils.resolveHostName;
 
 @Slf4j
 public class ElasticUtils {
@@ -84,17 +90,22 @@ public class ElasticUtils {
     }
 
 
+    @SneakyThrows
     public static long getCount() {
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
+        OkHttpClient client = no.nav.common.rest.client.RestClient.baseClient();
 
-        return RestUtils.withClient(client ->
-                client
-                        .target(url)
-                        .request()
-                        .header("Authorization", getAuthHeaderValue())
-                        .get(CountResponse.class)
-                        .getCount()
-        );
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", getAuthHeaderValue())
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+           return RestUtils.parseJsonResponse(response, CountResponse.class)
+                   .map(CountResponse::getCount)
+                   .orElse(0L);
+        }
     }
 
     static String getAbsoluteUrl() {

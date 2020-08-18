@@ -1,16 +1,16 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetTyper;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetTyper.mote;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper.mote;
 
 @Slf4j
 public class IndekseringUtils {

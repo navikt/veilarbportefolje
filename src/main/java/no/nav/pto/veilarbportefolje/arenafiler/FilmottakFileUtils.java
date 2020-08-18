@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.arenafiler;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.health.HealthCheckResult;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.SftpConfig;
@@ -12,28 +13,18 @@ import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static no.nav.metrics.utils.MetricsUtils.timed;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.AKTIVITETER_SFTP;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.LOPENDEYTELSER_SFTP;
 
 @Slf4j
 public class FilmottakFileUtils {
 
-    public static Try<FileObject> hentTiltaksFil() {
-        return timed("portefolje.sftp.tiltak", () -> hentFil(AKTIVITETER_SFTP));
-    }
-
-    public static Try<FileObject> hentYtelseFil() {
-        return timed("portefolje.sftp.ytelse", () -> hentFil(LOPENDEYTELSER_SFTP));
-    }
-
-    private static Try<FileObject> hentFil(SftpConfig sftpConfig) {
+    public static Try<FileObject> hentFil(SftpConfig sftpConfig) {
         log.info("Starter henting av fil fra {}", sftpConfig.getUrl());
         try {
             return FilmottakFileUtils.hentFilViaSftp(sftpConfig);
@@ -87,5 +78,11 @@ public class FilmottakFileUtils {
 
     public static long hoursSinceLastChanged(LocalDateTime lastChanged) {
         return ChronoUnit.HOURS.between(lastChanged, LocalDateTime.now());
+    }
+
+
+    public static HealthCheckResult innlesingAvFilFeilet(String sftpUrl) {
+        String message = String.format("Kunne ikke unmarshalle fil: %s", sftpUrl);
+        return HealthCheckResult.unhealthy(message, new UnmarshalException(message));
     }
 }

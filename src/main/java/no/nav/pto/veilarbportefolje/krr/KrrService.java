@@ -12,8 +12,9 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKon
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSMobiltelefonnummer;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonBolkRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonBolkResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -24,12 +25,13 @@ import java.util.stream.Collectors;
 import static java.lang.Boolean.TRUE;
 
 @Slf4j
+@Service
 public class KrrService {
 
-    private KrrRepository krrRepository;
-    private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
+    private final KrrRepository krrRepository;
+    private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 
-    @Inject
+    @Autowired
     public KrrService(KrrRepository krrRepository, DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1) {
         this.krrRepository = krrRepository;
         this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;

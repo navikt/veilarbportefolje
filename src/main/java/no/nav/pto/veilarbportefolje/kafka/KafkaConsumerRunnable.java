@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.kafka;
 import io.micrometer.core.instrument.Counter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -16,6 +16,7 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
+import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +27,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
+import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
+import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 
 @Slf4j
 public class KafkaConsumerRunnable<T> implements Runnable {
@@ -56,17 +57,17 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         this.shutdownLatch = new CountDownLatch(1);
 
         JobUtils.runAsyncJob(this);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.shutdown()));
-
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
         counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
+
     }
+
 
     @Override
     public void run() {
         try {
             log.info("Starter konsument for {}", topic);
             consumer.subscribe(singletonList(topic), getRebalanceListener());
-
             while (featureErPa() && !shutdown.get()) {
                 ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);

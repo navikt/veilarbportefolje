@@ -2,35 +2,28 @@ package no.nav.pto.veilarbportefolje.util;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.SsoToken;
-import no.nav.common.auth.Subject;
-import no.nav.common.auth.SubjectHandler;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import java.util.function.Supplier;
-
-import static javax.ws.rs.core.Response.Status.OK;
 
 @Slf4j
 public class RestUtils {
-    public static Response createResponse(Supplier<Object> supplier) {
-        return Try.ofSupplier(supplier)
+    public static ResponseEntity createResponse(Supplier<Object> supplier) {
+        return (ResponseEntity) Try.ofSupplier(supplier)
                 .toEither()
                 .fold(
                         (throwable) -> {
-                            if (throwable instanceof WebApplicationException) {
+                            //TODO VAD ER MOTSVARIGHETEN I SPRING
+                            /*if (throwable instanceof WebApplicationException) {
                                 return ((WebApplicationException) throwable).getResponse();
                             }
-                            log.warn("Exception ved restkall", throwable);
-                            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-                        },
-                        (entity) -> Response.status(OK).entity(entity).build()
-                );
-    }
 
-    public static String getSsoToken() {
-        Subject subject = SubjectHandler.getSubject().orElseThrow(IllegalStateException::new);
-        return subject.getSsoToken(SsoToken.Type.OIDC).orElseThrow(IllegalStateException::new);
+                             */
+                            log.warn("Exception ved restkall", throwable);
+                            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
+                        },
+                        (entity) -> ResponseEntity.status(HttpStatus.OK).body(entity)
+                );
     }
 }

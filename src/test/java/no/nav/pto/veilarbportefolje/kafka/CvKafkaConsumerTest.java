@@ -1,27 +1,20 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CvService;
-import no.nav.pto.veilarbportefolje.cv.IntegrationTest;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.service.AktoerService;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutionException;
-
-import static java.lang.String.valueOf;
-import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.stream;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.TestUtil.createUnleashMock;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1;
-import static no.nav.sbl.util.EnvironmentUtils.APP_ENVIRONMENT_NAME_PROPERTY_NAME;
-import static no.nav.sbl.util.EnvironmentUtils.EnviromentClass.T;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -31,10 +24,9 @@ public class CvKafkaConsumerTest extends IntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        System.setProperty(APP_ENVIRONMENT_NAME_PROPERTY_NAME, valueOf(T));
 
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktoerService.class), mock(CvRepository.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktorregisterClient.class), mock(CvRepository.class), mock(MetricsClient.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,
@@ -58,7 +50,9 @@ public class CvKafkaConsumerTest extends IntegrationTest {
         assertCvDocumentsAreFalseInElastic(fnr1, fnr2, fnr3);
 
         populateKafkaTopic(fnr1, fnr2, fnr3);
-        pollUntilHarDeltCvIsTrueInElastic(fnr1, fnr2, fnr3);
+        pollUntilHarOppdatertIElastic(() -> untilHarDeltCvIsTrue(fnr1, fnr2, fnr3));
+
+        assertCvDocumentsAreTrueInElastic(fnr1, fnr2, fnr3);
 
         deleteIndex(indexName);
 
@@ -66,38 +60,29 @@ public class CvKafkaConsumerTest extends IntegrationTest {
         assertCvDocumentsAreFalseInElastic(fnr1, fnr2, fnr3);
 
         cvService.setRewind(true);
-        pollUntilHarDeltCvIsTrueInElastic(fnr1, fnr2, fnr3);
+        pollUntilHarOppdatertIElastic(()-> untilHarDeltCvIsTrue(fnr1, fnr2, fnr3));
+        assertCvDocumentsAreTrueInElastic(fnr1, fnr2, fnr3);
+
     }
 
-    private void createCvDocumentsInElastic(Fnr... fnrs) {
-        for (Fnr fnr : fnrs) {
-            createCvDocument(fnr);
-        }
-    }
-
-    private void pollUntilHarDeltCvIsTrueInElastic(Fnr... fnrs) {
-        long t0 = currentTimeMillis();
-
-        while (untilHarDeltCvIsTrue(fnrs)) {
-            if (timeout(t0)) {
-                throw new RuntimeException();
-            }
-        }
-
+    private void assertCvDocumentsAreTrueInElastic(Fnr... fnrs) {
         for (Fnr fnr : fnrs) {
             GetResponse getResponse = fetchDocument(indexName, fnr);
             assertThat(harDeltCv(getResponse)).isTrue();
         }
     }
 
-    private static boolean timeout(long t0) {
-        return currentTimeMillis() - t0 > 10_000;
-    }
 
     private boolean untilHarDeltCvIsTrue(Fnr... fnrs) {
         return !stream(fnrs)
                 .map(fnr -> fetchDocument(indexName, fnr))
                 .allMatch(CvKafkaConsumerTest::harDeltCv);
+    }
+
+    private void createCvDocumentsInElastic(Fnr... fnrs) {
+        for (Fnr fnr : fnrs) {
+            createCvDocument(fnr);
+        }
     }
 
     private void assertCvDocumentsAreFalseInElastic(Fnr... fnrs) {
@@ -123,7 +108,6 @@ public class CvKafkaConsumerTest extends IntegrationTest {
     private static void populateKafkaTopic(Fnr... fnrs) {
         for (Fnr fnr : fnrs) {
             String aktoerId = generateId();
-
             String payload = new JSONObject()
                     .put("aktoerId", aktoerId)
                     .put("fnr", fnr.toString())
@@ -131,13 +115,8 @@ public class CvKafkaConsumerTest extends IntegrationTest {
                     .put("ressurs", "CV_HJEMMEL")
                     .toString();
 
-            ProducerRecord<String, String> record = new ProducerRecord<>(PAM_SAMTYKKE_ENDRET_V1.topic, aktoerId, payload);
+            populateKafkaTopic(PAM_SAMTYKKE_ENDRET_V1.topic, aktoerId, payload);
 
-            try {
-                KAFKA_PRODUCER.send(record).get();
-            } catch (InterruptedException | ExecutionException ignored) {
-                throw new RuntimeException();
-            }
-        }
+        };
     }
 }

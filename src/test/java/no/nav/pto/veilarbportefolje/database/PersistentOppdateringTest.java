@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import org.junit.Test;

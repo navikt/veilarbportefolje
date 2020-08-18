@@ -9,8 +9,6 @@ import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -23,9 +21,8 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 @Slf4j
 public class OppfolgingRepository {
 
-    private JdbcTemplate db;
+    private final JdbcTemplate db;
 
-    @Inject
     public OppfolgingRepository(JdbcTemplate db) {
         this.db = db;
     }
