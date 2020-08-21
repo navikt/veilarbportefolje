@@ -45,6 +45,7 @@ import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -391,7 +392,11 @@ public class ElasticIndexer {
     public Optional<String> hentGammeltIndeksNavn() {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(getAlias());
         GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
-        return response.getAliases().keySet().stream().findFirst();
+        Stream stream = response.getAliases().keySet().stream();
+
+        stream.forEach(indexName -> log.info("Indeksnavn " + indexName));
+
+        return stream.findFirst();
     }
 
     @SneakyThrows
