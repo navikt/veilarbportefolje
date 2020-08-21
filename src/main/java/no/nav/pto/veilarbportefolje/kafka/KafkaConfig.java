@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -39,5 +40,10 @@ public class KafkaConfig {
     @Bean
     public KafkaConsumerRunnable kafkaConsumerRegistrering(RegistreringService registreringService, UnleashService unleashService) {
         return new KafkaConsumerRunnable<>(registreringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC, "veilarbportfolje.registrering");
+    }
+
+    @Bean
+    public KafkaConsumerRunnable kafkaConsumerProfilering(ProfileringService profileringService, UnleashService unleashService) {
+        return new KafkaConsumerRunnable<>(profileringService, unleashService, KafkaProperties.kafkaMedAvroProperties(), Topic.KAFKA_PROFILERING_CONSUMER_TOPIC, "veilarbportfolje.profilering");
     }
 }
