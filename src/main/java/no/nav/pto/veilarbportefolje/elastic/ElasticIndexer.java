@@ -434,9 +434,13 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public void slettGammelIndeks(String gammelIndeks) {
-        AcknowledgedResponse response = restHighLevelClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
-        if (!response.isAcknowledged()) {
-            log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
+        try {
+            AcknowledgedResponse response = restHighLevelClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
+            if (!response.isAcknowledged()) {
+                log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
+            }
+        } catch (Exception e) {
+            log.error("Feil vid slettingen av gammelindeks ", e);
         }
     }
 
