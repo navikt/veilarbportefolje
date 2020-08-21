@@ -103,6 +103,7 @@ public class ElasticIndexer {
 
     private void gammelHovedIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
+        hentGammeltIndeksNavn();
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
 
