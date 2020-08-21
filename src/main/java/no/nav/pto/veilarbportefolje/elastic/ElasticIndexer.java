@@ -432,7 +432,6 @@ public class ElasticIndexer {
         }
     }
 
-    @SneakyThrows
     public void slettGammelIndeks(String gammelIndeks) {
         try {
             AcknowledgedResponse response = restHighLevelClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
@@ -444,7 +443,6 @@ public class ElasticIndexer {
         }
     }
 
-    @SneakyThrows
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
 
         BulkRequest bulk = new BulkRequest();
