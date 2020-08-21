@@ -103,7 +103,6 @@ public class ElasticIndexer {
 
     private void gammelHovedIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
-        hentGammeltIndeksNavn();
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
 
@@ -393,11 +392,7 @@ public class ElasticIndexer {
     public Optional<String> hentGammeltIndeksNavn() {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(getAlias());
         GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
-        Stream stream = response.getAliases().keySet().stream();
-
-        stream.forEach(indexName -> log.info("Indeksnavn " + indexName));
-
-        return stream.findFirst();
+        return response.getAliases().keySet().stream().findFirst();
     }
 
     @SneakyThrows
