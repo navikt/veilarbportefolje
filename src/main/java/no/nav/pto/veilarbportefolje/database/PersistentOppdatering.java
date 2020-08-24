@@ -2,14 +2,16 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetStatus;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -19,22 +21,26 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+@Service
+@Slf4j
 public class PersistentOppdatering {
+    private final ElasticIndexer elasticIndexer;
+    private final BrukerRepository brukerRepository;
+    private final AktivitetDAO aktivitetDAO;
 
-    @Inject
-    private ElasticIndexer elasticIndexer;
+    @Autowired
+    public PersistentOppdatering(ElasticIndexer elasticIndexer, BrukerRepository brukerRepository, AktivitetDAO aktivitetDAO){
+        this.elasticIndexer = elasticIndexer;
+        this.brukerRepository = brukerRepository;
+        this.aktivitetDAO = aktivitetDAO;
+    }
 
-    @Inject
-    private BrukerRepository brukerRepository;
 
-    @Inject
-    private AktivitetDAO aktivitetDAO;
-
-    public CompletableFuture<Void> lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
+    public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
+        elasticIndexer.indekserBrukere(personIds);
 
-        return runAsync(() -> elasticIndexer.indekserBrukere(personIds));
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {

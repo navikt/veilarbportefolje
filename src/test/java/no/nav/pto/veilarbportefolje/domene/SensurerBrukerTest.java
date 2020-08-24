@@ -1,10 +1,12 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 
-import no.nav.pto.veilarbportefolje.abac.PepClient;
+import no.nav.common.abac.Pep;
+import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -19,63 +21,65 @@ import static org.mockito.Mockito.when;
 public class SensurerBrukerTest {
 
     @Mock
-    private PepClient pepClient;
+    private Pep pep;
+
+    @InjectMocks
+    private AuthService authService;
 
     @Test
     public void skalIkkeSeKode6Bruker() {
-        when(pepClient.isSubjectAuthorizedToSeeKode6(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = PortefoljeUtils.sensurerBrukere(kode6Bruker(), "X123456", pepClient);
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere.get(0));
+        when(pep.harVeilederTilgangTilKode6(eq("X123456"))).thenReturn(false);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(),"X123456");
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeKode7Bruker() {
-        when(pepClient.isSubjectAuthorizedToSeeKode7(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = PortefoljeUtils.sensurerBrukere(kode7Bruker(), "X123456", pepClient);
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere.get(0));
+        when(pep.harVeilederTilgangTilKode7(eq("X123456"))).thenReturn(false);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(),"X123456");
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeEgenAnsatt() {
-        when(pepClient.isSubjectAuthorizedToSeeEgenAnsatt(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = PortefoljeUtils.sensurerBrukere(egenAnsatt(), "X123456", pepClient);
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere.get(0));
+        when(pep.harVeilederTilgangTilEgenAnsatt(eq("X123456"))).thenReturn(false);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(),"X123456");
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalSeKode6Bruker() {
-        when(pepClient.isSubjectAuthorizedToSeeKode6(eq("X123456"))).thenReturn(true);
-        List<Bruker> filtrerteBrukere = PortefoljeUtils.sensurerBrukere(kode6Bruker(), "X123456", pepClient);
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnKode6");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvKode6");
+        when(pep.harVeilederTilgangTilKode6(eq("X123456"))).thenReturn(true);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(),"X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode6");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode6");
     }
 
     @Test
     public void skalSeKode7Bruker() {
-        when(pepClient.isSubjectAuthorizedToSeeKode7(eq("X123456"))).thenReturn(true);
-        List<Bruker> filtrerteBrukere = PortefoljeUtils.sensurerBrukere(kode7Bruker(), "X123456", pepClient);
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnKode7");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvKode7");
+        when(pep.harVeilederTilgangTilKode7(eq("X123456"))).thenReturn(true);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), "X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode7");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode7");
     }
 
     @Test
     public void skalSeEgenAnsatt() {
-        when(pepClient.isSubjectAuthorizedToSeeEgenAnsatt(eq("X123456"))).thenReturn(true);
-        List<Bruker> filtrerteBrukere = PortefoljeUtils.sensurerBrukere(egenAnsatt(), "X123456", pepClient);
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvEgenAnsatt");
+        when(pep.harVeilederTilgangTilEgenAnsatt(eq("X123456"))).thenReturn(true);
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), "X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvEgenAnsatt");
     }
 
     @Test
     public void skalSeIkkeKonfidensiellBruker() {
-        when(pepClient.isSubjectAuthorizedToSeeKode7(eq("X123456"))).thenReturn(false);
-        List<Bruker> filtrerteBrukere = PortefoljeUtils.sensurerBrukere(ikkeKonfidensiellBruker(), "X123456", pepClient);
-        assertThat(filtrerteBrukere.get(0).getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.get(0).getFornavn()).isEqualTo("fornavnIkkeKonfidensiellBruker");
-        assertThat(filtrerteBrukere.get(0).getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
+        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker(), "X123456");
+        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
+        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnIkkeKonfidensiellBruker");
+        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
     }
 
 
@@ -85,43 +89,35 @@ public class SensurerBrukerTest {
         assertThat(bruker.getFornavn()).isEqualTo("");
     }
 
-    private List<Bruker> kode6Bruker() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker kode6Bruker() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode6")
                 .setFornavn("fornavnKode6")
-                .setDiskresjonskode("6"));
-        return brukere;
+                .setDiskresjonskode("6");
     }
 
-    private List<Bruker> kode7Bruker() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker kode7Bruker() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode7")
                 .setFornavn("fornavnKode7")
-                .setDiskresjonskode("7"));
-        return brukere;
+                .setDiskresjonskode("7");
     }
 
-    private List<Bruker> egenAnsatt() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker egenAnsatt() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvEgenAnsatt")
                 .setFornavn("fornavnKodeEgenAnsatt")
-                .setEgenAnsatt(true));
-        return brukere;
+                .setEgenAnsatt(true);
     }
 
-    private List<Bruker> ikkeKonfidensiellBruker() {
-        List<Bruker> brukere = new ArrayList<>();
-        brukere.add(new Bruker()
+    private Bruker ikkeKonfidensiellBruker() {
+        return new Bruker()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvIkkeKonfidensiellBruker")
-                .setFornavn("fornavnIkkeKonfidensiellBruker"));
-        return brukere;
+                .setFornavn("fornavnIkkeKonfidensiellBruker");
     }
 
 

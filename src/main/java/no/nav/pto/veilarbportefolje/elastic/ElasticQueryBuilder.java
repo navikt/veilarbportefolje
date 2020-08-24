@@ -1,9 +1,9 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import no.nav.pto.veilarbportefolje.api.ValideringsRegler;
+import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg;
+import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -24,8 +24,8 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetFiltervalg.NEI;
+import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;

@@ -1,15 +1,18 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
+import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Aktivitetstyper;
-import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.sql.SqlUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
-import javax.inject.Inject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,10 +21,17 @@ import java.util.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 
 @Slf4j
+@Repository
 public class TiltakRepository {
 
-    @Inject
-    private JdbcTemplate db;
+    private final JdbcTemplate db;
+    private final MetricsClient metricsClient;
+
+    @Autowired
+    public TiltakRepository(JdbcTemplate db, MetricsClient metricsClient){
+        this.db = db;
+        this.metricsClient = metricsClient;
+    }
 
     void slettBrukertiltak() {
         db.execute("TRUNCATE TABLE brukertiltak");
@@ -97,7 +107,7 @@ public class TiltakRepository {
             ps.executeBatch();
         } catch (SQLException e) {
             log.error("Kunne ikke lagre tiltaksaktivitet i databasen");
-            MetricsFactory.createEvent("veilarbportefolje.lagreEnhettiltak.feilet").report();
+            metricsClient.report(new Event("veilarbportefolje.lagreEnhettiltak.feilet").setFailed());
         }
     }
 }

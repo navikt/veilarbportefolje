@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.common.auth.SubjectHandler;
+import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;

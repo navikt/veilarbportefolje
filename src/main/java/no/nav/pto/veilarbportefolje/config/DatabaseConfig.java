@@ -1,98 +1,57 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.pto.veilarbportefolje.cv.CvRepository;
-import no.nav.pto.veilarbportefolje.feed.aktivitet.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
-import no.nav.pto.veilarbportefolje.database.*;
-import no.nav.pto.veilarbportefolje.dialog.DialogFeedRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.krr.KrrRepository;
-import no.nav.pto.veilarbportefolje.profilering.ProfileringRepository;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepository;
-import no.nav.sbl.dialogarena.types.Pingable;
-import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
-import no.nav.sbl.jdbc.DataSourceFactory;
-import no.nav.sbl.jdbc.Transactor;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import no.nav.common.health.HealthCheckResult;
+import no.nav.common.utils.Credentials;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.database.Transactor;
+import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.util.UUID;
 
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Configuration
+@EnableTransactionManagement
 public class DatabaseConfig {
 
-    public static final String VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_URL";
-    public static final String VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_USERNAME";
-    public static final String VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME = "VEILARBPORTEFOLJEDB_PASSWORD";
+    private EnvironmentProperties environmentProperties;
 
-
-    @Bean
-    public DataSource dataSource() {
-        return DataSourceFactory.dataSource()
-                .url(getRequiredProperty(VEILARBPORTEFOLJEDB_URL_PROPERTY_NAME))
-                .username(getRequiredProperty(VEILARBPORTEFOLJEDB_USERNAME_PROPERTY_NAME))
-                .password(getRequiredProperty(VEILARBPORTEFOLJEDB_PASSWORD_PROPERTY_NAME))
-                .maxPoolSize(300)
-                .build();
+    public DatabaseConfig (EnvironmentProperties environmentProperties) {
+        this.environmentProperties = environmentProperties;
     }
 
     @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+    public DataSource dataSource() {
+        Credentials oracleCredentials = getCredentials("oracle_creds");
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(environmentProperties.getDbUrl());
+        config.setUsername(oracleCredentials.username);
+        config.setPassword(oracleCredentials.password);
+        config.setMaximumPoolSize(300);
+        DataSource dataSource = new HikariDataSource(config);
+
+        migrateDb(dataSource);
+
+        return dataSource;
+    }
+
+    @Bean
+    public JdbcTemplate db(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource ds) {
-        return new NamedParameterJdbcTemplate(ds);
-    }
-
-
-    @Bean
-    public BrukerRepository brukerRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
-    }
-
-    @Bean
-    public PersonRepository personRepository(JdbcTemplate jdbcTemplate) {
-        return new PersonRepository(jdbcTemplate);
-    }
-
-    @Bean
-    public OppfolgingRepository OppfolgingFeedRepository(JdbcTemplate db) {
-        return new OppfolgingRepository(db);
-    }
-
-    @Bean
-    public DialogFeedRepository dialogFeedRepository(JdbcTemplate db) {
-        return new DialogFeedRepository(db);
-    }
-
-    @Bean
-    public AktivitetDAO aktivitetDAO(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new AktivitetDAO(jdbcTemplate, namedParameterJdbcTemplate);
-    }
-
-    @Bean
-    public ArbeidslisteRepository arbeidslisteRepository() {
-        return new ArbeidslisteRepository();
-    }
-
-    @Bean
-    public EnhetTiltakRepository enhetTiltakRepository() {
-        return new EnhetTiltakRepository();
-    }
-
-    @Bean
-    public KrrRepository krrRepository() {
-        return new KrrRepository();
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 
     @Bean
@@ -101,47 +60,23 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public Transactor transactor(PlatformTransactionManager platformTransactionManager) {
-        return new Transactor(platformTransactionManager);
+    public Transactor transactor(PlatformTransactionManager transactionManager) {
+        return new Transactor(transactionManager);
     }
 
-    @Bean
-    public VedtakStatusRepository vedtakStatusRepository(JdbcTemplate jdbcTemplate) {
-        return new VedtakStatusRepository(jdbcTemplate);
+    public static HealthCheckResult dbPinger(final JdbcTemplate db) {
+        try {
+            db.queryForList("select count(1) from dual");
+            return HealthCheckResult.healthy();
+        } catch (Exception e) {
+            return HealthCheckResult.unhealthy("Feil mot databasen", e);
+        }
     }
 
-    @Bean
-    public RegistreringRepository registreringRepository(JdbcTemplate jdbcTemplate) {
-        return new RegistreringRepository(jdbcTemplate);
+
+    private static void migrateDb(DataSource dataSource) {
+        Flyway flyway = new Flyway();
+        flyway.setDataSource(dataSource);
+        flyway.migrate();
     }
-
-    @Bean
-    public ProfileringRepository profileringRepository(JdbcTemplate jdbcTemplate) {
-        return new ProfileringRepository(jdbcTemplate);
-    }
-
-    @Bean
-    public CvRepository cvRepository(JdbcTemplate jdbcTemplate) {
-        return new CvRepository(jdbcTemplate);
-    }
-
-    @Bean
-    public Pingable dbPinger(final JdbcTemplate db) {
-        PingMetadata metadata = new PingMetadata(
-                UUID.randomUUID().toString(),
-                "N/A",
-                "Database for portefolje",
-                true
-        );
-
-        return () -> {
-            try {
-                db.queryForList("select count(1) from dual");
-                return Pingable.Ping.lyktes(metadata);
-            } catch (Exception e) {
-                return Pingable.Ping.feilet(metadata, e);
-            }
-        };
-    }
-
 }

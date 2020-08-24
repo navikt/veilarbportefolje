@@ -7,23 +7,17 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
-import org.springframework.stereotype.Component;
-
-import javax.inject.Inject;
-
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
-@Component
 public class ElasticServiceV2 {
 
-    private final RestHighLevelClient client;
-    private final String alias;
+    private String alias;
+    private RestHighLevelClient restHighLevelClient;
 
-    @Inject
-    public ElasticServiceV2(RestHighLevelClient client, String alias) {
-        this.client = client;
+    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, String alias) {
+        this.restHighLevelClient = restHighLevelClient;
         this.alias = alias;
     }
 
@@ -40,7 +34,7 @@ public class ElasticServiceV2 {
         );
 
         try {
-            client.update(updateRequest, DEFAULT);
+            restHighLevelClient.update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument ved oppdatering av cv");

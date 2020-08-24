@@ -3,7 +3,7 @@
     <envs>
       <env name="ELECTOR_PATH" value="localhost:4040" />
     </envs>
-    <option name="MAIN_CLASS_NAME" value="MainTest" />
+    <option name="MAIN_CLASS_NAME" value="VeilarbportefoljeTestApp" />
     <module name="veilarbportefolje" />
     <option name="VM_PARAMETERS" value="-Dmiljo.database=true" />
     <extension name="coverage">

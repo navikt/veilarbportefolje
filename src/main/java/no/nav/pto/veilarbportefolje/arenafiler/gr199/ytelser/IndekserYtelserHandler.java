@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 
-import javax.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -45,11 +44,13 @@ public class IndekserYtelserHandler {
         ));
     }
 
-    @Inject
-    private PersistentOppdatering persistentOppdatering;
+    private final PersistentOppdatering persistentOppdatering;
+    private final BrukerRepository brukerRepository;
 
-    @Inject
-    private BrukerRepository brukerRepository;
+    public IndekserYtelserHandler(PersistentOppdatering persistentOppdatering, BrukerRepository brukerRepository) {
+        this.brukerRepository = brukerRepository;
+        this.persistentOppdatering = persistentOppdatering;
+    }
 
     public synchronized void lagreYtelser(LoependeYtelser ytelser) {
         log.info("Sletter ytelsesdata fra DB");

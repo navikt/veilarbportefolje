@@ -8,14 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.util.CollectionUtils;
+import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -30,7 +33,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.utils.CollectionUtils.mapOf;
+import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.database.Table.*;
 import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
@@ -40,12 +43,13 @@ import static no.nav.sbl.sql.where.WhereClause.gt;
 import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
+@Repository
 public class BrukerRepository {
 
-    JdbcTemplate db;
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final JdbcTemplate db;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    @Inject
+    @Autowired
     public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
@@ -88,7 +92,7 @@ public class BrukerRepository {
 
         List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
                 sql,
-                mapOf(Pair.of("fnr", fnr)),
+                CollectionUtils.mapOf(Pair.of("fnr", fnr)),
                 (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null
         );
 
@@ -112,7 +116,7 @@ public class BrukerRepository {
                      + ")"
                      + "WHERE rn > :from ";
 
-        Map<String, Integer> parameters = mapOf(
+        Map<String, Integer> parameters = CollectionUtils.mapOf(
                 Pair.of("from", fromExclusive),
                 Pair.of("to", toInclusive)
         );
@@ -204,7 +208,6 @@ public class BrukerRepository {
     public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
-
         return SqlUtils
                 .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")

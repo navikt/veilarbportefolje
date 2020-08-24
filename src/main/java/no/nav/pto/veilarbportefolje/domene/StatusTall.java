@@ -53,6 +53,6 @@ public class StatusTall {
         this.minArbeidslisteLilla = buckets.getMinArbeidslisteLilla().getDoc_count();
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
-        this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count():0;
+        this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
     }
 }

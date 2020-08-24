@@ -3,21 +3,22 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import lombok.SneakyThrows;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class VedtakStatusRepository {
 
-    private JdbcTemplate db;
+    private final JdbcTemplate db;
 
-    public VedtakStatusRepository(JdbcTemplate db) {
-        this.db = db;
-    }
-
+    @Autowired
+    public VedtakStatusRepository(JdbcTemplate db) { this.db = db; }
 
     public void slettVedtakUtkast (long id) {
         SqlUtils.delete(db, "VEDTAKSTATUS_DATA")
