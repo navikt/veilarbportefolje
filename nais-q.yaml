@@ -52,7 +52,7 @@ spec:
       value: "-Xms4098m -Xmx8096m"
     - name: KAFKA_TOPIC_VEDTAK_STATUS_ENDRING
       value: aapen-oppfolging-vedtakStatusEndring-v1-{{namespace}}
-    - name: KAFKA_TOPIC_DIALOG
+    - name: KAFKA_TOPCI_DIALOG
       value: aapen-fo-endringPaaDialog-v1-{{namespace}}
     - name: KAFKA_TOPIC_OPPFOLGING
       value: aapen-fo-endringPaaOppfolgingStatus-v1-{{namespace}}

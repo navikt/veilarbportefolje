@@ -12,18 +12,20 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
+
 
 @Configuration
 public class KafkaConfig {
 
     public enum Topic {
-        VEDTAK_STATUS_ENDRING_TOPIC(System.getenv("KAKFA_TOPIC_VEDTAK_STATUS_ENDRING")),
-        DIALOG_CONSUMER_TOPIC(System.getenv("KAFKA_TOPIC_DIALOG")),
-        OPPFOLGING_CONSUMER_TOPIC(System.getenv("KAFKA_TOPIC_OPPFOLGING")),
-        KAFKA_REGISTRERING_CONSUMER_TOPIC(System.getenv("KAFKA_TOPIC_REGISTRERING")),
-        KAFKA_AKTIVITER_CONSUMER_TOPIC(System.getenv("KAFKA_TOPIC_AKTIVITER")),
-        PAM_SAMTYKKE_ENDRET_V1(System.getenv("KAFKA_TOPIC_CV_SAMTYKKE")),
-        KAFKA_PROFILERING_CONSUMER_TOPIC(System.getenv("KAFKA_TOPIC_PROFILERING"));
+        VEDTAK_STATUS_ENDRING_TOPIC(getRequiredProperty("KAKFA_TOPIC_VEDTAK_STATUS_ENDRING")),
+        DIALOG_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_DIALOG")),
+        OPPFOLGING_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_OPPFOLGING")),
+        KAFKA_REGISTRERING_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_REGISTRERING")),
+        KAFKA_AKTIVITER_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_AKTIVITER")),
+        PAM_SAMTYKKE_ENDRET_V1(getRequiredProperty("KAFKA_TOPIC_CV_SAMTYKKE")),
+        KAFKA_PROFILERING_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_PROFILERING"));
 
         final String topic;
 
