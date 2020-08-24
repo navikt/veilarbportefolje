@@ -97,6 +97,4 @@ public class KafkaConfig {
                 FeatureToggle.KAFKA_CV
         );
     }
-
-
 }
