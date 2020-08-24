@@ -50,17 +50,3 @@ spec:
   env:
     - name: JAVA_OPTS
       value: "-Xms4096m -Xmx10144m"
-    - name: KAFKA_TOPIC_VEDTAK_STATUS_ENDRING
-      value: aapen-oppfolging-vedtakStatusEndring-v1-p
-    - name: KAFKA_TOPCI_DIALOG
-      value: aapen-fo-endringPaaDialog-v1-p
-    - name: KAFKA_TOPIC_OPPFOLGING
-      value: aapen-fo-endringPaaOppfolgingStatus-v1-p
-    - name: KAFKA_TOPIC_REGISTRERING
-      value: aapen-arbeid-arbeidssoker-registrert-p
-    - name: KAFKA_TOPIC_AKTIVITER
-      value: aapen-fo-endringPaaAktivitet-v1-p
-    - name: KAFKA_TOPIC_CV_SAMTYKKE
-      value: aapen-pam-samtykke-endret-v1
-    - name: KAFKA_TOPIC_PROFILERING
-      value: aapen-arbeid-arbeidssoker-profilert-p

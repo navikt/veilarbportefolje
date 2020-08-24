@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
@@ -12,20 +13,19 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 
 
 @Configuration
 public class KafkaConfig {
 
     public enum Topic {
-        VEDTAK_STATUS_ENDRING_TOPIC(getRequiredProperty("KAKFA_TOPIC_VEDTAK_STATUS_ENDRING")),
-        DIALOG_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_DIALOG")),
-        OPPFOLGING_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_OPPFOLGING")),
-        KAFKA_REGISTRERING_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_REGISTRERING")),
-        KAFKA_AKTIVITER_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_AKTIVITER")),
-        PAM_SAMTYKKE_ENDRET_V1(getRequiredProperty("KAFKA_TOPIC_CV_SAMTYKKE")),
-        KAFKA_PROFILERING_CONSUMER_TOPIC(getRequiredProperty("KAFKA_TOPIC_PROFILERING"));
+        VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + EnvironmentUtils.requireNamespace()),
+        DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + EnvironmentUtils.requireNamespace()),
+        OPPFOLGING_CONSUMER_TOPIC("aapen-fo-endringPaaOppfolgingStatus-v1-" + EnvironmentUtils.requireNamespace()),
+        KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + EnvironmentUtils.requireNamespace()),
+        KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v1-" + EnvironmentUtils.requireNamespace()),
+        PAM_SAMTYKKE_ENDRET_V1("aapen-pam-samtykke-endret-v1"),
+        KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + EnvironmentUtils.requireNamespace());
 
         final String topic;
 
