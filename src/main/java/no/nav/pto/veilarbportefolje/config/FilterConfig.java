@@ -4,6 +4,7 @@ import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.subject.IdentType;
 import no.nav.common.auth.utils.ServiceUserTokenFinder;
+import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -50,7 +51,7 @@ public class FilterConfig {
                 .withClientId(properties.getOpenAmClientId())
                 .withIdTokenCookieName(OPEN_AM_ID_TOKEN_COOKIE_NAME)
                 .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
-                .withIdTokenFinder((req) -> Optional.empty()) // This overrides the default finder which checks the Authorization header for tokens
+                .withIdTokenFinder(new UserTokenFinder())
                 .withRefreshUrl(properties.getOpenAmRefreshUrl())
                 .withIdentType(IdentType.InternBruker);
     }
