@@ -7,8 +7,6 @@ public class FeatureToggle {
     public static final String HOVEDINDEKSERING_MED_PAGING = "portefolje.ny_hovedindeksering";
     public static final String KAFKA_AKTIVITETER = "portefolje.kafka.aktiviteter";
     public static final String KAFKA_CV = "veilarbportefolje.kafka.cv.killswitch";
-    public static final String KAFKA_OPPFOLGING = "portefolje.kafka.oppfolging";
-    public static final String KAFKA_OPPFOLGING_BEHANDLE_MELDINGER = "portefolje.kafka.oppfolging_behandle_meldinger";
     public static final String KAFKA_REGISTRERING = "veilarbportfolje.registrering";
     public static final String KAFKA_VEDTAKSTOTTE = "veilarbportfolje-hent-data-fra-vedtakstotte";
     public static final String KAFKA_VEILARBDIALOG = "veilarbdialog.kafka";
