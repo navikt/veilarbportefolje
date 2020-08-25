@@ -41,8 +41,8 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.FORVENTET_MINIM
 @RequestMapping("/internal")
 public class InternalController {
 
-    private List<SelfTestCheck> syncSelfTestChecks;
-    private List<SelfTestCheck> asyncSelfTestChecks;
+    private final List<SelfTestCheck> syncSelfTestChecks;
+    private final List<SelfTestCheck> asyncSelfTestChecks;
 
     @Autowired
     public InternalController(
@@ -60,7 +60,7 @@ public class InternalController {
                 new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient())
         );
 
-        List<SelfTestCheck> syncSelftester = List.of(
+        syncSelfTestChecks = List.of(
                 new SelfTestCheck("Sjekker henting av fil over sftp", true, tiltakHandler::sftpTiltakPing),
                 new SelfTestCheck("Sjekker henting av fil over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing),
                 new SelfTestCheck("Ping av DKIF_V1. Henter reservasjon fra KRR.", false, () -> DigitalKontaktinformasjonConfig.dkifV1Ping(dkifV1))
@@ -68,9 +68,6 @@ public class InternalController {
 
         List<SelfTestCheck> kafkaSelftTester = Arrays.stream(KafkaConfig.Topic.values())
                 .map(topic -> new SelfTestCheck("Sjekker at vi får kontakt med partisjonene for " + topic, false, new KafkaHelsesjekk(topic)))
-                .collect(Collectors.toList());
-
-        this.syncSelfTestChecks = Stream.concat(syncSelftester.stream(), kafkaSelftTester.stream())
                 .collect(Collectors.toList());
 
         this.asyncSelfTestChecks = Stream.concat(asyncSelftester.stream(), kafkaSelftTester.stream())
