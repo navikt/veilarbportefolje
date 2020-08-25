@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @RequestMapping("/api/personinfo")
@@ -24,7 +27,8 @@ public class PersoninfoController {
     @GetMapping("/{fnr}")
     public Personinfo hentPersoninfo(@PathVariable("fnr") String fnr) {
         authService.tilgangTilBruker(fnr);
-        return personRepository.hentPersoninfoForFnr(Fnr.of(fnr)).orElseThrow();
+        return personRepository.hentPersoninfoForFnr(Fnr.of(fnr))
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Kunne ikke finne personinfo for bruker"));
     }
 
 }
