@@ -1,24 +1,23 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser;
 
 import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.Metrics;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.ArenaFilType;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import org.apache.commons.vfs2.FileObject;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.*;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
@@ -70,14 +69,12 @@ public class KopierGR199FraArena {
     }
 
     public HealthCheckResult sftpLopendeYtelserPing() {
-        FileObject tiltakFil = this.hentYtelserFil().getOrElseThrow(() -> new RuntimeException());
-        Try<TiltakOgAktiviteterForBrukere> tiltak = FilmottakFileUtils.unmarshallTiltakFil(tiltakFil);
-        if (tiltak.isFailure()) {
-            log.error("innlesning av arenafil feil " + new RuntimeException(tiltak.getCause()));
-            return innlesingAvFilFeilet(environmentProperties.getArenaLoependeYtelserUrl());
-        } else {
-            return HealthCheckResult.healthy();
+        Try<FileObject> result = this.hentYtelserFil();
+        if (result.isFailure()) {
+            return HealthCheckResult.unhealthy("Klarte ikke å hente fil for ytelser");
         }
+
+        return HealthCheckResult.healthy();
     }
 
 }
