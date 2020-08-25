@@ -1,24 +1,24 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.Metrics;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.pto.veilarbportefolje.arenafiler.ArenaFilType;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
-import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
+import no.nav.pto.veilarbportefolje.domene.Brukerdata;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.pto.veilarbportefolje.service.PersonIdService;
 import org.apache.commons.vfs2.FileObject;
 
@@ -37,7 +37,8 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.*;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
+import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.*;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
@@ -75,11 +76,11 @@ public class TiltakHandler {
     }
 
     public HealthCheckResult sftpTiltakPing() {
-        FileObject ytelseFil = hentTiltaksFil().getOrElseThrow(() -> new RuntimeException());
-        Try<LoependeYtelser> ytelser = FilmottakFileUtils.unmarshallLoependeYtelserFil(ytelseFil);
-        if (ytelser.isFailure()) {
-            return innlesingAvFilFeilet(environmentProperties.getArenaPaagaaendeAktiviteterUrl());
+        Try<FileObject> result = hentTiltaksFil();
+        if (result.isFailure()) {
+            return HealthCheckResult.unhealthy("Kunne ikke hente tiltaksfil fra arena");
         }
+
         return HealthCheckResult.healthy();
     }
 
