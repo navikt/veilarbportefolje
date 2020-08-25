@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaHelsesjekk;
-import no.nav.pto.veilarbportefolje.krr.DigitalKontaktinformasjonConfig;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -55,7 +54,6 @@ public class InternalController {
                 new SelfTestCheck("Database for portefolje", true, () -> DatabaseConfig.dbPinger(db)),
                 new SelfTestCheck("Aktorregister", true, aktorregisterClient),
                 new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient()),
-                new SelfTestCheck("Ping av DKIF_V1. Henter reservasjon fra KRR.", false, () -> DigitalKontaktinformasjonConfig.dkifV1Ping(dkifV1)),
                 new SelfTestCheck("Sjekker henting av tiltaksfil fra arena over sftp", true, tiltakHandler::sftpTiltakPing),
                 new SelfTestCheck("Sjekker henting av ytelser-fil fra arena over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing)
         );

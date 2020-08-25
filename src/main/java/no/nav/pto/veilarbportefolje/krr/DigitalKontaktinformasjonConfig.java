@@ -31,15 +31,4 @@ public class DigitalKontaktinformasjonConfig {
                 .configureStsForSystemUser(stsConfig)
                 .build();
     }
-
-
-    public static HealthCheckResult dkifV1Ping(DigitalKontaktinformasjonV1 dkifV1) {
-        try {
-            dkifV1.ping();
-            return HealthCheckResult.healthy();
-        } catch (Exception e) {
-            log.error("feil mot dkif " + new RuntimeException(e));
-            return HealthCheckResult.unhealthy("Feil mot difi", e);
-        }
-    }
 }
