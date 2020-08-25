@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaHelsesjekk;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,7 +41,6 @@ public class InternalController {
 
     @Autowired
     public InternalController(
-            DigitalKontaktinformasjonV1 dkifV1,
             JdbcTemplate db,
             TiltakHandler tiltakHandler,
             KopierGR199FraArena kopierGR199FraArena,
