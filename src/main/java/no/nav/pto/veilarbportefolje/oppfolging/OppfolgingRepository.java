@@ -42,41 +42,8 @@ public class OppfolgingRepository {
                 .execute();
     }
 
-    public Result<AktoerId> oppdaterOppfolgingData(OppfolgingStatus dto) {
-        String aktoerId = dto.getAktoerId().aktoerId;
-        String veilederId = dto.getVeilederId().map(id -> id.toString()).orElse(null);
-
-        Supplier<Boolean> query = () -> {
-            return SqlUtils.upsert(db, "OPPFOLGING_DATA")
-                    .set("VEILEDERIDENT", veilederId)
-                    .set("OPPDATERT_KILDESYSTEM", dto.getEndretTimestamp())
-                    .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
-                    .set("OPPFOLGING", safeToJaNei(dto.isOppfolging()))
-                    .set("NY_FOR_VEILEDER", safeToJaNei(dto.isNyForVeileder()))
-                    .set("MANUELL", safeToJaNei(dto.isManuell()))
-                    .set("AKTOERID", aktoerId)
-                    .set("STARTDATO", dto.getStartDato())
-                    .where(WhereClause.equals("AKTOERID", aktoerId))
-                    .execute();
-        };
-
-        return Result.of(query).mapOk(_queryResult -> dto.getAktoerId());
-    }
-
-
     public static String safeToJaNei(Boolean aBoolean) {
         return TRUE.equals(aBoolean) ? "J" : "N";
-    }
-
-    public Result<BrukerOppdatertInformasjon> hentOppfolgingData(AktoerId aktoerId) {
-        Supplier<BrukerOppdatertInformasjon> query = () ->
-                db.queryForObject(
-                        "SELECT * FROM OPPFOLGING_DATA WHERE AKTOERID = ?",
-                        new Object[]{aktoerId.aktoerId},
-                        this::mapToBrukerOppdatertInformasjon
-                );
-
-        return Result.of(query);
     }
 
     public Result<Timestamp> hentStartdatoForOppfolging(AktoerId aktoerId) {

@@ -7,7 +7,6 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -69,13 +68,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
-
-        if (unleashService.isEnabled(FeatureToggle.KAFKA_OPPFOLGING_BEHANDLE_MELDINGER)) {
-            log.info("Oppdateringer for oppfølgingsstatus blir behandlet via kafka");
-            return;
-        }
-
-        if(!leaderElectionClient.isLeader()) {
+        if (!leaderElectionClient.isLeader()) {
             return;
         }
 
@@ -115,7 +108,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
         boolean brukerErIkkeUnderOppfolging = brukerErIkkeUnderOppfolging(oppfolgingData);
         boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet = eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
-        boolean skalSletteArbeidsliste =  brukerErIkkeUnderOppfolging|| eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet;
+        boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet;
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
@@ -141,9 +134,9 @@ public class OppfolgingFeedHandler implements FeedCallback {
         String veilederId = oppfolgingData.getVeileder();
         return brukerRepository
                 .retrievePersonid(aktoerId)
-                .peek(personId -> log.info("PersonId er {}, {}" , personId, aktoerId))
+                .peek(personId -> log.info("PersonId er {}, {}", personId, aktoerId))
                 .flatMap(brukerRepository::retrieveEnhet)
-                .peek(enhet -> log.info("Enhet {}, {} " , enhet, aktoerId))
+                .peek(enhet -> log.info("Enhet {}, {} ", enhet, aktoerId))
                 .map(enhet -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet))
                 .peek(veilederePaaEnhet -> log.info("AktoerId {}, Veileder: {} Veileder på enhet: {}", veilederId, veilederePaaEnhet, aktoerId))
                 .map(veilederePaaEnhet -> veilederePaaEnhet.contains(veilederId))

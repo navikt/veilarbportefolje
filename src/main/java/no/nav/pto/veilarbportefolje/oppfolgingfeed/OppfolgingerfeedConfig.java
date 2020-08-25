@@ -19,13 +19,13 @@ import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.math.BigDecimal;
 
 import static java.math.BigDecimal.valueOf;
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig.*;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VEILARBOPPFOLGING_URL_PROPERTY;
-
 
 @Configuration
 public class OppfolgingerfeedConfig {
