@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
@@ -39,8 +38,8 @@ public class KafkaConfig {
                 registreringService,
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
-                Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC,
-                FeatureToggle.KAFKA_REGISTRERING);
+                Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC
+        );
     }
 
     @Bean
@@ -49,8 +48,8 @@ public class KafkaConfig {
                 profileringService,
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
-                Topic.KAFKA_PROFILERING_CONSUMER_TOPIC,
-                FeatureToggle.KAFKA_PROFILERING);
+                Topic.KAFKA_PROFILERING_CONSUMER_TOPIC
+        );
     }
 
     @Bean
@@ -59,8 +58,7 @@ public class KafkaConfig {
                 aktivitetService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
-                Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                FeatureToggle.KAFKA_AKTIVITETER
+                Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC
         );
     }
 
@@ -70,8 +68,7 @@ public class KafkaConfig {
                 vedtakService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
-                Topic.VEDTAK_STATUS_ENDRING_TOPIC,
-                FeatureToggle.KAFKA_VEDTAKSTOTTE
+                Topic.VEDTAK_STATUS_ENDRING_TOPIC
         );
     }
 
@@ -81,8 +78,7 @@ public class KafkaConfig {
                 dialogService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
-                KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-                FeatureToggle.KAFKA_VEILARBDIALOG
+                KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC
         );
     }
 
@@ -92,8 +88,7 @@ public class KafkaConfig {
                 cvService,
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
-                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
-                FeatureToggle.KAFKA_CV
+                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1
         );
     }
 

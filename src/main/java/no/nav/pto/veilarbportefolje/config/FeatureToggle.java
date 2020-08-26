@@ -5,12 +5,6 @@ public class FeatureToggle {
     }
 
     public static final String HOVEDINDEKSERING_MED_PAGING = "portefolje.ny_hovedindeksering";
-    public static final String KAFKA_AKTIVITETER = "portefolje.kafka.aktiviteter";
-    public static final String KAFKA_CV = "veilarbportefolje.kafka.cv.killswitch";
-    public static final String KAFKA_REGISTRERING = "veilarbportfolje.registrering";
-    public static final String KAFKA_VEDTAKSTOTTE = "veilarbportfolje-hent-data-fra-vedtakstotte";
-    public static final String KAFKA_VEILARBDIALOG = "veilarbdialog.kafka";
     public static final String MARKER_SOM_SLETTET = "portefolje_marker_som_slettet";
     public static final String VEDTAKSTOTTE_PILOT = "pto.vedtaksstotte.pilot";
-    public static final String KAFKA_PROFILERING = "veilarbportfolje.profilering";
 }
