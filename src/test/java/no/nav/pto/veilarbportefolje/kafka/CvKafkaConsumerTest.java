@@ -32,8 +32,7 @@ public class CvKafkaConsumerTest extends IntegrationTest {
                 cvService,
                 createUnleashMock(),
                 getKafkaConsumerProperties(),
-                PAM_SAMTYKKE_ENDRET_V1,
-                ""
+                PAM_SAMTYKKE_ENDRET_V1
         );
     }
 

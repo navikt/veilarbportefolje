@@ -16,7 +16,6 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +36,6 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     private final UnleashService unleashService;
     private final String topic;
     private final KafkaConsumer<String, T> consumer;
-    private final String featureNavn;
     private final AtomicBoolean shutdown;
     private final CountDownLatch shutdownLatch;
     private final Counter counter;
@@ -45,14 +43,12 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     public KafkaConsumerRunnable(KafkaConsumerService<T> kafkaService,
                                  UnleashService unleashService,
                                  Properties kafkaProperties,
-                                 Topic topic,
-                                 String featureNavn) {
+                                 Topic topic) {
 
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
         this.topic = topic.topic;
         this.consumer = new KafkaConsumer<>(kafkaProperties);
-        this.featureNavn = featureNavn;
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
@@ -68,16 +64,13 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         try {
             log.info("Starter konsument for {}", topic);
             consumer.subscribe(singletonList(topic), getRebalanceListener());
-            while (featureErPa() && !shutdown.get()) {
+            while (!shutdown.get()) {
                 ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
                 records.forEach(this::process);
                 if (kafkaService.shouldRewind()) {
                     this.rewind();
                 }
             }
-        } catch (NullPointerException npe) {
-            log.error("Unleash kastet NPE på topic {}", topic, npe);
-            System.exit(1);
         } catch (Exception e) {
             String mld = String.format(
                     "%s under poll() eller subscribe() for topic %s",
@@ -140,10 +133,6 @@ public class KafkaConsumerRunnable<T> implements Runnable {
         MDC.remove(PREFERRED_NAV_CALL_ID_HEADER_NAME);
     }
 
-    private boolean featureErPa() {
-        return unleashService.isEnabled(this.featureNavn);
-    }
-
     private ConsumerRebalanceListener getRebalanceListener() {
         return new ConsumerRebalanceListener() {
 
@@ -154,7 +143,7 @@ public class KafkaConsumerRunnable<T> implements Runnable {
 
             @Override
             public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-                if (unleashService.isEnabled(featureNavn + "_rewind")) {
+                if (unleashService.isEnabled(topic + "_rewind")) {
                     log.info("Spoler tilbake til begynnelsen for topic " + topic);
                     consumer.seekToBeginning(partitions);
                 }

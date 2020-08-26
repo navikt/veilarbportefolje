@@ -6,14 +6,12 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.service.PersonIdService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -79,8 +77,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
                 aktivitetService,
                 createUnleashMock(),
                 getKafkaConsumerProperties(),
-                KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                ""
+                KAFKA_AKTIVITER_CONSUMER_TOPIC
         );
     }
 
