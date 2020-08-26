@@ -1,14 +1,13 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -53,9 +52,7 @@ public class ElasticService {
         BoolQueryBuilder boolQuery = boolQuery();
         boolQuery.must(matchQuery("enhet_id", enhetId));
 
-        if (unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)) {
-            boolQuery.must(matchQuery("oppfolging", true));
-        }
+        boolQuery.must(matchQuery("oppfolging", true));
 
         boolean kallesFraMinOversikt = veilederIdent.isPresent() && StringUtils.isNotBlank(veilederIdent.get());
         if (kallesFraMinOversikt) {
@@ -97,10 +94,7 @@ public class ElasticService {
 
     public List<Bruker> hentBrukereMedArbeidsliste(String veilederId, String enhetId) {
 
-        SearchSourceBuilder request =
-                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
-                        byggArbeidslisteQueryV2(enhetId, veilederId) :
-                        byggArbeidslisteQuery(enhetId, veilederId);
+        SearchSourceBuilder request = byggArbeidslisteQuery(enhetId, veilederId);
 
         ElasticSearchResponse response = search(request, indeksNavn, ElasticSearchResponse.class);
 
@@ -113,9 +107,7 @@ public class ElasticService {
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
 
         SearchSourceBuilder request =
-                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
-                        byggStatusTallForVeilederQueryV2(enhetId, veilederId, emptyList(), vedtakstottePilotErPa) :
-                        byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
+                byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -126,10 +118,9 @@ public class ElasticService {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
         boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
+
         SearchSourceBuilder request =
-                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
-                        byggStatusTallForEnhetQueryV2(enhetId, veilederPaaEnhet, vedtakstottePilotErPa):
-                        byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
+                byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
 
         StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -137,11 +128,7 @@ public class ElasticService {
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
-        SearchSourceBuilder request =
-                unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET) ?
-                        byggPortefoljestorrelserQueryV2(enhetId) :
-                        byggPortefoljestorrelserQuery(enhetId);
-
+        SearchSourceBuilder request = byggPortefoljestorrelserQuery(enhetId);
         PortefoljestorrelserResponse response = search(request, indeksNavn, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
