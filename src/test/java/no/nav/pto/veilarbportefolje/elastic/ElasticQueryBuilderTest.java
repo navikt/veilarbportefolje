@@ -8,14 +8,10 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeAll;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
@@ -23,7 +19,6 @@ import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.mapOf;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.search.sort.SortOrder.ASC;
@@ -125,48 +120,12 @@ public class ElasticQueryBuilderTest {
     }
 
     @Test
-    public void skal_bygge_korrekt_json_for_aa_hente_ut_brukere_med_arbeidsliste() {
-        val request = byggArbeidslisteQuery("0000", "Z00000");
-
-        val actualJson = request.query().toString();
-        val expectedJson = readFileAsJsonString("/brukere_med_arbeidslist.json");
-
-        assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
-    }
-
-    @Test
     public void skal_bygge_korrekt_json_for_aa_hente_ut_portefoljestorrelser() {
         val request = byggPortefoljestorrelserQuery("0000");
 
         val actualJson = request.aggregations().toString();
         val expectedJson = readFileAsJsonString("/portefoljestorrelser.json");
 
-        assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
-    }
-
-    @Test
-    public void skal_bygge_korrekt_json_for_aa_hente_ut_statustall_for_veileder() {
-        val builder = byggStatusTallForVeilederQuery("0000", "Z000000", listOf("Z00001"), true);
-
-        val actualJson = builder.aggregations().toString();
-        String expectedJson = readFileAsJsonString("/statustall_for_veileder.json");
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        expectedJson = expectedJson.replaceAll("fromDate", toIsoUTC(startOfDay));
-        expectedJson = expectedJson.replaceAll("toDate", toIsoUTC(startOfDay.plusDays(1)));
-
-        assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
-    }
-
-    @Test
-    public void skal_bygge_korrekt_json_for_aa_hente_ut_statustall_for_enhet() {
-        val builder = byggStatusTallForEnhetQuery("0000", listOf("Z00001"), true);
-
-        val actualJson = builder.aggregations().toString();
-        String expectedJson = readFileAsJsonString("/statustall_for_enhet.json");
-
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        expectedJson = expectedJson.replaceAll("fromDate", toIsoUTC(startOfDay));
-        expectedJson = expectedJson.replaceAll("toDate", toIsoUTC(startOfDay.plusDays(1)));
         assertThat(actualJson).isEqualToIgnoringWhitespace(expectedJson);
     }
 

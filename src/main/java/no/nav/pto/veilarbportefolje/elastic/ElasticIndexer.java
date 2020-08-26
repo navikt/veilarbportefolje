@@ -6,18 +6,19 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.CollectionUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.metrikker.MetricsUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import org.apache.commons.io.IOUtils;
-import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
@@ -33,29 +34,23 @@ import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
-import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.TermQueryBuilder;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
@@ -257,39 +252,11 @@ public class ElasticIndexer {
     private void slettBrukereIkkeLengerUnderOppfolging(List<OppfolgingsBruker> brukerBatch) {
         brukerBatch.stream()
                 .filter(bruker -> !erUnderOppfolging(bruker))
-                .forEach(this::slettBruker);
+                .forEach(this::markerBrukerSomSlettet);
     }
 
     @SneakyThrows
-    public void slettBruker(OppfolgingsBruker bruker) {
-
-        if (unleashService.isEnabled(FeatureToggle.MARKER_SOM_SLETTET)) {
-            updateOppfolgingTilFalse(bruker);
-        } else {
-            List<Integer> backoffs = Arrays.asList(1000, 3000, 6000, 0);
-
-            for (Integer backoff : backoffs) {
-                DeleteByQueryRequest deleteQuery = new DeleteByQueryRequest(getAlias())
-                        .setQuery(new TermQueryBuilder("fnr", bruker.getFnr()));
-
-                try {
-                    BulkByScrollResponse response = restHighLevelClient.deleteByQuery(deleteQuery, DEFAULT);
-                    if (response.getDeleted() == 1) {
-                        log.info("Sletting: slettet bruker {} (personId {})", bruker.getAktoer_id(), bruker.getPerson_id());
-                    }
-                } catch (ElasticsearchStatusException e) {
-                    String mld = format("ElasticsearchStatusException for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
-                    log.warn(mld, e);
-                    Thread.sleep(backoff);
-                } catch (Exception e) {
-                    String mld = format("Sletting feilet for bruker %s (personId %s)", bruker.getAktoer_id(), bruker.getPerson_id());
-                    log.error(mld, e);
-                }
-            }
-        }
-    }
-
-    private void updateOppfolgingTilFalse(OppfolgingsBruker bruker) throws IOException {
+    public void markerBrukerSomSlettet(OppfolgingsBruker bruker) {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(getAlias());
         updateRequest.type("_doc");
@@ -353,7 +320,7 @@ public class ElasticIndexer {
             );
 
         } else {
-            slettBruker(bruker);
+            markerBrukerSomSlettet(bruker);
         }
 
         return result;
@@ -373,7 +340,7 @@ public class ElasticIndexer {
             leggTilTiltak(bruker);
             skrivTilIndeks(getAlias(), bruker);
         } else {
-            slettBruker(bruker);
+            markerBrukerSomSlettet(bruker);
         }
 
         return result;
