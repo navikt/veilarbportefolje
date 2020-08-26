@@ -43,8 +43,7 @@ public class DialogKafkaConsumerTest extends IntegrationTest {
                 dialogService,
                 createUnleashMock(),
                 getKafkaConsumerProperties(),
-                KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                ""
+                KAFKA_AKTIVITER_CONSUMER_TOPIC
         );
     }
 
