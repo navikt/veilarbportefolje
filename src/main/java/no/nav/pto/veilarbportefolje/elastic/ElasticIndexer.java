@@ -257,6 +257,7 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public void markerBrukerSomSlettet(OppfolgingsBruker bruker) {
+        log.info("Markerer bruker {} som slettet", bruker.getAktoer_id());
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(getAlias());
         updateRequest.type("_doc");
