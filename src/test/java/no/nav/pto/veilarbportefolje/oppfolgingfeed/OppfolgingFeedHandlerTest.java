@@ -28,21 +28,6 @@ import static org.mockito.Mockito.*;
 
 public class OppfolgingFeedHandlerTest {
 
-
-    private class TestTransactor extends Transactor {
-
-        public TestTransactor() {
-            super(null);
-        }
-
-        @Override
-        @SneakyThrows
-        public void inTransaction(InTransaction inTransaction) {
-            inTransaction.run();
-        }
-
-    }
-
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
     private ElasticIndexer elasticIndexer;
@@ -174,14 +159,14 @@ public class OppfolgingFeedHandlerTest {
 
     private void givenBrukerHarVeilederFraAnnenEnhet() {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
-        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
+        when(brukerRepository.retrieveNavKontor(any(PersonId.class))).thenReturn(Try.success("enhet"));
         when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(Collections.singletonList("whatever"));
 
     }
 
     private void givenBrukerHarVeilederFraSammeEnhet() {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
-        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
+        when(brukerRepository.retrieveNavKontor(any(PersonId.class))).thenReturn(Try.success("enhet"));
         when(veilarbVeilederClient.hentVeilederePaaEnhet(any()))
                 .thenReturn(Collections.singletonList((eksisterendeInformasjon.getVeileder())));
 
@@ -190,7 +175,7 @@ public class OppfolgingFeedHandlerTest {
     private void givenBrukerManglerEnhet(){
         when(oppfolgingRepository.retrieveOppfolgingData(AKTOER_ID)).thenReturn(Try.success(eksisterendeInformasjon));
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
-        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.failure(new RuntimeException()));
+        when(brukerRepository.retrieveNavKontor(any(PersonId.class))).thenReturn(Try.failure(new RuntimeException()));
     }
 
     private void givenBrukerManglerPersonId(){

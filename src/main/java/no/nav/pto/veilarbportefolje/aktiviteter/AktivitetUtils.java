@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 
@@ -25,10 +25,10 @@ public class AktivitetUtils {
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
-                                                                           PersonIdService personIdService) {
+                                                                           BrukerService brukerService) {
         AktoerId aktoerId = AktoerId.of(aktoerAktiviteter.getAktoerid());
 
-        Try<PersonId> personid = personIdService.hentPersonidFraAktoerid(aktoerId)
+        Try<PersonId> personid = brukerService.hentPersonidFraAktoerid(aktoerId)
                 .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerId.toString(), e));
 
         return personid
@@ -68,9 +68,9 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktoerId aktoerId, PersonIdService personIdService, AktivitetDAO aktivitetDAO) {
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktoerId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO) {
         AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId);
-        return konverterTilBrukerOppdatering(aktiviteter, personIdService);
+        return konverterTilBrukerOppdatering(aktiviteter, brukerService);
     }
 
     public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {

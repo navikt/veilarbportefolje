@@ -6,7 +6,7 @@ import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class PersonIdToAktorIdScheduleTest {
 
     private JdbcTemplate db;
-    private PersonIdService personIdService;
+    private BrukerService brukerService;
     private PersonIdToAktorIdSchedule scheduler;
 
     private BrukerRepository brukerRepository;
@@ -39,10 +39,10 @@ public class PersonIdToAktorIdScheduleTest {
         aktorregisterClient = new AktorregisterClientMock();
 
         brukerRepository = new BrukerRepository(db, null);
-        personIdService = new PersonIdService(brukerRepository, aktorregisterClient);
+        brukerService = new BrukerService(brukerRepository, aktorregisterClient);
 
         LeaderElectionClient leaderElectionClient = mock(LeaderElectionClient.class);
-        scheduler = new PersonIdToAktorIdSchedule(personIdService, db, mock(ElasticIndexer.class), leaderElectionClient);
+        scheduler = new PersonIdToAktorIdSchedule(brukerService, db, mock(ElasticIndexer.class), leaderElectionClient);
 
         when(leaderElectionClient.isLeader()).thenReturn(true);
 
