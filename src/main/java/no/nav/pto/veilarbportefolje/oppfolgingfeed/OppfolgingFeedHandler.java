@@ -139,7 +139,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
                         .orElseThrow(IllegalStateException::new);
 
 
-        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorBrukerErPaa, navKontorForArbeidsliste);
+        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorBrukerErPaa, navKontorForArbeidsliste.get());
         return !navKontorBrukerErPaa.equals(navKontorForArbeidsliste.orElseThrow());
     }
 
