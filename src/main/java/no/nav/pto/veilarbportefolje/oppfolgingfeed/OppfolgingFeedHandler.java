@@ -108,7 +108,13 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
         boolean brukerErIkkeUnderOppfolging = brukerErIkkeUnderOppfolging(oppfolgingData);
         boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet = eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
-        boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet;
+
+        boolean skalSletteArbeidsliste;
+        if (unleashService.isEnabled("portefolje.endre_arbeidsliste_logikk")) {
+            skalSletteArbeidsliste = brukerErIkkeUnderOppfolging || brukerHarByttetNavKontor(aktoerId);
+        } else {
+            skalSletteArbeidsliste = brukerErIkkeUnderOppfolging || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet;
+        }
 
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
@@ -118,6 +124,21 @@ public class OppfolgingFeedHandler implements FeedCallback {
             oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
         });
 
+    }
+
+    private boolean brukerHarByttetNavKontor(AktoerId aktoerId) {
+        String navKontorArbeidslisteErLagretPaa =
+                arbeidslisteService.hentNavKontorForArbeidsliste(aktoerId)
+                        .orElseThrow(IllegalStateException::new);
+
+        String navKontorBrukerErPaa =
+                brukerRepository.hentNavKontor(aktoerId)
+                        .orElseThrow(IllegalStateException::new);
+
+
+        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorBrukerErPaa, navKontorArbeidslisteErLagretPaa);
+
+        return !navKontorBrukerErPaa.equals(navKontorArbeidslisteErLagretPaa);
     }
 
     public static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {
@@ -135,7 +156,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
         return brukerRepository
                 .retrievePersonid(aktoerId)
                 .peek(personId -> log.info("PersonId er {}, {}", personId, aktoerId))
-                .flatMap(brukerRepository::retrieveEnhet)
+                .flatMap(brukerRepository::retrieveNavKontor)
                 .peek(enhet -> log.info("Enhet {}, {} ", enhet, aktoerId))
                 .map(enhet -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet))
                 .peek(veilederePaaEnhet -> log.info("AktoerId {}, Veileder: {} Veileder på enhet: {}", veilederId, veilederePaaEnhet, aktoerId))

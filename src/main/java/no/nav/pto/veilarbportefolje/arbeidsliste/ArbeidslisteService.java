@@ -6,11 +6,11 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
@@ -27,7 +28,7 @@ import static java.lang.String.format;
 public class ArbeidslisteService {
     private final AktorregisterClient aktorregisterClient;
     private final ArbeidslisteRepository arbeidslisteRepository;
-    private final BrukerRepository brukerRepository;
+    private final BrukerService brukerService;
     private final ElasticIndexer elasticIndexer;
     private final MetricsClient metricsClient;
 
@@ -35,17 +36,16 @@ public class ArbeidslisteService {
     public ArbeidslisteService(
             AktorregisterClient aktorregisterClient,
             ArbeidslisteRepository arbeidslisteRepository,
-            BrukerRepository brukerRepository,
+            BrukerService brukerService,
             ElasticIndexer elasticIndexer,
-            MetricsClient metricsClient) {
+            MetricsClient metricsClient
+    ) {
         this.aktorregisterClient = aktorregisterClient;
         this.arbeidslisteRepository = arbeidslisteRepository;
-        this.brukerRepository = brukerRepository;
+        this.brukerService = brukerService;
         this.elasticIndexer = elasticIndexer;
         this.metricsClient = metricsClient;
-
     }
-
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
         return hentAktoerId(fnr).map(this::getArbeidsliste).get();
@@ -55,18 +55,21 @@ public class ArbeidslisteService {
         return arbeidslisteRepository.retrieveArbeidsliste(aktoerId);
     }
 
-    public Try<AktoerId> createArbeidsliste(ArbeidslisteDTO data) {
+    public Try<AktoerId> createArbeidsliste(ArbeidslisteDTO dto) {
 
         metricsClient.report((new Event("arbeidsliste.opprettet")));
 
-        Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
+        Try<AktoerId> aktoerId = hentAktoerId(dto.getFnr());
         if (aktoerId.isFailure()) {
             return Try.failure(aktoerId.getCause());
         }
+        dto.setAktoerId(aktoerId.get());
 
-        data.setAktoerId(aktoerId.get());
+        String navKontorForBruker = brukerService.hentNavKontorForBruker(dto.getFnr()).orElseThrow();
+        dto.setNavKontorForArbeidsliste(navKontorForBruker);
+
         return arbeidslisteRepository
-                .insertArbeidsliste(data)
+                .insertArbeidsliste(dto)
                 .onSuccess(elasticIndexer::indekser);
     }
 
@@ -91,10 +94,6 @@ public class ArbeidslisteService {
                 .onSuccess(elasticIndexer::indekser);
     }
 
-    public Try<String> hentEnhet(Fnr fnr) {
-        return brukerRepository.retrieveEnhet(fnr);
-    }
-
     public Result<Integer> deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
         return arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
     }
@@ -106,7 +105,7 @@ public class ArbeidslisteService {
     public Validation<String, List<Fnr>> erVeilederForBrukere(List<Fnr> fnrs) {
         List<Fnr> validerteFnrs = new ArrayList<>(fnrs.size());
         fnrs.forEach(fnr -> {
-            if(erVeilederForBruker(fnr.toString()).isValid()) {
+            if (erVeilederForBruker(fnr.toString()).isValid()) {
                 validerteFnrs.add(fnr);
             }
         });
@@ -118,7 +117,7 @@ public class ArbeidslisteService {
     public Validation<String, Fnr> erVeilederForBruker(String fnr) {
         VeilederId veilederId = AuthUtils.getInnloggetVeilederIdent();
 
-        Boolean erVeilederForBruker =
+        boolean erVeilederForBruker =
                 ValideringsRegler
                         .validerFnr(fnr)
                         .map(validFnr -> erVeilederForBruker(validFnr, veilederId))
@@ -138,7 +137,13 @@ public class ArbeidslisteService {
     }
 
     public Boolean erVeilederForBruker(AktoerId aktoerId, VeilederId veilederId) {
-        return brukerRepository.retrieveVeileder(aktoerId).
-                map(currentVeileder -> currentVeileder.equals(veilederId)).getOrElse(false);
+        return brukerService
+                .hentVeilederForBruker(aktoerId)
+                .map(currentVeileder -> currentVeileder.equals(veilederId))
+                .orElse(false);
+    }
+
+    public Optional<String> hentNavKontorForArbeidsliste(AktoerId aktoerId) {
+        return arbeidslisteRepository.hentNavKontorForArbeidsliste(aktoerId);
     }
 }

@@ -10,7 +10,7 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,11 +31,11 @@ public class FilmottakConfig {
     public TiltakHandler tiltakHandler(
             TiltakRepository tiltakRepository,
             AktivitetDAO aktivitetDAO,
-            PersonIdService personIdService,
+            BrukerService brukerService,
             BrukerRepository brukerRepository,
             EnvironmentProperties environmentProperties
             ) {
-        return new TiltakHandler(tiltakRepository, aktivitetDAO, personIdService, brukerRepository, environmentProperties);
+        return new TiltakHandler(tiltakRepository, aktivitetDAO, brukerService, brukerRepository, environmentProperties);
     }
 
     public static class SftpConfig {

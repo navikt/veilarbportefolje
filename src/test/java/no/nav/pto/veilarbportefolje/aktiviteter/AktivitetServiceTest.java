@@ -4,7 +4,7 @@ import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 public class AktivitetServiceTest {
 
     @Mock
-    private PersonIdService personIdService;
+    private BrukerService brukerService;
 
     @Mock
     private AktivitetDAO aktivitetDAO;
@@ -43,7 +43,7 @@ public class AktivitetServiceTest {
 
     @Before
     public void resetMock() {
-        reset(personIdService, persistentOppdatering, aktivitetDAO);
+        reset(brukerService, persistentOppdatering, aktivitetDAO);
     }
 
     private static final String AKTOERID_TEST = "AKTOERID_TEST";
@@ -75,7 +75,7 @@ public class AktivitetServiceTest {
                             .setStatus(ikkeFullfortStatus)));
                 });
 
-        when(personIdService
+        when(brukerService
                 .hentPersonidFraAktoerid(any(AktoerId.class)))
                 .thenAnswer(args -> Try.success(PersonId.of(args.getArgument(0).toString())));
 
@@ -107,7 +107,7 @@ public class AktivitetServiceTest {
 
         when(aktivitetDAO.getDistinctAktoerIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
         when(aktivitetDAO.getAktiviteterForAktoerid(any())).thenReturn(aktiviteter);
-        when(personIdService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
+        when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
 

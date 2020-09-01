@@ -5,7 +5,7 @@ import lombok.val;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +33,7 @@ public class AktivitetUtilsTest {
     private AktivitetDAO aktivitetDAO;
 
     @Mock
-    private PersonIdService personIdService;
+    private BrukerService brukerService;
 
     @Test
     public void konverterTilBrukerOppdatering_skal_hente_rett_brukerOppdateringer() throws Exception {
@@ -70,8 +70,8 @@ public class AktivitetUtilsTest {
         val aktiviteter = Arrays.asList(aktivitetDTO1, aktivitetDTO2, aktivitetDTO3, aktivitetDTO4, aktivitetDTO5);
         val aktorAktiviteter = new AktoerAktiviteter("123").setAktiviteter(aktiviteter);
 
-        when(personIdService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(() -> PersonId.of("123")));
-        val brukerOppdateringer = konverterTilBrukerOppdatering(aktorAktiviteter, personIdService);
+        when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(() -> PersonId.of("123")));
+        val brukerOppdateringer = konverterTilBrukerOppdatering(aktorAktiviteter, brukerService);
 
         assertThat(brukerOppdateringer.getNyesteUtlopteAktivitet()).isEqualTo(YESTERDAY);
         assertThat(brukerOppdateringer.getAktivitetStart()).isEqualTo(TODAY);

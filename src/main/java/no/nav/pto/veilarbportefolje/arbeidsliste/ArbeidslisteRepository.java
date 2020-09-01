@@ -4,6 +4,7 @@ import com.google.common.base.Supplier;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.util.Result;
@@ -15,10 +16,11 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 
+import static java.time.Instant.now;
+import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.sbl.sql.SqlUtils.*;
 
@@ -27,46 +29,56 @@ import static no.nav.sbl.sql.SqlUtils.*;
 public class ArbeidslisteRepository {
 
     private static final String DELETE_FROM_ARBEIDSLISTE_SQL = "delete from arbeidsliste where aktoerid = :aktoerid";
-    public static final String ARBEIDSLISTE = "ARBEIDSLISTE";
 
     private final JdbcTemplate db;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
-    public ArbeidslisteRepository (JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public ArbeidslisteRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
+    public Optional<String> hentNavKontorForArbeidsliste(AktoerId aktoerId) {
+        String navKontor = select(db, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE))
+                .column(NAV_KONTOR_FOR_ARBEIDSLISTE)
+                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .execute();
+
+        return Optional.ofNullable(navKontor);
+    }
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
         return Try.of(
-                () -> select(db, ARBEIDSLISTE, ArbeidslisteRepository::arbeidslisteMapper)
+                () -> select(db, Table.ARBEIDSLISTE.TABLE_NAME, ArbeidslisteRepository::arbeidslisteMapper)
                         .column("*")
-                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                         .execute()
         );
     }
 
-    public Try<AktoerId> insertArbeidsliste(ArbeidslisteDTO data) {
+    public Try<AktoerId> insertArbeidsliste(ArbeidslisteDTO dto) {
         return Try.of(
                 () -> {
 
                     AktoerId aktoerId = Optional
-                            .ofNullable(data.getAktoerId())
+                            .ofNullable(dto.getAktoerId())
                             .orElseThrow(() -> new RuntimeException("Fant ikke aktør-ID"));
 
-                    upsert(db, ARBEIDSLISTE)
-                            .set("AKTOERID", aktoerId.toString())
-                            .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
-                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
-                            .set("OVERSKRIFT", data.getOverskrift())
-                            .set("KOMMENTAR", data.getKommentar())
-                            .set("FRIST", data.getFrist())
-                            .set("KATEGORI", data.getKategori().name())
-                            .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                    upsert(db, TABLE_NAME)
+                            .set(AKTOERID, aktoerId.toString())
+                            .set(FNR, dto.getFnr().toString())
+                            .set(SIST_ENDRET_AV_VEILEDERIDENT, dto.getVeilederId().toString())
+                            .set(ENDRINGSTIDSPUNKT, Timestamp.from(now()))
+                            .set(OVERSKRIFT, dto.getOverskrift())
+                            .set(KOMMENTAR, dto.getKommentar())
+                            .set(FRIST, dto.getFrist())
+                            .set(KATEGORI, dto.getKategori().name())
+                            .set(NAV_KONTOR_FOR_ARBEIDSLISTE, dto.getNavKontorForArbeidsliste())
+                            .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                             .execute();
-                    return data.getAktoerId();
+
+                    return dto.getAktoerId();
                 }
         ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db", e));
     }
@@ -75,9 +87,9 @@ public class ArbeidslisteRepository {
     public Try<AktoerId> updateArbeidsliste(ArbeidslisteDTO data) {
         return Try.of(
                 () -> {
-                    update(db, ARBEIDSLISTE)
+                    update(db, TABLE_NAME)
                             .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
-                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(Instant.now()))
+                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(now()))
                             .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
@@ -94,7 +106,7 @@ public class ArbeidslisteRepository {
     public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
         return Try.of(
                 () -> {
-                    delete(db, ARBEIDSLISTE)
+                    delete(db, TABLE_NAME)
                             .where(WhereClause.equals("AKTOERID", aktoerID.toString()))
                             .execute();
                     return aktoerID;

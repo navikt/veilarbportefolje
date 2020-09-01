@@ -11,9 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
@@ -24,13 +22,13 @@ import static org.mockito.Mockito.never;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-public class PersonIdServiceTest {
+public class BrukerServiceTest {
 
     private static final String AKTOER_ID = "aktoerid1";
     private static final String FNR = "10108000398";
     private static final String PERSON_ID = "111111";
 
-    private PersonIdService personIdService;
+    private BrukerService brukerService;
 
     private JdbcTemplate db;
 
@@ -48,7 +46,7 @@ public class PersonIdServiceTest {
         db = new JdbcTemplate(setupInMemoryDatabase());
         brukerRepository = new BrukerRepository(db, null);
         aktorregisterClient = mock(AktorregisterClient.class);
-        personIdService = new PersonIdService(brukerRepository, aktorregisterClient);
+        brukerService = new BrukerService(brukerRepository, aktorregisterClient);
 
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
@@ -73,7 +71,7 @@ public class PersonIdServiceTest {
 
         assertTrue(updated > 0);
 
-        Try<PersonId> result = personIdService.hentPersonidFraAktoerid(aktoerId);
+        Try<PersonId> result = brukerService.hentPersonidFraAktoerid(aktoerId);
         verify(aktorregisterClient, never()).hentFnr(anyString());
         assertTrue(result.isSuccess());
         Assertions.assertEquals(personId, result.get());
@@ -93,7 +91,7 @@ public class PersonIdServiceTest {
         when(aktorregisterClient.hentFnr(nyAktoerId.toString())).thenReturn(FNR);
         when(aktorregisterClient.hentAktorId(FNR)).thenReturn(nyAktoerId.toString());
 
-        personIdService.hentPersonidFraAktoerid(nyAktoerId);
+        brukerService.hentPersonidFraAktoerid(nyAktoerId);
 
         Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
         assertEquals(gamleAktorId.get(), AKTOER_ID);
@@ -113,7 +111,7 @@ public class PersonIdServiceTest {
         when(aktorregisterClient.hentFnr(aktoerId.toString())).thenReturn(FNR);
         when(aktorregisterClient.hentAktorId(FNR)).thenReturn(nyAktoerId.toString());
 
-        personIdService.hentPersonidFraAktoerid(aktoerId);
+        brukerService.hentPersonidFraAktoerid(aktoerId);
 
         Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
         assertEquals(gamleAktorId.get(), aktoerId.toString());

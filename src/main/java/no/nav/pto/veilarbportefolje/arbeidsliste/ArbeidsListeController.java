@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -34,16 +35,19 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @RequestMapping("/api/arbeidsliste")
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
+    private final BrukerService brukerService;
     private final AktorregisterClient aktorregisterClient;
     private final AuthService authService;
 
     @Autowired
-    public ArbeidsListeController (
+    public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
+            BrukerService brukerService,
             AktorregisterClient aktorregisterClient,
             AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
+        this.brukerService = brukerService;
         this.aktorregisterClient = aktorregisterClient;
         this.authService = authService;
 
@@ -81,16 +85,16 @@ public class ArbeidsListeController {
         Fnr fnr = new Fnr(fnrString);
         Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
 
-        boolean harVeilederTilgang = arbeidslisteService.hentEnhet(fnr)
+        boolean harVeilederTilgang = brukerService.hentNavKontorForBruker(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
-                .getOrElse(false);
+                .orElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
                 .flatMap(arbeidslisteService::getArbeidsliste)
                 .toJavaOptional()
                 .orElse(emptyArbeidsliste())
                 .setIsOppfolgendeVeileder(aktoerId.map(id ->
-                        arbeidslisteService.erVeilederForBruker(id, VeilederId.of(innloggetVeileder))).get())
+                        arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder))).get())
                 .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
@@ -109,7 +113,6 @@ public class ArbeidsListeController {
         Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
-
 
         return arbeidsliste;
     }
@@ -185,7 +188,7 @@ public class ArbeidsListeController {
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
+        String enhet = brukerService.hentNavKontorForBruker(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
         authService.tilgangTilEnhet(enhet);
     }
 
