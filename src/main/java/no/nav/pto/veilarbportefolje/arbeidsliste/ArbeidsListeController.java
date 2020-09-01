@@ -6,12 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
-import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
 import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 
 @Slf4j
@@ -149,8 +148,7 @@ public class ArbeidsListeController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
-        return createResponse(() -> {
+    public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
             authService.tilgangTilOppfolging();
 
             java.util.List<String> feiledeFnrs = new ArrayList<>();
@@ -184,7 +182,6 @@ public class ArbeidsListeController {
                 throw new IllegalStateException();
             }
             return RestResponse.of(okFnrs, feiledeFnrs);
-        });
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
