@@ -126,19 +126,21 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
     }
 
-    private boolean brukerHarByttetNavKontor(AktoerId aktoerId) {
-        String navKontorArbeidslisteErLagretPaa =
-                arbeidslisteService.hentNavKontorForArbeidsliste(aktoerId)
-                        .orElseThrow(IllegalStateException::new);
+    boolean brukerHarByttetNavKontor(AktoerId aktoerId) {
+        Optional<String> navKontorForArbeidsliste =
+                arbeidslisteService.hentNavKontorForArbeidsliste(aktoerId);
+
+        if (navKontorForArbeidsliste.isEmpty()) {
+            return false;
+        }
 
         String navKontorBrukerErPaa =
                 brukerRepository.hentNavKontor(aktoerId)
                         .orElseThrow(IllegalStateException::new);
 
 
-        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorBrukerErPaa, navKontorArbeidslisteErLagretPaa);
-
-        return !navKontorBrukerErPaa.equals(navKontorArbeidslisteErLagretPaa);
+        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorBrukerErPaa, navKontorForArbeidsliste);
+        return !navKontorBrukerErPaa.equals(navKontorForArbeidsliste.orElseThrow());
     }
 
     public static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {
