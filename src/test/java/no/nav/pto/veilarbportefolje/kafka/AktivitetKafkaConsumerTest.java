@@ -13,7 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
@@ -46,7 +46,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
     private static AktivitetDAO aktivitetDAO;
     private static JdbcTemplate jdbcTemplate;
     private static String indexName;
-    private static PersonIdService personIdService;
+    private static BrukerService brukerService;
     private static BrukerRepository brukerRepository;
     static String aktoerId = "123456789";
     static String aktivitetId = "144500";
@@ -66,11 +66,11 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
         aktivitetDAO = new AktivitetDAO(jdbcTemplate, namedParameterJdbcTemplate);
         brukerRepository = mock(BrukerRepository.class);
 
-        personIdService = mock(PersonIdService.class);
+        brukerService = mock(BrukerService.class);
 
         PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(UnleashService.class), mock(MetricsClient.class), indexName), brukerRepository, aktivitetDAO);
 
-        aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, personIdService);
+        aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService);
 
 
         new KafkaConsumerRunnable<>(
@@ -91,7 +91,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
     @Test
     public void skal_inserte_kafka_melding_i_db () throws InterruptedException {
         Fnr fnr1 = Fnr.of("11111111111");
-        when(personIdService.hentPersonidFraAktoerid(AktoerId.of(aktoerId))).thenReturn(Try.success(PersonId.of("1234")));
+        when(brukerService.hentPersonidFraAktoerid(AktoerId.of(aktoerId))).thenReturn(Try.success(PersonId.of("1234")));
         when(brukerRepository.hentBrukere(any(List.class))).thenReturn(Collections.singletonList(new OppfolgingsBruker().setPerson_id("1234").setFnr(fnr1.getFnr())));
 
 

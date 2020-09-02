@@ -1,18 +1,17 @@
 package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
 import io.vavr.control.Try;
-import lombok.SneakyThrows;
-import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
-import no.nav.pto.veilarbportefolje.mock.UnleashServiceMock;
+import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,21 +26,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class OppfolgingFeedHandlerTest {
-
-
-    private class TestTransactor extends Transactor {
-
-        public TestTransactor() {
-            super(null);
-        }
-
-        @Override
-        @SneakyThrows
-        public void inTransaction(InTransaction inTransaction) {
-            inTransaction.run();
-        }
-
-    }
 
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
@@ -69,13 +53,19 @@ public class OppfolgingFeedHandlerTest {
                 veilarbVeilederClient,
                 new TestTransactor(),
                 new LeaderElectionClientMock(),
-                new UnleashServiceMock(false)
+                TestUtil.setupUnleashMock(false)
         );
 
     }
 
     private BrukerOppdatertInformasjon nyInformasjon = brukerInfo(true, "nyVeileder");
     private BrukerOppdatertInformasjon eksisterendeInformasjon = brukerInfo(true, "gammelVeileder");
+
+    @Test
+    public void skal_ikke_sjekke_nav_kontor_paa_arbeidsliste_om_bruker_ikke_har_arbeidsliste() {
+        boolean result = oppfolgingFeedHandler.brukerHarByttetNavKontor(AktoerId.of(""));
+        Assertions.assertThat(result).isFalse();
+    }
 
     @Test
     public void skalLagreBrukerOgOppdatereIndeksAsynkront() {
@@ -174,14 +164,14 @@ public class OppfolgingFeedHandlerTest {
 
     private void givenBrukerHarVeilederFraAnnenEnhet() {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
-        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
+        when(brukerRepository.retrieveNavKontor(any(PersonId.class))).thenReturn(Try.success("enhet"));
         when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(Collections.singletonList("whatever"));
 
     }
 
     private void givenBrukerHarVeilederFraSammeEnhet() {
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
-        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.success("enhet"));
+        when(brukerRepository.retrieveNavKontor(any(PersonId.class))).thenReturn(Try.success("enhet"));
         when(veilarbVeilederClient.hentVeilederePaaEnhet(any()))
                 .thenReturn(Collections.singletonList((eksisterendeInformasjon.getVeileder())));
 
@@ -190,7 +180,7 @@ public class OppfolgingFeedHandlerTest {
     private void givenBrukerManglerEnhet(){
         when(oppfolgingRepository.retrieveOppfolgingData(AKTOER_ID)).thenReturn(Try.success(eksisterendeInformasjon));
         when(brukerRepository.retrievePersonid(any())).thenReturn(Try.success(PersonId.of("dummy")));
-        when(brukerRepository.retrieveEnhet(any(PersonId.class))).thenReturn(Try.failure(new RuntimeException()));
+        when(brukerRepository.retrieveNavKontor(any(PersonId.class))).thenReturn(Try.failure(new RuntimeException()));
     }
 
     private void givenBrukerManglerPersonId(){

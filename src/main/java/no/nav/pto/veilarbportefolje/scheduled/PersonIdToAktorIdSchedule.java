@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +18,7 @@ public class PersonIdToAktorIdSchedule {
     private final JdbcTemplate db;
     private final ElasticIndexer elasticIndexer;
     private final LeaderElectionClient leaderElectionClient;
-    private final PersonIdService personIdService;
+    private final BrukerService brukerService;
 
     private static final String IKKE_MAPPEDE_AKTORIDER = "SELECT AKTOERID "
             + "FROM OPPFOLGING_DATA "
@@ -27,8 +27,8 @@ public class PersonIdToAktorIdSchedule {
             + "(SELECT AKTOERID FROM AKTOERID_TO_PERSONID)";
 
     @Autowired
-    public PersonIdToAktorIdSchedule(PersonIdService personIdService, JdbcTemplate db, ElasticIndexer elasticIndexer, LeaderElectionClient leaderElectionClient) {
-        this.personIdService = personIdService;
+    public PersonIdToAktorIdSchedule(BrukerService brukerService, JdbcTemplate db, ElasticIndexer elasticIndexer, LeaderElectionClient leaderElectionClient) {
+        this.brukerService = brukerService;
         this.db = db;
         this.elasticIndexer = elasticIndexer;
         this.leaderElectionClient = leaderElectionClient;
@@ -46,7 +46,7 @@ public class PersonIdToAktorIdSchedule {
 
         aktoerIder.forEach((id) -> {
             AktoerId aktoerId = AktoerId.of(id);
-            personIdService.hentPersonidFraAktoerid(aktoerId);
+            brukerService.hentPersonidFraAktoerid(aktoerId);
             elasticIndexer.indekser(aktoerId);
         });
 

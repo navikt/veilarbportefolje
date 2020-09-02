@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -32,7 +33,7 @@ import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.sbl.sql.SqlUtils.insert;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -316,9 +317,9 @@ public class BrukerRepositoryTest {
                 .value("NAV_KONTOR", expectedEnhet)
                 .execute();
 
-        Try<String> result = brukerRepository.retrieveEnhet(fnr);
-        assertTrue(result.isSuccess());
-        assertEquals(expectedEnhet, result.get());
+        Optional<String> navKontor = brukerRepository.hentNavKontor(fnr);
+        assertTrue(navKontor.isPresent());
+        assertEquals(expectedEnhet, navKontor.get());
     }
 
     @Test

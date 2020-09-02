@@ -1,9 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.SneakyThrows;
-import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.util.RestUtils;
 import org.apache.http.util.EntityUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;

@@ -6,11 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,6 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
-import static no.nav.pto.veilarbportefolje.util.RestUtils.createResponse;
 import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 
 @Slf4j
@@ -34,16 +34,19 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 @RequestMapping("/api/arbeidsliste")
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
+    private final BrukerService brukerService;
     private final AktorregisterClient aktorregisterClient;
     private final AuthService authService;
 
     @Autowired
-    public ArbeidsListeController (
+    public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
+            BrukerService brukerService,
             AktorregisterClient aktorregisterClient,
             AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
+        this.brukerService = brukerService;
         this.aktorregisterClient = aktorregisterClient;
         this.authService = authService;
 
@@ -81,16 +84,16 @@ public class ArbeidsListeController {
         Fnr fnr = new Fnr(fnrString);
         Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
 
-        boolean harVeilederTilgang = arbeidslisteService.hentEnhet(fnr)
+        boolean harVeilederTilgang = brukerService.hentNavKontorForBruker(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
-                .getOrElse(false);
+                .orElse(false);
 
         Arbeidsliste arbeidsliste = aktoerId
                 .flatMap(arbeidslisteService::getArbeidsliste)
                 .toJavaOptional()
                 .orElse(emptyArbeidsliste())
                 .setIsOppfolgendeVeileder(aktoerId.map(id ->
-                        arbeidslisteService.erVeilederForBruker(id, VeilederId.of(innloggetVeileder))).get())
+                        arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder))).get())
                 .setHarVeilederTilgang(harVeilederTilgang);
 
         return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
@@ -109,7 +112,6 @@ public class ArbeidsListeController {
         Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
-
 
         return arbeidsliste;
     }
@@ -146,8 +148,7 @@ public class ArbeidsListeController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
-        return createResponse(() -> {
+    public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
             authService.tilgangTilOppfolging();
 
             java.util.List<String> feiledeFnrs = new ArrayList<>();
@@ -181,11 +182,10 @@ public class ArbeidsListeController {
                 throw new IllegalStateException();
             }
             return RestResponse.of(okFnrs, feiledeFnrs);
-        });
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        String enhet = arbeidslisteService.hentEnhet(fnr).getOrElseThrow(x -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
+        String enhet = brukerService.hentNavKontorForBruker(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
         authService.tilgangTilEnhet(enhet);
     }
 

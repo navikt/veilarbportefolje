@@ -6,10 +6,12 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
+import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
+import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
+import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.CollectionUtils;
-import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
@@ -33,9 +35,11 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.json.JsonUtils.toJson;
-import static no.nav.pto.veilarbportefolje.database.Table.*;
+import static no.nav.pto.veilarbportefolje.database.Table.AKTOERID_TO_PERSONID;
 import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
+import static no.nav.pto.veilarbportefolje.database.Table.METADATA;
+import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
 import static no.nav.sbl.sql.SqlUtils.*;
@@ -65,11 +69,21 @@ public class BrukerRepository {
         }
     }
 
+    public Optional<Fnr> hentFnr(AktoerId aktoerId) {
+        String fnr = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString(FODSELSNR))
+                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .execute();
+
+        return Optional
+                .ofNullable(fnr)
+                .map(Fnr::of);
+    }
+
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
 
         return SqlUtils
-                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -130,7 +144,7 @@ public class BrukerRepository {
 
         log.info("rowNum: {}, offset: {}, pageSize: {}", rowNum, offset, pageSize);
 
-        return SqlUtils.select(db, VW_PORTEFOLJE_INFO, BrukerRepository::mapTilOppfolgingEnhetDTO)
+        return SqlUtils.select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, BrukerRepository::mapTilOppfolgingEnhetDTO)
                 .column("AKTOERID")
                 .column("FODSELSNR")
                 .column("PERSON_ID")
@@ -181,14 +195,14 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
     }
 
     public Result<OppfolgingsBruker> hentBruker(AktoerId aktoerId) {
-        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
+        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -197,7 +211,7 @@ public class BrukerRepository {
     }
 
     public Result<OppfolgingsBruker> hentBruker(Fnr fnr) {
-        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO, rs -> mapTilOppfolgingsBruker(rs))
+        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                 .execute();
@@ -209,7 +223,7 @@ public class BrukerRepository {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
         return SqlUtils
-                .select(db, Table.VW_PORTEFOLJE_INFO, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()
@@ -234,6 +248,17 @@ public class BrukerRepository {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
     }
 
+    public Optional<VeilederId> hentVeilederForBruker(AktoerId aktoerId) {
+        VeilederId veilederId = select(db, OPPFOLGING_DATA.TABLE_NAME, this::mapToVeilederId)
+                .column(OPPFOLGING_DATA.VEILEDERIDENT)
+                .where(WhereClause.equals(OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
+                .execute();
+
+        return Optional.ofNullable(veilederId);
+    }
+
+
+    @Deprecated
     public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
         return Try.of(
                 () -> {
@@ -245,13 +270,22 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
-    public Result<String> hentEnhetForBruker(Fnr fnr) {
-        Supplier<String> query = () -> select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
-                .column("NAV_KONTOR")
-                .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+    public Optional<String> hentNavKontor(AktoerId aktoerId) {
+        String navKontor = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, this::mapToEnhet)
+                .column(VW_PORTEFOLJE_INFO.NAV_KONTOR)
+                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                 .execute();
 
-        return Result.of(query);
+        return Optional.ofNullable(navKontor);
+    }
+
+    public Optional<String> hentNavKontor(Fnr fnr) {
+        String navKontor = select(db, OPPFOLGINGSBRUKER.TABLE_NAME, this::mapToEnhet)
+                .column(OPPFOLGINGSBRUKER.NAV_KONTOR)
+                .where(WhereClause.equals(FODSELSNR, fnr.toString()))
+                .execute();
+
+        return Optional.ofNullable(navKontor);
     }
 
     @Deprecated
@@ -266,7 +300,7 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
-    public Try<String> retrieveEnhet(PersonId personId) {
+    public Try<String> retrieveNavKontor(PersonId personId) {
         return Try.of(
                 () -> {
                     return select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
@@ -279,7 +313,7 @@ public class BrukerRepository {
     }
 
     public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
-        return insert(db, AKTOERID_TO_PERSONID)
+        return insert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
                 .value("AKTOERID", aktoerId.toString())
                 .value("PERSONID", personId.toString())
                 .value("GJELDENE", 1)
@@ -288,7 +322,7 @@ public class BrukerRepository {
     }
 
     public Integer insertGamleAktoerIdMedGjeldeneFlaggNull(AktoerId aktoerId, PersonId personId) {
-        return insert(db, AKTOERID_TO_PERSONID)
+        return insert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
                 .value("AKTOERID", aktoerId.toString())
                 .value("PERSONID", personId.toString())
                 .value("GJELDENE", 0)
@@ -296,7 +330,7 @@ public class BrukerRepository {
     }
 
     public Integer setGjeldeneFlaggTilNull(PersonId personId) {
-        return update(db, AKTOERID_TO_PERSONID)
+        return update(db, AKTOERID_TO_PERSONID.TABLE_NAME)
                 .set("GJELDENE", 0)
                 .whereEquals("PERSONID", personId.toString())
                 .execute();
@@ -304,7 +338,7 @@ public class BrukerRepository {
 
     public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
         return Try.of(
-                () -> select(db, AKTOERID_TO_PERSONID, this::mapToPersonIdFromAktoerIdToPersonId)
+                () -> select(db, AKTOERID_TO_PERSONID.TABLE_NAME, this::mapToPersonIdFromAktoerIdToPersonId)
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
@@ -505,4 +539,5 @@ public class BrukerRepository {
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
     }
+
 }

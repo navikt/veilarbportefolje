@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,15 +21,19 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-public class PersonIdService {
+public class BrukerService {
 
     private final BrukerRepository brukerRepository;
     private final AktorregisterClient aktorregisterClient;
 
     @Autowired
-    public PersonIdService(BrukerRepository brukerRepository, AktorregisterClient aktorregisterClient) {
+    public BrukerService(BrukerRepository brukerRepository, AktorregisterClient aktorregisterClient) {
         this.brukerRepository = brukerRepository;
         this.aktorregisterClient = aktorregisterClient;
+    }
+
+    public Optional<String> hentNavKontorForBruker(Fnr fnr) {
+        return brukerRepository.hentNavKontor(fnr);
     }
 
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
@@ -69,7 +74,9 @@ public class PersonIdService {
             brukerRepository.setGjeldeneFlaggTilNull(personId);
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
+    }
 
-
+    public Optional<VeilederId> hentVeilederForBruker(AktoerId aktoerId) {
+        return brukerRepository.hentVeilederForBruker(aktoerId);
     }
 }

@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,12 @@ import static org.mockito.Mockito.when;
 public class TestUtil {
 
     public static final String HSQL_URL = "jdbc:hsqldb:mem:portefolje";
+
+    public static UnleashService setupUnleashMock(boolean toggleValue) {
+        UnleashService mock = mock(UnleashService.class);
+        when(mock.isEnabled(anyString())).thenReturn(toggleValue);
+        return mock;
+    }
 
     public static SingleConnectionDataSource setupInMemoryDatabase() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();

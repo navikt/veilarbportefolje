@@ -19,7 +19,7 @@ import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
-import no.nav.pto.veilarbportefolje.service.PersonIdService;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.commons.vfs2.FileObject;
 
 import java.sql.Timestamp;
@@ -49,13 +49,13 @@ public class TiltakHandler {
     private final TiltakRepository tiltakrepository;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
-    private final PersonIdService personIdService;
+    private final BrukerService brukerService;
     private final EnvironmentProperties environmentProperties;
 
     static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
 
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, PersonIdService personIdService, BrukerRepository brukerRepository, EnvironmentProperties environmentProperties) {
-        this.personIdService = personIdService;
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, BrukerService brukerService, BrukerRepository brukerRepository, EnvironmentProperties environmentProperties) {
+        this.brukerService = brukerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
@@ -148,7 +148,7 @@ public class TiltakHandler {
                 .forEach(brukereBatch -> {
 
                     List<Fnr> fnrs = brukereBatch.toJavaStream().map(Bruker::getPersonident).map(Fnr::of).collect(toList());
-                    Map<Fnr, Optional<PersonId>> personidsMap = personIdService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> personidsMap = brukerService.hentPersonidsForFnrs(fnrs);
                     List<PersonId> personIds = personidsMap.values().stream()
                             .filter(Optional::isPresent)
                             .map(Optional::get).collect(toList());
@@ -282,7 +282,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = personIdService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = brukerService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
@@ -302,7 +302,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = personIdService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = brukerService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
@@ -322,7 +322,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = personIdService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = brukerService.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
