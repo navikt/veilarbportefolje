@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.HEAD;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -16,6 +14,7 @@ import java.util.Map;
 
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
 
 @RestController
@@ -37,10 +36,7 @@ public class FeedController {
         LOG.info("starter");
     }
 
-    // CONSUMER CONTROLLER
-
-    @HEAD
-    @Path("{name}")
+    @RequestMapping(path = "{name}", method = HEAD)
     public Response webhookCallback(@PathParam("name") String feedname) {
         return ofNullable(feedname)
                 .map((name) -> consumers.get(name))
