@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.util;
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRequest;
+import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 
 import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;

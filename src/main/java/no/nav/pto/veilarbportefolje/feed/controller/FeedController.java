@@ -1,22 +1,25 @@
 package no.nav.pto.veilarbportefolje.feed.controller;
 
-import no.nav.pto.veilarbportefolje.feed.common.*;
+import no.nav.pto.veilarbportefolje.feed.common.Authorization;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumer;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.*;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 
-@Component
-@Consumes("application/json")
-@Produces("application/json")
-@Path("feed")
+@RestController
+@RequestMapping("feed")
 public class FeedController {
 
     private static final Logger LOG = getLogger(FeedController.class);
