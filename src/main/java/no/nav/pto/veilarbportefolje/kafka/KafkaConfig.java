@@ -87,7 +87,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
-                KafkaProperties.kafkaMedAvroProperties(),
+                KafkaProperties.kafkaProperties(),
                 KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1
         );
     }
