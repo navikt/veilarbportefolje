@@ -136,8 +136,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
         String navKontorBrukerErPaa =
                 brukerRepository.hentNavKontor(aktoerId)
-                        .orElseThrow(IllegalStateException::new);
-
+                        .orElseThrow(() -> new IllegalStateException(aktoerId.toString()));
 
         log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorBrukerErPaa, navKontorForArbeidsliste.get());
         return !navKontorBrukerErPaa.equals(navKontorForArbeidsliste.orElseThrow());
