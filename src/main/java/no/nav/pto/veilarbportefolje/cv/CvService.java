@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.cv;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -23,7 +21,6 @@ public class CvService implements KafkaConsumerService<String> {
     private final ElasticServiceV2 elasticServiceV2;
     private final AktorregisterClient aktorregisterClient;
     private final CvRepository cvRepository;
-    private final MetricsClient metricsClient;
 
     private final AtomicBoolean rewind;
 
@@ -47,11 +44,10 @@ public class CvService implements KafkaConsumerService<String> {
     }
 
     @Autowired
-    public CvService(ElasticServiceV2 elasticServiceV2, AktorregisterClient aktorregisterClient, CvRepository cvRepository, MetricsClient metricsClient) {
+    public CvService(ElasticServiceV2 elasticServiceV2, AktorregisterClient aktorregisterClient, CvRepository cvRepository) {
         this.elasticServiceV2 = elasticServiceV2;
         this.aktorregisterClient = aktorregisterClient;
         this.cvRepository = cvRepository;
-        this.metricsClient = metricsClient;
         this.rewind = new AtomicBoolean();
     }
 
@@ -79,14 +75,10 @@ public class CvService implements KafkaConsumerService<String> {
 
         switch (melding.meldingType) {
             case SAMTYKKE_OPPRETTET:
-                log.info("Bruker {} har delt cv med nav", aktorId);
-                metricsClient.report(new Event("portefolje_har_delt_cv"));
                 cvRepository.upsert(aktorId, fnr, true);
                 elasticServiceV2.updateHarDeltCv(fnr, true);
                 break;
             case SAMTYKKE_SLETTET:
-                log.info("Bruker {} har ikke delt cv med nav", aktorId);
-                metricsClient.report(new Event("portefolje_har_ikke_delt_cv"));
                 cvRepository.upsert(aktorId, fnr, false);
                 elasticServiceV2.updateHarDeltCv(fnr, false);
                 break;

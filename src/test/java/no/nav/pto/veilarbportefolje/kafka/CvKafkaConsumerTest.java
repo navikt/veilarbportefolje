@@ -26,13 +26,14 @@ public class CvKafkaConsumerTest extends IntegrationTest {
     public static void beforeClass() {
 
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktorregisterClient.class), mock(CvRepository.class), mock(MetricsClient.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktorregisterClient.class), mock(CvRepository.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,
                 createUnleashMock(),
                 getKafkaConsumerProperties(),
-                PAM_SAMTYKKE_ENDRET_V1
+                PAM_SAMTYKKE_ENDRET_V1,
+                mock(MetricsClient.class)
         );
     }
 

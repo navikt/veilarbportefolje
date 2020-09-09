@@ -77,7 +77,8 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
                 aktivitetService,
                 createUnleashMock(),
                 getKafkaConsumerProperties(),
-                KAFKA_AKTIVITER_CONSUMER_TOPIC
+                KAFKA_AKTIVITER_CONSUMER_TOPIC,
+                mock(MetricsClient.class)
         );
     }
 
