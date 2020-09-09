@@ -317,7 +317,7 @@ public class BrukerRepositoryTest {
                 .value("NAV_KONTOR", expectedEnhet)
                 .execute();
 
-        Optional<String> navKontor = brukerRepository.hentNavKontor(fnr);
+        Optional<String> navKontor = brukerRepository.hentNavKontorFraDbLinkTilArena(fnr);
         assertTrue(navKontor.isPresent());
         assertEquals(expectedEnhet, navKontor.get());
     }
