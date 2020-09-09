@@ -16,7 +16,7 @@ spec:
   ingresses:
     - https://veilarbportefolje-q0.nais.preprod.local
     - https://app-q0.adeo.no/veilarbportefolje
-    - https://veilarbportefolje.dev.adeo.no
+    - https://dev.adeo.no/veilarbportefolje
   webproxy: true
   vault:
     enabled: true
