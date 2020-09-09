@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +49,7 @@ public class OppfolgingFeedHandlerTest {
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
+                mock(BrukerService.class),
                 elasticIndexer,
                 oppfolgingRepository,
                 veilarbVeilederClient,

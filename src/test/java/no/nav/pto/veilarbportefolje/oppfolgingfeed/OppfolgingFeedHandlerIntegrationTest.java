@@ -75,6 +75,7 @@ public class OppfolgingFeedHandlerIntegrationTest {
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerRepository,
+                new BrukerService(brukerRepository, aktorregisterClientMock),
                 elasticIndexerMock,
                 oppfolgingRepository,
                 mock(VeilarbVeilederClient.class),
@@ -82,7 +83,6 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 new LeaderElectionClientMock(),
                 unleashMock
         );
-
     }
 
     @After
@@ -93,11 +93,25 @@ public class OppfolgingFeedHandlerIntegrationTest {
     }
 
     @Test
+    public void skal_hente_nav_kontor_fra_db_link_om_vi_ikke_har_mappet_inn_aktoer_id() {
+        String aktoerId = "11111111111";
+        String navKontor = "0000";
+
+        setUpInitialState(aktoerId, navKontor, navKontor, true);
+        sendMeldingPaaFeed(aktoerId);
+
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(AktoerId.of(aktoerId))
+                .getOrElseThrow(() -> new RuntimeException());
+
+        assertThat(arbeidsliste).isNotNull();
+    }
+
+    @Test
     public void skal_ikke_slette_arbeidsliste_om_bruker_har_samme_nav_kontor_i_arena_som_vi_har_lagret_paa_arbeidslisten() {
         String aktoerId = "11111111111";
         String navKontor = "0000";
 
-        setUpInitialState(aktoerId, navKontor, navKontor);
+        setUpInitialState(aktoerId, navKontor, navKontor, false);
         sendMeldingPaaFeed(aktoerId);
 
         Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(AktoerId.of(aktoerId))
@@ -113,7 +127,7 @@ public class OppfolgingFeedHandlerIntegrationTest {
         String navKontorArena = "0000";
         String navKontorArbeidsliste = "1111";
 
-        setUpInitialState(aktoerId, navKontorArena, navKontorArbeidsliste);
+        setUpInitialState(aktoerId, navKontorArena, navKontorArbeidsliste, false);
         sendMeldingPaaFeed(aktoerId);
 
         Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(AktoerId.of(aktoerId))
@@ -132,11 +146,15 @@ public class OppfolgingFeedHandlerIntegrationTest {
         oppfolgingFeedHandler.call("", feedData);
     }
 
-    private static void setUpInitialState(String aktoerId, String navKontorArena, String navKontorArbeidsliste) {
+    private static void setUpInitialState(String aktoerId, String navKontorArena, String navKontorArbeidsliste, boolean harIkkeMappetAktoerId) {
         String fnr = "00000000000";
         String personId = "0";
 
-        when(aktorregisterClientMock.hentAktorId(anyString())).thenReturn(aktoerId);
+        if (harIkkeMappetAktoerId) {
+            when(aktorregisterClientMock.hentFnr(anyString())).thenReturn(fnr);
+        } else {
+            when(aktorregisterClientMock.hentAktorId(anyString())).thenReturn(aktoerId);
+        }
 
         SqlUtils
                 .insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
@@ -145,12 +163,14 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 .value(Table.OPPFOLGINGSBRUKER.NAV_KONTOR, navKontorArena)
                 .execute();
 
-        SqlUtils
-                .insert(jdbcTemplate, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
-                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktoerId)
-                .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId)
-                .value(Table.AKTOERID_TO_PERSONID.GJELDENE, true)
-                .execute();
+        if (!harIkkeMappetAktoerId) {
+            SqlUtils
+                    .insert(jdbcTemplate, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
+                    .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktoerId)
+                    .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId)
+                    .value(Table.AKTOERID_TO_PERSONID.GJELDENE, true)
+                    .execute();
+        }
 
         ArbeidslisteDTO dto = new ArbeidslisteDTO(Fnr.of(fnr))
                 .setNavKontorForArbeidsliste(navKontorArbeidsliste)

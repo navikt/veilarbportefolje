@@ -84,7 +84,7 @@ public class ArbeidsListeController {
         Fnr fnr = new Fnr(fnrString);
         Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
 
-        boolean harVeilederTilgang = brukerService.hentNavKontorForBruker(fnr)
+        boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
                 .orElse(false);
 
@@ -185,7 +185,7 @@ public class ArbeidsListeController {
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {
-        String enhet = brukerService.hentNavKontorForBruker(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
+        String enhet = brukerService.hentNavKontorFraDbLinkTilArena(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
         authService.tilgangTilEnhet(enhet);
     }
 

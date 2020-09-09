@@ -65,7 +65,7 @@ public class ArbeidslisteService {
         }
         dto.setAktoerId(aktoerId.get());
 
-        String navKontorForBruker = brukerService.hentNavKontorForBruker(dto.getFnr()).orElseThrow();
+        String navKontorForBruker = brukerService.hentNavKontorFraDbLinkTilArena(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker);
 
         return arbeidslisteRepository
