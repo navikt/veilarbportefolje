@@ -3,7 +3,7 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: veilarbportefolje
-  namespace: {{namespace}}
+  namespace: q0
   labels:
     team: pto
 spec:
@@ -14,17 +14,18 @@ spec:
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
-    - https://veilarbportefolje-{{namespace}}.nais.preprod.local
-    - https://app-{{namespace}}.adeo.no/veilarbportefolje
+    - https://veilarbportefolje-q0.nais.preprod.local
+    - https://app-q0.adeo.no/veilarbportefolje
+    - https://dev.adeo.no/veilarbportefolje
   webproxy: true
   vault:
     enabled: true
     paths:
       - kvPath: /serviceuser/data/dev/srvveilarbportefolje
         mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /oracle/data/dev/creds/veilarbportefolje_{{namespace}}-user
+      - kvPath: /oracle/data/dev/creds/veilarbportefolje_q0-user
         mountPath: /var/run/secrets/nais.io/oracle_creds
-      - kvPath: /kv/preprod/fss/veilarbportefolje/{{namespace}}
+      - kvPath: /kv/preprod/fss/veilarbportefolje/q0
         mountPath: /var/run/secrets/nais.io/vault
   envFrom:
     - configmap: pto-config
