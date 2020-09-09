@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
@@ -33,63 +34,64 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaConsumerRegistrering(RegistreringService registreringService, UnleashService unleashService) {
+    public KafkaConsumerRunnable kafkaConsumerRegistrering(RegistreringService registreringService, UnleashService unleashService, MetricsClient metricsClient) {
         return new KafkaConsumerRunnable<>(
                 registreringService,
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
-                Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC
+                Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC,
+                metricsClient
         );
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaConsumerProfilering(ProfileringService profileringService, UnleashService unleashService) {
+    public KafkaConsumerRunnable kafkaConsumerProfilering(ProfileringService profileringService, UnleashService unleashService, MetricsClient metricsClient) {
         return new KafkaConsumerRunnable<>(
                 profileringService,
                 unleashService,
                 KafkaProperties.kafkaMedAvroProperties(),
-                Topic.KAFKA_PROFILERING_CONSUMER_TOPIC
-        );
+                Topic.KAFKA_PROFILERING_CONSUMER_TOPIC,
+                metricsClient);
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaAktivitetConsumer(AktivitetService aktivitetService, UnleashService unleashService) {
+    public KafkaConsumerRunnable kafkaAktivitetConsumer(AktivitetService aktivitetService, UnleashService unleashService, MetricsClient metricsClient) {
         return new KafkaConsumerRunnable<>(
                 aktivitetService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
-                Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC
-        );
+                Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
+                metricsClient);
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaVedtakConsumer(VedtakService vedtakService, UnleashService unleashService) {
+    public KafkaConsumerRunnable kafkaVedtakConsumer(VedtakService vedtakService, UnleashService unleashService, MetricsClient metricsClient) {
         return new KafkaConsumerRunnable<>(
                 vedtakService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
-                Topic.VEDTAK_STATUS_ENDRING_TOPIC
-        );
+                Topic.VEDTAK_STATUS_ENDRING_TOPIC,
+                metricsClient);
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaDialogConsumer(DialogService dialogService, UnleashService unleashService) {
+    public KafkaConsumerRunnable kafkaDialogConsumer(DialogService dialogService, UnleashService unleashService, MetricsClient metricsClient) {
         return new KafkaConsumerRunnable<>(
                 dialogService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
-                KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC
-        );
+                KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
+                metricsClient);
     }
 
     @Bean
-    public KafkaConsumerRunnable kafkaCvConsumer (CvService cvService, UnleashService unleashService){
+    public KafkaConsumerRunnable kafkaCvConsumer (CvService cvService, UnleashService unleashService, MetricsClient metricsClient){
         return new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
                 KafkaProperties.kafkaProperties(),
-                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1
-        );
+                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
+                metricsClient);
     }
 
     public static String requireKafkaTopicPostfix() {
