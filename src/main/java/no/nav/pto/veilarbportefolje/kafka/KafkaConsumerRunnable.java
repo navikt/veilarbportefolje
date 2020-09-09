@@ -1,9 +1,10 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import io.micrometer.core.instrument.Counter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
@@ -27,7 +28,6 @@ import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
-import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 
 @Slf4j
 public class KafkaConsumerRunnable<T> implements Runnable {
@@ -38,24 +38,24 @@ public class KafkaConsumerRunnable<T> implements Runnable {
     private final KafkaConsumer<String, T> consumer;
     private final AtomicBoolean shutdown;
     private final CountDownLatch shutdownLatch;
-    private final Counter counter;
+    private final MetricsClient metricsClient;
 
     public KafkaConsumerRunnable(KafkaConsumerService<T> kafkaService,
                                  UnleashService unleashService,
                                  Properties kafkaProperties,
-                                 Topic topic) {
+                                 Topic topic,
+                                 MetricsClient metricsClient) {
 
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
         this.topic = topic.topic;
         this.consumer = new KafkaConsumer<>(kafkaProperties);
+        this.metricsClient = metricsClient;
         this.shutdown = new AtomicBoolean(false);
         this.shutdownLatch = new CountDownLatch(1);
 
         JobUtils.runAsyncJob(this);
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-        counter = Counter.builder(topic.topic + "-records_processed").register(getMeterRegistry());
-
     }
 
 
@@ -116,7 +116,7 @@ public class KafkaConsumerRunnable<T> implements Runnable {
                 record.topic()
         );
 
-        counter.increment();
+        metricsClient.report(new Event(topic + ".message_consumed"));
 
         try {
             kafkaService.behandleKafkaMelding(record.value());

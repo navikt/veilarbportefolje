@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -44,7 +43,7 @@ public class CvServiceTest extends IntegrationTest {
     public void setUp() {
         indexName = generateId();
         aktorregisterClient = mock(AktorregisterClient.class);
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), aktorregisterClient, cvRepository, mock(MetricsClient.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), aktorregisterClient, cvRepository);
         createIndex(indexName);
     }
 

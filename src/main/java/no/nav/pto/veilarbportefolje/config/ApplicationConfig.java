@@ -5,7 +5,6 @@ import no.nav.common.featuretoggle.UnleashServiceConfig;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.leaderelection.LeaderElectionHttpClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
-import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
