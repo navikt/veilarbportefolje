@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.slf4j.MDC;
 
 import java.math.BigDecimal;
@@ -35,6 +36,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
     private static BigDecimal lastEntry;
     private ArbeidslisteService arbeidslisteService;
     private BrukerRepository brukerRepository;
+    private BrukerService brukerService;
     private ElasticIndexer elasticIndexer;
     private OppfolgingRepository oppfolgingRepository;
     private VeilarbVeilederClient veilarbVeilederClient;
@@ -44,6 +46,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
                                  BrukerRepository brukerRepository,
+                                 BrukerService brukerService,
                                  ElasticIndexer elasticIndexer,
                                  OppfolgingRepository oppfolgingRepository,
                                  VeilarbVeilederClient veilarbVeilederClient,
@@ -52,6 +55,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
                                  UnleashService unleashService) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerRepository = brukerRepository;
+        this.brukerService = brukerService;
         this.elasticIndexer = elasticIndexer;
         this.oppfolgingRepository = oppfolgingRepository;
         this.veilarbVeilederClient = veilarbVeilederClient;
@@ -131,15 +135,18 @@ public class OppfolgingFeedHandler implements FeedCallback {
                 arbeidslisteService.hentNavKontorForArbeidsliste(aktoerId);
 
         if (navKontorForArbeidsliste.isEmpty()) {
+            log.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId.toString());
             return false;
         }
 
-        String navKontorBrukerErPaa =
-                brukerRepository.hentNavKontor(aktoerId)
-                        .orElseThrow(() -> new IllegalStateException(aktoerId.toString()));
+        final Optional<String> navKontorForBruker = brukerService.hentNavKontor(aktoerId);
+        if (navKontorForBruker.isEmpty()) {
+            log.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId.toString());
+            return false;
+        }
 
-        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorBrukerErPaa, navKontorForArbeidsliste.get());
-        return !navKontorBrukerErPaa.equals(navKontorForArbeidsliste.orElseThrow());
+        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
+        return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
     }
 
     public static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {

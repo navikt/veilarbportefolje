@@ -270,7 +270,7 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
-    public Optional<String> hentNavKontor(AktoerId aktoerId) {
+    public Optional<String> hentNavKontorFraView(AktoerId aktoerId) {
         String navKontor = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, this::mapToEnhet)
                 .column(VW_PORTEFOLJE_INFO.NAV_KONTOR)
                 .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
@@ -279,7 +279,7 @@ public class BrukerRepository {
         return Optional.ofNullable(navKontor);
     }
 
-    public Optional<String> hentNavKontor(Fnr fnr) {
+    public Optional<String> hentNavKontorFraDbLinkTilArena(Fnr fnr) {
         String navKontor = select(db, OPPFOLGINGSBRUKER.TABLE_NAME, this::mapToEnhet)
                 .column(OPPFOLGINGSBRUKER.NAV_KONTOR)
                 .where(WhereClause.equals(FODSELSNR, fnr.toString()))

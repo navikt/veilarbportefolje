@@ -32,8 +32,19 @@ public class BrukerService {
         this.aktorregisterClient = aktorregisterClient;
     }
 
-    public Optional<String> hentNavKontorForBruker(Fnr fnr) {
-        return brukerRepository.hentNavKontor(fnr);
+    public Optional<String> hentNavKontor(AktoerId aktoerId) {
+        return brukerRepository
+                .hentNavKontorFraView(aktoerId)
+                .or(() -> {
+                            String result = aktorregisterClient.hentFnr(aktoerId.toString());
+                            Fnr fnr = Fnr.of(result);
+                            return hentNavKontorFraDbLinkTilArena(fnr);
+                        }
+                );
+    }
+
+    public Optional<String> hentNavKontorFraDbLinkTilArena(Fnr fnr) {
+        return brukerRepository.hentNavKontorFraDbLinkTilArena(fnr);
     }
 
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
