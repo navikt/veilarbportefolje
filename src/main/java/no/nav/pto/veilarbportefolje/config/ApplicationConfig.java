@@ -34,7 +34,6 @@ public class ApplicationConfig {
     public static final String ELASTICSEARCH_USERNAME_PROPERTY = "VEILARBELASTIC_USERNAME";
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
 
-
     @Bean
     public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
         return new MetricsReporter(elasticIndexer);
