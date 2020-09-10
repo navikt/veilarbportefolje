@@ -7,8 +7,9 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRequest;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -85,7 +86,7 @@ public class ValideringsRegler {
 
     private static void test(String navn, Object data, boolean matches) {
         if (!matches) {
-            throw new BadRequestException(format("sjekk av %s feilet, %s", navn, data));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,format("sjekk av %s feilet, %s", navn, data));
         }
     }
 
