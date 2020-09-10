@@ -48,8 +48,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -350,6 +349,10 @@ public class ElasticIndexer {
     public void indekserBrukere(List<PersonId> personIds) {
         CollectionUtils.partition(personIds, BATCH_SIZE).forEach(batch -> {
             List<OppfolgingsBruker> brukere = brukerRepository.hentBrukere(batch);
+            if (brukere.isEmpty()) {
+                return;
+            }
+
             leggTilAktiviteter(brukere);
             leggTilTiltak(brukere);
             skrivTilIndeks(indexName, brukere);
