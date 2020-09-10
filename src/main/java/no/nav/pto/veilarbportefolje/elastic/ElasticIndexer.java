@@ -48,7 +48,8 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -270,12 +271,12 @@ public class ElasticIndexer {
         restHighLevelClient.updateAsync(updateRequest, DEFAULT, new ActionListener<>() {
             @Override
             public void onResponse(UpdateResponse updateResponse) {
-                log.info("Satte under oppfolging til false i elasticsearch" );
+                log.info("Satte under oppfolging til false i elasticsearch");
             }
 
             @Override
             public void onFailure(Exception e) {
-                log.error("Feil vid oppdatering av bruker som ikke er under oppfolging ", e);
+                log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
             }
         });
     }
