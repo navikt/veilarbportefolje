@@ -5,15 +5,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.function.Supplier;
 
 import static java.lang.Boolean.TRUE;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
@@ -44,19 +43,6 @@ public class OppfolgingRepository {
 
     public static String safeToJaNei(Boolean aBoolean) {
         return TRUE.equals(aBoolean) ? "J" : "N";
-    }
-
-    public Result<Timestamp> hentStartdatoForOppfolging(AktoerId aktoerId) {
-        Supplier<Timestamp> query = () -> {
-            String column = "STARTDATO";
-            return SqlUtils
-                    .select(db, "OPPFOLGING_DATA", rs -> rs.getTimestamp(column))
-                    .column(column)
-                    .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                    .execute();
-        };
-
-        return Result.of(query);
     }
 
     @Deprecated

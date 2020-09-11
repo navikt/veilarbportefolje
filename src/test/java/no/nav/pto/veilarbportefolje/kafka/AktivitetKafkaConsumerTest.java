@@ -26,7 +26,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +35,7 @@ import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO.AKTIVITETER;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -90,17 +89,16 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
     }
 
     @Test
-    public void skal_inserte_kafka_melding_i_db () throws InterruptedException {
-        Fnr fnr1 = Fnr.of("11111111111");
+    public void skal_inserte_kafka_melding_i_db () {
+        Fnr fnr = Fnr.of("11111111111");
         when(brukerService.hentPersonidFraAktoerid(AktoerId.of(aktoerId))).thenReturn(Try.success(PersonId.of("1234")));
-        when(brukerRepository.hentBrukere(any(List.class))).thenReturn(Collections.singletonList(new OppfolgingsBruker().setPerson_id("1234").setFnr(fnr1.getFnr())));
+        when(brukerRepository.hentBrukereFraView(anyList())).thenReturn(List.of(new OppfolgingsBruker().setOppfolging(true).setPerson_id("1234").setFnr(fnr.getFnr())));
 
+        createAktivitetDocument(fnr);
+        populateKafkaAktivitetTopic();
 
-        createAktivitetDocument(fnr1);
-        populateKafkaAktvitetTopic();
-
-        pollUntilHarOppdatertIElastic(()-> untilOppdatertAktivitetIJobbUtlopsdato(fnr1));
-        assertThat(getAktivitetIJobbUtlopsdato(fetchDocument(indexName, fnr1))).isEqualTo(toIsoUTC(timestampFromISO8601(tilDato)));
+        pollUntilHarOppdatertIElastic(()-> untilOppdatertAktivitetIJobbUtlopsdato(fnr));
+        assertThat(getAktivitetIJobbUtlopsdato(fetchDocument(indexName, fnr))).isEqualTo(toIsoUTC(timestampFromISO8601(tilDato)));
 
 
     }
@@ -136,7 +134,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
     }
 
 
-    private static void populateKafkaAktvitetTopic() {
+    private static void populateKafkaAktivitetTopic() {
         String aktivitetIJobbKafkaMelding = new JSONObject()
                 .put("aktivitetId", aktivitetId)
                 .put("aktorId", aktoerId)

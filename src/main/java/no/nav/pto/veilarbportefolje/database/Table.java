@@ -18,6 +18,7 @@ public class Table {
         public static final String TABLE_NAME = "OPPFOLGING_DATA";
         public static final String AKTOERID = "AKTOERID";
         public static final String VEILEDERIDENT = "VEILEDERIDENT";
+        public static final String STARTDATO = "STARTDATO";
     }
 
     public static final class OPPFOLGINGSBRUKER {

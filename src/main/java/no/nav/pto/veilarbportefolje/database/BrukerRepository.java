@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.CollectionUtils;
-import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -26,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -69,7 +67,7 @@ public class BrukerRepository {
         }
     }
 
-    public Optional<Fnr> hentFnr(AktoerId aktoerId) {
+    public Optional<Fnr> hentFnrFraView(AktoerId aktoerId) {
         String fnr = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString(FODSELSNR))
                 .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                 .execute();
@@ -201,25 +199,25 @@ public class BrukerRepository {
                 .executeToList();
     }
 
-    public Result<OppfolgingsBruker> hentBruker(AktoerId aktoerId) {
-        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
+    public Optional<OppfolgingsBruker> hentBrukerFraView(AktoerId aktoerId) {
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
 
-        return Result.of(query);
+        return Optional.ofNullable(bruker);
     }
 
-    public Result<OppfolgingsBruker> hentBruker(Fnr fnr) {
-        Supplier<OppfolgingsBruker> query = () -> SqlUtils.select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
+    public Optional<OppfolgingsBruker> hentBrukerFraView(Fnr fnr) {
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                 .execute();
 
-        return Result.of(query);
+        return Optional.ofNullable(bruker);
     }
 
-    public List<OppfolgingsBruker> hentBrukere(List<PersonId> personIds) {
+    public List<OppfolgingsBruker> hentBrukereFraView(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
         return SqlUtils

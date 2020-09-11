@@ -32,12 +32,6 @@ public class UnderOppfolgingRegler {
         return oppfolgingsFlaggErSatt(bruker) || erUnderOppfolgingIArena;
     }
 
-    public static boolean erUnderOppfolging(Result<OppfolgingsBruker> bruker) {
-        return bruker
-                .mapOk(UnderOppfolgingRegler::erUnderOppfolging)
-                .orElse(false);
-    }
-
     private static boolean erArbeidssoker(String formidlingsgruppeKode) {
         return ARBEIDSOKER.equals(formidlingsgruppeKode);
     }
