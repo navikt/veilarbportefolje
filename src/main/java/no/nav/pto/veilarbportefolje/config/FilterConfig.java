@@ -22,6 +22,11 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 @Configuration
 public class FilterConfig {
 
+    // TODO VILKE ANDRA KALLER PORTEFOLJE ???
+    private final List<String> ALLOWED_SERVICE_USERS = List.of(
+            "srvveilarbperson",
+            "srvveilarboppfolging"
+    );
 
     public OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties environmentProperties) {
         return new OidcAuthenticatorConfig()
@@ -41,7 +46,7 @@ public class FilterConfig {
     private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getStsDiscoveryUrl())
-                .withClientIds(List.of("srvveilarbperson")) // TODO VILKE ANDRA KALLER PORTEFOLJE ???
+                .withClientIds(ALLOWED_SERVICE_USERS)
                 .withIdentType(IdentType.Systemressurs);
     }
 
