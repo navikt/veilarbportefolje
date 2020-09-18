@@ -32,9 +32,6 @@ public class AktivitetService implements KafkaConsumerService<String> {
         this.persistentOppdatering = persistentOppdatering;
     }
 
-    public void slettAktivitet(String id) {
-        aktivitetDAO.deleteById(id);
-    }
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {

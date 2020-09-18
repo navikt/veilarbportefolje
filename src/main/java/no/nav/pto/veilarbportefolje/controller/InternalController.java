@@ -6,7 +6,6 @@ import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestUtils;
 import no.nav.common.health.selftest.SelftTestCheckResult;
 import no.nav.common.health.selftest.SelftestHtmlGenerator;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,13 +26,11 @@ public class InternalController {
 
     private final SelfTestChecks selfTestChecks;
     private final ElasticIndexer elasticIndexer;
-    private final AktivitetService aktivitetService;
 
     @Autowired
-    public InternalController(SelfTestChecks selfTestChecks, ElasticIndexer elasticIndexer, AktivitetService aktivitetService) {
+    public InternalController(SelfTestChecks selfTestChecks, ElasticIndexer elasticIndexer) {
         this.selfTestChecks = selfTestChecks;
         this.elasticIndexer = elasticIndexer;
-        this.aktivitetService = aktivitetService;
     }
 
     @GetMapping("/isReady")
@@ -67,8 +64,4 @@ public class InternalController {
         elasticIndexer.indekser(of(fnr));
     }
 
-    @DeleteMapping("/aktivitet/{aktivitetId}")
-    public void slettAktivitet(@PathVariable String aktivitetId) {
-        aktivitetService.slettAktivitet(aktivitetId);
-    }
 }
