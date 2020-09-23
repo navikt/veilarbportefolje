@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.util.Result;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,7 +93,7 @@ public class ArbeidslisteService {
                 .onSuccess(elasticIndexer::indekser);
     }
 
-    public Result<Integer> deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
+    public Integer deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
         return arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
     }
 

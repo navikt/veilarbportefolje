@@ -5,7 +5,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
