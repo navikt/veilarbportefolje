@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toList;
 
@@ -32,15 +33,17 @@ public class BrukerService {
         this.aktorregisterClient = aktorregisterClient;
     }
 
+    public Optional<Fnr> hentFnr(AktoerId aktoerId) {
+        return brukerRepository.hentFnrFraView(aktoerId).or(hentFnrFraAktoerRegister(aktoerId));
+    }
+
     public Optional<String> hentNavKontor(AktoerId aktoerId) {
         return brukerRepository
                 .hentNavKontorFraView(aktoerId)
                 .or(() -> {
-                            String result = aktorregisterClient.hentFnr(aktoerId.toString());
-                            Fnr fnr = Fnr.of(result);
-                            return hentNavKontorFraDbLinkTilArena(fnr);
-                        }
-                );
+                    return hentFnrFraAktoerregister(aktoerId)
+                            .flatMap(brukerRepository::hentNavKontorFraDbLinkTilArena);
+                });
     }
 
     public Optional<String> hentNavKontorFraDbLinkTilArena(Fnr fnr) {
@@ -89,5 +92,15 @@ public class BrukerService {
 
     public Optional<VeilederId> hentVeilederForBruker(AktoerId aktoerId) {
         return brukerRepository.hentVeilederForBruker(aktoerId);
+    }
+
+    private Supplier<Optional<Fnr>> hentFnrFraAktoerRegister(AktoerId aktoerId) {
+        return () -> hentFnrFraAktoerregister(aktoerId);
+    }
+
+    private Optional<Fnr> hentFnrFraAktoerregister(AktoerId aktoerId) {
+            return Optional
+                    .ofNullable(aktorregisterClient.hentFnr(aktoerId.toString()))
+                    .map(Fnr::of);
     }
 }

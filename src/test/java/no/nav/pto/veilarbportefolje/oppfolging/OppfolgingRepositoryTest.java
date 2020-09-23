@@ -1,14 +1,11 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-
-import no.nav.pto.veilarbportefolje.util.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import io.vavr.control.Try;
 
 import javax.sql.DataSource;
 import java.sql.Timestamp;
@@ -16,8 +13,7 @@ import java.time.Instant;
 
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository.safeToJaNei;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class OppfolgingRepositoryTest {
 
@@ -35,28 +31,6 @@ public class OppfolgingRepositoryTest {
     }
 
     @Test
-    public void skal_hente_oppfolging_startet() {
-        db.execute("TRUNCATE TABLE OPPFOLGING_DATA");
-        BrukerOppdatertInformasjon info = testBrukerInfo(Timestamp.from(Instant.now()));
-        oppfolgingRepository.oppdaterOppfolgingData(info);
-
-        Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(AKTOR_ID);
-        assertThat(result.isOk(), is(true));
-        assertThat(result.isEmpty(), is(false));
-        assertThat(result.isErr(), is(false));
-    }
-
-    @Test
-    public void skal_hente_oppfolging_startet_som_er_tom() {
-        db.execute("TRUNCATE TABLE OPPFOLGING_DATA");
-        Result<Timestamp> result = oppfolgingRepository.hentStartdatoForOppfolging(AKTOR_ID);
-
-        assertThat(result.isOk(), is(true));
-        assertThat(result.isEmpty(), is(true));
-        assertThat(result.isErr(), is(false));
-    }
-
-    @Test
     public void skal_inserte_oppfolging__i_oppfolging_data() {
         db.execute("TRUNCATE TABLE OPPFOLGING_DATA");
         Timestamp oppdatertIKildesystem = new Timestamp(Instant.now().toEpochMilli());
@@ -65,7 +39,7 @@ public class OppfolgingRepositoryTest {
         oppfolgingRepository.oppdaterOppfolgingData(bruker);
 
         Try<BrukerOppdatertInformasjon> eksisterendeData = oppfolgingRepository.retrieveOppfolgingData(AKTOR_ID);
-        assertThat(eksisterendeData.isSuccess(), is(true));
+        assertThat(eksisterendeData.isSuccess()).isTrue();
         assertDbValues(oppdatertIKildesystem, true, VEILEDER_ID, eksisterendeData.get());
     }
 
@@ -95,9 +69,9 @@ public class OppfolgingRepositoryTest {
 
     @Test
     public void skal_returnere_ja_nei_streng() {
-        assertThat(safeToJaNei(true), is("J"));
-        assertThat(safeToJaNei(false), is("N"));
-        assertThat(safeToJaNei(null), is("N"));
+        assertThat(safeToJaNei(true)).isEqualTo("J");
+        assertThat(safeToJaNei(false)).isEqualTo("N");
+        assertThat(safeToJaNei(null)).isEqualTo("N");
     }
 
     private void assertDbValues(
@@ -105,10 +79,11 @@ public class OppfolgingRepositoryTest {
             boolean oppfolging,
             String veilederId,
             BrukerOppdatertInformasjon infoFraDb) {
-        assertThat(infoFraDb.getAktoerid(), is(AKTOR_ID.toString()));
-        assertThat(infoFraDb.getOppfolging(), is(oppfolging));
-        assertThat(infoFraDb.getEndretTimestamp(), is(oppdatertIKildesystem));
-        assertThat(infoFraDb.getVeileder(), is(veilederId));
+
+        assertThat(infoFraDb.getAktoerid()).isEqualTo(AKTOR_ID.toString());
+        assertThat(infoFraDb.getOppfolging()).isEqualTo(oppfolging);
+        assertThat(infoFraDb.getEndretTimestamp()).isEqualTo(oppdatertIKildesystem);
+        assertThat(infoFraDb.getVeileder()).isEqualTo(veilederId);
     }
 
     private static BrukerOppdatertInformasjon testBrukerInfo(Timestamp tildeltTidspunkt) {
