@@ -1,13 +1,9 @@
 package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
 import io.micrometer.core.instrument.Gauge;
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
@@ -29,38 +25,28 @@ import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegis
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback {
-
-
     private static final String FEED_NAME = "oppfolging";
 
-    private static BigDecimal lastEntry;
-    private ArbeidslisteService arbeidslisteService;
-    private BrukerRepository brukerRepository;
-    private BrukerService brukerService;
-    private ElasticIndexer elasticIndexer;
-    private OppfolgingRepository oppfolgingRepository;
-    private VeilarbVeilederClient veilarbVeilederClient;
-    private Transactor transactor;
-    private final UnleashService unleashService;
+    private final ArbeidslisteService arbeidslisteService;
+    private final BrukerService brukerService;
+    private final ElasticIndexer elasticIndexer;
+    private final OppfolgingRepository oppfolgingRepository;
+    private final Transactor transactor;
     private final LeaderElectionClient leaderElectionClient;
 
+    private static BigDecimal lastEntry;
+
     public OppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
-                                 BrukerRepository brukerRepository,
                                  BrukerService brukerService,
                                  ElasticIndexer elasticIndexer,
                                  OppfolgingRepository oppfolgingRepository,
-                                 VeilarbVeilederClient veilarbVeilederClient,
                                  Transactor transactor,
-                                 LeaderElectionClient leaderElectionClient,
-                                 UnleashService unleashService) {
+                                 LeaderElectionClient leaderElectionClient) {
         this.arbeidslisteService = arbeidslisteService;
-        this.brukerRepository = brukerRepository;
         this.brukerService = brukerService;
         this.elasticIndexer = elasticIndexer;
         this.oppfolgingRepository = oppfolgingRepository;
-        this.veilarbVeilederClient = veilarbVeilederClient;
         this.transactor = transactor;
-        this.unleashService = unleashService;
         this.leaderElectionClient = leaderElectionClient;
 
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
@@ -108,21 +94,16 @@ public class OppfolgingFeedHandler implements FeedCallback {
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon oppfolgingData) {
         AktoerId aktoerId = AktoerId.of(oppfolgingData.getAktoerid());
 
-        Try<BrukerOppdatertInformasjon> hentOppfolgingData = oppfolgingRepository.retrieveOppfolgingData(aktoerId);
-
-        boolean brukerErIkkeUnderOppfolging = brukerErIkkeUnderOppfolging(oppfolgingData);
-        boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet = eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(hentOppfolgingData, aktoerId);
-
-        boolean skalSletteArbeidsliste;
-        if (unleashService.isEnabled("portefolje.endre_arbeidsliste_logikk")) {
-            skalSletteArbeidsliste = brukerErIkkeUnderOppfolging || brukerHarByttetNavKontor(aktoerId);
-        } else {
-            skalSletteArbeidsliste = brukerErIkkeUnderOppfolging || eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet;
-        }
-
+        final boolean byttetNavKontor = brukerHarByttetNavKontor(aktoerId);
+        boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || byttetNavKontor;
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
-                log.info("Sletter arbeidsliste for bruker {}, under oppfolging {}, har ikke tilgang til enhet {} ", aktoerId, brukerErIkkeUnderOppfolging, eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet);
+
+                log.info("Sletter arbeidsliste for bruker {} med oppfølging={} og byttetNavkontor={}",
+                        oppfolgingData.getAktoerid(),
+                        oppfolgingData.getOppfolging(),
+                        byttetNavKontor);
+
                 arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
             }
             oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
@@ -151,24 +132,5 @@ public class OppfolgingFeedHandler implements FeedCallback {
 
     public static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {
         return !oppfolgingData.getOppfolging();
-    }
-
-    public boolean eksisterendeVeilederHarIkkeTilgangTilBrukerSinEnhet(Try<BrukerOppdatertInformasjon> hentOppfolgingData, AktoerId aktoerId) {
-        return !hentOppfolgingData
-                .map(oppfolgingData -> veilederHarTilgangTilEnhet(aktoerId, oppfolgingData))
-                .getOrElse(false);
-    }
-
-    public boolean veilederHarTilgangTilEnhet(AktoerId aktoerId, BrukerOppdatertInformasjon oppfolgingData) {
-        String veilederId = oppfolgingData.getVeileder();
-        return brukerRepository
-                .retrievePersonid(aktoerId)
-                .peek(personId -> log.info("PersonId er {}, {}", personId, aktoerId))
-                .flatMap(brukerRepository::retrieveNavKontor)
-                .peek(enhet -> log.info("Enhet {}, {} ", enhet, aktoerId))
-                .map(enhet -> veilarbVeilederClient.hentVeilederePaaEnhet(enhet))
-                .peek(veilederePaaEnhet -> log.info("AktoerId {}, Veileder: {} Veileder på enhet: {}", veilederId, veilederePaaEnhet, aktoerId))
-                .map(veilederePaaEnhet -> veilederePaaEnhet.contains(veilederId))
-                .getOrElse(false);
     }
 }

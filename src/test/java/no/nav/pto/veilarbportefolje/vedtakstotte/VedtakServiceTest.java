@@ -11,17 +11,17 @@ import java.util.List;
 
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class VedtakServiceTest {
 
     private VedtakStatusRepository vedtakStatusRepository;
     private VedtakService vedtakService;
-    private static String AKTORID = "123456789";
-    private static long VEDTAKID = 1;
+    private static final String AKTORID = "123456789";
+    private static final long VEDTAKID = 1;
 
-    private static KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
+    private static final KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
             .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.UTKAST_OPPRETTET)
             .setTimestamp(LocalDateTime.now())
             .setAktorId(AKTORID)
