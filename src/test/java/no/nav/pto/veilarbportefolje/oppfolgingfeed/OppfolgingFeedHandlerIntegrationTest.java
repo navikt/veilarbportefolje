@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -74,14 +73,11 @@ public class OppfolgingFeedHandlerIntegrationTest {
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
-                brukerRepository,
                 new BrukerService(brukerRepository, aktorregisterClientMock),
                 elasticIndexerMock,
                 oppfolgingRepository,
-                mock(VeilarbVeilederClient.class),
                 new TestTransactor(),
-                new LeaderElectionClientMock(),
-                unleashMock
+                new LeaderElectionClientMock()
         );
     }
 
