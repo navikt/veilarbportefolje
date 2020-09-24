@@ -5,9 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -46,12 +44,6 @@ public class ArbeidslisteRepository {
                 .execute();
 
         return Optional.ofNullable(navKontor);
-    }
-
-    public void slettArbeidsliste(Fnr fnr) {
-        SqlUtils.delete(db, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, fnr.toString()))
-                .execute();
     }
 
     public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {

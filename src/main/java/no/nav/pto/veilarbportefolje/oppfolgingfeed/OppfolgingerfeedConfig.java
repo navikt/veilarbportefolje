@@ -1,20 +1,17 @@
 package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.client.OidcInterceptor;
 import no.nav.pto.veilarbportefolje.database.Transactor;
+import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumer;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
@@ -25,8 +22,8 @@ import java.math.BigDecimal;
 
 import static java.math.BigDecimal.valueOf;
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
-import static no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig.*;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.VEILARBOPPFOLGING_URL_PROPERTY;
+import static no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumerConfig.*;
 
 @Configuration
 public class OppfolgingerfeedConfig {
@@ -63,24 +60,18 @@ public class OppfolgingerfeedConfig {
 
     @Bean
     public FeedCallback oppfolgingFeedHandler(ArbeidslisteService arbeidslisteService,
-                                              BrukerRepository brukerRepository,
                                               BrukerService brukerService,
                                               ElasticIndexer elasticIndexer,
                                               OppfolgingRepository oppfolgingRepository,
-                                              VeilarbVeilederClient veilarbVeilederClient,
                                               Transactor transactor,
-                                              LeaderElectionClient leaderElectionClient,
-                                              UnleashService unleashService) {
+                                              LeaderElectionClient leaderElectionClient) {
         return new OppfolgingFeedHandler(
                 arbeidslisteService,
-                brukerRepository,
                 brukerService,
                 elasticIndexer,
                 oppfolgingRepository,
-                veilarbVeilederClient,
                 transactor,
-                leaderElectionClient,
-                unleashService
+                leaderElectionClient
         );
     }
 
