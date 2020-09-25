@@ -52,7 +52,6 @@ https://www.github.com/navikt/pam-elasticsearch
 
 Innstillinger i clusteret er definert i filen:
 
-
 ```
 src/main/resources/elastic_settings.json
 ```
@@ -63,18 +62,6 @@ Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppd
 ```
 select * from dba_scheduler_jobs;
 ```
-## URL-er for manuell oppdatering av søkeindeks
-
-| Endepunkt                                             | Beskrivelse                                                      |      
-| ------------------------------------------------------| -----------------------------------------------------------------|
-| /internal/totalhovedindeksering                       | Les inn filer fra arena, hent data fra krr og oppdater indeks    |
-| /internal/populer_elastic                             | Les fra database og oppdater indeks                              |
-| /internal/oppdater_ytelser                            | Les inn ytelsesfil fra arena og oppdater database                |
-| /internal/oppdater_tiltak                             | Les inn tiltaksfil fra arena og oppdater database                |
-| /internal/populer_krr                                 | Hent data om reservasjon i krr og oppdater database              |
-| /internal/reset_feed_oppfolging                       | Spol tilbake feed som overfører data om veiledertilordninger     |
-| /internal/slett_aktivitet?aktivitetId=<id>            | Slett aktivitet fra database og indeks                            |
-
 
 ## Plugin til IntelliJ
 Dette prosjektet benytter seg av [lombok](https://projectlombok.org).
