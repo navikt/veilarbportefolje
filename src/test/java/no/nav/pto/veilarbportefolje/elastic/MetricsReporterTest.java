@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.time.LocalDateTime;
 

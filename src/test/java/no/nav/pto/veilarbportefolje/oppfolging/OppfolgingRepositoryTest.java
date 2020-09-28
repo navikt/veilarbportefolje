@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -23,7 +23,7 @@ public class OppfolgingRepositoryTest {
     private static final String VEILEDER_ID = "X000000";
     private static final AktoerId AKTOR_ID = AktoerId.of("0000");
 
-    @BeforeEach
+    @Before
     public void setup() {
         DataSource ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);

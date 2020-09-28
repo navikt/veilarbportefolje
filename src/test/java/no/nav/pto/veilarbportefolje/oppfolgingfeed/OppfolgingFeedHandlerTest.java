@@ -8,15 +8,13 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 public class OppfolgingFeedHandlerTest {
@@ -50,7 +48,7 @@ public class OppfolgingFeedHandlerTest {
     @Test
     public void skal_ikke_sjekke_nav_kontor_paa_arbeidsliste_om_bruker_ikke_har_arbeidsliste() {
         boolean result = oppfolgingFeedHandler.brukerHarByttetNavKontor(AktoerId.of(""));
-        Assertions.assertThat(result).isFalse();
+        assertThat(result).isFalse();
     }
 
     @Test
@@ -73,21 +71,21 @@ public class OppfolgingFeedHandlerTest {
                 new BrukerOppdatertInformasjon().setFeedId(BigDecimal.valueOf(2)),
                 new BrukerOppdatertInformasjon(),
                 new BrukerOppdatertInformasjon().setFeedId(BigDecimal.valueOf(1))));
-        assertThat(maxId.isPresent(), is(true));
-        assertThat(maxId.get(), is(BigDecimal.valueOf(2)));
+        assertThat(maxId.isPresent()).isTrue();
+        assertThat(maxId.get()).isEqualTo(BigDecimal.valueOf(2));
     }
 
     @Test
     public void skalHandtereBareNullIFeedId() {
         Optional<BigDecimal> maxId = OppfolgingFeedHandler.finnMaxFeedId(List.of(
                 new BrukerOppdatertInformasjon()));
-        assertThat(maxId.isPresent(), is(false));
+        assertThat(maxId.isPresent()).isFalse();
     }
 
     @Test
     public void skalHandtereTomListeForFeedId() {
         Optional<BigDecimal> maxId = OppfolgingFeedHandler.finnMaxFeedId(new ArrayList<>());
-        assertThat(maxId.isPresent(), is(false));
+        assertThat(maxId.isPresent()).isFalse();
     }
 
     private void givenBrukerIkkeHarNoeOppfolgingsData() {

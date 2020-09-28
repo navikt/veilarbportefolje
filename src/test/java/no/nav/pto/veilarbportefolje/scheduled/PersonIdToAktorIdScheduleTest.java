@@ -15,8 +15,8 @@ import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock.AKTOER_ID;
 import static no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock.FNR;
 import static no.nav.sbl.sql.SqlUtils.insert;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -62,12 +62,12 @@ public class PersonIdToAktorIdScheduleTest {
                 .execute();
 
         //assert no mappings exist
-        assertThat(getMappedPersonidFromDb(AKTOER_ID).isFailure(), is(true));
+        assertThat(getMappedPersonidFromDb(AKTOER_ID).isFailure()).isTrue();
 
         scheduler.mapAktorId();
 
         Try<String> mappedPersonid = getMappedPersonidFromDb(AKTOER_ID);
-        assertThat(mappedPersonid.get(), is(PERSON_ID));
+        assertThat(mappedPersonid.get()).isEqualTo(PERSON_ID);
 
     }
 
