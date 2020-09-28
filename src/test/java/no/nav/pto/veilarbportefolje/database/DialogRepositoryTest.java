@@ -5,8 +5,8 @@ import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
@@ -22,7 +22,7 @@ public class DialogRepositoryTest {
 
     private DialogRepository dialogRepository;
 
-    @BeforeEach
+    @Before
     public void setup() {
         dialogRepository = new DialogRepository(new JdbcTemplate(setupInMemoryDatabase()));
     }

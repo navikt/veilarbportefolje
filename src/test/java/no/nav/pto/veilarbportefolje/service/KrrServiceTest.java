@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Option;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.sql.Timestamp;
 

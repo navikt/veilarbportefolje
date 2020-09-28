@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -15,7 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.never;
@@ -74,7 +73,7 @@ public class BrukerServiceTest {
         Try<PersonId> result = brukerService.hentPersonidFraAktoerid(aktoerId);
         verify(aktorregisterClient, never()).hentFnr(anyString());
         assertTrue(result.isSuccess());
-        Assertions.assertEquals(personId, result.get());
+        assertEquals(personId, result.get());
     }
 
     @Test
