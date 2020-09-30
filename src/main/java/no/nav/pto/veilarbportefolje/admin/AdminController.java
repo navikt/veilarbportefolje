@@ -49,7 +49,7 @@ public class AdminController {
         return "Indeksering startet med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
     }
 
-    @PostMapping("/hovedindeksering")
+    @GetMapping("/hovedindeksering")
     public String hovedindeksering() {
         authorizeAdmin();
 
