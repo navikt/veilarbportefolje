@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+<body>
+<h1>Admin-panel for oversikten</h1>
+<div>
+    <h2>AktoerId</h2>
+    <form id="brukerident">
+        <input type="text" id="aktoerIdInput" placeholder="fnr">
+        <input type="submit" value="Hent aktørID"/>
+    </form>
+    <div id="aktoerIdResponse"></div>
+</div>
+<div>
+    <h2>Indeks</h2>
+    <form id="indeksering">
+        <input type="submit" value="Start ny indeksering"/>
+    </form>
+    <div id="indekseringResponse"></div>
+    <br>
+    <form id="hovedindeksering">
+        <input type="submit" value="Start ny hovedindeksering"/>
+    </form>
+    <div id="hovedIndekseringResponse"></div>
+    <br>
+    <form id="bruker">
+        <input type="text" id="fnrInput" placeholder="fnr">
+        <input type="submit" value="Oppdater bruker"/>
+    </form>
+    <div id="oppdaterBrukerResponse"></div>
+</div>
+<div>
+    <h2>Aktiviteter</h2>
+    <form id="aktivitet">
+        <input type="text" id="aktivitetInput" placeholder="aktivitetId">
+        <input type="submit" value="Slett aktivitet"/>
+    </form>
+    <div id="slettAktivitetResponse"></div>
+</div>
+
+</body>
+<script src="index.js" type="application/javascript"></script>
+</html>
