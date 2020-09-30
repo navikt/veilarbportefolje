@@ -1,10 +1,11 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import org.junit.jupiter.api.Test;
+
+import org.junit.Test;
 
 import static no.nav.pto.veilarbportefolje.domene.AAPUnntakUkerIgjenFasettMapping.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+
 
 class AAPUnntakUkerIgjenFasettMappingTest {
 

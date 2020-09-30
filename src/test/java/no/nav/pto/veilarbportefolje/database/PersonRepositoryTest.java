@@ -4,8 +4,8 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Personinfo;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.sbl.sql.SqlUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -19,7 +19,7 @@ public class PersonRepositoryTest {
     private JdbcTemplate db;
     private PersonRepository personRepository;
 
-    @BeforeEach
+    @Before
     public void setup() {
         ds = setupInMemoryDatabase();
         db = new JdbcTemplate(ds);
