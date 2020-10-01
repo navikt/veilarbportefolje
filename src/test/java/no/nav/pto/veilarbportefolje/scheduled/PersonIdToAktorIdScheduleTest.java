@@ -16,7 +16,6 @@ import static no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock.AKTOER_I
 import static no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock.FNR;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +37,7 @@ public class PersonIdToAktorIdScheduleTest {
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         aktorregisterClient = new AktorregisterClientMock();
 
-        brukerRepository = new BrukerRepository(db, null);
+        brukerRepository = new BrukerRepository(db);
         brukerService = new BrukerService(brukerRepository, aktorregisterClient);
 
         LeaderElectionClient leaderElectionClient = mock(LeaderElectionClient.class);

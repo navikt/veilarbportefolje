@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
 import org.flywaydb.core.Flyway;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -35,6 +36,10 @@ public class TestUtil {
         setHsqlToOraSyntax(ds);
         migrateDb(ds);
         return ds;
+    }
+
+    public static JdbcTemplate setUpJdbcTemplate() {
+        return new JdbcTemplate(setupInMemoryDatabase());
     }
 
     public static UnleashService createUnleashMock() {

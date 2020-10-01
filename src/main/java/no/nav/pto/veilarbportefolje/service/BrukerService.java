@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,8 +75,7 @@ public class BrukerService {
         return nyPersonId;
     }
 
-    @Transactional
-    void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
+    public void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
         if (personId == null) {
             return;
         }
@@ -85,8 +83,7 @@ public class BrukerService {
         if (!aktoerId.equals(aktoerIdFraTPS)) {
             brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
         } else {
-            brukerRepository.setGjeldeneFlaggTilNull(personId);
-            brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
+            brukerRepository.oppdaterPersonIdAktoerIdMapping(aktoerId, personId);
         }
     }
 
@@ -99,8 +96,8 @@ public class BrukerService {
     }
 
     private Optional<Fnr> hentFnrFraAktoerregister(AktoerId aktoerId) {
-            return Optional
-                    .ofNullable(aktorregisterClient.hentFnr(aktoerId.toString()))
-                    .map(Fnr::of);
+        return Optional
+                .ofNullable(aktorregisterClient.hentFnr(aktoerId.toString()))
+                .map(Fnr::of);
     }
 }

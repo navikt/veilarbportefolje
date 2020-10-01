@@ -83,14 +83,8 @@ public class ArbeidslisteService {
                 .onSuccess(elasticIndexer::indekser);
     }
 
-    public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
-        Try<AktoerId> aktoerId = hentAktoerId(fnr);
-        if (aktoerId.isFailure()) {
-            return Try.failure(aktoerId.getCause());
-        }
-        return arbeidslisteRepository
-                .deleteArbeidsliste(aktoerId.get())
-                .onSuccess(elasticIndexer::indekser);
+    public int slettArbeidsliste(Fnr fnr) {
+        return arbeidslisteRepository.slettArbeidsliste(fnr);
     }
 
     public Integer deleteArbeidslisteForAktoerId(AktoerId aktoerId) {

@@ -1,4 +1,4 @@
-![](https://github.com/navikt/veilarbportefolje/workflows/Build,%20push%20and%20deploy/badge.svg)
+![](https://github.com/navikt/veilarbportefolje/workflows/Build,%20push%20and%20deploy/badge.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=navikt_veilarbportefolje&metric=alert_status)](https://sonarcloud.io/dashboard?id=navikt_veilarbportefolje)
 
 # Beskrivelse
 

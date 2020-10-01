@@ -23,8 +23,8 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 )
 public class PopulerKrrServlet extends HttpServlet {
 
-    private KrrService krrService;
-    private Credentials serviceUserCredentials;
+    private final KrrService krrService;
+    private final Credentials serviceUserCredentials;
 
     @Autowired
     public PopulerKrrServlet(KrrService krrService, Credentials serviceUserCredentials) {
