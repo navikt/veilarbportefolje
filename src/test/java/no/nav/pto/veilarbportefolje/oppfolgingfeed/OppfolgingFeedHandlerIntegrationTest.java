@@ -23,8 +23,6 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -48,13 +46,10 @@ public class OppfolgingFeedHandlerIntegrationTest {
         ElasticIndexer elasticIndexerMock = mock(ElasticIndexer.class);
 
         aktorregisterClientMock = mock(AktorregisterClient.class);
+        jdbcTemplate = TestUtil.setUpJdbcTemplate();
 
-        SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
-        jdbcTemplate = new JdbcTemplate(ds);
-        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
-
-        BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
-        ArbeidslisteRepository arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate, namedParameterJdbcTemplate);
+        BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate);
+        ArbeidslisteRepository arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate);
 
         BrukerService brukerService = new BrukerService(brukerRepository, aktorregisterClientMock);
 

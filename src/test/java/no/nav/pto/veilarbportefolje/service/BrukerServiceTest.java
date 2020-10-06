@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
@@ -11,13 +12,11 @@ import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.never;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -42,8 +41,8 @@ public class BrukerServiceTest {
     @Before
     public void setUp() {
 
-        db = new JdbcTemplate(setupInMemoryDatabase());
-        brukerRepository = new BrukerRepository(db, null);
+        db = TestUtil.setUpJdbcTemplate();
+        brukerRepository = new BrukerRepository(db);
         aktorregisterClient = mock(AktorregisterClient.class);
         brukerService = new BrukerService(brukerRepository, aktorregisterClient);
 

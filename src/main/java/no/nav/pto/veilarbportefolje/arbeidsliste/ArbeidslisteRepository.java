@@ -5,16 +5,16 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.Optional;
 
 import static java.time.Instant.now;
@@ -26,15 +26,11 @@ import static no.nav.sbl.sql.SqlUtils.*;
 @Repository
 public class ArbeidslisteRepository {
 
-    private static final String DELETE_FROM_ARBEIDSLISTE_SQL = "delete from arbeidsliste where aktoerid = :aktoerid";
-
     private final JdbcTemplate db;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
-    public ArbeidslisteRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public ArbeidslisteRepository(JdbcTemplate db) {
         this.db = db;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     public Optional<String> hentNavKontorForArbeidsliste(AktoerId aktoerId) {
@@ -99,26 +95,16 @@ public class ArbeidslisteRepository {
         ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
 
-    //TODO SLETTE EN AV DISSE DELETE METODER???
-
-    public Try<AktoerId> deleteArbeidsliste(AktoerId aktoerID) {
-        return Try.of(
-                () -> {
-                    delete(db, TABLE_NAME)
-                            .where(WhereClause.equals("AKTOERID", aktoerID.toString()))
-                            .execute();
-                    return aktoerID;
-                }
-        )
-                .onSuccess((aktoerid) -> log.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
-                .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db", e));
+    public Integer deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
+        return SqlUtils.delete(db, TABLE_NAME)
+                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .execute();
     }
 
-    public Integer deleteArbeidslisteForAktoerid(AktoerId aktoerId) {
-            return namedParameterJdbcTemplate
-                    .update(DELETE_FROM_ARBEIDSLISTE_SQL,
-                            Collections.singletonMap("aktoerid", aktoerId.toString())
-                    );
+    public int slettArbeidsliste(Fnr fnr) {
+        return SqlUtils.delete(db, TABLE_NAME)
+                .where(WhereClause.equals(FNR, fnr.toString()))
+                .execute();
     }
 
     @SneakyThrows

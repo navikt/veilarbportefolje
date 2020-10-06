@@ -11,7 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
@@ -34,29 +32,23 @@ import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class BrukerRepositoryTest {
     private static JdbcTemplate jdbcTemplate;
     private static BrukerRepository brukerRepository;
-
-    private final int ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA = 51;
-    private int ANTALL_LINJER_I_TESTDATA;
 
     @BeforeClass
     public static void beforeClass() {
         SingleConnectionDataSource ds = setupInMemoryDatabase();
 
         jdbcTemplate = new JdbcTemplate(ds);
-        brukerRepository = new BrukerRepository(jdbcTemplate, new NamedParameterJdbcTemplate(ds));
+        brukerRepository = new BrukerRepository(jdbcTemplate);
     }
 
     @Before
     public void setUp() {
         try {
             List<String> lines = IOUtils.readLines(BrukerRepositoryTest.class.getResourceAsStream("/insert-test-data-oppfolgingsbruker.sql"), UTF_8);
-            ANTALL_LINJER_I_TESTDATA = lines.size();
             this.jdbcTemplate.execute(Joiner.on("\n").join(lines));
         } catch (IOException e) {
             e.printStackTrace();
@@ -68,29 +60,6 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
-    }
-
-    @Test
-    public void skal_returnere_riktig_antall_brukere_under_oppfolging() {
-        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging(0, ANTALL_LINJER_I_TESTDATA);
-        assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
-    }
-
-    @Test
-    public void skal_hente_riktig_antall_fnr() {
-        List<String> fnr = brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10);
-        assertThat(fnr.size()).isEqualTo(10);
-    }
-
-    @Test
-    public void skal_ikke_tryne_om_man_proever_aa_hente_for_mange_fnr() {
-        brukerRepository.hentFnrFraOppfolgingBrukerTabell(0, 10000);
-    }
-
-    @Test
-    public void skal_returnere_riktig_antall_brukere() {
-        int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
-        assertThat(antallBrukere).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
     }
 
     @Test
@@ -113,7 +82,7 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalKunHaEnCelleIIndekseringLogg() {
+    public void skal_kun_ha_en_celle_i_indeksering_logg() {
         List<Map<String, Object>> sistIndeksert = jdbcTemplate.queryForList("SELECT SIST_INDEKSERT FROM metadata");
 
         assertThat(sistIndeksert.size()).isEqualTo(1);
@@ -121,7 +90,7 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalOppdatereSistIndeksertMedNyttTidsstempel() {
+    public void skal_oppdatere_sist_indeksert_med_nytt_tidsstempel() {
         Timestamp nyttTidsstempel = new Timestamp(System.currentTimeMillis());
         jdbcTemplate.update(brukerRepository.updateSistIndeksertSQL(), nyttTidsstempel);
 
@@ -131,13 +100,13 @@ public class BrukerRepositoryTest {
     }
 
     @Test
-    public void skalOppdatereOmBrukerFinnes() {
+    public void skal_oppdatere_om_bruker_finnes() {
         String personId = "personid";
 
         Brukerdata brukerdata1 = brukerdata(
                 "aktoerid",
                 personId,
-                "veielderid",
+                "veilederid",
                 Timestamp.from(Instant.now()),
                 YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(),
@@ -157,7 +126,7 @@ public class BrukerRepositoryTest {
         Brukerdata brukerdata2 = brukerdata(
                 "aktoerid",
                 personId,
-                "veielderid2",
+                "veilederid2",
                 Timestamp.from(Instant.now()),
                 YtelseMapping.DAGPENGER_MED_PERMITTERING,
                 LocalDateTime.now(),
@@ -177,18 +146,18 @@ public class BrukerRepositoryTest {
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), emptyList());
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata1), singletonList(personId));
 
-        Brukerdata brukerdataAfterInsert = brukerRepository.retrieveBrukerdata(asList(personId)).get(0);
+        Brukerdata brukerdataAfterInsert = brukerRepository.retrieveBrukerdata(List.of(personId)).get(0);
 
         assertThatBrukerdataIsEqual(brukerdata1, brukerdataAfterInsert);
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata2), emptyList());
-        Brukerdata brukerdataAfterUpdate = brukerRepository.retrieveBrukerdata(asList(personId)).get(0);
+        Brukerdata brukerdataAfterUpdate = brukerRepository.retrieveBrukerdata(List.of(personId)).get(0);
         assertThatBrukerdataIsEqual(brukerdata2, brukerdataAfterUpdate);
     }
 
 
     @Test
-    public void skalInserteOmBrukerIkkeFinnes() {
+    public void skal_inserte_om_bruker_ikke_finnes() {
         Brukerdata brukerdata = brukerdata(
                 "aktoerid",
                 "personid",
@@ -211,11 +180,98 @@ public class BrukerRepositoryTest {
 
         brukerRepository.insertOrUpdateBrukerdata(singletonList(brukerdata), emptyList());
 
-        Brukerdata brukerdataFromDb = brukerRepository.retrieveBrukerdata(asList("personid")).get(0);
+        Brukerdata brukerdataFromDb = brukerRepository.retrieveBrukerdata(List.of("personid")).get(0);
 
         assertThatBrukerdataIsEqual(brukerdata, brukerdataFromDb);
     }
 
+    @Test
+    public void retrieve_brukerdata_skal_inneholde_alle_felter() {
+
+        Brukerdata brukerdata = new Brukerdata()
+                .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
+                .setPersonid("personid")
+                .setAapmaxtidUke(1)
+                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
+                .setAktoerid("aktoerid")
+                .setUtlopsdato(LocalDateTime.now())
+                .setUtlopsFasett(ManedFasettMapping.MND1)
+                .setYtelse(YtelseMapping.AAP_MAXTID)
+                .setAktivitetStart(new Timestamp(1))
+                .setNesteAktivitetStart(new Timestamp(2))
+                .setForrigeAktivitetStart(new Timestamp(3));
+
+        brukerRepository.upsertBrukerdata(brukerdata);
+
+        Brukerdata brukerdataFromDB = brukerRepository.retrieveBrukerdata(singletonList("personid")).get(0);
+
+        assertThat(brukerdataFromDB).isEqualTo(brukerdata);
+    }
+
+    @Test
+    public void skal_hente_veileder_for_bruker() {
+        AktoerId aktoerId = AktoerId.of("101010");
+        VeilederId expectedVeilederId = VeilederId.of("X11111");
+
+        insert(jdbcTemplate, "OPPFOLGING_DATA")
+                .value("AKTOERID", aktoerId.toString())
+                .value("VEILEDERIDENT", expectedVeilederId.toString())
+                .execute();
+
+        Try<VeilederId> result = brukerRepository.retrieveVeileder(aktoerId);
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.get()).isEqualTo(expectedVeilederId);
+    }
+
+    @Test
+    public void skal_hente_enhet_for_bruker() {
+        Fnr fnr = new Fnr("12345678900");
+        String expectedEnhet = "123";
+
+        insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
+                .value("PERSON_ID", "123456")
+                .value("FODSELSNR", fnr.toString())
+                .value("NAV_KONTOR", expectedEnhet)
+                .execute();
+
+        Optional<String> navKontor = brukerRepository.hentNavKontorFraDbLinkTilArena(fnr);
+        assertThat(navKontor.get()).isEqualTo(expectedEnhet);
+    }
+
+    @Test
+    public void skal_hente_person_id_fra_database() {
+        Fnr fnr = new Fnr("12345678900");
+
+        PersonId expectedPersonId = PersonId.of("123456");
+        insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
+
+        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        assertThat(result.get()).isEqualTo(expectedPersonId);
+    }
+
+    @Test
+    public void skal_ikke_feile_om_ingen_person_id_finnes() {
+        Fnr fnr = new Fnr("99999999999");
+        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
+        assertThat(result.get()).isNull();
+    }
+
+    @Test
+    public void skalHenteFnrForPersonIdFraDatabase() {
+        PersonId personId = PersonId.of("123456");
+        Fnr expectedFnr = new Fnr("12345678900");
+
+        insertOppfolgingsbrukerForPersonIdToFnrMapping(expectedFnr, personId);
+
+        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(personId);
+        assertThat(result.get()).isEqualTo(expectedFnr);
+    }
+
+    @Test
+    public void skal_ikke_feile_om_ingen_fnr_for_person_id_finnes() {
+        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(PersonId.of("123456"));
+        assertThat(result.get()).isNull();
+    }
 
     private Brukerdata brukerdata(
             String aktoerid,
@@ -268,72 +324,6 @@ public class BrukerRepositoryTest {
         assertThat(b1.getYtelse()).isEqualTo(b2.getYtelse());
     }
 
-    @Test
-    public void retrieveBrukerdataSkalInneholdeAlleFelter() {
-
-        Brukerdata brukerdata = new Brukerdata()
-                .setNyesteUtlopteAktivitet(Timestamp.from(Instant.now()))
-                .setPersonid("personid")
-                .setAapmaxtidUke(1)
-                .setAapmaxtidUkeFasett(AAPMaxtidUkeFasettMapping.UKE_UNDER12)
-                .setAktoerid("aktoerid")
-                .setUtlopsdato(LocalDateTime.now())
-                .setUtlopsFasett(ManedFasettMapping.MND1)
-                .setYtelse(YtelseMapping.AAP_MAXTID)
-                .setAktivitetStart(new Timestamp(1))
-                .setNesteAktivitetStart(new Timestamp(2))
-                .setForrigeAktivitetStart(new Timestamp(3));
-
-        brukerRepository.upsertBrukerdata(brukerdata);
-
-        Brukerdata brukerdataFromDB = brukerRepository.retrieveBrukerdata(singletonList("personid")).get(0);
-
-        assertThat(brukerdata).isEqualTo(brukerdataFromDB);
-    }
-
-    @Test
-    public void skalHenteVeilederForBruker() {
-        AktoerId aktoerId = AktoerId.of("101010");
-        VeilederId expectedVeilederId = VeilederId.of("X11111");
-
-        insert(jdbcTemplate, "OPPFOLGING_DATA")
-                .value("AKTOERID", aktoerId.toString())
-                .value("VEILEDERIDENT", expectedVeilederId.toString())
-                .execute();
-
-        Try<VeilederId> result = brukerRepository.retrieveVeileder(aktoerId);
-        assertTrue(result.isSuccess());
-        assertEquals(expectedVeilederId, result.get());
-    }
-
-    @Test
-    public void skalHenteEnhetForBruker() {
-        Fnr fnr = new Fnr("12345678900");
-        String expectedEnhet = "123";
-
-        insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
-                .value("PERSON_ID", "123456")
-                .value("FODSELSNR", fnr.toString())
-                .value("NAV_KONTOR", expectedEnhet)
-                .execute();
-
-        Optional<String> navKontor = brukerRepository.hentNavKontorFraDbLinkTilArena(fnr);
-        assertTrue(navKontor.isPresent());
-        assertEquals(expectedEnhet, navKontor.get());
-    }
-
-    @Test
-    public void skalHentePersonIdFraDatabase() throws Exception {
-        Fnr fnr = new Fnr("12345678900");
-
-        PersonId expectedPersonId = PersonId.of("123456");
-        insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
-
-        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
-        assertTrue(result.isSuccess());
-        assertEquals(expectedPersonId, result.get());
-    }
-
     private int insertOppfolgingsbrukerForPersonIdToFnrMapping(Fnr fnr, PersonId personId) {
         return insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
                 .value("PERSON_ID", personId.toString())
@@ -341,33 +331,4 @@ public class BrukerRepositoryTest {
                 .value("NAV_KONTOR", "123")
                 .execute();
     }
-
-    @Test
-    public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
-        Fnr fnr = new Fnr("99999999999");
-        Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
-
-        assertTrue(result.get() == null);
-    }
-
-    @Test
-    public void skalHenteFnrForPersonIdFraDatabase() throws Exception {
-        PersonId personId = PersonId.of("123456");
-
-        Fnr expectedFnr = new Fnr("12345678900");
-
-        insertOppfolgingsbrukerForPersonIdToFnrMapping(expectedFnr, personId);
-
-        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(personId);
-        assertTrue(result.isSuccess());
-        assertEquals(expectedFnr, result.get());
-    }
-
-    @Test
-    public void skalIkkeFeileOmIngenFnrForPersonIdFinnes() throws Exception {
-        Try<Fnr> result = brukerRepository.retrieveFnrFromPersonid(PersonId.of("123456"));
-
-        assertTrue(result.get() == null);
-    }
-
 }

@@ -2,13 +2,11 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
@@ -63,7 +61,6 @@ public class ElasticIndexer {
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
-    private final UnleashService unleashService;
     private final MetricsClient metricsClient;
     private final String indexName;
 
@@ -71,7 +68,6 @@ public class ElasticIndexer {
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
-            UnleashService unleashService,
             MetricsClient metricsClient,
             String indexName
     ) {
@@ -79,21 +75,16 @@ public class ElasticIndexer {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
-        this.unleashService = unleashService;
         this.metricsClient = metricsClient;
         this.indexName = indexName;
     }
 
     @SneakyThrows
     public void startIndeksering() {
-        if (unleashService.isEnabled(FeatureToggle.HOVEDINDEKSERING_MED_PAGING)) {
-            nyHovedIndekseringMedPaging();
-        } else {
-            gammelHovedIndeksering();
-        }
+        hovedIndeksering();
     }
 
-    private void gammelHovedIndeksering() {
+    private void hovedIndeksering() {
         log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
@@ -127,49 +118,6 @@ public class ElasticIndexer {
 
         brukerRepository.oppdaterSistIndeksertElastic(tidsstempel);
         log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
-    }
-
-    private void nyHovedIndekseringMedPaging() {
-        log.info("Starter hovedindeksering");
-
-        String nyIndeks = opprettNyIndeks(createIndexName(indexName));
-        log.info("Opprettet ny indeks {}", nyIndeks);
-
-        int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
-
-        log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
-
-        int currentPage = 0;
-        for (int fra = 0; fra < antallBrukere; fra = utregnTil(fra, BATCH_SIZE)) {
-
-            int til = utregnTil(fra, BATCH_SIZE);
-
-            int numberOfPages = antallBrukere / BATCH_SIZE - 1;
-            currentPage = currentPage + 1;
-
-            log.info("{}/{} Indekserer brukere fra {} til {} av {}", currentPage, numberOfPages, fra, til, antallBrukere);
-
-            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
-            log.info("Hentet ut {} brukere fra databasen", brukere.size());
-
-            leggTilAktiviteter(brukere);
-            leggTilTiltak(brukere);
-
-            skrivTilIndeks(nyIndeks, brukere);
-        }
-
-        Optional<String> gammelIndeks = hentGammeltIndeksNavn();
-        if (gammelIndeks.isPresent()) {
-            log.info("Peker alias mot ny indeks {} og sletter gammel indeks {}", nyIndeks, gammelIndeks);
-            flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
-            slettGammelIndeks(gammelIndeks.get());
-        } else {
-            log.info("Oppretter alias til ny indeks: {}", nyIndeks);
-            opprettAliasForIndeks(nyIndeks);
-        }
-
-        brukerRepository.oppdaterSistIndeksertElastic(Timestamp.valueOf(now()));
-        log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
     }
 
     static int utregnTil(int from, int batchSize) {

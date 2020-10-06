@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -12,9 +11,6 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import javax.sql.DataSource;
 
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.TestUtil.createUnleashMock;
@@ -23,20 +19,16 @@ import static org.mockito.Mockito.mock;
 
 public class DialogKafkaConsumerTest extends IntegrationTest {
 
-    private static DialogService dialogService;
-    private static JdbcTemplate jdbcTemplate;
     private static String indexName;
-
+    private static DialogService dialogService;
 
     @BeforeClass
     public static void beforeClass() {
 
-        DataSource dataSource = TestUtil.setupInMemoryDatabase();
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-        BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
+        JdbcTemplate jdbcTemplate = TestUtil.setUpJdbcTemplate();
+        BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate);
         indexName = generateId();
-        dialogService = new DialogService(new DialogRepository(jdbcTemplate), new ElasticIndexer(mock(AktivitetDAO.class), brukerRepository, ELASTIC_CLIENT, mock(UnleashService.class), mock(MetricsClient.class), indexName));
+        dialogService = new DialogService(new DialogRepository(jdbcTemplate), new ElasticIndexer(mock(AktivitetDAO.class), brukerRepository, ELASTIC_CLIENT, mock(MetricsClient.class), indexName));
 
 
         new KafkaConsumerRunnable<>(
