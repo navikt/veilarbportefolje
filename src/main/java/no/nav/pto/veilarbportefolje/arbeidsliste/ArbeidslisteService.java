@@ -84,7 +84,11 @@ public class ArbeidslisteService {
     }
 
     public int slettArbeidsliste(Fnr fnr) {
-        return arbeidslisteRepository.slettArbeidsliste(fnr);
+        final int rowsUpdated = arbeidslisteRepository.slettArbeidsliste(fnr);
+        if (rowsUpdated == 1) {
+            elasticIndexer.indekser(fnr);
+        }
+        return rowsUpdated;
     }
 
     public Integer deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
