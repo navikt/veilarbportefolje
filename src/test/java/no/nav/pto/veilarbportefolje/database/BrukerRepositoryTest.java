@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.sbl.sql.SqlUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -60,6 +61,20 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
+    }
+
+    @Test
+    public void skal_hente_bruker_fra_view() {
+        final Fnr fnr = Fnr.of("00000000000");
+        final String personId = "0";
+
+        SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
+                .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
+                .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId)
+                .execute();
+
+        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(fnr);
+        assertThat(bruker).isPresent();
     }
 
     @Test
