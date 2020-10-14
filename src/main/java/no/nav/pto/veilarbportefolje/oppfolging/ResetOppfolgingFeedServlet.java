@@ -10,10 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.AuthorizationUtils.isBasicAuthAuthorized;
 
@@ -26,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.util.AuthorizationUtils.isBasicAuthAu
 public class ResetOppfolgingFeedServlet extends HttpServlet {
 
     private final OppfolgingRepository oppfolgingRepository;
-    private Credentials serviceUserCredentials;
+    private final Credentials serviceUserCredentials;
 
     @Autowired
     public ResetOppfolgingFeedServlet(OppfolgingRepository oppfolgingRepository, Credentials serviceUserCredentials) {
@@ -37,16 +34,15 @@ public class ResetOppfolgingFeedServlet extends HttpServlet {
     @Override
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-        BigDecimal fromId;
+        final long fromId;
         try {
-            fromId = Optional.ofNullable(req.getParameter("fromId"))
-                    .map(BigDecimal::new).get();
+            fromId = Long.parseLong(req.getParameter("fromId"));
         } catch (NumberFormatException e) {
-            throw new WebApplicationException("Kunne ikke lese fromId, bruk kun tall", Response.Status.BAD_REQUEST);
+            return;
         }
 
         if (isBasicAuthAuthorized(req, serviceUserCredentials)) {
-            oppfolgingRepository.updateOppfolgingFeedId(fromId);
+            oppfolgingRepository.updateOppfolgingFeedId(BigDecimal.valueOf(fromId));
             resp.getWriter().write(String.format("Stilte oppfolging-feeeden tilbake til id: %s", fromId));
             resp.setStatus(200);
 

@@ -21,13 +21,13 @@ public class Brukerdata {
     private YtelseMapping ytelse;
     private LocalDateTime utlopsdato;
     private FasettMapping utlopsFasett;
-    private Integer dagputlopUke;
+    private int dagputlopUke;
     private DagpengerUkeFasettMapping dagputlopUkeFasett;
-    private Integer permutlopUke;
+    private int permutlopUke;
     private DagpengerUkeFasettMapping permutlopUkeFasett;
-    private Integer aapmaxtidUke;
+    private int aapmaxtidUke;
     private AAPMaxtidUkeFasettMapping aapmaxtidUkeFasett;
-    private Integer aapUnntakDagerIgjen;
+    private int aapUnntakDagerIgjen;
     private AAPUnntakUkerIgjenFasettMapping aapunntakUkerIgjenFasett;
     private Timestamp nyesteUtlopteAktivitet;
     private Timestamp aktivitetStart;
