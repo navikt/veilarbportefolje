@@ -14,7 +14,7 @@ public class KafkaHelsesjekk implements HealthCheck {
 
     public KafkaHelsesjekk(KafkaConfig.Topic topic) {
         this.consumer = new KafkaConsumer<>(kafkaProperties());
-        this.topic = topic.topic;
+        this.topic = topic.topicName;
     }
 
     @Override

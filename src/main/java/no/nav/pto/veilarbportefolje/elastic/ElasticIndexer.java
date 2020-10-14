@@ -2,28 +2,20 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
-import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -31,145 +23,45 @@ import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 
 import java.nio.charset.Charset;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.lang.String.format;
-import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
-import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
-import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.REMOVE;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class ElasticIndexer {
 
-    final static int BATCH_SIZE = 1000;
-    final static int BATCH_SIZE_LIMIT = 1000;
+    static final int BATCH_SIZE = 1000;
+    static final int BATCH_SIZE_LIMIT = 1000;
     private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
-    private final UnleashService unleashService;
-    private final MetricsClient metricsClient;
-    private final String indexName;
+    private final IndexName alias;
 
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
-            UnleashService unleashService,
-            MetricsClient metricsClient,
-            String indexName
+            IndexName alias
     ) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
-        this.unleashService = unleashService;
-        this.metricsClient = metricsClient;
-        this.indexName = indexName;
-    }
-
-    @SneakyThrows
-    public void startIndeksering() {
-        if (unleashService.isEnabled(FeatureToggle.HOVEDINDEKSERING_MED_PAGING)) {
-            nyHovedIndekseringMedPaging();
-        } else {
-            gammelHovedIndeksering();
-        }
-    }
-
-    private void gammelHovedIndeksering() {
-        log.info("Hovedindeksering: Starter hovedindeksering i Elasticsearch");
-        long t0 = System.currentTimeMillis();
-        Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
-
-        String nyIndeks = opprettNyIndeks(createIndexName(getAlias()));
-        log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
-
-
-        List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging();
-        log.info("Hovedindeksering: Hentet {} oppfølgingsbrukere fra databasen", brukere.size());
-
-        log.info("Hovedindeksering: Batcher opp uthenting av aktiviteter og tiltak samt skriveoperasjon til indeks (BATCH_SIZE={})", BATCH_SIZE);
-        partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
-            leggTilAktiviteter(brukerBatch);
-            leggTilTiltak(brukerBatch);
-            skrivTilIndeks(nyIndeks, brukerBatch);
-        });
-
-        Optional<String> gammelIndeks = hentGammeltIndeksNavn();
-        if (gammelIndeks.isPresent()) {
-            log.info("Hovedindeksering: Peker alias mot ny indeks og sletter den gamle");
-            flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
-            slettGammelIndeks(gammelIndeks.get());
-        } else {
-            log.info("Hovedindeksering: Lager alias til ny indeks");
-            opprettAliasForIndeks(nyIndeks);
-        }
-
-        long t1 = System.currentTimeMillis();
-        long time = t1 - t0;
-
-        brukerRepository.oppdaterSistIndeksertElastic(tidsstempel);
-        log.info("Hovedindeksering: Hovedindeksering for {} brukere fullførte på {}ms", brukere.size(), time);
-    }
-
-    private void nyHovedIndekseringMedPaging() {
-        log.info("Starter hovedindeksering");
-
-        String nyIndeks = opprettNyIndeks(createIndexName(indexName));
-        log.info("Opprettet ny indeks {}", nyIndeks);
-
-        int antallBrukere = brukerRepository.hentAntallBrukereUnderOppfolging().orElseThrow(IllegalStateException::new);
-
-        log.info("Starter oppdatering av {} brukere i indeks med aktiviteter, tiltak og ytelser fra arena (BATCH_SIZE={})", antallBrukere, BATCH_SIZE);
-
-        int currentPage = 0;
-        for (int fra = 0; fra < antallBrukere; fra = utregnTil(fra, BATCH_SIZE)) {
-
-            int til = utregnTil(fra, BATCH_SIZE);
-
-            int numberOfPages = antallBrukere / BATCH_SIZE - 1;
-            currentPage = currentPage + 1;
-
-            log.info("{}/{} Indekserer brukere fra {} til {} av {}", currentPage, numberOfPages, fra, til, antallBrukere);
-
-            List<OppfolgingsBruker> brukere = brukerRepository.hentAlleBrukereUnderOppfolging(fra, til);
-            log.info("Hentet ut {} brukere fra databasen", brukere.size());
-
-            leggTilAktiviteter(brukere);
-            leggTilTiltak(brukere);
-
-            skrivTilIndeks(nyIndeks, brukere);
-        }
-
-        Optional<String> gammelIndeks = hentGammeltIndeksNavn();
-        if (gammelIndeks.isPresent()) {
-            log.info("Peker alias mot ny indeks {} og sletter gammel indeks {}", nyIndeks, gammelIndeks);
-            flyttAliasTilNyIndeks(gammelIndeks.get(), nyIndeks);
-            slettGammelIndeks(gammelIndeks.get());
-        } else {
-            log.info("Oppretter alias til ny indeks: {}", nyIndeks);
-            opprettAliasForIndeks(nyIndeks);
-        }
-
-        brukerRepository.oppdaterSistIndeksertElastic(Timestamp.valueOf(now()));
-        log.info("Ferdig! Hovedindeksering for {} brukere er gjennomført!", antallBrukere);
+        this.alias = alias;
     }
 
     static int utregnTil(int from, int batchSize) {
@@ -184,81 +76,13 @@ public class ElasticIndexer {
         return from + BATCH_SIZE;
     }
 
-    public void deltaindeksering() {
-        if (indeksenIkkeFinnes()) {
-            String message = format("Deltaindeksering: finner ingen indeks med alias %s", getAlias());
-            throw new IllegalStateException(message);
-        }
-
-        Event event = new Event("portefolje.antall.brukere");
-        event.addFieldToReport("antall_brukere", ElasticUtils.getCount());
-        metricsClient.report(event);
-
-        log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
-
-        List<OppfolgingsBruker> brukere = brukerRepository.hentOppdaterteBrukere();
-
-        List<String> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toList());
-
-        log.info("Deltaindeksering: hentet ut {} oppdaterte brukere {}", brukere.size(), aktoerIder);
-
-        if (brukere.isEmpty()) {
-            log.info("Deltaindeksering: Ingen oppdaterte brukere ble funnet. Avslutter.");
-            return;
-        }
-
-        Timestamp timestamp = Timestamp.valueOf(now());
-
-        partition(brukere, BATCH_SIZE).forEach(brukerBatch -> {
-
-            List<OppfolgingsBruker> brukereFortsattUnderOppfolging = brukerBatch.stream()
-                    .filter(UnderOppfolgingRegler::erUnderOppfolging)
-                    .collect(toList());
-
-            if (!brukereFortsattUnderOppfolging.isEmpty()) {
-                log.info("Deltaindeksering: Legger til aktiviteter");
-                leggTilAktiviteter(brukereFortsattUnderOppfolging);
-                log.info("Deltaindeksering: Legger til tiltak");
-                leggTilTiltak(brukereFortsattUnderOppfolging);
-                log.info("Deltaindeksering: Skriver til indeks");
-                skrivTilIndeks(indexName, brukereFortsattUnderOppfolging);
-            }
-
-            log.info("Deltaindeksering: Sletter brukere som ikke lenger ligger under oppfolging");
-            slettBrukereIkkeLengerUnderOppfolging(brukerBatch);
-        });
-
-        log.info("Deltaindeksering: Indeks oppdatert for {} brukere {}", brukere.size(), aktoerIder);
-
-        brukerRepository.oppdaterSistIndeksertElastic(timestamp);
-
-        int antall = brukere.size();
-
-        metricsClient.report(new Event("es.deltaindeksering.fullfort").addFieldToReport("es.antall.oppdateringer", antall));
-    }
-
-    @SneakyThrows
-    private boolean indeksenIkkeFinnes() {
-        GetIndexRequest request = new GetIndexRequest();
-        request.indices(indexName);
-
-        boolean exists = restHighLevelClient.indices().exists(request, DEFAULT);
-        return !exists;
-    }
-
-    private void slettBrukereIkkeLengerUnderOppfolging(List<OppfolgingsBruker> brukerBatch) {
-        brukerBatch.stream()
-                .filter(bruker -> !erUnderOppfolging(bruker))
-                .forEach(this::markerBrukerSomSlettet);
-    }
-
     @SneakyThrows
     public void markerBrukerSomSlettet(OppfolgingsBruker bruker) {
         log.info("Markerer bruker {} som slettet", bruker.getAktoer_id());
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(indexName);
+        updateRequest.index(alias.getValue());
         updateRequest.type("_doc");
-        updateRequest.id(bruker.getFnr());
+        updateRequest.id(bruker.getAktoer_id());
         updateRequest.doc(jsonBuilder()
                 .startObject()
                 .field("oppfolging", false)
@@ -273,7 +97,10 @@ public class ElasticIndexer {
 
             @Override
             public void onFailure(Exception e) {
-                log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
+                final int statusCode = ((ResponseException)e).getResponse().getStatusLine().getStatusCode();
+                if (statusCode != 404) {
+                    log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
+                }
             }
         });
     }
@@ -289,7 +116,8 @@ public class ElasticIndexer {
 
     public void indekser(List<PersonId> personIds) {
         partition(personIds, BATCH_SIZE).forEach(partition -> {
-            brukerRepository.hentBrukereFraView(partition).forEach(this::indekserBruker);
+            final List<OppfolgingsBruker> oppfolgingsBrukers = brukerRepository.hentBrukereFraView(partition);
+            oppfolgingsBrukers.forEach(this::indekserBruker);
         });
     }
 
@@ -297,7 +125,7 @@ public class ElasticIndexer {
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
             leggTilTiltak(bruker);
-            skrivTilIndeks(indexName, bruker);
+            skrivTilIndeks(alias.getValue(), bruker);
         } else {
             markerBrukerSomSlettet(bruker);
         }
@@ -305,46 +133,9 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public Optional<String> hentGammeltIndeksNavn() {
-        GetAliasesRequest getAliasRequest = new GetAliasesRequest(indexName);
+        GetAliasesRequest getAliasRequest = new GetAliasesRequest(alias.getValue());
         GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
-    }
-
-    @SneakyThrows
-    private void opprettAliasForIndeks(String indeks) {
-        AliasActions addAliasAction = new AliasActions(ADD)
-                .index(indeks)
-                .alias(indexName);
-
-        IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
-        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
-
-        if (!response.isAcknowledged()) {
-            log.error("Kunne ikke legge til alias {}", indexName);
-            throw new RuntimeException();
-        }
-    }
-
-    @SneakyThrows
-    private void flyttAliasTilNyIndeks(String gammelIndeks, String nyIndeks) {
-
-        AliasActions addAliasAction = new AliasActions(ADD)
-                .index(nyIndeks)
-                .alias(indexName);
-
-        AliasActions removeAliasAction = new AliasActions(REMOVE)
-                .index(gammelIndeks)
-                .alias(indexName);
-
-        IndicesAliasesRequest request = new IndicesAliasesRequest()
-                .addAliasAction(removeAliasAction)
-                .addAliasAction(addAliasAction);
-
-        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
-
-        if (!response.isAcknowledged()) {
-            log.error("Kunne ikke oppdatere alias {}", indexName);
-        }
     }
 
     public void slettGammelIndeks(String gammelIndeks) {
@@ -362,7 +153,7 @@ public class ElasticIndexer {
 
         BulkRequest bulk = new BulkRequest();
         oppfolgingsBrukere.stream()
-                .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
+                .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getAktoer_id()).source(toJson(bruker), XContentType.JSON))
                 .forEach(bulk::add);
 
         restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {

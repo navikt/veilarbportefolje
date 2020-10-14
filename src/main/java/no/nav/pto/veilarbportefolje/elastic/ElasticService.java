@@ -29,14 +29,14 @@ public class ElasticService {
     RestHighLevelClient restHighLevelClient;
     VeilarbVeilederClient veilarbVeilederClient;
     UnleashService unleashService;
-    String indeksNavn;
+    IndexName indexName;
 
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, String indeksNavn) {
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.unleashService = unleashService;
-        this.indeksNavn = indeksNavn;
+        this.indexName = indexName;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
@@ -80,7 +80,7 @@ public class ElasticService {
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
-        ElasticSearchResponse response = search(searchSourceBuilder, indeksNavn, ElasticSearchResponse.class);
+        ElasticSearchResponse response = search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class);
         int totalHits = response.getHits().getTotal();
 
         List<Bruker> brukere = response.getHits().getHits().stream()
@@ -96,7 +96,7 @@ public class ElasticService {
 
         SearchSourceBuilder request = byggArbeidslisteQuery(enhetId, veilederId);
 
-        ElasticSearchResponse response = search(request, indeksNavn, ElasticSearchResponse.class);
+        ElasticSearchResponse response = search(request, indexName.getValue(), ElasticSearchResponse.class);
 
         return response.getHits().getHits().stream()
                 .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa()))
@@ -109,7 +109,7 @@ public class ElasticService {
         SearchSourceBuilder request =
                 byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
 
-        StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
+        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
     }
@@ -122,14 +122,14 @@ public class ElasticService {
         SearchSourceBuilder request =
                 byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
 
-        StatustallResponse response = search(request, indeksNavn, StatustallResponse.class);
+        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new StatusTall(buckets, vedtakstottePilotErPa);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
         SearchSourceBuilder request = byggPortefoljestorrelserQuery(enhetId);
-        PortefoljestorrelserResponse response = search(request, indeksNavn, PortefoljestorrelserResponse.class);
+        PortefoljestorrelserResponse response = search(request, indexName.getValue(), PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
     }
@@ -145,7 +145,7 @@ public class ElasticService {
     }
 
     private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
-        boolean harVeilederPaaSammeEnhet = veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
+        boolean harVeilederPaaSammeEnhet = oppfolgingsBruker.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
         return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
     }
 

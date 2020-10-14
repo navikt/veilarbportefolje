@@ -2,10 +2,11 @@ package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
 import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.Transactor;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.feed.consumer.FeedCallback;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_OPPFOLGING;
 import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 
 @Slf4j
@@ -33,6 +35,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
     private final OppfolgingRepository oppfolgingRepository;
     private final Transactor transactor;
     private final LeaderElectionClient leaderElectionClient;
+    private final UnleashService unleashService;
 
     private static BigDecimal lastEntry;
 
@@ -41,13 +44,14 @@ public class OppfolgingFeedHandler implements FeedCallback {
                                  ElasticIndexer elasticIndexer,
                                  OppfolgingRepository oppfolgingRepository,
                                  Transactor transactor,
-                                 LeaderElectionClient leaderElectionClient) {
+                                 LeaderElectionClient leaderElectionClient, UnleashService unleashService) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
         this.elasticIndexer = elasticIndexer;
         this.oppfolgingRepository = oppfolgingRepository;
         this.transactor = transactor;
         this.leaderElectionClient = leaderElectionClient;
+        this.unleashService = unleashService;
 
         Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
     }
@@ -59,6 +63,10 @@ public class OppfolgingFeedHandler implements FeedCallback {
     @Override
     public void call(String lastEntryId, List<BrukerOppdatertInformasjon> data) {
         if (!leaderElectionClient.isLeader()) {
+            return;
+        }
+
+        if (unleashService.isEnabled(KAFKA_OPPFOLGING)) {
             return;
         }
 
@@ -94,7 +102,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
     private void oppdaterOppfolgingData(BrukerOppdatertInformasjon oppfolgingData) {
         AktoerId aktoerId = AktoerId.of(oppfolgingData.getAktoerid());
 
-        final boolean byttetNavKontor = brukerHarByttetNavKontor(aktoerId);
+        final boolean byttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || byttetNavKontor;
         transactor.inTransaction(() -> {
             if (skalSletteArbeidsliste) {
@@ -109,25 +117,6 @@ public class OppfolgingFeedHandler implements FeedCallback {
             oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
         });
 
-    }
-
-    boolean brukerHarByttetNavKontor(AktoerId aktoerId) {
-        Optional<String> navKontorForArbeidsliste =
-                arbeidslisteService.hentNavKontorForArbeidsliste(aktoerId);
-
-        if (navKontorForArbeidsliste.isEmpty()) {
-            log.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId.toString());
-            return false;
-        }
-
-        final Optional<String> navKontorForBruker = brukerService.hentNavKontor(aktoerId);
-        if (navKontorForBruker.isEmpty()) {
-            log.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId.toString());
-            return false;
-        }
-
-        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
-        return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
     }
 
     public static boolean brukerErIkkeUnderOppfolging(BrukerOppdatertInformasjon oppfolgingData) {

@@ -48,7 +48,7 @@ public class KafkaConsumerRunnable<T> implements Runnable {
 
         this.kafkaService = kafkaService;
         this.unleashService = unleashService;
-        this.topic = topic.topic;
+        this.topic = topic.topicName;
         this.consumer = new KafkaConsumer<>(kafkaProperties);
         this.metricsClient = metricsClient;
         this.shutdown = new AtomicBoolean(false);
@@ -157,5 +157,4 @@ public class KafkaConsumerRunnable<T> implements Runnable {
                 .map(String::new)
                 .orElse(IdUtils.generateId());
     }
-
 }

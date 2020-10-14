@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
-import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.junit.Test;
 
 import java.sql.Timestamp;

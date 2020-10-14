@@ -12,12 +12,12 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
-import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.mapOf;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -40,7 +40,7 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_bygge_riktig_filtrer_paa_veileder_script() {
-        String actualScript = byggVeilederPaaEnhetScript(listOf("Z000000", "Z000001", "Z000002"));
+        String actualScript = byggVeilederPaaEnhetScript(List.of("Z000000", "Z000001", "Z000002"));
         String expectedScript = "[\"Z000000\",\"Z000001\",\"Z000002\"].contains(doc.veileder_id.value)";
 
         assertThat(actualScript).isEqualTo(expectedScript);

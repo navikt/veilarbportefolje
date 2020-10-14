@@ -1,60 +1,54 @@
 package no.nav.pto.veilarbportefolje.krr;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import no.nav.common.health.HealthCheckResult;
-import no.nav.common.health.HealthCheckUtils;
-import no.nav.common.json.JsonUtils;
-import no.nav.common.rest.client.RestUtils;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfig;
+import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import org.springframework.stereotype.Component;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Optional;
+import java.util.UUID;
 
+import static java.time.Duration.ofSeconds;
+import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static no.nav.pto.veilarbportefolje.client.RestClientUtils.authHeaderMedSystemBruker;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+
+@Component
 public class DkifClient {
 
-    private final String dkifUrl;
+    private final HttpClient httpClient;
+    private final EnvironmentProperties env;
 
-    private final OkHttpClient client;
-
-    public DkifClient(String dkifUrl, OkHttpClient client) {
-        this.dkifUrl = dkifUrl;
-        this.client = client;
+    public DkifClient(HttpClient httpClient, EnvironmentProperties environmentProperties) {
+        this.httpClient = httpClient;
+        this.env = environmentProperties;
     }
 
     @SneakyThrows
-    public DkifKontaktinfo hentKontaktInfo(String fnr) {
-        Request request = new Request.Builder()
-                .url(joinPaths(dkifUrl, "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=false"))
+    public Optional<DkifKontaktinfoDTO> hentKontaktInfo(AktoerId aktoerid) {
+        final String uri = joinPaths(env.getDkifUrl(), "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=false");
+
+        final HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(uri))
+                .timeout(ofSeconds(10))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header("Nav-Personidenter", fnr)
+                .header("Nav-Call-Id", UUID.randomUUID().toString())
+                .header("Nav-Consumer-Id", ApplicationConfig.APPLICATION_NAME)
+                .header("Nav-Personidenter", aktoerid.toString())
+                .header("Authorization", authHeaderMedSystemBruker())
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            Optional<String> json = RestUtils.getBodyStr(response);
-
-            if (json.isEmpty()) {
-                DkifKontaktinfo dkifKontaktinfo = new DkifKontaktinfo();
-                dkifKontaktinfo.setPersonident(fnr);
-                return dkifKontaktinfo;
-            }
-
-            ObjectMapper mapper = JsonUtils.getMapper();
-            JsonNode node = mapper.readTree(json.get());
-
-            return mapper.treeToValue(node.get("kontaktinfo").get(fnr), DkifKontaktinfo.class);
-        }
-    }
-
-    public HealthCheckResult checkHealth() {
-        return HealthCheckUtils.pingUrl(joinPaths(dkifUrl, "/internal/isAlive"), client);
+        final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        final DkifKontaktinfoDTO dto = fromJson(response.body(), DkifKontaktinfoDTO.class);
+        return Optional.ofNullable(dto);
     }
 
 }

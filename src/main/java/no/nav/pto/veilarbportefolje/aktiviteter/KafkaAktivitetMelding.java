@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 

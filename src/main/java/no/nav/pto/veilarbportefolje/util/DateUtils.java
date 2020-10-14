@@ -51,6 +51,10 @@ public class DateUtils {
         return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
     }
 
+    public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
+        return Timestamp.from(zonedDateTime.toInstant());
+    }
+
     public static String toUtcString(ZonedDateTime zonedDateTime) {
         if(Objects.isNull(zonedDateTime)) {
             return null;
