@@ -4,7 +4,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;

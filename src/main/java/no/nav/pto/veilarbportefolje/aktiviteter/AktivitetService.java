@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;

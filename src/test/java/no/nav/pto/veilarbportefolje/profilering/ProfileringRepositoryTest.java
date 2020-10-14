@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.profilering;
 
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;

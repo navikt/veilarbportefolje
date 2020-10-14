@@ -53,7 +53,7 @@ public class EnhetController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        String ident = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
+        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
         BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);

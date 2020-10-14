@@ -14,6 +14,8 @@ import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.http.HttpClient;
+
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 
@@ -46,6 +48,11 @@ public class ClientConfig {
                 properties.getAbacUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
+    }
+
+    @Bean
+    public HttpClient httpClient() {
+        return HttpClient.newBuilder().build();
     }
 
 }

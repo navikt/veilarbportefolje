@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.krr;
 import lombok.Data;
 
 @Data
-public class DkifKontaktinfo {
+public class DkifKontaktinfoDTO {
     String personident;
     boolean kanVarsles;
     boolean reservert;

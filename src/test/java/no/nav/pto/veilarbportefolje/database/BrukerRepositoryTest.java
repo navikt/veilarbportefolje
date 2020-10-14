@@ -3,7 +3,12 @@ package no.nav.pto.veilarbportefolje.database;
 import com.google.common.base.Joiner;
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.sbl.sql.SqlUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -32,10 +37,13 @@ import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 
 public class BrukerRepositoryTest {
     private static JdbcTemplate jdbcTemplate;
@@ -68,6 +76,19 @@ public class BrukerRepositoryTest {
         jdbcTemplate.execute("truncate table oppfolgingsbruker");
         jdbcTemplate.execute("truncate table aktoerid_to_personid");
         jdbcTemplate.execute("truncate table bruker_data");
+    }
+
+    @Test
+    public void skal_hente_bruker_fra_view() {
+        final Fnr fnr = randomFnr();
+        final PersonId personId = randomPersonId();
+        SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
+                .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
+                .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())
+                .execute();
+
+        final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(fnr);
+        assertThat(bruker).isPresent();
     }
 
     @Test

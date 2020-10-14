@@ -10,11 +10,12 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -54,7 +55,7 @@ public class OppfolgingFeedHandlerIntegrationTest {
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
 
         BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
-        ArbeidslisteRepository arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate, namedParameterJdbcTemplate);
+        ArbeidslisteRepository arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate);
 
         BrukerService brukerService = new BrukerService(brukerRepository, aktorregisterClientMock);
 
@@ -63,13 +64,11 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 arbeidslisteRepository,
                 brukerService,
                 elasticIndexerMock,
+                 mock(ElasticServiceV2.class),
                 mock(MetricsClient.class)
         );
 
         OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(jdbcTemplate);
-
-        UnleashService unleashMock = mock(UnleashService.class);
-        when(unleashMock.isEnabled(anyString())).thenReturn(true);
 
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
@@ -77,8 +76,8 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 elasticIndexerMock,
                 oppfolgingRepository,
                 new TestTransactor(),
-                new LeaderElectionClientMock()
-        );
+                new LeaderElectionClientMock(),
+                mock(UnleashService.class));
     }
 
     @After

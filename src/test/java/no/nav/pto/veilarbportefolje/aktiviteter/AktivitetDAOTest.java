@@ -3,8 +3,10 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import com.google.common.base.Joiner;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepositoryTest;
-import no.nav.pto.veilarbportefolje.domene.*;
 
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;

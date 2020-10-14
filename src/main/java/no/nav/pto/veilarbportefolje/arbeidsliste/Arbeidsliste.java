@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 

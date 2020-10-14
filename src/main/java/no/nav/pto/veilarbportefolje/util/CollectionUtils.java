@@ -30,19 +30,6 @@ public class CollectionUtils {
         return partitionedList;
     }
 
-    public static <T> List<T> listOf(T... varargs) {
-        return Arrays.asList(varargs);
-    }
-
-    public static <T> List<T> listOf(T singleton) {
-        return Collections.singletonList(singleton);
-    }
-
-    public static <T> Set<T> setOf(T... varargs) {
-        List<T> list = Arrays.asList(varargs);
-        return new HashSet<>(list);
-    }
-
     @SafeVarargs
     public static <K, V> Map<K, V> mapOf(Pair<K,V>... varargs) {
 

@@ -3,11 +3,9 @@ package no.nav.pto.veilarbportefolje.auth;
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
-import javax.ws.rs.ForbiddenException;
 
 import static java.lang.String.format;
 

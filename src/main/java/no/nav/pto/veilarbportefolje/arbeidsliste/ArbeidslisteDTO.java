@@ -3,9 +3,9 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 
 import java.sql.Timestamp;
 

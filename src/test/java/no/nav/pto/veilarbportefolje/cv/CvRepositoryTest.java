@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import no.nav.pto.veilarbportefolje.TestUtil;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,12 +31,11 @@ public class CvRepositoryTest {
     @Test
     public void skal_upserte_database() {
         AktoerId aktoerId = AktoerId.of("0");
-        Fnr fnr = Fnr.of("00000000000");
 
-        cvRepository.upsert(aktoerId, fnr, true);
+        cvRepository.upsert(aktoerId, true);
         assertThat(cvRepository.harDeltCv(aktoerId)).isEqualTo("J");
 
-        cvRepository.upsert(aktoerId, fnr, false);
+        cvRepository.upsert(aktoerId, false);
         assertThat(cvRepository.harDeltCv(aktoerId)).isEqualTo("N");
     }
 
