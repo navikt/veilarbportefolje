@@ -44,6 +44,34 @@ function handleHovedIndeksering(e) {
     }
 }
 
+const ytelserForm = document.getElementById('ytelser');
+ytelserForm.addEventListener('submit', handleYtelser);
+
+function handleYtelser(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil lese inn ytelser fra arenafil (GR199) inn til databasen, dette kan ta en del tid. Er du sikker?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/ytelser',
+            {method: 'POST', credentials: 'same-origin'},
+            'ytelserResponse'
+        );
+    }
+}
+
+const tiltakForm = document.getElementById('tiltak');
+tiltakForm.addEventListener('submit', handleTiltak);
+
+function handleTiltak(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil lese inn tiltak fra arenafil (GR202) inn til databasen, dette kan ta en del tid. Er du sikker?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/tiltak',
+            {method: 'POST', credentials: 'same-origin'},
+            'tiltakResponse'
+        );
+    }
+}
+
 const oppdaterBrukerForm = document.getElementById('bruker');
 oppdaterBrukerForm.addEventListener('submit', handleOppdaterBruker)
 const fnrInput = document.getElementById('fnrInput');

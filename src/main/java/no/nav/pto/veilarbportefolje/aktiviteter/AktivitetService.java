@@ -51,9 +51,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
     }
 
     public void tryUtledOgLagreAlleAktivitetstatuser() {
-        utledOgLagreAlleAktivitetstatuser(); // TODO VARFÖR KALLAR MAN 2 GÅNGER PÅ DENNA FUNKTION??
         aktivitetDAO.slettAktivitetDatoer();
-
         run(this::utledOgLagreAlleAktivitetstatuser)
                 .onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
     }

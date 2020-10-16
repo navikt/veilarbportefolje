@@ -1,12 +1,8 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import static io.micrometer.prometheus.PrometheusConfig.DEFAULT;
-
-import lombok.extern.slf4j.Slf4j;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -16,24 +12,26 @@ import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 
 @Component
-@Slf4j
 public class MetricsReporter {
 
-    private ElasticIndexer elasticIndexer;
-    private static MeterRegistry prometheusMeterRegistry = new ProtectedPrometheusMeterRegistry();
+    private final ElasticIndexer elasticIndexer;
+    private final MetricsClient metricsClient;
 
-    public MetricsReporter(ElasticIndexer elasticIndexer) {
+    public MetricsReporter(ElasticIndexer elasticIndexer, MetricsClient metricsClient) {
         this.elasticIndexer = elasticIndexer;
-
-        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
-        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
+        this.metricsClient = metricsClient;
 
     }
 
-    private Number sjekkIndeksSistOpprettet() {
+    //Hourly
+    @Scheduled(cron = "0 0 * * * *")
+    private void sjekkIndeksSistOpprettet() {
         String indeksNavn = elasticIndexer.hentGammeltIndeksNavn().orElseThrow(IllegalStateException::new);
         LocalDateTime tidspunktForSisteHovedIndeksering = hentIndekseringsdato(indeksNavn);
-        return hoursSinceLastChanged(tidspunktForSisteHovedIndeksering);
+        final long timerSiden = hoursSinceLastChanged(tidspunktForSisteHovedIndeksering);
+        Event event = new Event("portefolje.sist.opprettet");
+        event.addFieldToReport("timerSiden", timerSiden);
+        metricsClient.report(event);
     }
 
     static LocalDateTime hentIndekseringsdato(String indeksNavn) {
@@ -43,20 +41,5 @@ public class MetricsReporter {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         return LocalDateTime.parse(dato + "_" + klokkeslett, formatter);
-    }
-
-    public static MeterRegistry getMeterRegistry() {
-        return prometheusMeterRegistry;
-    }
-
-    public static class ProtectedPrometheusMeterRegistry extends PrometheusMeterRegistry {
-        public ProtectedPrometheusMeterRegistry() {
-            super(DEFAULT);
-        }
-
-        @Override
-        public void close() {
-            throw new UnsupportedOperationException();
-        }
     }
 }

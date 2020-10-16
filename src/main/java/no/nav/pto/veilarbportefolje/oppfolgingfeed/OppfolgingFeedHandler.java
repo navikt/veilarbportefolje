@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
-import io.micrometer.core.instrument.Gauge;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -21,7 +20,6 @@ import java.util.Optional;
 import static java.util.Comparator.naturalOrder;
 import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.common.utils.IdUtils.generateId;
-import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 
 @Slf4j
 public class OppfolgingFeedHandler implements FeedCallback {
@@ -48,8 +46,6 @@ public class OppfolgingFeedHandler implements FeedCallback {
         this.oppfolgingRepository = oppfolgingRepository;
         this.transactor = transactor;
         this.leaderElectionClient = leaderElectionClient;
-
-        Gauge.builder("portefolje_feed_last_id", OppfolgingFeedHandler::getLastEntry).tag("feed_name", FEED_NAME).register(getMeterRegistry());
     }
 
     private static BigDecimal getLastEntry() {

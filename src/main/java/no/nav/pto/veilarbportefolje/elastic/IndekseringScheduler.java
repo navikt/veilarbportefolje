@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
@@ -10,6 +9,7 @@ import no.nav.pto.veilarbportefolje.util.JobUtils;
 import no.nav.pto.veilarbportefolje.util.RunningJob;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
+
 import java.util.Optional;
 
 import static no.nav.common.utils.IdUtils.generateId;
@@ -43,7 +43,6 @@ public class IndekseringScheduler {
             MDC.put("jobId", jobId);
             log.info("Startet nattlig elastic av tiltak og ytelser med jobId {}", jobId);
             try {
-
                 kopierGR199FraArena.startOppdateringAvYtelser();
                 tiltakHandler.startOppdateringAvTiltakIDatabasen();
             } finally {

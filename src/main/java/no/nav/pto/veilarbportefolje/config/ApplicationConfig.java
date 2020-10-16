@@ -4,6 +4,7 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.featuretoggle.UnleashServiceConfig;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.leaderelection.LeaderElectionHttpClient;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -35,8 +36,8 @@ public class ApplicationConfig {
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
 
     @Bean
-    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
-        return new MetricsReporter(elasticIndexer);
+    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer, MetricsClient metricsClient) {
+        return new MetricsReporter(elasticIndexer, metricsClient);
     }
 
     @Bean

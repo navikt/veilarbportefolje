@@ -66,6 +66,21 @@ public class AdminController {
         return "Hovedindeksering startet med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
     }
 
+    @GetMapping("/tiltak")
+    public String tiltak() {
+        authorizeAdmin();
+        final RunningJob runningJob = runAsyncJob(() -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
+        return "Oppdaterer tiltak i databasen jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
+    }
+
+
+    @GetMapping("/ytelser")
+    public String ytelser() {
+        authorizeAdmin();
+        final RunningJob runningJob = runAsyncJob(() -> kopierGR199FraArena.startOppdateringAvYtelser());
+        return "Oppdaterer ytelser med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
+    }
+
     @PutMapping("/indeks/bruker")
     public void indeks(@RequestBody String fnr) {
         authorizeAdmin();

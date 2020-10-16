@@ -1,16 +1,17 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser;
 
-import io.micrometer.core.instrument.Gauge;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
+import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.ArenaFilType;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.apache.commons.vfs2.FileObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -18,29 +19,24 @@ import java.time.ZoneId;
 
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
-import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j
 public class KopierGR199FraArena {
 
-    private final AktivitetService aktivitetService;
     private final IndekserYtelserHandler indekserHandler;
     private final MetricsClient metricsClient;
     private final EnvironmentProperties environmentProperties;
 
-    public KopierGR199FraArena(IndekserYtelserHandler indekserHandler, AktivitetService aktivitetService, MetricsClient metricsClient, EnvironmentProperties environmentProperties) {
+    @Autowired
+    public KopierGR199FraArena(IndekserYtelserHandler indekserHandler, MetricsClient metricsClient, EnvironmentProperties environmentProperties) {
         this.indekserHandler = indekserHandler;
-        this.aktivitetService = aktivitetService;
         this.metricsClient = metricsClient;
         this.environmentProperties = environmentProperties;
-        Gauge.builder("portefolje_arena_fil_ytelser_sist_oppdatert", this::sjekkArenaYtelserSistOppdatert).register(getMeterRegistry());
-
     }
 
     public void startOppdateringAvYtelser() {
         log.info("Indeksering: Starter oppdatering av ytelser...");
-        aktivitetService.tryUtledOgLagreAlleAktivitetstatuser(); //TODO VARFÖR BEHÖVER MAN GÖRA DETTA VID INLÄSNING AV YTELSER?
         this.hentYtelserFil()
                 .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs"))
                 .flatMap(FilmottakFileUtils::unmarshallLoependeYtelserFil)
@@ -56,12 +52,17 @@ public class KopierGR199FraArena {
                 environmentProperties.getArenaLoependeYtelserUrl(),
                 environmentProperties.getArenaFilmottakSFTPUsername(),
                 environmentProperties.getArenaFilmottakSFTPPassword(),
-                ArenaFilType.GR_202_YTELSER);
+                ArenaFilType.GR_199_YTELSER);
     }
 
-    public long sjekkArenaYtelserSistOppdatert() {
+    //Hourly
+    @Scheduled(cron = "0 0 * * * *")
+    public void sjekkArenaYtelserSistOppdatert() {
         Long millis = getLastModifiedTimeInMillis(lopendeYtelser()).getOrElseThrow(() -> new RuntimeException());
-        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
+        final long timerSiden = hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
+        final Event event = new Event("portefolje.arena.fil.ytelser.sist.oppdatert");
+        event.addFieldToReport("timerSiden", timerSiden);
+        metricsClient.report(event);
     }
 
     public Try<FileObject> hentYtelserFil() {
