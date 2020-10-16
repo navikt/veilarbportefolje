@@ -49,7 +49,7 @@ public class AdminController {
         return "Indeksering startet med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
     }
 
-    @GetMapping("/hovedindeksering")
+    @PostMapping("/hovedindeksering")
     public String hovedindeksering() {
         authorizeAdmin();
 
@@ -66,7 +66,7 @@ public class AdminController {
         return "Hovedindeksering startet med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
     }
 
-    @GetMapping("/tiltak")
+    @PostMapping("/tiltak")
     public String tiltak() {
         authorizeAdmin();
         final RunningJob runningJob = runAsyncJob(() -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
@@ -74,7 +74,7 @@ public class AdminController {
     }
 
 
-    @GetMapping("/ytelser")
+    @PostMapping("/ytelser")
     public String ytelser() {
         authorizeAdmin();
         final RunningJob runningJob = runAsyncJob(() -> kopierGR199FraArena.startOppdateringAvYtelser());
