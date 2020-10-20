@@ -1,6 +1,9 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
+import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
+import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +35,9 @@ public class RegistreringRepositoryTest {
         ArbeidssokerRegistrertEvent event = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setBrukersSituasjon("Permittert")
+                .setUtdanning(UtdanningSvar.GRUNNSKOLE)
+                .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
+                .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
@@ -48,6 +54,9 @@ public class RegistreringRepositoryTest {
         ArbeidssokerRegistrertEvent event1 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setBrukersSituasjon("Permittert")
+                .setUtdanning(UtdanningSvar.GRUNNSKOLE)
+                .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
+                .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 
@@ -56,6 +65,9 @@ public class RegistreringRepositoryTest {
         ArbeidssokerRegistrertEvent event2 = ArbeidssokerRegistrertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setBrukersSituasjon("Hjemmekontor")
+                .setUtdanning(UtdanningSvar.HOYERE_UTDANNING_1_TIL_4)
+                .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
+                .setUtdanningGodkjent(UtdanningGodkjentSvar.NEI)
                 .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
                 .build();
 

@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
-import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.arbeid.soker.registrering.*;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -36,11 +36,15 @@ public class RegistreringRepository {
                 .map(DateUtils::zonedDateStringToTimestamp)
                 .orElse(null);
 
+
         SqlUtils.upsert(db, BRUKER_REGISTRERING_TABELL)
                 .set("AKTOERID", kafkaRegistreringMelding.getAktorid())
                 .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .set("KAFKA_MELDING_MOTTATT", new Timestamp(System.currentTimeMillis()))
                 .set("REGISTRERING_OPPRETTET", timestamp)
+                .set("UTDANNING",kafkaRegistreringMelding.getUtdanning().toString())
+                .set("UTDANNING_BESTATT", kafkaRegistreringMelding.getUtdanningBestatt().toString())
+                .set("UTDANNING_GODKJENT", kafkaRegistreringMelding.getUtdanningGodkjent().toString())
                 .where(WhereClause.equals("AKTOERID", kafkaRegistreringMelding.getAktorid()))
                 .execute();
     }
@@ -71,6 +75,9 @@ public class RegistreringRepository {
         return ArbeidssokerRegistrertEvent.newBuilder()
                 .setBrukersSituasjon(rs.getString("BRUKERS_SITUASJON"))
                 .setAktorid(rs.getString("AKTOERID"))
+                .setUtdanning(UtdanningSvar.valueOf(rs.getString("UTDANNING")))
+                .setUtdanningBestatt(UtdanningBestattSvar.valueOf(rs.getString("UTDANNING_BESTATT")))
+                .setUtdanningGodkjent(UtdanningGodkjentSvar.valueOf(rs.getString("UTDANNING_GODKJENT")))
                 .setRegistreringOpprettet(registreringOpprettet)
                 .build();
     }

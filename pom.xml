@@ -23,7 +23,7 @@
         <elastic.version>6.5.2</elastic.version>
         <confluent.version>5.0.2</confluent.version>
         <avro.version>1.8.2</avro.version>
-        <veilarbregistrering.skjema.version>1.202004301354-b728b07</veilarbregistrering.skjema.version>
+        <veilarbregistrering.skjema.version>1.202010190947-866fe12</veilarbregistrering.skjema.version>
         <flyway.version>4.0.3</flyway.version>
         <prometheus.version>0.4.0</prometheus.version>
         <jaxb.version>2.3.1</jaxb.version>
