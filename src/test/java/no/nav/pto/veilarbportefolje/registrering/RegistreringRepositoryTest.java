@@ -79,5 +79,33 @@ public class RegistreringRepositoryTest {
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 
+    @Test
+    public void skallOppdatereUtdanning() {
+        ArbeidssokerRegistrertEvent event1 = ArbeidssokerRegistrertEvent.newBuilder()
+                .setAktorid(AKTORID)
+                .setBrukersSituasjon("Permittert")
+                .setUtdanning(UtdanningSvar.GRUNNSKOLE)
+                .setUtdanningBestatt(UtdanningBestattSvar.JA)
+                .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .build();
+        registreringRepository.upsertBrukerRegistrering(event1);
+
+        ArbeidssokerRegistrertEvent event2 = ArbeidssokerRegistrertEvent.newBuilder()
+                .setAktorid(AKTORID)
+                .setBrukersSituasjon("Permittert")
+                .setUtdanning(UtdanningSvar.HOYERE_UTDANNING_5_ELLER_MER)
+                .setUtdanningBestatt(UtdanningBestattSvar.NEI)
+                .setUtdanningGodkjent(UtdanningGodkjentSvar.INGEN_SVAR)
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .build();
+        registreringRepository.upsertBrukerRegistrering(event2);
+
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+
+        assertThat(registrering.isPresent());
+        assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
+    }
+
 
 }
