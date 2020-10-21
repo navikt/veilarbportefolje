@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -27,6 +28,9 @@ public class Filtervalg {
     public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
     public String navnEllerFnrQuery;
     public List<String> registreringstype = new ArrayList<>();
+    public List<String> utdanning = new ArrayList<>();
+    public List<String> utdanningBestatt = new ArrayList<>();
+    public List<String> utdanningGodkjent = new ArrayList<>();
     public List<String> arbeidslisteKategori = new ArrayList<>();
     public CVjobbprofil cvJobbprofil;
 
@@ -45,6 +49,9 @@ public class Filtervalg {
                 !tiltakstyper.isEmpty() ||
                 !hovedmal.isEmpty() ||
                 !registreringstype.isEmpty() ||
+                !utdanning.isEmpty() ||
+                !utdanningBestatt.isEmpty() ||
+                !utdanningGodkjent.isEmpty() ||
                 !arbeidslisteKategori.isEmpty() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
@@ -97,8 +104,24 @@ public class Filtervalg {
                 .stream()
                 .map((veileder) -> veileder.matches("[A-Z]\\d{6}"))
                 .reduce(true, and());
+        Boolean utdanningOK = utdanning
+                .stream()
+                .map((x) -> validUtdanning(x))
+                .reduce(true, and());
 
-        return alderOk && fodselsdatoOk && veiledereOk;
+        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK;
+    }
+
+    public Boolean validUtdanning(String input){
+        if(input == null){
+            return false;
+        }
+        try {
+            UtdanningSvar.valueOf(input);
+        }catch (IllegalArgumentException e){
+            return false;
+        }
+        return true;
     }
 
     private BinaryOperator<Boolean> and() {
