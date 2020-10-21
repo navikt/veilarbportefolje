@@ -141,7 +141,7 @@
         <dependency>
             <groupId>no.nav.arbeid</groupId>
             <artifactId>veilarbregistrering-skjema</artifactId>
-            <version>1.202005251110-cb2c669</version>
+            <version>1.202010190947-866fe12</version>
         </dependency>
         <dependency>
             <groupId>no.nav.arbeid.pam</groupId>
@@ -437,8 +437,7 @@
                     </snapshots>
                 </repository>
                 <repository>
-                    <id>github</id>
-                    <name>github-package-registry-navikt</name>
+                    <id>github-package-registry-navikt</id>
                     <url>https://maven.pkg.github.com/navikt/maven-release</url>
                 </repository>
                 <repository>
