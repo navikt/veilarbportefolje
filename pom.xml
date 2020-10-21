@@ -437,8 +437,11 @@
                     </snapshots>
                 </repository>
                 <repository>
-                    <id>github-package-registry-navikt</id>
+                    <id>github</id>
+                    <name>github-package-registry-navikt</name>
                     <url>https://maven.pkg.github.com/navikt/maven-release</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
                 </repository>
                 <repository>
                     <id>confluent</id>
