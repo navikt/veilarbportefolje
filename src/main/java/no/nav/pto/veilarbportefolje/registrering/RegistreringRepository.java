@@ -42,7 +42,7 @@ public class RegistreringRepository {
                 .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .set("KAFKA_MELDING_MOTTATT", new Timestamp(System.currentTimeMillis()))
                 .set("REGISTRERING_OPPRETTET", timestamp)
-                .set("UTDANNING",kafkaRegistreringMelding.getUtdanning().toString())
+                .set("UTDANNING", kafkaRegistreringMelding.getUtdanning().toString())
                 .set("UTDANNING_BESTATT", kafkaRegistreringMelding.getUtdanningBestatt().toString())
                 .set("UTDANNING_GODKJENT", kafkaRegistreringMelding.getUtdanningGodkjent().toString())
                 .where(WhereClause.equals("AKTOERID", kafkaRegistreringMelding.getAktorid()))
