@@ -258,13 +258,15 @@ public class BrukerRepository {
         Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
 
         batchProcess(1000, fnrs, (fnrBatch) -> {
-
-            final Map<String, Optional<String>> fnrPersonIdMap = select(db, OPPFOLGINGSBRUKER.TABLE_NAME, BrukerRepository::toFnrIdTuple)
-                    .column("person_id")
-                    .column("fodselsnr")
-                    .where(in(OPPFOLGINGSBRUKER.FODSELSNR, fnrs))
-                    .executeToList()
+            Map<String, Object> params = new HashMap<>();
+            params.put("fnrs", fnrBatch);
+            String sql = getPersonIdsFromFnrsSQL();
+            Map<String, Optional<String>> fnrPersonIdMap = db.queryForList(sql, params)
                     .stream()
+                    .map((rs) -> Tuple.of(
+                            (String) rs.get("FODSELSNR"),
+                            rs.get("PERSON_ID").toString())
+                    )
                     .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
 
             brukere.putAll(fnrPersonIdMap);
@@ -277,9 +279,15 @@ public class BrukerRepository {
         return brukere;
     }
 
-    @SneakyThrows
-    private static Tuple2<String, String> toFnrIdTuple(ResultSet rs) {
-        return Tuple.of(rs.getString(OPPFOLGINGSBRUKER.FODSELSNR), rs.getString(OPPFOLGINGSBRUKER.PERSON_ID));
+    private String getPersonIdsFromFnrsSQL() {
+        return
+                "SELECT " +
+                "person_id, " +
+                "fodselsnr " +
+                "FROM " +
+                "OPPFOLGINGSBRUKER " +
+                "WHERE " +
+                "fodselsnr in (:fnrs)";
     }
 
     public void setAktiviteterSistOppdatert(Timestamp sistOppdatert) {
