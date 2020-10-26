@@ -38,7 +38,7 @@ function handleHovedIndeksering(e) {
     if (window.confirm('Dette vil lese filer fra arena inn til databasen, lese fra databasen og så opprette en ny indeks, dette kan ta en del tid. Er du sikker?')) {
         fetchData(
             '/veilarbportefolje/api/admin/hovedindeksering',
-            {method: 'GET', credentials: 'same-origin'},
+            {method: 'POST', credentials: 'same-origin'},
             'hovedIndekseringResponse'
         );
     }
