@@ -258,10 +258,9 @@ public class BrukerRepository {
         Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
 
         batchProcess(1000, fnrs, (fnrBatch) -> {
-            Map<String, Object> params = new HashMap<>();
-            params.put("fnrs", fnrBatch);
+
             String sql = getPersonIdsFromFnrsSQL();
-            Map<String, Optional<String>> fnrPersonIdMap = db.queryForList(sql, params)
+            Map<String, Optional<String>> fnrPersonIdMap = db.queryForList(sql, fnrBatch)
                     .stream()
                     .map((rs) -> Tuple.of(
                             (String) rs.get("FODSELSNR"),
@@ -287,7 +286,7 @@ public class BrukerRepository {
                 "FROM " +
                 "OPPFOLGINGSBRUKER " +
                 "WHERE " +
-                "fodselsnr in (:fnrs)";
+                "fodselsnr in ?";
     }
 
     public void setAktiviteterSistOppdatert(Timestamp sistOppdatert) {
