@@ -260,6 +260,7 @@ public class BrukerRepository {
         batchProcess(1000, fnrs, (fnrBatch) -> {
 
             final Map<String, Optional<String>> fnrPersonIdMap = select(db, OPPFOLGINGSBRUKER.TABLE_NAME, BrukerRepository::toFnrIdTuple)
+                    .column("*")
                     .where(in(OPPFOLGINGSBRUKER.FODSELSNR, fnrs))
                     .executeToList()
                     .stream()
