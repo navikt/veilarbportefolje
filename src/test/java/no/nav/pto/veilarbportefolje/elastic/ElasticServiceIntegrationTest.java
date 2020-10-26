@@ -18,7 +18,6 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -957,14 +956,12 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
         });
     }
 
-    @NotNull
     private static VeilarbVeilederClient mockVeilederService() {
         VeilarbVeilederClient veilederServiceMock = mock(VeilarbVeilederClient.class);
         when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf((TEST_VEILEDER_0)));
         return veilederServiceMock;
     }
 
-    @NotNull
     private static Pep mockPep() {
         Pep pepMock = mock(Pep.class);
         when(pepMock.harVeilederTilgangTilEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
