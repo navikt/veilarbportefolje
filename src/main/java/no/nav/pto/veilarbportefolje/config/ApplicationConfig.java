@@ -4,12 +4,11 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.featuretoggle.UnleashServiceConfig;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.leaderelection.LeaderElectionHttpClient;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr199.ytelser.KopierGR199FraArena;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.TiltakHandler;
+import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.IndekseringScheduler;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
@@ -36,8 +35,8 @@ public class ApplicationConfig {
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
 
     @Bean
-    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer, MetricsClient metricsClient) {
-        return new MetricsReporter(elasticIndexer, metricsClient);
+    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
+        return new MetricsReporter(elasticIndexer);
     }
 
     @Bean

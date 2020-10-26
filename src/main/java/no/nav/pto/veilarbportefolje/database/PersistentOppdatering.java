@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.HovedindekseringRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +23,13 @@ import static java.util.stream.Collectors.toMap;
 @Slf4j
 public class PersistentOppdatering {
     private final ElasticIndexer elasticIndexer;
-    private final HovedindekseringRepository hovedindekseringRepository;
+    private final BrukerRepository brukerRepository;
     private final AktivitetDAO aktivitetDAO;
 
     @Autowired
-    public PersistentOppdatering(ElasticIndexer elasticIndexer, HovedindekseringRepository hovedindekseringRepository, AktivitetDAO aktivitetDAO){
+    public PersistentOppdatering(ElasticIndexer elasticIndexer, BrukerRepository brukerRepository, AktivitetDAO aktivitetDAO){
         this.elasticIndexer = elasticIndexer;
-        this.hovedindekseringRepository = hovedindekseringRepository;
+        this.brukerRepository = brukerRepository;
         this.aktivitetDAO = aktivitetDAO;
     }
 
@@ -62,7 +61,7 @@ public class PersistentOppdatering {
     }
 
     private void lagreBrukerdata(List<? extends BrukerOppdatering> oppdateringer) {
-        Map<String, Brukerdata> brukerdata = hovedindekseringRepository.retrieveBrukerdata(oppdateringer
+        Map<String, Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(oppdateringer
                 .stream()
                 .map(BrukerOppdatering::getPersonid)
                 .collect(toList())
@@ -81,7 +80,7 @@ public class PersistentOppdatering {
 
         }).collect(toList());
 
-        hovedindekseringRepository.insertOrUpdateBrukerdata(brukere, brukerdata.keySet());
+        brukerRepository.insertOrUpdateBrukerdata(brukere, brukerdata.keySet());
     }
 
     void lagreAktivitetstatuser(List<AktivitetStatus> aktivitetStatuser) {

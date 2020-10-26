@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak;
+package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import com.google.common.base.Joiner;
 import io.vavr.collection.List;

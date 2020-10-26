@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
 import lombok.val;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.service.BrukerService;

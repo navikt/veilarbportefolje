@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
-import io.vavr.control.Try;
 import lombok.Value;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.MetricsClient;
@@ -17,6 +16,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import java.sql.Timestamp;
@@ -38,9 +38,10 @@ public class ArbeidslisteServiceTest {
     public static void beforeClass() {
         SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
         jdbcTemplate = new JdbcTemplate(ds);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
 
-        ArbeidslisteRepository arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate);
-        BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate);
+        ArbeidslisteRepository arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate, namedParameterJdbcTemplate);
+        BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
 
         aktorregisterClientMock = mock(AktorregisterClient.class);
 
@@ -78,9 +79,7 @@ public class ArbeidslisteServiceTest {
     public void skal_inserte_nav_kontor_i_arbeidsliste() {
         String aktoerId = "00000000000";
         String navKontor = "00000000000";
-        setUpInitialState(aktoerId, navKontor);
-        final Try<Arbeidsliste> result = arbeidslisteService.getArbeidsliste(AktoerId.of(aktoerId));
-        assertThat(result.get()).isNotNull();
+        FnrOgNavKontor fnrOgNavKontor = setUpInitialState(aktoerId, navKontor);
     }
 
     private static FnrOgNavKontor setUpInitialState(String aktoerId, String navKontor) {
@@ -105,7 +104,7 @@ public class ArbeidslisteServiceTest {
 
         ArbeidslisteDTO dto = new ArbeidslisteDTO(Fnr.of(fnr))
                 .setNavKontorForArbeidsliste("0000")
-                .setAktoerId(AktoerId.of(aktoerId))
+                .setAktoerId(AktoerId.of("0"))
                 .setVeilederId(VeilederId.of("0"))
                 .setFrist(Timestamp.from(now()))
                 .setKategori(Arbeidsliste.Kategori.BLA)

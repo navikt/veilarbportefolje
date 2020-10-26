@@ -38,36 +38,8 @@ function handleHovedIndeksering(e) {
     if (window.confirm('Dette vil lese filer fra arena inn til databasen, lese fra databasen og så opprette en ny indeks, dette kan ta en del tid. Er du sikker?')) {
         fetchData(
             '/veilarbportefolje/api/admin/hovedindeksering',
-            {method: 'POST', credentials: 'same-origin'},
+            {method: 'GET', credentials: 'same-origin'},
             'hovedIndekseringResponse'
-        );
-    }
-}
-
-const ytelserForm = document.getElementById('ytelser');
-ytelserForm.addEventListener('submit', handleYtelser);
-
-function handleYtelser(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn ytelser fra arenafil (GR199) inn til databasen, dette kan ta en del tid. Er du sikker?')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/ytelser',
-            {method: 'POST', credentials: 'same-origin'},
-            'ytelserResponse'
-        );
-    }
-}
-
-const tiltakForm = document.getElementById('tiltak');
-tiltakForm.addEventListener('submit', handleTiltak);
-
-function handleTiltak(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn tiltak fra arenafil (GR202) inn til databasen, dette kan ta en del tid. Er du sikker?')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/tiltak',
-            {method: 'POST', credentials: 'same-origin'},
-            'tiltakResponse'
         );
     }
 }

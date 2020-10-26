@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.vavr.control.Try;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -12,7 +13,6 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.HovedindekseringRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.elasticsearch.action.get.GetResponse;
@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
@@ -46,7 +47,6 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
     private static String indexName;
     private static BrukerService brukerService;
     private static BrukerRepository brukerRepository;
-    private static HovedindekseringRepository hovedindekseringRepository;
     static String aktoerId = "123456789";
     static String aktivitetId = "144500";
 
@@ -58,15 +58,16 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
 
         DataSource dataSource = TestUtil.setupInMemoryDatabase();
         jdbcTemplate = new JdbcTemplate(dataSource);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
         indexName = generateId();
 
-        aktivitetDAO = new AktivitetDAO(jdbcTemplate);
+        aktivitetDAO = new AktivitetDAO(jdbcTemplate, namedParameterJdbcTemplate);
         brukerRepository = mock(BrukerRepository.class);
-        brukerService = mock(BrukerService.class);
-        hovedindekseringRepository = mock(HovedindekseringRepository.class);
 
-        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(MetricsClient.class), indexName), hovedindekseringRepository, aktivitetDAO);
+        brukerService = mock(BrukerService.class);
+
+        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(UnleashService.class), mock(MetricsClient.class), indexName), brukerRepository, aktivitetDAO);
 
         aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService);
 

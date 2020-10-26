@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeidsliste;
 
@@ -81,7 +82,7 @@ public class ArbeidsListeController {
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
 
         Fnr fnr = new Fnr(fnrString);
-        Try<AktoerId> aktoerId = Try.of(() -> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
+        Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
@@ -108,9 +109,11 @@ public class ArbeidsListeController {
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
+
+        return arbeidsliste;
     }
 
     @PutMapping("{fnr}")
@@ -138,46 +141,47 @@ public class ArbeidsListeController {
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
 
-        arbeidslisteService.slettArbeidsliste(Fnr.of(fnr));
-
-        return emptyArbeidsliste()
-                .setHarVeilederTilgang(true)
-                .setIsOppfolgendeVeileder(true);
+        return arbeidslisteService
+                .deleteArbeidsliste(new Fnr(fnr))
+                .map((a) -> emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
+                .getOrElseThrow(() -> new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
     }
 
     @PostMapping("/delete")
     public RestResponse<String> deleteArbeidslisteListe(@RequestBody java.util.List<ArbeidslisteRequest> arbeidslisteData) {
-        authService.tilgangTilOppfolging();
+            authService.tilgangTilOppfolging();
 
-        java.util.List<String> feiledeFnrs = new ArrayList<>();
-        java.util.List<String> okFnrs = new ArrayList<>();
+            java.util.List<String> feiledeFnrs = new ArrayList<>();
+            java.util.List<String> okFnrs = new ArrayList<>();
 
-        java.util.List<Fnr> fnrs = arbeidslisteData
-                .stream()
-                .map(data -> new Fnr(data.getFnr()))
-                .collect(Collectors.toList());
+            java.util.List<Fnr> fnrs = arbeidslisteData
+                    .stream()
+                    .map(data -> new Fnr(data.getFnr()))
+                    .collect(Collectors.toList());
 
-        Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
-        Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
+            Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
+            Validation<String, List<Fnr>> veilederForBrukere = arbeidslisteService.erVeilederForBrukere(fnrs);
+            if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
+                throw new IllegalStateException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
+            }
 
-        if (validerFnrs.isInvalid() || veilederForBrukere.isInvalid()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+            validerFnrs.get()
+                    .forEach((fnr) -> arbeidslisteService
+                            .deleteArbeidsliste(fnr)
+                            .onSuccess((aktoerid) -> {
+                                okFnrs.add(fnr.toString());
+                                log.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
+                            })
+                            .onFailure((error) -> {
+                                feiledeFnrs.add(fnr.toString());
+                                log.warn("Kunne ikke slette arbeidsliste", error);
+                            })
+                    );
 
-        validerFnrs
-                .get()
-                .forEach(fnr -> {
-                    final int rowsUpdated = arbeidslisteService.slettArbeidsliste(fnr);
-                    if (rowsUpdated != 1) {
-                        feiledeFnrs.add(fnr.toString());
-                        log.warn("Kunne ikke slette arbeidsliste");
-                    } else {
-                        okFnrs.add(fnr.toString());
-                        log.info("Arbeidsliste slettet");
-                    }
-                });
-
-        return RestResponse.of(okFnrs, feiledeFnrs);
+            if (feiledeFnrs.size() == fnrs.size()) {
+                throw new IllegalStateException();
+            }
+            return RestResponse.of(okFnrs, feiledeFnrs);
     }
 
     private void sjekkTilgangTilEnhet(Fnr fnr) {

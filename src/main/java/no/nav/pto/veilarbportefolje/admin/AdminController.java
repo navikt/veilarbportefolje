@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.admin;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr199.ytelser.KopierGR199FraArena;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.TiltakHandler;
+import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
+import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -49,7 +49,7 @@ public class AdminController {
         return "Indeksering startet med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
     }
 
-    @PostMapping("/hovedindeksering")
+    @GetMapping("/hovedindeksering")
     public String hovedindeksering() {
         authorizeAdmin();
 
@@ -64,21 +64,6 @@ public class AdminController {
         );
 
         return "Hovedindeksering startet med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
-    }
-
-    @PostMapping("/tiltak")
-    public String tiltak() {
-        authorizeAdmin();
-        final RunningJob runningJob = runAsyncJob(() -> tiltakHandler.startOppdateringAvTiltakIDatabasen());
-        return "Oppdaterer tiltak i databasen jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
-    }
-
-
-    @PostMapping("/ytelser")
-    public String ytelser() {
-        authorizeAdmin();
-        final RunningJob runningJob = runAsyncJob(() -> kopierGR199FraArena.startOppdateringAvYtelser());
-        return "Oppdaterer ytelser med jobId " + runningJob.getJobId() + " på pod " + runningJob.getPodName();
     }
 
     @PutMapping("/indeks/bruker")

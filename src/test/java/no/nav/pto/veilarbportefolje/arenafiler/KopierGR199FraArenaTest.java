@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler;
+package no.nav.pto.veilarbportefolje.arenafiler;
 
 import io.vavr.control.Try;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;

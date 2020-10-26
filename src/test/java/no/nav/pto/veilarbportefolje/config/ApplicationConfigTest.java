@@ -5,7 +5,7 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakConfig;
+import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.mock.AktorregisterClientMock;
 import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;

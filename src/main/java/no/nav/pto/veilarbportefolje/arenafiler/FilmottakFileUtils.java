@@ -1,11 +1,11 @@
-package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler;
+package no.nav.pto.veilarbportefolje.arenafiler;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
-import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakConfig.SftpConfig;
+import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig.SftpConfig;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.auth.StaticUserAuthenticator;
 import org.apache.commons.vfs2.impl.DefaultFileSystemConfigBuilder;

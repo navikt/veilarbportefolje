@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak;
+package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import lombok.Value;
 import lombok.experimental.Wither;
@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.TiltakUtils.utledTildato;
+import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.utledTildato;
 
 @Value(staticConstructor = "of")
 @Wither
