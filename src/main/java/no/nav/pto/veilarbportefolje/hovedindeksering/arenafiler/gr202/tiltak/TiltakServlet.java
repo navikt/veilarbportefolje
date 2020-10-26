@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
+package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Credentials;

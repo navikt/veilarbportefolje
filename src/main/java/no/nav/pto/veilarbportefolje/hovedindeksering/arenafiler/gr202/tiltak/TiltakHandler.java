@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
+package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
@@ -11,16 +11,15 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivit
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
-import no.nav.pto.veilarbportefolje.arenafiler.ArenaFilType;
-import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
-import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.ArenaFilType;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakConfig;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakFileUtils;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.HovedindekseringRepository;
 import org.apache.commons.vfs2.FileObject;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -39,9 +38,9 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
-import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.*;
+import static no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
+import static no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
+import static no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.TiltakUtils.*;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j
@@ -49,20 +48,24 @@ public class TiltakHandler {
 
     private final TiltakRepository tiltakrepository;
     private final AktivitetDAO aktivitetDAO;
-    private final BrukerRepository brukerRepository;
-    private final BrukerService brukerService;
     private final EnvironmentProperties environmentProperties;
     private final MetricsClient metrcisClient;
+    private final HovedindekseringRepository hovedindekseringRepository;
 
     static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
 
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, BrukerService brukerService, BrukerRepository brukerRepository, EnvironmentProperties environmentProperties, MetricsClient metricsClient) {
-        this.brukerService = brukerService;
+    public TiltakHandler(
+            TiltakRepository tiltakRepository,
+            AktivitetDAO aktivitetDAO,
+            EnvironmentProperties environmentProperties,
+            MetricsClient metricsClient,
+            HovedindekseringRepository hovedindekseringRepository
+    ) {
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
-        this.brukerRepository = brukerRepository;
         this.environmentProperties = environmentProperties;
         this.metrcisClient = metricsClient;
+        this.hovedindekseringRepository = hovedindekseringRepository;
     }
 
     public FilmottakConfig.SftpConfig lopendeAktiviteter() {
@@ -155,12 +158,12 @@ public class TiltakHandler {
                 .forEach(brukereBatch -> {
 
                     List<Fnr> fnrs = brukereBatch.toJavaStream().map(Bruker::getPersonident).map(Fnr::of).collect(toList());
-                    Map<Fnr, Optional<PersonId>> personidsMap = brukerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> personidsMap = hovedindekseringRepository.hentPersonidsForFnrs(fnrs);
                     List<PersonId> personIds = personidsMap.values().stream()
                             .filter(Optional::isPresent)
                             .map(Optional::get).collect(toList());
 
-                    List<Brukerdata> brukerdata = brukerRepository.retrieveBrukerdata(
+                    List<Brukerdata> brukerdata = hovedindekseringRepository.retrieveBrukerdata(
                             personIds.stream().map(PersonId::toString).collect(toList()));
 
                     Map<PersonId, Optional<Brukerdata>> brukerdataMap = toBrukerdataOptionalMap(personIds, brukerdata);
@@ -176,7 +179,7 @@ public class TiltakHandler {
 
                     List<String> finnesIDb = brukerdata.stream().map(Brukerdata::getPersonid).collect(toList());
 
-                    brukerRepository.insertOrUpdateBrukerdata(brukereMedOppdatertUtlopsdato, finnesIDb);
+                    hovedindekseringRepository.insertOrUpdateBrukerdata(brukereMedOppdatertUtlopsdato, finnesIDb);
                 });
     }
 
@@ -289,7 +292,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = brukerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = hovedindekseringRepository.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
@@ -309,7 +312,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = brukerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = hovedindekseringRepository.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
@@ -329,7 +332,7 @@ public class TiltakHandler {
                 .forEach((brukereSubList) -> {
                     List<Bruker> brukereJavaBatch = brukereSubList.toJavaList();
                     List<Fnr> fnrs = brukereJavaBatch.stream().map(Bruker::getPersonident).filter(Objects::nonNull).map(Fnr::new).collect(toList());
-                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = brukerService.hentPersonidsForFnrs(fnrs);
+                    Map<Fnr, Optional<PersonId>> fnrPersonidMap = hovedindekseringRepository.hentPersonidsForFnrs(fnrs);
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {

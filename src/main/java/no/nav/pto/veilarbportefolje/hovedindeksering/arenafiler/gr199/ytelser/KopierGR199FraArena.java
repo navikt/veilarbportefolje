@@ -1,13 +1,13 @@
-package no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser;
+package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr199.ytelser;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.arenafiler.ArenaFilType;
-import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
-import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.ArenaFilType;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakConfig;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.apache.commons.vfs2.FileObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +17,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
+import static no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
+import static no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j

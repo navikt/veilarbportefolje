@@ -1,11 +1,10 @@
-package no.nav.pto.veilarbportefolje.arenafiler;
+package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler;
 
-import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.IndekserYtelserHandler;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
+import no.nav.melding.virksomhet.loependeytelser.v1.*;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukerinformasjonFraFil;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
-import no.nav.melding.virksomhet.loependeytelser.v1.*;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr199.ytelser.IndekserYtelserHandler;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class IndekserYtelserHandlerTest {
     PersistentOppdatering persistentOppdatering;
 
     @Mock
-    BrukerRepository brukerRepository;
+    HovedindekseringRepository hovedindekseringRepository;
 
     @InjectMocks
     IndekserYtelserHandler handler;
@@ -55,7 +54,7 @@ public class IndekserYtelserHandlerTest {
 
     @Before
     public void setup() {
-        when(brukerRepository.retrievePersonidFromFnrs(anyCollection())).then((invocationOnMock -> {
+        when(hovedindekseringRepository.retrievePersonidFromFnrs(anyCollection())).then((invocationOnMock -> {
             Collection<String> fnrs = (Collection<String>) invocationOnMock.getArguments()[0];
             Map<String, Optional<String>> res = fnrs.stream()
                     .collect(Collectors.toMap(identity(), (fnr) -> {

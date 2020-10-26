@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser;
+package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr199.ytelser;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeVedtak;
 import no.nav.melding.virksomhet.loependeytelser.v1.LoependeYtelser;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.HovedindekseringRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -45,16 +46,16 @@ public class IndekserYtelserHandler {
     }
 
     private final PersistentOppdatering persistentOppdatering;
-    private final BrukerRepository brukerRepository;
+    private final HovedindekseringRepository hovedindekseringRepository;
 
-    public IndekserYtelserHandler(PersistentOppdatering persistentOppdatering, BrukerRepository brukerRepository) {
-        this.brukerRepository = brukerRepository;
+    public IndekserYtelserHandler(PersistentOppdatering persistentOppdatering, HovedindekseringRepository hovedindekseringRepository) {
+        this.hovedindekseringRepository = hovedindekseringRepository;
         this.persistentOppdatering = persistentOppdatering;
     }
 
     public synchronized void lagreYtelser(LoependeYtelser ytelser) {
         log.info("Sletter ytelsesdata fra DB");
-        brukerRepository.slettYtelsesdata();
+        hovedindekseringRepository.slettYtelsesdata();
 
         batchProcess(10000, ytelser.getLoependeVedtakListe(), (vedtakListe) -> {
             LocalDateTime now = now();
@@ -91,7 +92,7 @@ public class IndekserYtelserHandler {
                 .map(LoependeVedtak::getPersonident)
                 .collect(toSet());
 
-        return brukerRepository.retrievePersonidFromFnrs(personIdenter);
+        return hovedindekseringRepository.retrievePersonidFromFnrs(personIdenter);
     }
 
     private Function<Tuple2<String, LoependeVedtak>, Try<BrukerinformasjonFraFil>> lagBrukeroppdatering(LocalDateTime now) {

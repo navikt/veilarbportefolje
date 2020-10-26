@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.database;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -21,20 +19,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTOERID_TO_PERSONID;
 import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
 import static no.nav.pto.veilarbportefolje.database.Table.METADATA;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
-import static no.nav.pto.veilarbportefolje.util.StreamUtils.batchProcess;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.mapTilOppfolgingsBruker;
+import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 import static no.nav.sbl.sql.SqlUtils.*;
 import static no.nav.sbl.sql.where.WhereClause.gt;
 import static no.nav.sbl.sql.where.WhereClause.in;
@@ -247,63 +243,9 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke fnr for personid: " + personId, e));
     }
 
-    public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {
-        return SqlUtils.select(db, Table.BRUKER_DATA.TABLE_NAME, BrukerRepository::toBrukerData)
-                .column("*")
-                .where(in(Table.BRUKER_DATA.PERSONID, personIds))
-                .executeToList();
-    }
-
-    public Map<String, Optional<String>> retrievePersonidFromFnrs(Collection<String> fnrs) {
-        Map<String, Optional<String>> brukere = new HashMap<>(fnrs.size());
-
-        batchProcess(1000, fnrs, (fnrBatch) -> {
-
-            String sql = getPersonIdsFromFnrsSQL();
-            Map<String, Optional<String>> fnrPersonIdMap = db.queryForList(sql, fnrBatch)
-                    .stream()
-                    .map((rs) -> Tuple.of(
-                            (String) rs.get("FODSELSNR"),
-                            rs.get("PERSON_ID").toString())
-                    )
-                    .collect(Collectors.toMap(Tuple2::_1, personData -> Optional.of(personData._2())));
-
-            brukere.putAll(fnrPersonIdMap);
-        });
-
-        fnrs.stream()
-                .filter(not(brukere::containsKey))
-                .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
-
-        return brukere;
-    }
-
-    private String getPersonIdsFromFnrsSQL() {
-        return
-                "SELECT " +
-                "person_id, " +
-                "fodselsnr " +
-                "FROM " +
-                "OPPFOLGINGSBRUKER " +
-                "WHERE " +
-                "fodselsnr in ?";
-    }
-
     public void setAktiviteterSistOppdatert(Timestamp sistOppdatert) {
         String sql = "UPDATE METADATA SET aktiviteter_sist_oppdatert = ?";
         db.update(sql, sistOppdatert);
-    }
-
-    public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {
-        Map<Boolean, List<Brukerdata>> eksisterendeBrukere = brukerdata
-                .stream()
-                .collect(groupingBy((data) -> finnesIDb.contains(data.getPersonid())));
-
-        Brukerdata.batchUpdate(db, eksisterendeBrukere.getOrDefault(true, emptyList()));
-
-        eksisterendeBrukere
-                .getOrDefault(false, emptyList())
-                .forEach(this::upsertBrukerdata);
     }
 
     /**
@@ -356,25 +298,6 @@ public class BrukerRepository {
                 .setForrigeAktivitetStart(rs.getTimestamp("FORRIGE_AKTIVITET_START"));
     }
 
-    void upsertBrukerdata(Brukerdata brukerdata) {
-        brukerdata.toUpsertQuery(db).execute();
-    }
-
-    public void slettYtelsesdata() {
-        update(db, "bruker_data")
-                .set("ytelse", (Object) null)
-                .set("utlopsdato", (Object) null)
-                .set("utlopsdatoFasett", (Object) null)
-                .set("dagputlopuke", (Object) null)
-                .set("dagputlopukefasett", (Object) null)
-                .set("permutlopuke", (Object) null)
-                .set("permutlopukefasett", (Object) null)
-                .set("aapmaxtiduke", (Object) null)
-                .set("aapmaxtidukefasett", (Object) null)
-                .set("aapunntakdagerigjen", (Object) null)
-                .set("aapunntakukerigjenfasett", (Object) null)
-                .execute();
-    }
 
     String retrieveSistIndeksertSQL() {
         return "SELECT SIST_INDEKSERT FROM METADATA";

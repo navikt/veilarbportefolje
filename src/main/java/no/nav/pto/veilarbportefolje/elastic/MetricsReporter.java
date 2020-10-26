@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static java.util.Arrays.asList;
-import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
+import static no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 
 @Component
 public class MetricsReporter {

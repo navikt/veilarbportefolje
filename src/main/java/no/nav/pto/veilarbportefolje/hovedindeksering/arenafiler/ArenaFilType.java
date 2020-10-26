@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arenafiler;
+package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler;
 
 public enum ArenaFilType {
     GR_202_TILTAK,

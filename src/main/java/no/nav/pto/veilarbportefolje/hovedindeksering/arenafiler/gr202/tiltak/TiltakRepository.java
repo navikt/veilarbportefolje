@@ -1,9 +1,8 @@
-package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
+package no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Aktivitetstyper;
 import no.nav.sbl.sql.SqlUtils;

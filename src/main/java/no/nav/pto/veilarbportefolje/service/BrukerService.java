@@ -11,13 +11,8 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -49,19 +44,11 @@ public class BrukerService {
         return brukerRepository.hentNavKontorFraDbLinkTilArena(fnr);
     }
 
-    public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
-        Map<Fnr, Optional<PersonId>> typeMap = new HashMap<>();
-        Map<String, Optional<String>> stringMap = brukerRepository.retrievePersonidFromFnrs(fnrs.stream().map(Fnr::toString).collect(toList()));
-        stringMap.forEach((key, value) -> typeMap.put(new Fnr(key), value.map(PersonId::of)));
-        return typeMap;
-    }
-
     public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
         return brukerRepository.retrievePersonid(aktoerId)
                 .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId)
                 .onFailure(e -> log.warn("Kunne ikke hente/mappe personId for aktorid: " + aktoerId, e));
     }
-
 
     public PersonId getPersonIdFromFnr(AktoerId aktoerId) {
         Fnr fnr = Fnr.of(aktorregisterClient.hentFnr(aktoerId.toString()));

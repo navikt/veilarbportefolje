@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.krr.KrrRepository;

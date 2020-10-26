@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.controller;
 
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;

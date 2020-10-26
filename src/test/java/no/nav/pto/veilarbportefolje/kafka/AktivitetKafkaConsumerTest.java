@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.HovedindekseringRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.elasticsearch.action.get.GetResponse;
@@ -45,6 +46,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
     private static String indexName;
     private static BrukerService brukerService;
     private static BrukerRepository brukerRepository;
+    private static HovedindekseringRepository hovedindekseringRepository;
     static String aktoerId = "123456789";
     static String aktivitetId = "144500";
 
@@ -61,10 +63,10 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
 
         aktivitetDAO = new AktivitetDAO(jdbcTemplate);
         brukerRepository = mock(BrukerRepository.class);
-
         brukerService = mock(BrukerService.class);
+        hovedindekseringRepository = mock(HovedindekseringRepository.class);
 
-        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(MetricsClient.class), indexName), brukerRepository, aktivitetDAO);
+        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(MetricsClient.class), indexName), hovedindekseringRepository, aktivitetDAO);
 
         aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService);
 

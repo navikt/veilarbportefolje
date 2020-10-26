@@ -4,7 +4,7 @@ import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Gruppeaktivitet;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Utdanningsaktivitet;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.hovedindeksering.arenafiler.gr202.tiltak.Brukertiltak;
 import org.junit.Test;
 
 import java.util.List;
