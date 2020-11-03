@@ -44,7 +44,7 @@ public class VedtakService implements KafkaConsumerService<String> {
                 break;
             }
         }
-        elasticIndexer.indekser(AktoerId.of(vedtakStatusEndring.aktorId));
+        elasticIndexer.indekser(AktoerId.of(vedtakStatusEndring.getAktorId()));
     }
 
     @Override
