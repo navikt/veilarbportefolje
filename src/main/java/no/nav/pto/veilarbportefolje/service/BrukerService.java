@@ -32,17 +32,11 @@ public class BrukerService {
         this.aktorregisterClient = aktorregisterClient;
     }
 
-    public Optional<Fnr> hentFnr(AktoerId aktoerId) {
-        return brukerRepository.hentFnrFraView(aktoerId).or(hentFnrFraAktoerRegister(aktoerId));
-    }
-
     public Optional<String> hentNavKontor(AktoerId aktoerId) {
         return brukerRepository
                 .hentNavKontorFraView(aktoerId)
-                .or(() -> {
-                    return hentFnrFraAktoerregister(aktoerId)
-                            .flatMap(brukerRepository::hentNavKontorFraDbLinkTilArena);
-                });
+                .or(() -> hentFnrFraAktoerregister(aktoerId)
+                        .flatMap(brukerRepository::hentNavKontorFraDbLinkTilArena));
     }
 
     public Optional<String> hentNavKontorFraDbLinkTilArena(Fnr fnr) {
@@ -89,10 +83,6 @@ public class BrukerService {
 
     public Optional<VeilederId> hentVeilederForBruker(AktoerId aktoerId) {
         return brukerRepository.hentVeilederForBruker(aktoerId);
-    }
-
-    private Supplier<Optional<Fnr>> hentFnrFraAktoerRegister(AktoerId aktoerId) {
-        return () -> hentFnrFraAktoerregister(aktoerId);
     }
 
     private Optional<Fnr> hentFnrFraAktoerregister(AktoerId aktoerId) {

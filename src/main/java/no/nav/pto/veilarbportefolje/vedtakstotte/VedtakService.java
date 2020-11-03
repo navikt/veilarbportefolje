@@ -28,11 +28,11 @@ public class VedtakService implements KafkaConsumerService<String> {
         switch (vedtakStatus) {
             case UTKAST_SLETTET : {
                 slettUtkast(vedtakStatusEndring);
-                return;
+                break;
             }
             case VEDTAK_SENDT: {
                 setVedtakSendt(vedtakStatusEndring);
-                return;
+                break;
             }
             case UTKAST_OPPRETTET:
             case BESLUTTER_PROSESS_STARTET:
@@ -41,6 +41,7 @@ public class VedtakService implements KafkaConsumerService<String> {
             case KLAR_TIL_BESLUTTER:
             case KLAR_TIL_VEILEDER: {
                 oppdaterUtkast(vedtakStatusEndring);
+                break;
             }
         }
         elasticIndexer.indekser(AktoerId.of(vedtakStatusEndring.aktorId));
