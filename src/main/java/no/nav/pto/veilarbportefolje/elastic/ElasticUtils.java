@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.utils.Credentials;
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.CountResponse;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import okhttp3.OkHttpClient;
@@ -16,10 +14,9 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.RestClient;
-
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -124,7 +121,7 @@ public class ElasticUtils {
     }
 
     public static String getAlias() {
-        return String.format("brukerindeks_%s", EnvironmentUtils.getNamespace().orElse("localhost"));
+        return "brukerindeks";
     }
 
     static String getElasticScheme() {
