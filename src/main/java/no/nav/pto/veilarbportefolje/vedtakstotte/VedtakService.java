@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +15,11 @@ public class VedtakService implements KafkaConsumerService<String> {
 
     private final VedtakStatusRepository vedtakStatusRepository;
     private final ElasticIndexer elasticIndexer;
-    private final BrukerService brukerService;
 
     @Autowired
-    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer, BrukerService brukerService) {
+    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
         this.vedtakStatusRepository = vedtakStatusRepository;
         this.elasticIndexer = elasticIndexer;
-        this.brukerService = brukerService;
     }
 
     public void behandleKafkaMelding(String melding) {
@@ -46,6 +43,7 @@ public class VedtakService implements KafkaConsumerService<String> {
                 oppdaterUtkast(vedtakStatusEndring);
             }
         }
+        elasticIndexer.indekser(AktoerId.of(vedtakStatusEndring.aktorId));
     }
 
     @Override
@@ -60,23 +58,17 @@ public class VedtakService implements KafkaConsumerService<String> {
 
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
-        indekserBruker(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
-        indekserBruker(AktoerId.of(melding.getAktorId()));
     }
 
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
-        indekserBruker(AktoerId.of(melding.getAktorId()));
     }
 
-    private void indekserBruker (AktoerId aktoerId) {
-        brukerService.hentFnr(aktoerId).ifPresent(elasticIndexer::indekser);
-    }
 }
