@@ -29,8 +29,6 @@ import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 public class InternalController {
 
     private final SelfTestChecks selfTestChecks;
-
-    @Autowired
     private final JdbcTemplate db;
 
     @Autowired
