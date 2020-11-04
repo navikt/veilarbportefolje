@@ -22,8 +22,8 @@ import java.io.IOException;
 )
 public class TiltakServlet extends HttpServlet {
 
-    private final TiltakHandler tiltakHandler;
-    private final Credentials serviceUserCredentials;
+    private TiltakHandler tiltakHandler;
+    private Credentials serviceUserCredentials;
 
 
     @Autowired

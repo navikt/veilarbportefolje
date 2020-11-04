@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.common.abac.Pep;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Pair;
@@ -66,6 +67,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
                 ELASTIC_CLIENT,
+                unleashMock,
                 mock(MetricsClient.class),
                 TEST_INDEX
         );
@@ -203,7 +205,9 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         val response = elasticService.hentBrukere(TEST_ENHET, empty(), "asc", "ikke_satt", filtervalg, null, null);
 
+
         assertThat(response.getAntall()).isEqualTo(2);
+
     }
 
     @Test
@@ -917,6 +921,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
         assertThat(userExistsInResponse(brukerMedTiltak, response)).isFalse();
     }
 
+
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {
         return brukere.getBrukere().stream().anyMatch(bruker -> veilederId.equals(bruker.getVeilederId()));
     }
@@ -937,7 +942,7 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
     @SneakyThrows
     private void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
         elasticIndexer.skrivTilIndeks(TEST_INDEX, listOf(brukere));
-        ELASTIC_CLIENT.indices().refreshAsync(new RefreshRequest(TEST_INDEX), RequestOptions.DEFAULT, new ActionListener<>() {
+        ELASTIC_CLIENT.indices().refreshAsync(new RefreshRequest(TEST_INDEX), RequestOptions.DEFAULT, new ActionListener<RefreshResponse>() {
             @Override
             public void onResponse(RefreshResponse refreshResponse) {
                 log.info("refreshed");
@@ -955,6 +960,17 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
         VeilarbVeilederClient veilederServiceMock = mock(VeilarbVeilederClient.class);
         when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf((TEST_VEILEDER_0)));
         return veilederServiceMock;
+    }
+
+    private static Pep mockPep() {
+        Pep pepMock = mock(Pep.class);
+        when(pepMock.harVeilederTilgangTilEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilKode6(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilKode7(UNPRIVILEGED_TOKEN)).thenReturn(false);
+        when(pepMock.harVeilederTilgangTilEgenAnsatt(PRIVILEGED_TOKEN)).thenReturn(true);
+        when(pepMock.harVeilederTilgangTilKode6(PRIVILEGED_TOKEN)).thenReturn(true);
+        when(pepMock.harVeilederTilgangTilKode7(PRIVILEGED_TOKEN)).thenReturn(true);
+        return pepMock;
     }
 
 }
