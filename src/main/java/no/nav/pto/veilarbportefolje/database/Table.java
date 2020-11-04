@@ -7,33 +7,6 @@ public class Table {
         static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
     }
 
-    public static final class BRUKERTILTAK {
-        public static final String TABLE_NAME = "BRUKERTILTAK";
-        public static final String FODSELSNR = "FODSELSNR";
-        public static final String TILTAKSKODE = "TILTAKSKODE";
-        public static final String TILDATO = "TILDATO";
-    }
-
-    public static final class AKTIVITETER {
-        public static final String TABLE_NAME = "AKTIVITETER";
-        public static final String AKTIVITETID = "AKTIVITETID";
-        public static final String AKTOERID = "AKTOERID";
-        public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
-        public static final String AVTALT = "AVTALT";
-        public static final String OPPDATERTDATO = "OPPDATERTDATO";
-        public static final String STATUS = "STATUS";
-    }
-
-    public static final class BRUKERSTATUS_AKTIVITETER {
-        public static final String TABLE_NAME = "BRUKERSTATUS_AKTIVITETER";
-        public static final String PERSONID = "PERSONID";
-        public static final String AKTOERID = "AKTOERID";
-        public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
-        public static final String STATUS = "STATUS";
-        public static final String NESTE_UTLOPSDATO = "NESTE_UTLOPSDATO";
-        public static final String NESTE_STARTDATO = "NESTE_STARTDATO";
-    }
-
     public static final class AKTOERID_TO_PERSONID {
         public static final String TABLE_NAME = "AKTOERID_TO_PERSONID";
         public static final String AKTOERID = "AKTOERID";

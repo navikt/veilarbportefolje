@@ -1,10 +1,9 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
+import io.micrometer.core.instrument.Gauge;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Bruker;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.TiltakOgAktiviteterForBrukere;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.Tiltaksaktivitet;
@@ -22,7 +21,6 @@ import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.apache.commons.vfs2.FileObject;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -42,6 +40,7 @@ import static java.util.stream.Stream.concat;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.getLastModifiedTimeInMillis;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 import static no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakUtils.*;
+import static no.nav.pto.veilarbportefolje.elastic.MetricsReporter.getMeterRegistry;
 import static no.nav.pto.veilarbportefolje.util.StreamUtils.log;
 
 @Slf4j
@@ -52,34 +51,28 @@ public class TiltakHandler {
     private final BrukerRepository brukerRepository;
     private final BrukerService brukerService;
     private final EnvironmentProperties environmentProperties;
-    private final MetricsClient metrcisClient;
 
     static final String ARENA_AKTIVITET_DATOFILTER = "2017-12-04";
 
-    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, BrukerService brukerService, BrukerRepository brukerRepository, EnvironmentProperties environmentProperties, MetricsClient metricsClient) {
+    public TiltakHandler(TiltakRepository tiltakRepository, AktivitetDAO aktivitetDAO, BrukerService brukerService, BrukerRepository brukerRepository, EnvironmentProperties environmentProperties) {
         this.brukerService = brukerService;
         this.tiltakrepository = tiltakRepository;
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.environmentProperties = environmentProperties;
-        this.metrcisClient = metricsClient;
+        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", this::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
     }
 
     public FilmottakConfig.SftpConfig lopendeAktiviteter() {
         return new FilmottakConfig.SftpConfig(environmentProperties.getArenaPaagaaendeAktiviteterUrl(),
                 environmentProperties.getArenaFilmottakSFTPUsername(),
                 environmentProperties.getArenaFilmottakSFTPPassword(),
-                ArenaFilType.GR_199_YTELSER);
+                ArenaFilType.GR_199_TILTAK);
     }
 
-    //Hourly
-    @Scheduled(cron = "0 0 * * * *")
-    public void sjekkArenaAktiviteterSistOppdatert() {
+    public long sjekkArenaAktiviteterSistOppdatert() {
         Long millis = getLastModifiedTimeInMillis(lopendeAktiviteter()).getOrElseThrow(() -> new RuntimeException());
-        final long timerSiden = hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
-        final Event event = new Event("portefolje.arena.fil.aktiviteter.sist.oppdatert");
-        event.addFieldToReport("timerSiden", timerSiden);
-        metrcisClient.report(event);
+        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
     }
 
     public HealthCheckResult sftpTiltakPing() {
