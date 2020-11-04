@@ -32,7 +32,6 @@
         <sonar.projectKey>navikt_veilarbportefolje</sonar.projectKey>
         <sonar.organization>navit</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.tests>test/</sonar.tests>
     </properties>
 
     <build>
