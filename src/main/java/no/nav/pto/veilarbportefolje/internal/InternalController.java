@@ -6,8 +6,8 @@ import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestUtils;
 import no.nav.common.health.selftest.SelftTestCheckResult;
 import no.nav.common.health.selftest.SelftestHtmlGenerator;
-import no.nav.common.metrics.InfluxClient;
-import no.nav.pto.veilarbportefolje.metrikker.MetricsUtils;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,10 +30,12 @@ public class InternalController {
 
     private final SelfTestChecks selfTestChecks;
     private final JdbcTemplate db;
+    private MetricsClient metricsClient;
 
     @Autowired
-    public InternalController(SelfTestChecks selfTestChecks, JdbcTemplate db) {
+    public InternalController(SelfTestChecks selfTestChecks, JdbcTemplate db, MetricsClient metricsClient) {
         this.selfTestChecks = selfTestChecks;
+        this.metricsClient = metricsClient;
         this.db = db;
     }
 
@@ -67,10 +69,12 @@ public class InternalController {
     @Scheduled(cron = "0 * 1 * * *")
     private void metrikkOppdatering() {
         String sql =  "SELECT count(*) FROM AKTOERID_TO_PERSONID "
-                    + "WHERE PERSONID IN "
-                    + "(SELECT PERSONID FROM AKTOERID_TO_PERSONID GROUP BY PERSONID HAVING max(GJELDENE) = 0)";
-        MetricsUtils.timed("portefolje.metrikker.usermapping", () -> {
-            db.queryForObject(sql, Integer.class);
-        }, new InfluxClient());
+                + "WHERE PERSONID IN "
+                + "(SELECT PERSONID FROM AKTOERID_TO_PERSONID GROUP BY PERSONID HAVING max(GJELDENE) = 0)";
+        var brukere = db.queryForObject(sql, Integer.class);
+
+        Event event = new Event("portefolje.metrikker.usermapping");
+        event.addFieldToReport("brukere",brukere);
+        metricsClient.report(event);
     }
 }
