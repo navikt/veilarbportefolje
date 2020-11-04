@@ -2,34 +2,30 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
-import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.UpsertQuery;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.Timestamp;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyper.contains;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
-import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 @Repository
@@ -39,10 +35,12 @@ public class AktivitetDAO {
     private static final String AKTIVITETID = "AKTIVITETID";
 
     private final JdbcTemplate db;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
-    public AktivitetDAO(JdbcTemplate db) {
+    public AktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     public AktoerId getAktoerId(String aktivitetId) {
@@ -58,9 +56,7 @@ public class AktivitetDAO {
     }
 
     public void slettAlleAktivitetstatus(String aktivitettype) {
-        SqlUtils.delete(db, Table.BRUKERSTATUS_AKTIVITETER.TABLE_NAME)
-                .where(WhereClause.equals(Table.BRUKERSTATUS_AKTIVITETER.AKTIVITETTYPE, aktivitettype))
-                .execute();
+        db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
     }
 
     public AktoerAktiviteter getAktiviteterForAktoerid(AktoerId aktoerid) {
@@ -111,7 +107,7 @@ public class AktivitetDAO {
     }
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
-        io.vavr.collection.List.ofAll(statuser).sliding(1000, 1000)
+        io.vavr.collection.List.ofAll(statuser).sliding(1000,1000)
                 .forEach((statuserBatch) -> {
                     try {
                         AktivitetStatus.batchInsert(db, statuserBatch.toJavaList());
@@ -140,19 +136,15 @@ public class AktivitetDAO {
             throw new IllegalArgumentException("Trenger person-ider for å hente ut aktivitetsstatuser");
         }
 
-        final List<String> ids = personIds.stream().map(PersonId::toString).collect(toList());
+        Map<String, Object> params = new HashMap<>();
+        params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
 
-        final List<AktivitetStatus> dtos = SqlUtils.select(db, Table.BRUKERSTATUS_AKTIVITETER.TABLE_NAME, AktivitetDAO::mapAktivitetStatus)
-                .column("*")
-                .where(in(Table.BRUKERSTATUS_AKTIVITETER.PERSONID, ids))
-                .executeToList();
-
-        return dtos
+        return namedParameterJdbcTemplate
+                .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()
-                .filter(aktivitetStatus -> contains(aktivitetStatus.getAktivitetType()))
-                .collect(toMap(
-                        AktivitetStatus::getPersonid,
-                        DbUtils::toSet,
+                .map(AktivitetDAO::mapAktivitetStatus)
+                .filter(aktivitetStatus -> AktivitetTyper.contains(aktivitetStatus.getAktivitetType()))
+                .collect(toMap(AktivitetStatus::getPersonid, DbUtils::toSet,
                         (oldValue, newValue) -> {
                             oldValue.addAll(newValue);
                             return oldValue;
@@ -168,39 +160,61 @@ public class AktivitetDAO {
     }
 
     public List<Brukertiltak> hentBrukertiltak(List<Fnr> fnrs) {
-        final List<String> ids = fnrs.stream().map(Fnr::toString).collect(toList());
 
-        return SqlUtils.select(db, Table.BRUKERTILTAK.TABLE_NAME, AktivitetDAO::toBrukerTiltak)
-                .column("*")
-                .where(in(Table.BRUKERTILTAK.FODSELSNR, ids))
-                .executeToList();
+        Map<String, Object> params = new HashMap<>();
+        params.put("fnrs", fnrs.stream().map(Fnr::toString).collect(toList()));
+
+        return namedParameterJdbcTemplate
+                .queryForList(hentBrukertiltakForListeAvFnrSQL(), params)
+                .stream()
+                .map(row -> Brukertiltak.of(
+                        Fnr.of((String) row.get("FNR")),
+                        (String) row.get("TILTAK"),
+                        (Timestamp) row.get("TILDATO"))
+                )
+                .collect(toList());
     }
 
     public void slettAktivitetDatoer() {
         SqlUtils.update(db, "bruker_data")
-                .set("NYESTEUTLOPTEAKTIVITET", (Object) null)
-                .set("AKTIVITET_START", (Object) null)
-                .set("NESTE_AKTIVITET_START", (Object) null)
-                .set("FORRIGE_AKTIVITET_START", (Object) null)
+                .set("NYESTEUTLOPTEAKTIVITET", (Object)null)
+                .set("AKTIVITET_START", (Object)null)
+                .set("NESTE_AKTIVITET_START", (Object)null)
+                .set("FORRIGE_AKTIVITET_START", (Object)null)
                 .execute();
     }
 
-    @SneakyThrows
-    public static AktivitetStatus mapAktivitetStatus(ResultSet resultSet) {
-        return new AktivitetStatus()
-                .setPersonid(PersonId.of(resultSet.getString("PERSONID")))
-                .setAktoerid(AktoerId.of(resultSet.getString("AKTOERID")))
-                .setAktivitetType(resultSet.getString("AKTIVITETTYPE"))
-                .setAktiv(parse0OR1(resultSet.getString("STATUS")))
-                .setNesteStart(resultSet.getTimestamp("NESTE_STARTDATO"))
-                .setNesteUtlop(resultSet.getTimestamp("NESTE_UTLOPSDATO"));
+    private String hentBrukertiltakForListeAvFnrSQL() {
+        return "SELECT " +
+                "TILTAKSKODE AS TILTAK, " +
+                "FODSELSNR as FNR, " +
+                "TILDATO " +
+                "FROM BRUKERTILTAK " +
+                "WHERE FODSELSNR in(:fnrs)";
     }
 
-    @SneakyThrows
-    private static Brukertiltak toBrukerTiltak(ResultSet rs) {
-        return Brukertiltak.of(
-                Fnr.of(rs.getString(Table.BRUKERTILTAK.FODSELSNR)),
-                rs.getString(Table.BRUKERTILTAK.TILTAKSKODE),
-                rs.getTimestamp(Table.BRUKERTILTAK.TILDATO));
+    private String getAktivitetStatuserForListOfPersonIds() {
+        return
+                "SELECT " +
+                        "PERSONID, " +
+                        "AKTOERID, " +
+                        "AKTIVITETTYPE, " +
+                        "STATUS, " +
+                        "NESTE_UTLOPSDATO, " +
+                        "NESTE_STARTDATO " +
+                        "FROM " +
+                        "BRUKERSTATUS_AKTIVITETER " +
+                        "WHERE " +
+                        "PERSONID in (:personids)";
+    }
+
+    public static AktivitetStatus mapAktivitetStatus (Map<String, Object> row) {
+        return new AktivitetStatus()
+                .setPersonid(PersonId.of((String) row.get("PERSONID")))
+                .setAktoerid(AktoerId.of((String) row.get("AKTOERID")))
+                .setAktivitetType((String) row.get("AKTIVITETTYPE"))
+                .setAktiv(parse0OR1((String) row.get("STATUS")))
+                .setNesteStart((Timestamp) row.get("NESTE_STARTDATO"))
+                .setNesteUtlop((Timestamp) row.get("NESTE_UTLOPSDATO"));
     }
 }

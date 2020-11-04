@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="no/nav/common/log/logback-default.xml"/>
-
-    <!-- Logger cookies dersom det ikke parses riktig. Dette kan fjernes i versjon 2.2020.10.13_14.48-80e4c2dc5856 av common eller nyere -->
-    <logger name="org.apache.tomcat.util.http.parser.Cookie" level="OFF" />
 </configuration>
