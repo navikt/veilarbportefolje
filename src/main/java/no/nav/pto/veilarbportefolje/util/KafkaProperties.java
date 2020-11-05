@@ -4,7 +4,6 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -26,7 +25,7 @@ public class KafkaProperties {
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + serviceUserCredentials.username + "\" password=\"" + serviceUserCredentials.password + "\";");
-        props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(AUTO_OFFSET_RESET_CONFIG, "none");
         props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
         props.put(MAX_POLL_RECORDS_CONFIG, 5);
         props.put(SESSION_TIMEOUT_MS_CONFIG, 20000);
