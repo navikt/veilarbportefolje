@@ -34,7 +34,7 @@ public class VedtakServiceTest {
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
         ElasticIndexer elasticIndexer = mock(ElasticIndexer.class);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, elasticIndexer, mock(BrukerService.class));
+        this.vedtakService = new VedtakService(vedtakStatusRepository, elasticIndexer);
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
     }
 

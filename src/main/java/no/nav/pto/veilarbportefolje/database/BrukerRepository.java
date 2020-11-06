@@ -67,16 +67,6 @@ public class BrukerRepository {
         }
     }
 
-    public Optional<Fnr> hentFnrFraView(AktoerId aktoerId) {
-        String fnr = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString(FODSELSNR))
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
-                .execute();
-
-        return Optional
-                .ofNullable(fnr)
-                .map(Fnr::of);
-    }
-
     public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
 
