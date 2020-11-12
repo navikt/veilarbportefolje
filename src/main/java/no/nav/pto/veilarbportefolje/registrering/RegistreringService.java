@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,14 +12,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class RegistreringService implements KafkaConsumerService<ArbeidssokerRegistrertEvent> {
     private final RegistreringRepository registreringRepository;
+    private final ElasticIndexer elasticIndexer;
 
     @Autowired
-    public RegistreringService(RegistreringRepository registreringRepository) {
+    public RegistreringService(RegistreringRepository registreringRepository, ElasticIndexer elasticIndexer) {
         this.registreringRepository = registreringRepository;
+        this.elasticIndexer = elasticIndexer;
     }
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         registreringRepository.upsertBrukerRegistrering(kafkaRegistreringMelding);
+        elasticIndexer.indekser(AktoerId.of(kafkaRegistreringMelding.getAktorid()));
     }
 
     @Override

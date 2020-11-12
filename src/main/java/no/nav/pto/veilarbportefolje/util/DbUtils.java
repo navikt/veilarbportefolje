@@ -81,7 +81,10 @@ public class DbUtils {
                 .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setProfilering_resultat(rs.getString("profilering_resultat"))
-                .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV));
+                .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
+                .setUtdanning(rs.getString("UTDANNING"))
+                .setUtdanning_bestatt(rs.getString("UTDANNING_BESTATT"))
+                .setUtdanning_godkjent(rs.getString("UTDANNING_GODKJENT"));
 
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");

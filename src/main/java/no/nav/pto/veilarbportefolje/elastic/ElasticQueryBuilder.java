@@ -58,7 +58,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
         byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
         byggManuellFilter(filtervalg.utdanning, queryBuilder, "utdanning");
-        byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt´");
+        byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt");
         byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
         byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
 
