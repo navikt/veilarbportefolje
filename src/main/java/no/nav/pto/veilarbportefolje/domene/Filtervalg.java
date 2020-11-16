@@ -93,7 +93,7 @@ public class Filtervalg {
 
         Boolean alderOk = alder
                 .stream()
-                .map(FiltervalgMappers.alder::containsKey)
+                .map(alderInput -> (FiltervalgMappers.alder.containsKey(alderInput) || FiltervalgMappers.isValidDynamicRange(alderInput)))
                 .reduce(true, and());
 
         Boolean fodselsdatoOk = fodselsdagIMnd

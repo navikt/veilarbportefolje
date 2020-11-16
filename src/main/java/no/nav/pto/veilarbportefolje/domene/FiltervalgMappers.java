@@ -3,6 +3,8 @@ package no.nav.pto.veilarbportefolje.domene;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Integer.parseInt;
+
 public class FiltervalgMappers {
     private static String prefix = "[NOW/DAY-"; // '/DAY' runder ned til dagen for å kunne bruke cache
     private static String postfix = "+1DAY/DAY]"; // NOW+1DAY/DAY velger midnatt som kommer istedenfor midnatt som var, '/DAY' for å bruke cache
@@ -18,4 +20,12 @@ public class FiltervalgMappers {
         put("60-66", prefix + "67YEARS+1DAY TO NOW-60YEARS" + postfix);
         put("67-70", prefix + "71YEARS+1DAY TO NOW-67YEARS" + postfix);
     }};
+
+    public static final boolean isValidDynamicRange(String fraTilAlderIput){
+        String[] fraTilAlder = fraTilAlderIput.split("-");
+        if (fraTilAlder.length == 2 && parseInt(fraTilAlder[0]) <= parseInt(fraTilAlder[1])){
+            return true;
+        }
+        return false;
+    }
 }
