@@ -1,6 +1,10 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
 import lombok.SneakyThrows;
+import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
+import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
+import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
@@ -12,23 +16,31 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static java.util.Optional.empty;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
@@ -62,20 +74,20 @@ public class RegistreringIntegrationTest extends IntegrationTest {
     public void setUp() {
         indexName = generateId();
 
-        AktivitetDAO aktivitetDAO = new AktivitetDAO(jdbcTemplate,namedParameterJdbcTemplate);
         BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate,namedParameterJdbcTemplate);
-        VeilarbVeilederClient veilederServiceMock = mockVeilederService();
-        UnleashService unleashMock = mock(UnleashService.class);
-        elasticService = new ElasticService(ELASTIC_CLIENT, veilederServiceMock, unleashMock, indexName);
+        BrukerRepository brukerRepositorySpy = spy(brukerRepository);
+        Mockito.doReturn(Optional.of(fnr.toString())).when(brukerRepositorySpy).hentFnrView(AKTORID);
+
+        registreringService = new RegistreringService(registreringRepository, new ElasticServiceV2(ELASTIC_CLIENT, indexName), brukerRepositorySpy);
+        elasticService = new ElasticService(ELASTIC_CLIENT, mockVeilederService(), mock(UnleashService.class), indexName);
         elasticIndexer = new ElasticIndexer(
-                aktivitetDAO,
+                new AktivitetDAO(jdbcTemplate,namedParameterJdbcTemplate),
                 brukerRepository,
                 ELASTIC_CLIENT,
-                unleashMock,
+                mock(UnleashService.class),
                 mock(MetricsClient.class),
                 indexName
         );
-        registreringService = new RegistreringService(registreringRepository, elasticIndexer);
         elasticIndexer.opprettNyIndeks(indexName);
     }
 
@@ -83,6 +95,36 @@ public class RegistreringIntegrationTest extends IntegrationTest {
     public void tearDown() {
         deleteIndex(indexName);
         jdbcTemplate.execute("TRUNCATE TABLE BRUKER_REGISTRERING");
+    }
+
+
+    @Test
+    public void utdanning_full_integration() {
+        populateSingleBruker();
+
+        ArbeidssokerRegistrertEvent kafkaMessage = ArbeidssokerRegistrertEvent.newBuilder()
+                .setAktorid(AKTORID.toString())
+                .setBrukersSituasjon("Permittert")
+                .setUtdanning(UtdanningSvar.GRUNNSKOLE)
+                .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
+                .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .build();
+
+        registreringService.behandleKafkaMelding(kafkaMessage);
+
+        GetResponse getResponse = fetchDocument(indexName, fnr);
+        assertThat(getResponse.isExists()).isTrue();
+
+        String utdanning = (String) getResponse.getSourceAsMap().get("utdanning");
+        String situasjon = (String) getResponse.getSourceAsMap().get("brukers_situasjon");
+        String utdanningBestatt = (String) getResponse.getSourceAsMap().get("utdanning_bestatt");
+        String utdanningGodkjent = (String) getResponse.getSourceAsMap().get("utdanning_godkjent");
+
+        assertThat(utdanning).isEqualTo(UtdanningSvar.GRUNNSKOLE.toString());
+        assertThat(situasjon).isEqualTo("Permittert");
+        assertThat(utdanningBestatt).isEqualTo(UtdanningBestattSvar.INGEN_SVAR.toString());
+        assertThat(utdanningGodkjent).isEqualTo(UtdanningGodkjentSvar.JA.toString());
     }
 
     @Test
@@ -179,11 +221,22 @@ public class RegistreringIntegrationTest extends IntegrationTest {
         return filtervalg;
     }
 
-    private static void populateElastic() {
-        List<OppfolgingsBruker> brukere = listOf(
+    private static void populateSingleBruker() {
+        OppfolgingsBruker bruker =
                 new OppfolgingsBruker()
                         .setFnr(fnr.toString())
                         .setAktoer_id(AKTORID.toString())
+                        .setOppfolging(true)
+                        .setEnhet_id(TEST_ENHET);
+
+        skrivBrukereTilTestindeks(bruker);
+        pollUntilHarOppdatertIElastic(()-> countDocuments(indexName) < 1);
+    }
+
+    private static void populateElastic() {
+        List<OppfolgingsBruker> brukere = listOf(
+                new OppfolgingsBruker()
+                        .setFnr(randomFnr())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
                         .setUtdanning_bestatt("NEI")

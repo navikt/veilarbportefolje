@@ -198,6 +198,15 @@ public class BrukerRepository {
         return Optional.ofNullable(bruker);
     }
 
+    public Optional<String> hentFnrView(AktoerId aktoerId) {
+        final String fnr = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString("fodselsnr"))
+                .column("*")
+                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                .execute();
+
+        return Optional.ofNullable(fnr);
+    }
+
     public Optional<OppfolgingsBruker> hentBrukerFraView(Fnr fnr) {
         final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
