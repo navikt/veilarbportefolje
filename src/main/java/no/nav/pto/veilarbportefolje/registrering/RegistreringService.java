@@ -33,7 +33,7 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
         if(fnr.isPresent()){
             elastic.updateRegistering(Fnr.of(fnr.get()), kafkaRegistreringMelding);
         }else{
-            log.error("Fant ikke fnr på aktør id: " + kafkaRegistreringMelding.getAktorid());
+            log.warn("Fant ikke fnr på aktør id: " + kafkaRegistreringMelding.getAktorid());
         }
     }
 
