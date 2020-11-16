@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -30,6 +31,30 @@ public class ElasticServiceV2 {
         updateRequest.doc(jsonBuilder()
                 .startObject()
                 .field("har_delt_cv", harDeltCv)
+                .endObject()
+        );
+
+        try {
+            restHighLevelClient.update(updateRequest, DEFAULT);
+        } catch (ElasticsearchException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                log.info("Kunne ikke finne dokument ved oppdatering av cv");
+            }
+        }
+    }
+
+    @SneakyThrows
+    public void updateRegistering(Fnr fnr, ArbeidssokerRegistrertEvent utdanningEvent) {
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.index(alias);
+        updateRequest.type("_doc");
+        updateRequest.id(fnr.getFnr());
+        updateRequest.doc(jsonBuilder()
+                .startObject()
+                .field("brukers_situasjon", utdanningEvent.getBrukersSituasjon())
+                .field("utdanning", utdanningEvent.getUtdanning())
+                .field("utdanning_bestatt", utdanningEvent.getUtdanningBestatt())
+                .field("utdanning_godkjent", utdanningEvent.getUtdanningGodkjent())
                 .endObject()
         );
 

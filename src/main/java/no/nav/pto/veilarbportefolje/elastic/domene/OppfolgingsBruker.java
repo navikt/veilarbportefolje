@@ -82,4 +82,7 @@ public class OppfolgingsBruker {
     boolean er_sykmeldt_med_arbeidsgiver;
     String brukers_situasjon;
     String profilering_resultat;
+    String utdanning;
+    String utdanning_bestatt;
+    String utdanning_godkjent;
 }
