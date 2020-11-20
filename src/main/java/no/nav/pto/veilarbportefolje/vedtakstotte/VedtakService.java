@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
@@ -15,11 +17,13 @@ public class VedtakService implements KafkaConsumerService<String> {
 
     private final VedtakStatusRepository vedtakStatusRepository;
     private final ElasticIndexer elasticIndexer;
+    private final AtomicBoolean rewind;
 
     @Autowired
     public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
         this.vedtakStatusRepository = vedtakStatusRepository;
         this.elasticIndexer = elasticIndexer;
+        this.rewind = new AtomicBoolean();
     }
 
     public void behandleKafkaMelding(String melding) {
@@ -49,11 +53,12 @@ public class VedtakService implements KafkaConsumerService<String> {
 
     @Override
     public boolean shouldRewind() {
-        return false;
+        return rewind.get();
     }
 
     @Override
     public void setRewind(boolean rewind) {
+        this.rewind.set(rewind);
 
     }
 

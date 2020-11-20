@@ -25,7 +25,7 @@ public class ElasticConfig {
     public static String VEILARBELASTIC_USERNAME = getRequiredProperty(ELASTICSEARCH_USERNAME_PROPERTY);
     public static String VEILARBELASTIC_PASSWORD = getRequiredProperty(ELASTICSEARCH_PASSWORD_PROPERTY);
 
-   public static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
+    public static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
 
     private static ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
             .username(VEILARBELASTIC_USERNAME)
