@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +51,7 @@ public class ArbeidslisteServiceTest {
         arbeidslisteService = new ArbeidslisteService(aktorregisterClientMock, arbeidslisteRepository, brukerService, mock(ElasticIndexer.class), mock(MetricsClient.class));
     }
 
+    @Before
     @After
     public void tearDown() {
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.ARBEIDSLISTE.TABLE_NAME);
