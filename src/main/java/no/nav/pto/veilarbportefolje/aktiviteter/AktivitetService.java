@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.vavr.control.Try.run;
 import static no.nav.common.json.JsonUtils.fromJson;
@@ -24,12 +25,14 @@ public class AktivitetService implements KafkaConsumerService<String> {
     private final BrukerService brukerService;
     private final AktivitetDAO aktivitetDAO;
     private final PersistentOppdatering persistentOppdatering;
+    private final AtomicBoolean rewind;
 
     @Autowired
     public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerService = brukerService;
         this.persistentOppdatering = persistentOppdatering;
+        this.rewind= new AtomicBoolean();
     }
 
     public void slettAktivitet(String id) {
@@ -101,12 +104,12 @@ public class AktivitetService implements KafkaConsumerService<String> {
 
     @Override
     public boolean shouldRewind() {
-        return false;
+        return rewind.get();
     }
 
     @Override
     public void setRewind(boolean rewind) {
-
+        this.rewind.set(rewind);
     }
 
     private boolean skallIkkeOppdatereAktivitet(KafkaAktivitetMelding aktivitetData) {
