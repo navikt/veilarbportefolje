@@ -1,11 +1,11 @@
-const indekseringForm = document.getElementById('registrering');
-indekseringForm.addEventListener('submit', handleRewindRegistrering);
+const registreringForm = document.getElementById('registrering');
+registreringForm.addEventListener('submit', handleRewindRegistrering);
 
 function handleRewindRegistrering(e) {
     e.preventDefault();
     if (window.confirm('Dette vil lese inn alle kafka meldinger fra registrering fra starten av.')) {
         fetchData(
-            '/veilarbindexer/api/admin/rewind/registrering',
+            '/veilarbportefolje/api/admin/rewind/registrering',
             {method: 'POST', credentials: 'same-origin'},
             'registreringResponse'
         );

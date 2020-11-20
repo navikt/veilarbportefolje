@@ -32,7 +32,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerService = brukerService;
         this.persistentOppdatering = persistentOppdatering;
-        this.rewind= new AtomicBoolean();
+        this.rewind = new AtomicBoolean();
     }
 
     public void slettAktivitet(String id) {
