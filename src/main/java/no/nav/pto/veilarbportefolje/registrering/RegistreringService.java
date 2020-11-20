@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -18,12 +19,14 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     private final RegistreringRepository registreringRepository;
     private final ElasticServiceV2 elastic;
     private final BrukerRepository brukerRepository;
+    private final AtomicBoolean rewind;
 
     @Autowired
     public RegistreringService(RegistreringRepository registreringRepository, ElasticServiceV2 elastic, BrukerRepository brukerRepository) {
         this.registreringRepository = registreringRepository;
         this.elastic = elastic;
         this.brukerRepository = brukerRepository;
+        this.rewind = new AtomicBoolean();
     }
 
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
@@ -40,11 +43,11 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
 
     @Override
     public boolean shouldRewind() {
-        return false;
+        return rewind.get();
     }
 
     @Override
     public void setRewind(boolean rewind) {
-
+        this.rewind.set(rewind);
     }
 }

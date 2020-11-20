@@ -7,19 +7,23 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
 @Service
 public class DialogService implements KafkaConsumerService<String> {
 
-    private DialogRepository dialogRepository;
-    private ElasticIndexer elasticIndexer;
+    private final DialogRepository dialogRepository;
+    private final ElasticIndexer elasticIndexer;
+    private final AtomicBoolean rewind;
 
     @Autowired
     public DialogService(DialogRepository dialogRepository, ElasticIndexer elasticIndexer) {
         this.dialogRepository = dialogRepository;
         this.elasticIndexer = elasticIndexer;
+        this.rewind = new AtomicBoolean();
     }
 
     @Override
@@ -31,11 +35,11 @@ public class DialogService implements KafkaConsumerService<String> {
 
     @Override
     public boolean shouldRewind() {
-        return false;
+        return rewind.get();
     }
 
     @Override
     public void setRewind(boolean rewind) {
-
+        this.rewind.set(rewind);
     }
 }
