@@ -2,11 +2,9 @@ package no.nav.pto.veilarbportefolje.client;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.common.utils.EnvironmentUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -25,7 +23,10 @@ public class VeilarbVeilederClient {
     private final OkHttpClient client;
 
     public VeilarbVeilederClient() {
-        url = format("http://veilarbveileder.%s.svc.nais.local/veilarbveileder", requireNamespace());
+        url = EnvironmentUtils.isProduction().orElseThrow()
+                ? "https://veilarbveileder.nais.adeo.no/veilarbveileder"
+                : format("https://veilarbveileder-%s.nais.preprod.local/veilarbveileder", requireNamespace());
+
         this.client = RestClient.baseClient();
     }
 
