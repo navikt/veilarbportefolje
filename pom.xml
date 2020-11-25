@@ -170,6 +170,11 @@
         <!-- Common -->
         <dependency>
             <groupId>no.nav.common</groupId>
+            <artifactId>test</artifactId> <!-- Brukes inntil videre for å fjerne sjekk på SSL for elastic -->
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>
             <version>${common.version}</version>
         </dependency>

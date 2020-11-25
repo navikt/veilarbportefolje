@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.test.ssl.SSLTestUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -49,7 +50,11 @@ public class ElasticUtils {
         return new RestClientBuilder.HttpClientConfigCallback() {
             @Override
             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                return httpClientBuilder.setDefaultCredentialsProvider(createCredentialsProvider());
+                // TODO: Siden vi bruker self-signed SSL certs så må vi skru av validering for elastic rest klienten
+                //  Når vi går over til Aiven så vil vi ikke lenger trenge å skru av validering av SSL certs
+                return httpClientBuilder
+                        .setDefaultCredentialsProvider(createCredentialsProvider())
+                        .setSSLContext(SSLTestUtils.sslContext); // NB!: Dette vil fjerne sjekk på SSL certs
             }
 
             private CredentialsProvider createCredentialsProvider() {
