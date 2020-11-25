@@ -7,8 +7,6 @@ import no.nav.common.leaderelection.LeaderElectionHttpClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,11 +29,6 @@ public class ApplicationConfig {
     public static final String ELASTICSEARCH_PASSWORD_PROPERTY = "VEILARBELASTIC_PASSWORD";
 
     @Bean
-    public MetricsReporter elasticMetricsReporter(ElasticIndexer elasticIndexer) {
-        return new MetricsReporter(elasticIndexer);
-    }
-
-    @Bean
     public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.resolveFromEnvironment());
     }
@@ -49,8 +42,7 @@ public class ApplicationConfig {
 
     @Bean
     public Credentials serviceUserCredentials() {
-        Credentials serviceUserCredentials = getCredentials("service_user");
-        return serviceUserCredentials;
+        return getCredentials("service_user");
     }
 
     @Bean

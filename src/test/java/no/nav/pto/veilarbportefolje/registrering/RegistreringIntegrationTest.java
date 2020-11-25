@@ -14,9 +14,11 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.elastic.ElasticCountService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import org.elasticsearch.action.ActionListener;
@@ -78,15 +80,17 @@ public class RegistreringIntegrationTest extends IntegrationTest {
         BrukerRepository brukerRepositorySpy = spy(brukerRepository);
         Mockito.doReturn(Optional.of(fnr.toString())).when(brukerRepositorySpy).hentFnrView(AKTORID);
 
-        registreringService = new RegistreringService(registreringRepository, new ElasticServiceV2(ELASTIC_CLIENT, indexName), brukerRepositorySpy);
-        elasticService = new ElasticService(ELASTIC_CLIENT, mockVeilederService(), mock(UnleashService.class), indexName);
+        ElasticIndex index = ElasticIndex.of(indexName);
+
+        registreringService = new RegistreringService(registreringRepository, new ElasticServiceV2(() -> ELASTIC_CLIENT, index), brukerRepositorySpy);
+        elasticService = new ElasticService(() -> ELASTIC_CLIENT, mockVeilederService(), mock(UnleashService.class), index);
         elasticIndexer = new ElasticIndexer(
                 new AktivitetDAO(jdbcTemplate,namedParameterJdbcTemplate),
                 brukerRepository,
-                ELASTIC_CLIENT,
+                () -> ELASTIC_CLIENT,
                 mock(UnleashService.class),
                 mock(MetricsClient.class),
-                indexName
+                mock(ElasticCountService.class), index
         );
         elasticIndexer.opprettNyIndeks(indexName);
     }
