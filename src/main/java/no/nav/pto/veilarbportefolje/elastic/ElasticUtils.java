@@ -7,6 +7,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.client.RestClient;
@@ -54,6 +55,7 @@ public class ElasticUtils {
                 //  Når vi går over til Aiven så vil vi ikke lenger trenge å skru av validering av SSL certs
                 return httpClientBuilder
                         .setDefaultCredentialsProvider(createCredentialsProvider())
+                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE) // NB!: Vil fjerne sjekk på hostname for certs
                         .setSSLContext(SSLTestUtils.sslContext); // NB!: Dette vil fjerne sjekk på SSL certs
             }
 
