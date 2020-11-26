@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -37,6 +39,7 @@ public class ArbeidslisteRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
+    // TODO: endre til bruk av elastic
     public Optional<String> hentNavKontorForArbeidsliste(AktoerId aktoerId) {
         String navKontor = select(db, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE))
                 .column(NAV_KONTOR_FOR_ARBEIDSLISTE)
@@ -46,7 +49,7 @@ public class ArbeidslisteRepository {
         return Optional.ofNullable(navKontor);
     }
 
-    public Try<Arbeidsliste> retrieveArbeidsliste(AktoerId aktoerId) {
+    public Try<Arbeidsliste> retrieveArbeidslisteFromDb(AktoerId aktoerId) {
         return Try.of(
                 () -> select(db, Table.ARBEIDSLISTE.TABLE_NAME, ArbeidslisteRepository::arbeidslisteMapper)
                         .column("*")
@@ -55,10 +58,10 @@ public class ArbeidslisteRepository {
         );
     }
 
-    public Try<AktoerId> insertArbeidsliste(ArbeidslisteDTO dto) {
+    public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
         return Try.of(
                 () -> {
-
+                    dto.setEndringstidspunkt(Timestamp.from(now()));
                     AktoerId aktoerId = Optional
                             .ofNullable(dto.getAktoerId())
                             .orElseThrow(() -> new RuntimeException("Fant ikke aktør-ID"));
@@ -67,7 +70,7 @@ public class ArbeidslisteRepository {
                             .set(AKTOERID, aktoerId.toString())
                             .set(FNR, dto.getFnr().toString())
                             .set(SIST_ENDRET_AV_VEILEDERIDENT, dto.getVeilederId().toString())
-                            .set(ENDRINGSTIDSPUNKT, Timestamp.from(now()))
+                            .set(ENDRINGSTIDSPUNKT, dto.getEndringstidspunkt())
                             .set(OVERSKRIFT, dto.getOverskrift())
                             .set(KOMMENTAR, dto.getKommentar())
                             .set(FRIST, dto.getFrist())
@@ -76,25 +79,26 @@ public class ArbeidslisteRepository {
                             .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                             .execute();
 
-                    return dto.getAktoerId();
+                    return dto;
                 }
         ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db", e));
     }
 
 
-    public Try<AktoerId> updateArbeidsliste(ArbeidslisteDTO data) {
+    public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
         return Try.of(
                 () -> {
+                    data.setEndringstidspunkt(Timestamp.from(now()));
                     update(db, TABLE_NAME)
                             .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
-                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(now()))
+                            .set("ENDRINGSTIDSPUNKT", data.getEndringstidspunkt())
                             .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
                             .set("KATEGORI", data.getKategori().name())
                             .whereEquals("AKTOERID", data.getAktoerId().toString())
                             .execute();
-                    return data.getAktoerId();
+                    return data;
                 }
         ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }

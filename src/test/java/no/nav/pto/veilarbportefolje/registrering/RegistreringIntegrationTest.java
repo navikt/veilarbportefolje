@@ -229,7 +229,7 @@ public class RegistreringIntegrationTest extends IntegrationTest {
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET);
 
-        skrivBrukereTilTestindeks(bruker);
+        skrivBrukereTilTestindeks(indexName, elasticIndexer, List.of(bruker));
         pollUntilHarOppdatertIElastic(()-> countDocuments(indexName) < 1);
     }
 
@@ -259,28 +259,8 @@ public class RegistreringIntegrationTest extends IntegrationTest {
                         .setUtdanning("GRUNNSKOLE")
         );
 
-        skrivBrukereTilTestindeks(brukere);
+        skrivBrukereTilTestindeks(indexName, elasticIndexer, brukere);
         pollUntilHarOppdatertIElastic(()-> countDocuments(indexName) < brukere.size());
     }
 
-    private static void skrivBrukereTilTestindeks(List<OppfolgingsBruker> brukere) {
-        OppfolgingsBruker[] array = new OppfolgingsBruker[brukere.size()];
-        skrivBrukereTilTestindeks(brukere.toArray(array));
-    }
-
-    @SneakyThrows
-    private static void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
-        elasticIndexer.skrivTilIndeks(indexName, listOf(brukere));
-        ELASTIC_CLIENT.indices().refreshAsync(new RefreshRequest(indexName), RequestOptions.DEFAULT, new ActionListener<RefreshResponse>() {
-            @Override
-            public void onResponse(RefreshResponse refreshResponse) {
-                System.out.println("refreshed");
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                System.err.println("noe gikk galt her " + e);
-            }
-        });
-    }
 }

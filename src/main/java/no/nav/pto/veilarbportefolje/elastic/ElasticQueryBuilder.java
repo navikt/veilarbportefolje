@@ -1,10 +1,7 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
-import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;

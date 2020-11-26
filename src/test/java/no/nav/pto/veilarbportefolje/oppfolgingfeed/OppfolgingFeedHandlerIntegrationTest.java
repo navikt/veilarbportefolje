@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -45,8 +46,6 @@ public class OppfolgingFeedHandlerIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        ElasticIndexer elasticIndexerMock = mock(ElasticIndexer.class);
-
         aktorregisterClientMock = mock(AktorregisterClient.class);
 
         SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
@@ -62,7 +61,7 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 aktorregisterClientMock,
                 arbeidslisteRepository,
                 brukerService,
-                elasticIndexerMock,
+                mock(ElasticServiceV2.class),
                 mock(MetricsClient.class)
         );
 
@@ -74,7 +73,7 @@ public class OppfolgingFeedHandlerIntegrationTest {
         oppfolgingFeedHandler = new OppfolgingFeedHandler(
                 arbeidslisteService,
                 new BrukerService(brukerRepository, aktorregisterClientMock),
-                elasticIndexerMock,
+                mock(ElasticIndexer.class),
                 oppfolgingRepository,
                 new TestTransactor(),
                 new LeaderElectionClientMock()

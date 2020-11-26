@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -82,21 +84,18 @@ public class ArbeidsListeController {
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
 
         Fnr fnr = new Fnr(fnrString);
-        Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
                 .orElse(false);
 
-        Arbeidsliste arbeidsliste = aktoerId
-                .flatMap(arbeidslisteService::getArbeidsliste)
-                .toJavaOptional()
-                .orElse(emptyArbeidsliste())
-                .setIsOppfolgendeVeileder(aktoerId.map(id ->
-                        arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder))).get())
-                .setHarVeilederTilgang(harVeilederTilgang);
-
-        return harVeilederTilgang ? arbeidsliste : emptyArbeidsliste().setHarVeilederTilgang(false);
+        if(harVeilederTilgang) {
+            Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(fnr).orElseGet(this::emptyArbeidsliste);
+            return arbeidsliste.setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(fnr, VeilederId.of(innloggetVeileder)))
+                    .setHarVeilederTilgang(true);
+        } else {
+            return emptyArbeidsliste().setHarVeilederTilgang(false);
+        }
     }
 
     @PostMapping("{fnr}")
@@ -109,11 +108,9 @@ public class ArbeidsListeController {
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
+        return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
-
-        return arbeidsliste;
     }
 
     @PutMapping("{fnr}")
@@ -184,6 +181,7 @@ public class ArbeidsListeController {
             return RestResponse.of(okFnrs, feiledeFnrs);
     }
 
+    //TODO: bruk Elastic? med DB fallback
     private void sjekkTilgangTilEnhet(Fnr fnr) {
         String enhet = brukerService.hentNavKontorFraDbLinkTilArena(fnr).orElseThrow(() -> new IllegalArgumentException("Kunne ikke hente enhet for denne brukeren"));
         authService.tilgangTilEnhet(enhet);
@@ -217,8 +215,7 @@ public class ArbeidsListeController {
                             if (result.isFailure()) {
                                 return RestResponse.of(result.getCause().getMessage());
                             }
-                            return RestResponse.of(result.get());
-
+                            return RestResponse.of(result.get().aktoerId);
                         }
                 );
     }
