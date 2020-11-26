@@ -118,7 +118,7 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
 
     @Test
     public void skal_hente_nav_kontor_fra_db_link_om_vi_ikke_har_mappet_inn_aktoer_id() {
-        setUpInitialState(aktoerId, navKontor, navKontor, true);
+        setUpInitialState(aktoerId, navKontor, true);
         sendMeldingPaaFeed(aktoerId);
 
         Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr)).get();
@@ -127,8 +127,7 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
 
     @Test
     public void skal_ikke_slette_arbeidsliste_om_bruker_har_samme_nav_kontor_i_arena_som_vi_har_lagret_paa_arbeidslisten() {
-
-        setUpInitialState(aktoerId, navKontor, navKontor, false);
+        setUpInitialState(aktoerId, navKontor, false);
         sendMeldingPaaFeed(aktoerId);
 
         Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr)).get();
@@ -139,7 +138,8 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
 
     @Test
     public void skal_slette_arbeidsliste_om_bruker_ikke_har_samme_nav_kontor_i_arena_som_vi_har_lagret_paa_arbeidslisten() {
-        setUpInitialState(aktoerId, navKontorArena, navKontorArbeidsliste, false);
+        setUpInitialState(aktoerId, navKontorArena, false);
+        byttNavKontor(navKontorArbeidsliste);
         sendMeldingPaaFeed(aktoerId);
 
         Optional<Arbeidsliste> arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr));
@@ -156,7 +156,7 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
         oppfolgingFeedHandler.call("", feedData);
     }
 
-    private static void setUpInitialState(String aktoerId, String navKontorArena, String navKontorArbeidsliste, boolean harIkkeMappetAktoerId) {
+    private static void setUpInitialState(String aktoerId, String navKontorArena, boolean harIkkeMappetAktoerId) {
 
         if (harIkkeMappetAktoerId) {
             when(aktorregisterClientMock.hentFnr(anyString())).thenReturn(fnr);
@@ -193,6 +193,12 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
         populateElastic(navKontorArena);
         arbeidslisteService.createArbeidsliste(dto);
 
+    }
+
+    private static void byttNavKontor(String nyttKontor){
+        SqlUtils.update(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
+                .set(Table.OPPFOLGINGSBRUKER.NAV_KONTOR, nyttKontor)
+                .execute();
     }
 
     private static void populateElastic(String navKontor) {
