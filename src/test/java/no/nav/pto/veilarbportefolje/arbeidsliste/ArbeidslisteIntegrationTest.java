@@ -12,8 +12,10 @@ import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticCountService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -31,7 +33,6 @@ import java.util.Optional;
 import static io.vavr.control.Validation.valid;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.mockito.Mockito.mock;
 
 public class ArbeidslisteIntegrationTest extends IntegrationTest {
@@ -69,15 +70,16 @@ public class ArbeidslisteIntegrationTest extends IntegrationTest {
         arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate, namedParameterJdbcTemplate);
         BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
         brukerService = Mockito.spy( new BrukerService(brukerRepository, aktorregisterClientMock));
-        arbeidslisteService = Mockito.spy(new ArbeidslisteService(aktorregisterClientMock, arbeidslisteRepository, brukerService,new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(MetricsClient.class)));
+        arbeidslisteService = Mockito.spy(new ArbeidslisteService(aktorregisterClientMock, arbeidslisteRepository, brukerService,new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)), mock(MetricsClient.class)));
 
         elasticIndexer = new ElasticIndexer(
                 new AktivitetDAO(jdbcTemplate,namedParameterJdbcTemplate),
                 brukerRepository,
-                ELASTIC_CLIENT,
+                () -> ELASTIC_CLIENT,
                 mock(UnleashService.class),
                 mock(MetricsClient.class),
-                indexName
+                mock(ElasticCountService.class),
+                ElasticIndex.of(indexName)
         );
         elasticIndexer.opprettNyIndeks(indexName);
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.ARBEIDSLISTE.TABLE_NAME);

@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticSearchResponse;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.get.GetRequest;
@@ -20,19 +21,17 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
-import static java.time.Instant.now;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
@@ -41,25 +40,26 @@ import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 @Slf4j
+@Service
 public class ElasticServiceV2 {
-
-    private String alias;
-    private RestHighLevelClient restHighLevelClient;
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+    private final String indeks;
+    private final Supplier<RestHighLevelClient> restHighLevelClientSupplier;
 
-    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, String alias) {
-        this.restHighLevelClient = restHighLevelClient;
-        this.alias = alias;
+    @Autowired
+    public ElasticServiceV2(Supplier<RestHighLevelClient> restHighLevelClientSupplier, ElasticIndex elasticIndex) {
+        this.restHighLevelClientSupplier = restHighLevelClientSupplier;
+        this.indeks = elasticIndex.getIndex();
     }
 
     public Optional<AktoerId> hentAktoerId(Fnr fnr){
         GetRequest getRequest = new GetRequest();
-        getRequest.index(alias);
+        getRequest.index(indeks);
         getRequest.type("_doc");
         getRequest.id(fnr.getFnr());
 
         try {
-            GetResponse a = restHighLevelClient.get(getRequest, DEFAULT);
+            GetResponse a = restHighLevelClientSupplier.get().get(getRequest, DEFAULT);
             String id = (String) a.getSource().get("aktoer_id");
             return Optional.of(AktoerId.of(id));
         } catch (ElasticsearchException e) {
@@ -75,7 +75,7 @@ public class ElasticServiceV2 {
     @SneakyThrows
     public void updateHarDeltCv(Fnr fnr, boolean harDeltCv) {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias);
+        updateRequest.index(indeks);
         updateRequest.type("_doc");
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
@@ -85,7 +85,7 @@ public class ElasticServiceV2 {
         );
 
         try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
+            restHighLevelClientSupplier.get().update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument ved oppdatering av cv");
@@ -96,7 +96,7 @@ public class ElasticServiceV2 {
     @SneakyThrows
     public void updateRegistering(Fnr fnr, ArbeidssokerRegistrertEvent utdanningEvent) {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias);
+        updateRequest.index(indeks);
         updateRequest.type("_doc");
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
@@ -109,7 +109,7 @@ public class ElasticServiceV2 {
         );
 
         try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
+            restHighLevelClientSupplier.get().update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument ved oppdatering av registering");
@@ -120,7 +120,7 @@ public class ElasticServiceV2 {
     @SneakyThrows
     public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias);
+        updateRequest.index(indeks);
         updateRequest.type("_doc");
         updateRequest.id(arbeidslisteDTO.getFnr().getFnr());
         String frist = arbeidslisteDTO.getFrist() == null ? null : arbeidslisteDTO.getFrist().toString();
@@ -137,7 +137,7 @@ public class ElasticServiceV2 {
                 .endObject()
         );
         try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
+            restHighLevelClientSupplier.get().update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument ved oppdatering av arbeidsliste");
@@ -148,7 +148,7 @@ public class ElasticServiceV2 {
     @SneakyThrows
     public AktoerId slettArbeidsliste(Fnr fnr, AktoerId aktoerId) {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias);
+        updateRequest.index(indeks);
         updateRequest.type("_doc");
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
@@ -164,7 +164,7 @@ public class ElasticServiceV2 {
                 .endObject()
         );
         try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
+            restHighLevelClientSupplier.get().update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument ved oppdatering av arbeidsliste");
@@ -175,12 +175,12 @@ public class ElasticServiceV2 {
 
     public Optional<Arbeidsliste> hentArbeidsListe(Fnr fnr){
         GetRequest getRequest = new GetRequest();
-        getRequest.index(alias);
+        getRequest.index(indeks);
         getRequest.type("_doc");
         getRequest.id(fnr.getFnr());
 
         try {
-            GetResponse a = restHighLevelClient.get(getRequest, DEFAULT);
+            GetResponse a = restHighLevelClientSupplier.get().get(getRequest, DEFAULT);
             return Optional.ofNullable(arbeidslisteMapper(a.getSource()));
         } catch (IOException e) {
             e.printStackTrace();
@@ -208,10 +208,10 @@ public class ElasticServiceV2 {
     @SneakyThrows
     private <T> T search(SearchSourceBuilder searchSourceBuilder, Class<T> clazz) {
         SearchRequest request = new SearchRequest()
-                .indices(alias)
+                .indices(indeks)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = restHighLevelClientSupplier.get().search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
@@ -234,15 +234,4 @@ public class ElasticServiceV2 {
         return null;
     }
 
-    /*
-    "sistEndretAv") VeilederId sistEndretAv,
-                        @JsonProperty("endringstidspunkt") ZonedDateTime endringstidspunkt,
-                        @JsonProperty("overskrift") String overskrift,
-                        @JsonProperty("kommentar") String kommentar,
-                        @JsonProperty("frist") ZonedDateTime frist,
-                        @JsonProperty("isOppfolgendeVeileder") Boolean isOppfolgendeVeileder,
-                        @JsonProperty("arbeidslisteAktiv") Boolean arbeidslisteAktiv,
-                        @JsonProperty("kategori") Kategori kategori,
-                        @JsonProperty("harVeilederTilgang"
-     */
 }

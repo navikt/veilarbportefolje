@@ -1,17 +1,13 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.rest.client.RestUtils;
-import no.nav.pto.veilarbportefolje.elastic.domene.CountResponse;
+import no.nav.common.test.ssl.SSLTestUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.client.RestClient;
@@ -20,20 +16,12 @@ import org.elasticsearch.client.RestHighLevelClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-
-import static no.nav.common.utils.EnvironmentUtils.resolveHostName;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
 
 @Slf4j
 public class ElasticUtils {
 
-    public static final String NAIS_LOADBALANCED_HOSTNAME = "tpa-veilarbelastic-elasticsearch.nais.preprod.local";
-    public static final String NAIS_INTERNAL_CLUSTER_HOSTNAME = "tpa-veilarbelastic-elasticsearch.tpa.svc.nais.local";
-
-    private static int SOCKET_TIMEOUT = 120_000;
-    private static int CONNECT_TIMEOUT = 60_000;
+    private static final int SOCKET_TIMEOUT = 120_000;
+    private static final int CONNECT_TIMEOUT = 60_000;
 
     public static RestHighLevelClient createClient(ElasticClientConfig config) {
         HttpHost httpHost = new HttpHost(
@@ -63,7 +51,12 @@ public class ElasticUtils {
         return new RestClientBuilder.HttpClientConfigCallback() {
             @Override
             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                return httpClientBuilder.setDefaultCredentialsProvider(createCredentialsProvider());
+                // TODO: Siden vi bruker self-signed SSL certs så må vi skru av validering for elastic rest klienten
+                //  Når vi går over til Aiven så vil vi ikke lenger trenge å skru av validering av SSL certs
+                return httpClientBuilder
+                        .setDefaultCredentialsProvider(createCredentialsProvider())
+                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE) // NB!: Vil fjerne sjekk på hostname for certs
+                        .setSSLContext(SSLTestUtils.sslContext); // NB!: Dette vil fjerne sjekk på SSL certs
             }
 
             private CredentialsProvider createCredentialsProvider() {
@@ -79,77 +72,10 @@ public class ElasticUtils {
         };
     }
 
-
     public static String createIndexName(String alias) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         String timestamp = LocalDateTime.now().format(formatter);
         return String.format("%s_%s", alias, timestamp);
     }
 
-
-    @SneakyThrows
-    public static long getCount() {
-        String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
-        OkHttpClient client = no.nav.common.rest.client.RestClient.baseClient();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("Authorization", getAuthHeaderValue())
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-           return RestUtils.parseJsonResponse(response, CountResponse.class)
-                   .map(CountResponse::getCount)
-                   .orElse(0L);
-        }
-    }
-
-    static String getAbsoluteUrl() {
-        return String.format(
-                "%s://%s:%s/%s/",
-                getElasticScheme(),
-                getElasticHostname(),
-                getElasticPort(),
-                getAlias()
-        );
-    }
-
-    static String getAuthHeaderValue() {
-        String auth = VEILARBELASTIC_USERNAME + ":" + VEILARBELASTIC_PASSWORD;
-        return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
-    }
-
-    public static String getAlias() {
-        return "brukerindeks";
-    }
-
-    static String getElasticScheme() {
-        if (onDevillo()) {
-            return "https";
-        } else {
-            return "http";
-        }
-    }
-
-    static int getElasticPort() {
-        if (onDevillo()) {
-            return 443;
-        } else {
-            return 9200;
-        }
-    }
-
-    static String getElasticHostname() {
-        if (onDevillo()) {
-            return NAIS_LOADBALANCED_HOSTNAME;
-        } else {
-            return NAIS_INTERNAL_CLUSTER_HOSTNAME;
-        }
-    }
-
-    public static boolean onDevillo() {
-        String hostname = resolveHostName();
-        return hostname.contains("devillo.no");
-    }
 }

@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -43,7 +44,7 @@ public class CvServiceTest extends IntegrationTest {
     public void setUp() {
         indexName = generateId();
         aktorregisterClient = mock(AktorregisterClient.class);
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), aktorregisterClient, cvRepository);
+        cvService = new CvService(new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)), aktorregisterClient, cvRepository);
         createIndex(indexName);
     }
 

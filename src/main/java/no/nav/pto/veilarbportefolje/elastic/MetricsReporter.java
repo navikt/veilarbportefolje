@@ -2,32 +2,32 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Metrics;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import static io.micrometer.prometheus.PrometheusConfig.DEFAULT;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static io.micrometer.prometheus.PrometheusConfig.DEFAULT;
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
 
-@Component
 @Slf4j
+@Component
 public class MetricsReporter {
 
-    private ElasticIndexer elasticIndexer;
-    private static MeterRegistry prometheusMeterRegistry = new ProtectedPrometheusMeterRegistry();
+    private static final MeterRegistry prometheusMeterRegistry = new ProtectedPrometheusMeterRegistry();
 
-    public MetricsReporter(ElasticIndexer elasticIndexer) {
+    private final ElasticIndexer elasticIndexer;
+
+    @Autowired
+    public MetricsReporter(ElasticIndexer elasticIndexer, ElasticCountService elasticCountService) {
         this.elasticIndexer = elasticIndexer;
 
-        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
+        Gauge.builder("veilarbelastic_number_of_docs", elasticCountService::getCount).register(getMeterRegistry());
         Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
-
     }
 
     private Number sjekkIndeksSistOpprettet() {

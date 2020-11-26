@@ -16,27 +16,36 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+@Service
 public class ElasticService {
-    RestHighLevelClient restHighLevelClient;
-    VeilarbVeilederClient veilarbVeilederClient;
-    UnleashService unleashService;
-    String indeksNavn;
+    private final Supplier<RestHighLevelClient> restHighLevelClientSupplier;
+    private final VeilarbVeilederClient veilarbVeilederClient;
+    private final UnleashService unleashService;
+    private final String indeksNavn;
 
-
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, String indeksNavn) {
-        this.restHighLevelClient = restHighLevelClient;
+    @Autowired
+    public ElasticService(
+            Supplier<RestHighLevelClient> restHighLevelClientSupplier,
+            VeilarbVeilederClient veilarbVeilederClient,
+            UnleashService unleashService,
+            ElasticIndex elasticIndex
+    ) {
+        this.restHighLevelClientSupplier = restHighLevelClientSupplier;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.unleashService = unleashService;
-        this.indeksNavn = indeksNavn;
+        this.indeksNavn = elasticIndex.getIndex();
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
@@ -140,7 +149,7 @@ public class ElasticService {
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = restHighLevelClientSupplier.get().search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 

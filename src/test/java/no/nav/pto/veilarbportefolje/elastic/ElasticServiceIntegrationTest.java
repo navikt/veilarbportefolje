@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import org.elasticsearch.action.ActionListener;
@@ -62,14 +63,14 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         UnleashService unleashMock = mock(UnleashService.class);
 
-        elasticService = new ElasticService(ELASTIC_CLIENT, veilederServiceMock, unleashMock, TEST_INDEX);
+        elasticService = new ElasticService(() -> ELASTIC_CLIENT, veilederServiceMock, unleashMock, ElasticIndex.of(TEST_INDEX));
         elasticIndexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
-                ELASTIC_CLIENT,
+                () -> ELASTIC_CLIENT,
                 unleashMock,
                 mock(MetricsClient.class),
-                TEST_INDEX
+                mock(ElasticCountService.class), ElasticIndex.of(TEST_INDEX)
         );
     }
 

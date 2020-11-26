@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import org.apache.commons.io.IOUtils;
@@ -33,11 +34,14 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -47,7 +51,6 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.createIndexName;
-import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.getAlias;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type.ADD;
@@ -56,32 +59,36 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
+@Component
 public class ElasticIndexer {
 
     final static int BATCH_SIZE = 1000;
     final static int BATCH_SIZE_LIMIT = 1000;
-    private final RestHighLevelClient restHighLevelClient;
+    private final Supplier<RestHighLevelClient> restHighLevelClientSupplier;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final UnleashService unleashService;
     private final MetricsClient metricsClient;
+    private final ElasticCountService elasticCountService;
     private final String indexName;
 
+    @Autowired
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
-            RestHighLevelClient restHighLevelClient,
+            Supplier<RestHighLevelClient> restHighLevelClientSupplier,
             UnleashService unleashService,
             MetricsClient metricsClient,
-            String indexName
+            ElasticCountService elasticCountService,
+            ElasticIndex elasticIndex
     ) {
-
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
-        this.restHighLevelClient = restHighLevelClient;
+        this.restHighLevelClientSupplier = restHighLevelClientSupplier;
         this.unleashService = unleashService;
         this.metricsClient = metricsClient;
-        this.indexName = indexName;
+        this.elasticCountService = elasticCountService;
+        this.indexName = elasticIndex.getIndex();
     }
 
     @SneakyThrows
@@ -98,7 +105,7 @@ public class ElasticIndexer {
         long t0 = System.currentTimeMillis();
         Timestamp tidsstempel = Timestamp.valueOf(LocalDateTime.now());
 
-        String nyIndeks = opprettNyIndeks(createIndexName(getAlias()));
+        String nyIndeks = opprettNyIndeks(createIndexName(indexName));
         log.info("Hovedindeksering: Opprettet ny index {}", nyIndeks);
 
 
@@ -186,12 +193,12 @@ public class ElasticIndexer {
 
     public void deltaindeksering() {
         if (indeksenIkkeFinnes()) {
-            String message = format("Deltaindeksering: finner ingen indeks med alias %s", getAlias());
+            String message = format("Deltaindeksering: finner ingen indeks med alias %s", indexName);
             throw new IllegalStateException(message);
         }
 
         Event event = new Event("portefolje.antall.brukere");
-        event.addFieldToReport("antall_brukere", ElasticUtils.getCount());
+        event.addFieldToReport("antall_brukere", elasticCountService.getCount());
         metricsClient.report(event);
 
         log.info("Deltaindeksering: Starter deltaindeksering i Elasticsearch");
@@ -242,7 +249,7 @@ public class ElasticIndexer {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(indexName);
 
-        boolean exists = restHighLevelClient.indices().exists(request, DEFAULT);
+        boolean exists = restHighLevelClientSupplier.get().indices().exists(request, DEFAULT);
         return !exists;
     }
 
@@ -265,7 +272,7 @@ public class ElasticIndexer {
                 .endObject()
         );
 
-        restHighLevelClient.updateAsync(updateRequest, DEFAULT, new ActionListener<>() {
+        restHighLevelClientSupplier.get().updateAsync(updateRequest, DEFAULT, new ActionListener<>() {
             @Override
             public void onResponse(UpdateResponse updateResponse) {
                 log.info("Satte under oppfolging til false i elasticsearch");
@@ -306,7 +313,7 @@ public class ElasticIndexer {
     @SneakyThrows
     public Optional<String> hentGammeltIndeksNavn() {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(indexName);
-        GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
+        GetAliasesResponse response = restHighLevelClientSupplier.get().indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
     }
 
@@ -317,7 +324,7 @@ public class ElasticIndexer {
                 .alias(indexName);
 
         IndicesAliasesRequest request = new IndicesAliasesRequest().addAliasAction(addAliasAction);
-        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = restHighLevelClientSupplier.get().indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke legge til alias {}", indexName);
@@ -340,7 +347,7 @@ public class ElasticIndexer {
                 .addAliasAction(removeAliasAction)
                 .addAliasAction(addAliasAction);
 
-        AcknowledgedResponse response = restHighLevelClient.indices().updateAliases(request, DEFAULT);
+        AcknowledgedResponse response = restHighLevelClientSupplier.get().indices().updateAliases(request, DEFAULT);
 
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke oppdatere alias {}", indexName);
@@ -349,7 +356,7 @@ public class ElasticIndexer {
 
     public void slettGammelIndeks(String gammelIndeks) {
         try {
-            AcknowledgedResponse response = restHighLevelClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
+            AcknowledgedResponse response = restHighLevelClientSupplier.get().indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
             if (!response.isAcknowledged()) {
                 log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
             }
@@ -365,7 +372,7 @@ public class ElasticIndexer {
                 .map(bruker -> new IndexRequest(indeksNavn, "_doc", bruker.getFnr()).source(toJson(bruker), XContentType.JSON))
                 .forEach(bulk::add);
 
-        restHighLevelClient.bulkAsync(bulk, DEFAULT, new ActionListener<>() {
+        restHighLevelClientSupplier.get().bulkAsync(bulk, DEFAULT, new ActionListener<>() {
             @Override
             public void onResponse(BulkResponse bulkItemResponses) {
                 if (bulkItemResponses.hasFailures()) {
@@ -397,11 +404,11 @@ public class ElasticIndexer {
     @SneakyThrows
     public String opprettNyIndeks(String navn) {
 
-        String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
+        String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), StandardCharsets.UTF_8);
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
 
-        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
+        CreateIndexResponse response = restHighLevelClientSupplier.get().indices().create(request, DEFAULT);
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();

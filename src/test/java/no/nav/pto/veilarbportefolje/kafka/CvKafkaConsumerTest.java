@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.cv.CvRepository;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
@@ -24,9 +25,8 @@ public class CvKafkaConsumerTest extends IntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, indexName), mock(AktorregisterClient.class), mock(CvRepository.class));
+        cvService = new CvService(new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)), mock(AktorregisterClient.class), mock(CvRepository.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,
