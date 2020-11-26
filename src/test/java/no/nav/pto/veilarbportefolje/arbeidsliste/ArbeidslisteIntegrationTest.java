@@ -6,7 +6,6 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
-import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -40,37 +39,34 @@ public class ArbeidslisteIntegrationTest extends IntegrationTest {
     private static NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private static JdbcTemplate jdbcTemplate;
     private static AktorregisterClient aktorregisterClientMock;
-    private static AuthService authMock;
 
     private ArbeidslisteService arbeidslisteService;
-    private ArbeidslisteRepository arbeidslisteRepository;
 
     private String indexName;
 
     private static final String TEST_ENHET = "0000";
     private static final String TEST_VEILEDER_0 = "Z000000";
-    private static AktoerId aktoerId = AktoerId.of("0000000000");
-    private static Fnr fnr = Fnr.of("11111111111");
+    private static final AktoerId aktoerId = AktoerId.of("0000000000");
+    private static final Fnr fnr = Fnr.of("11111111111");
     private ElasticIndexer elasticIndexer;
     private BrukerService brukerService;
+
     @BeforeClass
     public static void beforeClass() {
         SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
         jdbcTemplate = new JdbcTemplate(ds);
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(ds);
         aktorregisterClientMock = mock(AktorregisterClient.class);
-        authMock = mock(AuthService.class);
-        Mockito.doReturn(true).when(authMock).harVeilederTilgangTilEnhet(Mockito.anyString(), Mockito.anyString());
 
     }
 
     @Before
     public void setUp() {
         indexName = generateId();
-        arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate, namedParameterJdbcTemplate);
+        ArbeidslisteRepository arbeidslisteRepository = new ArbeidslisteRepository(jdbcTemplate, namedParameterJdbcTemplate);
         BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
         brukerService = Mockito.spy( new BrukerService(brukerRepository, aktorregisterClientMock));
-        arbeidslisteService = Mockito.spy(new ArbeidslisteService(aktorregisterClientMock, arbeidslisteRepository, brukerService,new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)), mock(MetricsClient.class)));
+        arbeidslisteService = Mockito.spy(new ArbeidslisteService(aktorregisterClientMock, arbeidslisteRepository, brukerService, new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)), mock(MetricsClient.class)));
 
         elasticIndexer = new ElasticIndexer(
                 new AktivitetDAO(jdbcTemplate,namedParameterJdbcTemplate),

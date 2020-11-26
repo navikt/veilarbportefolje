@@ -53,18 +53,6 @@ public class ArbeidslisteService {
         return elasticelasticService.hentArbeidsListe(fnr);
     }
 
-    public Try<Arbeidsliste> getArbeidsliste(AktoerId aktoerId) {
-        List<Arbeidsliste> arbeidslistes = elasticelasticService.hentArbeidsListe(aktoerId);
-        if(arbeidslistes.size() == 1){
-            return Try.success(arbeidslistes.get(0));
-        }else if(arbeidslistes.size() > 1){
-            log.warn("Flere arbeidslister lagret på samme aktørId: " +aktoerId);
-            return Try.success(arbeidslistes.get(0));
-        }else{
-            return Try.failure(new NoSuchElementException("Fant ingen arbeids liste på aktoerId: " +aktoerId));
-        }
-    }
-
     public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
         metricsClient.report((new Event("arbeidsliste.opprettet")));
 
@@ -101,9 +89,17 @@ public class ArbeidslisteService {
                 .onSuccess(a -> elasticelasticService.slettArbeidsliste(fnr, a));
     }
 
-    //TODO: fix
     public Integer deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
-        return arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
+        Integer affectedRows = arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
+        if(affectedRows > 0){
+            List<Fnr> fnr = elasticelasticService.hentFnr(aktoerId);
+            if(fnr.size() == 1){
+                elasticelasticService.slettArbeidsliste(fnr.get(0), aktoerId);
+            }else {
+                log.warn("Flere fnr er mappet til samme aktoerId'er: "+aktoerId);
+            }
+        }
+        return affectedRows;
     }
 
     private Optional<AktoerId> hentAktoerId(Fnr fnr) {

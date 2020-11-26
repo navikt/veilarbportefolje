@@ -25,15 +25,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -42,7 +45,9 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 @Slf4j
 @Service
 public class ElasticServiceV2 {
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+    private DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd HH:mm:ss.")
+            .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, false)
+            .toFormatter();
     private final String indeks;
     private final Supplier<RestHighLevelClient> restHighLevelClientSupplier;
 
@@ -70,6 +75,19 @@ public class ElasticServiceV2 {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    public List<Fnr> hentFnr(AktoerId aktoerId) {
+        SearchSourceBuilder request =
+                new SearchSourceBuilder().query(
+                        boolQuery()
+                                .must(termQuery("aktoer_id", aktoerId.aktoerId))
+                );
+
+        ElasticSearchResponse response = search(request, ElasticSearchResponse.class);
+        return response.getHits().getHits().stream()
+                .map(hit -> Fnr.of(hit.get_source().getFnr()))
+                .collect(toList());
     }
 
     @SneakyThrows
@@ -187,23 +205,6 @@ public class ElasticServiceV2 {
         return Optional.empty();
     }
 
-    public List<Arbeidsliste> hentArbeidsListe(AktoerId aktoerId){
-        SearchSourceBuilder request =
-                new SearchSourceBuilder().query(
-                        boolQuery()
-                                .must(termQuery("oppfolging", true))
-                                .must(termQuery("aktoer_id", aktoerId.aktoerId))
-                                .must(termQuery("arbeidsliste_aktiv", true))
-                );
-
-        ElasticSearchResponse response = search(request, ElasticSearchResponse.class);
-
-        return response.getHits().getHits().stream()
-                .map(hit -> Arbeidsliste.of(hit.get_source()))
-                .collect(toList());
-    }
-
-
     @SneakyThrows
     private <T> T search(SearchSourceBuilder searchSourceBuilder, Class<T> clazz) {
         SearchRequest request = new SearchRequest()
@@ -217,8 +218,8 @@ public class ElasticServiceV2 {
     @SneakyThrows
     private Arbeidsliste arbeidslisteMapper(Map<String,Object> rs) {
         if(rs.get("arbeidsliste_aktiv") != null && (boolean)rs.get("arbeidsliste_aktiv")){
-            ZonedDateTime frist = rs.get("arbeidsliste_frist") == null ? null : toZonedDateTime(formatter.parse((String)rs.get("arbeidsliste_frist")));
-            ZonedDateTime endringstidspunkt = rs.get("arbeidsliste_endringstidspunkt") == null ? null : toZonedDateTime(formatter.parse((String)rs.get("arbeidsliste_endringstidspunkt")));
+            ZonedDateTime frist = rs.get("arbeidsliste_frist") == null ? null : ZonedDateTime.of(LocalDateTime.parse((String)rs.get("arbeidsliste_frist"),formatter), ZoneId.of("UTC"));
+            ZonedDateTime endringstidspunkt = rs.get("arbeidsliste_endringstidspunkt") == null ? null : ZonedDateTime.of(LocalDateTime.parse((String)rs.get("arbeidsliste_endringstidspunkt"),formatter), ZoneId.of("UTC"));
             Arbeidsliste.Kategori kategori = rs.get("arbeidsliste_kategori") == null ? null : Arbeidsliste.Kategori.valueOf((String) rs.get("arbeidsliste_kategori"));
 
             return new Arbeidsliste(
@@ -228,7 +229,8 @@ public class ElasticServiceV2 {
                     (String) rs.get("arbeidsliste_kommentar"),
                     frist,
                     kategori
-                    );
+                    )
+                    .setArbeidslisteAktiv(true);
             }
         return null;
     }

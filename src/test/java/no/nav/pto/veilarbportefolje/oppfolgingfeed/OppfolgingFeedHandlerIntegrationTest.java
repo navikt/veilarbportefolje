@@ -4,6 +4,7 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
@@ -14,8 +15,12 @@ import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticCountService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
 import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -29,23 +34,36 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 import static java.time.Instant.now;
-import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.*;
+import static no.nav.common.utils.IdUtils.generateId;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class OppfolgingFeedHandlerIntegrationTest {
+public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
 
     private static OppfolgingFeedHandler oppfolgingFeedHandler;
     private static ArbeidslisteService arbeidslisteService;
     private static JdbcTemplate jdbcTemplate;
     private static AktorregisterClient aktorregisterClientMock;
 
+    private static final String aktoerId = "11111111111";
+    private static final String navKontor = "0000";
+    private static final String fnr = "00000000000";
+    private static final String personId = "0";
+
+    private static final String navKontorArena = "0000";
+    private static final String navKontorArbeidsliste = "1111";
+    private static String indexName;
+    private static ElasticIndexer elasticIndexer;
+
     @BeforeClass
     public static void beforeClass() {
+        indexName = generateId();
         aktorregisterClientMock = mock(AktorregisterClient.class);
 
         SingleConnectionDataSource ds = TestUtil.setupInMemoryDatabase();
@@ -61,8 +79,18 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 aktorregisterClientMock,
                 arbeidslisteRepository,
                 brukerService,
-                mock(ElasticServiceV2.class),
+                new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)),
                 mock(MetricsClient.class)
+        );
+
+        elasticIndexer = new ElasticIndexer(
+                new AktivitetDAO(jdbcTemplate, namedParameterJdbcTemplate),
+                brukerRepository,
+                () -> ELASTIC_CLIENT,
+                mock(UnleashService.class),
+                mock(MetricsClient.class),
+                mock(ElasticCountService.class),
+                ElasticIndex.of(indexName)
         );
 
         OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(jdbcTemplate);
@@ -78,6 +106,7 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 new TestTransactor(),
                 new LeaderElectionClientMock()
         );
+        createIndex(indexName);
     }
 
     @After
@@ -89,28 +118,20 @@ public class OppfolgingFeedHandlerIntegrationTest {
 
     @Test
     public void skal_hente_nav_kontor_fra_db_link_om_vi_ikke_har_mappet_inn_aktoer_id() {
-        String aktoerId = "11111111111";
-        String navKontor = "0000";
-
         setUpInitialState(aktoerId, navKontor, navKontor, true);
         sendMeldingPaaFeed(aktoerId);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(AktoerId.of(aktoerId))
-                .getOrElseThrow(() -> new RuntimeException());
-
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr)).get();
         assertThat(arbeidsliste).isNotNull();
     }
 
     @Test
     public void skal_ikke_slette_arbeidsliste_om_bruker_har_samme_nav_kontor_i_arena_som_vi_har_lagret_paa_arbeidslisten() {
-        String aktoerId = "11111111111";
-        String navKontor = "0000";
 
         setUpInitialState(aktoerId, navKontor, navKontor, false);
         sendMeldingPaaFeed(aktoerId);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(AktoerId.of(aktoerId))
-                .getOrElseThrow(() -> new RuntimeException());
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr)).get();
 
         assertThat(arbeidsliste).isNotNull();
     }
@@ -118,17 +139,11 @@ public class OppfolgingFeedHandlerIntegrationTest {
 
     @Test
     public void skal_slette_arbeidsliste_om_bruker_ikke_har_samme_nav_kontor_i_arena_som_vi_har_lagret_paa_arbeidslisten() {
-        String aktoerId = "11111111111";
-        String navKontorArena = "0000";
-        String navKontorArbeidsliste = "1111";
-
         setUpInitialState(aktoerId, navKontorArena, navKontorArbeidsliste, false);
         sendMeldingPaaFeed(aktoerId);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(AktoerId.of(aktoerId))
-                .getOrElseThrow(() -> new RuntimeException());
-
-        assertThat(arbeidsliste).isNull();
+        Optional<Arbeidsliste> arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr));
+        assertThat(arbeidsliste.orElse(null)).isNull();
     }
 
     private static void sendMeldingPaaFeed(String aktoerId) {
@@ -142,8 +157,6 @@ public class OppfolgingFeedHandlerIntegrationTest {
     }
 
     private static void setUpInitialState(String aktoerId, String navKontorArena, String navKontorArbeidsliste, boolean harIkkeMappetAktoerId) {
-        String fnr = "00000000000";
-        String personId = "0";
 
         if (harIkkeMappetAktoerId) {
             when(aktorregisterClientMock.hentFnr(anyString())).thenReturn(fnr);
@@ -175,17 +188,22 @@ public class OppfolgingFeedHandlerIntegrationTest {
                 .setKategori(Arbeidsliste.Kategori.BLA)
                 .setOverskrift("foo");
 
-        SqlUtils
-                .insert(jdbcTemplate, TABLE_NAME)
-                .value(AKTOERID, dto.getAktoerId().toString())
-                .value(FNR, dto.getFnr().toString())
-                .value(SIST_ENDRET_AV_VEILEDERIDENT, dto.getVeilederId().toString())
-                .value(ENDRINGSTIDSPUNKT, Timestamp.from(now()))
-                .value(OVERSKRIFT, dto.getOverskrift())
-                .value(KOMMENTAR, dto.getKommentar())
-                .value(FRIST, dto.getFrist())
-                .value(KATEGORI, dto.getKategori().name())
-                .value(NAV_KONTOR_FOR_ARBEIDSLISTE, dto.getNavKontorForArbeidsliste())
-                .execute();
+        deleteIndex(indexName);
+        createIndex(indexName);
+        populateElastic(navKontorArena);
+        arbeidslisteService.createArbeidsliste(dto);
+
+    }
+
+    private static void populateElastic(String navKontor) {
+        List<OppfolgingsBruker> brukere = listOf(
+                new OppfolgingsBruker()
+                        .setFnr(fnr)
+                        .setAktoer_id(aktoerId)
+                        .setOppfolging(true)
+                        .setEnhet_id(navKontor)
+        );
+        skrivBrukereTilTestindeks(indexName, elasticIndexer, brukere);
+        pollUntilHarOppdatertIElastic(()-> countDocuments(indexName) < brukere.size());
     }
 }
