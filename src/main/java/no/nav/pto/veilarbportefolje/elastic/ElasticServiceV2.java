@@ -160,7 +160,6 @@ public class ElasticServiceV2 {
                 .nullField("arbeidsliste_kategori")
                 .nullField("arbeidsliste_endringstidspunkt")
                 .nullField("arbeidsliste_sist_endret_av_veilederid")
-                //.nullField("NAV_KONTOR_FOR_ARBEIDSLISTE")
                 .endObject()
         );
         try {
