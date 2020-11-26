@@ -110,7 +110,7 @@ public class ArbeidslisteIntegrationTest extends IntegrationTest {
         Assert.assertEquals(arbeidsliste.get(), localArbeidsliste);
 
          Optional<Arbeidsliste> ab = arbeidslisteService.getArbeidsliste(fnr);
-         Assert.assertEquals(mockArbeidslisteFromDTO_IgnoreEndringstidspunkt(ab.get(),localArbeidsliste),ab.get());
+         Assert.assertEquals(mockArbeidslisteFromDTO_IgnoreEndringstidspunkt_og_aktiv(ab.get(),localArbeidsliste),ab.get());
 
     }
 
@@ -146,7 +146,7 @@ public class ArbeidslisteIntegrationTest extends IntegrationTest {
         Assert.assertEquals(localArbeidsliste_1, arbeidsliste_1.get());
         Assert.assertNotNull(arbeidsliste_2.get().endringstidspunkt);
 
-        Assert.assertEquals(mockArbeidslisteFromDTO_IgnoreEndringstidspunkt(ab.get(),localArbeidsliste_2),ab.get());
+        Assert.assertEquals(mockArbeidslisteFromDTO_IgnoreEndringstidspunkt_og_aktiv(ab.get(),localArbeidsliste_2),ab.get());
     }
 
     @Test
@@ -175,14 +175,14 @@ public class ArbeidslisteIntegrationTest extends IntegrationTest {
         Assert.assertTrue(ab.isEmpty());
     }
 
-    private Arbeidsliste mockArbeidslisteFromDTO_IgnoreEndringstidspunkt(Arbeidsliste arbeidsliste, ArbeidslisteDTO arbeidslisteDTO){
+    private Arbeidsliste mockArbeidslisteFromDTO_IgnoreEndringstidspunkt_og_aktiv(Arbeidsliste arbeidsliste, ArbeidslisteDTO arbeidslisteDTO){
         ZonedDateTime frist = arbeidslisteDTO.frist == null ? null : ZonedDateTime.of(arbeidslisteDTO.frist.toLocalDateTime(), ZoneId.of("UTC"));
         return new Arbeidsliste(arbeidslisteDTO.veilederId,
                 arbeidsliste.endringstidspunkt,
                 arbeidslisteDTO.overskrift,
                 arbeidslisteDTO.kommentar,
                 frist,
-                arbeidslisteDTO.kategori);
+                arbeidslisteDTO.kategori).setArbeidslisteAktiv(arbeidsliste.arbeidslisteAktiv);
     }
 
     private void populateElastic() {
