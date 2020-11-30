@@ -44,7 +44,7 @@ public class CvServiceTest extends IntegrationTest {
     public void setUp() {
         indexName = generateId();
         aktorregisterClient = mock(AktorregisterClient.class);
-        cvService = new CvService(new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)), aktorregisterClient, cvRepository);
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, ElasticIndex.of(indexName)), aktorregisterClient, cvRepository);
         createIndex(indexName);
     }
 

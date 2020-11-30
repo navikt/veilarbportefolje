@@ -12,8 +12,6 @@ import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.function.Supplier;
-
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -22,11 +20,11 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 public class ElasticServiceV2 {
 
     private final String indeks;
-    private final Supplier<RestHighLevelClient> restHighLevelClientSupplier;
+    private final RestHighLevelClient restHighLevelClient;
 
     @Autowired
-    public ElasticServiceV2(Supplier<RestHighLevelClient> restHighLevelClientSupplier, ElasticIndex elasticIndex) {
-        this.restHighLevelClientSupplier = restHighLevelClientSupplier;
+    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, ElasticIndex elasticIndex) {
+        this.restHighLevelClient = restHighLevelClient;
         this.indeks = elasticIndex.getIndex();
     }
 
@@ -34,7 +32,6 @@ public class ElasticServiceV2 {
     public void updateHarDeltCv(Fnr fnr, boolean harDeltCv) {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indeks);
-        updateRequest.type("_doc");
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
                 .startObject()
@@ -43,7 +40,7 @@ public class ElasticServiceV2 {
         );
 
         try {
-            restHighLevelClientSupplier.get().update(updateRequest, DEFAULT);
+            restHighLevelClient.update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument ved oppdatering av cv");
@@ -55,7 +52,6 @@ public class ElasticServiceV2 {
     public void updateRegistering(Fnr fnr, ArbeidssokerRegistrertEvent utdanningEvent) {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indeks);
-        updateRequest.type("_doc");
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
                 .startObject()
@@ -67,7 +63,7 @@ public class ElasticServiceV2 {
         );
 
         try {
-            restHighLevelClientSupplier.get().update(updateRequest, DEFAULT);
+            restHighLevelClient.update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.info("Kunne ikke finne dokument ved oppdatering av cv");

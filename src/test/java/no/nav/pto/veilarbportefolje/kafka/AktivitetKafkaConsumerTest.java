@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.vavr.control.Try;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -11,7 +10,6 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticCountService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -69,7 +67,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
 
         brukerService = mock(BrukerService.class);
 
-        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, () -> ELASTIC_CLIENT, mock(UnleashService.class), mock(MetricsClient.class), mock(ElasticCountService.class), ElasticIndex.of(indexName)), brukerRepository, aktivitetDAO);
+        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, ElasticIndex.of(indexName)), brukerRepository, aktivitetDAO);
 
         aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService);
 

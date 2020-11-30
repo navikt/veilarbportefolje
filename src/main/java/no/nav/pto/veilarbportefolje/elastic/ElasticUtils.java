@@ -32,7 +32,6 @@ public class ElasticUtils {
 
         return new RestHighLevelClient(RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
-                .setMaxRetryTimeoutMillis(SOCKET_TIMEOUT)
                 .setRequestConfigCallback(
                         requestConfig -> {
                             requestConfig.setConnectTimeout(CONNECT_TIMEOUT);

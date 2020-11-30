@@ -1,12 +1,12 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
 import no.nav.common.featuretoggle.UnleashService;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -14,13 +14,13 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.elastic.ElasticCountService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
+import no.nav.pto.veilarbportefolje.util.ElasticTestUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
@@ -50,6 +50,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 public class RegistreringIntegrationTest extends IntegrationTest {
     private static JdbcTemplate jdbcTemplate;
     private static RegistreringRepository registreringRepository;
@@ -61,8 +62,8 @@ public class RegistreringIntegrationTest extends IntegrationTest {
 
     private static RegistreringService registreringService;
     private static String indexName;
-    private static AktoerId AKTORID = AktoerId.of("0000000000");
-    private static Fnr fnr = Fnr.of("11111111111");
+    private static final AktoerId AKTORID = AktoerId.of("0000000000");
+    private static final Fnr fnr = Fnr.of("11111111111");
 
     @BeforeClass
     public static void beforeClass() {
@@ -82,17 +83,16 @@ public class RegistreringIntegrationTest extends IntegrationTest {
 
         ElasticIndex index = ElasticIndex.of(indexName);
 
-        registreringService = new RegistreringService(registreringRepository, new ElasticServiceV2(() -> ELASTIC_CLIENT, index), brukerRepositorySpy);
-        elasticService = new ElasticService(() -> ELASTIC_CLIENT, mockVeilederService(), mock(UnleashService.class), index);
+        registreringService = new RegistreringService(registreringRepository, new ElasticServiceV2(ELASTIC_CLIENT, index), brukerRepositorySpy);
+        elasticService = new ElasticService(ELASTIC_CLIENT, mockVeilederService(), mock(UnleashService.class), index);
         elasticIndexer = new ElasticIndexer(
                 new AktivitetDAO(jdbcTemplate,namedParameterJdbcTemplate),
                 brukerRepository,
-                () -> ELASTIC_CLIENT,
-                mock(UnleashService.class),
-                mock(MetricsClient.class),
-                mock(ElasticCountService.class), index
+                ELASTIC_CLIENT,
+                index
         );
-        elasticIndexer.opprettNyIndeks(indexName);
+
+        ElasticTestUtils.opprettNyIndeks(indexName, ELASTIC_CLIENT);
     }
 
     @After

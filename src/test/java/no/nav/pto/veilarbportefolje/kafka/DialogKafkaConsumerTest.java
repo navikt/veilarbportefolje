@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -8,7 +7,6 @@ import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.elastic.ElasticCountService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import org.json.JSONObject;
@@ -38,7 +36,7 @@ public class DialogKafkaConsumerTest extends IntegrationTest {
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         BrukerRepository brukerRepository = new BrukerRepository(jdbcTemplate, namedParameterJdbcTemplate);
         indexName = generateId();
-        dialogService = new DialogService(new DialogRepository(jdbcTemplate), new ElasticIndexer(mock(AktivitetDAO.class), brukerRepository, () -> ELASTIC_CLIENT, mock(UnleashService.class), mock(MetricsClient.class), mock(ElasticCountService.class), ElasticIndex.of(indexName)));
+        dialogService = new DialogService(new DialogRepository(jdbcTemplate), new ElasticIndexer(mock(AktivitetDAO.class), brukerRepository, ELASTIC_CLIENT, ElasticIndex.of(indexName)));
 
 
         new KafkaConsumerRunnable<>(

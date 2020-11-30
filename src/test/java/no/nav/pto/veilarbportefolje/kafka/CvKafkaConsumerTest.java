@@ -26,7 +26,7 @@ public class CvKafkaConsumerTest extends IntegrationTest {
     @BeforeClass
     public static void beforeClass() {
         indexName = generateId();
-        cvService = new CvService(new ElasticServiceV2(() -> ELASTIC_CLIENT, ElasticIndex.of(indexName)), mock(AktorregisterClient.class), mock(CvRepository.class));
+        cvService = new CvService(new ElasticServiceV2(ELASTIC_CLIENT, ElasticIndex.of(indexName)), mock(AktorregisterClient.class), mock(CvRepository.class));
 
         new KafkaConsumerRunnable<>(
                 cvService,

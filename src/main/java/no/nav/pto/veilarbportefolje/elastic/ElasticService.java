@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -30,19 +29,19 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Service
 public class ElasticService {
-    private final Supplier<RestHighLevelClient> restHighLevelClientSupplier;
+    private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final UnleashService unleashService;
     private final String indeksNavn;
 
     @Autowired
     public ElasticService(
-            Supplier<RestHighLevelClient> restHighLevelClientSupplier,
+            RestHighLevelClient restHighLevelClient,
             VeilarbVeilederClient veilarbVeilederClient,
             UnleashService unleashService,
             ElasticIndex elasticIndex
     ) {
-        this.restHighLevelClientSupplier = restHighLevelClientSupplier;
+        this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.unleashService = unleashService;
         this.indeksNavn = elasticIndex.getIndex();
@@ -149,7 +148,7 @@ public class ElasticService {
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = restHighLevelClientSupplier.get().search(request, RequestOptions.DEFAULT);
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 

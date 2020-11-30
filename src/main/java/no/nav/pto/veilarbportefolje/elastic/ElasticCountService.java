@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
@@ -11,42 +10,32 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 
-import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.*;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_PASSWORD;
+import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.VEILARBELASTIC_USERNAME;
 
 @Slf4j
 @Service
 public class ElasticCountService {
 
-    private final UnleashService unleashService;
-    private final ElasticClientConfig naisTpaElasticClientConfig;
-    private final ElasticClientConfig ptoElasticsearchElasticClientConfig;
+    private final ElasticClientConfig elasticsearchElasticClientConfig;
     private final String indexName;
 
     @Autowired
     public ElasticCountService(
-            UnleashService unleashService,
-            @Qualifier(NAIS_TPA_CLIENT_CONFIG) ElasticClientConfig naisTpaElasticClientConfig,
-            @Qualifier(PTO_ELASTICSEARCH_CLIENT_CONFIG) ElasticClientConfig ptoElasticsearchElasticClientConfig,
+            ElasticClientConfig elasticsearchElasticClientConfig,
             ElasticIndex elasticIndex
     ) {
-        this.unleashService = unleashService;
-        this.naisTpaElasticClientConfig = naisTpaElasticClientConfig;
-        this.ptoElasticsearchElasticClientConfig = ptoElasticsearchElasticClientConfig;
+        this.elasticsearchElasticClientConfig = elasticsearchElasticClientConfig;
         this.indexName = elasticIndex.getIndex();
     }
 
     @SneakyThrows
     public long getCount() {
-        ElasticClientConfig config = unleashService.isEnabled(USE_PTO_ELASTICSEARCH_TOGGLE)
-                ? ptoElasticsearchElasticClientConfig
-                : naisTpaElasticClientConfig;
-
-        String url = createAbsoluteUrl(config, indexName) + "_doc/_count";
+        String url = createAbsoluteUrl(elasticsearchElasticClientConfig, indexName) + "_doc/_count";
         OkHttpClient client = no.nav.common.rest.client.RestClient.baseClient();
 
         Request request = new Request.Builder()

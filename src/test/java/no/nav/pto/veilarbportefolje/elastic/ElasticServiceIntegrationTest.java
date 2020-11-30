@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.abac.Pep;
 import no.nav.common.featuretoggle.UnleashService;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
@@ -15,6 +14,7 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.kafka.IntegrationTest;
+import no.nav.pto.veilarbportefolje.util.ElasticTestUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
@@ -63,20 +63,18 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
 
         UnleashService unleashMock = mock(UnleashService.class);
 
-        elasticService = new ElasticService(() -> ELASTIC_CLIENT, veilederServiceMock, unleashMock, ElasticIndex.of(TEST_INDEX));
+        elasticService = new ElasticService(ELASTIC_CLIENT, veilederServiceMock, unleashMock, ElasticIndex.of(TEST_INDEX));
         elasticIndexer = new ElasticIndexer(
                 mock(AktivitetDAO.class),
                 mock(BrukerRepository.class),
-                () -> ELASTIC_CLIENT,
-                unleashMock,
-                mock(MetricsClient.class),
-                mock(ElasticCountService.class), ElasticIndex.of(TEST_INDEX)
+                ELASTIC_CLIENT,
+                ElasticIndex.of(TEST_INDEX)
         );
     }
 
     @Before
     public void createIndex() {
-        elasticIndexer.opprettNyIndeks(TEST_INDEX);
+        ElasticTestUtils.opprettNyIndeks(TEST_INDEX, ELASTIC_CLIENT);
     }
 
     @After
