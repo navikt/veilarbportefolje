@@ -113,7 +113,7 @@ public class ArbeidslisteRepositoryTest {
         repo.deleteArbeidslisteForAktoerid(aktoerId1);
         arbeidsliste = repo.retrieveArbeidslisteFromDb(aktoerId1);
         assertTrue(arbeidsliste.isSuccess());
-        assertNotNull(arbeidsliste.get());
+        assertNull(arbeidsliste.get());
     }
 
 }
