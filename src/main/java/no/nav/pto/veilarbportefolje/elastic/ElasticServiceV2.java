@@ -72,7 +72,7 @@ public class ElasticServiceV2 {
                 log.info("Kunne ikke finne dokument i oppersajon hent aktoer_id fra fnr.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Kunne ikke lese inn index fil fra Elasticsearch under henting av AktoerId.");
         }
         return Optional.empty();
     }
@@ -200,7 +200,7 @@ public class ElasticServiceV2 {
             GetResponse a = restHighLevelClientSupplier.get().get(getRequest, DEFAULT);
             return Optional.ofNullable(arbeidslisteMapper(a.getSource()));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Kunne ikke lese inn index fil fra Elasticsearch under henting av arbeidsliste.");
         }
         return Optional.empty();
     }
