@@ -41,7 +41,7 @@ public class ElasticQueryBuilderTest {
     @Test
     public void skal_bygge_riktig_filtrer_paa_veileder_script() {
         String actualScript = byggVeilederPaaEnhetScript(listOf("Z000000", "Z000001", "Z000002"));
-        String expectedScript = "[\"Z000000\",\"Z000001\",\"Z000002\"].contains(doc.veileder_id.value)";
+        String expectedScript = "(doc.veileder_id.size() != 0 && [\"Z000000\",\"Z000001\",\"Z000002\"].contains(doc.veileder_id.value)).toString()";
 
         assertThat(actualScript).isEqualTo(expectedScript);
     }

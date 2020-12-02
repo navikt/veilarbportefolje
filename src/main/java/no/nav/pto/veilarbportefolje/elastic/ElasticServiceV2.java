@@ -4,29 +4,34 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.elastic.domene.ElasticIndex;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
+@Service
 public class ElasticServiceV2 {
 
-    private String alias;
-    private RestHighLevelClient restHighLevelClient;
+    private final String indeks;
+    private final RestHighLevelClient restHighLevelClient;
 
-    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, String alias) {
+    @Autowired
+    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, ElasticIndex elasticIndex) {
         this.restHighLevelClient = restHighLevelClient;
-        this.alias = alias;
+        this.indeks = elasticIndex.getIndex();
     }
 
     @SneakyThrows
     public void updateHarDeltCv(Fnr fnr, boolean harDeltCv) {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias);
-        updateRequest.type("_doc");
+        updateRequest.index(indeks);
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
                 .startObject()
@@ -46,8 +51,7 @@ public class ElasticServiceV2 {
     @SneakyThrows
     public void updateRegistering(Fnr fnr, ArbeidssokerRegistrertEvent utdanningEvent) {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(alias);
-        updateRequest.type("_doc");
+        updateRequest.index(indeks);
         updateRequest.id(fnr.getFnr());
         updateRequest.doc(jsonBuilder()
                 .startObject()

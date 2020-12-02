@@ -8,16 +8,15 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.json.JSONObject;
 import org.testcontainers.containers.KafkaContainer;
@@ -87,16 +86,15 @@ public class IntegrationTest {
     protected static IndexResponse createDocument(String indexName, Fnr fnr, String json) {
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName);
-        indexRequest.type("_doc");
         indexRequest.id(fnr.getFnr());
         indexRequest.source(json, XContentType.JSON);
         return ELASTIC_CLIENT.index(indexRequest, DEFAULT);
     }
 
     @SneakyThrows
-    public static AcknowledgedResponse deleteIndex(String indexName) {
+    public static void deleteIndex(String indexName) {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
-        return ELASTIC_CLIENT.indices().delete(deleteIndexRequest, DEFAULT);
+        ELASTIC_CLIENT.indices().delete(deleteIndexRequest, DEFAULT);
     }
 
     @SneakyThrows
@@ -115,9 +113,7 @@ public class IntegrationTest {
     }
 
 
-
     public static void populateKafkaTopic(String topic, String key ,String payload) {
-
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, payload);
 
         try {

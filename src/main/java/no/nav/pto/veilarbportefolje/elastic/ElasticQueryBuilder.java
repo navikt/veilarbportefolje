@@ -169,6 +169,7 @@ public class ElasticQueryBuilder {
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
         Script script = new Script(byggVeilederPaaEnhetScript(veilederePaaEnhet));
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, STRING);
+        scriptBuilder.order(SortOrder.DESC); // NyForEnhet skal legge seg øverst
         builder.sort(scriptBuilder);
         return builder;
     }
@@ -478,7 +479,7 @@ public class ElasticQueryBuilder {
                 "ufordelteBrukere",
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .should(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
+                        .must(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
                         .should(boolQuery().mustNot(existsQuery("veileder_id")))
         );
     }
@@ -544,8 +545,8 @@ public class ElasticQueryBuilder {
                 .map(id -> format("\"%s\"", id))
                 .collect(joining(","));
 
-        String medKlammer = format("%s%s%s", "[", veiledere, "]");
-        return format("%s.contains(doc.veileder_id.value)", medKlammer);
+        String veilederListe = format("[%s]", veiledere);
+        return format("(doc.veileder_id.size() != 0 && %s.contains(doc.veileder_id.value)).toString()", veilederListe);
     }
 }
 

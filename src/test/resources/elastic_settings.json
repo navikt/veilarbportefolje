@@ -1,0 +1,130 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 2,
+      "refresh_interval": "10s",
+      "max_ngram_diff": 18
+    },
+    "analysis": {
+      "filter": {
+        "spesialtegnfolding": {
+          "type": "asciifolding",
+          "preserve_original": true
+        }
+      },
+      "analyzer": {
+        "fullt_navn_sok": {
+          "tokenizer": "fullt_navn_sok_tokenizer",
+          "filter": [
+            "lowercase",
+            "spesialtegnfolding"
+          ]
+        },
+        "fnr_sok": {
+          "tokenizer": "fnr_sok_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "fullt_navn_sok_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        },
+        "fnr_sok_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 12,
+          "token_chars": [
+            "digit"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "veileder_id": {
+        "type": "keyword"
+      },
+      "enhet_id": {
+        "type": "keyword"
+      },
+      "person_id": {
+        "type": "keyword"
+      },
+      "aktoer_id": {
+        "type": "keyword"
+      },
+      "etternavn": {
+        "type": "keyword"
+      },
+      "arbeidsliste_overskrift": {
+        "type": "keyword"
+      },
+      "arbeidsliste_kategori": {
+        "type": "keyword"
+      },
+      "vedtak_status": {
+        "type": "keyword"
+      },
+      "fullt_navn": {
+        "type": "text",
+        "analyzer": "fullt_navn_sok",
+        "fields": {
+          "raw": {
+            "type": "keyword"
+          }
+        }
+      },
+      "fnr": {
+        "type": "text",
+        "fields": {
+          "raw": {
+            "type": "keyword"
+          }
+        },
+        "analyzer": "fnr_sok"
+      },
+      "aktivitet_utlopsdatoer": {
+        "type": "date"
+      },
+      "aktivitet_mote_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_stilling_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_egen_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_behandling_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_ijobb_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_sokeavtale_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_tiltak_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_utdanningaktivitet_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      },
+      "aktivitet_gruppeaktivitet_utlopsdato": {
+        "type": "date",
+        "copy_to": "aktivitet_utlopsdatoer"
+      }
+    }
+  }
+}

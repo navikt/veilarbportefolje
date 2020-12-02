@@ -16,6 +16,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,18 +27,24 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+@Service
 public class ElasticService {
-    RestHighLevelClient restHighLevelClient;
-    VeilarbVeilederClient veilarbVeilederClient;
-    UnleashService unleashService;
-    String indeksNavn;
+    private final RestHighLevelClient restHighLevelClient;
+    private final VeilarbVeilederClient veilarbVeilederClient;
+    private final UnleashService unleashService;
+    private final String indeksNavn;
 
-
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, String indeksNavn) {
+    @Autowired
+    public ElasticService(
+            RestHighLevelClient restHighLevelClient,
+            VeilarbVeilederClient veilarbVeilederClient,
+            UnleashService unleashService,
+            ElasticIndex elasticIndex
+    ) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.unleashService = unleashService;
-        this.indeksNavn = indeksNavn;
+        this.indeksNavn = elasticIndex.getIndex();
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
@@ -81,7 +89,7 @@ public class ElasticService {
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
         ElasticSearchResponse response = search(searchSourceBuilder, indeksNavn, ElasticSearchResponse.class);
-        int totalHits = response.getHits().getTotal();
+        int totalHits = response.getHits().getTotal().getValue();
 
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)
