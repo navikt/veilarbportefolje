@@ -89,7 +89,7 @@ public class ElasticService {
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
         ElasticSearchResponse response = search(searchSourceBuilder, indeksNavn, ElasticSearchResponse.class);
-        int totalHits = response.getHits().getTotal();
+        int totalHits = response.getHits().getTotal().getValue();
 
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)

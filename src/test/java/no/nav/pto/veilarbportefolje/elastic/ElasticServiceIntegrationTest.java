@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.common.abac.Pep;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -49,8 +48,6 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
     private static final String TEST_VEILEDER_0 = "Z000000";
     private static final String TEST_VEILEDER_1 = "Z000001";
     private static final String LITE_PRIVILEGERT_VEILEDER = "Z000001";
-    private static final String UNPRIVILEGED_TOKEN = "unprivileged-test-token";
-    private static final String PRIVILEGED_TOKEN = "test-token";
 
     private static ElasticService elasticService;
     private static ElasticIndexer elasticIndexer;
@@ -959,17 +956,6 @@ public class ElasticServiceIntegrationTest extends IntegrationTest {
         VeilarbVeilederClient veilederServiceMock = mock(VeilarbVeilederClient.class);
         when(veilederServiceMock.hentVeilederePaaEnhet(TEST_ENHET)).thenReturn(listOf((TEST_VEILEDER_0)));
         return veilederServiceMock;
-    }
-
-    private static Pep mockPep() {
-        Pep pepMock = mock(Pep.class);
-        when(pepMock.harVeilederTilgangTilEgenAnsatt(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.harVeilederTilgangTilKode6(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.harVeilederTilgangTilKode7(UNPRIVILEGED_TOKEN)).thenReturn(false);
-        when(pepMock.harVeilederTilgangTilEgenAnsatt(PRIVILEGED_TOKEN)).thenReturn(true);
-        when(pepMock.harVeilederTilgangTilKode6(PRIVILEGED_TOKEN)).thenReturn(true);
-        when(pepMock.harVeilederTilgangTilKode7(PRIVILEGED_TOKEN)).thenReturn(true);
-        return pepMock;
     }
 
 }
