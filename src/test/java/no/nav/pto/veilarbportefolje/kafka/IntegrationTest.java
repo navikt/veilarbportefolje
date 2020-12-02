@@ -2,20 +2,26 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.apache.http.util.EntityUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.Request;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -24,12 +30,14 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 import static java.lang.System.currentTimeMillis;
 import static no.nav.pto.veilarbportefolje.elastic.Constant.ELASTICSEARCH_VERSION;
+import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
 import static org.apache.http.HttpHost.create;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -142,4 +150,24 @@ public class IntegrationTest {
         return currentTimeMillis() - t0 > 12_000;
     }
 
+    public static void skrivBrukereTilTestindeks(String indexName, ElasticIndexer elasticIndexer, List<OppfolgingsBruker> brukere) {
+        OppfolgingsBruker[] array = new OppfolgingsBruker[brukere.size()];
+        skrivBrukereTilTestindeks(indexName, elasticIndexer, brukere.toArray(array));
+    }
+
+    @SneakyThrows
+    private static void skrivBrukereTilTestindeks(String indexName, ElasticIndexer elasticIndexer, OppfolgingsBruker... brukere) {
+        elasticIndexer.skrivTilIndeks(indexName, listOf(brukere));
+        ELASTIC_CLIENT.indices().refreshAsync(new RefreshRequest(indexName), RequestOptions.DEFAULT, new ActionListener<RefreshResponse>() {
+            @Override
+            public void onResponse(RefreshResponse refreshResponse) {
+                System.out.println("refreshed");
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                System.err.println("noe gikk galt her " + e);
+            }
+        });
+    }
 }

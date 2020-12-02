@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
@@ -9,7 +10,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +18,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 
+@Slf4j
 @Service
 public class ArbeidslisteService {
     private final AktorregisterClient aktorregisterClient;
     private final ArbeidslisteRepository arbeidslisteRepository;
     private final BrukerService brukerService;
-    private final ElasticIndexer elasticIndexer;
+    private final ElasticServiceV2 elasticelasticService;
     private final MetricsClient metricsClient;
 
     @Autowired
@@ -36,69 +39,81 @@ public class ArbeidslisteService {
             AktorregisterClient aktorregisterClient,
             ArbeidslisteRepository arbeidslisteRepository,
             BrukerService brukerService,
-            ElasticIndexer elasticIndexer,
+            ElasticServiceV2 elasticelasticService,
             MetricsClient metricsClient
     ) {
         this.aktorregisterClient = aktorregisterClient;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.brukerService = brukerService;
-        this.elasticIndexer = elasticIndexer;
+        this.elasticelasticService = elasticelasticService;
         this.metricsClient = metricsClient;
     }
 
-    public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
-        return hentAktoerId(fnr).map(this::getArbeidsliste).get();
+    public Optional<Arbeidsliste> getArbeidsliste(Fnr fnr) {
+        return elasticelasticService.hentArbeidsListe(fnr);
     }
 
-    public Try<Arbeidsliste> getArbeidsliste(AktoerId aktoerId) {
-        return arbeidslisteRepository.retrieveArbeidsliste(aktoerId);
-    }
-
-    public Try<AktoerId> createArbeidsliste(ArbeidslisteDTO dto) {
-
+    public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
         metricsClient.report((new Event("arbeidsliste.opprettet")));
 
-        Try<AktoerId> aktoerId = hentAktoerId(dto.getFnr());
-        if (aktoerId.isFailure()) {
-            return Try.failure(aktoerId.getCause());
+        Optional<AktoerId> aktoerId = hentAktoerId(dto.getFnr());
+        if (aktoerId.isEmpty()) {
+            return Try.failure(new NoSuchElementException("Fant ingen bruker med gitt fnr"));
         }
         dto.setAktoerId(aktoerId.get());
 
         String navKontorForBruker = brukerService.hentNavKontorFraDbLinkTilArena(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker);
 
-        return arbeidslisteRepository
-                .insertArbeidsliste(dto)
-                .onSuccess(elasticIndexer::indekser);
+        return arbeidslisteRepository.insertArbeidsliste(dto).onSuccess(elasticelasticService::updateArbeidsliste);
     }
 
-    public Try<AktoerId> updateArbeidsliste(ArbeidslisteDTO data) {
-        Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
-        if (aktoerId.isFailure()) {
-            return Try.failure(aktoerId.getCause());
+    public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
+        Optional<AktoerId> aktoerId = hentAktoerId(data.getFnr());
+        if (aktoerId.isEmpty()) {
+            return Try.failure(new NoSuchElementException("Fant ingen bruker med gitt fnr"));
         }
 
         return arbeidslisteRepository
                 .updateArbeidsliste(data.setAktoerId(aktoerId.get()))
-                .onSuccess(elasticIndexer::indekser);
+                .onSuccess(elasticelasticService::updateArbeidsliste);
     }
 
     public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
-        Try<AktoerId> aktoerId = hentAktoerId(fnr);
-        if (aktoerId.isFailure()) {
-            return Try.failure(aktoerId.getCause());
+        Optional<AktoerId> aktoerId = hentAktoerId(fnr);
+        if (aktoerId.isEmpty()) {
+            return Try.failure(new NoSuchElementException("Fant ingen bruker med gitt fnr"));
         }
         return arbeidslisteRepository
                 .deleteArbeidsliste(aktoerId.get())
-                .onSuccess(elasticIndexer::indekser);
+                .onSuccess(a -> elasticelasticService.slettArbeidsliste(fnr, a));
     }
 
     public Integer deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
-        return arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
+        Integer affectedRows = arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
+        if(affectedRows > 0){
+            List<Fnr> fnr = elasticelasticService.hentFnr(aktoerId);
+            if(fnr.size() == 1){
+                elasticelasticService.slettArbeidsliste(fnr.get(0), aktoerId);
+            }else {
+                log.warn("Flere fnr er mappet til samme aktoerId'er: "+aktoerId);
+            }
+        }
+        return affectedRows;
     }
 
-    private Try<AktoerId> hentAktoerId(Fnr fnr) {
-        return Try.of(() -> AktoerId.of(aktorregisterClient.hentAktorId(fnr.toString())));
+    private Optional<AktoerId> hentAktoerId(Fnr fnr) {
+        Optional<AktoerId> aktoerId = elasticelasticService.hentAktoerId(fnr);
+        if(aktoerId.isPresent()){
+            return aktoerId;
+        }else{
+            try {
+                AktoerId aktoerIdFraAreana = AktoerId.of(aktorregisterClient.hentAktorId(fnr.toString()));
+                return Optional.of(aktoerIdFraAreana);
+            }catch (Exception e){
+                return Optional.empty();
+            }
+        }
     }
 
     public Validation<String, List<Fnr>> erVeilederForBrukere(List<Fnr> fnrs) {
@@ -132,7 +147,7 @@ public class ArbeidslisteService {
     public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
         return hentAktoerId(fnr)
                 .map(aktoerId -> erVeilederForBruker(aktoerId, veilederId))
-                .getOrElse(false);
+                .isPresent();
     }
 
     public Boolean erVeilederForBruker(AktoerId aktoerId, VeilederId veilederId) {

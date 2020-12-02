@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.Fnr;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.sbl.sql.SqlUtils;
 import org.junit.After;
@@ -48,7 +48,7 @@ public class ArbeidslisteServiceTest {
 
         BrukerService brukerService = new BrukerService(brukerRepository, aktorregisterClientMock);
 
-        arbeidslisteService = new ArbeidslisteService(aktorregisterClientMock, arbeidslisteRepository, brukerService, mock(ElasticIndexer.class), mock(MetricsClient.class));
+        arbeidslisteService = new ArbeidslisteService(aktorregisterClientMock, arbeidslisteRepository, brukerService, mock(ElasticServiceV2.class), mock(MetricsClient.class));
     }
 
     @Before
