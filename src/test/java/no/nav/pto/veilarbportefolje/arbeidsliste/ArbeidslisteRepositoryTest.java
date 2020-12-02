@@ -108,12 +108,12 @@ public class ArbeidslisteRepositoryTest {
         AktoerId aktoerId1 = AktoerId.of("22222222");
         Try<Arbeidsliste> arbeidsliste = repo.retrieveArbeidslisteFromDb(aktoerId1);
         assertTrue(arbeidsliste.isSuccess());
-        assertTrue(arbeidsliste.get() != null);
+        assertNotNull(arbeidsliste.get());
 
         repo.deleteArbeidslisteForAktoerid(aktoerId1);
         arbeidsliste = repo.retrieveArbeidslisteFromDb(aktoerId1);
         assertTrue(arbeidsliste.isSuccess());
-        assertFalse(arbeidsliste.get() != null);
+        assertNotNull(arbeidsliste.get());
     }
 
 }

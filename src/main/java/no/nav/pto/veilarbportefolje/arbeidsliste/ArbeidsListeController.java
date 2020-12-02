@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.AktoerId;
@@ -34,19 +33,16 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerService brukerService;
-    private final AktorregisterClient aktorregisterClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
             BrukerService brukerService,
-            AktorregisterClient aktorregisterClient,
             AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
-        this.aktorregisterClient = aktorregisterClient;
         this.authService = authService;
 
     }
@@ -105,7 +101,7 @@ public class ArbeidsListeController {
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
+        return arbeidslisteService.getArbeidsliste(new Fnr(fnr)).orElse(emptyArbeidsliste())
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
     }
@@ -122,7 +118,7 @@ public class ArbeidsListeController {
                 .onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        return arbeidslisteService.getArbeidsliste(fnr).get()
+        return arbeidslisteService.getArbeidsliste(fnr).orElse(emptyArbeidsliste())
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(arbeidslisteService.erVeilederForBruker(
                         fnr,
@@ -137,7 +133,7 @@ public class ArbeidsListeController {
 
         return arbeidslisteService
                 .deleteArbeidsliste(new Fnr(fnr))
-                .map((a) -> emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
+                .map(a -> emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
                 .getOrElseThrow(() -> new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
     }
 
@@ -160,15 +156,15 @@ public class ArbeidsListeController {
             }
 
             validerFnrs.get()
-                    .forEach((fnr) -> arbeidslisteService
+                    .forEach(fnr -> arbeidslisteService
                             .deleteArbeidsliste(fnr)
-                            .onSuccess((aktoerid) -> {
+                            .onSuccess(aktoerid -> {
                                 okFnrs.add(fnr.toString());
                                 log.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
                             })
-                            .onFailure((error) -> {
+                            .onFailure(e -> {
                                 feiledeFnrs.add(fnr.toString());
-                                log.warn("Kunne ikke slette arbeidsliste", error);
+                                log.warn("Kunne ikke slette arbeidsliste", e);
                             })
                     );
 

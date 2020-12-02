@@ -112,7 +112,7 @@ public class ArbeidslisteRepository {
                     return aktoerID;
                 }
         )
-                .onSuccess((aktoerid) -> log.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
+                .onSuccess(aktoerid -> log.info("Arbeidsliste for aktoerid {} slettet", aktoerid.toString()))
                 .onFailure(e -> log.warn("Kunne ikke slette arbeidsliste fra db", e));
     }
 

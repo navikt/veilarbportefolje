@@ -118,8 +118,8 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
         setUpInitialState(aktoerId, navKontor, true);
         sendMeldingPaaFeed(aktoerId);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr)).get();
-        assertThat(arbeidsliste).isNotNull();
+        Optional<Arbeidsliste> arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr));
+        assertThat(arbeidsliste).isPresent();
     }
 
     @Test
@@ -127,9 +127,8 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
         setUpInitialState(aktoerId, navKontor, false);
         sendMeldingPaaFeed(aktoerId);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr)).get();
-
-        assertThat(arbeidsliste).isNotNull();
+        Optional<Arbeidsliste> arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr));
+        assertThat(arbeidsliste).isPresent();
     }
 
 
@@ -140,7 +139,7 @@ public class OppfolgingFeedHandlerIntegrationTest extends IntegrationTest  {
         sendMeldingPaaFeed(aktoerId);
 
         Optional<Arbeidsliste> arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.of(fnr));
-        assertThat(arbeidsliste.orElse(null)).isNull();
+        assertThat(arbeidsliste).isEmpty();
     }
 
     private static void sendMeldingPaaFeed(String aktoerId) {
