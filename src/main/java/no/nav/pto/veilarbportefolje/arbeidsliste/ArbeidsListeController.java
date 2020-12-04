@@ -6,10 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,10 +79,10 @@ public class ArbeidsListeController {
     public Arbeidsliste getArbeidsListe(@PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
 
-        String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
+        String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
         Fnr fnr = new Fnr(fnrString);
-        Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.getFnr())));
+        Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.toString())));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
@@ -141,10 +141,12 @@ public class ArbeidsListeController {
         validerErVeilederForBruker(fnr);
         sjekkTilgangTilEnhet(new Fnr(fnr));
 
-        return arbeidslisteService
-                .deleteArbeidsliste(new Fnr(fnr))
-                .map((a) -> emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true))
-                .getOrElseThrow(() -> new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker"));
+        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(new Fnr(fnr));
+        if (antallRaderSlettet != 1) {
+            throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
+        }
+
+        return emptyArbeidsliste().setHarVeilederTilgang(true).setIsOppfolgendeVeileder(true);
     }
 
     @PostMapping("/delete")
@@ -165,18 +167,20 @@ public class ArbeidsListeController {
                 throw new IllegalStateException(format("%s inneholder ett eller flere ugyldige fødselsnummer", validerFnrs.getError()));
             }
 
-            validerFnrs.get()
-                    .forEach((fnr) -> arbeidslisteService
-                            .deleteArbeidsliste(fnr)
-                            .onSuccess((aktoerid) -> {
-                                okFnrs.add(fnr.toString());
-                                log.info("Arbeidsliste for aktoerid {} slettet", aktoerid);
-                            })
-                            .onFailure((error) -> {
-                                feiledeFnrs.add(fnr.toString());
-                                log.warn("Kunne ikke slette arbeidsliste", error);
-                            })
-                    );
+            validerFnrs.get().forEach(fnr -> {
+                final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
+
+                final AktoerId aktoerId = brukerService.hentAktoerId(fnr)
+                        .orElse(new AktoerId("uten aktør-ID"));
+
+                if (antallRaderSlettet != 1) {
+                    feiledeFnrs.add(fnr.toString());
+                    log.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.toString());
+                } else {
+                    okFnrs.add(fnr.toString());
+                    log.info("Arbeidsliste for aktoerid {} slettet", aktoerId.toString());
+                }
+            });
 
             if (feiledeFnrs.size() == fnrs.size()) {
                 throw new IllegalStateException();

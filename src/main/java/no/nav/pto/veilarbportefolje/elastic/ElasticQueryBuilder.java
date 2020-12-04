@@ -116,7 +116,7 @@ public class ElasticQueryBuilder {
         SortOrder order = "ascending".equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC;
 
         if ("ikke_satt".equals(sortField)) {
-            searchSourceBuilder.sort("person_id", SortOrder.ASC);
+            searchSourceBuilder.sort("aktoer_id", SortOrder.ASC);
             return searchSourceBuilder;
         }
 

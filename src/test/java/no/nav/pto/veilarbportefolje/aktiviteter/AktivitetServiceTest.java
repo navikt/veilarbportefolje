@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.junit.Before;
 import org.junit.Test;

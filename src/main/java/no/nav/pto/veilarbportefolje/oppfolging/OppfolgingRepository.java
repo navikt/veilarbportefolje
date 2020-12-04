@@ -3,8 +3,10 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,8 +15,11 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
@@ -24,6 +29,43 @@ public class OppfolgingRepository {
 
     public OppfolgingRepository(JdbcTemplate db) {
         this.db = db;
+    }
+
+    public boolean settUnderOppfolging(AktoerId aktoerId, ZonedDateTime startDato) {
+        return SqlUtils.upsert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .set("AKTOERID", aktoerId.toString())
+                .set("OPPFOLGING", "J")
+                .set("STARTDATO", toTimestamp(startDato))
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
+                .execute();
+    }
+
+    public int settVeileder(AktoerId aktorId, VeilederId veilederId) {
+        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
+                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktorId.toString())
+                .execute();
+    }
+
+    public int settNyForVeileder(AktoerId aktoerId, boolean nyForVeileder) {
+        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, safeToJaNei(nyForVeileder))
+                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+                .execute();
+    }
+
+    public int settManuellStatus(AktoerId aktoerId, boolean manuellStatus) {
+        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .set(Table.OPPFOLGING_DATA.MANUELL, safeToJaNei(manuellStatus))
+                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+                .execute();
+    }
+
+    public int settOppfolgingTilFalse(AktoerId aktoerId) {
+        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .set(Table.OPPFOLGING_DATA.OPPFOLGING, safeToJaNei(false))
+                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+                .execute();
     }
 
     public void oppdaterOppfolgingData(BrukerOppdatertInformasjon info) {
@@ -45,6 +87,15 @@ public class OppfolgingRepository {
         return TRUE.equals(aBoolean) ? "J" : "N";
     }
 
+    public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktoerId aktoerId) {
+        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> mapToBrukerOppdatertInformasjon(rs))
+                .column("*")
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
+                .execute();
+
+        return Optional.ofNullable(oppfolging);
+    }
+
     @Deprecated
     public Try<BrukerOppdatertInformasjon> retrieveOppfolgingData(AktoerId aktoerId) {
         String id = aktoerId.toString();
@@ -55,6 +106,9 @@ public class OppfolgingRepository {
         ).onFailure(e -> log.info("Fant ikke oppfølgingsdata for bruker med aktoerId {}", id));
     }
 
+    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet resultSet) {
+        return mapToBrukerOppdatertInformasjon(resultSet, 0);
+    }
 
     @SneakyThrows
     private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
@@ -72,6 +126,4 @@ public class OppfolgingRepository {
         log.info("Oppdaterer feed_id for oppfølging: {}", id);
         SqlUtils.update(db, "METADATA").set("oppfolging_sist_oppdatert_id", id).execute();
     }
-
-
 }

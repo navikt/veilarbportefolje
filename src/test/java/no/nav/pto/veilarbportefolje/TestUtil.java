@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -10,20 +9,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class TestUtil {
 
     public static final String HSQL_URL = "jdbc:hsqldb:mem:portefolje";
-
-    public static UnleashService setupUnleashMock(boolean toggleValue) {
-        UnleashService mock = mock(UnleashService.class);
-        when(mock.isEnabled(anyString())).thenReturn(toggleValue);
-        return mock;
-    }
 
     public static SingleConnectionDataSource setupInMemoryDatabase() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
@@ -36,13 +24,6 @@ public class TestUtil {
         migrateDb(ds);
         return ds;
     }
-
-    public static UnleashService createUnleashMock() {
-        UnleashService unleash = mock(UnleashService.class);
-        when(unleash.isEnabled(anyString())).thenReturn(true);
-        return unleash;
-    }
-
 
     private static void migrateDb(DriverManagerDataSource ds) {
         Flyway flyway = new Flyway();

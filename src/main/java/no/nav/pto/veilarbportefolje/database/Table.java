@@ -19,6 +19,9 @@ public class Table {
         public static final String AKTOERID = "AKTOERID";
         public static final String VEILEDERIDENT = "VEILEDERIDENT";
         public static final String STARTDATO = "STARTDATO";
+        public static final String OPPFOLGING = "OPPFOLGING";
+        public static final String MANUELL = "MANUELL";
+        public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
     }
 
     public static final class OPPFOLGINGSBRUKER {
@@ -45,6 +48,7 @@ public class Table {
         public static final String TABLE_NAME = "VW_PORTEFOLJE_INFO";
         public static final String AKTOERID = "AKTOERID";
         public static final String FODSELSNR = "FODSELSNR";
+        public static final String PERSON_ID = "PERSON_ID";
         public static final String NAV_KONTOR = "NAV_KONTOR";
     }
 

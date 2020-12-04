@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

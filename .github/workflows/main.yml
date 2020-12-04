@@ -49,7 +49,7 @@ jobs:
           MAVEN_OPTS: -Xss1024M -Xmx2048M
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -s settings.xml -P github  -B verify sonar:sonar
+        run: mvn -s settings.xml -P github  -B verify
   test-build-and-push:
     name: Test, build and push
     runs-on: ubuntu-latest

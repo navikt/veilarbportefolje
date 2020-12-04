@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.*;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;

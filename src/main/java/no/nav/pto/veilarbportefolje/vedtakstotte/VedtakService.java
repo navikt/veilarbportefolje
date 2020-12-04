@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;

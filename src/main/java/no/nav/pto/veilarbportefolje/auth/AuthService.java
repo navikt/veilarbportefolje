@@ -28,7 +28,7 @@ public class AuthService {
     }
 
     public void tilgangTilEnhet(String enhet) {
-        String veilederId = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
+        String veilederId = AuthUtils.getInnloggetVeilederIdent().toString();
         AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
     }
 
@@ -43,7 +43,7 @@ public class AuthService {
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
-        String veilederIdent = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
+        String veilederIdent = AuthUtils.getInnloggetVeilederIdent().toString();
         return brukere.stream()
                 .map(bruker -> fjernKonfidensiellInfoDersomIkkeTilgang(bruker, veilederIdent))
                 .collect(toList());

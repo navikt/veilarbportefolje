@@ -4,10 +4,11 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toList;
 
@@ -31,6 +31,12 @@ public class BrukerService {
     public BrukerService(BrukerRepository brukerRepository, AktorregisterClient aktorregisterClient) {
         this.brukerRepository = brukerRepository;
         this.aktorregisterClient = aktorregisterClient;
+    }
+
+    public Optional<AktoerId> hentAktoerId(Fnr fnr) {
+        return brukerRepository.hentBrukerFraView(fnr)
+                .map(OppfolgingsBruker::getAktoer_id)
+                .map(AktoerId::new);
     }
 
     public Optional<String> hentNavKontor(AktoerId aktoerId) {
@@ -60,7 +66,9 @@ public class BrukerService {
 
     public PersonId getPersonIdFromFnr(AktoerId aktoerId) {
         Fnr fnr = Fnr.of(aktorregisterClient.hentFnr(aktoerId.toString()));
+
         PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
+
         AktoerId nyAktorIdForPersonId = Try.of(() ->
                 aktorregisterClient.hentAktorId(fnr.toString()))
                 .map(AktoerId::of)
@@ -93,4 +101,5 @@ public class BrukerService {
                     .ofNullable(aktorregisterClient.hentFnr(aktoerId.toString()))
                     .map(Fnr::of);
     }
+
 }
