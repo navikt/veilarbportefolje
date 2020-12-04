@@ -6,6 +6,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -44,6 +45,16 @@ public class ElasticServiceV2 {
                 .endObject();
 
         update(aktoerId, content);
+    }
+
+    @SneakyThrows
+    public void updateSisteEndring(SisteEndringDTO objectSkrevetTilDatabase) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("siste_endring_tidspunkt", objectSkrevetTilDatabase.getTidspunkt().toString())
+                .field("siste_endring_kategori", objectSkrevetTilDatabase.getKategori().toString())
+                .endObject();
+        update(objectSkrevetTilDatabase.getAktoerId(), content);
     }
 
     @SneakyThrows
@@ -128,5 +139,4 @@ public class ElasticServiceV2 {
             }
         }
     }
-
 }

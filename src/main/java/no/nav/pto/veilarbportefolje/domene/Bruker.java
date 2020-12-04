@@ -70,6 +70,8 @@ public class Bruker {
     String vedtakStatus;
     LocalDateTime vedtakStatusEndret;
     boolean trengerRevurdering;
+    String sisteEndringKategori;
+    LocalDateTime sisteEndringTidspunkt;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa) {
 
@@ -124,6 +126,8 @@ public class Bruker {
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
+                .setSisteEndringKategori(bruker.getSiste_endring_kategori())
+                .setSisteEndringTidspunkt(toLocalDateTimeOrNull(bruker.getSiste_endring_tidspunkt()))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
