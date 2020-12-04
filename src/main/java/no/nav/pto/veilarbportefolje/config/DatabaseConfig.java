@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.utils.Credentials;
-import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.Transactor;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
