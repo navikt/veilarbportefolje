@@ -35,6 +35,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -100,7 +102,9 @@ import static org.mockito.Mockito.when;
         PersonRepository.class,
         NyForVeilederService.class,
         VeilederTilordnetService.class,
-        OppfolgingStartetService.class
+        OppfolgingStartetService.class,
+        SisteEndringService.class,
+        SisteEndringRepository.class
 })
 public class ApplicationConfigTest {
 

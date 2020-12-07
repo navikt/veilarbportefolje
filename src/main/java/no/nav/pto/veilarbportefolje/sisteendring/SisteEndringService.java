@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class SisteEndringService {
     private final ElasticServiceV2 elasticServiceV2;
     private final SisteEndringRepository sisteEndringRepository;
 
+    @Autowired
     public SisteEndringService(ElasticServiceV2 elasticServiceV2, SisteEndringRepository sisteEndringRepository) {
         this.elasticServiceV2 = elasticServiceV2;
         this.sisteEndringRepository = sisteEndringRepository;
