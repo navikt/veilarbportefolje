@@ -13,8 +13,8 @@ public class EnvironmentProperties {
 
     private String abacUrl;
     private String dbUrl;
-    private String dkifUrl;
     private String difiUrl;
+    private String dkifUrl;
     private String aktorregisterUrl;
     private String stsDiscoveryUrl;
     private String arenaLoependeYtelserUrl;
