@@ -16,6 +16,7 @@ spec:
   ingresses:
     - https://veilarbportefolje-{{namespace}}.nais.preprod.local
     - https://app-{{namespace}}.adeo.no/veilarbportefolje
+    - https://app-{{namespace}}.dev.adeo.no/veilarbportefolje
     - https://veilarbportefolje-{{namespace}}.dev.adeo.no
   webproxy: true
   vault:
@@ -24,7 +25,7 @@ spec:
       - kvPath: /serviceuser/data/dev/srvveilarbportefolje
         mountPath: /var/run/secrets/nais.io/service_user
       - kvPath: /oracle/data/dev/creds/veilarbportefolje_{{namespace}}-user
-        mountPath: /var/run/secrets/nais.io/oracle_config
+        mountPath: /var/run/secrets/nais.io/oracle_creds
       - kvPath: /kv/preprod/fss/veilarbportefolje/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
       - kvPath: /oracle/data/dev/config/veilarbportefolje_{{namespace}}
