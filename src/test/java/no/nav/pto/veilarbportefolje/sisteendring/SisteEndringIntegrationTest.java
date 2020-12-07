@@ -1,43 +1,33 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
 
-    private final RegistreringService registreringService;
     private final AktivitetService aktivitetService;
-    private final SisteEndringService sisteEndringService;
-    private final ElasticService elasticService;
 
     @Autowired
-    public SisteEndringIntegrationTest(RegistreringService registreringService, AktivitetService aktivitetService, SisteEndringService sisteEndringService, ElasticService elasticService) {
-        this.registreringService = registreringService;
+    public SisteEndringIntegrationTest(AktivitetService aktivitetService) {
         this.aktivitetService = aktivitetService;
-        this.sisteEndringService = sisteEndringService;
-        this.elasticService = elasticService;
     }
 
     @Test
-    public void utdanning_full_integration() {
+    public void siste_endring_full_integration() {
+        final String testEnhet = "0000";
+
+        populateElastic(testEnhet);
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
         String aktivitetKafkaMelding = "{" +
@@ -66,7 +56,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
 
     private void populateElastic(String enhet) {
-        final AktoerId aktoerId1 = TestDataUtils.randomAktoerId();
+        final AktoerId aktoerId1 = AktoerId.of("123456789");
         final AktoerId aktoerId2 = TestDataUtils.randomAktoerId();
         final AktoerId aktoerId3 = TestDataUtils.randomAktoerId();
 
@@ -74,25 +64,17 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId1.toString())
                         .setOppfolging(true)
-                        .setEnhet_id(enhet)
-                        .setUtdanning_bestatt("NEI")
-                        .setUtdanning_godkjent("NEI"),
+                        .setEnhet_id(enhet),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId2.toString())
                         .setOppfolging(true)
-                        .setEnhet_id(enhet)
-                        .setUtdanning_bestatt("JA")
-                        .setUtdanning_godkjent("JA")
-                        .setUtdanning("GRUNNSKOLE"),
+                        .setEnhet_id(enhet),
 
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId3.toString())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
-                        .setUtdanning_bestatt("NEI")
-                        .setUtdanning_godkjent("JA")
-                        .setUtdanning("GRUNNSKOLE")
         );
 
         brukere.forEach(bruker -> elasticTestClient.createUserInElastic(bruker));

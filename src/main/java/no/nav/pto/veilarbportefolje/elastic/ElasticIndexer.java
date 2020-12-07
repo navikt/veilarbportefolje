@@ -125,6 +125,7 @@ public class ElasticIndexer {
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
             leggTilTiltak(bruker);
+            /// TODO: legg til siste endring
             skrivTilIndeks(alias.getValue(), bruker);
         } else {
             markerBrukerSomSlettet(bruker);

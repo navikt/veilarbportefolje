@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public abstract class EndToEndTest {
+
     @Autowired
     protected ElasticTestClient elasticTestClient;
 

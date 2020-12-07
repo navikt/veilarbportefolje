@@ -97,7 +97,6 @@ import static org.mockito.Mockito.when;
         ElasticIndexer.class,
         CvRepository.class,
         CvService.class,
-        RegistreringService.class,
         RegistreringRepository.class,
         PersonRepository.class,
         NyForVeilederService.class,
