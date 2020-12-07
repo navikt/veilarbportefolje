@@ -38,13 +38,14 @@ public class SisteEndringService {
         SisteEndringDTO objectSkrevetTilDatabase = null;
         Timestamp tidspunkt = aktivitet.getEndretDato() == null ? null : dateToTimestamp(aktivitet.getEndretDato());
         AktoerId aktoerId =  AktoerId.of(aktivitet.getAktorId());
+        SisteEndringsKategorier kategorier = (tidspunkt == null) ? NY_AKTIVITET : ENDRET_AKTIVITET;
 
         if (tidspunkt == null || hendelseErNyereEnnIDatabase(tidspunkt, aktoerId)) {
             tidspunkt = (tidspunkt == null) ? Timestamp.from(now()) : tidspunkt; // TODO: Antar at nye aktivterer (null verdier) er skapt "nå".
             try {
                 objectSkrevetTilDatabase = new SisteEndringDTO()
                         .setAktoerId(aktoerId)
-                        .setKategori(NY_AKTIVITET)
+                        .setKategori(kategorier)
                         .setTidspunkt(tidspunkt);
                 sisteEndringRepository.upsert(objectSkrevetTilDatabase);
             } catch (Exception e) {

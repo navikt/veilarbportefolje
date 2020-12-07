@@ -22,10 +22,10 @@ public class SisteEndringRepository {
 
     public void upsert(SisteEndringDTO sisteEndringDTO) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
-                .set(AKTOERID, sisteEndringDTO.aktoerId.toString())
-                .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.kategori.toString())
-                .set(SISTE_ENDRING_TIDSPUNKT, sisteEndringDTO.tidspunkt)
-                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.aktoerId.toString()))
+                .set(AKTOERID, sisteEndringDTO.getAktoerId().toString())
+                .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().toString())
+                .set(SISTE_ENDRING_TIDSPUNKT, sisteEndringDTO.getTidspunkt())
+                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().toString()))
                 .execute();
     }
 
