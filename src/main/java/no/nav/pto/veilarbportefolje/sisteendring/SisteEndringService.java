@@ -61,6 +61,6 @@ public class SisteEndringService {
 
     private boolean hendelseErNyereEnnIDatabase(Timestamp endringstidspunkt, AktoerId aktoerId) {
         Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(aktoerId);
-        return databaseVerdi.compareTo(endringstidspunkt) < 0;
+        return databaseVerdi == null || databaseVerdi.compareTo(endringstidspunkt) < 0;
     }
 }
