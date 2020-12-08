@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
@@ -90,6 +91,7 @@ public class ElasticServiceV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("veileder_id", veilederId.toString())
+                .field("ny_for_enhet", false)
                 .endObject();
 
         update(aktoerId, content);
@@ -119,7 +121,8 @@ public class ElasticServiceV2 {
         updateRequest.doc(content);
 
         try {
-            restHighLevelClient.update(updateRequest, DEFAULT);
+            final UpdateResponse update = restHighLevelClient.update(updateRequest, DEFAULT);
+            log.info("Oppdaterte dokument for bruker {} returnerte status {}", aktoerId, update.status());
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
