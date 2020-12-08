@@ -3,12 +3,11 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
@@ -120,11 +119,10 @@ public class ElasticServiceV2 {
         updateRequest.doc(content);
 
         try {
-            final UpdateResponse update = restHighLevelClient.update(updateRequest, DEFAULT);
-            System.out.println(update.status());
+            restHighLevelClient.update(updateRequest, DEFAULT);
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.info("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
+                log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
             }
         }
     }
