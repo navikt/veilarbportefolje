@@ -86,5 +86,4 @@ public class OppfolgingsBruker {
     String utdanning_bestatt;
     String utdanning_godkjent;
     String siste_endring_tidspunkt;
-    String siste_endring_kategori;
 }

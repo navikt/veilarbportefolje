@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
@@ -18,6 +19,7 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static java.lang.Integer.parseInt;
@@ -61,7 +63,6 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt");
         byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
         byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
-        byggManuellFilter(filtervalg.sisteEndringKategori, queryBuilder, "siste_endring_kategori");
 
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
@@ -83,6 +84,10 @@ public class ElasticQueryBuilder {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
         }
 
+        if (filtervalg.harSisteEndringFilter()) {
+            byggSisteEndringFilter(filtervalg.sisteEndringKategori, queryBuilder);
+        }
+
         if (filtervalg.harNavnEllerFnrQuery()) {
             String query = filtervalg.navnEllerFnrQuery.trim().toLowerCase();
             if (isNumeric(query)) {
@@ -91,7 +96,14 @@ public class ElasticQueryBuilder {
                 queryBuilder.must(termQuery("fullt_navn", query));
             }
         }
+
     }
+
+    private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
+        BoolQueryBuilder subQuery = boolQuery();
+        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endring_"+kategori.toLowerCase())));
+        queryBuilder.must(subQuery);
+      }
 
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
         return filtervalg.aktiviteter.entrySet().stream()

@@ -29,16 +29,6 @@ public class SisteEndringRepository {
                 .execute();
     }
 
-    public String getSisteEndringKategori(AktoerId aktoerId,SisteEndringsKategorier kategori ) {
-        return SqlUtils
-                .select(jdbcTemplate, TABLE_NAME, rs -> rs.getString(SISTE_ENDRING_KATEGORI))
-                .column(SISTE_ENDRING_KATEGORI)
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()).and(
-                        WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.toString())
-                ))
-                .execute();
-    }
-
     public Timestamp getSisteEndringTidspunkt(AktoerId aktoerId, SisteEndringsKategorier kategori) {
         return SqlUtils
                 .select(jdbcTemplate, TABLE_NAME, rs -> rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT))

@@ -45,7 +45,7 @@ public class RegistreringRepositoryTest {
 
         Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
 
-        assertThat(registrering.isPresent());
+        assertThat(registrering.isPresent()).isTrue();
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event);
     }
 
@@ -75,7 +75,7 @@ public class RegistreringRepositoryTest {
 
         Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
 
-        assertThat(registrering.isPresent());
+        assertThat(registrering.isPresent()).isTrue();
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }
 

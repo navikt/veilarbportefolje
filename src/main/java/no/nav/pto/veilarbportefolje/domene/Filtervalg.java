@@ -80,6 +80,10 @@ public class Filtervalg {
         return tiltakstyper != null;
     }
 
+    public boolean harSisteEndringFilter() {
+        return !sisteEndringKategori.isEmpty();
+    }
+
     public boolean harManuellBrukerStatus() {
         return manuellBrukerStatus != null && !manuellBrukerStatus.isEmpty();
     }
