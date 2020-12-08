@@ -15,6 +15,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -49,10 +50,10 @@ public class ElasticServiceV2 {
 
     @SneakyThrows
     public void updateSisteEndring(SisteEndringDTO objectSkrevetTilDatabase) {
+        String field = "siste_endring_"+objectSkrevetTilDatabase.getKategori().toString().toLowerCase();
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("siste_endring_tidspunkt", objectSkrevetTilDatabase.getTidspunkt().toString())
-                .field("siste_endring_kategori", objectSkrevetTilDatabase.getKategori().toString())
+                .field(field, objectSkrevetTilDatabase.getTidspunkt().toString())
                 .endObject();
         update(objectSkrevetTilDatabase.getAktoerId(), content);
     }

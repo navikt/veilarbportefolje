@@ -20,9 +20,21 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void siste_endring_full_integration() {
+    public void siste_endring_ulike_typer_aktivteter() {
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
+
+        String nyAktivitetKafkaMelding = "{" +
+                "\"aktivitetId\":\"144136\"," +
+                "\"aktorId\":\""+aktoerId.getValue()+"\"," +
+                "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
+                "\"tilDato\":null," +
+                "\"aktivitetType\":\"IJOBB\"," +
+                "\"aktivitetStatus\":\"FULLFORT\"," +
+                "\"avtalt\":true," +
+                "\"historisk\":false" +
+                "}";
+
         String aktivitetKafkaMelding = "{" +
                 "\"aktivitetId\":\"144136\"," +
                 "\"aktorId\":\""+aktoerId.getValue()+"\"," +
@@ -34,17 +46,19 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"avtalt\":true," +
                 "\"historisk\":false" +
                 "}";
+        aktivitetService.behandleKafkaMelding(nyAktivitetKafkaMelding);
         aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
 
         assertThat(getResponse.isExists()).isTrue();
 
-        String endring_kategori = (String) getResponse.getSourceAsMap().get("siste_endring_kategori");
-        String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_tidspunkt");
+        String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_endret_aktivitet");
+        String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_aktivitet");
 
-        assertThat(endring_kategori).isEqualTo(SisteEndringsKategorier.ENDRET_AKTIVITET.toString());
-        System.out.println(endring_tidspunkt);
+        assertThat(endring_tidspunkt).isEqualTo("2020-05-28 09:47:42.48");
+        assertThat(ny_tidspunkt).isNotNull();
+        assertThat(!ny_tidspunkt.equals(endring_tidspunkt)).isTrue();
     }
 
 }

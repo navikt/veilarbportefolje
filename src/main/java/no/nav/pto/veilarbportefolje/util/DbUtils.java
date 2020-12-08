@@ -83,9 +83,7 @@ public class DbUtils {
                 .setProfilering_resultat(rs.getString("profilering_resultat"))
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setUtdanning(rs.getString("UTDANNING"))
-                .setUtdanning_bestatt(rs.getString("UTDANNING_BESTATT"))
-                .setSiste_endring_kategori(rs.getString("siste_endring_kategori"))
-                .setSiste_endring_tidspunkt(toIsoUTC(rs.getTimestamp("siste_endring_tidspunkt")));
+                .setUtdanning_bestatt(rs.getString("UTDANNING_BESTATT"));
 
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");
