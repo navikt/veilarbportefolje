@@ -22,7 +22,6 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
-
     private final AktivitetService aktivitetService;
     private final ElasticService elasticService;
 
@@ -31,14 +30,15 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         this.aktivitetService = aktivitetService;
         this.elasticService = elasticService;
     }
-    
+
     @Test
     public void siste_endring_ulike_typer_aktivteter() {
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
+        String endretTid = "2020-05-28T09:47:42.48+02:00";
 
         send_aktvitet_melding(aktoerId,null);
-        send_aktvitet_melding(aktoerId,"2020-05-28T09:47:42.48+02:00");
+        send_aktvitet_melding(aktoerId,endretTid);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -46,7 +46,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_endret_aktivitet");
         String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_aktivitet");
 
-        assertThat(endring_tidspunkt).isEqualTo("2020-05-28 09:47:42.48");
+        assertThat(endring_tidspunkt).isEqualTo("2020-05-28T07:47:42.480Z"); // TODO: ikke hardkodet tid. Testene vil feile utenfor Norge
         assertThat(ny_tidspunkt).isNotNull();
         assertThat(!ny_tidspunkt.equals(endring_tidspunkt)).isTrue();
     }
@@ -80,7 +80,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_endret_aktivitet");
         String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_aktivitet");
 
-        assertThat(endring_tidspunkt).isEqualTo("2020-05-28 09:47:42.48");
+        assertThat(endring_tidspunkt).isEqualTo("2020-05-28T07:47:42.480Z"); // TODO: ikke hardkodet tid. Testene vil feile utenfor Norge
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
@@ -88,7 +88,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     "asc",
                     "ikke_satt",
-                    getFiltervalgNyAktivitet(),
+                    getFiltervalgEndretAktivitet(),
                     null,
                     null);
 
@@ -100,11 +100,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 empty(),
                 "asc",
                 "ikke_satt",
-                getFiltervalgNyAktivitet(),
+                getFiltervalgEndretAktivitet(),
                 null,
                 null);
 
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
+        assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt().toString()).isEqualTo("2020-05-28T09:47:42.480");
     }
 
 
@@ -124,10 +125,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
     }
 
-    private static Filtervalg getFiltervalgNyAktivitet() {
+    private static Filtervalg getFiltervalgEndretAktivitet() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.setSisteEndringKategori(List.of(NY_AKTIVITET.name()));
+        filtervalg.setSisteEndringKategori(List.of(ENDRET_AKTIVITET.name()));
         return filtervalg;
     }
 

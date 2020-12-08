@@ -14,9 +14,14 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,15 +85,16 @@ public class ElasticService {
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
-        ElasticSearchResponse response = search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class);
-        int totalHits = response.getHits().getTotal();
-
-        List<Bruker> brukere = response.getHits().getHits().stream()
+        List<Bruker> brukere = (filtervalg.harSisteEndringFilter()) ?
+                searchAndAddSisteEndring(searchSourceBuilder, indexName.getValue(), filtervalg.sisteEndringKategori, veiledereMedTilgangTilEnhet)
+                :
+                search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class).getHits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
-                .collect(toList());
+                        .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
+                        .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
+                        .collect(toList());
 
+        int totalHits = brukere.size();
         return new BrukereMedAntall(totalHits, brukere);
     }
 
@@ -144,6 +150,42 @@ public class ElasticService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
+    @SneakyThrows
+    private List<Bruker> searchAndAddSisteEndring(SearchSourceBuilder searchSourceBuilder, String indexAlias, List<String> sisteEndringKategori, List<String> veiledereMedTilgangTilEnhet) {
+        SearchRequest request = new SearchRequest()
+                .indices(indexAlias)
+                .source(searchSourceBuilder);
+
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+
+        return Arrays.stream(response.getHits().getHits())
+                .map(temp -> leggtilSisteEndring(temp, sisteEndringKategori))
+                .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
+                .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
+                .collect(toList());
+    }
+
+    private OppfolgingsBruker leggtilSisteEndring(SearchHit temp, List<String> sisteEndringKategori) {
+        OppfolgingsBruker bruker = JsonUtils.fromJson(temp.toString(), OppfolgingsBruker.class);
+        LocalDateTime nyesteEndring = null;
+
+        for (String kategori : sisteEndringKategori) {
+            String field = (String) temp.getSourceAsMap().getOrDefault("siste_endring_" + kategori.toLowerCase(), null);
+            if(field != null){
+                LocalDateTime comp = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.systemDefault());
+                if(nyesteEndring == null ){
+                    nyesteEndring = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.systemDefault());
+                } else {
+                    nyesteEndring = nyesteEndring.compareTo(comp) < 0 ? nyesteEndring : comp;
+                }
+            }
+        }
+
+        bruker.setSiste_endring_tidspunkt(nyesteEndring);
+        return bruker;
+    }
+
+
     private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = oppfolgingsBruker.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
         return oppfolgingsBruker.setNy_for_enhet(!harVeilederPaaSammeEnhet);
@@ -153,4 +195,5 @@ public class ElasticService {
     private boolean erVedtakstottePilotPa() {
         return unleashService.isEnabled(FeatureToggle.VEDTAKSTOTTE_PILOT);
     }
+
 }

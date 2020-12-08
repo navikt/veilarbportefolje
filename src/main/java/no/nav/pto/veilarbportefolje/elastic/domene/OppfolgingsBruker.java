@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.elastic.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
@@ -85,5 +86,5 @@ public class OppfolgingsBruker {
     String utdanning;
     String utdanning_bestatt;
     String utdanning_godkjent;
-    String siste_endring_tidspunkt;
+    LocalDateTime siste_endring_tidspunkt;
 }
