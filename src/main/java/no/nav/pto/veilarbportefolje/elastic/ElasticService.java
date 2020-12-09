@@ -18,9 +18,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +27,6 @@ import java.util.Optional;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 public class ElasticService {

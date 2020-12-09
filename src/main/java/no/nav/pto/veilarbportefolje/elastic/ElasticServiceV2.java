@@ -15,7 +15,6 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;

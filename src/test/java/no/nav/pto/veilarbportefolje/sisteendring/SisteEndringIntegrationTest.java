@@ -32,6 +32,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         this.elasticService = elasticService;
     }
 
+    @Test
     public void siste_endring_ulike_typer_aktivteter() {
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
