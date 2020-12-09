@@ -9,13 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.ENDRET_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.NY_AKTIVITET;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Service
@@ -68,6 +66,6 @@ public class SisteEndringService {
         if(databaseVerdi == null){
             return true;
         }
-        return databaseVerdi.toInstant().atZone(ZoneId.of("Europe/Oslo")).compareTo(endringstidspunkt) < 0;
+        return toZonedDateTime(databaseVerdi).compareTo(endringstidspunkt) < 0;
     }
 }

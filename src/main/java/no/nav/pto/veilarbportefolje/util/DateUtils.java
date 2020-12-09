@@ -51,6 +51,13 @@ public class DateUtils {
         return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Oslo"));
     }
 
+    public static ZonedDateTime toZonedDateTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("Europe/Oslo"));
+    }
+
     public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
         if(zonedDateTime == null){
             return null;

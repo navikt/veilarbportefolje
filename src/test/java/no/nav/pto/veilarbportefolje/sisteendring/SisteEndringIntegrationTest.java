@@ -110,7 +110,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null);
 
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
-        assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt().toString()).isEqualTo(zonedDateTime.toString());
+        assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
     }
 
 
