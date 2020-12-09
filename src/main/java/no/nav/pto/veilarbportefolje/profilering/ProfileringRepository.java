@@ -18,6 +18,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Repository
 public class ProfileringRepository {
@@ -49,10 +50,9 @@ public class ProfileringRepository {
     }
 
     private ArbeidssokerProfilertEvent mapTilArbeidssokerProfilertEvent(ResultSet rs) throws SQLException {
-        LocalDateTime localDateTime = rs.getTimestamp("PROFILERING_TIDSPUNKT").toLocalDateTime();
         return ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(rs.getString("AKTOERID"))
-                .setProfileringGjennomfort(ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(toZonedDateTime(rs.getTimestamp("PROFILERING_TIDSPUNKT")).format(ISO_ZONED_DATE_TIME))
                 .setProfilertTil(ProfilertTil.valueOf(rs.getString("PROFILERING_RESULTAT")))
                 .build();
     }

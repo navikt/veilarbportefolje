@@ -34,7 +34,7 @@ public class ProfileringRepositoryTest {
         ArbeidssokerProfilertEvent event1 = ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(AKTORID)
                 .setProfilertTil(ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING)
-                .setProfileringGjennomfort(ZonedDateTime.of(LocalDateTime.now().minusDays(30), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(ZonedDateTime.now(ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .build();
 
         profileringRepository.upsertBrukerProfilering(event1);
