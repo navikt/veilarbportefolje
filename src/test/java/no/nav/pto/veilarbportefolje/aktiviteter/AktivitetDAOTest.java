@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,9 +73,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
                 .setAktorId("aktoer_id_test_1")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
 
         KafkaAktivitetMelding aktivitet2 = new KafkaAktivitetMelding()
@@ -82,9 +83,9 @@ public class AktivitetDAOTest {
                 .setAktorId("aktoer_id_test_2")
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
 
         KafkaAktivitetMelding aktivitet3 = new KafkaAktivitetMelding()
@@ -93,9 +94,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
                 .setAktorId("aktoer_id_test_1")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
 
         aktivitetDAO.upsertAktivitet(aktivitet1);
@@ -114,9 +115,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
 
         aktivitetDAO.upsertAktivitet(aktivitet);
@@ -137,9 +138,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
 
         KafkaAktivitetMelding aktivitet2 = new KafkaAktivitetMelding()
@@ -147,9 +148,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.FULLFORT);
 
         aktivitetDAO.upsertAktivitet(aktivitet1);
@@ -170,7 +171,7 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
 
         KafkaAktivitetMelding aktivitet2 = new KafkaAktivitetMelding()
@@ -178,7 +179,7 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);;
 
         aktivitetDAO.upsertAktivitet(aktivitet1);
@@ -195,7 +196,7 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
 
         KafkaAktivitetMelding aktivitet2 = new KafkaAktivitetMelding()
@@ -203,7 +204,7 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);;
 
         aktivitetDAO.upsertAktivitet(asList(aktivitet1, aktivitet2));

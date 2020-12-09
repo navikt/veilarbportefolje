@@ -36,7 +36,7 @@ public class DateUtils {
             return null;
         }
         DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
-        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC"));
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("Europe/Oslo"));
         return zonedDateTime.format(formatter);
     }
 
@@ -48,7 +48,7 @@ public class DateUtils {
         if (date == null) {
             return null;
         }
-        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Oslo"));
     }
 
     public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
@@ -68,7 +68,7 @@ public class DateUtils {
             return null;
         }
         DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.of("UTC"));
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.of("Europe/Oslo"));
         return zonedDateTime.format(formatter);
     }
 
@@ -76,7 +76,7 @@ public class DateUtils {
         if (dato == null) {
             return null;
         }
-        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.of("Europe/Oslo"));
     }
 
     public static Timestamp dateToTimestamp(Date date) {

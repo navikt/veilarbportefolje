@@ -48,7 +48,7 @@ public class Arbeidsliste {
         ZonedDateTime endringstidspunkt = null;
         if (bruker.getArbeidsliste_endringstidspunkt() != null) {
             Instant instant = Instant.parse(bruker.getArbeidsliste_endringstidspunkt());
-            endringstidspunkt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+            endringstidspunkt = ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Oslo"));
         }
 
         String overskrift = bruker.getArbeidsliste_overskrift();

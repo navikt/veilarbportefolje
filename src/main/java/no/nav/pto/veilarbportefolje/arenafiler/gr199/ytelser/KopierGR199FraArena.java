@@ -61,7 +61,7 @@ public class KopierGR199FraArena {
 
     public long sjekkArenaYtelserSistOppdatert() {
         Long millis = getLastModifiedTimeInMillis(lopendeYtelser()).getOrElseThrow(() -> new RuntimeException());
-        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
+        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.of("Europe/Oslo")));
     }
 
     public Try<FileObject> hentYtelserFil() {

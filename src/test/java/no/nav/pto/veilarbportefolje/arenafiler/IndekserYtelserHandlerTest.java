@@ -225,7 +225,7 @@ public class IndekserYtelserHandlerTest {
         try {
             Periode periode = new Periode();
             LocalDate now = LocalDate.now().plusDays(10);
-            GregorianCalendar gcal = GregorianCalendar.from(now.atStartOfDay(ZoneId.systemDefault()));
+            GregorianCalendar gcal = GregorianCalendar.from(now.atStartOfDay(ZoneId.of("Europe/Oslo")));
             XMLGregorianCalendar xcal = null;
             xcal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
 

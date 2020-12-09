@@ -52,7 +52,7 @@ public class ProfileringRepository {
         LocalDateTime localDateTime = rs.getTimestamp("PROFILERING_TIDSPUNKT").toLocalDateTime();
         return ArbeidssokerProfilertEvent.newBuilder()
                 .setAktorid(rs.getString("AKTOERID"))
-                .setProfileringGjennomfort(ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .setProfileringGjennomfort(ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .setProfilertTil(ProfilertTil.valueOf(rs.getString("PROFILERING_RESULTAT")))
                 .build();
     }

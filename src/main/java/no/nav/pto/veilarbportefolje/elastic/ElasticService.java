@@ -172,9 +172,9 @@ public class ElasticService {
         for (String kategori : sisteEndringKategori) {
             String field = (String) temp.getSourceAsMap().getOrDefault("siste_endring_" + kategori.toLowerCase(), null);
             if(field != null){
-                LocalDateTime comp = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.systemDefault());
+                LocalDateTime comp = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.of("Europe/Oslo"));
                 if(nyesteEndring == null ){
-                    nyesteEndring = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.systemDefault());
+                    nyesteEndring = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.of("Europe/Oslo"));
                 } else {
                     nyesteEndring = nyesteEndring.compareTo(comp) < 0 ? nyesteEndring : comp;
                 }

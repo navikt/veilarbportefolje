@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.ENDRET_AKTIVITET;
@@ -38,12 +40,14 @@ public class SisteEndringService {
 
     private SisteEndringDTO lagreAktivitetData(KafkaAktivitetMelding aktivitet) {
         SisteEndringDTO objectSkrevetTilDatabase = null;
-        Timestamp tidspunkt = aktivitet.getEndretDato() == null ? null : dateToTimestamp(aktivitet.getEndretDato());
-        AktoerId aktoerId =  AktoerId.of(aktivitet.getAktorId());
+
+        ZonedDateTime tidspunkt = aktivitet.getEndretDato() == null ? null : aktivitet.getEndretDato();
         SisteEndringsKategorier kategorier = (tidspunkt == null) ? NY_AKTIVITET : ENDRET_AKTIVITET;
+        AktoerId aktoerId = AktoerId.of(aktivitet.getAktorId());
 
         if (tidspunkt == null || hendelseErNyereEnnIDatabase(tidspunkt, kategorier, aktoerId)) {
-            tidspunkt = (tidspunkt == null) ? Timestamp.from(now()) : tidspunkt; // TODO: Antar at nye aktivterer (null verdier) er skapt "nå".
+            tidspunkt = (tidspunkt == null) ? ZonedDateTime.now() : tidspunkt; // TODO: Antar at nye aktivterer (null verdier) er skapt "nå".
+
             try {
                 objectSkrevetTilDatabase = new SisteEndringDTO()
                         .setAktoerId(aktoerId)
@@ -53,14 +57,17 @@ public class SisteEndringService {
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre siste endring for aktivitetid %s", aktivitet.getAktivitetId());
                 log.error(message, e);
-                 objectSkrevetTilDatabase = null;
+                objectSkrevetTilDatabase = null;
             }
         }
         return objectSkrevetTilDatabase;
     }
 
-    private boolean hendelseErNyereEnnIDatabase(Timestamp endringstidspunkt, SisteEndringsKategorier kategorier, AktoerId aktoerId) {
+    private boolean hendelseErNyereEnnIDatabase(ZonedDateTime endringstidspunkt, SisteEndringsKategorier kategorier, AktoerId aktoerId) {
         Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(aktoerId, kategorier);
-        return databaseVerdi == null || databaseVerdi.compareTo(endringstidspunkt) < 0;
+        if(databaseVerdi == null){
+            return true;
+        }
+        return databaseVerdi.toInstant().atZone(ZoneId.of("Europe/Oslo")).compareTo(endringstidspunkt) < 0;
     }
 }

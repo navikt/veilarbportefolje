@@ -38,7 +38,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.GRUNNSKOLE)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
-                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .build();
 
         registreringRepository.upsertBrukerRegistrering(event);
@@ -57,7 +57,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.GRUNNSKOLE)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
-                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .build();
 
         registreringRepository.upsertBrukerRegistrering(event1);
@@ -68,7 +68,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.HOYERE_UTDANNING_1_TIL_4)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.NEI)
-                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .build();
 
         registreringRepository.upsertBrukerRegistrering(event2);
@@ -87,7 +87,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.GRUNNSKOLE)
                 .setUtdanningBestatt(UtdanningBestattSvar.JA)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
-                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now().minusDays(4), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .build();
         registreringRepository.upsertBrukerRegistrering(event1);
 
@@ -97,7 +97,7 @@ public class RegistreringRepositoryTest {
                 .setUtdanning(UtdanningSvar.HOYERE_UTDANNING_5_ELLER_MER)
                 .setUtdanningBestatt(UtdanningBestattSvar.NEI)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.INGEN_SVAR)
-                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .build();
         registreringRepository.upsertBrukerRegistrering(event2);
 

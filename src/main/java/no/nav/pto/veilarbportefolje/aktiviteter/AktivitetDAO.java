@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -24,6 +25,7 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
 @Slf4j
@@ -85,9 +87,9 @@ public class AktivitetDAO {
                 .set("AKTOERID", aktivitet.getAktorId())
                 .set("AKTIVITETTYPE", aktivitet.getAktivitetType().name().toLowerCase())
                 .set("AVTALT", aktivitet.isAvtalt())
-                .set("FRADATO", dateToTimestamp(aktivitet.getFraDato()))
-                .set("TILDATO", dateToTimestamp(aktivitet.getTilDato()))
-                .set("OPPDATERTDATO", dateToTimestamp(aktivitet.getEndretDato()))
+                .set("FRADATO", toTimestamp(aktivitet.getFraDato()))
+                .set("TILDATO", toTimestamp(aktivitet.getTilDato()))
+                .set("OPPDATERTDATO", toTimestamp(aktivitet.getEndretDato()))
                 .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
                 .set(AKTIVITETID, aktivitet.getAktivitetId())
                 .where(WhereClause.equals(AKTIVITETID, aktivitet.getAktivitetId()))

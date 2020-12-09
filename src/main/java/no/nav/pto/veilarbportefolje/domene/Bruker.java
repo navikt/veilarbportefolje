@@ -142,7 +142,7 @@ public class Bruker {
         if (date == null) {
             return null;
         }
-        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
     }
 
 

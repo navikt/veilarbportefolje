@@ -3,16 +3,16 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
 public class KafkaAktivitetMelding {
     String aktivitetId;
     String aktorId;
-    Date fraDato;
-    Date tilDato;
-    Date endretDato;
+    ZonedDateTime fraDato;
+    ZonedDateTime tilDato;
+    ZonedDateTime endretDato;
     AktivitetTypeData aktivitetType;
     AktivitetStatus aktivitetStatus;
     boolean avtalt;

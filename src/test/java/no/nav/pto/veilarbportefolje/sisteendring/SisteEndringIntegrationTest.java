@@ -11,6 +11,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
         String endretTid = "2020-05-28T09:47:42.48+02:00";
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(endretTid);
 
         send_aktvitet_melding(aktoerId,null);
         send_aktvitet_melding(aktoerId,endretTid);
@@ -46,7 +48,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_endret_aktivitet");
         String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_aktivitet");
 
-        assertThat(endring_tidspunkt).isEqualTo("2020-05-28T07:47:42.480Z"); // TODO: ikke hardkodet tid. Testene vil feile utenfor Norge
+        assertThat(endring_tidspunkt).isEqualTo(zonedDateTime.toString());
         assertThat(ny_tidspunkt).isNotNull();
         assertThat(!ny_tidspunkt.equals(endring_tidspunkt)).isTrue();
     }
@@ -55,6 +57,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     void siste_endring_filter_test() {
         final String testEnhet = "0000";
         final AktoerId aktoerId = randomAktoerId();
+        String endretTid = "2020-05-28T09:47:42.48+02:00";
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(endretTid);
+
         populateElastic(testEnhet, aktoerId.toString());
 
         pollElasticUntil(() -> {
@@ -71,7 +76,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         send_aktvitet_melding(aktoerId,null);
-        send_aktvitet_melding(aktoerId,"2020-05-28T09:47:42.48+02:00");
+        send_aktvitet_melding(aktoerId,endretTid);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
 
@@ -80,7 +85,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_endret_aktivitet");
         String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_aktivitet");
 
-        assertThat(endring_tidspunkt).isEqualTo("2020-05-28T07:47:42.480Z"); // TODO: ikke hardkodet tid. Testene vil feile utenfor Norge
+        assertThat(endring_tidspunkt).isEqualTo(zonedDateTime.toString());
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
@@ -105,7 +110,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null);
 
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
-        assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt().toString()).isEqualTo("2020-05-28T09:47:42.480");
+        assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt().toString()).isEqualTo(zonedDateTime.toString());
     }
 
 

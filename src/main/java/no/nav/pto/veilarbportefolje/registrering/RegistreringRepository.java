@@ -68,7 +68,7 @@ public class RegistreringRepository {
 
     private static ArbeidssokerRegistrertEvent mapTilArbeidssokerRegistrertEvent(ResultSet rs) throws SQLException {
         String registreringOpprettet = ofNullable(rs.getTimestamp("REGISTRERING_OPPRETTET"))
-                .map(registreringDato -> ZonedDateTime.of(registreringDato.toLocalDateTime(), ZoneId.systemDefault()))
+                .map(registreringDato -> ZonedDateTime.of(registreringDato.toLocalDateTime(), ZoneId.of("Europe/Oslo")))
                 .map(zonedDateRegistreringDato -> zonedDateRegistreringDato.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
                 .orElse(null);
 

@@ -50,7 +50,7 @@ class RegistreringServiceTest extends EndToEndTest {
                 .setUtdanning(UtdanningSvar.GRUNNSKOLE)
                 .setUtdanningBestatt(UtdanningBestattSvar.INGEN_SVAR)
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.JA)
-                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).format(ISO_ZONED_DATE_TIME))
+                .setRegistreringOpprettet(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Europe/Oslo")).format(ISO_ZONED_DATE_TIME))
                 .build();
 
         registreringService.behandleKafkaMelding(kafkaMessage);

@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class SisteEndringRepository {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
                 .set(AKTOERID, sisteEndringDTO.getAktoerId().toString())
                 .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().toString())
-                .set(SISTE_ENDRING_TIDSPUNKT, sisteEndringDTO.getTidspunkt())
+                .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
                 .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().toString()))
                 .execute();
     }
