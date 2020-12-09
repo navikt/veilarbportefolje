@@ -25,11 +25,11 @@ public class KafkaAktivtetServiceTest {
                 "\"historisk\":false" +
                 "}";
 
-        ZonedDateTime zonedDateTime = LocalDateTime.parse("2020-07-09T12:00:00+02:00",
-                ISO_ZONED_DATE_TIME).atZone(ZoneId.of("Europe/Oslo"));
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse("2020-07-09T12:00:00+02:00",
+                ISO_ZONED_DATE_TIME);
 
-        ZonedDateTime zonedDateTime2 = LocalDateTime.parse("2020-05-28T09:47:42.48+02:00",
-                ISO_ZONED_DATE_TIME).atZone(ZoneId.of("Europe/Oslo"));
+        ZonedDateTime zonedDateTime2 = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00",
+                ISO_ZONED_DATE_TIME);
 
         KafkaAktivitetMelding aktivitetDataFraKafka = new KafkaAktivitetMelding()
                 .setAktivitetId("144136")
