@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
+import no.nav.pto.veilarbportefolje.util.KafkaProperties.KafkaAutoOffset;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +47,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 registreringService,
                 unleashService,
-                KafkaProperties.kafkaMedAvroProperties(),
+                KafkaProperties.kafkaMedAvroProperties(KafkaAutoOffset.NONE),
                 Topic.KAFKA_REGISTRERING_CONSUMER_TOPIC,
                 metricsClient
         );
@@ -57,7 +58,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 profileringService,
                 unleashService,
-                KafkaProperties.kafkaMedAvroProperties(),
+                KafkaProperties.kafkaMedAvroProperties(KafkaAutoOffset.NONE),
                 Topic.KAFKA_PROFILERING_CONSUMER_TOPIC,
                 metricsClient
         );
@@ -68,7 +69,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 aktivitetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
                 metricsClient
         );
@@ -79,7 +80,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 vedtakService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.VEDTAK_STATUS_ENDRING_TOPIC,
                 metricsClient
         );
@@ -90,7 +91,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 dialogService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
                 metricsClient
         );
@@ -101,7 +102,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
                 metricsClient
         );
@@ -112,7 +113,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 oppfolgingStartetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
                 Topic.OPPFOLGING_STARTET,
                 metricsClient
         );
@@ -123,7 +124,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 oppfolgingAvsluttetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
                 KafkaConfig.Topic.OPPFOLGING_AVSLUTTET,
                 metricsClient
         );
@@ -134,7 +135,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 manuellStatusService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
                 Topic.ENDRING_PAA_MANUELL_STATUS,
                 metricsClient
         );
@@ -145,7 +146,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 nyForVeilederService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
                 Topic.ENDRING_PAA_NY_FOR_VEILEDER,
                 metricsClient
         );
@@ -156,7 +157,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 veilederTilordnetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
                 Topic.VEILEDER_TILORDNET,
                 metricsClient
         );

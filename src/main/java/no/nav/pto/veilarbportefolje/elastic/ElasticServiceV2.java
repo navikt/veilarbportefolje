@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import org.elasticsearch.ElasticsearchException;
@@ -103,6 +103,7 @@ public class ElasticServiceV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("veileder_id", veilederId.toString())
+                .field("ny_for_enhet", false)
                 .endObject();
 
         update(aktoerId, content);
@@ -133,10 +134,10 @@ public class ElasticServiceV2 {
 
         try {
             final UpdateResponse update = restHighLevelClient.update(updateRequest, DEFAULT);
-            System.out.println(update.status());
+            log.info("Oppdaterte dokument for bruker {} returnerte status {}", aktoerId, update.status());
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.info("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
+                log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
             }
         }
     }

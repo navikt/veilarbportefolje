@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
+import no.nav.pto.veilarbportefolje.util.KafkaProperties.KafkaAutoOffset;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
 import static java.time.Duration.ofSeconds;
@@ -13,7 +14,7 @@ public class KafkaHelsesjekk implements HealthCheck {
     final String topic;
 
     public KafkaHelsesjekk(KafkaConfig.Topic topic) {
-        this.consumer = new KafkaConsumer<>(kafkaProperties());
+        this.consumer = new KafkaConsumer<>(kafkaProperties(KafkaAutoOffset.NONE));
         this.topic = topic.topicName;
     }
 

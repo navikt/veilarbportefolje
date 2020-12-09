@@ -38,6 +38,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
 
         assertThat(tilordnetVeileder).isEqualTo(nyVeileder);
+        assertThat(bruker.isNy_for_enhet()).isFalse();
     }
 
     @Test

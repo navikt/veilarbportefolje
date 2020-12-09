@@ -19,13 +19,28 @@ public class KafkaProperties {
     public static final String KAFKA_BROKERS = EnvironmentUtils.getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY);
     private static final Credentials serviceUserCredentials = getCredentials("service_user");
 
-    public static Properties kafkaProperties() {
+    public enum  KafkaAutoOffset {
+        NONE("none"),
+        LATEST("latest");
+
+        private String autoOffset;
+
+        KafkaAutoOffset(String autoOffset) {
+            this.autoOffset = autoOffset;
+        }
+
+        public String getAutoOffset() {
+            return autoOffset;
+        }
+    }
+
+    public static Properties kafkaProperties(KafkaAutoOffset autoOffset) {
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + serviceUserCredentials.username + "\" password=\"" + serviceUserCredentials.password + "\";");
-        props.put(AUTO_OFFSET_RESET_CONFIG, "none");
+        props.put(AUTO_OFFSET_RESET_CONFIG, autoOffset.getAutoOffset());
         props.put(GROUP_ID_CONFIG, "veilarbportefolje-consumer");
         props.put(MAX_POLL_RECORDS_CONFIG, 5);
         props.put(SESSION_TIMEOUT_MS_CONFIG, 20000);
@@ -35,9 +50,9 @@ public class KafkaProperties {
         return props;
     }
 
-    public static Properties kafkaMedAvroProperties() {
+    public static Properties kafkaMedAvroProperties(KafkaAutoOffset autoOffset) {
         final String KAFKA_SCHEMAS_URL = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
-        Properties props = KafkaProperties.kafkaProperties();
+        Properties props = KafkaProperties.kafkaProperties(autoOffset);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
