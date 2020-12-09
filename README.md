@@ -5,13 +5,13 @@
 Tjeneste som aggregerer data fra andre baksystemer og håndterer oppdatering av søkeindeks brukt i modia oversikten.
 
 Følgende data aggregeres:
-* Informasjon om brukere under oppfølging via databaselink til Arena
-* Informasjon om løpende ytelser fra arena via sftp
-* Informasjon om brukeraktiviteter fra arena via sftp
-* Reservering mot digitale henvendelser i KRR via dkif
-* Veiledertilordninger fra `veilarboppfolging` via REST-feed
-* Dialoger fra `veilarbdialog` (aktivitetsplan) via REST-feed
-* Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via REST-feed
+* Informasjon om brukere under oppfølging via databaselink til Arena (flyttet til veilarbindexer)
+* Informasjon om løpende ytelser fra arena via sftp (flyttet til veilarbindexer)
+* Informasjon om brukeraktiviteter fra arena via sftp (flyttet til veilarbindexer)
+* Reservering mot digitale henvendelser i KRR via dkif (flyttet til veilarbindexer)
+* Veiledertilordninger fra `veilarboppfolging` via Kafka
+* Dialoger fra `veilarbdialog` (aktivitetsplan) via Kafka
+* Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via Kafka
 
 ## Hvordan bygge
 

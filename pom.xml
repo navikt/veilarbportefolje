@@ -109,11 +109,6 @@
             <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
             <version>${no.nav.tjenestespesifikasjoner.version}</version>
         </dependency>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>dkif-tjenestespesifikasjon</artifactId>
-            <version>${no.nav.tjenestespesifikasjoner.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>com.oracle.ojdbc</groupId>
