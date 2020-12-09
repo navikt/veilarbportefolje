@@ -21,6 +21,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 public class ElasticService {
@@ -172,9 +174,9 @@ public class ElasticService {
         for (String kategori : sisteEndringKategori) {
             String field = (String) temp.getSourceAsMap().getOrDefault("siste_endring_" + kategori.toLowerCase(), null);
             if(field != null){
-                LocalDateTime comp = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.of("Europe/Oslo"));
+                LocalDateTime comp = ZonedDateTime.parse(field).toLocalDateTime();
                 if(nyesteEndring == null ){
-                    nyesteEndring = LocalDateTime.ofInstant(Instant.parse(field), ZoneId.of("Europe/Oslo"));
+                    nyesteEndring = comp;
                 } else {
                     nyesteEndring = nyesteEndring.compareTo(comp) < 0 ? nyesteEndring : comp;
                 }

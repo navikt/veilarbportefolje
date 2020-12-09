@@ -53,7 +53,7 @@ public class ElasticServiceV2 {
         String field = "siste_endring_"+objectSkrevetTilDatabase.getKategori().toString().toLowerCase();
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field(field, objectSkrevetTilDatabase.getTidspunkt().toString())
+                .field(field, objectSkrevetTilDatabase.getTidspunkt().toOffsetDateTime().toString())
                 .endObject();
         update(objectSkrevetTilDatabase.getAktoerId(), content);
     }
