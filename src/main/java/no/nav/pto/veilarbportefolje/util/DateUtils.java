@@ -132,6 +132,6 @@ public class DateUtils {
     }
 
     public static Timestamp zonedDateStringToTimestamp(CharSequence zonedDateString) {
-       return Timestamp.from((ZonedDateTime.parse(zonedDateString).toInstant()));
+        return toTimestamp(ZonedDateTime.parse(zonedDateString));
     }
 }

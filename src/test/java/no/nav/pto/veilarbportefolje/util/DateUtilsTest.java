@@ -31,7 +31,7 @@ public class DateUtilsTest {
     public void should_return_correct_date() {
         String original = "2010-12-03T10:15:30.100+02:00";
         Timestamp timestampFromString = timestampFromISO8601(original);
-        String fromTimestamp = iso8601FromTimestamp(timestampFromString, ZoneId.of("Europe/Oslo"));
+        String fromTimestamp = iso8601FromTimestamp(timestampFromString, ZoneId.of("+02:00"));
 
         assertThat(fromTimestamp).isEqualTo(original);
     }
