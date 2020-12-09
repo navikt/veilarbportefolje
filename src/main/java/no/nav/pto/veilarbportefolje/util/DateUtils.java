@@ -52,6 +52,9 @@ public class DateUtils {
     }
 
     public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
+        if(zonedDateTime == null){
+            return null;
+        }
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
