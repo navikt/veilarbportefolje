@@ -32,7 +32,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         this.elasticService = elasticService;
     }
 
-    @Test
     public void siste_endring_ulike_typer_aktivteter() {
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
@@ -79,13 +78,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         send_aktvitet_melding(aktoerId,endretTid);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-
         assertThat(getResponse.isExists()).isTrue();
-
-        String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_endret_aktivitet");
-        String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_aktivitet");
-
-        assertThat(endring_tidspunkt).isEqualTo(zonedDateTime.toString());
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
