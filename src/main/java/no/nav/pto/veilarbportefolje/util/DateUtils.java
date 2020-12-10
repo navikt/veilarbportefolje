@@ -24,6 +24,10 @@ public class DateUtils {
     }
 
 
+    public static String iso8601FromTimestamp(Timestamp timestamp) {
+        return iso8601FromTimestamp(timestamp,  ZoneId.of("Europe/Oslo"));
+    }
+
     static String iso8601FromTimestamp(Timestamp timestamp, ZoneId zoneId) {
         if(timestamp == null) {
             return null;

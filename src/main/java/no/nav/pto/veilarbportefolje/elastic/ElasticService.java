@@ -84,16 +84,14 @@ public class ElasticService {
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
-        List<Bruker> brukere = (filtervalg.harSisteEndringFilter()) ?
-                searchAndAddSisteEndring(searchSourceBuilder, indexName.getValue(), filtervalg.sisteEndringKategori, veiledereMedTilgangTilEnhet)
-                :
-                search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class).getHits().getHits().stream()
-                .map(Hit::get_source)
+        ElasticSearchResponse response = search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class);
+        int totalHits = response.getHits().getTotal();
+
+        List<Bruker> brukere = response.getHits().getHits().stream().map(Hit::get_source)
                         .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                        .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
+                        .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg.sisteEndringKategori))
                         .collect(toList());
 
-        int totalHits = brukere.size();
         return new BrukereMedAntall(totalHits, brukere);
     }
 
@@ -149,27 +147,20 @@ public class ElasticService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    @SneakyThrows
-    private List<Bruker> searchAndAddSisteEndring(SearchSourceBuilder searchSourceBuilder, String indexAlias, List<String> sisteEndringKategori, List<String> veiledereMedTilgangTilEnhet) {
-        SearchRequest request = new SearchRequest()
-                .indices(indexAlias)
-                .source(searchSourceBuilder);
+    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
+        Bruker bruker = Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
+        if(sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
+            return bruker;
+        }
 
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-
-        return Arrays.stream(response.getHits().getHits())
-                .map(temp -> leggtilSisteEndring(temp, sisteEndringKategori))
-                .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
-                .collect(toList());
+        bruker.setSisteEndringTidspunkt(finnSisteEndring(oppfolgingsBruker, sisteEndringKategori));
+        return bruker;
     }
 
-    private OppfolgingsBruker leggtilSisteEndring(SearchHit temp, List<String> sisteEndringKategori) {
-        OppfolgingsBruker bruker = JsonUtils.fromJson(temp.toString(), OppfolgingsBruker.class);
+    private LocalDateTime finnSisteEndring(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
         LocalDateTime nyesteEndring = null;
-
         for (String kategori : sisteEndringKategori) {
-            String field = (String) temp.getSourceAsMap().getOrDefault("siste_endring_" + kategori.toLowerCase(), null);
+            String field = oppfolgingsBruker.matchSisteEndringKategoriTilVerdi(kategori);
             if(field != null){
                 LocalDateTime comp = ZonedDateTime.parse(field).toLocalDateTime();
                 if(nyesteEndring == null ){
@@ -179,9 +170,7 @@ public class ElasticService {
                 }
             }
         }
-
-        bruker.setSiste_endring_tidspunkt(nyesteEndring);
-        return bruker;
+        return nyesteEndring;
     }
 
 

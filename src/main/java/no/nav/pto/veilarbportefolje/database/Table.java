@@ -69,8 +69,22 @@ public class Table {
     public static final class SISTE_ENDRING {
         public static final String TABLE_NAME = "SISTE_ENDRING";
         public static final String AKTOERID = "AKTOERID";
-        public static final String SISTE_ENDRING_KATEGORI = "SISTE_ENDRING_KATEGORI";
-        public static final String SISTE_ENDRING_TIDSPUNKT = "SISTE_ENDRING_TIDSPUNKT";
+
+        public static final String MAL = "MAL";
+        public static final String NY_STILLING = "NY_STILLING";
+        public static final String NY_IJOBB = "NY_IJOBB";
+        public static final String NY_EGEN = "NY_EGEN";
+        public static final String NY_BEHANDLING = "NY_BEHANDLING";
+
+        public static final String FULLFORT_STILLING = "FULLFORT_STILLING";
+        public static final String FULLFORT_IJOBB = "FULLFORT_IJOBB";
+        public static final String FULLFORT_EGEN = "FULLFORT_EGEN";
+        public static final String FULLFORT_BEHANDLING = "FULLFORT_BEHANDLING";
+
+        public static final String AVBRUTT_STILLING = "AVBRUTT_STILLING";
+        public static final String AVBRUTT_IJOBB = "AVBRUTT_IJOBB";
+        public static final String AVBRUTT_EGEN = "AVBRUTT_EGEN";
+        public static final String AVBRUTT_BEHANDLING = "AVBRUTT_BEHANDLING";
     }
 
 

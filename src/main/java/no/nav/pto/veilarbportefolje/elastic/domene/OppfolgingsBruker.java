@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.elastic.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
@@ -86,5 +86,54 @@ public class OppfolgingsBruker {
     String utdanning;
     String utdanning_bestatt;
     String utdanning_godkjent;
-    LocalDateTime siste_endring_tidspunkt;
+
+    String siste_endring_mal;
+
+    String siste_endring_ny_stilling;
+    String siste_endring_ny_ijobb;
+    String siste_endring_ny_egen;
+    String siste_endring_ny_behandling;
+
+    String siste_endring_fullfort_stilling;
+    String siste_endring_fullfort_ijobb;
+    String siste_endring_fullfort_egen;
+    String siste_endring_fullfort_behandling;
+
+    String siste_endring_avbrutt_stilling;
+    String siste_endring_avbrutt_ijobb;
+    String siste_endring_avbrutt_egen;
+    String siste_endring_avbrutt_behandling;
+
+    public String matchSisteEndringKategoriTilVerdi(String siste_endring){
+        switch (SisteEndringsKategorier.valueOf(siste_endring)) {
+            case MAL:
+                return siste_endring_mal;
+            case NY_STILLING:
+                return siste_endring_ny_stilling;
+            case NY_IJOBB:
+                return siste_endring_ny_ijobb;
+            case NY_EGEN:
+                return siste_endring_ny_egen;
+            case NY_BEHANDLING:
+                return siste_endring_ny_behandling;
+            case FULLFORT_STILLING:
+                return siste_endring_fullfort_stilling;
+            case FULLFORT_IJOBB:
+                return siste_endring_fullfort_ijobb;
+            case FULLFORT_EGEN:
+                return siste_endring_fullfort_egen;
+            case FULLFORT_BEHANDLING:
+                return siste_endring_fullfort_behandling;
+            case AVBRUTT_STILLING:
+                return siste_endring_avbrutt_stilling;
+            case AVBRUTT_IJOBB:
+                return siste_endring_avbrutt_ijobb;
+            case AVBRUTT_EGEN:
+                return siste_endring_avbrutt_egen;
+            case AVBRUTT_BEHANDLING:
+                return siste_endring_avbrutt_behandling;
+            default:
+                return null;
+        }
+    }
 }
