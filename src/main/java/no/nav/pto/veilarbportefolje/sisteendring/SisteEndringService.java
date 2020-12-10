@@ -13,7 +13,6 @@ import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetStatus.AVBRUTT;
 import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetStatus.FULLFORT;
-import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetTypeData.*;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
@@ -41,11 +40,11 @@ public class SisteEndringService {
     private SisteEndringDTO lagreAktivitetData(KafkaAktivitetMelding aktivitet) {
         SisteEndringDTO objectSkrevetTilDatabase = null;
 
-        ZonedDateTime tidspunkt = aktivitet.getEndretDato() == null ? null : aktivitet.getEndretDato();
-        SisteEndringsKategorier kategorier = getKategoriFromKafkaMessage(aktivitet);
         AktoerId aktoerId = AktoerId.of(aktivitet.getAktorId());
+        ZonedDateTime tidspunkt = aktivitet.getEndretDato();
+        SisteEndringsKategorier kategorier = getKategoriFromKafkaMessage(aktivitet);
 
-        if (kategorier != null && (tidspunkt == null || hendelseErNyereEnnIDatabase(tidspunkt, kategorier, aktoerId))) {
+        if (kategorier != null && hendelseErNyereEnnIDatabase(tidspunkt, kategorier, aktoerId)) {
             tidspunkt = (tidspunkt == null) ? ZonedDateTime.now() : tidspunkt;
 
             try {
@@ -62,8 +61,11 @@ public class SisteEndringService {
         }
         return objectSkrevetTilDatabase;
     }
-    
+
     private boolean hendelseErNyereEnnIDatabase(ZonedDateTime endringstidspunkt, SisteEndringsKategorier kategorier, AktoerId aktoerId) {
+        if (endringstidspunkt == null) {
+            return true;
+        }
         Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(aktoerId, kategorier);
         if (databaseVerdi == null) {
             return true;
