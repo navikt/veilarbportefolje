@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
+import lombok.SneakyThrows;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -34,17 +36,27 @@ public class SisteEndringRepository {
     public void upsert(SisteEndringDTO sisteEndringDTO) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
                 .set(AKTOERID, sisteEndringDTO.getAktoerId().toString())
-                .set(sisteEndringDTO.getKategori().toString(), Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
+                .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().toString())
+                .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
                 .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().toString()))
                 .execute();
     }
 
     public Timestamp getSisteEndringTidspunkt(AktoerId aktoerId, SisteEndringsKategorier kategori) {
         return SqlUtils
-                .select(jdbcTemplate, TABLE_NAME, rs -> rs.getTimestamp(kategori.toString()))
-                .column(kategori.toString())
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
-                .execute();
+                .select(jdbcTemplate, TABLE_NAME, rs -> rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT))
+                .column(SISTE_ENDRING_TIDSPUNKT)
+                .where(WhereClause.equals(AKTOERID, aktoerId.toString()).and(
+                        WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.toString())
+                )).execute();
+    }
+
+    public ResultSet getAlleSisteEndringTidspunkter(AktoerId aktoerId) {
+        return SqlUtils
+                .select(jdbcTemplate, TABLE_NAME, rs -> rs)
+                .column(SISTE_ENDRING_TIDSPUNKT)
+                .column(SISTE_ENDRING_KATEGORI)
+                .where(WhereClause.equals(AKTOERID, aktoerId.getValue())).execute();
     }
 
     public void setAlleSisteEndringTidspunkter(List<OppfolgingsBruker> oppfolgingsBrukere) {
@@ -53,21 +65,31 @@ public class SisteEndringRepository {
         }
         Map<String, Object> params = new HashMap<>();
         params.put("aktoerider", oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).collect(toList()));
-        jdbcTemplate
-            .queryForList(getOppfolgingsBrukerForListeAvAktoerId(), params)
-            .forEach(a -> mapDbTilOppfolgingsBruker(a, oppfolgingsBrukere));
+        for (OppfolgingsBruker bruker : oppfolgingsBrukere) {
+            mapDbTilOppfolgingsBruker(bruker);
+        }
+        System.out.println("s");
+        //        .forEach(a -> mapDbTilOppfolgingsBruker(a, oppfolgingsBrukere));
     }
 
-    private void mapDbTilOppfolgingsBruker (Map<String, Object> row, List<OppfolgingsBruker> oppfolgingsBrukere) {
-        String aktoerid = (String) row.get(AKTOERID);
-        OppfolgingsBruker oppfolgingsBruker = oppfolgingsBrukere.stream()
-                .filter(bruker -> bruker.getAktoer_id().equals(aktoerid))
-                .findAny()
-                .orElse(null);
-        if(oppfolgingsBruker == null){
-            return;
+    @SneakyThrows
+    private void mapDbTilOppfolgingsBruker(OppfolgingsBruker oppfolgingsBrukere) {
+        jdbcTemplate.query("select * from books", new RowCallbackHandler() {
+            public void processRow(ResultSet resultSet) throws SQLException {
+                while (resultSet.next()) {
+                    String name = resultSet.getString("Name");
+                    // process it
+                }
+            }
+        });
+        String q = getOppfolgingsBrukerForListeAvAktoerId(oppfolgingsBrukere.getAktoer_id());
+        ResultSet rs = getOppfolgingsBrukerForListeAvAktoerId(AktoerId.of());
+        while (rs.next()) {
+            Timestamp coffeeName = rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT);
+            String kategori = rs.getString(SISTE_ENDRING_KATEGORI);
+            System.out.println(coffeeName + ", " + kategori);
         }
-
+    /*
         oppfolgingsBruker.setSiste_endring_mal(iso8601FromTimestamp((Timestamp) row.get(MAL)));
 
         oppfolgingsBruker.setSiste_endring_ny_stilling(iso8601FromTimestamp((Timestamp) row.get(NY_STILLING)));
@@ -84,30 +106,16 @@ public class SisteEndringRepository {
         oppfolgingsBruker.setSiste_endring_avbrutt_ijobb(iso8601FromTimestamp((Timestamp) row.get(AVBRUTT_IJOBB)));
         oppfolgingsBruker.setSiste_endring_avbrutt_egen(iso8601FromTimestamp((Timestamp) row.get(AVBRUTT_EGEN)));
         oppfolgingsBruker.setSiste_endring_avbrutt_behandling(iso8601FromTimestamp((Timestamp) row.get(AVBRUTT_BEHANDLING)));
+    */
     }
 
-    private String getOppfolgingsBrukerForListeAvAktoerId() {
-        return
-                "SELECT " +
-                        "AKTOERID, " +
-
-                        "MAL TIMESTAMP" +
-                        "NY_STILLING TIMESTAMP" +
-                        "NY_IJOBB TIMESTAMP" +
-                        "NY_EGEN TIMESTAMP" +
-                        "NY_BEHANDLING TIMESTAMP" +
-
-                        "FULLFORT_STILLING TIMESTAMP" +
-                        "FULLFORT_IJOBB TIMESTAMP" +
-                        "FULLFORT_EGEN TIMESTAMP" +
-                        "FULLFORT_BEHANDLING TIMESTAMP" +
-
-                        "AVBRUTT_STILLING TIMESTAMP" +
-                        "AVBRUTT_IJOBB TIMESTAMP" +
-                        "AVBRUTT_EGEN TIMESTAMP" +
-                        "AVBRUTT_BEHANDLING TIMESTAMP" +
-                        "WHERE " +
-                        "AKTOERID in (:aktoerider)";
+    private String getOppfolgingsBrukerForListeAvAktoerId(String aktorID) {
+        return      "SELECT " +
+                    SISTE_ENDRING_KATEGORI + ", " +
+                    SISTE_ENDRING_TIDSPUNKT +
+                    " FROM " + TABLE_NAME +
+                    " WHERE " +
+                    AKTOERID+"="+aktorID;
     }
 
 }
