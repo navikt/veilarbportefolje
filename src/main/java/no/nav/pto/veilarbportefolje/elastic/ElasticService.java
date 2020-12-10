@@ -175,7 +175,7 @@ public class ElasticService {
                 if(nyesteEndring == null ){
                     nyesteEndring = comp;
                 } else {
-                    nyesteEndring = nyesteEndring.compareTo(comp) < 0 ? nyesteEndring : comp;
+                    nyesteEndring = nyesteEndring.compareTo(comp) > 0 ? nyesteEndring : comp;
                 }
             }
         }

@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.ENDRET_AKTIVITET;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.NY_AKTIVITET;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.*;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -33,24 +32,33 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void siste_endring_ulike_typer_aktivteter() {
+    public void siste_endring_aktivteter() {
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
         String endretTid = "2020-05-28T09:47:42.48+02:00";
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(endretTid);
+        String endretTidSisteEndring = "2020-11-28T09:47:42.48+02:00";
+        ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
+        ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse(endretTidSisteEndring);
 
         send_aktvitet_melding(aktoerId,null);
-        send_aktvitet_melding(aktoerId,endretTid);
+        send_aktvitet_melding(aktoerId, endretTid);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
-        String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_endret_aktivitet");
-        String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_aktivitet");
+        String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_fullfort_ijobb");
+        String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_ijobb");
 
-        assertThat(endring_tidspunkt).isEqualTo(zonedDateTime.toString());
+        assertThat(endring_tidspunkt).isEqualTo(endretTidZonedDateTime.toString());
         assertThat(ny_tidspunkt).isNotNull();
         assertThat(!ny_tidspunkt.equals(endring_tidspunkt)).isTrue();
+
+        send_aktvitet_melding(aktoerId, endretTidSisteEndring);
+        GetResponse getResponse_2 = elasticTestClient.fetchDocument(aktoerId);
+        assertThat(getResponse_2.isExists()).isTrue();
+
+        String endring_tidspunkt_2 = (String) getResponse_2.getSourceAsMap().get("siste_endring_fullfort_ijobb");
+        assertThat(endring_tidspunkt_2).isEqualTo(endretTidNyZonedDateTime.toString());
     }
 
     @Test
@@ -76,7 +84,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         });
 
         send_aktvitet_melding(aktoerId,null);
-        send_aktvitet_melding(aktoerId,endretTid);
+        send_aktvitet_melding(aktoerId, endretTid);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -105,6 +113,21 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
         assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
+
+        var responseBrukere_2 = elasticService.hentBrukere(
+                testEnhet,
+                empty(),
+                "asc",
+                "ikke_satt",
+                getFiltervalgAlleAktivitetEndringer(),
+                null,
+                null);
+        assertThat(responseBrukere_2.getAntall()).isEqualTo(1);
+        var respons_tidspunkt = responseBrukere_2.getBrukere().get(0).getSisteEndringTidspunkt();
+
+        assertThat(respons_tidspunkt).isNotNull();
+        assertThat(!respons_tidspunkt.equals(zonedDateTime.toLocalDateTime())).isTrue();
+
     }
 
 
@@ -127,14 +150,14 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private static Filtervalg getFiltervalgEndretAktivitet() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.setSisteEndringKategori(List.of(ENDRET_AKTIVITET.name()));
+        filtervalg.setSisteEndringKategori(List.of(FULLFORT_IJOBB.name()));
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalgAlleAktivitetEndringer() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.setSisteEndringKategori(List.of(NY_AKTIVITET.name(), ENDRET_AKTIVITET.name()));
+        filtervalg.setSisteEndringKategori(List.of(NY_IJOBB.name(), FULLFORT_IJOBB.name()));
         return filtervalg;
     }
 

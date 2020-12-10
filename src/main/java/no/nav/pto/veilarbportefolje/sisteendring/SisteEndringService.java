@@ -11,8 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.ENDRET_AKTIVITET;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.NY_AKTIVITET;
+import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetStatus.AVBRUTT;
+import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetStatus.FULLFORT;
+import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetTypeData.*;
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
@@ -31,7 +33,7 @@ public class SisteEndringService {
     public void behandleAktivitet(KafkaAktivitetMelding kafkaAktivitet) {
         SisteEndringDTO objectSkrevetTilDatabase = lagreAktivitetData(kafkaAktivitet);
 
-        if(objectSkrevetTilDatabase != null){
+        if (objectSkrevetTilDatabase != null) {
             elasticServiceV2.updateSisteEndring(objectSkrevetTilDatabase);
         }
     }
@@ -40,11 +42,11 @@ public class SisteEndringService {
         SisteEndringDTO objectSkrevetTilDatabase = null;
 
         ZonedDateTime tidspunkt = aktivitet.getEndretDato() == null ? null : aktivitet.getEndretDato();
-        SisteEndringsKategorier kategorier = (tidspunkt == null) ? NY_AKTIVITET : ENDRET_AKTIVITET;
+        SisteEndringsKategorier kategorier = getKategoriFromKafkaMessage(aktivitet);
         AktoerId aktoerId = AktoerId.of(aktivitet.getAktorId());
 
-        if (tidspunkt == null || hendelseErNyereEnnIDatabase(tidspunkt, kategorier, aktoerId)) {
-            tidspunkt = (tidspunkt == null) ? ZonedDateTime.now() : tidspunkt; // TODO: Antar at nye aktivterer (null verdier) er skapt "nå".
+        if (kategorier != null && (tidspunkt == null || hendelseErNyereEnnIDatabase(tidspunkt, kategorier, aktoerId))) {
+            tidspunkt = (tidspunkt == null) ? ZonedDateTime.now() : tidspunkt;
 
             try {
                 objectSkrevetTilDatabase = new SisteEndringDTO()
@@ -60,12 +62,51 @@ public class SisteEndringService {
         }
         return objectSkrevetTilDatabase;
     }
-
+    
     private boolean hendelseErNyereEnnIDatabase(ZonedDateTime endringstidspunkt, SisteEndringsKategorier kategorier, AktoerId aktoerId) {
         Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(aktoerId, kategorier);
-        if(databaseVerdi == null){
+        if (databaseVerdi == null) {
             return true;
         }
         return toZonedDateTime(databaseVerdi).compareTo(endringstidspunkt) < 0;
     }
+
+    private SisteEndringsKategorier getKategoriFromKafkaMessage(KafkaAktivitetMelding aktivitet) {
+        if (aktivitet.getEndretDato() == null) {
+            switch (aktivitet.getAktivitetType()) {
+                case STILLING:
+                    return NY_STILLING;
+                case IJOBB:
+                    return NY_IJOBB;
+                case EGEN:
+                    return NY_EGEN;
+                case BEHANDLING:
+                    return NY_BEHANDLING;
+            }
+        } else if (aktivitet.getAktivitetStatus().equals(FULLFORT)) {
+            switch (aktivitet.getAktivitetType()) {
+                case STILLING:
+                    return FULLFORT_STILLING;
+                case IJOBB:
+                    return FULLFORT_IJOBB;
+                case EGEN:
+                    return FULLFORT_EGEN;
+                case BEHANDLING:
+                    return FULLFORT_BEHANDLING;
+            }
+        } else if (aktivitet.getAktivitetStatus().equals(AVBRUTT)) {
+            switch (aktivitet.getAktivitetType()) {
+                case STILLING:
+                    return AVBRUTT_STILLING;
+                case IJOBB:
+                    return AVBRUTT_IJOBB;
+                case EGEN:
+                    return AVBRUTT_EGEN;
+                case BEHANDLING:
+                    return AVBRUTT_BEHANDLING;
+            }
+        }
+        return null;
+    }
+
 }
