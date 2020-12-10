@@ -58,14 +58,14 @@ public class ElasticIndexer {
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
-            IndexName alias,
-            SisteEndringRepository sisteEndringRepository) {
+            SisteEndringRepository sisteEndringRepository,
+            IndexName alias) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
-        this.alias = alias;
         this.sisteEndringRepository = sisteEndringRepository;
+        this.alias = alias;
     }
 
     static int utregnTil(int from, int batchSize) {
