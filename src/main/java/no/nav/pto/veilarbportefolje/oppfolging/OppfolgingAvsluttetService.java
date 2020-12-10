@@ -34,7 +34,7 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         }
 
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
-        final AktoerId aktoerId = dto.getAktoerId();
+        final AktoerId aktoerId = dto.getAktorId();
 
         arbeidslisteService.slettArbeidsliste(aktoerId);
         oppfolgingRepository.settOppfolgingTilFalse(aktoerId);

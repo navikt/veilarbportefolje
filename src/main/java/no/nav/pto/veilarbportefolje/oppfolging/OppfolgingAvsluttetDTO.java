@@ -7,6 +7,6 @@ import java.time.ZonedDateTime;
 
 @Value
 public class OppfolgingAvsluttetDTO {
-    AktoerId aktoerId;
+    AktoerId aktorId;
     ZonedDateTime sluttdato;
 }
