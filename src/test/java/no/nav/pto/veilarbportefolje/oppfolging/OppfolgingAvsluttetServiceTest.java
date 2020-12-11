@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,25 +27,33 @@ class OppfolgingAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_slette_arbeidsliste_og_avslutte_oppfølging() {
+    void skal_slette_arbeidsliste_registrering_og_avslutte_oppfølging() {
         final AktoerId aktoerId = randomAktoerId();
 
         testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId());
 
         String payload = new JSONObject()
-                .put("aktoerId", aktoerId.toString())
+                .put("aktorId", aktoerId.toString())
                 .put("sluttdato", "2020-12-01T00:00:00+02:00")
                 .toString();
 
         oppfolgingAvsluttetService.behandleKafkaMelding(payload);
 
-        String result = SqlUtils
+        String arbeidsliste = SqlUtils
                 .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
                 .column(Table.ARBEIDSLISTE.AKTOERID)
                 .where(WhereClause.equals(Table.ARBEIDSLISTE.AKTOERID, aktoerId.getValue()))
                 .execute();
 
-        assertThat(result).isNull();
+        assertThat(arbeidsliste).isNull();
+
+        String registrering = SqlUtils
+                .select(jdbcTemplate, Table.BRUKER_REGISTRERING.TABLE_NAME, rs -> rs.getString(Table.BRUKER_REGISTRERING.AKTOERID))
+                .column(Table.BRUKER_REGISTRERING.AKTOERID)
+                .where(WhereClause.equals(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.getValue()))
+                .execute();
+
+        assertThat(registrering).isNull();
 
         assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isEqualTo("N");
 

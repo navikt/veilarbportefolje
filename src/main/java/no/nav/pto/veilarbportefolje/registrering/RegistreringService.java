@@ -31,6 +31,9 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
         elastic.updateRegistering(aktoerId, kafkaRegistreringMelding);
     }
 
+    public void slettRegistering(AktoerId aktoerId) {
+        registreringRepository.slettBrukerRegistrering(aktoerId);
+    }
 
     @Override
     public boolean shouldRewind() {

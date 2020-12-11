@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_OPPFOLGING;
 
@@ -26,6 +27,7 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
     }
 
     @Override
+    @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
         if (!unleashService.isEnabled(KAFKA_OPPFOLGING)) {
             return;
