@@ -32,7 +32,7 @@ public class DateUtils {
         if(timestamp == null) {
             return null;
         }
-        return ZonedDateTime.ofInstant(timestamp.toInstant(), zoneId).toString();
+        return ZonedDateTime.ofInstant(timestamp.toInstant(), zoneId).toOffsetDateTime().toString();
     }
 
     public static String toIsoUTC(Timestamp timestamp) {

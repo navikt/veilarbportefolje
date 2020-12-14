@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.*;
@@ -46,8 +47,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
-        String endring_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_fullfort_ijobb");
-        String ny_tidspunkt = (String) getResponse.getSourceAsMap().get("siste_endring_ny_ijobb");
+        // TODO: use mapping to OppfolgingsBruker
+        String endring_tidspunkt =  ((Map<String, String>)getResponse.getSourceAsMap().get("siste_endringer")).get("fullfort_ijobb");
+        String ny_tidspunkt = ((Map<String, String>)getResponse.getSourceAsMap().get("siste_endringer")).get("ny_ijobb");
 
         assertThat(endring_tidspunkt).isEqualTo(endretTidZonedDateTime.toString());
         assertThat(ny_tidspunkt).isNotNull();
@@ -57,7 +59,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         GetResponse getResponse_2 = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse_2.isExists()).isTrue();
 
-        String endring_tidspunkt_2 = (String) getResponse_2.getSourceAsMap().get("siste_endring_fullfort_ijobb");
+        String endring_tidspunkt_2 = ((Map<String, String>)getResponse_2.getSourceAsMap().get("siste_endringer")).get("fullfort_ijobb");
         assertThat(endring_tidspunkt_2).isEqualTo(endretTidNyZonedDateTime.toString());
     }
 

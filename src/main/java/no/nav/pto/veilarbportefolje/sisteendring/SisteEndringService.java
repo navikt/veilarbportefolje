@@ -95,6 +95,8 @@ public class SisteEndringService {
                     return FULLFORT_EGEN;
                 case BEHANDLING:
                     return FULLFORT_BEHANDLING;
+                case SOKEAVTALE:
+                    return FULLFORT_SOKEAVTALE;
             }
         } else if (aktivitet.getAktivitetStatus().equals(AVBRUTT)) {
             switch (aktivitet.getAktivitetType()) {
@@ -106,6 +108,8 @@ public class SisteEndringService {
                     return AVBRUTT_EGEN;
                 case BEHANDLING:
                     return AVBRUTT_BEHANDLING;
+                case SOKEAVTALE:
+                    return AVBRUTT_SOKEAVTALE;
             }
         }
         return null;

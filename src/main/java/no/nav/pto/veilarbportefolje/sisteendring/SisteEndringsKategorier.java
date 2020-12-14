@@ -13,11 +13,13 @@ public enum SisteEndringsKategorier {
     FULLFORT_IJOBB,
     FULLFORT_EGEN,
     FULLFORT_BEHANDLING,
+    FULLFORT_SOKEAVTALE,
 
     AVBRUTT_STILLING,
     AVBRUTT_IJOBB,
     AVBRUTT_EGEN,
-    AVBRUTT_BEHANDLING;
+    AVBRUTT_BEHANDLING,
+    AVBRUTT_SOKEAVTALE;
 
     public static boolean contains(String value) {
         try {

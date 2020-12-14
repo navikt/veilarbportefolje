@@ -19,7 +19,6 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static java.lang.Integer.parseInt;
@@ -101,7 +100,7 @@ public class ElasticQueryBuilder {
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         BoolQueryBuilder subQuery = boolQuery();
-        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endring_"+kategori.toLowerCase())));
+        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer."+kategori.toLowerCase())));
         queryBuilder.must(subQuery);
       }
 

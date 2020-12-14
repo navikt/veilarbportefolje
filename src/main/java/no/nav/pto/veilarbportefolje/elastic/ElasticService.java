@@ -148,29 +148,11 @@ public class ElasticService {
     }
 
     private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
-        Bruker bruker = Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
         if(sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
-            return bruker;
+            return Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
         }
-
-        bruker.setSisteEndringTidspunkt(finnSisteEndring(oppfolgingsBruker, sisteEndringKategori));
-        return bruker;
-    }
-
-    private LocalDateTime finnSisteEndring(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
-        LocalDateTime nyesteEndring = null;
-        for (String kategori : sisteEndringKategori) {
-            String field = oppfolgingsBruker.matchSisteEndringKategoriTilVerdi(kategori);
-            if(field != null){
-                LocalDateTime comp = ZonedDateTime.parse(field).toLocalDateTime();
-                if(nyesteEndring == null ){
-                    nyesteEndring = comp;
-                } else {
-                    nyesteEndring = nyesteEndring.compareTo(comp) > 0 ? nyesteEndring : comp;
-                }
-            }
-        }
-        return nyesteEndring;
+        oppfolgingsBruker.kalkulerSisteEndring(sisteEndringKategori);
+        return Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
     }
 
 
