@@ -27,7 +27,6 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
     }
 
     @Override
-    @Transactional
     public void behandleKafkaMelding(String kafkaMelding) {
         if (!unleashService.isEnabled(KAFKA_OPPFOLGING)) {
             return;
