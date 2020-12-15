@@ -189,7 +189,7 @@ public class SisteEndring {
     }
 
     private boolean eventIsMoreRecent(Instant currentMostRecent, String comp) {
-        return currentMostRecent == null || (comp != null && Instant.parse(comp).isAfter(currentMostRecent));
+        return currentMostRecent == null || (comp != null && ZonedDateTime.parse(comp).toInstant().isAfter(currentMostRecent));
     }
 
     private Instant instantOrNull(String iso_8601) {
@@ -199,7 +199,7 @@ public class SisteEndring {
         try{//Feilet i github med: "2020-05-28T09:47:42.480+02:00"
             return ZonedDateTime.parse(iso_8601).toInstant();
         }catch (Exception e){
-            System.out.println("Feilet med: "+iso_8601);
+            System.out.println("Feilet med: " + iso_8601);
         }
         return null;
     }
