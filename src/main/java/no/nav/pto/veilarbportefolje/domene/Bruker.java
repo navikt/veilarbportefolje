@@ -126,7 +126,7 @@ public class Bruker {
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .setSisteEndringKategori(bruker.getAggregert_siste_endring_kategori())
-                .setSisteEndringTidspunkt(toLocalDateTimeOrNull(bruker.getAggregert_siste_endring_tidspunkt()))
+                .setSisteEndringTidspunkt(bruker.getAggregert_siste_endring_tidspunkt())
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))

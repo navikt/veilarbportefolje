@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -181,7 +184,7 @@ public class SisteEndring {
 
         if (sisteTid != null){
             oppfolgingsBruker.setAggregert_siste_endring_kategori(sisteKategori);
-            oppfolgingsBruker.setAggregert_siste_endring_tidspunkt(sisteTid.toString());
+            oppfolgingsBruker.setAggregert_siste_endring_tidspunkt(LocalDateTime.ofInstant(sisteTid, ZoneId.of("Europe/Oslo")));
         }
     }
 
@@ -193,8 +196,8 @@ public class SisteEndring {
         if (iso_8601 == null) {
             return null;
         }
-        try{
-        return Instant.parse(iso_8601);
+        try{//Feilet i github med: "2020-05-28T09:47:42.480+02:00"
+            return ZonedDateTime.parse(iso_8601).toInstant();
         }catch (Exception e){
             System.out.println("Feilet med: "+iso_8601);
         }
