@@ -193,7 +193,12 @@ public class SisteEndring {
         if (iso_8601 == null) {
             return null;
         }
+        try{
         return Instant.parse(iso_8601);
+        }catch (Exception e){
+            System.out.println("Feilet med: "+iso_8601);
+        }
+        return null;
     }
 
 }
