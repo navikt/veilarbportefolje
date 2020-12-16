@@ -14,13 +14,9 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,10 +83,11 @@ public class ElasticService {
         ElasticSearchResponse response = search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class);
         int totalHits = response.getHits().getTotal();
 
-        List<Bruker> brukere = response.getHits().getHits().stream().map(Hit::get_source)
-                        .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                        .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg.sisteEndringKategori))
-                        .collect(toList());
+        List<Bruker> brukere = response.getHits().getHits().stream()
+                .map(Hit::get_source)
+                .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
+                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg.sisteEndringKategori))
+                .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
     }
@@ -148,7 +145,7 @@ public class ElasticService {
     }
 
     private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
-        if(sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
+        if (sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
             return Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
         }
         oppfolgingsBruker.kalkulerSisteEndring(sisteEndringKategori);
@@ -165,5 +162,4 @@ public class ElasticService {
     private boolean erVedtakstottePilotPa() {
         return unleashService.isEnabled(FeatureToggle.VEDTAKSTOTTE_PILOT);
     }
-
 }

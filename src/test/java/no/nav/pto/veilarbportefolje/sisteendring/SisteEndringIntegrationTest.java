@@ -47,20 +47,29 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
-        // TODO: use mapping to OppfolgingsBruker
-        String endring_tidspunkt =  ((Map<String, String>)getResponse.getSourceAsMap().get("siste_endringer")).get("fullfort_ijobb");
-        String ny_tidspunkt = ((Map<String, String>)getResponse.getSourceAsMap().get("siste_endringer")).get("ny_ijobb");
+        String endring_fullfort_ijobb = getValueFromNestedObject(getResponse, "fullfort_ijobb");
+        String endring_ny_ijobb = getValueFromNestedObject(getResponse, "ny_ijobb");
 
-        assertThat(endring_tidspunkt).isEqualTo(endretTidZonedDateTime.toString());
-        assertThat(ny_tidspunkt).isNotNull();
-        assertThat(!ny_tidspunkt.equals(endring_tidspunkt)).isTrue();
+        assertThat(endring_fullfort_ijobb).isEqualTo(endretTidZonedDateTime.toString());
+
+        assertThat(endring_ny_ijobb).isNotNull();
+        assertThat(!endring_ny_ijobb.equals(endring_fullfort_ijobb)).isTrue();
 
         send_aktvitet_melding(aktoerId, endretTidSisteEndring);
         GetResponse getResponse_2 = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse_2.isExists()).isTrue();
 
-        String endring_tidspunkt_2 = ((Map<String, String>)getResponse_2.getSourceAsMap().get("siste_endringer")).get("fullfort_ijobb");
-        assertThat(endring_tidspunkt_2).isEqualTo(endretTidNyZonedDateTime.toString());
+        String endring_fullfort_ijobb_2 = getValueFromNestedObject(getResponse_2, "fullfort_ijobb");
+        assertThat(endring_fullfort_ijobb_2).isEqualTo(endretTidNyZonedDateTime.toString());
+    }
+
+    private String getValueFromNestedObject(GetResponse respons, String field){
+        assertThat(respons).isNotNull();
+        Object nestedObject = respons.getSourceAsMap().get("siste_endringer");
+        if(nestedObject instanceof Map) {
+            return  ((Map<String, String>) nestedObject).get(field);
+        }
+        return null;
     }
 
     @Test

@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 @Data
 @Accessors(chain = true)

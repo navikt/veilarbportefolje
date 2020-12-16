@@ -49,7 +49,7 @@ public class ElasticServiceV2 {
 
     @SneakyThrows
     public void updateSisteEndring(SisteEndringDTO objectSkrevetTilDatabase) {
-        String field = objectSkrevetTilDatabase.getKategori().toString().toLowerCase();
+        String field = objectSkrevetTilDatabase.getKategori().name().toLowerCase();
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                     .startObject("siste_endringer")

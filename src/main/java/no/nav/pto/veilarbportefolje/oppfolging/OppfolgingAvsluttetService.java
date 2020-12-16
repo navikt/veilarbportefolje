@@ -26,7 +26,8 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
                                       OppfolgingRepository oppfolgingRepository,
                                       RegistreringService registreringService,
                                       ElasticServiceV2 elasticServiceV2,
-                                      UnleashService unleashService, SisteEndringService sisteEndringService) {
+                                      UnleashService unleashService,
+                                      SisteEndringService sisteEndringService) {
         this.arbeidslisteService = arbeidslisteService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.registreringService = registreringService;

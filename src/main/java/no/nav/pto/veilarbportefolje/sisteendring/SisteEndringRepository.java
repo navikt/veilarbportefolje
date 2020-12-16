@@ -30,11 +30,11 @@ public class SisteEndringRepository {
 
     public void upsert(SisteEndringDTO sisteEndringDTO) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
-                .set(AKTOERID, sisteEndringDTO.getAktoerId().toString())
-                .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().toString())
+                .set(AKTOERID, sisteEndringDTO.getAktoerId().getValue())
+                .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
-                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().toString()).and(
-                        WhereClause.equals(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().toString())
+                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().getValue()).and(
+                        WhereClause.equals(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 )).execute();
     }
 
@@ -42,8 +42,8 @@ public class SisteEndringRepository {
         return SqlUtils
                 .select(jdbcTemplate, TABLE_NAME, rs -> rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT))
                 .column(SISTE_ENDRING_TIDSPUNKT)
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()).and(
-                        WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.toString())
+                .where(WhereClause.equals(AKTOERID, aktoerId.getValue()).and(
+                        WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.name())
                 )).execute();
     }
 

@@ -182,7 +182,7 @@ public class SisteEndring {
             }
         }
 
-        if (sisteTid != null){
+        if (sisteTid != null) {
             oppfolgingsBruker.setAggregert_siste_endring_kategori(sisteKategori);
             oppfolgingsBruker.setAggregert_siste_endring_tidspunkt(LocalDateTime.ofInstant(sisteTid, ZoneId.of("Europe/Oslo")));
         }
@@ -196,12 +196,7 @@ public class SisteEndring {
         if (iso_8601 == null) {
             return null;
         }
-        try{//Feilet i github med: "2020-05-28T09:47:42.480+02:00"
-            return ZonedDateTime.parse(iso_8601).toInstant();
-        }catch (Exception e){
-            System.out.println("Feilet med: " + iso_8601);
-        }
-        return null;
+        return ZonedDateTime.parse(iso_8601).toInstant();
     }
 
 }
