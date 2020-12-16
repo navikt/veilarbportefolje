@@ -25,8 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AktivitetDAOTest {
 
