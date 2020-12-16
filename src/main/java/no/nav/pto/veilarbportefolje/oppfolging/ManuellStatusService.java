@@ -32,7 +32,10 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
         final AktoerId aktoerId = AktoerId.of(dto.getAktorId());
 
         oppfolgingRepository.settManuellStatus(aktoerId, dto.isErManuell());
-        elasticServiceV2.settManuellStatus(aktoerId, ManuellBrukerStatus.MANUELL);
+
+        String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
+
+        elasticServiceV2.settManuellStatus(aktoerId, manuellStatus);
     }
 
     @Override

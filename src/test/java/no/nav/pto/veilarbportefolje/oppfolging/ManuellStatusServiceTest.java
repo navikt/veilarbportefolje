@@ -28,7 +28,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skal_oppdatere_manuell_status_på_bruker() {
+    void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
         final AktoerId aktoerId = randomAktoerId();
         final BrukerOppdatertInformasjon info = new BrukerOppdatertInformasjon()
                 .setAktoerid(aktoerId.toString())
@@ -45,8 +45,31 @@ class ManuellStatusServiceTest extends EndToEndTest {
         manuellStatusService.behandleKafkaMelding(melding);
 
         final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
-        assertThat(oppfolgingData.getManuell()).isTrue();
 
+        assertThat(oppfolgingData.getManuell()).isTrue();
         pollElasticUntil(() -> elasticTestClient.hentBrukerFraElastic(aktoerId).getManuell_bruker().equals(MANUELL.name()));
+    }
+
+    @Test
+    void skal_oppdatere_oversikten_når_bruker_blir_satt_til_digital_oppfølging() {
+        final AktoerId aktoerId = randomAktoerId();
+        final BrukerOppdatertInformasjon info = new BrukerOppdatertInformasjon()
+                .setAktoerid(aktoerId.toString())
+                .setManuell(false);
+
+        oppfolgingRepository.oppdaterOppfolgingData(info);
+        elasticTestClient.createUserInElastic(aktoerId);
+
+        String melding = new JSONObject()
+                .put("aktorId", aktoerId.toString())
+                .put("erManuell", false)
+                .toString();
+
+        manuellStatusService.behandleKafkaMelding(melding);
+
+        final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
+
+        assertThat(oppfolgingData.getManuell()).isFalse();
+        pollElasticUntil(() -> elasticTestClient.hentBrukerFraElastic(aktoerId).getManuell_bruker() == null);
     }
 }
