@@ -63,15 +63,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(endring_fullfort_ijobb_2).isEqualTo(endretTidNyZonedDateTime.toString());
     }
 
-    private String getValueFromNestedObject(GetResponse respons, String field){
-        assertThat(respons).isNotNull();
-        Object nestedObject = respons.getSourceAsMap().get("siste_endringer");
-        if(nestedObject instanceof Map) {
-            return  ((Map<String, String>) nestedObject).get(field);
-        }
-        return null;
-    }
-
     @Test
     void siste_endring_filter_test() {
         final String testEnhet = "0000";
@@ -106,7 +97,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     "asc",
                     "ikke_satt",
-                    getFiltervalgEndretAktivitet(),
+                    getFiltervalgFullfort_IJobb(),
                     null,
                     null);
 
@@ -118,7 +109,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 empty(),
                 "asc",
                 "ikke_satt",
-                getFiltervalgEndretAktivitet(),
+                getFiltervalgFullfort_IJobb(),
                 null,
                 null);
 
@@ -130,7 +121,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 empty(),
                 "asc",
                 "ikke_satt",
-                getFiltervalgAlleAktivitetEndringer(),
+                getFiltervalgFullfort_IJobb_Og_Ny_IJobb(),
                 null,
                 null);
         assertThat(responseBrukere_2.getAntall()).isEqualTo(1);
@@ -158,18 +149,27 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
     }
 
-    private static Filtervalg getFiltervalgEndretAktivitet() {
+    private static Filtervalg getFiltervalgFullfort_IJobb() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
         filtervalg.setSisteEndringKategori(List.of(FULLFORT_IJOBB.name()));
         return filtervalg;
     }
 
-    private static Filtervalg getFiltervalgAlleAktivitetEndringer() {
+    private static Filtervalg getFiltervalgFullfort_IJobb_Og_Ny_IJobb() {
         Filtervalg filtervalg = new Filtervalg();
         filtervalg.setFerdigfilterListe(new ArrayList<>());
         filtervalg.setSisteEndringKategori(List.of(NY_IJOBB.name(), FULLFORT_IJOBB.name()));
         return filtervalg;
+    }
+
+    private String getValueFromNestedObject(GetResponse respons, String field){
+        assertThat(respons).isNotNull();
+        Object nestedObject = respons.getSourceAsMap().get("siste_endringer");
+        if(nestedObject instanceof Map) {
+            return  ((Map<String, String>) nestedObject).get(field);
+        }
+        return null;
     }
 
     private void populateElastic(String enhet, String aktoerId) {
