@@ -33,9 +33,10 @@ public class OppfolgingRepository {
 
     public boolean settUnderOppfolging(AktoerId aktoerId, ZonedDateTime startDato) {
         return SqlUtils.upsert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .set("AKTOERID", aktoerId.toString())
-                .set("OPPFOLGING", "J")
-                .set("STARTDATO", toTimestamp(startDato))
+                .set(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+                .set(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
+                .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "J")
+                .set(Table.OPPFOLGING_DATA.STARTDATO, toTimestamp(startDato))
                 .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
                 .execute();
     }

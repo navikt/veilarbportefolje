@@ -27,8 +27,12 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
             return;
         }
         final NyForVeilederDTO dto = JsonUtils.fromJson(kafkaMelding, NyForVeilederDTO.class);
-        oppfolgingRepository.settNyForVeileder(dto.getAktorId(), dto.isNyForVeileder());
-        elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), dto.isNyForVeileder());
+
+        final boolean brukerIkkeErNyForVeileder = !dto.isNyForVeileder();
+        if (brukerIkkeErNyForVeileder) {
+            oppfolgingRepository.settNyForVeileder(dto.getAktorId(), false);
+            elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), false);
+        }
     }
 
     @Override

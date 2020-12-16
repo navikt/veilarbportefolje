@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
-import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.elasticsearch.ElasticsearchException;
@@ -92,6 +91,7 @@ public class ElasticServiceV2 {
                 .startObject()
                 .field("veileder_id", veilederId.toString())
                 .field("ny_for_enhet", false)
+                .field("ny_for_veileder", true)
                 .endObject();
 
         update(aktoerId, content);
@@ -117,7 +117,7 @@ public class ElasticServiceV2 {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
         updateRequest.type("_doc");
-        updateRequest.id(aktoerId.toString());
+        updateRequest.id(aktoerId.getValue());
         updateRequest.doc(content);
 
         try {
