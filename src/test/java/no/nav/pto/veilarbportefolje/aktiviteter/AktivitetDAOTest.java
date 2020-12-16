@@ -256,7 +256,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void skalBareLagreNyesteVersjonAvAktivitet(){
+    public void skalHaRiktigVersionLogikk(){
         KafkaAktivitetMelding aktivitet_i_database = new KafkaAktivitetMelding()
                 .setVersion(2)
                 .setAktivitetId("aktivitetid")
@@ -297,6 +297,5 @@ public class AktivitetDAOTest {
         aktivitetDAO.upsertAktivitet(aktivitet_i_database);
         assertThat(aktivitetDAO.erNyVersjonAvAktivitet(aktivitet_gammel)).isFalse();
         assertThat(aktivitetDAO.erNyVersjonAvAktivitet(aktivitet_ny)).isTrue();
-
     }
 }
