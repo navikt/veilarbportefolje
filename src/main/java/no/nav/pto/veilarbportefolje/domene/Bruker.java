@@ -10,9 +10,8 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.toList;
@@ -144,7 +143,7 @@ public class Bruker {
         if (date == null) {
             return null;
         }
-        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
+        return ZonedDateTime.parse(date).toLocalDateTime();
     }
 
 

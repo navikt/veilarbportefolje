@@ -98,7 +98,7 @@ public class DateUtils {
     }
 
     public static Timestamp dateToTimestamp(String date) {
-        return Optional.ofNullable(date).map(Instant::parse).map(Timestamp::from).orElse(null);
+        return Optional.ofNullable(date).map(x -> ZonedDateTime.parse(x).toInstant()).map(Timestamp::from).orElse(null);
     }
 
     public static boolean isFarInTheFutureDate(Timestamp utlopsdato) {
