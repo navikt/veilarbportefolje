@@ -38,19 +38,6 @@ public class KopierGR199FraArena {
 
     }
 
-    public void startOppdateringAvYtelser() {
-        log.info("Indeksering: Starter oppdatering av ytelser...");
-        aktivitetService.tryUtledOgLagreAlleAktivitetstatuser(); //TODO VARFÖR BEHÖVER MAN GÖRA DETTA VID INLÄSNING AV YTELSER?
-        this.hentYtelserFil()
-                .onFailure(log(log, "Kunne ikke hente ut fil med ytelser via nfs"))
-                .flatMap(FilmottakFileUtils::unmarshallLoependeYtelserFil)
-                .onFailure(log(log, "Unmarshalling av ytelsesfil feilet"))
-                .andThen(indekserHandler::lagreYtelser)
-                .onFailure(log(log, "Hovedindeksering feilet"));
-
-        log.info("Indeksering: Fullført oppdatering av ytelser");
-    }
-
     public FilmottakConfig.SftpConfig lopendeYtelser() {
         return new FilmottakConfig.SftpConfig(
                 environmentProperties.getArenaLoependeYtelserUrl(),

@@ -26,6 +26,7 @@ import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 public class AktivitetDAOTest {
 
@@ -179,7 +180,7 @@ public class AktivitetDAOTest {
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
                 .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);;
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
 
         aktivitetDAO.upsertAktivitet(aktivitet1);
         aktivitetDAO.upsertAktivitet(aktivitet2);
@@ -189,7 +190,6 @@ public class AktivitetDAOTest {
 
     @Test
     public void skalHenteListeMedAktiviteterForAktorid() {
-
         KafkaAktivitetMelding aktivitet1 = new KafkaAktivitetMelding()
                 .setAktivitetId("id1")
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
@@ -253,5 +253,50 @@ public class AktivitetDAOTest {
         assertThat(brukertiltak.get(0).getTiltak().equals("T1")).isTrue();
         assertThat(brukertiltak.get(1).getTiltak().equals("T2")).isTrue();
         assertThat(brukertiltak.get(2).getTiltak().equals("T1")).isTrue();
+    }
+
+    @Test
+    public void skalBareLagreNyesteVersjonAvAktivitet(){
+        KafkaAktivitetMelding aktivitet_i_database = new KafkaAktivitetMelding()
+                .setVersion(2)
+                .setAktivitetId("aktivitetid")
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
+                .setAktorId("aktoerid")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
+
+        KafkaAktivitetMelding aktivitet_gammel = new KafkaAktivitetMelding()
+                .setVersion(1)
+                .setAktivitetId("aktivitetid")
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
+                .setAktorId("aktoerid")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
+
+
+        KafkaAktivitetMelding aktivitet_ny = new KafkaAktivitetMelding()
+                .setVersion(3)
+                .setAktivitetId("aktivitetid")
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
+                .setAktorId("aktoerid")
+                .setAvtalt(false)
+                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
+                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
+
+
+        assertThat(aktivitetDAO.erNyVersjonAvAktivitet(aktivitet_i_database)).isTrue();
+
+        aktivitetDAO.upsertAktivitet(aktivitet_i_database);
+        assertThat(aktivitetDAO.erNyVersjonAvAktivitet(aktivitet_gammel)).isFalse();
+        assertThat(aktivitetDAO.erNyVersjonAvAktivitet(aktivitet_ny)).isTrue();
+
     }
 }

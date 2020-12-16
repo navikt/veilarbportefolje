@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
@@ -54,6 +55,17 @@ public class AktivitetDAO {
                 .orElseThrow(IllegalStateException::new);
     }
 
+    public Integer getVersjon(String aktivitetId) {
+        return SqlUtils
+                .select(db, AKTIVITETER, rs -> rs.getInt("VERSION"))
+                .column("VERSION")
+                .where(WhereClause.equals(AKTIVITETID, aktivitetId))
+                .executeToList()
+                .stream()
+                .findFirst()
+                .orElse(null);
+    }
+
     public void slettAlleAktivitetstatus(String aktivitettype) {
         db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
     }
@@ -89,6 +101,7 @@ public class AktivitetDAO {
                 .set("TILDATO", dateToTimestamp(aktivitet.getTilDato()))
                 .set("OPPDATERTDATO", dateToTimestamp(aktivitet.getEndretDato()))
                 .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
+                .set("VERSION", aktivitet.getVersion())
                 .set(AKTIVITETID, aktivitet.getAktivitetId())
                 .where(WhereClause.equals(AKTIVITETID, aktivitet.getAktivitetId()))
                 .execute();
@@ -215,5 +228,17 @@ public class AktivitetDAO {
                 .setAktiv(parse0OR1((String) row.get("STATUS")))
                 .setNesteStart((Timestamp) row.get("NESTE_STARTDATO"))
                 .setNesteUtlop((Timestamp) row.get("NESTE_UTLOPSDATO"));
+    }
+
+    public boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
+        Integer kommendeVersjon = aktivitet.getVersion();
+        if(kommendeVersjon == null){
+            return false;
+        }
+        Integer databaseVersjon = getVersjon(aktivitet.getAktivitetId());
+        if(databaseVersjon == null ){
+            return true;
+        }
+        return kommendeVersjon.compareTo(databaseVersjon) > 0;
     }
 }
