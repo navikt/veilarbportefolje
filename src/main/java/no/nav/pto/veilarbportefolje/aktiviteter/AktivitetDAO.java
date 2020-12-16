@@ -25,7 +25,6 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.*;
-import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.AKTIVITETID;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
