@@ -37,6 +37,10 @@ public class SisteEndringService {
         }
     }
 
+    public void slettSisteEndringer(AktoerId aktoerId) {
+        sisteEndringRepository.slettSisteEndringer(aktoerId);
+    }
+
     private SisteEndringDTO lagreAktivitetData(KafkaAktivitetMelding aktivitet) {
         SisteEndringDTO objectSkrevetTilDatabase = null;
 

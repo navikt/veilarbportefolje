@@ -97,7 +97,7 @@ public class ArbeidslisteRepository {
 
     public int slettArbeidsliste(AktoerId aktoerId) {
         return SqlUtils.delete(db, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .where(WhereClause.equals(AKTOERID, aktoerId.getValue()))
                 .execute();
     }
 

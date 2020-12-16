@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.admin;
 
 import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.http.HttpStatus;
@@ -14,10 +15,18 @@ import java.util.List;
 public class AdminController {
     private final List<String> admins;
     private final RegistreringService registreringService;
+    private final AktorregisterClient aktorregisterClient;
 
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService) {
+    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorregisterClient aktorregisterClient) {
         this.admins = environmentProperties.getAdmins();
         this.registreringService = registreringService;
+        this.aktorregisterClient = aktorregisterClient;
+    }
+
+    @PostMapping("/aktoerId")
+    public String aktoerId(@RequestBody String fnr) {
+        authorizeAdmin();
+        return aktorregisterClient.hentAktorId(fnr);
     }
 
     @PostMapping("/rewind/registrering")

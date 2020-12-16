@@ -7,6 +7,11 @@ public class Table {
         static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
     }
 
+    public static final class BRUKER_REGISTRERING {
+        public static final String TABLE_NAME = "BRUKER_REGISTRERING";
+        public static final String AKTOERID = "AKTOERID";
+    }
+
     public static final class AKTOERID_TO_PERSONID {
         public static final String TABLE_NAME = "AKTOERID_TO_PERSONID";
         public static final String AKTOERID = "AKTOERID";

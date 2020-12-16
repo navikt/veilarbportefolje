@@ -20,15 +20,12 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.database.Transactor;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
-import no.nav.pto.veilarbportefolje.krr.DkifClient;
-import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
@@ -56,7 +53,6 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.Properties;
 
 import static no.nav.common.utils.IdUtils.generateId;
@@ -67,7 +63,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.elasticsearch.client.RestClient.builder;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -87,7 +82,6 @@ import static org.mockito.Mockito.when;
         TiltakRepository.class,
         AktivitetDAO.class,
         BrukerRepository.class,
-        KrrRepository.class,
         OppfolgingRepository.class,
         ArbeidslisteService.class,
         ArbeidslisteRepository.class,
@@ -155,13 +149,6 @@ public class ApplicationConfigTest {
         props.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return new KafkaProducer<>(props);
-    }
-
-    @Bean
-    public DkifClient dkifClient() {
-        final DkifClient mock = mock(DkifClient.class);
-        when(mock.hentKontaktInfo(any(AktoerId.class))).thenReturn(Optional.empty());
-        return mock;
     }
 
     @Bean

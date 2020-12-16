@@ -80,10 +80,10 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void settManuellStatus(AktoerId aktoerId, ManuellBrukerStatus manuellStatus) {
+    public void settManuellStatus(AktoerId aktoerId, String manuellStatus) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field("manuell_bruker", manuellStatus.name())
+                .field("manuell_bruker", manuellStatus)
                 .endObject();
 
         update(aktoerId, content);

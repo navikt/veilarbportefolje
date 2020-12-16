@@ -1,3 +1,21 @@
+const aktoerIdForm = document.getElementById('brukerident')
+aktoerIdForm.addEventListener('submit', handleAktoerId);
+
+const aktoerIdInput = document.getElementById('aktoerIdInput')
+
+function handleAktoerId(e) {
+    e.preventDefault()
+
+    const fnr = aktoerIdInput.value;
+    if (fnr && fnr.length > 0) {
+        fetchData(
+            '/veilarbportefolje/api/admin/aktoerId',
+            {method: 'POST', credentials: 'same-origin', body: fnr},
+            'aktoerIdResponse'
+        )
+    }
+}
+
 const registreringForm = document.getElementById('registrering');
 registreringForm.addEventListener('submit', handleRewindRegistrering);
 

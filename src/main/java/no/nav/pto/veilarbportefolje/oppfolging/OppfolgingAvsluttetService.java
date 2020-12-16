@@ -6,6 +6,8 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_OPPFOLGING;
@@ -15,16 +17,22 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
 
     private final ArbeidslisteService arbeidslisteService;
     private final OppfolgingRepository oppfolgingRepository;
+    private final RegistreringService registreringService;
     private final ElasticServiceV2 elasticServiceV2;
     private final UnleashService unleashService;
+    private final SisteEndringService sisteEndringService;
 
     public OppfolgingAvsluttetService(ArbeidslisteService arbeidslisteService,
                                       OppfolgingRepository oppfolgingRepository,
-                                      ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
+                                      RegistreringService registreringService,
+                                      ElasticServiceV2 elasticServiceV2,
+                                      UnleashService unleashService, SisteEndringService sisteEndringService) {
         this.arbeidslisteService = arbeidslisteService;
         this.oppfolgingRepository = oppfolgingRepository;
+        this.registreringService = registreringService;
         this.elasticServiceV2 = elasticServiceV2;
         this.unleashService = unleashService;
+        this.sisteEndringService = sisteEndringService;
     }
 
     @Override
@@ -34,10 +42,12 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         }
 
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
-        final AktoerId aktoerId = dto.getAktoerId();
+        final AktoerId aktoerId = dto.getAktorId();
 
-        arbeidslisteService.slettArbeidsliste(aktoerId);
         oppfolgingRepository.settOppfolgingTilFalse(aktoerId);
+        registreringService.slettRegistering(aktoerId);
+        arbeidslisteService.slettArbeidsliste(aktoerId);
+        sisteEndringService.slettSisteEndringer(aktoerId);
         elasticServiceV2.markerBrukerSomSlettet(aktoerId);
     }
 
