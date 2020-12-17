@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 
-public enum SisteEndringsKategorier {
+public enum SisteEndringsKategori {
     MAL,
 
     NY_STILLING,
@@ -23,7 +23,7 @@ public enum SisteEndringsKategorier {
 
     public static boolean contains(String value) {
         try {
-            SisteEndringsKategorier.valueOf(value);
+            SisteEndringsKategori.valueOf(value);
             return true;
         } catch (Exception e) {
             return false;

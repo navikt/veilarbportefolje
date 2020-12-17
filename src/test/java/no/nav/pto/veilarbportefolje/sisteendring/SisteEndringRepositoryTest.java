@@ -33,14 +33,14 @@ public class SisteEndringRepositoryTest {
         String tidspunkt_1 = zonedDateTime_1.toOffsetDateTime().toString();
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
-                .setKategori(SisteEndringsKategorier.NY_IJOBB)
+                .setKategori(SisteEndringsKategori.NY_IJOBB)
                 .setAktoerId(AKTORID);
 
         ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
-                .setKategori(SisteEndringsKategorier.AVBRUTT_EGEN)
+                .setKategori(SisteEndringsKategori.AVBRUTT_EGEN)
                 .setAktoerId(AKTORID);
 
         sisteEndringRepository.upsert(dto_1);
@@ -60,28 +60,28 @@ public class SisteEndringRepositoryTest {
         String tidspunkt_1 = zonedDateTime_1.toOffsetDateTime().toString();
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
-                .setKategori(SisteEndringsKategorier.FULLFORT_STILLING)
+                .setKategori(SisteEndringsKategori.FULLFORT_STILLING)
                 .setAktoerId(AKTORID);
 
         ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
-                .setKategori(SisteEndringsKategorier.MAL)
+                .setKategori(SisteEndringsKategori.MAL)
                 .setAktoerId(AKTORID);
 
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);
-        Timestamp fraRepo_1 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategorier.FULLFORT_STILLING);
-        Timestamp fraRepo_2 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategorier.MAL);
+        Timestamp fraRepo_1 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.FULLFORT_STILLING);
+        Timestamp fraRepo_2 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.MAL);
 
         assertThat(iso8601FromTimestamp(fraRepo_1)).isEqualTo(tidspunkt_1);
         assertThat(iso8601FromTimestamp(fraRepo_2)).isEqualTo(tidspunkt_2);
 
         sisteEndringRepository.slettSisteEndringer(AKTORID);
 
-        Timestamp fraRepo_etter_sletting_1 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategorier.FULLFORT_STILLING);
-        Timestamp fraRepo_etter_sletting_2 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategorier.MAL);
+        Timestamp fraRepo_etter_sletting_1 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.FULLFORT_STILLING);
+        Timestamp fraRepo_etter_sletting_2 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.MAL);
 
         assertThat(iso8601FromTimestamp(fraRepo_etter_sletting_1)).isNull();
         assertThat(iso8601FromTimestamp(fraRepo_etter_sletting_2)).isNull();

@@ -37,7 +37,7 @@ public class SisteEndringRepository {
                 )).execute();
     }
 
-    public Timestamp getSisteEndringTidspunkt(AktoerId aktoerId, SisteEndringsKategorier kategori) {
+    public Timestamp getSisteEndringTidspunkt(AktoerId aktoerId, SisteEndringsKategori kategori) {
         return SqlUtils
                 .select(jdbcTemplate, TABLE_NAME, rs -> rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT))
                 .column(SISTE_ENDRING_TIDSPUNKT)

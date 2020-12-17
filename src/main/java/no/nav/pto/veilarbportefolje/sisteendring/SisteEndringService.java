@@ -11,9 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
-import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetStatus.AVBRUTT;
-import static no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding.AktivitetStatus.FULLFORT;
-import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
@@ -46,7 +43,7 @@ public class SisteEndringService {
 
         AktoerId aktoerId = AktoerId.of(aktivitet.getAktorId());
         ZonedDateTime tidspunkt = aktivitet.getEndretDato();
-        SisteEndringsKategorier kategorier = getKategoriFromKafkaMessage(aktivitet);
+        SisteEndringsKategori kategorier = getKategoriFromKafkaMessage(aktivitet);
 
         if (kategorier != null && hendelseErNyereEnnIDatabase(tidspunkt, kategorier, aktoerId)) {
             tidspunkt = (tidspunkt == null) ? ZonedDateTime.now() : tidspunkt;
@@ -66,7 +63,7 @@ public class SisteEndringService {
         return objectSkrevetTilDatabase;
     }
 
-    private boolean hendelseErNyereEnnIDatabase(ZonedDateTime endringstidspunkt, SisteEndringsKategorier kategorier, AktoerId aktoerId) {
+    private boolean hendelseErNyereEnnIDatabase(ZonedDateTime endringstidspunkt, SisteEndringsKategori kategorier, AktoerId aktoerId) {
         if (endringstidspunkt == null) {
             return true;
         }
@@ -77,44 +74,16 @@ public class SisteEndringService {
         return toZonedDateTime(databaseVerdi).compareTo(endringstidspunkt) < 0;
     }
 
-    private SisteEndringsKategorier getKategoriFromKafkaMessage(KafkaAktivitetMelding aktivitet) {
+    private SisteEndringsKategori getKategoriFromKafkaMessage(KafkaAktivitetMelding aktivitet) {
+        String potensiellSisteEndringsKategori;
         if (aktivitet.getEndretDato() == null) {
-            switch (aktivitet.getAktivitetType()) {
-                case STILLING:
-                    return NY_STILLING;
-                case IJOBB:
-                    return NY_IJOBB;
-                case EGEN:
-                    return NY_EGEN;
-                case BEHANDLING:
-                    return NY_BEHANDLING;
-            }
-        } else if (aktivitet.getAktivitetStatus().equals(FULLFORT)) {
-            switch (aktivitet.getAktivitetType()) {
-                case STILLING:
-                    return FULLFORT_STILLING;
-                case IJOBB:
-                    return FULLFORT_IJOBB;
-                case EGEN:
-                    return FULLFORT_EGEN;
-                case BEHANDLING:
-                    return FULLFORT_BEHANDLING;
-                case SOKEAVTALE:
-                    return FULLFORT_SOKEAVTALE;
-            }
-        } else if (aktivitet.getAktivitetStatus().equals(AVBRUTT)) {
-            switch (aktivitet.getAktivitetType()) {
-                case STILLING:
-                    return AVBRUTT_STILLING;
-                case IJOBB:
-                    return AVBRUTT_IJOBB;
-                case EGEN:
-                    return AVBRUTT_EGEN;
-                case BEHANDLING:
-                    return AVBRUTT_BEHANDLING;
-                case SOKEAVTALE:
-                    return AVBRUTT_SOKEAVTALE;
-            }
+            potensiellSisteEndringsKategori = "NY_"+aktivitet.getAktivitetType();
+        } else {
+            potensiellSisteEndringsKategori = aktivitet.getAktivitetStatus() + "_" + aktivitet.getAktivitetType();
+        }
+
+        if(SisteEndringsKategori.contains(potensiellSisteEndringsKategori)){
+            return SisteEndringsKategori.valueOf(potensiellSisteEndringsKategori);
         }
         return null;
     }

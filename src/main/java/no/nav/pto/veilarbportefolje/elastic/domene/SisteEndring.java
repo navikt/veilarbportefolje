@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -35,8 +35,8 @@ public class SisteEndring {
     String avbrutt_sokeavtale;
 
     public void setTidspunktForKategori(String kategori, String value) {
-        if (SisteEndringsKategorier.contains(kategori)) {
-            switch (SisteEndringsKategorier.valueOf(kategori)) {
+        if (SisteEndringsKategori.contains(kategori)) {
+            switch (SisteEndringsKategori.valueOf(kategori)) {
                 case MAL:
                     mal = value;
                     return;
@@ -86,8 +86,8 @@ public class SisteEndring {
         String sisteKategori = null;
         Instant sisteTid = null;
         for (String kategori : kategorier) {
-            if (SisteEndringsKategorier.contains(kategori)) {
-                switch (SisteEndringsKategorier.valueOf(kategori)) {
+            if (SisteEndringsKategori.contains(kategori)) {
+                switch (SisteEndringsKategori.valueOf(kategori)) {
                     case MAL:
                         if (eventIsMoreRecent(sisteTid, mal)) {
                             sisteKategori = kategori;

@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 @Accessors(chain = true)
 public class SisteEndringDTO {
     private AktoerId aktoerId;
-    private SisteEndringsKategorier kategori;
+    private SisteEndringsKategori kategori;
     private ZonedDateTime tidspunkt;
 
 }
