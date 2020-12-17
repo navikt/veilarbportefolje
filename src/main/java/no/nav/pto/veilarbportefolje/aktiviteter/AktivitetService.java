@@ -40,7 +40,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
 
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
 
-        if(skallIkkeOppdatereAktivitet(aktivitetData)) {
+        if (skallIkkeOppdatereAktivitet(aktivitetData)) {
             return;
         }
 
@@ -81,13 +81,10 @@ public class AktivitetService implements KafkaConsumerService<String> {
         try {
             if (aktivitet.isHistorisk()) {
                 aktivitetDAO.deleteById(aktivitet.getAktivitetId());
-            } else {
-                if(aktivitet.getVersion() == null ){
-                    aktivitetDAO.upsertAktivitet(aktivitet);
-                } else if (aktivitetDAO.erNyVersjonAvAktivitet(aktivitet)){
-                    aktivitetDAO.upsertAktivitet(aktivitet);
-                }
+            } else if (aktivitetDAO.erNyVersjonAvAktivitet(aktivitet)) {
+                aktivitetDAO.upsertAktivitet(aktivitet);
             }
+
         } catch (Exception e) {
             String message = String.format("Kunne ikke lagre aktivitetdata fra feed for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);

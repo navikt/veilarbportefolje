@@ -220,7 +220,7 @@ public class AktivitetDAO {
     public boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
         Integer kommendeVersjon = aktivitet.getVersion();
         if(kommendeVersjon == null){
-            return false;
+            return true;
         }
         Integer databaseVersjon = getVersjon(aktivitet.getAktivitetId());
         if(databaseVersjon == null ){
