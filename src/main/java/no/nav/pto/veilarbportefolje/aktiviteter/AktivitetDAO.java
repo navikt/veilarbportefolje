@@ -59,10 +59,7 @@ public class AktivitetDAO {
                 .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getInt(VERSION))
                 .column(VERSION)
                 .where(WhereClause.equals(AKTIVITETID, aktivitetId))
-                .executeToList()
-                .stream()
-                .findFirst()
-                .orElse(null);
+                .execute();
     }
 
     public void slettAlleAktivitetstatus(String aktivitettype) {
