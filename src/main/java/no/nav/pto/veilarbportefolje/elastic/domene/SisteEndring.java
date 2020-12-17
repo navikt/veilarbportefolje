@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategorier;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -189,14 +188,14 @@ public class SisteEndring {
     }
 
     private boolean eventIsMoreRecent(Instant currentMostRecent, String comp) {
-        return currentMostRecent == null || (comp != null && ZonedDateTime.parse(comp).toInstant().isAfter(currentMostRecent));
+        return currentMostRecent == null || (comp != null && Instant.parse(comp).isAfter(currentMostRecent));
     }
 
     private Instant instantOrNull(String iso_8601) {
         if (iso_8601 == null) {
             return null;
         }
-        return ZonedDateTime.parse(iso_8601).toInstant();
+        return Instant.parse(iso_8601);
     }
 
 }

@@ -36,8 +36,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     public void siste_endring_aktivteter() {
         final AktoerId aktoerId = randomAktoerId();
         elasticTestClient.createUserInElastic(aktoerId);
-        String endretTid = "2020-05-28T09:47:42.48+02:00";
-        String endretTidSisteEndring = "2020-11-28T09:47:42.48+02:00";
+        String endretTid = "2020-05-28T07:47:42.480Z";
+        String endretTidSisteEndring = "2020-11-26T10:40:40.000Z";
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
         ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse(endretTidSisteEndring);
 

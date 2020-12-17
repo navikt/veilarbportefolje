@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
-import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -53,7 +53,7 @@ public class ElasticServiceV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                     .startObject("siste_endringer")
-                        .field(field, objectSkrevetTilDatabase.getTidspunkt().toOffsetDateTime().toString())
+                        .field(field, DateUtils.toIsoUTC(objectSkrevetTilDatabase.getTidspunkt()))
                     .endObject()
                 .endObject();
         update(objectSkrevetTilDatabase.getAktoerId(), content);

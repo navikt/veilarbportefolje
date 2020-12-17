@@ -69,7 +69,7 @@ public class DateUtils {
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
-    public static String toUtcString(ZonedDateTime zonedDateTime) {
+    public static String toIsoUTC(ZonedDateTime zonedDateTime) {
         if(Objects.isNull(zonedDateTime)) {
             return null;
         }
@@ -84,13 +84,6 @@ public class DateUtils {
         DateTimeFormatter formatter =  DateTimeFormatter.ISO_INSTANT;
         ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.of("Europe/Oslo"));
         return zonedDateTime.format(formatter);
-    }
-
-    public static LocalDateTime toLocalDateTime(Date dato) {
-        if (dato == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.of("Europe/Oslo"));
     }
 
     public static Timestamp dateToTimestamp(Date date) {

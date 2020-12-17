@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.iso8601FromTimestamp;
@@ -64,14 +63,15 @@ public class SisteEndringRepository {
 
     @SneakyThrows
     private void mapDbTilOppfolgingsBruker(OppfolgingsBruker oppfolgingsBrukere) {
-        SisteEndring sisteEndringer = new SisteEndring();
-        List<Map<String, Object>> alleKategorierForBruker = jdbcTemplate.queryForList(getAlleKategorierForAktoerId(oppfolgingsBrukere.getAktoer_id()));
-        for (Map<String, Object> rad : alleKategorierForBruker) {
-            sisteEndringer.setTidspunktForKategori((String) rad.get(SISTE_ENDRING_KATEGORI), iso8601FromTimestamp((Timestamp) rad.get(SISTE_ENDRING_TIDSPUNKT)));
-        }
+        SisteEndring sisteEndringer = jdbcTemplate.query(getAlleKategorierForAktoerId(oppfolgingsBrukere.getAktoer_id()), rs -> {
+            SisteEndring sisteEndring = new SisteEndring();
+            while(rs.next()){
+                sisteEndring.setTidspunktForKategori(rs.getString(SISTE_ENDRING_KATEGORI), iso8601FromTimestamp(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
+            }
+            return sisteEndring;
+        });
         oppfolgingsBrukere.setSiste_endringer(sisteEndringer);
     }
-
 
     private String getAlleKategorierForAktoerId(String aktorID) {
         return "SELECT " +
