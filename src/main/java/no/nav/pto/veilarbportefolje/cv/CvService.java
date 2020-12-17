@@ -2,9 +2,8 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 @Service
 public class CvService implements KafkaConsumerService<String> {
     private final ElasticServiceV2 elasticServiceV2;
-    private final AktorregisterClient aktorregisterClient;
     private final CvRepository cvRepository;
 
     private final AtomicBoolean rewind;
@@ -44,9 +42,8 @@ public class CvService implements KafkaConsumerService<String> {
     }
 
     @Autowired
-    public CvService(ElasticServiceV2 elasticServiceV2, AktorregisterClient aktorregisterClient, CvRepository cvRepository) {
+    public CvService(ElasticServiceV2 elasticServiceV2, CvRepository cvRepository) {
         this.elasticServiceV2 = elasticServiceV2;
-        this.aktorregisterClient = aktorregisterClient;
         this.cvRepository = cvRepository;
         this.rewind = new AtomicBoolean();
     }
@@ -64,31 +61,24 @@ public class CvService implements KafkaConsumerService<String> {
     @Override
     public void behandleKafkaMelding(String payload) {
         Melding melding = fromJson(payload, Melding.class);
-        AktoerId aktorId = melding.getAktoerId();
+        AktoerId aktoerId = melding.getAktoerId();
 
         if (melding.getRessurs() != CV_HJEMMEL) {
-            log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktorId);
+            log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktoerId);
             return;
         }
 
-        Fnr fnr = melding.getFnr() == null ? hentFnrFraAktoerTjenesten(melding.getAktoerId()) : melding.getFnr();
-
         switch (melding.meldingType) {
             case SAMTYKKE_OPPRETTET:
-                cvRepository.upsert(aktorId, fnr, true);
-                elasticServiceV2.updateHarDeltCv(fnr, true);
+                cvRepository.upsert(aktoerId, true);
+                elasticServiceV2.updateHarDeltCv(aktoerId,true);
                 break;
             case SAMTYKKE_SLETTET:
-                cvRepository.upsert(aktorId, fnr, false);
-                elasticServiceV2.updateHarDeltCv(fnr, false);
+                cvRepository.upsert(aktoerId, false);
+                elasticServiceV2.updateHarDeltCv(aktoerId,false);
                 break;
             default:
-                log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktorId);
+                log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktoerId);
         }
-    }
-
-    private Fnr hentFnrFraAktoerTjenesten(AktoerId aktoerId) {
-        log.info("Henter fnr fra aktoertjenesten for bruker {}...", aktoerId);
-        return Fnr.of(aktorregisterClient.hentFnr(aktoerId.toString()));
     }
 }

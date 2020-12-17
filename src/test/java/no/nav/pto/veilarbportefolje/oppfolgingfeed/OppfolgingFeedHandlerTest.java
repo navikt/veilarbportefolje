@@ -1,8 +1,9 @@
 package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
 import io.vavr.control.Try;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.mock.LeaderElectionClientMock;
@@ -38,8 +39,8 @@ public class OppfolgingFeedHandlerTest {
                 elasticIndexer,
                 oppfolgingRepository,
                 new TestTransactor(),
-                new LeaderElectionClientMock()
-        );
+                new LeaderElectionClientMock(),
+                mock(UnleashService.class));
 
     }
 
@@ -47,7 +48,7 @@ public class OppfolgingFeedHandlerTest {
 
     @Test
     public void skal_ikke_sjekke_nav_kontor_paa_arbeidsliste_om_bruker_ikke_har_arbeidsliste() {
-        boolean result = oppfolgingFeedHandler.brukerHarByttetNavKontor(AktoerId.of(""));
+        boolean result = arbeidslisteService.brukerHarByttetNavKontor(AktoerId.of(""));
         assertThat(result).isFalse();
     }
 

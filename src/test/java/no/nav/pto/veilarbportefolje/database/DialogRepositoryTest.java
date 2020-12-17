@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +14,6 @@ import java.time.Instant;
 
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
 
 
 public class DialogRepositoryTest {

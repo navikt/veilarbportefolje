@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolgingfeed;
 
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -64,15 +65,16 @@ public class OppfolgingerfeedConfig {
                                               ElasticIndexer elasticIndexer,
                                               OppfolgingRepository oppfolgingRepository,
                                               Transactor transactor,
-                                              LeaderElectionClient leaderElectionClient) {
+                                              LeaderElectionClient leaderElectionClient,
+                                              UnleashService unleashService) {
         return new OppfolgingFeedHandler(
                 arbeidslisteService,
                 brukerService,
                 elasticIndexer,
                 oppfolgingRepository,
                 transactor,
-                leaderElectionClient
-        );
+                leaderElectionClient,
+                unleashService);
     }
 
     public static String nesteId(JdbcTemplate db) {

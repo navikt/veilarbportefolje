@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +23,9 @@ public class CvRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void upsert(AktoerId aktoerId, Fnr fnr, boolean harDeltCv) {
+    public void upsert(AktoerId aktoerId, boolean harDeltCv) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
                 .set(AKTOERID, aktoerId.toString())
-                .set(FNR, fnr.toString())
                 .set(HAR_DELT_CV, boolToJaNei(harDeltCv))
                 .set(SISTE_MELDING_MOTTATT, Timestamp.from(now()))
                 .where(WhereClause.equals(AKTOERID, aktoerId.toString()))

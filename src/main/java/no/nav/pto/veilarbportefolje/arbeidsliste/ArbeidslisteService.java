@@ -6,12 +6,15 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +28,13 @@ import static java.lang.String.format;
 
 @Service
 public class ArbeidslisteService {
+    private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
+
     private final AktorregisterClient aktorregisterClient;
     private final ArbeidslisteRepository arbeidslisteRepository;
     private final BrukerService brukerService;
     private final ElasticIndexer elasticIndexer;
+    private final ElasticServiceV2 elasticServiceV2;
     private final MetricsClient metricsClient;
 
     @Autowired
@@ -37,12 +43,13 @@ public class ArbeidslisteService {
             ArbeidslisteRepository arbeidslisteRepository,
             BrukerService brukerService,
             ElasticIndexer elasticIndexer,
-            MetricsClient metricsClient
+            ElasticServiceV2 elasticServiceV2, MetricsClient metricsClient
     ) {
         this.aktorregisterClient = aktorregisterClient;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.brukerService = brukerService;
         this.elasticIndexer = elasticIndexer;
+        this.elasticServiceV2 = elasticServiceV2;
         this.metricsClient = metricsClient;
     }
 
@@ -83,18 +90,24 @@ public class ArbeidslisteService {
                 .onSuccess(elasticIndexer::indekser);
     }
 
-    public Try<AktoerId> deleteArbeidsliste(Fnr fnr) {
-        Try<AktoerId> aktoerId = hentAktoerId(fnr);
-        if (aktoerId.isFailure()) {
-            return Try.failure(aktoerId.getCause());
+    public int slettArbeidsliste(AktoerId aktoerId) {
+        final int rowsUpdated = arbeidslisteRepository.slettArbeidsliste(aktoerId);
+        if (rowsUpdated == 1) {
+            elasticServiceV2.slettArbeidsliste(aktoerId);
         }
-        return arbeidslisteRepository
-                .deleteArbeidsliste(aktoerId.get())
-                .onSuccess(elasticIndexer::indekser);
+        return rowsUpdated;
+    }
+
+    public int slettArbeidsliste(Fnr fnr) {
+        final int rowsUpdated = arbeidslisteRepository.slettArbeidsliste(fnr);
+        if (rowsUpdated == 1) {
+            elasticIndexer.indekser(fnr);
+        }
+        return rowsUpdated;
     }
 
     public Integer deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
-        return arbeidslisteRepository.deleteArbeidslisteForAktoerid(aktoerId);
+        return arbeidslisteRepository.slettArbeidsliste(aktoerId);
     }
 
     private Try<AktoerId> hentAktoerId(Fnr fnr) {
@@ -144,5 +157,23 @@ public class ArbeidslisteService {
 
     public Optional<String> hentNavKontorForArbeidsliste(AktoerId aktoerId) {
         return arbeidslisteRepository.hentNavKontorForArbeidsliste(aktoerId);
+    }
+
+    public boolean brukerHarByttetNavKontor(AktoerId aktoerId) {
+        Optional<String> navKontorForArbeidsliste = hentNavKontorForArbeidsliste(aktoerId);
+
+        if (navKontorForArbeidsliste.isEmpty()) {
+            log.info("Bruker {} har ikke NAV-kontor på arbeidsliste", aktoerId.toString());
+            return false;
+        }
+
+        final Optional<String> navKontorForBruker = brukerService.hentNavKontor(aktoerId);
+        if (navKontorForBruker.isEmpty()) {
+            log.error("Kunne ikke hente NAV-kontor fra db-link til arena for bruker {}", aktoerId.toString());
+            return false;
+        }
+
+        log.info("Bruker {} er på kontor {} mens arbeidslisten er lagret på {}", aktoerId.toString(), navKontorForBruker.get(), navKontorForArbeidsliste.get());
+        return !navKontorForBruker.orElseThrow().equals(navKontorForArbeidsliste.orElseThrow());
     }
 }

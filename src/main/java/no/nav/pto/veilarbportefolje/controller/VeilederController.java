@@ -55,7 +55,7 @@ public class VeilederController {
         authService.tilgangTilOppfolging();
         authService.tilgangTilEnhet(enhet);
 
-        String ident = AuthUtils.getInnloggetVeilederIdent().getVeilederId();
+        String ident = AuthUtils.getInnloggetVeilederIdent().toString();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
         BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(enhet, Optional.of(veilederIdent), sortDirection, sortField, filtervalg, fra, antall);

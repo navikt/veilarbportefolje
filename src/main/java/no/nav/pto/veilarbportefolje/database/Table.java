@@ -7,6 +7,11 @@ public class Table {
         static final String SIST_INDEKSERT_ES = "SIST_INDEKSERT_ES";
     }
 
+    public static final class BRUKER_REGISTRERING {
+        public static final String TABLE_NAME = "BRUKER_REGISTRERING";
+        public static final String AKTOERID = "AKTOERID";
+    }
+
     public static final class AKTOERID_TO_PERSONID {
         public static final String TABLE_NAME = "AKTOERID_TO_PERSONID";
         public static final String AKTOERID = "AKTOERID";
@@ -19,6 +24,9 @@ public class Table {
         public static final String AKTOERID = "AKTOERID";
         public static final String VEILEDERIDENT = "VEILEDERIDENT";
         public static final String STARTDATO = "STARTDATO";
+        public static final String OPPFOLGING = "OPPFOLGING";
+        public static final String MANUELL = "MANUELL";
+        public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
     }
 
     public static final class OPPFOLGINGSBRUKER {
@@ -45,6 +53,7 @@ public class Table {
         public static final String TABLE_NAME = "VW_PORTEFOLJE_INFO";
         public static final String AKTOERID = "AKTOERID";
         public static final String FODSELSNR = "FODSELSNR";
+        public static final String PERSON_ID = "PERSON_ID";
         public static final String NAV_KONTOR = "NAV_KONTOR";
     }
 

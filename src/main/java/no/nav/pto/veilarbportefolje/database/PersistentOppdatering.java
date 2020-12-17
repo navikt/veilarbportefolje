@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
-import no.nav.pto.veilarbportefolje.domene.PersonId;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,6 @@ public class PersistentOppdatering {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
         List<PersonId> personIds = brukerOppdateringer.stream().map(BrukerOppdatering::getPersonid).map(PersonId::of).collect(toList());
         elasticIndexer.indekser(personIds);
-
     }
 
     public void lagreBrukeroppdateringerIDB(List<? extends BrukerOppdatering> brukerOppdatering) {

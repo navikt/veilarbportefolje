@@ -1,111 +1,90 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import io.vavr.control.Try;
-import no.nav.common.featuretoggle.UnleashService;
-import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.TestUtil;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.Fnr;
-import no.nav.pto.veilarbportefolje.domene.PersonId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
+import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
+import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import no.nav.sbl.sql.SqlUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
 
-import static no.nav.common.utils.IdUtils.generateId;
-import static no.nav.pto.veilarbportefolje.TestUtil.createUnleashMock;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO.AKTIVITETER;
-import static no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-public class AktivitetKafkaConsumerTest extends IntegrationTest {
+class AktivitetKafkaConsumerTest extends EndToEndTest {
 
-    private static AktivitetService aktivitetService;
-    private static AktivitetDAO aktivitetDAO;
-    private static JdbcTemplate jdbcTemplate;
-    private static String indexName;
-    private static BrukerService brukerService;
-    private static BrukerRepository brukerRepository;
-    static String aktoerId = "123456789";
-    static String aktivitetId = "144500";
+    private final JdbcTemplate db;
+    private final ElasticTestClient elasticTestClient;
+    private final AktivitetService aktivitetService;
 
-    static String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toString();
-
-
-    @BeforeClass
-    public static void beforeClass() {
-
-        DataSource dataSource = TestUtil.setupInMemoryDatabase();
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-
-        indexName = generateId();
-
-        aktivitetDAO = new AktivitetDAO(jdbcTemplate, namedParameterJdbcTemplate);
-        brukerRepository = mock(BrukerRepository.class);
-
-        brukerService = mock(BrukerService.class);
-
-        PersistentOppdatering persistentOppdatering = new PersistentOppdatering(new ElasticIndexer(aktivitetDAO, brukerRepository, ELASTIC_CLIENT, mock(UnleashService.class), mock(MetricsClient.class), indexName), brukerRepository, aktivitetDAO);
-
-        aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService);
-
-
-        new KafkaConsumerRunnable<>(
-                aktivitetService,
-                createUnleashMock(),
-                getKafkaConsumerProperties(),
-                KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                mock(MetricsClient.class)
-        );
-    }
-
-    @After
-    public void tearDown() {
-        jdbcTemplate.execute("TRUNCATE TABLE " + AKTIVITETER);
-        jdbcTemplate.execute("TRUNCATE TABLE BRUKERSTATUS_AKTIVITETER");
-        deleteIndex(indexName);
+    @Autowired
+    public AktivitetKafkaConsumerTest(JdbcTemplate db, ElasticTestClient elasticTestClient, AktivitetService aktivitetService) {
+        this.db = db;
+        this.elasticTestClient = elasticTestClient;
+        this.aktivitetService = aktivitetService;
     }
 
     @Test
-    public void skal_inserte_kafka_melding_i_db () {
-        Fnr fnr = Fnr.of("11111111111");
-        when(brukerService.hentPersonidFraAktoerid(AktoerId.of(aktoerId))).thenReturn(Try.success(PersonId.of("1234")));
-        when(brukerRepository.hentBrukereFraView(anyList())).thenReturn(List.of(new OppfolgingsBruker().setOppfolging(true).setPerson_id("1234").setFnr(fnr.getFnr())));
+    void skal_oppdatere_aktivitet_i_elastic() {
+        final AktoerId aktoerId = AktoerId.of("123456789");
+        final PersonId personId = PersonId.of("1234");
+        final Fnr fnr = Fnr.of("00000000000");
 
-        createAktivitetDocument(fnr);
-        populateKafkaAktivitetTopic();
+        final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toString();
 
-        pollUntilHarOppdatertIElastic(()-> untilOppdatertAktivitetIJobbUtlopsdato(fnr));
-        assertThat(getAktivitetIJobbUtlopsdato(fetchDocument(indexName, fnr))).isEqualTo(toIsoUTC(timestampFromISO8601(tilDato)));
+        SqlUtils.insert(db, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
+                .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())
+                .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
+                .execute();
 
+        SqlUtils.insert(db, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
+                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktoerId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.toString())
+                .value(Table.AKTOERID_TO_PERSONID.GJELDENE, true)
+                .execute();
 
+        SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+                .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
+                .execute();
+
+        createAktivitetDocument(aktoerId);
+
+        String melding = new JSONObject()
+                .put("aktivitetId", 1)
+                .put("aktorId", aktoerId.toString())
+                .put("fraDato", "2020-08-31T10:03:20+02:00")
+                .put("tilDato", tilDato)
+                .put("endretDato", "2020-07-29T15:43:41.049+02:00")
+                .put("aktivitetType", "IJOBB")
+                .put("aktivitetStatus", "GJENNOMFORES")
+                .put("avtalt", true)
+                .put("historisk", false)
+                .toString();
+
+        aktivitetService.behandleKafkaMelding(melding);
+
+        pollElasticUntil(() -> aktivitetIJobbUtlopsdatoErOppdatert(aktoerId));
+
+        final String aktivitetIJobbUtlopsdato = getAktivitetIJobbUtlopsdato(elasticTestClient.fetchDocument(aktoerId));
+
+        assertThat(aktivitetIJobbUtlopsdato).isEqualTo(toIsoUTC(timestampFromISO8601(tilDato)));
     }
 
-
-    private Boolean untilOppdatertAktivitetIJobbUtlopsdato(Fnr fnr) {
-        return Optional.of(fetchDocument(indexName, fnr))
+    private Boolean aktivitetIJobbUtlopsdatoErOppdatert(AktoerId aktoerId) {
+        return !Optional.of(elasticTestClient.fetchDocument(aktoerId))
                 .map(AktivitetKafkaConsumerTest::getAktivitetIJobbUtlopsdato)
                 .map(utlopsDato -> utlopsDato.equals(getFarInTheFutureDate()))
                 .get();
@@ -116,7 +95,7 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
     }
 
 
-    private void createAktivitetDocument(Fnr fnr) {
+    private void createAktivitetDocument(AktoerId aktoerId) {
         String document = new JSONObject()
                 .put("aktivitet_mote_utlopsdato", DateUtils.getFarInTheFutureDate())
                 .put("aktivitet_stilling_utlopsdato", DateUtils.getFarInTheFutureDate())
@@ -127,26 +106,9 @@ public class AktivitetKafkaConsumerTest extends IntegrationTest {
                 .put("aktivitet_tiltak_utlopsdato", DateUtils.getFarInTheFutureDate())
                 .put("aktivitet_utdanningaktivitet_utlopsdato", DateUtils.getFarInTheFutureDate())
                 .put("aktivitet_gruppeaktivitet_utlopsdato", DateUtils.getFarInTheFutureDate())
-                .put("fnr", fnr.toString())
+                .put("aktoer_id", aktoerId.toString())
                 .toString();
 
-        createDocument(indexName, fnr, document);
-    }
-
-
-    private static void populateKafkaAktivitetTopic() {
-        String aktivitetIJobbKafkaMelding = new JSONObject()
-                .put("aktivitetId", aktivitetId)
-                .put("aktorId", aktoerId)
-                .put("fraDato", "2020-08-31T10:03:20+02:00")
-                .put("tilDato", tilDato)
-                .put("endretDato","2020-07-29T15:43:41.049+02:00")
-                .put("aktivitetType", "IJOBB")
-                .put("aktivitetStatus", "GJENNOMFORES")
-                .put("avtalt", true)
-                .put("historisk", false)
-                .toString();
-
-        populateKafkaTopic(KAFKA_AKTIVITER_CONSUMER_TOPIC.topic, aktoerId, aktivitetIJobbKafkaMelding);
+        elasticTestClient.createDocument(aktoerId, document);
     }
 }

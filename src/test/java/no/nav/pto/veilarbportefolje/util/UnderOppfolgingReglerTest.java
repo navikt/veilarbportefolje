@@ -4,16 +4,15 @@ import lombok.val;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
-import static no.nav.pto.veilarbportefolje.util.CollectionUtils.listOf;
-import static no.nav.pto.veilarbportefolje.util.CollectionUtils.setOf;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class UnderOppfolgingReglerTest {
 
-    private static Set<String> KVALIFISERINGSGRUPPEKODER = setOf(
+    private static Set<String> KVALIFISERINGSGRUPPEKODER = Set.of(
             "BATT", "KAP11", "IKVAL", "IVURD", "VURDU", "VURDI", "VARIG", "OPPFI", "BKART", "BFORM"
     );
 
@@ -74,7 +73,7 @@ public class UnderOppfolgingReglerTest {
 
     @Test
     public void erUnderOppfolging_IARBS_true_for_BATT_BFORM_IKVAL_VURDU_OPPFI_VARIG() {
-        for (String kgKode : listOf("BATT", "IKVAL", "VURDU", "OPPFI", "BFORM", "VARIG")) {
+        for (String kgKode : List.of("BATT", "IKVAL", "VURDU", "OPPFI", "BFORM", "VARIG")) {
             assertThat(erUnderOppfolging("IARBS", kgKode)).isTrue();
         }
     }
@@ -82,7 +81,7 @@ public class UnderOppfolgingReglerTest {
     @Test
     public void erUnderOppfolging_IARBS_False_for_KAP11_IVURD_VURDI_BKART() {
         assertThat(erUnderOppfolging("IARBS", null)).isFalse();
-        for (String kgKode : listOf("KAP11", "IVURD", "VURDI", "BKART")) {
+        for (String kgKode : List.of("KAP11", "IVURD", "VURDI", "BKART")) {
             assertThat(erUnderOppfolging("IARBS", kgKode)).isFalse();
         }
     }

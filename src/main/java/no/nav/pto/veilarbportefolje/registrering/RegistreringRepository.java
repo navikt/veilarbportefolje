@@ -1,7 +1,8 @@
 package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.*;
-import no.nav.pto.veilarbportefolje.domene.AktoerId;
+import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -18,11 +19,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
+import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_REGISTRERING.AKTOERID;
 
 @Repository
 public class RegistreringRepository {
-
-    private final String BRUKER_REGISTRERING_TABELL = "BRUKER_REGISTRERING";
 
     private final JdbcTemplate db;
 
@@ -37,32 +37,31 @@ public class RegistreringRepository {
                 .orElse(null);
 
 
-        SqlUtils.upsert(db, BRUKER_REGISTRERING_TABELL)
-                .set("AKTOERID", kafkaRegistreringMelding.getAktorid())
+        SqlUtils.upsert(db, Table.BRUKER_REGISTRERING.TABLE_NAME)
+                .set(AKTOERID, kafkaRegistreringMelding.getAktorid())
                 .set("BRUKERS_SITUASJON", kafkaRegistreringMelding.getBrukersSituasjon())
                 .set("KAFKA_MELDING_MOTTATT", new Timestamp(System.currentTimeMillis()))
                 .set("REGISTRERING_OPPRETTET", timestamp)
                 .set("UTDANNING", kafkaRegistreringMelding.getUtdanning().toString())
                 .set("UTDANNING_BESTATT", kafkaRegistreringMelding.getUtdanningBestatt().toString())
                 .set("UTDANNING_GODKJENT", kafkaRegistreringMelding.getUtdanningGodkjent().toString())
-                .where(WhereClause.equals("AKTOERID", kafkaRegistreringMelding.getAktorid()))
+                .where(WhereClause.equals(AKTOERID, kafkaRegistreringMelding.getAktorid()))
                 .execute();
     }
 
 
     public Optional<ArbeidssokerRegistrertEvent> hentBrukerRegistrering(AktoerId aktoerId) {
         return ofNullable(
-                SqlUtils.select(db, BRUKER_REGISTRERING_TABELL, RegistreringRepository::mapTilArbeidssokerRegistrertEvent)
+                SqlUtils.select(db, Table.BRUKER_REGISTRERING.TABLE_NAME, RegistreringRepository::mapTilArbeidssokerRegistrertEvent)
                         .column("*")
-                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .where(WhereClause.equals(AKTOERID, aktoerId.getValue()))
                         .execute()
         );
     }
 
-    //TODO LYTTE PÅ AVSLUTTOPPFOLGINGFEEDEN OG SLETT BRUKEREN PGA DATAMINIMERING OSV MORRO
     public void slettBrukerRegistrering(AktoerId aktoerId) {
-        SqlUtils.delete(db, BRUKER_REGISTRERING_TABELL)
-                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+        SqlUtils.delete(db, Table.BRUKER_REGISTRERING.TABLE_NAME)
+                .where(WhereClause.equals(AKTOERID, aktoerId.getValue()))
                 .execute();
     }
 
@@ -74,7 +73,7 @@ public class RegistreringRepository {
 
         return ArbeidssokerRegistrertEvent.newBuilder()
                 .setBrukersSituasjon(rs.getString("BRUKERS_SITUASJON"))
-                .setAktorid(rs.getString("AKTOERID"))
+                .setAktorid(rs.getString(AKTOERID))
                 .setUtdanning(UtdanningSvar.valueOf(rs.getString("UTDANNING")))
                 .setUtdanningBestatt(UtdanningBestattSvar.valueOf(rs.getString("UTDANNING_BESTATT")))
                 .setUtdanningGodkjent(UtdanningGodkjentSvar.valueOf(rs.getString("UTDANNING_GODKJENT")))

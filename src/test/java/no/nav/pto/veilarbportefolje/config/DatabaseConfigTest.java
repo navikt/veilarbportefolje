@@ -5,7 +5,6 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Transactor;
-import no.nav.pto.veilarbportefolje.krr.KrrRepository;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +20,6 @@ import javax.sql.DataSource;
         TiltakRepository.class,
         AktivitetDAO.class,
         BrukerRepository.class,
-        KrrRepository.class,
         OppfolgingRepository.class
 })
 public class DatabaseConfigTest {

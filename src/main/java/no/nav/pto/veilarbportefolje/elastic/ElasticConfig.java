@@ -1,13 +1,12 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import no.nav.common.health.HealthCheckResult;
-import no.nav.common.metrics.MetricsClient;
-import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.health.HealthCheckResult;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +26,7 @@ public class ElasticConfig {
 
     public static final long FORVENTET_MINIMUM_ANTALL_DOKUMENTER = 200_000;
 
-    private static ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
+    private static final ElasticClientConfig defaultConfig = ElasticClientConfig.builder()
             .username(VEILARBELASTIC_USERNAME)
             .password(VEILARBELASTIC_PASSWORD)
             .hostname(getElasticHostname())
@@ -41,8 +40,8 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticServiceV2 elasticServiceV2 (RestHighLevelClient restHighLevelClient) {
-        return new ElasticServiceV2(restHighLevelClient, getAlias());
+    public ElasticServiceV2 elasticServiceV2(RestHighLevelClient restHighLevelClient) {
+        return new ElasticServiceV2(restHighLevelClient, new IndexName(getAlias()));
     }
 
     public static HealthCheckResult checkHealth() {
@@ -56,12 +55,14 @@ public class ElasticConfig {
 
     @Bean
     public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService) {
-        return new ElasticService(restHighLevelClient, veilarbVeilederClient, unleashService, getAlias());
+        return new ElasticService(restHighLevelClient, veilarbVeilederClient, unleashService, new IndexName(getAlias()));
     }
 
 
     @Bean
-    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, UnleashService unleashService, MetricsClient metricsClient, RestHighLevelClient restHighLevelClient) {
-        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, unleashService, metricsClient, getAlias());
+    public ElasticIndexer elasticIndexer(AktivitetDAO aktivitetDAO, BrukerRepository brukerRepository, RestHighLevelClient restHighLevelClient) {
+        return new ElasticIndexer(aktivitetDAO, brukerRepository, restHighLevelClient, new IndexName(getAlias()));
+
+
     }
 }
