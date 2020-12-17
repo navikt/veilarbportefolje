@@ -131,4 +131,11 @@ public class DateUtils {
     public static Timestamp zonedDateStringToTimestamp(CharSequence zonedDateString) {
         return toTimestamp(ZonedDateTime.parse(zonedDateString));
     }
+
+    public static LocalDateTime toLocalDateTimeOrNull(String date) {
+        if (date == null) {
+            return null;
+        }
+        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
+    }
 }

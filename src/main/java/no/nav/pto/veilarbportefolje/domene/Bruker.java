@@ -10,14 +10,11 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.toList;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.isFarInTheFutureDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -139,14 +136,6 @@ public class Bruker {
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
 
     }
-
-    private static LocalDateTime toLocalDateTimeOrNull(String date) {
-        if (date == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
-    }
-
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
         if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {

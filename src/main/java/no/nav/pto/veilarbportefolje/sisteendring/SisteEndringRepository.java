@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.elastic.domene.SisteEndring;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.iso8601FromTimestamp;
@@ -63,14 +64,13 @@ public class SisteEndringRepository {
 
     @SneakyThrows
     private void mapDbTilOppfolgingsBruker(OppfolgingsBruker oppfolgingsBrukere) {
-        SisteEndring sisteEndringer = jdbcTemplate.query(getAlleKategorierForAktoerId(oppfolgingsBrukere.getAktoer_id()), rs -> {
-            SisteEndring sisteEndring = new SisteEndring();
+        oppfolgingsBrukere.setSiste_endringer(jdbcTemplate.query(getAlleKategorierForAktoerId(oppfolgingsBrukere.getAktoer_id()), rs -> {
+            Map<String,String> sisteEndring = new HashMap<>();
             while(rs.next()){
-                sisteEndring.setTidspunktForKategori(rs.getString(SISTE_ENDRING_KATEGORI), iso8601FromTimestamp(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
+                sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(), iso8601FromTimestamp(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
             }
             return sisteEndring;
-        });
-        oppfolgingsBrukere.setSiste_endringer(sisteEndringer);
+        }));
     }
 
     private String getAlleKategorierForAktoerId(String aktorID) {

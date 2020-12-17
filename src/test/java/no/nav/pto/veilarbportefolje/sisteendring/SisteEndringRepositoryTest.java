@@ -49,8 +49,8 @@ public class SisteEndringRepositoryTest {
         OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.getValue());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
 
-        assertThat(bruker.getSiste_endringer().getNy_ijobb()).isEqualTo(tidspunkt_1);
-        assertThat(bruker.getSiste_endringer().getAvbrutt_egen()).isEqualTo(tidspunkt_2);
+        assertThat(bruker.getSiste_endringer().get("ny_ijobb")).isEqualTo(tidspunkt_1);
+        assertThat(bruker.getSiste_endringer().get("avbrutt_egen")).isEqualTo(tidspunkt_2);
     }
 
 
