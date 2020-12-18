@@ -38,30 +38,18 @@ public class AktivitetService implements KafkaConsumerService<String> {
         this.rewind = new AtomicBoolean();
     }
 
-    public void slettAktivitet(String id) {
-        aktivitetDAO.deleteById(id);
-    }
-
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
         sisteEndringService.behandleAktivitet(aktivitetData);
 
-        if(skallIkkeOppdatereAktivitet(aktivitetData)) {
+        if (skallIkkeOppdatereAktivitet(aktivitetData)) {
             return;
         }
 
         lagreAktivitetData(aktivitetData);
 
         utledOgIndekserAktivitetstatuserForAktoerid(AktoerId.of(aktivitetData.getAktorId()));
-    }
-
-    public void tryUtledOgLagreAlleAktivitetstatuser() {
-        utledOgLagreAlleAktivitetstatuser(); // TODO VARFÖR KALLAR MAN 2 GÅNGER PÅ DENNA FUNKTION??
-        aktivitetDAO.slettAktivitetDatoer();
-
-        run(this::utledOgLagreAlleAktivitetstatuser)
-                .onFailure(e -> log.error("Kunne ikke lagre alle aktivitetstatuser", e));
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
@@ -96,9 +84,10 @@ public class AktivitetService implements KafkaConsumerService<String> {
         try {
             if (aktivitet.isHistorisk()) {
                 aktivitetDAO.deleteById(aktivitet.getAktivitetId());
-            } else {
+            } else if (aktivitetDAO.erNyVersjonAvAktivitet(aktivitet)) {
                 aktivitetDAO.upsertAktivitet(aktivitet);
             }
+
         } catch (Exception e) {
             String message = String.format("Kunne ikke lagre aktivitetdata fra feed for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);

@@ -29,7 +29,34 @@ class NyForVeilederServiceTest extends EndToEndTest {
     }
 
     @Test
-    void skalOppdatereNyForVeileder() {
+    void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() {
+        final AktoerId aktoerId = TestDataUtils.randomAktoerId();
+
+        SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue())
+                .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
+                .value(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER,"J")
+                .execute();
+
+        elasticTestClient.createUserInElastic(aktoerId);
+
+        String payload = new JSONObject()
+                .put("aktorId", aktoerId.getValue())
+                .put("nyForVeileder", false)
+                .toString();
+
+        nyForVeilederService.behandleKafkaMelding(payload);
+
+        final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
+        assertThat(data).isPresent();
+        assertThat(data.get().getNyForVeileder()).isFalse();
+
+        final boolean nyForVeileder = elasticTestClient.hentBrukerFraElastic(aktoerId).isNy_for_veileder();
+        assertThat(nyForVeileder).isFalse();
+    }
+
+    @Test
+    void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() {
         final AktoerId aktoerId = TestDataUtils.randomAktoerId();
 
         SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
@@ -49,9 +76,9 @@ class NyForVeilederServiceTest extends EndToEndTest {
 
         final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
         assertThat(data).isPresent();
-        assertThat(data.get().getNyForVeileder()).isTrue();
+        assertThat(data.get().getNyForVeileder()).isFalse();
 
         final boolean nyForVeileder = elasticTestClient.hentBrukerFraElastic(aktoerId).isNy_for_veileder();
-        assertThat(nyForVeileder).isTrue();
+        assertThat(nyForVeileder).isFalse();
     }
 }

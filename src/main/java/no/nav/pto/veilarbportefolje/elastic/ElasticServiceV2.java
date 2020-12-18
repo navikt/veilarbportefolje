@@ -105,6 +105,7 @@ public class ElasticServiceV2 {
                 .startObject()
                 .field("veileder_id", veilederId.toString())
                 .field("ny_for_enhet", false)
+                .field("ny_for_veileder", true)
                 .endObject();
 
         update(aktoerId, content);
@@ -130,7 +131,7 @@ public class ElasticServiceV2 {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
         updateRequest.type("_doc");
-        updateRequest.id(aktoerId.toString());
+        updateRequest.id(aktoerId.getValue());
         updateRequest.doc(content);
 
         try {

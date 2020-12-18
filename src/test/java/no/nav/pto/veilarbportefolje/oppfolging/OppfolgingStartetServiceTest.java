@@ -33,5 +33,6 @@ class OppfolgingStartetServiceTest extends EndToEndTest {
 
         final BrukerOppdatertInformasjon info = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();
+        assertThat(info.getNyForVeileder()).isTrue();
     }
 }

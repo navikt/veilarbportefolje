@@ -13,6 +13,7 @@ public class KafkaAktivitetMelding {
     ZonedDateTime fraDato;
     ZonedDateTime tilDato;
     ZonedDateTime endretDato;
+    Integer version;
     AktivitetTypeData aktivitetType;
     AktivitetStatus aktivitetStatus;
     boolean avtalt;

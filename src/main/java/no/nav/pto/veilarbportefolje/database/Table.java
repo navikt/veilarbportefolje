@@ -71,11 +71,26 @@ public class Table {
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
     }
 
+<<<<<<< HEAD
     public static final class SISTE_ENDRING {
         public static final String TABLE_NAME = "SISTE_ENDRING";
         public static final String AKTOERID = "AKTOERID";
 
         public static final String SISTE_ENDRING_KATEGORI = "SISTE_ENDRING_KATEGORI";
         public static final String SISTE_ENDRING_TIDSPUNKT = "SISTE_ENDRING_TIDSPUNKT";}
+=======
+    public static final class AKTIVITETER {
+        public static final String TABLE_NAME = "AKTIVITETER";
+        public static final String AKTIVITETID = "AKTIVITETID";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String AKTIVITETTYPE = "AKTIVITETTYPE";
+        public static final String AVTALT = "AVTALT";
+        public static final String FRADATO = "FRADATO";
+        public static final String TILDATO = "TILDATO";
+        public static final String OPPDATERTDATO = "OPPDATERTDATO";
+        public static final String STATUS = "STATUS";
+        public static final String VERSION = "VERSION";
+    }
+>>>>>>> de28eb8573d385562b7f5d27f18459afcbe53138
 
 }
