@@ -263,9 +263,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
 
         KafkaAktivitetMelding aktivitet_gammel = new KafkaAktivitetMelding()
@@ -274,9 +274,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
 
 
@@ -286,9 +286,9 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")
                 .setAvtalt(false)
-                .setFraDato(timestampFromISO8601("2017-03-03T10:10:10+02:00"))
-                .setTilDato(timestampFromISO8601("2017-12-03T10:10:10+02:00"))
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
+                .setFraDato(ZonedDateTime.parse("2017-03-03T10:10:10+02:00"))
+                .setTilDato(ZonedDateTime.parse("2017-12-03T10:10:10+02:00"))
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
 
 
