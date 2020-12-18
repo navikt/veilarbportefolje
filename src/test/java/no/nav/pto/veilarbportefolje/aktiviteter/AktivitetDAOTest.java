@@ -179,13 +179,8 @@ public class AktivitetDAOTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.EGEN)
                 .setAktorId("aktoerid")
                 .setAvtalt(true)
-<<<<<<< HEAD
                 .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);;
-=======
-                .setEndretDato(timestampFromISO8601("2017-02-03T10:10:10+02:00"))
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.PLANLAGT);
->>>>>>> de28eb8573d385562b7f5d27f18459afcbe53138
 
         aktivitetDAO.upsertAktivitet(aktivitet1);
         aktivitetDAO.upsertAktivitet(aktivitet2);
