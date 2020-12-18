@@ -10,6 +10,7 @@ import java.util.Date;
 public class KafkaAktivitetMelding {
     String aktivitetId;
     String aktorId;
+    Integer version;
     Date fraDato;
     Date tilDato;
     Date endretDato;

@@ -4,6 +4,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
@@ -23,6 +24,7 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
+import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
@@ -30,8 +32,6 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 @Repository
 public class AktivitetDAO {
 
-    public static final String AKTIVITETER = "AKTIVITETER";
-    private static final String AKTIVITETID = "AKTIVITETID";
 
     private final JdbcTemplate db;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -44,8 +44,8 @@ public class AktivitetDAO {
 
     public AktoerId getAktoerId(String aktivitetId) {
         return SqlUtils
-                .select(db, AKTIVITETER, rs -> rs.getString("AKTOERID"))
-                .column("AKTOERID")
+                .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getString(AKTOERID))
+                .column(AKTOERID)
                 .where(WhereClause.equals(AKTIVITETID, aktivitetId))
                 .executeToList()
                 .stream()
@@ -54,19 +54,27 @@ public class AktivitetDAO {
                 .orElseThrow(IllegalStateException::new);
     }
 
+    public Integer getVersjon(String aktivitetId) {
+        return SqlUtils
+                .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getInt(VERSION))
+                .column(VERSION)
+                .where(WhereClause.equals(AKTIVITETID, aktivitetId))
+                .execute();
+    }
+
     public void slettAlleAktivitetstatus(String aktivitettype) {
         db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
     }
 
     public AktoerAktiviteter getAktiviteterForAktoerid(AktoerId aktoerid) {
 
-        List<AktivitetDTO> queryResult = SqlUtils.select(db, AKTIVITETER, AktivitetDAO::mapToAktivitetDTO)
-                .column("AKTOERID")
-                .column("AKTIVITETTYPE")
-                .column("STATUS")
-                .column("FRADATO")
-                .column("TILDATO")
-                .where(WhereClause.equals("AKTOERID", aktoerid.toString()))
+        List<AktivitetDTO> queryResult = SqlUtils.select(db,  Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
+                .column(AKTOERID)
+                .column(AKTIVITETTYPE)
+                .column(STATUS)
+                .column(FRADATO)
+                .column(TILDATO)
+                .where(WhereClause.equals(AKTOERID, aktoerid.toString()))
                 .executeToList();
 
         return new AktoerAktiviteter(aktoerid.toString()).setAktiviteter(queryResult);
@@ -74,21 +82,22 @@ public class AktivitetDAO {
 
     private static AktivitetDTO mapToAktivitetDTO(ResultSet res) throws SQLException {
         return new AktivitetDTO()
-                .setAktivitetType(res.getString("AKTIVITETTYPE"))
-                .setStatus(res.getString("STATUS"))
-                .setFraDato(res.getTimestamp("FRADATO"))
-                .setTilDato(res.getTimestamp("TILDATO"));
+                .setAktivitetType(res.getString(AKTIVITETTYPE))
+                .setStatus(res.getString(STATUS))
+                .setFraDato(res.getTimestamp(FRADATO))
+                .setTilDato(res.getTimestamp(TILDATO));
     }
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
-        SqlUtils.upsert(db, AKTIVITETER)
-                .set("AKTOERID", aktivitet.getAktorId())
-                .set("AKTIVITETTYPE", aktivitet.getAktivitetType().name().toLowerCase())
-                .set("AVTALT", aktivitet.isAvtalt())
-                .set("FRADATO", dateToTimestamp(aktivitet.getFraDato()))
-                .set("TILDATO", dateToTimestamp(aktivitet.getTilDato()))
-                .set("OPPDATERTDATO", dateToTimestamp(aktivitet.getEndretDato()))
-                .set("STATUS", aktivitet.getAktivitetStatus().name().toLowerCase())
+        SqlUtils.upsert(db,  Table.AKTIVITETER.TABLE_NAME)
+                .set(AKTOERID, aktivitet.getAktorId())
+                .set(AKTIVITETTYPE, aktivitet.getAktivitetType().name().toLowerCase())
+                .set(AVTALT, aktivitet.isAvtalt())
+                .set(FRADATO, dateToTimestamp(aktivitet.getFraDato()))
+                .set(TILDATO, dateToTimestamp(aktivitet.getTilDato()))
+                .set(OPPDATERTDATO, dateToTimestamp(aktivitet.getEndretDato()))
+                .set(STATUS, aktivitet.getAktivitetStatus().name().toLowerCase())
+                .set(VERSION, aktivitet.getVersion())
                 .set(AKTIVITETID, aktivitet.getAktivitetId())
                 .where(WhereClause.equals(AKTIVITETID, aktivitet.getAktivitetId()))
                 .execute();
@@ -96,7 +105,7 @@ public class AktivitetDAO {
 
     public void deleteById(String aktivitetid) {
         log.info("Sletter alle aktiviteter med id {}", aktivitetid);
-        SqlUtils.delete(db, AKTIVITETER)
+        SqlUtils.delete(db,  Table.AKTIVITETER.TABLE_NAME)
                 .where(WhereClause.equals(AKTIVITETID, aktivitetid))
                 .execute();
     }
@@ -153,7 +162,7 @@ public class AktivitetDAO {
     public List<String> getDistinctAktoerIdsFromAktivitet() {
         return db.queryForList("SELECT DISTINCT AKTOERID FROM AKTIVITETER")
                 .stream()
-                .map(map -> (String) map.get("AKTOERID"))
+                .map(map -> (String) map.get(AKTOERID))
                 .collect(toList());
 
     }
@@ -172,15 +181,6 @@ public class AktivitetDAO {
                         (Timestamp) row.get("TILDATO"))
                 )
                 .collect(toList());
-    }
-
-    public void slettAktivitetDatoer() {
-        SqlUtils.update(db, "bruker_data")
-                .set("NYESTEUTLOPTEAKTIVITET", (Object)null)
-                .set("AKTIVITET_START", (Object)null)
-                .set("NESTE_AKTIVITET_START", (Object)null)
-                .set("FORRIGE_AKTIVITET_START", (Object)null)
-                .execute();
     }
 
     private String hentBrukertiltakForListeAvFnrSQL() {
@@ -215,5 +215,17 @@ public class AktivitetDAO {
                 .setAktiv(parse0OR1((String) row.get("STATUS")))
                 .setNesteStart((Timestamp) row.get("NESTE_STARTDATO"))
                 .setNesteUtlop((Timestamp) row.get("NESTE_UTLOPSDATO"));
+    }
+
+    public boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
+        Integer kommendeVersjon = aktivitet.getVersion();
+        if(kommendeVersjon == null){
+            return true;
+        }
+        Integer databaseVersjon = getVersjon(aktivitet.getAktivitetId());
+        if(databaseVersjon == null ){
+            return true;
+        }
+        return kommendeVersjon.compareTo(databaseVersjon) > 0;
     }
 }
