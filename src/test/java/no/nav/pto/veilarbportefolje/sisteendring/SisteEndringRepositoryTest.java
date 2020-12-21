@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.iso8601FromTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringRepositoryTest {
@@ -49,8 +49,8 @@ public class SisteEndringRepositoryTest {
         OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.getValue());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
 
-        assertThat(bruker.getSiste_endringer().get("ny_ijobb")).isEqualTo(tidspunkt_1);
-        assertThat(bruker.getSiste_endringer().get("avbrutt_egen")).isEqualTo(tidspunkt_2);
+        assertThat(bruker.getSiste_endringer().get("ny_ijobb")).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));
+        assertThat(bruker.getSiste_endringer().get("avbrutt_egen")).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
     }
 
 
@@ -75,16 +75,16 @@ public class SisteEndringRepositoryTest {
         Timestamp fraRepo_1 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.FULLFORT_STILLING);
         Timestamp fraRepo_2 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.MAL);
 
-        assertThat(iso8601FromTimestamp(fraRepo_1)).isEqualTo(tidspunkt_1);
-        assertThat(iso8601FromTimestamp(fraRepo_2)).isEqualTo(tidspunkt_2);
+        assertThat(toIsoUTC(fraRepo_1)).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));
+        assertThat(toIsoUTC(fraRepo_2)).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
 
         sisteEndringRepository.slettSisteEndringer(AKTORID);
 
         Timestamp fraRepo_etter_sletting_1 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.FULLFORT_STILLING);
         Timestamp fraRepo_etter_sletting_2 = sisteEndringRepository.getSisteEndringTidspunkt(AKTORID, SisteEndringsKategori.MAL);
 
-        assertThat(iso8601FromTimestamp(fraRepo_etter_sletting_1)).isNull();
-        assertThat(iso8601FromTimestamp(fraRepo_etter_sletting_2)).isNull();
+        assertThat(toIsoUTC(fraRepo_etter_sletting_1)).isNull();
+        assertThat(toIsoUTC(fraRepo_etter_sletting_2)).isNull();
     }
 
 }

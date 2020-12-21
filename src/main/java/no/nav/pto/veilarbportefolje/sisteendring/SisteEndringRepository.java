@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.iso8601FromTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 
 @Slf4j
 @Repository
@@ -67,7 +67,7 @@ public class SisteEndringRepository {
         oppfolgingsBrukere.setSiste_endringer(jdbcTemplate.query(getAlleKategorierForAktoerId(oppfolgingsBrukere.getAktoer_id()), rs -> {
             Map<String,String> sisteEndring = new HashMap<>();
             while(rs.next()){
-                sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(), iso8601FromTimestamp(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
+                sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(), toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
             }
             return sisteEndring;
         }));
