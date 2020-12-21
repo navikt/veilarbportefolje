@@ -82,7 +82,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     null,
                     null);
 
-            return brukereMedAntall.getAntall() == 1;
+            return brukereMedAntall.getAntall() == 2;
         });
 
         send_aktvitet_melding(aktoerId,null);
@@ -176,6 +176,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
                         .setAktoer_id(aktoerId)
+                        .setOppfolging(true)
+                        .setEnhet_id(enhet),
+
+                new OppfolgingsBruker()
+                        .setAktoer_id(randomAktoerId().getValue())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
         );
