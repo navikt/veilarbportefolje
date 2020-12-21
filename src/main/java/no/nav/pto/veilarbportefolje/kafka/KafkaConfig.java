@@ -81,7 +81,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 aktivitetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
                 Topic.KAFKA_AKTIVITER_V2_CONSUMER_TOPIC,
                 metricsClient
         );

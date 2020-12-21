@@ -21,6 +21,7 @@ public class KafkaProperties {
 
     public enum  KafkaAutoOffset {
         NONE("none"),
+        EARLIEST("earliest"),
         LATEST("latest");
 
         private String autoOffset;
