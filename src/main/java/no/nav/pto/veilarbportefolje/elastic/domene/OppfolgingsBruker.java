@@ -3,14 +3,10 @@ package no.nav.pto.veilarbportefolje.elastic.domene;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 
 @Data
 @Accessors(chain = true)
@@ -89,9 +85,8 @@ public class OppfolgingsBruker {
     String utdanning;
     String utdanning_bestatt;
     String utdanning_godkjent;
-    String siste_endring_kategori;
-
-    LocalDateTime siste_endring_tidspunkt;
+    String aggregert_siste_endring_kategori;
+    LocalDateTime aggregert_siste_endring_tidspunkt;
     Map<String, String> siste_endringer;
 
     public void kalkulerSisteEndring(List<String> kategorier){
@@ -101,9 +96,9 @@ public class OppfolgingsBruker {
 
         for (String kategori : kategorier) {
             LocalDateTime temp = toLocalDateTimeOrNull(siste_endringer.get(kategori.toLowerCase()));
-            if(temp != null && (siste_endring_tidspunkt == null || temp.isAfter(siste_endring_tidspunkt))){
-                siste_endring_kategori = kategori;
-                siste_endring_tidspunkt = temp;
+            if(temp != null && (aggregert_siste_endring_tidspunkt == null || temp.isAfter(aggregert_siste_endring_tidspunkt))){
+                aggregert_siste_endring_kategori = kategori;
+                aggregert_siste_endring_tidspunkt = temp;
             }
         }
     }
