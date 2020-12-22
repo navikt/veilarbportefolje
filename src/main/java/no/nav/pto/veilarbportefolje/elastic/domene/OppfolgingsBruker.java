@@ -89,9 +89,9 @@ public class OppfolgingsBruker {
     String utdanning;
     String utdanning_bestatt;
     String utdanning_godkjent;
+    String siste_endring_kategori;
 
-    LocalDateTime aggregert_siste_endring_tidspunkt;
-    String aggregert_siste_endring_kategori;
+    LocalDateTime siste_endring_tidspunkt;
     Map<String, String> siste_endringer;
 
     public void kalkulerSisteEndring(List<String> kategorier){
