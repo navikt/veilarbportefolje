@@ -101,9 +101,9 @@ public class OppfolgingsBruker {
 
         for (String kategori : kategorier) {
             LocalDateTime temp = toLocalDateTimeOrNull(siste_endringer.get(kategori.toLowerCase()));
-            if(temp != null && (aggregert_siste_endring_tidspunkt == null || temp.isAfter(aggregert_siste_endring_tidspunkt))){
-                aggregert_siste_endring_kategori = kategori;
-                aggregert_siste_endring_tidspunkt = temp;
+            if(temp != null && (siste_endring_tidspunkt == null || temp.isAfter(siste_endring_tidspunkt))){
+                siste_endring_kategori = kategori;
+                siste_endring_tidspunkt = temp;
             }
         }
     }
