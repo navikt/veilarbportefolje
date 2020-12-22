@@ -50,9 +50,7 @@ public class ValideringsRegler {
             "veileder_id",
             "vedtakstatus",
             "vedtak_status_endret",
-            "arbeidslistekategori",
-            "siste_endring_kategori",
-            "siste_endring_tidspunkt"
+            "arbeidslistekategori"
             );
 
     public static void sjekkEnhet(String enhet) {
