@@ -6,6 +6,8 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_OPPFOLGING;
 
 @Service
@@ -14,6 +16,7 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
     private final OppfolgingRepository oppfolgingRepository;
     private final ElasticServiceV2 elasticServiceV2;
     private final UnleashService unleashService;
+    private final AtomicBoolean rewind = new AtomicBoolean(false);
 
     public NyForVeilederService(OppfolgingRepository oppfolgingRepository, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
         this.oppfolgingRepository = oppfolgingRepository;
@@ -37,11 +40,11 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
 
     @Override
     public boolean shouldRewind() {
-        return false;
+        return rewind.get();
     }
 
     @Override
     public void setRewind(boolean rewind) {
-
+        this.rewind.set(rewind);
     }
 }
