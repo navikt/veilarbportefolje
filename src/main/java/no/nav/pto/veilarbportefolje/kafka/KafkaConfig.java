@@ -158,7 +158,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 nyForVeilederService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
                 Topic.ENDRING_PAA_NY_FOR_VEILEDER,
                 metricsClient
         );
