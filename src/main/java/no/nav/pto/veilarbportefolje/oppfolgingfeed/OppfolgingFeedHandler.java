@@ -66,7 +66,7 @@ public class OppfolgingFeedHandler implements FeedCallback {
             return;
         }
 
-        if (!unleashService.isEnabled(KAFKA_OPPFOLGING)) {
+        if (unleashService.isEnabled(KAFKA_OPPFOLGING)) {
             return;
         }
 
@@ -105,22 +105,16 @@ public class OppfolgingFeedHandler implements FeedCallback {
         final boolean byttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
         boolean skalSletteArbeidsliste = brukerErIkkeUnderOppfolging(oppfolgingData) || byttetNavKontor;
         transactor.inTransaction(() -> {
-            try {
-                if (skalSletteArbeidsliste) {
+            if (skalSletteArbeidsliste) {
 
-                    log.info("Sletter arbeidsliste for bruker {} med oppfølging={} og byttetNavkontor={}",
-                            oppfolgingData.getAktoerid(),
-                            oppfolgingData.getOppfolging(),
-                            byttetNavKontor);
+                log.info("Sletter arbeidsliste for bruker {} med oppfølging={} og byttetNavkontor={}",
+                        oppfolgingData.getAktoerid(),
+                        oppfolgingData.getOppfolging(),
+                        byttetNavKontor);
 
-                    arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
-                }
-                oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
-                log.info("Update oppfolging data for: {} and veileder: {}", oppfolgingData.getAktoerid(), oppfolgingData.getVeileder());
+                arbeidslisteService.deleteArbeidslisteForAktoerId(aktoerId);
             }
-            catch (Exception e){
-                log.error("Error while updating oppfolging data for: {} and veileder: {}",oppfolgingData.getAktoerid(), oppfolgingData.getVeileder());
-            }
+            oppfolgingRepository.oppdaterOppfolgingData(oppfolgingData);
         });
 
     }
