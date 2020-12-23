@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
@@ -30,14 +31,16 @@ public class HelsesjekkConfig {
                                          Pep veilarbPep,
                                          TiltakHandler tiltakHandler,
                                          KopierGR199FraArena kopierGR199FraArena,
-                                         JdbcTemplate jdbcTemplate) {
+                                         JdbcTemplate jdbcTemplate,
+                                         UnleashService unleashService) {
         List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, ElasticConfig::checkHealth),
                 new SelfTestCheck("Database for portefolje", true, () -> dbPinger(jdbcTemplate)),
                 new SelfTestCheck("Aktorregister", true, aktorregisterClient),
                 new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient()),
                 new SelfTestCheck("Sjekker henting av tiltaksfil fra arena over sftp", true, tiltakHandler::sftpTiltakPing),
-                new SelfTestCheck("Sjekker henting av ytelser-fil fra arena over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing)
+                new SelfTestCheck("Sjekker henting av ytelser-fil fra arena over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing),
+                new SelfTestCheck("Sjekker at feature-toggles kan hentes fra Unleash", false, unleashService)
         );
 
         List<SelfTestCheck> kafkaSelftester = Arrays.stream(KafkaConfig.Topic.values())
