@@ -30,6 +30,20 @@ function handleRewindRegistrering(e) {
     }
 }
 
+const aktiviteterForm = document.getElementById('aktiviteter');
+aktiviteterForm.addEventListener('submit', handleRewindAktiviteter);
+
+function handleRewindAktiviteter(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil lese inn alle kafka meldinger fra aktivteter fra starten av.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/rewind/aktivtet',
+            {method: 'POST', credentials: 'same-origin'},
+            'aktiviteterResponse'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
