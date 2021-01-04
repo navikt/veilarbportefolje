@@ -36,15 +36,19 @@ public class AktivitetService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-
         KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
+        log.info(
+                "Behandler kafka-aktivtet-melding på aktorId: {} med aktivtetId: {}, version: {}",
+                aktivitetData.getAktorId(),
+                aktivitetData.getAktivitetId(),
+                aktivitetData.getVersion()
+        );
 
         if (skallIkkeOppdatereAktivitet(aktivitetData)) {
             return;
         }
 
         lagreAktivitetData(aktivitetData);
-
         utledOgIndekserAktivitetstatuserForAktoerid(AktoerId.of(aktivitetData.getAktorId()));
     }
 
@@ -85,7 +89,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
             }
 
         } catch (Exception e) {
-            String message = String.format("Kunne ikke lagre aktivitetdata for aktivitetid %s", aktivitet.getAktivitetId());
+            String message = String.format("Kunne ikke lagre aktivitetdata fra topic for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);
         }
     }
