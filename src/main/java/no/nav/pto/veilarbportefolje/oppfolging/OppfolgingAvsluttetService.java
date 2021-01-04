@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
@@ -9,8 +8,6 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.stereotype.Service;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_OPPFOLGING;
-
 @Service
 public class OppfolgingAvsluttetService implements KafkaConsumerService<String> {
 
@@ -18,26 +15,19 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
     private final OppfolgingRepository oppfolgingRepository;
     private final RegistreringService registreringService;
     private final ElasticServiceV2 elasticServiceV2;
-    private final UnleashService unleashService;
 
     public OppfolgingAvsluttetService(ArbeidslisteService arbeidslisteService,
                                       OppfolgingRepository oppfolgingRepository,
                                       RegistreringService registreringService,
-                                      ElasticServiceV2 elasticServiceV2,
-                                      UnleashService unleashService) {
+                                      ElasticServiceV2 elasticServiceV2) {
         this.arbeidslisteService = arbeidslisteService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.registreringService = registreringService;
         this.elasticServiceV2 = elasticServiceV2;
-        this.unleashService = unleashService;
     }
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        if (!unleashService.isEnabled(KAFKA_OPPFOLGING)) {
-            return;
-        }
-
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
         final AktoerId aktoerId = dto.getAktorId();
 

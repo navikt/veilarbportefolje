@@ -1,8 +1,7 @@
-package no.nav.pto.veilarbportefolje.oppfolgingfeed;
+package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
-import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

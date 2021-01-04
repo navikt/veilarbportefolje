@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.ZonedDateTime;
+
 import static no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus.MANUELL;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
@@ -30,11 +32,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
         final AktoerId aktoerId = randomAktoerId();
-        final BrukerOppdatertInformasjon info = new BrukerOppdatertInformasjon()
-                .setAktoerid(aktoerId.toString())
-                .setManuell(false);
-
-        oppfolgingRepository.oppdaterOppfolgingData(info);
+        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         elasticTestClient.createUserInElastic(aktoerId);
 
         String melding = new JSONObject()
@@ -53,11 +51,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_digital_oppfølging() {
         final AktoerId aktoerId = randomAktoerId();
-        final BrukerOppdatertInformasjon info = new BrukerOppdatertInformasjon()
-                .setAktoerid(aktoerId.toString())
-                .setManuell(false);
-
-        oppfolgingRepository.oppdaterOppfolgingData(info);
+        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         elasticTestClient.createUserInElastic(aktoerId);
 
         String melding = new JSONObject()

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static io.vavr.control.Try.run;
 import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
@@ -86,7 +85,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
             }
 
         } catch (Exception e) {
-            String message = String.format("Kunne ikke lagre aktivitetdata fra feed for aktivitetid %s", aktivitet.getAktivitetId());
+            String message = String.format("Kunne ikke lagre aktivitetdata for aktivitetid %s", aktivitet.getAktivitetId());
             log.error(message, e);
         }
     }
