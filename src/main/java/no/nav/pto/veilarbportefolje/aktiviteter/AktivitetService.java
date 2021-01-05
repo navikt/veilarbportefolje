@@ -48,7 +48,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
             return;
         }
 
-        lagreAktivitetData(aktivitetData);
+        aktivitetDAO.tryLagreAktivitetData(aktivitetData);
         utledOgIndekserAktivitetstatuserForAktoerid(AktoerId.of(aktivitetData.getAktorId()));
     }
 
@@ -80,19 +80,6 @@ public class AktivitetService implements KafkaConsumerService<String> {
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));
     }
 
-    private void lagreAktivitetData(KafkaAktivitetMelding aktivitet) {
-        try {
-            if (aktivitet.isHistorisk()) {
-                aktivitetDAO.deleteById(aktivitet.getAktivitetId());
-            } else if (aktivitetDAO.erNyVersjonAvAktivitet(aktivitet)) {
-                aktivitetDAO.upsertAktivitet(aktivitet);
-            }
-
-        } catch (Exception e) {
-            String message = String.format("Kunne ikke lagre aktivitetdata fra topic for aktivitetid %s", aktivitet.getAktivitetId());
-            log.error(message, e);
-        }
-    }
 
     @Override
     public boolean shouldRewind() {

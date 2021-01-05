@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -227,5 +228,19 @@ public class AktivitetDAO {
             return true;
         }
         return kommendeVersjon.compareTo(databaseVersjon) > 0;
+    }
+
+    @Transactional
+    public void tryLagreAktivitetData(KafkaAktivitetMelding aktivitet) {
+        try {
+            if (aktivitet.isHistorisk()) {
+                deleteById(aktivitet.getAktivitetId());
+            } else if (erNyVersjonAvAktivitet(aktivitet)) {
+                upsertAktivitet(aktivitet);
+            }
+        } catch (Exception e) {
+            String message = String.format("Kunne ikke lagre aktivitetdata fra topic for aktivitetid %s", aktivitet.getAktivitetId());
+            log.error(message, e);
+        }
     }
 }
