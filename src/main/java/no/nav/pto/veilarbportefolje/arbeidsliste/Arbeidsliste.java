@@ -63,6 +63,11 @@ public class Arbeidsliste {
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
     }
 
+    @JsonProperty("sistEndretAv")
+    public String getSistEndretAv(){
+        return sistEndretAv.getValue();
+    }
+
     private static Date dateIfNotFarInTheFutureDate(Instant instant) {
         return DateUtils.isFarInTheFutureDate(instant) ? null : Date.from(instant);
     }
