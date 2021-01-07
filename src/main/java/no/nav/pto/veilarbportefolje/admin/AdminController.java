@@ -2,7 +2,9 @@ package no.nav.pto.veilarbportefolje.admin;
 
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +18,15 @@ public class AdminController {
     private final List<String> admins;
     private final RegistreringService registreringService;
     private final AktorregisterClient aktorregisterClient;
+    private final NyForVeilederService nyForVeilederService;
+    private final AktivitetService aktivitetService;
 
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorregisterClient aktorregisterClient) {
+    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorregisterClient aktorregisterClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService) {
         this.admins = environmentProperties.getAdmins();
         this.registreringService = registreringService;
         this.aktorregisterClient = aktorregisterClient;
+        this.nyForVeilederService = nyForVeilederService;
+        this.aktivitetService = aktivitetService;
     }
 
     @PostMapping("/aktoerId")
@@ -34,6 +40,20 @@ public class AdminController {
         authorizeAdmin();
         registreringService.setRewind(true);
         return "Rewind av registrering har startet";
+    }
+
+    @PostMapping("/rewind/nyForVeileder")
+    public String rewindNyVeileder() {
+        authorizeAdmin();
+        nyForVeilederService.setRewind(true);
+        return "Rewind av nyVeileder har startet";
+    }
+
+    @PostMapping("/rewind/aktivtet")
+    public String rewindAktivteter() {
+        authorizeAdmin();
+        aktivitetService.setRewind(true);
+        return "Rewind av aktivteter har startet";
     }
 
     private void authorizeAdmin() {

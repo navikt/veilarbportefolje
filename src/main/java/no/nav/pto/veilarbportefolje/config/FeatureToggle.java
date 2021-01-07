@@ -5,5 +5,4 @@ public class FeatureToggle {
     }
 
     public static final String VEDTAKSTOTTE_PILOT = "pto.vedtaksstotte.pilot";
-    public static final String KAFKA_OPPFOLGING = "pto.oppfolging.kafka";
 }

@@ -72,6 +72,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
                 .put("aktivitetStatus", "GJENNOMFORES")
                 .put("avtalt", true)
                 .put("historisk", false)
+                .put("version", 1)
                 .toString();
 
         aktivitetService.behandleKafkaMelding(melding);

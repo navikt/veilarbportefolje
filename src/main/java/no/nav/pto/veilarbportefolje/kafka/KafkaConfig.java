@@ -26,8 +26,7 @@ public class KafkaConfig {
         VEDTAK_STATUS_ENDRING_TOPIC("aapen-oppfolging-vedtakStatusEndring-v1-" + requireKafkaTopicPostfix()),
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + requireKafkaTopicPostfix()),
-        KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v1-" + requireKafkaTopicPostfix()),
-        KAFKA_AKTIVITER_V2_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v2-" + requireKafkaTopicPostfix()),
+        KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v3-" + requireKafkaTopicPostfix()),
         PAM_SAMTYKKE_ENDRET_V1("aapen-pam-samtykke-endret-v1"),
         KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + requireKafkaTopicPostfix()),
@@ -70,19 +69,8 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 aktivitetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
-                Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
-                metricsClient
-        );
-    }
-
-    @Bean
-    public KafkaConsumerRunnable<String> kafkaAktivitetConsumerV2(AktivitetService aktivitetService, UnleashService unleashService, MetricsClient metricsClient) {
-        return new KafkaConsumerRunnable<>(
-                aktivitetService,
-                unleashService,
                 KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
-                Topic.KAFKA_AKTIVITER_V2_CONSUMER_TOPIC,
+                Topic.KAFKA_AKTIVITER_CONSUMER_TOPIC,
                 metricsClient
         );
     }

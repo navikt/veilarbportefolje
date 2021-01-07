@@ -8,10 +8,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 @SpringBootApplication
 @ServletComponentScan
 public class VeilarbportefoljeApp {
-
     public static void main(String... args) {
-        System.setProperty("oppfolging.feed.brukertilgang", "srvveilarboppfolging");
         SpringApplication.run(VeilarbportefoljeApp.class, args);
     }
-
 }
