@@ -25,6 +25,7 @@ import static no.nav.common.utils.StringUtils.nullOrEmpty;
 
 public class ValideringsRegler {
     private static List<String> sortDirs = asList("ikke_satt", "ascending", "descending");
+    // TODO: endre til å bare inneholde defaultSort verdier
     public static List<String> sortFields = asList(
             "ikke_satt",
             "valgteaktiviteter",
@@ -51,7 +52,6 @@ public class ValideringsRegler {
             "vedtakstatus",
             "vedtak_status_endret",
             "arbeidslistekategori",
-            "siste_endring_kategori",
             "siste_endring_tidspunkt"
             );
 

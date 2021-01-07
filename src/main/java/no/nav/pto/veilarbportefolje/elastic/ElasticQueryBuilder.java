@@ -17,9 +17,12 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -164,10 +167,28 @@ public class ElasticQueryBuilder {
             case "arbeidslistekategori":
                 searchSourceBuilder.sort("arbeidsliste_kategori", order);
                 break;
+            case "siste_endring_tidspunkt":
+                sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
+                break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
         return searchSourceBuilder;
+    }
+
+    private static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
+        if(filtervalg.sisteEndringKategori.size() == 1) {
+            builder.sort("siste_endringer."+filtervalg.sisteEndringKategori.get(0).toLowerCase(), order);
+        } else if(filtervalg.sisteEndringKategori.size() > 1) {
+            StringJoiner expresion = new StringJoiner(",", "Math.max(", ")");
+            for (String kategori : filtervalg.sisteEndringKategori) {
+                expresion.add("doc['siste_endringer." + kategori.toLowerCase() + "'].value.toInstant().toEpochMilli()");
+            }
+            Script script = new Script(expresion.toString());
+            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+            scriptBuilder.order(order);
+            builder.sort(scriptBuilder);
+        }
     }
 
     private static void defaultSort(String sortField, SearchSourceBuilder searchSourceBuilder, SortOrder order) {
