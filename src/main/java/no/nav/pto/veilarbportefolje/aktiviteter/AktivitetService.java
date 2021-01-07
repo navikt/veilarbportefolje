@@ -49,7 +49,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
         }
 
         aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        utledOgIndekserAktivitetstatuserForAktoerid(AktoerId.of(aktivitetData.getAktorId()));
+        //utledOgIndekserAktivitetstatuserForAktoerid(AktoerId.of(aktivitetData.getAktorId()));
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
