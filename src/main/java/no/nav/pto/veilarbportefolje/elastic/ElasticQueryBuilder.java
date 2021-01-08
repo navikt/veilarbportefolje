@@ -177,14 +177,18 @@ public class ElasticQueryBuilder {
     }
 
     private static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
+        String expresion = null;
         if(filtervalg.sisteEndringKategori.size() == 1) {
-            builder.sort("siste_endringer."+filtervalg.sisteEndringKategori.get(0).toLowerCase(), order);
+            expresion = " return doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0).toLowerCase() + "'].value.toInstant().toEpochMilli();";
         } else if(filtervalg.sisteEndringKategori.size() > 1) {
-            StringJoiner expresion = new StringJoiner(",", "Math.max(", ")");
+            StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
             for (String kategori : filtervalg.sisteEndringKategori) {
-                expresion.add("doc['siste_endringer." + kategori.toLowerCase() + "'].value.toInstant().toEpochMilli()");
+                expresionJoiner.add("doc['siste_endringer." + kategori.toLowerCase() + "'].value.toInstant().toEpochMilli()");
             }
-            Script script = new Script(expresion.toString());
+            expresion = expresionJoiner.toString();
+        }
+        if(expresion != null){
+            Script script = new Script(expresion);
             ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
             scriptBuilder.order(order);
             builder.sort(scriptBuilder);

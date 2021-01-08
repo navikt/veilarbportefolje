@@ -226,7 +226,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_2_i_2020).getYear());
         assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_1_i_2021).getYear());
 
-
         var responseSortertFULLFORT_MIX = elasticService.hentBrukere(
                 testEnhet,
                 empty(),
@@ -241,6 +240,25 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertFULLFORT_MIX.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_IJOBB_bruker_1_i_2024).getYear());
         assertThat(responseSortertFULLFORT_MIX.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(ZonedDateTime.parse(endret_Tid_EGEN_bruker_3_i_2019).getYear());
 
+        var responseSortertTomRes1 = elasticService.hentBrukere(
+                testEnhet,
+                empty(),
+                "descending",
+                "siste_endring_tidspunkt",
+                getFiltervalg(NY_IJOBB),
+                null,
+                null);
+        assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);
+
+        var responseSortertTomRes2 = elasticService.hentBrukere(
+                testEnhet,
+                empty(),
+                "descending",
+                "siste_endring_tidspunkt",
+                getFiltervalg(NY_IJOBB,NY_EGEN),
+                null,
+                null);
+        assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
 
     }
 
