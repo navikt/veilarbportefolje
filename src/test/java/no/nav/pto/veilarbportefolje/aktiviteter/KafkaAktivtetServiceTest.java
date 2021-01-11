@@ -63,7 +63,7 @@ public class KafkaAktivtetServiceTest {
                 ISO_ZONED_DATE_TIME);
 
         KafkaAktivitetMelding aktivitetDataFraKafka = new KafkaAktivitetMelding()
-                .setVersion(1)
+                .setVersion(1L)
                 .setAktivitetId("144136")
                 .setAktorId("123456789")
                 .setFraDato(zonedDateTime)

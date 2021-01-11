@@ -257,7 +257,7 @@ public class AktivitetDAOTest {
     @Test
     public void skalHaRiktigVersionLogikk(){
         KafkaAktivitetMelding aktivitet_i_database = new KafkaAktivitetMelding()
-                .setVersion(2)
+                .setVersion(2L)
                 .setAktivitetId("aktivitetid")
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")
@@ -268,7 +268,7 @@ public class AktivitetDAOTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.BRUKER_ER_INTERESSERT);
 
         KafkaAktivitetMelding aktivitet_gammel = new KafkaAktivitetMelding()
-                .setVersion(1)
+                .setVersion(1L)
                 .setAktivitetId("aktivitetid")
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")
@@ -280,7 +280,7 @@ public class AktivitetDAOTest {
 
 
         KafkaAktivitetMelding aktivitet_ny = new KafkaAktivitetMelding()
-                .setVersion(3)
+                .setVersion(3L)
                 .setAktivitetId("aktivitetid")
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.SOKEAVTALE)
                 .setAktorId("aktoerid")

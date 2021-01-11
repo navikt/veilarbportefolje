@@ -56,9 +56,9 @@ public class AktivitetDAO {
                 .orElseThrow(IllegalStateException::new);
     }
 
-    public Integer getVersjon(String aktivitetId) {
+    public Long getVersjon(String aktivitetId) {
         return SqlUtils
-                .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getInt(VERSION))
+                .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getLong(VERSION))
                 .column(VERSION)
                 .where(WhereClause.equals(AKTIVITETID, aktivitetId))
                 .execute();
@@ -220,11 +220,11 @@ public class AktivitetDAO {
     }
 
     public boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
-        Integer kommendeVersjon = aktivitet.getVersion();
+        Long kommendeVersjon = aktivitet.getVersion();
         if(kommendeVersjon == null){
             return false;
         }
-        Integer databaseVersjon = getVersjon(aktivitet.getAktivitetId());
+        Long databaseVersjon = getVersjon(aktivitet.getAktivitetId());
         if(databaseVersjon == null ){
             return true;
         }
