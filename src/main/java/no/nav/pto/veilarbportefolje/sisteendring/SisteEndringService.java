@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
@@ -27,10 +26,22 @@ public class SisteEndringService {
     }
 
     public void behandleAktivitet(KafkaAktivitetMelding kafkaAktivitet) {
-        SisteEndringDTO objectSkrevetTilDatabase = lagreAktivitetData(kafkaAktivitet);
+        if (kafkaAktivitet.getLagtInnAv() == KafkaAktivitetMelding.InnsenderData.BRUKER) {
+            AktoerId aktoerId = AktoerId.of(kafkaAktivitet.getAktorId());
+            SisteEndringDTO sisteEndringDTO = new SisteEndringDTO()
+                    .setAktoerId(aktoerId)
+                    .setKategori(kafkaAktivitet.getSisteEndringKategori())
+                    .setTidspunkt(kafkaAktivitet.getEndretDato());
 
-        if (objectSkrevetTilDatabase != null) {
-            elasticServiceV2.updateSisteEndring(objectSkrevetTilDatabase);
+            if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+                try {
+                    sisteEndringRepository.upsert(sisteEndringDTO);
+                    elasticServiceV2.updateSisteEndring(sisteEndringDTO);
+                } catch (Exception e) {
+                    String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
+                    log.error(message, e);
+                }
+            }
         }
     }
 
@@ -38,54 +49,16 @@ public class SisteEndringService {
         sisteEndringRepository.slettSisteEndringer(aktoerId);
     }
 
-    private SisteEndringDTO lagreAktivitetData(KafkaAktivitetMelding aktivitet) {
-        SisteEndringDTO objectSkrevetTilDatabase = null;
-
-        AktoerId aktoerId = AktoerId.of(aktivitet.getAktorId());
-        ZonedDateTime tidspunkt = aktivitet.getEndretDato();
-        SisteEndringsKategori kategorier = getKategoriFromKafkaMessage(aktivitet);
-
-        if (kategorier != null && hendelseErNyereEnnIDatabase(tidspunkt, kategorier, aktoerId)) {
-            tidspunkt = (tidspunkt == null) ? ZonedDateTime.now() : tidspunkt;
-
-            try {
-                objectSkrevetTilDatabase = new SisteEndringDTO()
-                        .setAktoerId(aktoerId)
-                        .setKategori(kategorier)
-                        .setTidspunkt(tidspunkt);
-                sisteEndringRepository.upsert(objectSkrevetTilDatabase);
-            } catch (Exception e) {
-                String message = String.format("Kunne ikke lagre siste endring for aktivitetid %s", aktivitet.getAktivitetId());
-                log.error(message, e);
-                objectSkrevetTilDatabase = null;
-            }
+    private boolean hendelseErNyereEnnIDatabase(SisteEndringDTO sisteEndringDTO) {
+        if (sisteEndringDTO.getTidspunkt() == null) {
+            log.warn("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
+            return false;
         }
-        return objectSkrevetTilDatabase;
-    }
-
-    private boolean hendelseErNyereEnnIDatabase(ZonedDateTime endringstidspunkt, SisteEndringsKategori kategorier, AktoerId aktoerId) {
-        if (endringstidspunkt == null) {
-            return true;
-        }
-        Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(aktoerId, kategorier);
+        Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
         if (databaseVerdi == null) {
             return true;
         }
-        return toZonedDateTime(databaseVerdi).compareTo(endringstidspunkt) < 0;
-    }
-
-    private SisteEndringsKategori getKategoriFromKafkaMessage(KafkaAktivitetMelding aktivitet) {
-        String potensiellSisteEndringsKategori;
-        if (aktivitet.getEndretDato() == null) {
-            potensiellSisteEndringsKategori = "NY_"+aktivitet.getAktivitetType();
-        } else {
-            potensiellSisteEndringsKategori = aktivitet.getAktivitetStatus() + "_" + aktivitet.getAktivitetType();
-        }
-
-        if(SisteEndringsKategori.contains(potensiellSisteEndringsKategori)){
-            return SisteEndringsKategori.valueOf(potensiellSisteEndringsKategori);
-        }
-        return null;
+        return toZonedDateTime(databaseVerdi).compareTo(sisteEndringDTO.getTidspunkt()) < 0;
     }
 
 }
