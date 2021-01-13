@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 
 import java.time.ZonedDateTime;
 
@@ -16,6 +17,8 @@ public class KafkaAktivitetMelding {
     Long version;
     AktivitetTypeData aktivitetType;
     AktivitetStatus aktivitetStatus;
+    SisteEndringsKategori sisteEndringKategori;
+    InnsenderData lagtInnAv;
     boolean avtalt;
     boolean historisk;
 
@@ -37,4 +40,10 @@ public class KafkaAktivitetMelding {
         MOTE,
         SAMTALEREFERAT,
     }
+
+    public enum InnsenderData {
+        BRUKER,
+        NAV
+    }
+
 }

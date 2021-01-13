@@ -96,10 +96,10 @@ public class AktivitetService implements KafkaConsumerService<String> {
     }
 
     private boolean skallIkkeOppdatereAktivitet(KafkaAktivitetMelding aktivitetData) {
-        return !aktivitetData.isAvtalt() || erEnNyOpprettetAktivitet(aktivitetData);
+        return !aktivitetData.isAvtalt() || invalidAktivitet(aktivitetData);
     }
 
-    private boolean erEnNyOpprettetAktivitet(KafkaAktivitetMelding aktivitetData) {
+    private boolean invalidAktivitet(KafkaAktivitetMelding aktivitetData) {
         return aktivitetData.getEndretDato() == null;
     }
 

@@ -1,4 +1,5 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.junit.Test;
 
 import java.time.ZonedDateTime;
@@ -10,40 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class KafkaAktivtetServiceTest {
     @Test
     public void skal_deserialisere_kafka_payload() {
-        String aktivitetKafkaMelding = "{" +
-                "\"aktivitetId\":\"144136\"," +
-                "\"aktorId\":\"123456789\"," +
-                "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
-                "\"tilDato\":null," +
-                "\"endretDato\":\"2020-05-28T09:47:42.48+02:00\"," +
-                "\"aktivitetType\":\"IJOBB\"," +
-                "\"aktivitetStatus\":\"FULLFORT\"," +
-                "\"avtalt\":true," +
-                "\"historisk\":false" +
-                "}";
-
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse("2020-07-09T12:00:00+02:00",
-                ISO_ZONED_DATE_TIME);
-
-        ZonedDateTime zonedDateTime2 = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00",
-                ISO_ZONED_DATE_TIME);
-
-        KafkaAktivitetMelding aktivitetDataFraKafka = new KafkaAktivitetMelding()
-                .setAktivitetId("144136")
-                .setAktorId("123456789")
-                .setFraDato(zonedDateTime)
-                .setTilDato(null)
-                .setEndretDato(zonedDateTime2)
-                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
-                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.FULLFORT)
-                .setAvtalt(true)
-                .setHistorisk(false);
-
-        assertThat(fromJson(aktivitetKafkaMelding, KafkaAktivitetMelding.class)).isEqualTo(aktivitetDataFraKafka);
-    }
-
-    @Test
-    public void skal_deserialisere_kafka_payload_V2() {
         String aktivitetKafkaMeldingMedVersion = "{" +
                 "\"aktivitetId\":\"144136\"," +
                 "\"aktorId\":\"123456789\"," +
@@ -75,6 +42,46 @@ public class KafkaAktivtetServiceTest {
                 .setHistorisk(false);
 
         assertThat(fromJson(aktivitetKafkaMeldingMedVersion, KafkaAktivitetMelding.class)).isEqualTo(aktivitetDataFraKafka);
+    }
+
+    @Test
+    public void skal_deserialisere_kafka_payload_V4() {
+        String aktivitetKafkaMelding = "{" +
+                "\"aktivitetId\":\"144136\"," +
+                "\"version\":\"1\"," +
+                "\"aktorId\":\"123456789\"," +
+                "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
+                "\"tilDato\":null," +
+                "\"endretDato\":\"2020-05-28T09:47:42.48+02:00\"," +
+                "\"aktivitetType\":\"IJOBB\"," +
+                "\"aktivitetStatus\":\"FULLFORT\"," +
+                "\"sisteEndringKategori\":\"FULLFORT_SOKEAVTALE\"," +
+                "\"lagtInnAv\":\"NAV\"," +
+                "\"avtalt\":true," +
+                "\"historisk\":false" +
+                "}";
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse("2020-07-09T12:00:00+02:00",
+                ISO_ZONED_DATE_TIME);
+
+        ZonedDateTime zonedDateTime2 = ZonedDateTime.parse("2020-05-28T09:47:42.48+02:00",
+                ISO_ZONED_DATE_TIME);
+
+        KafkaAktivitetMelding aktivitetDataFraKafka = new KafkaAktivitetMelding()
+                .setAktivitetId("144136")
+                .setAktorId("123456789")
+                .setVersion(1L)
+                .setFraDato(zonedDateTime)
+                .setTilDato(null)
+                .setEndretDato(zonedDateTime2)
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.FULLFORT)
+                .setLagtInnAv(KafkaAktivitetMelding.InnsenderData.NAV)
+                .setSisteEndringKategori(SisteEndringsKategori.FULLFORT_SOKEAVTALE)
+                .setAvtalt(true)
+                .setHistorisk(false);
+
+        assertThat(fromJson(aktivitetKafkaMelding, KafkaAktivitetMelding.class)).isEqualTo(aktivitetDataFraKafka);
     }
 
 }
