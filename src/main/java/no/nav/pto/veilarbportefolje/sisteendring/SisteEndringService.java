@@ -27,12 +27,7 @@ public class SisteEndringService {
 
     public void behandleAktivitet(KafkaAktivitetMelding kafkaAktivitet) {
         if (kafkaAktivitet.getLagtInnAv() == KafkaAktivitetMelding.InnsenderData.BRUKER) {
-            AktoerId aktoerId = AktoerId.of(kafkaAktivitet.getAktorId());
-            SisteEndringDTO sisteEndringDTO = new SisteEndringDTO()
-                    .setAktoerId(aktoerId)
-                    .setKategori(kafkaAktivitet.getSisteEndringKategori())
-                    .setTidspunkt(kafkaAktivitet.getEndretDato());
-
+            SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(kafkaAktivitet);
             if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
                 try {
                     sisteEndringRepository.upsert(sisteEndringDTO);

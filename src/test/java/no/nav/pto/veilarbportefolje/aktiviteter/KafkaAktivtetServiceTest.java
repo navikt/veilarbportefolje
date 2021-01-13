@@ -55,7 +55,7 @@ public class KafkaAktivtetServiceTest {
                 "\"endretDato\":\"2020-05-28T09:47:42.48+02:00\"," +
                 "\"aktivitetType\":\"IJOBB\"," +
                 "\"aktivitetStatus\":\"FULLFORT\"," +
-                "\"sisteEndringKategori\":\"FULLFORT_SOKEAVTALE\"," +
+                "\"endringsType\":\"OPPRETTET\"," +
                 "\"lagtInnAv\":\"NAV\"," +
                 "\"avtalt\":true," +
                 "\"historisk\":false" +
@@ -77,7 +77,7 @@ public class KafkaAktivtetServiceTest {
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.IJOBB)
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.FULLFORT)
                 .setLagtInnAv(KafkaAktivitetMelding.InnsenderData.NAV)
-                .setSisteEndringKategori(SisteEndringsKategori.FULLFORT_SOKEAVTALE)
+                .setEndringsType(KafkaAktivitetMelding.EndringsType.OPPRETTET)
                 .setAvtalt(true)
                 .setHistorisk(false);
 

@@ -17,7 +17,7 @@ public class KafkaAktivitetMelding {
     Long version;
     AktivitetTypeData aktivitetType;
     AktivitetStatus aktivitetStatus;
-    SisteEndringsKategori sisteEndringKategori;
+    EndringsType endringsType;
     InnsenderData lagtInnAv;
     boolean avtalt;
     boolean historisk;
@@ -39,6 +39,13 @@ public class KafkaAktivitetMelding {
         BEHANDLING,
         MOTE,
         SAMTALEREFERAT,
+    }
+
+    public enum EndringsType {
+        OPPRETTET,
+        FLYTTET,
+        REDIGERT,
+        HISTORISK
     }
 
     public enum InnsenderData {

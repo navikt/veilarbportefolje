@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
@@ -43,8 +44,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         ZonedDateTime endretTidZonedDateTime_NY_IJOBB = ZonedDateTime.parse(endretTid_nyijobb);
         ZonedDateTime endretTidNyZonedDateTime = ZonedDateTime.parse(endretTidSisteEndring);
 
-        send_aktvitet_melding(aktoerId, endretTid_nyijobb, NY_IJOBB);
-        send_aktvitet_melding(aktoerId, endretTid, FULLFORT_IJOBB);
+        send_aktvitet_melding(aktoerId, endretTid_nyijobb, KafkaAktivitetMelding.EndringsType.OPPRETTET,
+                KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
+        send_aktvitet_melding(aktoerId, endretTid, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -57,7 +62,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(endring_ny_ijobb).isNotNull();
         assertThat(endring_ny_ijobb).isEqualTo(endretTidZonedDateTime_NY_IJOBB.toString());
 
-        send_aktvitet_melding(aktoerId, endretTidSisteEndring, FULLFORT_IJOBB);
+        send_aktvitet_melding(aktoerId, endretTidSisteEndring, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
         GetResponse getResponse_2 = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse_2.isExists()).isTrue();
 
@@ -89,8 +96,12 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             return brukereMedAntall.getAntall() == 1;
         });
 
-        send_aktvitet_melding(aktoerId, endretTid_ny, NY_IJOBB);
-        send_aktvitet_melding(aktoerId, endretTid, FULLFORT_IJOBB);
+        send_aktvitet_melding(aktoerId, endretTid_ny, KafkaAktivitetMelding.EndringsType.OPPRETTET,
+                KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
+        send_aktvitet_melding(aktoerId, endretTid, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -164,12 +175,22 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             return brukereMedAntall.getAntall() == 3;
         });
 
-        send_aktvitet_melding(aktoerId_1,endret_Tid_IJOBB_bruker_1_i_2024, FULLFORT_IJOBB);
-        send_aktvitet_melding(aktoerId_2, endret_Tid_IJOBB_bruker_2_i_2025, FULLFORT_IJOBB);
+        send_aktvitet_melding(aktoerId_1,endret_Tid_IJOBB_bruker_1_i_2024, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
+        send_aktvitet_melding(aktoerId_2, endret_Tid_IJOBB_bruker_2_i_2025, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
 
-        send_aktvitet_melding(aktoerId_1,endret_Tid_EGEN_bruker_1_i_2021, FULLFORT_EGEN);
-        send_aktvitet_melding(aktoerId_2, endret_Tid_EGEN_bruker_2_i_2020, FULLFORT_EGEN);
-        send_aktvitet_melding(aktoerId_3, endret_Tid_EGEN_bruker_3_i_2019, FULLFORT_EGEN);
+        send_aktvitet_melding(aktoerId_1,endret_Tid_EGEN_bruker_1_i_2021, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        send_aktvitet_melding(aktoerId_2, endret_Tid_EGEN_bruker_2_i_2020, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.EGEN);
+        send_aktvitet_melding(aktoerId_3, endret_Tid_EGEN_bruker_3_i_2019, KafkaAktivitetMelding.EndringsType.FLYTTET,
+                KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
+                KafkaAktivitetMelding.AktivitetTypeData.EGEN);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId_1);
         assertThat(getResponse.isExists()).isTrue();
@@ -264,7 +285,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
 
-    private void send_aktvitet_melding(AktoerId aktoerId, String endretDato, SisteEndringsKategori kategori) {
+    private void send_aktvitet_melding(AktoerId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
+                                       KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
         String endret = endretDato == null ? "" : "\"endretDato\":\""+endretDato+"\",";
         String aktivitetKafkaMelding = "{" +
                 "\"aktivitetId\":\"144136\"," +
@@ -272,7 +294,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
                 "\"tilDato\":null," +
                     endret +
-                "\"sisteEndringKategori\":\""+kategori.name()+"\"," +
+                "\"aktivitetType\":\""+typeData+"\"," +
+                "\"aktivitetStatus\":\""+status+"\"," +
+                "\"endringsType\":\""+endringsType+"\"," +
                 "\"lagtInnAv\":\"BRUKER\"," +
                 "\"avtalt\":true," +
                 "\"historisk\":false" +
