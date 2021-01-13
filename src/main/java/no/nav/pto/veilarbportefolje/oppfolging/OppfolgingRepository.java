@@ -105,4 +105,9 @@ public class OppfolgingRepository {
                 .setStartDato(rs.getTimestamp("STARTDATO"));
     }
 
+    public void slettOppfolgingData(AktoerId aktoerId) {
+        SqlUtils.delete(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue()))
+                .execute();
+    }
 }

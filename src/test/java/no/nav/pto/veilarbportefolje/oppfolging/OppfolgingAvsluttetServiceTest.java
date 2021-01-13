@@ -55,7 +55,7 @@ class OppfolgingAvsluttetServiceTest extends EndToEndTest {
 
         assertThat(registrering).isNull();
 
-        assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isEqualTo("N");
+        assertThat(testDataClient.hentOppfolgingFlaggFraDatabase(aktoerId)).isNull();
 
         final Map<String, Object> source = elasticTestClient.fetchDocument(aktoerId).getSourceAsMap();
 
