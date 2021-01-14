@@ -93,14 +93,6 @@ public class ElasticService {
                 .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg.sisteEndringKategori))
                 .collect(toList());
 
-        if (sortField.equals("siste_endring_tidspunkt")){
-            if (sortOrder.equals("ascending")){
-                brukere.sort(Comparator.comparing(Bruker::getSisteEndringTidspunkt));
-            } else {
-                brukere.sort(Comparator.comparing(Bruker::getSisteEndringTidspunkt).reversed());
-            }
-        }
-
         return new BrukereMedAntall(totalHits, brukere);
     }
 
