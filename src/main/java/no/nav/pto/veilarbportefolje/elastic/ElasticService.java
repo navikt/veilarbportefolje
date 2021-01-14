@@ -17,6 +17,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,6 +92,14 @@ public class ElasticService {
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
                 .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg.sisteEndringKategori))
                 .collect(toList());
+
+        if (sortField.equals("siste_endring_tidspunkt")){
+            if (sortOrder.equals("ascending")){
+                brukere.sort(Comparator.comparing(Bruker::getSisteEndringTidspunkt));
+            } else {
+                brukere.sort(Comparator.comparing(Bruker::getSisteEndringTidspunkt).reversed());
+            }
+        }
 
         return new BrukereMedAntall(totalHits, brukere);
     }
