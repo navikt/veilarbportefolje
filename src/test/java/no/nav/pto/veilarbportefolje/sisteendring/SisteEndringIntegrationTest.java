@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.elasticsearch.action.get.GetResponse;
@@ -322,7 +323,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(respons).isNotNull();
         Object nestedObject = respons.getSourceAsMap().get("siste_endringer");
         if(nestedObject instanceof Map) {
-            return  ((Map<String, String>) nestedObject).get(field);
+            return  ((Map<String, Map<String, String>>) nestedObject).get(field).get("tidspunkt");
         }
         return null;
     }

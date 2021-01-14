@@ -179,11 +179,11 @@ public class ElasticQueryBuilder {
     private static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expresion = null;
         if(filtervalg.sisteEndringKategori.size() == 1) {
-            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0).toLowerCase() + "']?.value.getMillis()";
+            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0).toLowerCase() + ".tidspunkt']?.value.getMillis()";
         } else if(filtervalg.sisteEndringKategori.size() > 1) {
             StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
             for (String kategori : filtervalg.sisteEndringKategori) {
-                expresionJoiner.add("doc['siste_endringer." + kategori.toLowerCase()  + "']?.value.getMillis()");
+                expresionJoiner.add("doc['siste_endringer." + kategori.toLowerCase()  + ".tidspunkt']?.value.getMillis()");
             }
             expresion = expresionJoiner.toString();
         }

@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -66,9 +67,11 @@ public class SisteEndringRepository {
     @SneakyThrows
     private void mapDbTilOppfolgingsBruker(OppfolgingsBruker oppfolgingsBrukere) {
         oppfolgingsBrukere.setSiste_endringer(jdbcTemplate.query(getAlleKategorierForAktoerId(oppfolgingsBrukere.getAktoer_id()), rs -> {
-            Map<String,String> sisteEndring = new HashMap<>();
+            Map<String, Endring> sisteEndring = new HashMap<>();
             while(rs.next()){
-                sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(), toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
+                sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(),new Endring()
+                                .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
+                                .setAktivtetId(rs.getString(AKTIVITETID)));
             }
             return sisteEndring;
         }));
@@ -77,7 +80,8 @@ public class SisteEndringRepository {
     private String getAlleKategorierForAktoerId(String aktorID) {
         return "SELECT " +
                 SISTE_ENDRING_KATEGORI + ", " +
-                SISTE_ENDRING_TIDSPUNKT +
+                SISTE_ENDRING_TIDSPUNKT + ", " +
+                AKTIVITETID +
                 " FROM " + TABLE_NAME +
                 " WHERE " +
                 AKTOERID + "=" + aktorID;

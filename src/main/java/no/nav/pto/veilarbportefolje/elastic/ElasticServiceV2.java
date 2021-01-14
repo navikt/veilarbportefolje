@@ -48,15 +48,18 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void updateSisteEndring(SisteEndringDTO objectSkrevetTilDatabase) {
-        String field = objectSkrevetTilDatabase.getKategori().name().toLowerCase();
+    public void updateSisteEndring(SisteEndringDTO dto) {
+        String kategori = dto.getKategori().name().toLowerCase();
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                     .startObject("siste_endringer")
-                        .field(field, DateUtils.toIsoUTC(objectSkrevetTilDatabase.getTidspunkt()))
+                        .startObject(kategori)
+                            .field("tidspunkt", DateUtils.toIsoUTC(dto.getTidspunkt()))
+                            .field("aktivtetId", dto.getAktivtetId())
+                        .endObject()
                     .endObject()
                 .endObject();
-        update(objectSkrevetTilDatabase.getAktoerId(), content);
+        update(dto.getAktoerId(), content);
     }
 
     @SneakyThrows

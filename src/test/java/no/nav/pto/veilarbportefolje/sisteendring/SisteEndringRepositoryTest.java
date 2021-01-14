@@ -34,14 +34,16 @@ public class SisteEndringRepositoryTest {
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
                 .setKategori(SisteEndringsKategori.NY_IJOBB)
-                .setAktoerId(AKTORID);
+                .setAktoerId(AKTORID)
+                .setAktivtetId("1");
 
         ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
                 .setKategori(SisteEndringsKategori.AVBRUTT_EGEN)
-                .setAktoerId(AKTORID);
+                .setAktoerId(AKTORID)
+                .setAktivtetId("2");
 
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);
@@ -49,8 +51,10 @@ public class SisteEndringRepositoryTest {
         OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.getValue());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
 
-        assertThat(bruker.getSiste_endringer().get("ny_ijobb")).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));
-        assertThat(bruker.getSiste_endringer().get("avbrutt_egen")).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
+        assertThat(bruker.getSiste_endringer().get("ny_ijobb").getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));
+        assertThat(bruker.getSiste_endringer().get("ny_ijobb").getAktivtetId()).isEqualTo(dto_1.getAktivtetId());
+        assertThat(bruker.getSiste_endringer().get("avbrutt_egen").getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
+        assertThat(bruker.getSiste_endringer().get("avbrutt_egen").getAktivtetId()).isEqualTo(dto_2.getAktivtetId());
     }
 
 
