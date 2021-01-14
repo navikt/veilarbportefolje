@@ -33,6 +33,7 @@ public class SisteEndringRepository {
                 .set(AKTOERID, sisteEndringDTO.getAktoerId().getValue())
                 .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
+                .set(AKTIVITETID, sisteEndringDTO.getAktivtetId())
                 .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().getValue()).and(
                         WhereClause.equals(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 )).execute();

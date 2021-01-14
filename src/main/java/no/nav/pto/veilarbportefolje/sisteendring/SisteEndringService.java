@@ -26,16 +26,18 @@ public class SisteEndringService {
     }
 
     public void behandleAktivitet(KafkaAktivitetMelding kafkaAktivitet) {
-        if (kafkaAktivitet.getLagtInnAv() == KafkaAktivitetMelding.InnsenderData.BRUKER) {
-            SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(kafkaAktivitet);
-            if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
-                try {
-                    sisteEndringRepository.upsert(sisteEndringDTO);
-                    elasticServiceV2.updateSisteEndring(sisteEndringDTO);
-                } catch (Exception e) {
-                    String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
-                    log.error(message, e);
-                }
+        if (kafkaAktivitet.getLagtInnAv() == null || kafkaAktivitet.getLagtInnAv() == KafkaAktivitetMelding.InnsenderData.NAV) {
+            return;
+        }
+
+        SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(kafkaAktivitet);
+        if (sisteEndringDTO.getKategori() != null && hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+            try {
+                sisteEndringRepository.upsert(sisteEndringDTO);
+                elasticServiceV2.updateSisteEndring(sisteEndringDTO);
+            } catch (Exception e) {
+                String message = String.format("Kunne ikke lagre eller indexere siste endring for aktivitetid %s", kafkaAktivitet.getAktivitetId());
+                log.error(message, e);
             }
         }
     }
@@ -46,7 +48,7 @@ public class SisteEndringService {
 
     private boolean hendelseErNyereEnnIDatabase(SisteEndringDTO sisteEndringDTO) {
         if (sisteEndringDTO.getTidspunkt() == null) {
-            log.warn("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
+            log.error("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
             return false;
         }
         Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
@@ -55,5 +57,4 @@ public class SisteEndringService {
         }
         return toZonedDateTime(databaseVerdi).compareTo(sisteEndringDTO.getTidspunkt()) < 0;
     }
-
 }

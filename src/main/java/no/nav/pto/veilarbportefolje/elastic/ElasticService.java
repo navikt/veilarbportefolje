@@ -145,10 +145,9 @@ public class ElasticService {
     }
 
     private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
-        if (sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
-            return Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
+        if (sisteEndringKategori != null && !sisteEndringKategori.isEmpty()) {
+            oppfolgingsBruker.kalkulerSisteEndring(sisteEndringKategori);
         }
-        oppfolgingsBruker.kalkulerSisteEndring(sisteEndringKategori);
         return Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
     }
 

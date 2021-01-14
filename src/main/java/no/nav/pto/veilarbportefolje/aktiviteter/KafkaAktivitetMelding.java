@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 
 import java.time.ZonedDateTime;
 
