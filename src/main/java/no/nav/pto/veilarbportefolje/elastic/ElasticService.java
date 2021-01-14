@@ -82,8 +82,6 @@ public class ElasticService {
 
         sorterQueryParametere(sortOrder, sortField, searchSourceBuilder, filtervalg);
 
-        searchSourceBuilder.explain(true);
-
         ElasticSearchResponse response = search(searchSourceBuilder, indexName.getValue(), ElasticSearchResponse.class);
         int totalHits = response.getHits().getTotal();
 
