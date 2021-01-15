@@ -6,11 +6,11 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
-import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
@@ -25,12 +25,13 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
-    private final AktivitetService aktivitetService;
+    private final AktivitetService spyAktivitetService;
     private final ElasticService elasticService;
 
     @Autowired
     public SisteEndringIntegrationTest(AktivitetService aktivitetService, ElasticService elasticService) {
-        this.aktivitetService = aktivitetService;
+        this.spyAktivitetService = Mockito.spy(aktivitetService);
+        Mockito.doNothing().when(spyAktivitetService).utledOgIndekserAktivitetstatuserForAktoerid(Mockito.any());
         this.elasticService = elasticService;
     }
 
@@ -302,7 +303,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"avtalt\":true," +
                 "\"historisk\":false" +
                 "}";
-        aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
+        spyAktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori) {
