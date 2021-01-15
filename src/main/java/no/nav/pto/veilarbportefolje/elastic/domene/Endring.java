@@ -8,4 +8,12 @@ import lombok.experimental.Accessors;
 public class Endring {
     private String aktivtetId;
     private String tidspunkt;
+
+    public Endring(){
+
+    }
+
+    public Endring(String tidspunkt){
+        this.tidspunkt = tidspunkt;
+    }
 }
