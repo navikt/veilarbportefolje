@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -141,6 +142,7 @@ public class ElasticService {
         return new FacetResults(buckets);
     }
 
+    @SneakyThrows
     private <T> T search(SearchSourceBuilder searchSourceBuilder, String indexAlias, Class<T> clazz) {
         SearchRequest request = new SearchRequest()
                 .indices(indexAlias)
@@ -149,8 +151,13 @@ public class ElasticService {
         SearchResponse response = null;
         try {
             response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-        } catch (Exception e) {
+        } catch (ElasticsearchStatusException e) {
             e.printStackTrace();
+            log.error("Melding: {}",e.getMessage());
+            log.error("sub Melding: {}",e.getLocalizedMessage());
+            log.error("detaljert Melding: {}",e.getDetailedMessage());
+
+
             log.error("Feil relatert til Elastic: ", e);
         }
         return JsonUtils.fromJson(response.toString(), clazz);
