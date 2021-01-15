@@ -8,9 +8,7 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -18,12 +16,6 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,8 +29,6 @@ public class ElasticService {
     VeilarbVeilederClient veilarbVeilederClient;
     UnleashService unleashService;
     IndexName indexName;
-    private static final Logger log = LoggerFactory.getLogger(SisteEndringDTO.class);
-
 
     public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
@@ -148,18 +138,7 @@ public class ElasticService {
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = null;
-        try {
-            response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-        } catch (ElasticsearchStatusException e) {
-            e.printStackTrace();
-            log.error("Melding: {}",e.getMessage());
-            log.error("sub Melding: {}",e.getLocalizedMessage());
-            log.error("detaljert Melding: {}",e.getDetailedMessage());
-
-
-            log.error("Feil relatert til Elastic: ", e);
-        }
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 

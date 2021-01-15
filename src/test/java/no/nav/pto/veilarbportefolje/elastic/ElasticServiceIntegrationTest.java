@@ -839,7 +839,6 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     void skal_hente_ut_alle_brukere_som_ikke_har_tiltak() {
         val brukerMedTiltak = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktoerId().getValue())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
@@ -848,7 +847,6 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktoerId().getValue())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
@@ -856,7 +854,6 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val brukerUtenAktiviteter = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktoerId().getValue())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET);
@@ -874,7 +871,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "ascending",
+                "asc",
                 "ikke_satt",
                 filterValg,
                 null,
