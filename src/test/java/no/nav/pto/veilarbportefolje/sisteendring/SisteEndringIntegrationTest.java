@@ -1,12 +1,18 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
+import io.vavr.control.Try;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
@@ -25,13 +31,15 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
-    private final AktivitetService spyAktivitetService;
+    private final AktivitetService aktivitetService;
     private final ElasticService elasticService;
 
     @Autowired
-    public SisteEndringIntegrationTest(AktivitetService aktivitetService, ElasticService elasticService) {
-        this.spyAktivitetService = Mockito.spy(aktivitetService);
-        Mockito.doNothing().when(spyAktivitetService).utledOgIndekserAktivitetstatuserForAktoerid(Mockito.any());
+    public SisteEndringIntegrationTest(ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService) {
+        BrukerService brukerService = Mockito.mock(BrukerService.class);
+        Mockito.when(brukerService.hentPersonidFraAktoerid(Mockito.any())).thenReturn(Try.of(() -> PersonId.of("123")));
+
+        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering,  brukerService, sisteEndringService);
         this.elasticService = elasticService;
     }
 
@@ -303,7 +311,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"avtalt\":true," +
                 "\"historisk\":false" +
                 "}";
-        spyAktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
+        aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori) {
