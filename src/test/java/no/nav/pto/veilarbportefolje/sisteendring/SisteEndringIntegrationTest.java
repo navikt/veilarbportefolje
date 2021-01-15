@@ -158,7 +158,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     @Test
     void siste_endring_sortering_test() {
-        /*
         final String testEnhet = "0000";
         final AktoerId aktoerId_1 = randomAktoerId();
         final AktoerId aktoerId_2 = randomAktoerId();
@@ -291,8 +290,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null,
                 null);
         assertThat(responseSortertTomRes2.getAntall()).isEqualTo(0);
-         */
-
     }
 
 

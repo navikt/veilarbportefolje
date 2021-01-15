@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -16,7 +17,10 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -32,6 +36,7 @@ public class ElasticService {
     VeilarbVeilederClient veilarbVeilederClient;
     UnleashService unleashService;
     IndexName indexName;
+    private static final Logger log = LoggerFactory.getLogger(SisteEndringDTO.class);
 
 
     public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, IndexName indexName) {
@@ -136,13 +141,18 @@ public class ElasticService {
         return new FacetResults(buckets);
     }
 
-    @SneakyThrows
     private <T> T search(SearchSourceBuilder searchSourceBuilder, String indexAlias, Class<T> clazz) {
         SearchRequest request = new SearchRequest()
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = null;
+        try {
+            response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Feil relatert til Elastic: ", e);
+        }
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 

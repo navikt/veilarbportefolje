@@ -871,7 +871,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
                 empty(),
-                "asc",
+                "ascending",
                 "ikke_satt",
                 filterValg,
                 null,

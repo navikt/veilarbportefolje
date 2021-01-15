@@ -184,8 +184,7 @@ public class ElasticQueryBuilder {
         }
     }
 
-    static SearchSourceBuilder sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
-        /*
+    static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expresion = null;
         if(filtervalg.sisteEndringKategori.size() == 1) {
             expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0).toLowerCase() + ".tidspunkt']?.value.getMillis()";
@@ -201,8 +200,7 @@ public class ElasticQueryBuilder {
             ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
             scriptBuilder.order(order);
             builder.sort(scriptBuilder);
-        }*/
-        return builder;
+        }
     }
 
     static SearchSourceBuilder sorterPaaNyForEnhet(SearchSourceBuilder builder, List<String> veilederePaaEnhet) {
