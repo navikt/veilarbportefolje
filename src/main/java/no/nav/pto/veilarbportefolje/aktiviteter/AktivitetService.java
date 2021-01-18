@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.util.BatchConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,12 +26,14 @@ public class AktivitetService implements KafkaConsumerService<String> {
     private final AktivitetDAO aktivitetDAO;
     private final PersistentOppdatering persistentOppdatering;
     private final AtomicBoolean rewind;
+    private final SisteEndringService sisteEndringService;
 
     @Autowired
-    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerService = brukerService;
         this.persistentOppdatering = persistentOppdatering;
+        this.sisteEndringService = sisteEndringService;
         this.rewind = new AtomicBoolean();
     }
 
@@ -44,6 +47,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
                 aktivitetData.getVersion()
         );
 
+        sisteEndringService.behandleAktivitet(aktivitetData);
         if (skallIkkeOppdatereAktivitet(aktivitetData)) {
             return;
         }
@@ -92,12 +96,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
     }
 
     private boolean skallIkkeOppdatereAktivitet(KafkaAktivitetMelding aktivitetData) {
-        return !aktivitetData.isAvtalt() || erEnNyOpprettetAktivitet(aktivitetData);
+        return !aktivitetData.isAvtalt();
     }
-
-    private boolean erEnNyOpprettetAktivitet(KafkaAktivitetMelding aktivitetData) {
-        return aktivitetData.getEndretDato() == null;
-    }
-
 
 }

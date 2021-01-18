@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -43,6 +45,21 @@ public class ElasticServiceV2 {
                 .endObject();
 
         update(aktoerId, content);
+    }
+
+    @SneakyThrows
+    public void updateSisteEndring(SisteEndringDTO dto) {
+        String kategori = dto.getKategori().name().toLowerCase();
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                    .startObject("siste_endringer")
+                        .startObject(kategori)
+                            .field("tidspunkt", DateUtils.toIsoUTC(dto.getTidspunkt()))
+                            .field("aktivtetId", dto.getAktivtetId())
+                        .endObject()
+                    .endObject()
+                .endObject();
+        update(dto.getAktoerId(), content);
     }
 
     @SneakyThrows

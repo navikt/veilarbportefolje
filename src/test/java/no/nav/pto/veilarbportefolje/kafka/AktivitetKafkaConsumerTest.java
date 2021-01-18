@@ -42,7 +42,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
         final PersonId personId = PersonId.of("1234");
         final Fnr fnr = Fnr.of("00000000000");
 
-        final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toString();
+        final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.of("Europe/Oslo")).toInstant().toString();
 
         SqlUtils.insert(db, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.toString())

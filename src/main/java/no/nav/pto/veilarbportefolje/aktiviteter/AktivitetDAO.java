@@ -25,6 +25,7 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
@@ -55,9 +56,9 @@ public class AktivitetDAO {
                 .orElseThrow(IllegalStateException::new);
     }
 
-    public Integer getVersjon(String aktivitetId) {
+    public Long getVersjon(String aktivitetId) {
         return SqlUtils
-                .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getInt(VERSION))
+                .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getLong(VERSION))
                 .column(VERSION)
                 .where(WhereClause.equals(AKTIVITETID, aktivitetId))
                 .execute();
@@ -94,9 +95,9 @@ public class AktivitetDAO {
                 .set(AKTOERID, aktivitet.getAktorId())
                 .set(AKTIVITETTYPE, aktivitet.getAktivitetType().name().toLowerCase())
                 .set(AVTALT, aktivitet.isAvtalt())
-                .set(FRADATO, dateToTimestamp(aktivitet.getFraDato()))
-                .set(TILDATO, dateToTimestamp(aktivitet.getTilDato()))
-                .set(OPPDATERTDATO, dateToTimestamp(aktivitet.getEndretDato()))
+                .set(FRADATO, toTimestamp(aktivitet.getFraDato()))
+                .set(TILDATO, toTimestamp(aktivitet.getTilDato()))
+                .set(OPPDATERTDATO, toTimestamp(aktivitet.getEndretDato()))
                 .set(STATUS, aktivitet.getAktivitetStatus().name().toLowerCase())
                 .set(VERSION, aktivitet.getVersion())
                 .set(AKTIVITETID, aktivitet.getAktivitetId())
@@ -219,11 +220,11 @@ public class AktivitetDAO {
     }
 
     public boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
-        Integer kommendeVersjon = aktivitet.getVersion();
+        Long kommendeVersjon = aktivitet.getVersion();
         if(kommendeVersjon == null){
             return false;
         }
-        Integer databaseVersjon = getVersjon(aktivitet.getAktivitetId());
+        Long databaseVersjon = getVersjon(aktivitet.getAktivitetId());
         if(databaseVersjon == null ){
             return true;
         }

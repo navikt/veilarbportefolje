@@ -16,7 +16,6 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +29,6 @@ public class ElasticService {
     VeilarbVeilederClient veilarbVeilederClient;
     UnleashService unleashService;
     IndexName indexName;
-
 
     public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
@@ -86,7 +84,7 @@ public class ElasticService {
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(oppfolgingsBruker -> Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa()))
+                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg.sisteEndringKategori))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -143,6 +141,14 @@ public class ElasticService {
         SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
+
+    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
+        if (sisteEndringKategori != null && !sisteEndringKategori.isEmpty()) {
+            oppfolgingsBruker.kalkulerSisteEndring(sisteEndringKategori);
+        }
+        return Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
+    }
+
 
     private OppfolgingsBruker setNyForEnhet(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = oppfolgingsBruker.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());

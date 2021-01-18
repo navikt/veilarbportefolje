@@ -3,19 +3,21 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
 public class KafkaAktivitetMelding {
     String aktivitetId;
     String aktorId;
-    Integer version;
-    Date fraDato;
-    Date tilDato;
-    Date endretDato;
+    ZonedDateTime fraDato;
+    ZonedDateTime tilDato;
+    ZonedDateTime endretDato;
+    Long version;
     AktivitetTypeData aktivitetType;
     AktivitetStatus aktivitetStatus;
+    EndringsType endringsType;
+    InnsenderData lagtInnAv;
     boolean avtalt;
     boolean historisk;
 
@@ -37,4 +39,17 @@ public class KafkaAktivitetMelding {
         MOTE,
         SAMTALEREFERAT,
     }
+
+    public enum EndringsType {
+        OPPRETTET,
+        FLYTTET,
+        REDIGERT,
+        HISTORISK
+    }
+
+    public enum InnsenderData {
+        BRUKER,
+        NAV
+    }
+
 }

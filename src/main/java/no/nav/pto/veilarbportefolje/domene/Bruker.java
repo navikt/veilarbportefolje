@@ -10,14 +10,11 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.toList;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.isFarInTheFutureDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -70,6 +67,8 @@ public class Bruker {
     String vedtakStatus;
     LocalDateTime vedtakStatusEndret;
     boolean trengerRevurdering;
+    String sisteEndringKategori;
+    LocalDateTime sisteEndringTidspunkt;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa) {
 
@@ -123,6 +122,8 @@ public class Bruker {
                 .setVedtakStatus(bruker.getVedtak_status())
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
+                .setSisteEndringKategori(bruker.getAggregert_siste_endring_kategori())
+                .setSisteEndringTidspunkt(bruker.getAggregert_siste_endring_tidspunkt())
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
@@ -135,14 +136,6 @@ public class Bruker {
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
 
     }
-
-    private static LocalDateTime toLocalDateTimeOrNull(String date) {
-        if (date == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
-    }
-
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
         if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
