@@ -33,7 +33,6 @@ public class ArbeidslisteService {
     private final AktorregisterClient aktorregisterClient;
     private final ArbeidslisteRepository arbeidslisteRepository;
     private final BrukerService brukerService;
-    private final ElasticIndexer elasticIndexer;
     private final ElasticServiceV2 elasticServiceV2;
     private final MetricsClient metricsClient;
 
@@ -42,13 +41,11 @@ public class ArbeidslisteService {
             AktorregisterClient aktorregisterClient,
             ArbeidslisteRepository arbeidslisteRepository,
             BrukerService brukerService,
-            ElasticIndexer elasticIndexer,
             ElasticServiceV2 elasticServiceV2, MetricsClient metricsClient
     ) {
         this.aktorregisterClient = aktorregisterClient;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.brukerService = brukerService;
-        this.elasticIndexer = elasticIndexer;
         this.elasticServiceV2 = elasticServiceV2;
         this.metricsClient = metricsClient;
     }
@@ -102,12 +99,8 @@ public class ArbeidslisteService {
         if (aktoerId.isPresent()) {
             return slettArbeidsliste(aktoerId.get());
         }
-
-        final int rowsUpdated = arbeidslisteRepository.slettArbeidsliste(fnr);
-        if (rowsUpdated == 1) {
-            elasticIndexer.indekser(fnr);
-        }
-        return rowsUpdated;
+        log.error("fant ikke aktørId på fnr");
+        return -1;
     }
 
     private Try<AktoerId> hentAktoerId(Fnr fnr) {
