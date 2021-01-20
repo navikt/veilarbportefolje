@@ -61,7 +61,7 @@ public class ArbeidslisteService {
         return arbeidslisteRepository.retrieveArbeidsliste(aktoerId);
     }
 
-    public Try<AktoerId> createArbeidsliste(ArbeidslisteDTO dto) {
+    public Try<ArbeidslisteDTO> createArbeidsliste(ArbeidslisteDTO dto) {
 
         metricsClient.report((new Event("arbeidsliste.opprettet")));
 
@@ -75,11 +75,10 @@ public class ArbeidslisteService {
         dto.setNavKontorForArbeidsliste(navKontorForBruker);
 
         return arbeidslisteRepository
-                .insertArbeidsliste(dto)
-                .onSuccess(elasticIndexer::indekser);
+                .insertArbeidsliste(dto).onSuccess(elasticServiceV2::updateArbeidsliste);
     }
 
-    public Try<AktoerId> updateArbeidsliste(ArbeidslisteDTO data) {
+    public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
         Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
         if (aktoerId.isFailure()) {
             return Try.failure(aktoerId.getCause());
@@ -87,7 +86,7 @@ public class ArbeidslisteService {
 
         return arbeidslisteRepository
                 .updateArbeidsliste(data.setAktoerId(aktoerId.get()))
-                .onSuccess(elasticIndexer::indekser);
+                .onSuccess(elasticServiceV2::updateArbeidsliste);
     }
 
     public int slettArbeidsliste(AktoerId aktoerId) {
@@ -99,15 +98,16 @@ public class ArbeidslisteService {
     }
 
     public int slettArbeidsliste(Fnr fnr) {
+        Optional<AktoerId> aktoerId = brukerService.hentAktoerId(fnr);
+        if (aktoerId.isPresent()) {
+            return slettArbeidsliste(aktoerId.get());
+        }
+
         final int rowsUpdated = arbeidslisteRepository.slettArbeidsliste(fnr);
         if (rowsUpdated == 1) {
             elasticIndexer.indekser(fnr);
         }
         return rowsUpdated;
-    }
-
-    public Integer deleteArbeidslisteForAktoerId(AktoerId aktoerId) {
-        return arbeidslisteRepository.slettArbeidsliste(aktoerId);
     }
 
     private Try<AktoerId> hentAktoerId(Fnr fnr) {

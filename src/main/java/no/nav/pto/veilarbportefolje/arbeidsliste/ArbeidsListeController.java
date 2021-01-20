@@ -221,7 +221,7 @@ public class ArbeidsListeController {
                             if (result.isFailure()) {
                                 return RestResponse.of(result.getCause().getMessage());
                             }
-                            return RestResponse.of(result.get());
+                            return RestResponse.of(result.get().getAktoerId());
 
                         }
                 );
