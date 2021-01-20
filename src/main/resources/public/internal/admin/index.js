@@ -1,3 +1,26 @@
+const oppfolgingsbrukerForm = document.getElementById('oppfolgingsbruker')
+oppfolgingsbrukerForm.addEventListener('submit', handleFjernOppfolgingsbruker);
+
+const oppfolgingsbrukerInput = document.getElementById('oppfolgingsbrukerInput')
+
+function handleFjernOppfolgingsbruker(e) {
+    e.preventDefault()
+
+    const aktoerId = oppfolgingsbrukerInput.value;
+
+    if (!window.confirm('Dette vil fjerne brukeren fra oversikten, er du sikker på at du vil fortsette?')) {
+        return;
+    }
+
+    if (aktoerId && aktoerId.length > 0) {
+        fetchData(
+            '/veilarbportefolje/api/admin/oppfolgingsbruker',
+            {method: 'DELETE', credentials: 'same-origin', body: aktoerId},
+            'oppfolgingsbrukerResponse'
+        )
+    }
+}
+
 const aktoerIdForm = document.getElementById('brukerident')
 aktoerIdForm.addEventListener('submit', handleAktoerId);
 
