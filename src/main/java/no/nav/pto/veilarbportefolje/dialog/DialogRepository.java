@@ -12,8 +12,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Objects;
+
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
@@ -23,13 +24,6 @@ public class DialogRepository {
     @Autowired
     public DialogRepository(JdbcTemplate db) {
         this.db = db;
-    }
-
-    private Timestamp toTimestamp(Date date) {
-        if(Objects.isNull(date)) {
-            return null;
-        }
-        return new Timestamp(date.toInstant().toEpochMilli());
     }
 
     public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
@@ -54,8 +48,8 @@ public class DialogRepository {
     private Dialogdata mapToDialogData(ResultSet rs, int i) {
         return new Dialogdata()
                 .setAktorId(rs.getString("AKTOERID"))
-                .setSisteEndring(rs.getTimestamp("OPPDATERT_KILDESYSTEM"))
-                .setTidspunktEldsteUbehandlede(rs.getTimestamp("VENTER_PA_NAV"))
-                .setTidspunktEldsteVentende(rs.getTimestamp("VENTER_PA_BRUKER"));
+                .setSisteEndring(toZonedDateTime(rs.getTimestamp("OPPDATERT_KILDESYSTEM")))
+                .setTidspunktEldsteUbehandlede(toZonedDateTime(rs.getTimestamp("VENTER_PA_NAV")))
+                .setTidspunktEldsteVentende(toZonedDateTime(rs.getTimestamp("VENTER_PA_BRUKER")));
     }
 }

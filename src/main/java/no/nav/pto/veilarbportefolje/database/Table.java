@@ -71,6 +71,15 @@ public class Table {
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
     }
 
+    public static final class SISTE_ENDRING {
+        public static final String TABLE_NAME = "SISTE_ENDRING";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String AKTIVITETID = "AKTIVITETID";
+
+        public static final String SISTE_ENDRING_KATEGORI = "SISTE_ENDRING_KATEGORI";
+        public static final String SISTE_ENDRING_TIDSPUNKT = "SISTE_ENDRING_TIDSPUNKT";
+    }
+
     public static final class AKTIVITETER {
         public static final String TABLE_NAME = "AKTIVITETER";
         public static final String AKTIVITETID = "AKTIVITETID";

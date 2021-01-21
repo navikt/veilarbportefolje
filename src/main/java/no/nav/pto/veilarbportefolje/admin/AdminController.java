@@ -4,7 +4,9 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +22,15 @@ public class AdminController {
     private final AktorregisterClient aktorregisterClient;
     private final NyForVeilederService nyForVeilederService;
     private final AktivitetService aktivitetService;
+    private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
 
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorregisterClient aktorregisterClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService) {
+    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorregisterClient aktorregisterClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService) {
         this.admins = environmentProperties.getAdmins();
         this.registreringService = registreringService;
         this.aktorregisterClient = aktorregisterClient;
         this.nyForVeilederService = nyForVeilederService;
         this.aktivitetService = aktivitetService;
+        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
     }
 
     @PostMapping("/aktoerId")
@@ -54,6 +58,13 @@ public class AdminController {
         authorizeAdmin();
         aktivitetService.setRewind(true);
         return "Rewind av aktivteter har startet";
+    }
+
+    @DeleteMapping("/oppfolgingsbruker")
+    public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
+        authorizeAdmin();
+        oppfolgingAvsluttetService.avsluttOppfolging(AktoerId.of(aktoerId));
+        return "Slettet oppfølgingsbruker " + aktoerId;
     }
 
     private void authorizeAdmin() {

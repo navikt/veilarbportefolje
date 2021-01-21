@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -50,17 +51,19 @@ public class ElasticIndexer {
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
     private final IndexName alias;
+    private final SisteEndringRepository sisteEndringRepository;
 
     public ElasticIndexer(
             AktivitetDAO aktivitetDAO,
             BrukerRepository brukerRepository,
             RestHighLevelClient restHighLevelClient,
-            IndexName alias
-    ) {
+            SisteEndringRepository sisteEndringRepository,
+            IndexName alias) {
 
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.restHighLevelClient = restHighLevelClient;
+        this.sisteEndringRepository = sisteEndringRepository;
         this.alias = alias;
     }
 
@@ -97,7 +100,7 @@ public class ElasticIndexer {
 
             @Override
             public void onFailure(Exception e) {
-                final int statusCode = ((ResponseException)e).getResponse().getStatusLine().getStatusCode();
+                final int statusCode = ((ResponseException) e).getResponse().getStatusLine().getStatusCode();
                 if (statusCode != 404) {
                     log.error(format("Feil ved markering av bruker %s som slettet", bruker.getAktoer_id()), e);
                 }
@@ -125,6 +128,7 @@ public class ElasticIndexer {
         if (erUnderOppfolging(bruker)) {
             leggTilAktiviteter(bruker);
             leggTilTiltak(bruker);
+            leggTilSisteEndring(bruker);
             skrivTilIndeks(alias.getValue(), bruker);
         } else {
             markerBrukerSomSlettet(bruker);
@@ -264,8 +268,22 @@ public class ElasticIndexer {
         });
     }
 
+
+    private void leggTilSisteEndring(List<OppfolgingsBruker> brukere) {
+        if (brukere == null || brukere.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        validateBatchSize(brukere);
+        sisteEndringRepository.setAlleSisteEndringTidspunkter(brukere);
+    }
+
     private void leggTilAktiviteter(OppfolgingsBruker bruker) {
         leggTilAktiviteter(Collections.singletonList(bruker));
+    }
+
+    private void leggTilSisteEndring(OppfolgingsBruker bruker) {
+        leggTilSisteEndring(Collections.singletonList(bruker));
     }
 
 }

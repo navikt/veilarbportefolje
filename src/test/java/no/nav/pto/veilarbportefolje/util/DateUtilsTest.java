@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Timestamp;
@@ -8,13 +7,12 @@ import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static java.time.Duration.ofSeconds;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class DateUtilsTest {
@@ -23,8 +21,8 @@ public class DateUtilsTest {
     public void skal_kalkulere_riktig_tidsintervall_basert_paa_timestamp() {
         Instant twoHoursAgo = Instant.now().minus(30, SECONDS);
         Duration duration = DateUtils.calculateTimeElapsed(twoHoursAgo);
-        Assert.assertThat(duration.toMillis(), lessThanOrEqualTo(ofSeconds(31).toMillis()));
-        Assert.assertThat(duration.toMillis(), greaterThanOrEqualTo(ofSeconds(29).toMillis()));
+        assertThat(duration.toMillis()).isLessThanOrEqualTo(ofSeconds(31).toMillis());
+        assertThat(duration.toMillis()).isGreaterThanOrEqualTo(ofSeconds(29).toMillis());
     }
 
     @Test
@@ -34,6 +32,15 @@ public class DateUtilsTest {
         String fromTimestamp = iso8601FromTimestamp(timestampFromString, ZoneId.of("+02:00"));
 
         assertThat(fromTimestamp).isEqualTo(original);
+    }
+
+    @Test
+    public void should_return_utc_from_zonedDateTime() {
+        String original = "2010-12-03T10:15:30.100+02:00";
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(original);
+        String fromTimestamp = DateUtils.toIsoUTC(zonedDateTime);
+
+        assertThat(fromTimestamp).isEqualTo("2010-12-03T08:15:30.100Z");
     }
 
     @Test
@@ -63,13 +70,13 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void tekst_skal_returnere_null() throws ParseException {
+    public void tekst_skal_returnere_null() {
         Timestamp hipp_hurra = getTimestampFromSimpleISODate("hipp hurra");
         assertThat(hipp_hurra).isNull();
     }
 
     @Test(expected = NullPointerException.class)
-    public void null_skal_kaste_exception() throws ParseException {
+    public void null_skal_kaste_exception() {
         getTimestampFromSimpleISODate(null);
     }
 }

@@ -48,14 +48,24 @@ public class DateUtils {
         if (date == null) {
             return null;
         }
-        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Oslo"));
+    }
+
+    public static ZonedDateTime toZonedDateTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("Europe/Oslo"));
     }
 
     public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
+        if(zonedDateTime == null){
+            return null;
+        }
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
-    public static String toUtcString(ZonedDateTime zonedDateTime) {
+    public static String toIsoUTC(ZonedDateTime zonedDateTime) {
         if(Objects.isNull(zonedDateTime)) {
             return null;
         }
@@ -72,19 +82,12 @@ public class DateUtils {
         return zonedDateTime.format(formatter);
     }
 
-    public static LocalDateTime toLocalDateTime(Date dato) {
-        if (dato == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(dato.toInstant(), ZoneId.systemDefault());
-    }
-
     public static Timestamp dateToTimestamp(Date date) {
         return Optional.ofNullable(date).map(Date::toInstant).map(Timestamp::from).orElse(null);
     }
 
     public static Timestamp dateToTimestamp(String date) {
-        return Optional.ofNullable(date).map(Instant::parse).map(Timestamp::from).orElse(null);
+        return Optional.ofNullable(date).map(x -> ZonedDateTime.parse(x).toInstant()).map(Timestamp::from).orElse(null);
     }
 
     public static boolean isFarInTheFutureDate(Timestamp utlopsdato) {
@@ -122,6 +125,13 @@ public class DateUtils {
     }
 
     public static Timestamp zonedDateStringToTimestamp(CharSequence zonedDateString) {
-       return Timestamp.from((ZonedDateTime.parse(zonedDateString).toInstant()));
+        return toTimestamp(ZonedDateTime.parse(zonedDateString));
+    }
+
+    public static LocalDateTime toLocalDateTimeOrNull(String date) {
+        if (date == null) {
+            return null;
+        }
+        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
     }
 }

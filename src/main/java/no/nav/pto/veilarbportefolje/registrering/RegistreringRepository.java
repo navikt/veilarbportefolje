@@ -13,8 +13,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -35,7 +33,6 @@ public class RegistreringRepository {
         Timestamp timestamp = ofNullable(kafkaRegistreringMelding.getRegistreringOpprettet())
                 .map(DateUtils::zonedDateStringToTimestamp)
                 .orElse(null);
-
 
         SqlUtils.upsert(db, Table.BRUKER_REGISTRERING.TABLE_NAME)
                 .set(AKTOERID, kafkaRegistreringMelding.getAktorid())
@@ -67,7 +64,7 @@ public class RegistreringRepository {
 
     private static ArbeidssokerRegistrertEvent mapTilArbeidssokerRegistrertEvent(ResultSet rs) throws SQLException {
         String registreringOpprettet = ofNullable(rs.getTimestamp("REGISTRERING_OPPRETTET"))
-                .map(registreringDato -> ZonedDateTime.of(registreringDato.toLocalDateTime(), ZoneId.systemDefault()))
+                .map(DateUtils::toZonedDateTime)
                 .map(zonedDateRegistreringDato -> zonedDateRegistreringDato.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
                 .orElse(null);
 

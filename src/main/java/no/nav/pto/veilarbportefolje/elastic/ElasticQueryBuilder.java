@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
@@ -16,9 +17,12 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -82,6 +86,10 @@ public class ElasticQueryBuilder {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
         }
 
+        if (filtervalg.harSisteEndringFilter()) {
+            byggSisteEndringFilter(filtervalg.sisteEndringKategori, queryBuilder);
+        }
+
         if (filtervalg.harNavnEllerFnrQuery()) {
             String query = filtervalg.navnEllerFnrQuery.trim().toLowerCase();
             if (isNumeric(query)) {
@@ -90,7 +98,14 @@ public class ElasticQueryBuilder {
                 queryBuilder.must(termQuery("fullt_navn", query));
             }
         }
+
     }
+
+    private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
+        BoolQueryBuilder subQuery = boolQuery();
+        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer."+kategori.toLowerCase())));
+        queryBuilder.must(subQuery);
+      }
 
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
         return filtervalg.aktiviteter.entrySet().stream()
@@ -152,6 +167,9 @@ public class ElasticQueryBuilder {
             case "arbeidslistekategori":
                 searchSourceBuilder.sort("arbeidsliste_kategori", order);
                 break;
+            case "siste_endring_tidspunkt":
+                sorterSisteEndringTidspunkt(searchSourceBuilder, order, filtervalg);
+                break;
             default:
                 defaultSort(sortField, searchSourceBuilder, order);
         }
@@ -163,6 +181,25 @@ public class ElasticQueryBuilder {
             searchSourceBuilder.sort(sortField, order);
         } else {
             throw new IllegalStateException();
+        }
+    }
+
+    static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
+        String expresion = null;
+        if(filtervalg.sisteEndringKategori.size() == 1) {
+            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0).toLowerCase() + ".tidspunkt']?.value.getMillis()";
+        } else if(filtervalg.sisteEndringKategori.size() > 1) {
+            StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
+            for (String kategori : filtervalg.sisteEndringKategori) {
+                expresionJoiner.add("doc['siste_endringer." + kategori.toLowerCase()  + ".tidspunkt']?.value.getMillis()");
+            }
+            expresion = expresionJoiner.toString();
+        }
+        if(expresion != null){
+            Script script = new Script(expresion);
+            ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+            scriptBuilder.order(order);
+            builder.sort(scriptBuilder);
         }
     }
 

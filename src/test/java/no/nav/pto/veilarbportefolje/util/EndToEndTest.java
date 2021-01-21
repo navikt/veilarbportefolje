@@ -28,7 +28,8 @@ public abstract class EndToEndTest {
         try {
             elasticIndexer.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
-            e.printStackTrace();
+            elasticTestClient.deleteIndex(indexName);
+            elasticIndexer.opprettNyIndeks(indexName.getValue());
         }
     }
 
