@@ -51,7 +51,7 @@ public class ArbeidslisteRepository {
         );
     }
 
-    public Try<AktoerId> insertArbeidsliste(ArbeidslisteDTO dto) {
+    public Try<ArbeidslisteDTO> insertArbeidsliste(ArbeidslisteDTO dto) {
         return Try.of(
                 () -> {
 
@@ -72,13 +72,13 @@ public class ArbeidslisteRepository {
                             .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
                             .execute();
 
-                    return dto.getAktoerId();
+                    return dto;
                 }
         ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db", e));
     }
 
 
-    public Try<AktoerId> updateArbeidsliste(ArbeidslisteDTO data) {
+    public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
         return Try.of(
                 () -> {
                     update(db, TABLE_NAME)
@@ -90,7 +90,7 @@ public class ArbeidslisteRepository {
                             .set("KATEGORI", data.getKategori().name())
                             .whereEquals("AKTOERID", data.getAktoerId().toString())
                             .execute();
-                    return data.getAktoerId();
+                    return data;
                 }
         ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }

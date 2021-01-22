@@ -41,8 +41,8 @@ public class ArbeidslisteRepositoryTest {
 
         jdbcTemplate.execute("TRUNCATE TABLE ARBEIDSLISTE");
 
-        Try<AktoerId> result1 = repo.insertArbeidsliste(data);
-        Try<AktoerId> result2 = repo.insertArbeidsliste(data2);
+        Try<ArbeidslisteDTO> result1 = repo.insertArbeidsliste(data);
+        Try<ArbeidslisteDTO> result2 = repo.insertArbeidsliste(data2);
         assertThat(result1.isSuccess()).isTrue();
         assertThat(result2.isSuccess()).isTrue();
     }
@@ -68,7 +68,7 @@ public class ArbeidslisteRepositoryTest {
                         .setKommentar(data.getKommentar())
                         .setKategori(Arbeidsliste.Kategori.LILLA))
                 .flatMap(oppdatertArbeidsliste -> repo.updateArbeidsliste(oppdatertArbeidsliste))
-                .flatMap(aktoerId -> repo.retrieveArbeidsliste(aktoerId));
+                .flatMap(arbeidslisteDTO -> repo.retrieveArbeidsliste(arbeidslisteDTO.getAktoerId()));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(Arbeidsliste.Kategori.LILLA).isEqualTo(updatedArbeidsliste.get().getKategori());
@@ -94,7 +94,7 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalReturnereFailureVedFeil() {
-        Try<AktoerId> result = repo.insertArbeidsliste(data.setAktoerId(null));
+        Try<ArbeidslisteDTO> result = repo.insertArbeidsliste(data.setAktoerId(null));
         assertThat(result.isFailure()).isTrue();
     }
 

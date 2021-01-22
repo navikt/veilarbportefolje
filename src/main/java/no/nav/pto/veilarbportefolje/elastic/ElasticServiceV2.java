@@ -3,10 +3,10 @@ package no.nav.pto.veilarbportefolje.elastic;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -15,7 +15,10 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
 
 import java.io.IOException;
+import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -54,7 +57,7 @@ public class ElasticServiceV2 {
                 .startObject()
                     .startObject("siste_endringer")
                         .startObject(kategori)
-                            .field("tidspunkt", DateUtils.toIsoUTC(dto.getTidspunkt()))
+                            .field("tidspunkt", toIsoUTC(dto.getTidspunkt()))
                             .field("aktivtetId", dto.getAktivtetId())
                         .endObject()
                     .endObject()
@@ -112,6 +115,21 @@ public class ElasticServiceV2 {
                 .endObject();
 
         update(aktoerId, content);
+    }
+
+    @SneakyThrows
+    public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("arbeidsliste_aktiv",true)
+                .field("arbeidsliste_overskrift", arbeidslisteDTO.getOverskrift())
+                .field("arbeidsliste_kommentar", arbeidslisteDTO.getKommentar())
+                .field("arbeidsliste_frist", Optional.ofNullable(toIsoUTC(arbeidslisteDTO.getFrist())).orElse(getFarInTheFutureDate()))
+                .field("arbeidsliste_sist_endret_av_veilederid", arbeidslisteDTO.getVeilederId().getValue())
+                .field("arbeidsliste_endringstidspunkt", toIsoUTC(arbeidslisteDTO.getEndringstidspunkt()))
+                .field("arbeidsliste_kategori", arbeidslisteDTO.getKategori().name())
+                .endObject();
+        update(arbeidslisteDTO.getAktoerId(), content);
     }
 
     @SneakyThrows
