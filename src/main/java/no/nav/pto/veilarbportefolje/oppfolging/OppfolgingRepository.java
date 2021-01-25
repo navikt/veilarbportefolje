@@ -32,7 +32,6 @@ public class OppfolgingRepository {
         return SqlUtils.upsert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
                 .set(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
                 .set(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
-                .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "J")
                 .set(Table.OPPFOLGING_DATA.STARTDATO, toTimestamp(startDato))
                 .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
                 .execute();
@@ -41,6 +40,7 @@ public class OppfolgingRepository {
     public int settVeileder(AktoerId aktorId, VeilederId veilederId) {
         return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
                 .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
+                .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "J")
                 .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktorId.toString())
                 .execute();
     }
