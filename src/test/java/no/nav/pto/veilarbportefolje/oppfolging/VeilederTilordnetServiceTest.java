@@ -37,8 +37,10 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final OppfolgingsBruker bruker = elasticTestClient.hentBrukerFraElastic(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
 
+
         assertThat(tilordnetVeileder).isEqualTo(nyVeileder);
         assertThat(bruker.isNy_for_enhet()).isFalse();
+        assertThat(bruker.isNy_for_veileder()).isTrue();
     }
 
     @Test
