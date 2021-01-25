@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,13 +15,13 @@ import static no.nav.common.json.JsonUtils.fromJson;
 public class DialogService implements KafkaConsumerService<String> {
 
     private final DialogRepository dialogRepository;
-    private final ElasticIndexer elasticIndexer;
+    private final ElasticServiceV2 elasticServiceV2;
     private final AtomicBoolean rewind;
 
     @Autowired
-    public DialogService(DialogRepository dialogRepository, ElasticIndexer elasticIndexer) {
+    public DialogService(DialogRepository dialogRepository, ElasticServiceV2 elasticServiceV2) {
         this.dialogRepository = dialogRepository;
-        this.elasticIndexer = elasticIndexer;
+        this.elasticServiceV2 = elasticServiceV2;
         this.rewind = new AtomicBoolean();
     }
 
@@ -30,7 +29,7 @@ public class DialogService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
         Dialogdata melding = fromJson(kafkaMelding, Dialogdata.class);
         dialogRepository.oppdaterDialogInfoForBruker(melding);
-        elasticIndexer.indekser(AktoerId.of(melding.getAktorId()));
+        elasticServiceV2.updateDialog(melding);
     }
 
     @Override

@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
+import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
@@ -115,6 +116,17 @@ public class ElasticServiceV2 {
                 .endObject();
 
         update(aktoerId, content);
+    }
+
+    @SneakyThrows
+    public void updateDialog(Dialogdata melding) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("venterpasvarfrabruker", toIsoUTC(melding.getTidspunktEldsteVentende()))
+                .field("venterpasvarfranav", toIsoUTC(melding.getTidspunktEldsteUbehandlede()))
+                .endObject();
+
+        update(AktoerId.of(melding.getAktorId()), content);
     }
 
     @SneakyThrows
