@@ -81,16 +81,17 @@ public class ArbeidslisteRepository {
     public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
         return Try.of(
                 () -> {
+                    Timestamp endringsTidspunkt = Timestamp.from(now());
                     update(db, TABLE_NAME)
                             .set("SIST_ENDRET_AV_VEILEDERIDENT", data.getVeilederId().toString())
-                            .set("ENDRINGSTIDSPUNKT", Timestamp.from(now()))
+                            .set("ENDRINGSTIDSPUNKT", endringsTidspunkt)
                             .set("OVERSKRIFT", data.getOverskrift())
                             .set("KOMMENTAR", data.getKommentar())
                             .set("FRIST", data.getFrist())
                             .set("KATEGORI", data.getKategori().name())
                             .whereEquals("AKTOERID", data.getAktoerId().toString())
                             .execute();
-                    return data;
+                    return data.setEndringstidspunkt(endringsTidspunkt);
                 }
         ).onFailure(e -> log.warn("Kunne ikke oppdatere arbeidsliste i db", e));
     }
