@@ -15,7 +15,6 @@ Følgende data aggregeres:
 * Informasjon om delt cv fra arbeidsplassen via Kafka
 * Informasjon om endring av mål fra `veilarboppfolging` via Kafka
 
->>>>>>> 04bed49d1e80cdb83acfbe7f0f0cf179a4e68ead
 ## Hvordan bygge
 
 Kjør `mvn clean install`
