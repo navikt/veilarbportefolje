@@ -27,9 +27,6 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
         if (brukerIkkeErNyForVeileder) {
             oppfolgingRepository.settNyForVeileder(dto.getAktorId(), false);
             elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), false);
-        }else{
-            oppfolgingRepository.settNyForVeileder(dto.getAktorId(), true);
-            elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), true);
         }
     }
 
