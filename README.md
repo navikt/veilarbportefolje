@@ -12,7 +12,7 @@ Følgende data aggregeres:
 * Veiledertilordninger fra `veilarboppfolging` via Kafka
 * Dialoger fra `veilarbdialog` (aktivitetsplan) via Kafka
 * Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via Kafka
-
+* Informasjon om endring av mål fra `veilarboppfolging` via Kafka
 ## Hvordan bygge
 
 Kjør `mvn clean install`
