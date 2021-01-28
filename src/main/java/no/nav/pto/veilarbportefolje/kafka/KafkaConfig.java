@@ -170,7 +170,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 malService,
                 unleashService,
-                KafkaProperties.kafkaMedAvroProperties(KafkaAutoOffset.EARLIEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
                 Topic.ENDRING_PA_MAL,
                 metricsClient
         );
