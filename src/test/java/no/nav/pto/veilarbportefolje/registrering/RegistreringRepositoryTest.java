@@ -4,7 +4,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -27,7 +27,7 @@ public class RegistreringRepositoryTest {
     public void setup() {
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.registreringRepository = new RegistreringRepository(db);
-        registreringRepository.slettBrukerRegistrering(AktoerId.of(AKTORID));
+        registreringRepository.slettBrukerRegistrering(AktorId.of(AKTORID));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class RegistreringRepositoryTest {
 
         registreringRepository.upsertBrukerRegistrering(event);
 
-        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktorId.of(AKTORID));
 
         assertThat(registrering.isPresent()).isTrue();
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event);
@@ -73,7 +73,7 @@ public class RegistreringRepositoryTest {
 
         registreringRepository.upsertBrukerRegistrering(event2);
 
-        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktorId.of(AKTORID));
 
         assertThat(registrering.isPresent()).isTrue();
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
@@ -101,7 +101,7 @@ public class RegistreringRepositoryTest {
                 .build();
         registreringRepository.upsertBrukerRegistrering(event2);
 
-        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktoerId.of(AKTORID));
+        Optional<ArbeidssokerRegistrertEvent> registrering = registreringRepository.hentBrukerRegistrering(AktorId.of(AKTORID));
 
         assertThat(registrering.orElseThrow(IllegalStateException::new)).isEqualTo(event2);
     }

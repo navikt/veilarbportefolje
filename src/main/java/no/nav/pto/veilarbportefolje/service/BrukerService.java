@@ -2,10 +2,10 @@ package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.pdl.AktorOppslagClient;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -25,21 +25,21 @@ import static java.util.stream.Collectors.toList;
 public class BrukerService {
 
     private final BrukerRepository brukerRepository;
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorOppslagClient aktorOppslagClient;
 
     @Autowired
-    public BrukerService(BrukerRepository brukerRepository, AktorregisterClient aktorregisterClient) {
+    public BrukerService(BrukerRepository brukerRepository, AktorOppslagClient aktorOppslagClient) {
         this.brukerRepository = brukerRepository;
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorOppslagClient = aktorOppslagClient;
     }
 
-    public Optional<AktoerId> hentAktoerId(Fnr fnr) {
+    public Optional<AktorId> hentAktorId(Fnr fnr) {
         return brukerRepository.hentBrukerFraView(fnr)
                 .map(OppfolgingsBruker::getAktoer_id)
-                .map(AktoerId::new);
+                .map(AktorId::new);
     }
 
-    public Optional<String> hentNavKontor(AktoerId aktoerId) {
+    public Optional<String> hentNavKontor(AktorId aktoerId) {
         return brukerRepository
                 .hentNavKontorFraView(aktoerId)
                 .or(() -> hentFnrFraAktoerregister(aktoerId)
@@ -57,21 +57,20 @@ public class BrukerService {
         return typeMap;
     }
 
-    public Try<PersonId> hentPersonidFraAktoerid(AktoerId aktoerId) {
+    public Try<PersonId> hentPersonidFraAktoerid(AktorId aktoerId) {
         return brukerRepository.retrievePersonid(aktoerId)
                 .map(personId -> personId == null ? getPersonIdFromFnr(aktoerId) : personId)
                 .onFailure(e -> log.warn("Kunne ikke hente/mappe personId for aktorid: " + aktoerId, e));
     }
 
 
-    public PersonId getPersonIdFromFnr(AktoerId aktoerId) {
-        Fnr fnr = Fnr.of(aktorregisterClient.hentFnr(aktoerId.toString()));
+    public PersonId getPersonIdFromFnr(AktorId aktoerId) {
+        Fnr fnr = aktorOppslagClient.hentFnr(aktoerId);
 
         PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
 
-        AktoerId nyAktorIdForPersonId = Try.of(() ->
-                aktorregisterClient.hentAktorId(fnr.toString()))
-                .map(AktoerId::of)
+        AktorId nyAktorIdForPersonId = Try.of(() ->
+                aktorOppslagClient.hentAktorId(fnr))
                 .get();
 
         updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(aktoerId, nyPersonId, nyAktorIdForPersonId);
@@ -79,27 +78,26 @@ public class BrukerService {
     }
 
     @Transactional
-    void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktoerId aktoerId, PersonId personId, AktoerId aktoerIdFraTPS) {
+    void updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(AktorId aktoerId, PersonId personId, AktorId aktoerIdFraTPS) {
         if (personId == null) {
             return;
         }
 
         if (!aktoerId.equals(aktoerIdFraTPS)) {
-            brukerRepository.insertGamleAktoerIdMedGjeldeneFlaggNull(aktoerId, personId);
+            brukerRepository.insertGamleAktorIdMedGjeldeneFlaggNull(aktoerId, personId);
         } else {
             brukerRepository.setGjeldeneFlaggTilNull(personId);
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
     }
 
-    public Optional<VeilederId> hentVeilederForBruker(AktoerId aktoerId) {
+    public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
         return brukerRepository.hentVeilederForBruker(aktoerId);
     }
 
-    private Optional<Fnr> hentFnrFraAktoerregister(AktoerId aktoerId) {
+    private Optional<Fnr> hentFnrFraAktoerregister(AktorId aktoerId) {
             return Optional
-                    .ofNullable(aktorregisterClient.hentFnr(aktoerId.toString()))
-                    .map(Fnr::of);
+                    .ofNullable(aktorOppslagClient.hentFnr(aktoerId));
     }
 
 }

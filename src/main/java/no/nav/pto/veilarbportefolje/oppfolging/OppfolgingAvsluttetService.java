@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -33,11 +33,11 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
-        final AktoerId aktoerId = dto.getAktorId();
+        final AktorId aktoerId = dto.getAktorId();
         avsluttOppfolging(aktoerId);
     }
 
-    public void avsluttOppfolging(AktoerId aktoerId) {
+    public void avsluttOppfolging(AktorId aktoerId) {
         oppfolgingRepository.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId);

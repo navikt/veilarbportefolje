@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.profilering;
 
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -42,7 +42,7 @@ public class ProfileringRepository {
                 .execute();
     }
 
-    public ArbeidssokerProfilertEvent hentBrukerProfilering (AktoerId aktoerId) {
+    public ArbeidssokerProfilertEvent hentBrukerProfilering (AktorId aktoerId) {
         return SqlUtils.select(db, BRUKER_PROFILERING_TABELL, this::mapTilArbeidssokerProfilertEvent)
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))

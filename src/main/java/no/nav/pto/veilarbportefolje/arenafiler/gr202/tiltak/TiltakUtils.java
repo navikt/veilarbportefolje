@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
@@ -53,7 +53,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(AktoerId.of(null))
+                .setAktoerid(AktorId.of(null))
                 .setAktivitetType(TILTAK)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)
@@ -79,7 +79,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(AktoerId.of(null))
+                .setAktoerid(AktorId.of(null))
                 .setAktivitetType(GRUPPEAKTIVITET)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)
@@ -102,7 +102,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(AktoerId.of(null))
+                .setAktoerid(AktorId.of(null))
                 .setAktivitetType(UTDANNINGAKTIVITET)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)

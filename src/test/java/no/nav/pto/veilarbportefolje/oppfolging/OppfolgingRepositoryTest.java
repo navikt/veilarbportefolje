@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.junit.Before;
@@ -28,7 +28,7 @@ public class OppfolgingRepositoryTest {
 
     @Test
     public void skal_sette_oppfolging_til_false() {
-        final AktoerId aktoerId = AktoerId.of("0");
+        final AktorId aktoerId = AktorId.of("0");
 
         SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
                 .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())

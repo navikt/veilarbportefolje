@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -23,7 +23,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_tilordnet_veileder() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
         final String payload = new JSONObject()
                 .put("aktorId", aktoerId.getValue())
@@ -45,7 +45,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
     @Test
     void skal_slette_arbeidsliste_om_bruker_har_byttet_nav_kontor() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
         final String payload = new JSONObject()
                 .put("aktorId", aktoerId.getValue())
@@ -61,7 +61,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         pollElasticUntil(() -> !arbeidslisteAktiv(aktoerId));
     }
 
-    private Boolean arbeidslisteAktiv(AktoerId aktoerId) {
+    private Boolean arbeidslisteAktiv(AktorId aktoerId) {
         return (Boolean) elasticTestClient.getDocument(aktoerId).get().getSourceAsMap().get("arbeidsliste_aktiv");
     }
 }

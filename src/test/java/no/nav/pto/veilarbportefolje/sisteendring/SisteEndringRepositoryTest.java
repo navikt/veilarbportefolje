@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class SisteEndringRepositoryTest {
 
     private SisteEndringRepository sisteEndringRepository;
-    private static AktoerId AKTORID = AktoerId.of("123456789");
+    private static AktorId AKTORID = AktorId.of("123456789");
 
     @Before
     public void setup() {
@@ -34,7 +34,7 @@ public class SisteEndringRepositoryTest {
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
                 .setKategori(SisteEndringsKategori.NY_IJOBB)
-                .setAktoerId(AKTORID)
+                .setAktorId(AKTORID)
                 .setAktivtetId("1");
 
         ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
@@ -42,7 +42,7 @@ public class SisteEndringRepositoryTest {
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
                 .setKategori(SisteEndringsKategori.AVBRUTT_EGEN)
-                .setAktoerId(AKTORID)
+                .setAktorId(AKTORID)
                 .setAktivtetId("2");
 
         sisteEndringRepository.upsert(dto_1);
@@ -65,14 +65,14 @@ public class SisteEndringRepositoryTest {
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
                 .setKategori(SisteEndringsKategori.FULLFORT_STILLING)
-                .setAktoerId(AKTORID);
+                .setAktorId(AKTORID);
 
         ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
                 .setKategori(SisteEndringsKategori.MAL)
-                .setAktoerId(AKTORID);
+                .setAktorId(AKTORID);
 
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);

@@ -24,7 +24,7 @@ import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
 import static no.nav.pto.veilarbportefolje.util.CollectionUtils.mapOf;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -51,18 +51,18 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
-                        .setAktoer_id(randomAktoerId().toString())
+                        .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET),
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(randomAktoerId().toString())
+                        .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET),
 
                 // Markert som slettet
                 new OppfolgingsBruker()
-                        .setAktoer_id(randomAktoerId().toString())
+                        .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(false)
                         .setEnhet_id(TEST_ENHET)
         );
@@ -174,19 +174,19 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         List<OppfolgingsBruker> brukere = List.of(
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(randomAktoerId().toString())
+                        .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
                         .setVeileder_id(null),
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(randomAktoerId().toString())
+                        .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
                         .setVeileder_id(TEST_VEILEDER_0),
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(randomAktoerId().toString())
+                        .setAktoer_id(randomAktorId().toString())
                         .setOppfolging(true)
                         .setEnhet_id(TEST_ENHET)
                         .setVeileder_id(null)
@@ -741,7 +741,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val brukerMedSokeAvtale = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktoerId().toString())
+                .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
@@ -749,14 +749,14 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val brukerMedBehandling = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktoerId().toString())
+                .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)
                 .setEnhet_id(TEST_ENHET)
                 .setAktiviteter(Set.of("behandling"));
 
         val brukerMedUtenAktiviteter = new OppfolgingsBruker()
-                .setAktoer_id(randomAktoerId().toString())
+                .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setVeileder_id(TEST_VEILEDER_0)

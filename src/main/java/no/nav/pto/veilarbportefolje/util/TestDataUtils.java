@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.*;
 
 import static java.lang.String.valueOf;
@@ -12,8 +14,8 @@ public class TestDataUtils {
     }
 
 
-    public static AktoerId randomAktoerId() {
-        return AktoerId.of(valueOf(current().nextInt()));
+    public static AktorId randomAktorId() {
+        return AktorId.of(valueOf(current().nextInt()));
     }
 
     public static PersonId randomPersonId() {

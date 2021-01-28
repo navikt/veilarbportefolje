@@ -16,7 +16,7 @@ import no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.Tiltakkodeverk;
 import no.nav.pto.veilarbportefolje.service.BrukerService;

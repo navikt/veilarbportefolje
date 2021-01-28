@@ -4,10 +4,10 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -64,7 +64,7 @@ public class ArbeidsListeController {
         RestResponse<String> response = new RestResponse<>(new ArrayList<>(), new ArrayList<>());
 
         arbeidsliste.forEach(request -> {
-            RestResponse<AktoerId> opprettArbeidsliste = opprettArbeidsliste(request);
+            RestResponse<AktorId> opprettArbeidsliste = opprettArbeidsliste(request);
             if (opprettArbeidsliste.containsError()) {
                 response.addError(request.getFnr());
             } else {
@@ -82,7 +82,7 @@ public class ArbeidsListeController {
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
         Fnr fnr = new Fnr(fnrString);
-        Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.toString())));
+        Try<AktorId> aktoerId = Try.of(()-> aktorregisterClient.hentAktorId(fnr));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
@@ -170,8 +170,8 @@ public class ArbeidsListeController {
             validerFnrs.get().forEach(fnr -> {
                 final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
 
-                final AktoerId aktoerId = brukerService.hentAktoerId(fnr)
-                        .orElse(new AktoerId("uten aktør-ID"));
+                final AktorId aktoerId = brukerService.hentAktorId(fnr)
+                        .orElse(new AktorId("uten aktør-ID"));
 
                 if (antallRaderSlettet != 1) {
                     feiledeFnrs.add(fnr.toString());
@@ -212,7 +212,7 @@ public class ArbeidsListeController {
                 .collect(Collectors.toList());
     }
 
-    private RestResponse<AktoerId> opprettArbeidsliste(ArbeidslisteRequest arbeidslisteRequest) {
+    private RestResponse<AktorId> opprettArbeidsliste(ArbeidslisteRequest arbeidslisteRequest) {
         return validerArbeidsliste(arbeidslisteRequest, false)
                 .map(arbeidslisteService::createArbeidsliste)
                 .fold(
@@ -221,7 +221,7 @@ public class ArbeidsListeController {
                             if (result.isFailure()) {
                                 return RestResponse.of(result.getCause().getMessage());
                             }
-                            return RestResponse.of(result.get().getAktoerId());
+                            return RestResponse.of(result.get().getAktorId());
 
                         }
                 );

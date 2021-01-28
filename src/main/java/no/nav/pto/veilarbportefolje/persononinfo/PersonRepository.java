@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
 import lombok.SneakyThrows;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Personinfo;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;

@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.profilering;
 
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.profilering.ProfilertTil;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,7 +38,7 @@ public class ProfileringRepositoryTest {
                 .build();
 
         profileringRepository.upsertBrukerProfilering(event1);
-        assertThat(profileringRepository.hentBrukerProfilering(AktoerId.of(AKTORID))).isEqualTo(event1);
+        assertThat(profileringRepository.hentBrukerProfilering(AktorId.of(AKTORID))).isEqualTo(event1);
 
     }
 
@@ -59,7 +59,7 @@ public class ProfileringRepositoryTest {
                 .build();
 
         profileringRepository.upsertBrukerProfilering(event2);
-        assertThat(profileringRepository.hentBrukerProfilering(AktoerId.of(AKTORID1))).isEqualTo(event2);
+        assertThat(profileringRepository.hentBrukerProfilering(AktorId.of(AKTORID1))).isEqualTo(event2);
 
     }
 }

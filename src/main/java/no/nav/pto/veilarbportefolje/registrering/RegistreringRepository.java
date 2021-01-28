@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import no.nav.arbeid.soker.registrering.*;
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -47,18 +47,18 @@ public class RegistreringRepository {
     }
 
 
-    public Optional<ArbeidssokerRegistrertEvent> hentBrukerRegistrering(AktoerId aktoerId) {
+    public Optional<ArbeidssokerRegistrertEvent> hentBrukerRegistrering(AktorId aktoerId) {
         return ofNullable(
                 SqlUtils.select(db, Table.BRUKER_REGISTRERING.TABLE_NAME, RegistreringRepository::mapTilArbeidssokerRegistrertEvent)
                         .column("*")
-                        .where(WhereClause.equals(AKTOERID, aktoerId.getValue()))
+                        .where(WhereClause.equals(AKTOERID, aktoerId.get()))
                         .execute()
         );
     }
 
-    public void slettBrukerRegistrering(AktoerId aktoerId) {
+    public void slettBrukerRegistrering(AktorId aktoerId) {
         SqlUtils.delete(db, Table.BRUKER_REGISTRERING.TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
                 .execute();
     }
 

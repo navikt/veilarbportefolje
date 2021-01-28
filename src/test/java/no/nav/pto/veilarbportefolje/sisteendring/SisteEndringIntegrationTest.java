@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -27,7 +27,7 @@ import java.util.Map;
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
@@ -47,7 +47,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     @Test
     public void siste_endring_mal() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
         elasticTestClient.createUserInElastic(aktoerId);
         String endretTid = "2020-05-28T07:47:42.480Z";
         ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
@@ -65,7 +65,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     @Test
     public void siste_endring_aktivteter() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
         elasticTestClient.createUserInElastic(aktoerId);
         String endretTid = "2020-05-28T07:47:42.480Z";
         String endretTid_nyijobb = "2028-05-28T07:47:42.480Z";
@@ -105,7 +105,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     void siste_endring_filter_test() {
         final String testEnhet = "0000";
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
         String endretTid = "2019-05-28T09:47:42.48+02:00";
         String endretTid_ny = "2020-05-28T09:47:42.48+02:00";
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(endretTid);
@@ -180,9 +180,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     @Test
     void siste_endring_sortering_test() {
         final String testEnhet = "0000";
-        final AktoerId aktoerId_1 = randomAktoerId();
-        final AktoerId aktoerId_2 = randomAktoerId();
-        final AktoerId aktoerId_3 = randomAktoerId();
+        final AktorId aktoerId_1 = randomAktorId();
+        final AktorId aktoerId_2 = randomAktorId();
+        final AktorId aktoerId_3 = randomAktorId();
 
         String endret_Tid_IJOBB_bruker_1_i_2024 = "2024-05-28T09:47:42.480Z";
         String endret_Tid_IJOBB_bruker_2_i_2025 = "2025-05-28T09:47:42.480Z";
@@ -314,7 +314,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
 
-    private void send_aktvitet_melding(AktoerId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
+    private void send_aktvitet_melding(AktorId aktoerId, String endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
         String endret = endretDato == null ? "" : "\"endretDato\":\""+endretDato+"\",";
         String aktivitetKafkaMelding = "{" +
@@ -333,7 +333,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
     }
 
-    private void send_mal_melding(AktoerId aktoerId, ZonedDateTime endretDato) {
+    private void send_mal_melding(AktorId aktoerId, ZonedDateTime endretDato) {
         String endret = endretDato == null ? "" : "\"endretTidspunk\":\""+endretDato+"\"";
         String kafkamelding = "{" +
                 "\"aktorId\":\""+aktoerId.getValue()+"\"," +

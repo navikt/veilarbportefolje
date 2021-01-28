@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         final ManuellStatusDTO dto = JsonUtils.fromJson(kafkaMelding, ManuellStatusDTO.class);
-        final AktoerId aktoerId = AktoerId.of(dto.getAktorId());
+        final AktorId aktoerId = AktorId.of(dto.getAktorId());
 
         oppfolgingRepository.settManuellStatus(aktoerId, dto.isErManuell());
 

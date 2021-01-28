@@ -1,10 +1,12 @@
 package no.nav.pto.veilarbportefolje.admin;
 
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -36,7 +38,7 @@ public class AdminController {
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
         authorizeAdmin();
-        return aktorregisterClient.hentAktorId(fnr);
+        return aktorregisterClient.hentAktorId(Fnr.of(fnr)).get();
     }
 
     @PostMapping("/rewind/registrering")
@@ -63,12 +65,12 @@ public class AdminController {
     @DeleteMapping("/oppfolgingsbruker")
     public String slettOppfolgingsbruker(@RequestBody String aktoerId) {
         authorizeAdmin();
-        oppfolgingAvsluttetService.avsluttOppfolging(AktoerId.of(aktoerId));
+        oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(aktoerId));
         return "Slettet oppfølgingsbruker " + aktoerId;
     }
 
     private void authorizeAdmin() {
-        final String ident = SubjectHandler.getIdent().orElseThrow();
+        final String ident = AuthContextHolder.getNavIdent().map(Id::toString).orElseThrow();
         if (!admins.contains(ident)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }

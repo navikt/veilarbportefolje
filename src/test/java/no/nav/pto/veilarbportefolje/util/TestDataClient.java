@@ -22,7 +22,7 @@ public class TestDataClient {
         this.elasticTestClient = elasticTestClient;
     }
 
-    public void endreNavKontorForBruker(AktoerId aktoerId, NavKontor navKontor) {
+    public void endreNavKontorForBruker(AktorId aktoerId, NavKontor navKontor) {
         final String fnr = SqlUtils.select(jdbcTemplate, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString(Table.VW_PORTEFOLJE_INFO.FODSELSNR))
                 .column(Table.VW_PORTEFOLJE_INFO.FODSELSNR)
                 .where(WhereClause.equals(Table.VW_PORTEFOLJE_INFO.AKTOERID, aktoerId.getValue()))
@@ -34,7 +34,7 @@ public class TestDataClient {
                 .execute();
     }
 
-    public void setupBrukerMedArbeidsliste(AktoerId aktoerId, NavKontor navKontor, VeilederId veilederId) {
+    public void setupBrukerMedArbeidsliste(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId) {
         SqlUtils.insert(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME)
                 .value(AKTOERID, aktoerId.getValue())
                 .value(NAV_KONTOR_FOR_ARBEIDSLISTE, navKontor.getValue())
@@ -45,7 +45,7 @@ public class TestDataClient {
         elasticTestClient.oppdaterArbeidsliste(aktoerId, true);
     }
 
-    public void setupBruker(AktoerId aktoerId, NavKontor navKontor, VeilederId veilederId) {
+    public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId) {
         final PersonId personId = TestDataUtils.randomPersonId();
         final Fnr fnr = TestDataUtils.randomFnr();
 
@@ -74,7 +74,7 @@ public class TestDataClient {
         elasticTestClient.createUserInElastic(aktoerId);
     }
 
-    public String hentOppfolgingFlaggFraDatabase(AktoerId aktoerId) {
+    public String hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {
         return SqlUtils.select(jdbcTemplate, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> rs.getString(Table.OPPFOLGING_DATA.OPPFOLGING))
                 .column(Table.OPPFOLGING_DATA.OPPFOLGING)
                 .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue()))

@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
@@ -38,7 +38,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_aktivitet_i_elastic() {
-        final AktoerId aktoerId = AktoerId.of("123456789");
+        final AktorId aktoerId = AktorId.of("123456789");
         final PersonId personId = PersonId.of("1234");
         final Fnr fnr = Fnr.of("00000000000");
 
@@ -84,7 +84,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
         assertThat(aktivitetIJobbUtlopsdato).isEqualTo(toIsoUTC(timestampFromISO8601(tilDato)));
     }
 
-    private Boolean aktivitetIJobbUtlopsdatoErOppdatert(AktoerId aktoerId) {
+    private Boolean aktivitetIJobbUtlopsdatoErOppdatert(AktorId aktoerId) {
         return !Optional.of(elasticTestClient.fetchDocument(aktoerId))
                 .map(AktivitetKafkaConsumerTest::getAktivitetIJobbUtlopsdato)
                 .map(utlopsDato -> utlopsDato.equals(getFarInTheFutureDate()))
@@ -96,7 +96,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
     }
 
 
-    private void createAktivitetDocument(AktoerId aktoerId) {
+    private void createAktivitetDocument(AktorId aktoerId) {
         String document = new JSONObject()
                 .put("aktivitet_mote_utlopsdato", DateUtils.getFarInTheFutureDate())
                 .put("aktivitet_stilling_utlopsdato", DateUtils.getFarInTheFutureDate())

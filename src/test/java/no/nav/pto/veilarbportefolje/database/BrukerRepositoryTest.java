@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.database;
 import com.google.common.base.Joiner;
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -314,7 +314,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteVeilederForBruker() {
-        AktoerId aktoerId = AktoerId.of("101010");
+        AktorId aktoerId = AktorId.of("101010");
         VeilederId expectedVeilederId = VeilederId.of("X11111");
 
         insert(jdbcTemplate, "OPPFOLGING_DATA")

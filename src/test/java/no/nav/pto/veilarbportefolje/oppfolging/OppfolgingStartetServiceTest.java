@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -23,7 +23,7 @@ class OppfolgingStartetServiceTest extends EndToEndTest {
 
     @Test
     void skal_sette_bruker_under_oppfølging_i_databasen() {
-        final AktoerId aktoerId = TestDataUtils.randomAktoerId();
+        final AktorId aktoerId = TestDataUtils.randomAktorId();
         final String payload = new JSONObject()
                 .put("aktorId", aktoerId.getValue())
                 .put("oppfolgingStartet", "2020-12-01T00:00:00+02:00")

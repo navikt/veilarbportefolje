@@ -10,8 +10,8 @@ import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -193,7 +193,7 @@ public class BrukerRepository {
                 .executeToList();
     }
 
-    public Optional<OppfolgingsBruker> hentBrukerFraView(AktoerId aktoerId) {
+    public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
         final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
@@ -202,7 +202,7 @@ public class BrukerRepository {
         return Optional.ofNullable(bruker);
     }
 
-    public Optional<String> hentFnrView(AktoerId aktoerId) {
+    public Optional<String> hentFnrView(AktorId aktoerId) {
         final String fnr = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString("fodselsnr"))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
@@ -249,7 +249,7 @@ public class BrukerRepository {
         return parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING");
     }
 
-    public Optional<VeilederId> hentVeilederForBruker(AktoerId aktoerId) {
+    public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
         VeilederId veilederId = select(db, OPPFOLGING_DATA.TABLE_NAME, this::mapToVeilederId)
                 .column(OPPFOLGING_DATA.VEILEDERIDENT)
                 .where(WhereClause.equals(OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
@@ -260,7 +260,7 @@ public class BrukerRepository {
 
 
     @Deprecated
-    public Try<VeilederId> retrieveVeileder(AktoerId aktoerId) {
+    public Try<VeilederId> retrieveVeileder(AktorId aktoerId) {
         return Try.of(
                 () -> {
                     return select(db, "OPPFOLGING_DATA", this::mapToVeilederId)
@@ -271,7 +271,7 @@ public class BrukerRepository {
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
-    public Optional<String> hentNavKontorFraView(AktoerId aktoerId) {
+    public Optional<String> hentNavKontorFraView(AktorId aktoerId) {
         String navKontor = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, this::mapToEnhet)
                 .column(VW_PORTEFOLJE_INFO.NAV_KONTOR)
                 .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
@@ -313,7 +313,7 @@ public class BrukerRepository {
                 .onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()));
     }
 
-    public Integer insertAktoeridToPersonidMapping(AktoerId aktoerId, PersonId personId) {
+    public Integer insertAktoeridToPersonidMapping(AktorId aktoerId, PersonId personId) {
         return insert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
                 .value("AKTOERID", aktoerId.toString())
                 .value("PERSONID", personId.toString())
@@ -322,7 +322,7 @@ public class BrukerRepository {
 
     }
 
-    public Integer insertGamleAktoerIdMedGjeldeneFlaggNull(AktoerId aktoerId, PersonId personId) {
+    public Integer insertGamleAktorIdMedGjeldeneFlaggNull(AktorId aktoerId, PersonId personId) {
         return insert(db, AKTOERID_TO_PERSONID.TABLE_NAME)
                 .value("AKTOERID", aktoerId.toString())
                 .value("PERSONID", personId.toString())
@@ -337,9 +337,9 @@ public class BrukerRepository {
                 .execute();
     }
 
-    public Try<PersonId> retrievePersonid(AktoerId aktoerId) {
+    public Try<PersonId> retrievePersonid(AktorId aktoerId) {
         return Try.of(
-                () -> select(db, AKTOERID_TO_PERSONID.TABLE_NAME, this::mapToPersonIdFromAktoerIdToPersonId)
+                () -> select(db, AKTOERID_TO_PERSONID.TABLE_NAME, this::mapToPersonIdFromAktorIdToPersonId)
                         .column("PERSONID")
                         .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                         .execute()
@@ -379,7 +379,7 @@ public class BrukerRepository {
     }
 
     @SneakyThrows
-    private PersonId mapToPersonIdFromAktoerIdToPersonId(ResultSet rs) {
+    private PersonId mapToPersonIdFromAktorIdToPersonId(ResultSet rs) {
         return PersonId.of(rs.getString("PERSONID"));
     }
 

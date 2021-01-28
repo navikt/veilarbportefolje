@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -28,7 +28,7 @@ class OppfolgingAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void skal_slette_arbeidsliste_registrering_og_avslutte_oppfølging() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
 
         testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId());
 

@@ -2,9 +2,10 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 
 import java.sql.Timestamp;
@@ -13,7 +14,7 @@ import java.sql.Timestamp;
 @Accessors(chain = true)
 public class ArbeidslisteDTO {
     final Fnr fnr;
-    AktoerId aktoerId;
+    AktorId AktorId;
     VeilederId veilederId;
     String overskrift;
     String kommentar;
@@ -26,7 +27,7 @@ public class ArbeidslisteDTO {
     public static ArbeidslisteDTO of(Fnr fnr, String overskrift, String kommentar, Timestamp frist, Arbeidsliste.Kategori kategori) {
         return
                 new ArbeidslisteDTO(fnr)
-                        .setVeilederId(VeilederId.of(SubjectHandler.getIdent().orElseThrow(IllegalStateException::new)))
+                        .setVeilederId(VeilederId.of(AuthContextHolder.getNavIdent().map(Id::toString).orElseThrow(IllegalStateException::new)))
                         .setOverskrift(overskrift)
                         .setKommentar(kommentar)
                         .setKategori(kategori)

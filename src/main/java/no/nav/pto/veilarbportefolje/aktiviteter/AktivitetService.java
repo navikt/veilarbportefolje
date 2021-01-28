@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -53,11 +53,11 @@ public class AktivitetService implements KafkaConsumerService<String> {
         }
 
         aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        utledOgIndekserAktivitetstatuserForAktoerid(AktoerId.of(aktivitetData.getAktorId()));
+        utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(aktivitetData.getAktorId()));
     }
 
     public void utledOgLagreAlleAktivitetstatuser() {
-        List<String> aktoerider = aktivitetDAO.getDistinctAktoerIdsFromAktivitet();
+        List<String> aktoerider = aktivitetDAO.getDistinctAktorIdsFromAktivitet();
 
         BatchConsumer<String> consumer = batchConsumer(1000, this::utledOgLagreAktivitetstatuser);
 
@@ -70,7 +70,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
 
     private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
         aktoerider.forEach(aktoerId -> {
-            AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktoerId.of(aktoerId));
+            AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktorId.of(aktoerId));
             AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService);
             Optional.ofNullable(aktivitetBrukerOppdateringer)
                     .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(oppdatering)));
@@ -78,7 +78,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
 
     }
 
-    public void utledOgIndekserAktivitetstatuserForAktoerid(AktoerId aktoerId) {
+    public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
         AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO);
         Optional.ofNullable(aktivitetBrukerOppdateringer)
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));

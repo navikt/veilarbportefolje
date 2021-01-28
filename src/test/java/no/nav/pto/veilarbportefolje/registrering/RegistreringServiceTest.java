@@ -4,7 +4,7 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
@@ -23,7 +23,7 @@ import java.util.List;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class RegistreringServiceTest extends EndToEndTest {
@@ -39,7 +39,7 @@ class RegistreringServiceTest extends EndToEndTest {
 
     @Test
     void utdanning_full_integration() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
 
         elasticTestClient.createUserInElastic(aktoerId);
 
@@ -166,9 +166,9 @@ class RegistreringServiceTest extends EndToEndTest {
     }
 
     private void populateElastic(String enhet) {
-        final AktoerId aktoerId1 = TestDataUtils.randomAktoerId();
-        final AktoerId aktoerId2 = TestDataUtils.randomAktoerId();
-        final AktoerId aktoerId3 = TestDataUtils.randomAktoerId();
+        final AktorId aktoerId1 = TestDataUtils.randomAktorId();
+        final AktorId aktoerId2 = TestDataUtils.randomAktorId();
+        final AktorId aktoerId3 = TestDataUtils.randomAktorId();
 
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()

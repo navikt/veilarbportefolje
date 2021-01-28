@@ -4,7 +4,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +38,7 @@ public class PersistentOppdateringTest {
     @Test
     public void lagreAktivitetStatuserTest() {
         PersonId personId = PersonId.of("111111");
-        AktoerId aktoerId = AktoerId.of("222222");
+        AktorId aktoerId = AktorId.of("222222");
 
         AktivitetStatus a1 = new AktivitetStatus()
                 .setPersonid(personId)

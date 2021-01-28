@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 public class SisteEndringDTO {
     private static final Logger log = LoggerFactory.getLogger(SisteEndringDTO.class);
 
-    private AktoerId aktoerId;
+    private AktorId aktoerId;
     private String aktivtetId;
     private SisteEndringsKategori kategori;
     private ZonedDateTime tidspunkt;
@@ -24,14 +24,14 @@ public class SisteEndringDTO {
     }
 
     public SisteEndringDTO(MalEndringKafkaDTO melding) {
-        aktoerId = AktoerId.of(melding.getAktorId());
+        aktoerId = AktorId.of(melding.getAktorId());
         tidspunkt = melding.getEndretTidspunk();
         kategori = SisteEndringsKategori.MAL;
         aktivtetId = null;
     }
 
     public SisteEndringDTO(KafkaAktivitetMelding melding) {
-        aktoerId = AktoerId.of(melding.getAktorId());
+        aktoerId = AktorId.of(melding.getAktorId());
         tidspunkt = melding.getEndretDato();
         aktivtetId = melding.getAktivitetId();
 

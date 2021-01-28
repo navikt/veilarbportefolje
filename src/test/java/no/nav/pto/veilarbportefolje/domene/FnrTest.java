@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.Fnr;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
