@@ -49,10 +49,10 @@ public class KafkaVedtakStatusEndring {
             case UTKAST_OPPRETTET:
             return "Utkast";
             case BESLUTTER_PROSESS_STARTET:
-                return "Trenger beslutter";
+                return "Trenger kvalitetssikring";
             case BLI_BESLUTTER:
             case KLAR_TIL_BESLUTTER:
-                return "Venter på beslutter";
+                return "Venter på tilbakemelding";
             case GODKJENT_AV_BESLUTTER:
                 return "Klar til utsendelse";
             case KLAR_TIL_VEILEDER:
