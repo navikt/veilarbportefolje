@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,13 @@ public class SisteEndringDTO {
     private ZonedDateTime tidspunkt;
 
     public SisteEndringDTO() {
+    }
+
+    public SisteEndringDTO(MalEndringKafkaDTO melding) {
+        aktoerId = AktoerId.of(melding.getAktorId());
+        tidspunkt = melding.getEndretTidspunk();
+        kategori = SisteEndringsKategori.MAL;
+        aktivtetId = null;
     }
 
     public SisteEndringDTO(KafkaAktivitetMelding melding) {

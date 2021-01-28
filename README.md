@@ -13,6 +13,7 @@ Følgende data aggregeres:
 * Dialoger fra `veilarbdialog` (aktivitetsplan) via Kafka
 * Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via Kafka
 * Informasjon om delt cv fra arbeidsplassen via Kafka
+* Informasjon om endring av mål fra `veilarboppfolging` via Kafka
 
 ## Hvordan bygge
 

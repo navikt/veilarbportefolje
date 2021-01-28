@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
+import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,23 @@ public class SisteEndringService {
     public SisteEndringService(ElasticServiceV2 elasticServiceV2, SisteEndringRepository sisteEndringRepository) {
         this.elasticServiceV2 = elasticServiceV2;
         this.sisteEndringRepository = sisteEndringRepository;
+    }
+
+    public void behandleMal(MalEndringKafkaDTO melding) {
+        if (melding.getLagtInnAv() == null || melding.getLagtInnAv() == MalEndringKafkaDTO.InnsenderData.NAV) {
+            return;
+        }
+        SisteEndringDTO sisteEndringDTO = new SisteEndringDTO(melding);
+        if(hendelseErNyereEnnIDatabase(sisteEndringDTO)) {
+            try {
+                sisteEndringRepository.upsert(sisteEndringDTO);
+                elasticServiceV2.updateSisteEndring(sisteEndringDTO);
+            } catch (Exception e) {
+                String message = String.format("Kunne ikke lagre eller indexere siste endring for aktoer id: %s", melding.getAktorId());
+                log.error(message, e);
+            }
+
+        }
     }
 
     public void behandleAktivitet(KafkaAktivitetMelding kafkaAktivitet) {
