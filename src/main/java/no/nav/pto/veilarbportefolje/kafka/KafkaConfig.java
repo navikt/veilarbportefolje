@@ -113,7 +113,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 oppfolgingStartetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.OPPFOLGING_STARTET,
                 metricsClient
         );
@@ -124,7 +124,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 oppfolgingAvsluttetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 KafkaConfig.Topic.OPPFOLGING_AVSLUTTET,
                 metricsClient
         );
@@ -135,7 +135,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 manuellStatusService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.ENDRING_PAA_MANUELL_STATUS,
                 metricsClient
         );
@@ -146,7 +146,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 nyForVeilederService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.ENDRING_PAA_NY_FOR_VEILEDER,
                 metricsClient
         );
@@ -157,7 +157,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 veilederTilordnetService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.LATEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.VEILEDER_TILORDNET,
                 metricsClient
         );
