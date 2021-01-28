@@ -7,6 +7,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
+import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -33,7 +34,8 @@ public class KafkaConfig {
         VEILEDER_TILORDNET("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_NY_FOR_VEILEDER("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_STARTET("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + requireKafkaTopicPostfix()),
-        OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix());
+        OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
+        ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-"+ requireKafkaTopicPostfix());
 
         final String topicName;
 
@@ -159,6 +161,17 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.VEILEDER_TILORDNET,
+                metricsClient
+        );
+    }
+
+    @Bean
+    public KafkaConsumerRunnable<String> kafkaConsumerMal(MalService malService, UnleashService unleashService, MetricsClient metricsClient) {
+        return new KafkaConsumerRunnable<>(
+                malService,
+                unleashService,
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
+                Topic.ENDRING_PA_MAL,
                 metricsClient
         );
     }

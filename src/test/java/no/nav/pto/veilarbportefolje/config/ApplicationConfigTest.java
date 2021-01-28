@@ -25,6 +25,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
+import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
@@ -96,7 +97,8 @@ import static org.mockito.Mockito.when;
         VeilederTilordnetService.class,
         OppfolgingStartetService.class,
         SisteEndringService.class,
-        SisteEndringRepository.class
+        SisteEndringRepository.class,
+        MalService.class
 })
 public class ApplicationConfigTest {
 

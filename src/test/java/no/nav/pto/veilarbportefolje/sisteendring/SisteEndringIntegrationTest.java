@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -30,16 +31,36 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
+    private final MalService malService;
     private final AktivitetService aktivitetService;
     private final ElasticService elasticService;
 
     @Autowired
-    public SisteEndringIntegrationTest(ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService) {
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService) {
         BrukerService brukerService = Mockito.mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(Mockito.any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
 
         this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering,  brukerService, sisteEndringService);
         this.elasticService = elasticService;
+        this.malService = malService;
+    }
+
+    @Test
+    public void siste_endring_mal() {
+        final AktoerId aktoerId = randomAktoerId();
+        elasticTestClient.createUserInElastic(aktoerId);
+        String endretTid = "2020-05-28T07:47:42.480Z";
+        ZonedDateTime endretTidZonedDateTime = ZonedDateTime.parse(endretTid);
+
+        send_mal_melding(aktoerId,endretTidZonedDateTime);
+
+        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
+        assertThat(getResponse.isExists()).isTrue();
+
+        String endring_mal= getValueFromNestedObject(getResponse, "mal");
+
+        assertThat(endring_mal).isNotNull();
+        assertThat(endring_mal).isEqualTo(endretTidZonedDateTime.toString());
     }
 
     @Test
@@ -310,6 +331,17 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 "\"historisk\":false" +
                 "}";
         aktivitetService.behandleKafkaMelding(aktivitetKafkaMelding);
+    }
+
+    private void send_mal_melding(AktoerId aktoerId, ZonedDateTime endretDato) {
+        String endret = endretDato == null ? "" : "\"endretTidspunk\":\""+endretDato+"\"";
+        String kafkamelding = "{" +
+                "\"aktorId\":\""+aktoerId.getValue()+"\"," +
+                "\"lagtInnAv\":\"BRUKER\"," +
+                "\"veilederIdent\":\"Z12345\"," +
+                endret +
+                "}";
+        malService.behandleKafkaMelding(kafkamelding);
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori) {
