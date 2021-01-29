@@ -66,10 +66,10 @@ public class SisteEndringService {
 
     private boolean hendelseErNyereEnnIDatabase(SisteEndringDTO sisteEndringDTO) {
         if (sisteEndringDTO.getTidspunkt() == null) {
-            log.error("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktorId());
+            log.error("Endringstidspunkt var null for aktoerId: " + sisteEndringDTO.getAktoerId());
             return false;
         }
-        Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(sisteEndringDTO.getAktorId(), sisteEndringDTO.getKategori());
+        Timestamp databaseVerdi = sisteEndringRepository.getSisteEndringTidspunkt(sisteEndringDTO.getAktoerId(), sisteEndringDTO.getKategori());
         if (databaseVerdi == null) {
             return true;
         }

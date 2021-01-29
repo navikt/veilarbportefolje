@@ -107,7 +107,7 @@ public class OppfolgingRepository {
 
     public void slettOppfolgingData(AktorId aktoerId) {
         SqlUtils.delete(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
                 .execute();
     }
 }

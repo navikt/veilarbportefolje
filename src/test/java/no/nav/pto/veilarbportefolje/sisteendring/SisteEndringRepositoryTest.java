@@ -34,7 +34,7 @@ public class SisteEndringRepositoryTest {
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
                 .setKategori(SisteEndringsKategori.NY_IJOBB)
-                .setAktorId(AKTORID)
+                .setAktoerId(AKTORID)
                 .setAktivtetId("1");
 
         ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
@@ -42,13 +42,13 @@ public class SisteEndringRepositoryTest {
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
                 .setKategori(SisteEndringsKategori.AVBRUTT_EGEN)
-                .setAktorId(AKTORID)
+                .setAktoerId(AKTORID)
                 .setAktivtetId("2");
 
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);
 
-        OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.getValue());
+        OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.get());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
 
         assertThat(bruker.getSiste_endringer().get("ny_ijobb").getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));
@@ -65,14 +65,14 @@ public class SisteEndringRepositoryTest {
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
                 .setKategori(SisteEndringsKategori.FULLFORT_STILLING)
-                .setAktorId(AKTORID);
+                .setAktoerId(AKTORID);
 
         ZonedDateTime zonedDateTime_2 = ZonedDateTime.now(ZoneId.of("Europe/Oslo")).minusDays(3);
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
                 .setKategori(SisteEndringsKategori.MAL)
-                .setAktorId(AKTORID);
+                .setAktoerId(AKTORID);
 
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);

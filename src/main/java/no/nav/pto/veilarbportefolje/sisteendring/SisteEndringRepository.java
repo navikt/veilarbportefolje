@@ -31,11 +31,11 @@ public class SisteEndringRepository {
 
     public void upsert(SisteEndringDTO sisteEndringDTO) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
-                .set(AKTOERID, sisteEndringDTO.getAktorId().getValue())
+                .set(AKTOERID, sisteEndringDTO.getAktoerId().get())
                 .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
                 .set(AKTIVITETID, sisteEndringDTO.getAktivtetId())
-                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktorId().getValue()).and(
+                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().get()).and(
                         WhereClause.equals(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 )).execute();
     }
@@ -44,7 +44,7 @@ public class SisteEndringRepository {
         return SqlUtils
                 .select(jdbcTemplate, TABLE_NAME, rs -> rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT))
                 .column(SISTE_ENDRING_TIDSPUNKT)
-                .where(WhereClause.equals(AKTOERID, aktoerId.getValue()).and(
+                .where(WhereClause.equals(AKTOERID, aktoerId.get()).and(
                         WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.name())
                 )).execute();
     }
@@ -52,7 +52,7 @@ public class SisteEndringRepository {
 
     public void slettSisteEndringer(AktorId aktoerId) {
         SqlUtils.delete(jdbcTemplate, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.getValue())).execute();
+                .where(WhereClause.equals(AKTOERID, aktoerId.get())).execute();
     }
 
     public void setAlleSisteEndringTidspunkter(List<OppfolgingsBruker> oppfolgingsBrukere) {

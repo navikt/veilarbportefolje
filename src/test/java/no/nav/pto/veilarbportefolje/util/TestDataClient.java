@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.value.*;
 import no.nav.sbl.sql.SqlUtils;
@@ -25,7 +27,7 @@ public class TestDataClient {
     public void endreNavKontorForBruker(AktorId aktoerId, NavKontor navKontor) {
         final String fnr = SqlUtils.select(jdbcTemplate, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString(Table.VW_PORTEFOLJE_INFO.FODSELSNR))
                 .column(Table.VW_PORTEFOLJE_INFO.FODSELSNR)
-                .where(WhereClause.equals(Table.VW_PORTEFOLJE_INFO.AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(Table.VW_PORTEFOLJE_INFO.AKTOERID, aktoerId.get()))
                 .execute();
 
         SqlUtils.update(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
@@ -36,7 +38,7 @@ public class TestDataClient {
 
     public void setupBrukerMedArbeidsliste(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId) {
         SqlUtils.insert(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME)
-                .value(AKTOERID, aktoerId.getValue())
+                .value(AKTOERID, aktoerId.get())
                 .value(NAV_KONTOR_FOR_ARBEIDSLISTE, navKontor.getValue())
                 .execute();
 
@@ -51,24 +53,24 @@ public class TestDataClient {
 
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.PERSON_ID, personId.getValue())
-                .value(FODSELSNR, fnr.getValue())
+                .value(FODSELSNR, fnr.get())
                 .value(Table.OPPFOLGINGSBRUKER.NAV_KONTOR, navKontor.getValue())
                 .execute();
 
         SqlUtils.insert(jdbcTemplate, Table.AKTOERID_TO_PERSONID.TABLE_NAME)
-                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktoerId.getValue())
+                .value(Table.AKTOERID_TO_PERSONID.AKTOERID, aktoerId.get())
                 .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.getValue())
                 .value(Table.AKTOERID_TO_PERSONID.GJELDENE, 1)
                 .execute();
 
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue())
+                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
                 .value(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.getValue())
                 .execute();
 
         SqlUtils.insert(jdbcTemplate, Table.BRUKER_REGISTRERING.TABLE_NAME)
-                .value(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.getValue())
+                .value(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.get())
                 .execute();
 
         elasticTestClient.createUserInElastic(aktoerId);
@@ -77,7 +79,7 @@ public class TestDataClient {
     public String hentOppfolgingFlaggFraDatabase(AktorId aktoerId) {
         return SqlUtils.select(jdbcTemplate, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> rs.getString(Table.OPPFOLGING_DATA.OPPFOLGING))
                 .column(Table.OPPFOLGING_DATA.OPPFOLGING)
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
                 .execute();
     }
 }

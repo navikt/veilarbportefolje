@@ -42,7 +42,7 @@ class OppfolgingAvsluttetServiceTest extends EndToEndTest {
         String arbeidsliste = SqlUtils
                 .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
                 .column(Table.ARBEIDSLISTE.AKTOERID)
-                .where(WhereClause.equals(Table.ARBEIDSLISTE.AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(Table.ARBEIDSLISTE.AKTOERID, aktoerId.get()))
                 .execute();
 
         assertThat(arbeidsliste).isNull();
@@ -50,7 +50,7 @@ class OppfolgingAvsluttetServiceTest extends EndToEndTest {
         String registrering = SqlUtils
                 .select(jdbcTemplate, Table.BRUKER_REGISTRERING.TABLE_NAME, rs -> rs.getString(Table.BRUKER_REGISTRERING.AKTOERID))
                 .column(Table.BRUKER_REGISTRERING.AKTOERID)
-                .where(WhereClause.equals(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.get()))
                 .execute();
 
         assertThat(registrering).isNull();

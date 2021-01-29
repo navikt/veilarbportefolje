@@ -191,7 +191,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endret_Tid_EGEN_bruker_2_i_2020 = "2020-05-28T06:47:42.480Z";
         String endret_Tid_EGEN_bruker_3_i_2019 = "2019-05-28T00:47:42.480Z";
 
-        populateElastic(aktoerId_1.getValue(), aktoerId_2.getValue(), aktoerId_3.getValue());
+        populateElastic(aktoerId_1.get(), aktoerId_2.get(), aktoerId_3.get());
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
                     testEnhet,
@@ -319,7 +319,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         String endret = endretDato == null ? "" : "\"endretDato\":\""+endretDato+"\",";
         String aktivitetKafkaMelding = "{" +
                 "\"aktivitetId\":\"144136\"," +
-                "\"aktorId\":\""+aktoerId.getValue()+"\"," +
+                "\"aktorId\":\""+aktoerId.get()+"\"," +
                 "\"fraDato\":\"2020-07-09T12:00:00+02:00\"," +
                 "\"tilDato\":null," +
                     endret +
@@ -336,7 +336,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private void send_mal_melding(AktorId aktoerId, ZonedDateTime endretDato) {
         String endret = endretDato == null ? "" : "\"endretTidspunk\":\""+endretDato+"\"";
         String kafkamelding = "{" +
-                "\"aktorId\":\""+aktoerId.getValue()+"\"," +
+                "\"aktorId\":\""+aktoerId.get()+"\"," +
                 "\"lagtInnAv\":\"BRUKER\"," +
                 "\"veilederIdent\":\"Z12345\"," +
                 endret +

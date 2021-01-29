@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.auth;
 
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.http.HttpStatus;
@@ -19,18 +18,21 @@ public class AuthUtils {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, format("sjekk av %s feilet, %s", navn, data));
         }
     }
-
-    public static String getInnloggetBrukerToken() {
-        return SubjectHandler
+/*
+TODO:
+Usikker om denne koden får samme resultat om denne:
+    SubjectHandler
                 .getSsoToken()
                 .map(SsoToken::getToken)
+ */
+    public static String getInnloggetBrukerToken() {
+        return AuthContextHolder.getIdTokenString()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is missing"));
     }
 
     public static VeilederId getInnloggetVeilederIdent() {
-        return SubjectHandler
-                .getIdent()
-                .map(VeilederId::of)
+        return AuthContextHolder.getNavIdent()
+                .map(id -> VeilederId.of(id.get()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is missing from subject"));
     }
 }

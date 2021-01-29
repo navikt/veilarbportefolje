@@ -25,7 +25,7 @@ class OppfolgingStartetServiceTest extends EndToEndTest {
     void skal_sette_bruker_under_oppfølging_i_databasen() {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
         final String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("oppfolgingStartet", "2020-12-01T00:00:00+02:00")
                 .toString();
 

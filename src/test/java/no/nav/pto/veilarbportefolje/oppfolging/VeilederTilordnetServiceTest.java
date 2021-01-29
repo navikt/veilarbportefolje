@@ -26,7 +26,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
         final String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("veilederId", nyVeileder.getValue())
                 .toString();
 
@@ -48,7 +48,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
         final String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("veilederId", nyVeileder.getValue())
                 .toString();
 

@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.domene;
 
 
 import no.nav.common.abac.Pep;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import org.junit.Test;
@@ -28,28 +29,28 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalIkkeSeKode6Bruker() {
-        when(pep.harVeilederTilgangTilKode6(eq("X123456"))).thenReturn(false);
+        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(false);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(),"X123456");
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeKode7Bruker() {
-        when(pep.harVeilederTilgangTilKode7(eq("X123456"))).thenReturn(false);
+        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(false);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(),"X123456");
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeEgenAnsatt() {
-        when(pep.harVeilederTilgangTilEgenAnsatt(eq("X123456"))).thenReturn(false);
+        when(pep.harVeilederTilgangTilEgenAnsatt(eq(NavIdent.of("X123456")))).thenReturn(false);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(),"X123456");
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalSeKode6Bruker() {
-        when(pep.harVeilederTilgangTilKode6(eq("X123456"))).thenReturn(true);
+        when(pep.harVeilederTilgangTilKode6(eq(NavIdent.of("X123456")))).thenReturn(true);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(),"X123456");
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode6");
@@ -58,7 +59,7 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalSeKode7Bruker() {
-        when(pep.harVeilederTilgangTilKode7(eq("X123456"))).thenReturn(true);
+        when(pep.harVeilederTilgangTilKode7(eq(NavIdent.of("X123456")))).thenReturn(true);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), "X123456");
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode7");
@@ -67,7 +68,7 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalSeEgenAnsatt() {
-        when(pep.harVeilederTilgangTilEgenAnsatt(eq("X123456"))).thenReturn(true);
+        when(pep.harVeilederTilgangTilEgenAnsatt(eq(NavIdent.of("X123456")))).thenReturn(true);
         Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), "X123456");
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");

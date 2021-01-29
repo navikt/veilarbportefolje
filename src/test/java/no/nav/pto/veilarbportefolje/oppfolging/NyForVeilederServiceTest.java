@@ -33,7 +33,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
 
         SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue())
+                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
                 .value(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER,"J")
                 .execute();
@@ -41,7 +41,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         elasticTestClient.createUserInElastic(aktoerId);
 
         String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("nyForVeileder", false)
                 .toString();
 
@@ -60,7 +60,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
 
         SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue())
+                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
                 .value(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER,"N")
                 .execute();
@@ -68,7 +68,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         elasticTestClient.createUserInElastic(aktoerId);
 
         String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("nyForVeileder", true)
                 .toString();
 
