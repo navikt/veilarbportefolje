@@ -16,7 +16,7 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static no.nav.common.utils.EnvironmentUtils.requireNamespace;
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
 
 @Configuration
@@ -165,7 +165,6 @@ public class KafkaConfig {
 
 
     public static String requireKafkaTopicPostfix() {
-        String namespace = requireNamespace();
-        return namespace.equals("default") ? "p" : namespace;
+        return isDevelopment().orElse(false) ? "q1" : "p";
     }
 }
