@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -17,7 +16,6 @@ import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.never;
 

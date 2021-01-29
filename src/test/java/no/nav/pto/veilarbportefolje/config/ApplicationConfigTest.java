@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
@@ -173,8 +173,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public AktorregisterClient aktorregisterClient() {
-        return mock(AktorregisterClient.class);
+    public AktorOppslagClient aktorOppslagClient() {
+        return mock(AktorOppslagClient.class);
     }
 
     @Bean

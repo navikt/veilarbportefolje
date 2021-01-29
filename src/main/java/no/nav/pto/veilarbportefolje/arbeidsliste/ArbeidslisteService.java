@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
@@ -29,7 +29,7 @@ import static java.lang.String.format;
 public class ArbeidslisteService {
     private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
 
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorOppslagClient aktorOppslagClient;
     private final ArbeidslisteRepository arbeidslisteRepository;
     private final BrukerService brukerService;
     private final ElasticServiceV2 elasticServiceV2;
@@ -37,12 +37,13 @@ public class ArbeidslisteService {
 
     @Autowired
     public ArbeidslisteService(
-            AktorregisterClient aktorregisterClient,
+            AktorOppslagClient aktorOppslagClient,
             ArbeidslisteRepository arbeidslisteRepository,
             BrukerService brukerService,
-            ElasticServiceV2 elasticServiceV2, MetricsClient metricsClient
+            ElasticServiceV2 elasticServiceV2,
+            MetricsClient metricsClient
     ) {
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorOppslagClient = aktorOppslagClient;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.brukerService = brukerService;
         this.elasticServiceV2 = elasticServiceV2;
@@ -103,7 +104,7 @@ public class ArbeidslisteService {
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
-        return Try.of(() -> aktorregisterClient.hentAktorId(fnr));
+        return Try.of(() -> aktorOppslagClient.hentAktorId(fnr));
     }
 
     public Validation<String, List<Fnr>> erVeilederForBrukere(List<Fnr> fnrs) {

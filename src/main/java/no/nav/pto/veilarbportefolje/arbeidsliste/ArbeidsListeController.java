@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
@@ -35,19 +35,18 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerService brukerService;
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorOppslagClient aktorOppslagClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
             BrukerService brukerService,
-            AktorregisterClient aktorregisterClient,
-            AuthService authService
+            AktorOppslagClient aktorOppslagClient, AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorOppslagClient = aktorOppslagClient;
         this.authService = authService;
 
     }
@@ -82,7 +81,7 @@ public class ArbeidsListeController {
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
         Fnr fnr = new Fnr(fnrString);
-        Try<AktorId> aktoerId = Try.of(()-> aktorregisterClient.hentAktorId(fnr));
+        Try<AktorId> aktoerId = Try.of(()-> aktorOppslagClient.hentAktorId(fnr));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))

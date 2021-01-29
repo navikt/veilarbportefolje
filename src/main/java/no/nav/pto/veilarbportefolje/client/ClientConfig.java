@@ -3,26 +3,18 @@ package no.nav.pto.veilarbportefolje.client;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPep;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
-import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.client.aktorregister.AktorregisterHttpClient;
-import no.nav.common.client.aktorregister.CachedAktorregisterClient;
 import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.client.pdl.CachedAktorOppslagClient;
-import no.nav.common.health.HealthCheckResult;
+import no.nav.common.client.pdl.PdlAktorOppslagClient;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.http.HttpClient;
-import java.util.List;
-import java.util.Map;
-
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
 
@@ -31,11 +23,13 @@ import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_
 public class ClientConfig {
 
     @Bean
-    public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
-        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
-                properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
+    public AktorOppslagClient aktorOppslagClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
+        AktorOppslagClient aktorOppslagClient =  new PdlAktorOppslagClient(
+                properties.getPdlUrl(),
+                systemUserTokenProvider::getSystemUserToken,
+                () -> APPLICATION_NAME
         );
-        return new CachedAktorregisterClient(aktorregisterClient);
+        return new CachedAktorOppslagClient(aktorOppslagClient);
     }
 
     @Bean

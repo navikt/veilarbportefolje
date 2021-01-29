@@ -1,9 +1,9 @@
 package no.nav.pto.veilarbportefolje.admin;
 
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
+import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.common.types.identer.AktorId;
@@ -21,15 +21,15 @@ import java.util.List;
 public class AdminController {
     private final List<String> admins;
     private final RegistreringService registreringService;
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorOppslagClient aktorOppslagClient;
     private final NyForVeilederService nyForVeilederService;
     private final AktivitetService aktivitetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
 
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorregisterClient aktorregisterClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService) {
+    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorOppslagClient aktorOppslagClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService) {
         this.admins = environmentProperties.getAdmins();
         this.registreringService = registreringService;
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorOppslagClient = aktorOppslagClient;
         this.nyForVeilederService = nyForVeilederService;
         this.aktivitetService = aktivitetService;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
@@ -38,7 +38,7 @@ public class AdminController {
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
         authorizeAdmin();
-        return aktorregisterClient.hentAktorId(Fnr.of(fnr)).get();
+        return aktorOppslagClient.hentAktorId(Fnr.of(fnr)).get();
     }
 
     @PostMapping("/rewind/registrering")
