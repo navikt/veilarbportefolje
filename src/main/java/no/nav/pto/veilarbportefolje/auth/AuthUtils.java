@@ -18,13 +18,7 @@ public class AuthUtils {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, format("sjekk av %s feilet, %s", navn, data));
         }
     }
-/*
-TODO:
-Usikker om denne koden får samme resultat om denne:
-    SubjectHandler
-                .getSsoToken()
-                .map(SsoToken::getToken)
- */
+
     public static String getInnloggetBrukerToken() {
         return AuthContextHolder.getIdTokenString()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is missing"));

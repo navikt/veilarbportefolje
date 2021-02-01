@@ -29,8 +29,6 @@ public class FnrTest {
         assertTrue(fnr1.equals(fnr2));
     }
 
-    //TODO: endre her eller i common
-    /*
     @Test
     public void skalKasteExceptionVedUgyldigFnr() throws Exception {
         thrown.expect(IllegalArgumentException.class);
@@ -44,5 +42,4 @@ public class FnrTest {
         String fnr = "aaaaaaaaaaa";
         new Fnr(fnr);
     }
-    */
 }
