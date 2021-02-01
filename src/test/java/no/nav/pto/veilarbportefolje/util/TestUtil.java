@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje;
+package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
 import org.flywaydb.core.Flyway;

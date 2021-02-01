@@ -98,10 +98,6 @@ public class DateUtils {
         return isFarInTheFutureDate(Optional.ofNullable(instant).map(Instant::toEpochMilli).map(Timestamp::new).orElse(null));
     }
 
-    public static boolean isFarInTheFutureDate(Date date) {
-        return isFarInTheFutureDate(Optional.ofNullable(date).map(Date::toInstant).map(Instant::toEpochMilli).map(Timestamp::new).orElse(null));
-    }
-
     private static Timestamp getFarInTheFutureTimestamp() {
         return timestampFromISO8601(FAR_IN_THE_FUTURE_DATE);
     }
