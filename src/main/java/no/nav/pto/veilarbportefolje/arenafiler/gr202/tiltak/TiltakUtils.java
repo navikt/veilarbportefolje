@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
+import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.etterFilterDato;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.not;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 
 public class TiltakUtils {
 
@@ -53,7 +55,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(AktorId.of(null))
+                .setAktoerid(randomAktorId())
                 .setAktivitetType(TILTAK)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)
@@ -79,7 +81,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(AktorId.of(null))
+                .setAktoerid(randomAktorId())
                 .setAktivitetType(GRUPPEAKTIVITET)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)
@@ -102,7 +104,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(AktorId.of(null))
+                .setAktoerid(randomAktorId())
                 .setAktivitetType(UTDANNINGAKTIVITET)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)

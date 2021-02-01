@@ -23,8 +23,8 @@ import static org.mockito.Mockito.never;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class BrukerServiceTest {
 
-    private static final AktorId AKTOER_ID = AktorId.of("aktoerid1");
-    private static final Fnr FNR = Fnr.of("10108000398");
+    private static final String AKTOER_ID = "aktoerid1";
+    private static final String FNR = "10108000398";
     private static final String PERSON_ID = "111111";
 
     private BrukerService brukerService;
@@ -87,8 +87,8 @@ public class BrukerServiceTest {
 
         AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorOppslagClient.hentFnr(nyAktorId)).thenReturn(FNR);
-        when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(nyAktorId);
+        when(aktorOppslagClient.hentFnr(nyAktorId)).thenReturn(Fnr.of(FNR));
+        when(aktorOppslagClient.hentAktorId(Fnr.of(FNR))).thenReturn(nyAktorId);
 
         brukerService.hentPersonidFraAktoerid(nyAktorId);
 
@@ -107,8 +107,8 @@ public class BrukerServiceTest {
 
         AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorOppslagClient.hentFnr(aktoerId)).thenReturn(FNR);
-        when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(nyAktorId);
+        when(aktorOppslagClient.hentFnr(aktoerId)).thenReturn(Fnr.of(FNR));
+        when(aktorOppslagClient.hentAktorId(Fnr.of(FNR))).thenReturn(nyAktorId);
 
         brukerService.hentPersonidFraAktoerid(aktoerId);
 
