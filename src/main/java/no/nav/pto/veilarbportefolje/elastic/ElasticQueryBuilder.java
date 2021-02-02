@@ -164,6 +164,9 @@ public class ElasticQueryBuilder {
             case "vedtakstatus":
                 searchSourceBuilder.sort("vedtak_status", order);
                 break;
+            case "ansvarlig_veileder_for_vedtak":
+                searchSourceBuilder.sort("ansvarlig_veileder_for_vedtak", order);
+                break;
             case "arbeidslistekategori":
                 searchSourceBuilder.sort("arbeidsliste_kategori", order);
                 break;
