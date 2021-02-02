@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
-import no.nav.pto.veilarbportefolje.TestUtil;
+import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import org.junit.After;
 import org.junit.BeforeClass;

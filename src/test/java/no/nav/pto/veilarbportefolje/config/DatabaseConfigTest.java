@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.pto.veilarbportefolje.TestUtil;
+import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;

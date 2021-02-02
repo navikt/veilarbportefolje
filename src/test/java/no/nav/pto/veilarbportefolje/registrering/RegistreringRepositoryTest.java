@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
-import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class RegistreringRepositoryTest {

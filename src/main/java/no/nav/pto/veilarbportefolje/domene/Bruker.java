@@ -13,7 +13,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static no.nav.pto.veilarbportefolje.util.CollectionUtils.toList;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -115,7 +114,7 @@ public class Bruker {
                 .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
                 .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
-                .setBrukertiltak(toList(bruker.getTiltak()))
+                .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))

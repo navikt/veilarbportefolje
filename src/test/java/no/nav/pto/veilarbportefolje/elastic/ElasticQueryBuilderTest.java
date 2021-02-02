@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -13,12 +12,12 @@ import org.junit.Test;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
-import static no.nav.pto.veilarbportefolje.util.CollectionUtils.mapOf;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.search.sort.SortOrder.ASC;
@@ -50,9 +49,9 @@ public class ElasticQueryBuilderTest {
     public void skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
         val navnPaAktivitet = "behandling";
         val filtervalg = new Filtervalg().setAktiviteter(
-                mapOf(
-                        Pair.of(navnPaAktivitet, JA),
-                        Pair.of("egen", NEI)
+                Map.of(
+                        navnPaAktivitet, JA,
+                        "egen", NEI
                 )
         );
 
@@ -66,7 +65,7 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_bygge_korrekt_json_om_man_velger_nei_på_tiltak() {
-        val filtervalg = new Filtervalg().setAktiviteter(mapOf(Pair.of("tiltak", NEI)));
+        val filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", NEI));
         val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
         val expectedJson = readFileAsJsonString("/nei_paa_tiltak.json");
@@ -77,7 +76,7 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
-        val filtervalg = new Filtervalg().setAktiviteter(mapOf(Pair.of("behandling", JA)));
+        val filtervalg = new Filtervalg().setAktiviteter(Map.of("behandling", JA));
         val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
         val expectedJson = readFileAsJsonString("/ja_paa_behandling.json");
@@ -88,7 +87,7 @@ public class ElasticQueryBuilderTest {
 
     @Test
     public void skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
-        val filtervalg = new Filtervalg().setAktiviteter(mapOf(Pair.of("tiltak", AktivitetFiltervalg.JA)));
+        val filtervalg = new Filtervalg().setAktiviteter(Map.of("tiltak", AktivitetFiltervalg.JA));
         val builders = byggAktivitetFilterQuery(filtervalg, boolQuery());
 
         val expectedJson = readFileAsJsonString("/ja_paa_tiltak.json");

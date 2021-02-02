@@ -18,8 +18,6 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import static no.nav.common.utils.EnvironmentUtils.resolveHostName;
@@ -78,14 +76,6 @@ public class ElasticUtils {
             }
         };
     }
-
-
-    public static String createIndexName(String alias) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
-        String timestamp = LocalDateTime.now().format(formatter);
-        return String.format("%s_%s", alias, timestamp);
-    }
-
 
     @SneakyThrows
     public static long getCount() {

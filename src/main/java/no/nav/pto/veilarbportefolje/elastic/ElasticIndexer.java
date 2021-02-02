@@ -16,11 +16,9 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
@@ -112,11 +110,6 @@ public class ElasticIndexer {
         brukerRepository.hentBrukerFraView(aktoerId).ifPresent(this::indekserBruker);
     }
 
-
-    public void indekser(Fnr fnr) {
-        brukerRepository.hentBrukerFraView(fnr).ifPresent(this::indekserBruker);
-    }
-
     public void indekser(List<PersonId> personIds) {
         partition(personIds, BATCH_SIZE).forEach(partition -> {
             final List<OppfolgingsBruker> oppfolgingsBrukers = brukerRepository.hentBrukereFraView(partition);
@@ -140,17 +133,6 @@ public class ElasticIndexer {
         GetAliasesRequest getAliasRequest = new GetAliasesRequest(alias.getValue());
         GetAliasesResponse response = restHighLevelClient.indices().getAlias(getAliasRequest, DEFAULT);
         return response.getAliases().keySet().stream().findFirst();
-    }
-
-    public void slettGammelIndeks(String gammelIndeks) {
-        try {
-            AcknowledgedResponse response = restHighLevelClient.indices().delete(new DeleteIndexRequest(gammelIndeks), DEFAULT);
-            if (!response.isAcknowledged()) {
-                log.warn("Kunne ikke slette gammel indeks {}", gammelIndeks);
-            }
-        } catch (Exception e) {
-            log.error("Feil vid slettingen av gammelindeks ", e);
-        }
     }
 
     public void skrivTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {

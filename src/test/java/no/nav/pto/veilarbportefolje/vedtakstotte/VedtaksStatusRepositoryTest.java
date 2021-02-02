@@ -4,12 +4,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class VedtaksStatusRepositoryTest {
 
