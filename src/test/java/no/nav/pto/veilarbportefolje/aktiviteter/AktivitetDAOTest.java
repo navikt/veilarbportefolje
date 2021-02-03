@@ -244,8 +244,8 @@ public class AktivitetDAOTest {
 
     @Test
     public void skalHenteBrukertiltakForListeAvFnr() {
-        Fnr fnr1 = Fnr.of("11111111111");
-        Fnr fnr2 = Fnr.of("22222222222");
+        Fnr fnr1 = Fnr.ofValidFnr("11111111111");
+        Fnr fnr2 = Fnr.ofValidFnr("22222222222");
 
         List<Brukertiltak> brukertiltak = aktivitetDAO.hentBrukertiltak(asList(fnr1, fnr2));
 

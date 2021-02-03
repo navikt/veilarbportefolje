@@ -24,7 +24,7 @@ public class ArbeidslisteRepositoryTest {
 
         repo = new ArbeidslisteRepository(jdbcTemplate);
 
-        data = new ArbeidslisteDTO(new Fnr("01010101010"))
+        data = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
                 .setAktorId(AktorId.of("22222222"))
                 .setVeilederId(VeilederId.of("X11111"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
@@ -32,7 +32,7 @@ public class ArbeidslisteRepositoryTest {
                 .setOverskrift("Dette er en overskrift")
                 .setKategori(Arbeidsliste.Kategori.BLA);
 
-        ArbeidslisteDTO data2 = new ArbeidslisteDTO(new Fnr("01010101011"))
+        ArbeidslisteDTO data2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
                 .setAktorId(AktorId.of("22222223"))
                 .setVeilederId(VeilederId.of("X11112"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
@@ -60,7 +60,7 @@ public class ArbeidslisteRepositoryTest {
         assertThat(Arbeidsliste.Kategori.BLA).isEqualTo(result.get().getKategori());
 
         Try<Arbeidsliste> updatedArbeidsliste = result
-                .map(arbeidsliste -> new ArbeidslisteDTO(Fnr.of("01010101010"))
+                .map(arbeidsliste -> new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
                         .setAktorId(data.getAktorId())
                         .setVeilederId(data.getVeilederId())
                         .setEndringstidspunkt(data.getEndringstidspunkt())

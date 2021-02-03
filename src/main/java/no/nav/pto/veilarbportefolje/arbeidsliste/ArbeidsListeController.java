@@ -80,7 +80,7 @@ public class ArbeidsListeController {
 
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
-        Fnr fnr = new Fnr(fnrString);
+        Fnr fnr = Fnr.ofValidFnr(fnrString);
         Try<AktorId> aktoerId = Try.of(()-> aktorOppslagClient.hentAktorId(fnr));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
@@ -102,13 +102,13 @@ public class ArbeidsListeController {
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
-        sjekkTilgangTilEnhet(new Fnr(fnr));
+        sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
+        arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
 
@@ -118,7 +118,7 @@ public class ArbeidsListeController {
     @PutMapping("{fnr}")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
-        Fnr fnr = new Fnr(fnrString);
+        Fnr fnr = Fnr.ofValidFnr(fnrString);
         sjekkTilgangTilEnhet(fnr);
         validerArbeidsliste(body, true);
 
@@ -138,9 +138,9 @@ public class ArbeidsListeController {
     public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
-        sjekkTilgangTilEnhet(new Fnr(fnr));
+        sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(new Fnr(fnr));
+        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
         if (antallRaderSlettet != 1) {
             throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
@@ -157,7 +157,7 @@ public class ArbeidsListeController {
 
             java.util.List<Fnr> fnrs = arbeidslisteData
                     .stream()
-                    .map(data -> new Fnr(data.getFnr()))
+                    .map(data -> Fnr.ofValidFnr(data.getFnr()))
                     .collect(Collectors.toList());
 
             Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);

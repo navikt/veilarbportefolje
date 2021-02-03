@@ -30,7 +30,7 @@ class PersonRepositoryTest {
 
     @Test
     void skalIkkeTryneOmBrukerIkkeFinnes() {
-        Optional<Personinfo> finnesikke = personRepository.hentPersoninfoForFnr(Fnr.of("11111111111"));
+        Optional<Personinfo> finnesikke = personRepository.hentPersoninfoForFnr(Fnr.ofValidFnr("11111111111"));
         assertThat(finnesikke).isNotPresent();
     }
 

@@ -178,7 +178,7 @@ public class AktivitetDAO {
                 .queryForList(hentBrukertiltakForListeAvFnrSQL(), params)
                 .stream()
                 .map(row -> Brukertiltak.of(
-                        Fnr.of((String) row.get("FNR")),
+                        Fnr.ofValidFnr((String) row.get("FNR")),
                         (String) row.get("TILTAK"),
                         (Timestamp) row.get("TILDATO"))
                 )

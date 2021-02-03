@@ -184,9 +184,9 @@ public class TiltakHandler {
     private Map<PersonId, TiltakOppdateringer> finnTiltaksOppdateringerFraTiltaksfil(io.vavr.collection.List<Bruker> brukereBatch,
                                                                                      Map<Fnr, Optional<PersonId>> personidsMap) {
         return brukereBatch.toJavaStream()
-                .filter(bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).isPresent())
+                .filter(bruker -> personidsMap.get(Fnr.ofValidFnr(bruker.getPersonident())).isPresent())
                 .collect(toMap(
-                        bruker -> personidsMap.get(Fnr.of(bruker.getPersonident())).get(),
+                        bruker -> personidsMap.get(Fnr.ofValidFnr(bruker.getPersonident())).get(),
                         TiltakUtils::finnOppdateringForBruker
                 ));
     }
@@ -286,7 +286,7 @@ public class TiltakHandler {
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
-                                Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
+                                Optional<PersonId> personId = fnrPersonidMap.get(Fnr.ofValidFnr(bruker.getPersonident()));
                                 return personId.map(p -> utledAktivitetstatusForTiltak(bruker, p)).orElse(null);
                             })
                             .filter(Objects::nonNull)
@@ -306,7 +306,7 @@ public class TiltakHandler {
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
-                                Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
+                                Optional<PersonId> personId = fnrPersonidMap.get(Fnr.ofValidFnr(bruker.getPersonident()));
                                 return personId.map(p -> utledGruppeaktivitetstatus(bruker, p)).orElse(null);
                             })
                             .filter(Objects::nonNull)
@@ -326,7 +326,7 @@ public class TiltakHandler {
                     List<AktivitetStatus> aktivitetStatuses = brukereJavaBatch
                             .stream()
                             .map(bruker -> {
-                                Optional<PersonId> personId = fnrPersonidMap.get(new Fnr(bruker.getPersonident()));
+                                Optional<PersonId> personId = fnrPersonidMap.get(Fnr.ofValidFnr(bruker.getPersonident()));
                                 return personId.map(p -> TiltakUtils.utledUtdanningsaktivitetstatus(bruker, p)).orElse(null);
                             })
                             .filter(Objects::nonNull)

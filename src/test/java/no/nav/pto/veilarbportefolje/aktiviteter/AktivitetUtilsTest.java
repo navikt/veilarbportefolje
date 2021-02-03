@@ -198,8 +198,8 @@ public class AktivitetUtilsTest {
     private List<Brukertiltak> tiltakData(String dato1, String dato2) {
         List<Brukertiltak> tiltak = new ArrayList<>();
 
-        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T1", parseDato(dato1)));
-        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T2", parseDato(dato2)));
+        tiltak.add(Brukertiltak.of(Fnr.ofValidFnr("12345678910"), "T1", parseDato(dato1)));
+        tiltak.add(Brukertiltak.of(Fnr.ofValidFnr("12345678910"), "T2", parseDato(dato2)));
 
         return tiltak;
     }

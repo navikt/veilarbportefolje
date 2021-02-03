@@ -57,7 +57,7 @@ public class BrukerServiceTest {
     }
 
     public void skalFinnePersonIdFraDatabase() {
-        when(aktorOppslagClient.hentFnr(any(AktorId.class))).thenReturn(Fnr.of(FNR_FRA_SOAP_TJENESTE));
+        when(aktorOppslagClient.hentFnr(any(AktorId.class))).thenReturn(Fnr.ofValidFnr(FNR_FRA_SOAP_TJENESTE));
         when(aktorOppslagClient.hentAktorId(any(Fnr.class))).thenReturn(AktorId.of(AKTOERID_FRA_SOAP_TJENESTE));
 
         AktorId aktoerId = AktorId.of("111");
@@ -87,8 +87,8 @@ public class BrukerServiceTest {
 
         AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorOppslagClient.hentFnr(nyAktorId)).thenReturn(Fnr.of(FNR));
-        when(aktorOppslagClient.hentAktorId(Fnr.of(FNR))).thenReturn(nyAktorId);
+        when(aktorOppslagClient.hentFnr(nyAktorId)).thenReturn(Fnr.ofValidFnr(FNR));
+        when(aktorOppslagClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
 
         brukerService.hentPersonidFraAktoerid(nyAktorId);
 
@@ -107,8 +107,8 @@ public class BrukerServiceTest {
 
         AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorOppslagClient.hentFnr(aktoerId)).thenReturn(Fnr.of(FNR));
-        when(aktorOppslagClient.hentAktorId(Fnr.of(FNR))).thenReturn(nyAktorId);
+        when(aktorOppslagClient.hentFnr(aktoerId)).thenReturn(Fnr.ofValidFnr(FNR));
+        when(aktorOppslagClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
 
         brukerService.hentPersonidFraAktoerid(aktoerId);
 

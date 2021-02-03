@@ -27,7 +27,7 @@ public class PersoninfoController {
     @GetMapping("/{fnr}")
     public Personinfo hentPersoninfo(@PathVariable("fnr") String fnr) {
         authService.tilgangTilBruker(fnr);
-        return personRepository.hentPersoninfoForFnr(Fnr.of(fnr))
+        return personRepository.hentPersoninfoForFnr(Fnr.ofValidFnr(fnr))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Kunne ikke finne personinfo for bruker"));
     }
 

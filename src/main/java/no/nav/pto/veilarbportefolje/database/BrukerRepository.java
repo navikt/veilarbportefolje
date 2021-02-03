@@ -390,7 +390,7 @@ public class BrukerRepository {
 
     @SneakyThrows
     private Fnr mapFnrFromOppfolgingsbruker(ResultSet resultSet) {
-        return Fnr.of(resultSet.getString("FODSELSNR"));
+        return Fnr.ofValidFnr(resultSet.getString("FODSELSNR"));
     }
 
     public List<Brukerdata> retrieveBrukerdata(List<String> personIds) {

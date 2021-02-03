@@ -38,7 +38,7 @@ public class AdminController {
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
         authorizeAdmin();
-        return aktorOppslagClient.hentAktorId(Fnr.of(fnr)).get();
+        return aktorOppslagClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
     }
 
     @PostMapping("/rewind/registrering")

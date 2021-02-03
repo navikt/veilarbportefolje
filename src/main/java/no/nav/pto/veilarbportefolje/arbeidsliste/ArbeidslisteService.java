@@ -129,7 +129,7 @@ public class ArbeidslisteService {
                         .getOrElse(false);
 
         if (erVeilederForBruker) {
-            return valid(new Fnr(fnr));
+            return valid(Fnr.ofValidFnr(fnr));
         }
         return invalid(format("Veileder %s er ikke veileder for bruker med fnr %s", veilederId, fnr));
     }

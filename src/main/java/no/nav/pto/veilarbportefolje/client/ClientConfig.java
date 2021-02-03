@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.client;
 
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPep;
-import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
+import no.nav.common.abac.*;
+import no.nav.common.abac.audit.*;
 import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.client.pdl.CachedAktorOppslagClient;
 import no.nav.common.client.pdl.PdlAktorOppslagClient;
@@ -46,8 +45,10 @@ public class ClientConfig {
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
         return new VeilarbPep(
-                properties.getAbacUrl(), serviceUserCredentials.username,
-                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
+                serviceUserCredentials.username,
+                new AbacCachedClient(new AbacHttpClient(properties.getAbacUrl(), serviceUserCredentials.username, serviceUserCredentials.password)),
+                new NimbusSubjectProvider(),
+                new AuditConfig(new AuditLogger(), new SpringAuditRequestInfoSupplier(),null)
         );
     }
 

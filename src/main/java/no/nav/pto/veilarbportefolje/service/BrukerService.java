@@ -53,7 +53,7 @@ public class BrukerService {
     public Map<Fnr, Optional<PersonId>> hentPersonidsForFnrs(List<Fnr> fnrs) {
         Map<Fnr, Optional<PersonId>> typeMap = new HashMap<>();
         Map<String, Optional<String>> stringMap = brukerRepository.retrievePersonidFromFnrs(fnrs.stream().map(Fnr::toString).collect(toList()));
-        stringMap.forEach((key, value) -> typeMap.put(new Fnr(key), value.map(PersonId::of)));
+        stringMap.forEach((key, value) -> typeMap.put(Fnr.ofValidFnr(key), value.map(PersonId::of)));
         return typeMap;
     }
 

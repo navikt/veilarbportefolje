@@ -329,7 +329,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteEnhetForBruker() {
-        Fnr fnr = new Fnr("12345678900");
+        Fnr fnr = Fnr.ofValidFnr("12345678900");
         String expectedEnhet = "123";
 
         insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
@@ -345,7 +345,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHentePersonIdFraDatabase() throws Exception {
-        Fnr fnr = new Fnr("12345678900");
+        Fnr fnr = Fnr.ofValidFnr("12345678900");
 
         PersonId expectedPersonId = PersonId.of("123456");
         insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
@@ -365,7 +365,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
-        Fnr fnr = new Fnr("99999999999");
+        Fnr fnr = Fnr.ofValidFnr("99999999999");
         Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
 
         assertTrue(result.get() == null);
@@ -375,7 +375,7 @@ public class BrukerRepositoryTest {
     public void skalHenteFnrForPersonIdFraDatabase() throws Exception {
         PersonId personId = PersonId.of("123456");
 
-        Fnr expectedFnr = new Fnr("12345678900");
+        Fnr expectedFnr = Fnr.ofValidFnr("12345678900");
 
         insertOppfolgingsbrukerForPersonIdToFnrMapping(expectedFnr, personId);
 

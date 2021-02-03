@@ -40,7 +40,7 @@ class AktivitetKafkaConsumerTest extends EndToEndTest {
     void skal_oppdatere_aktivitet_i_elastic() {
         final AktorId aktoerId = AktorId.of("123456789");
         final PersonId personId = PersonId.of("1234");
-        final Fnr fnr = Fnr.of("00000000000");
+        final Fnr fnr = Fnr.ofValidFnr("00000000000");
 
         final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.of("Europe/Oslo")).toInstant().toString();
 

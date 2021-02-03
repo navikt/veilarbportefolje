@@ -133,7 +133,7 @@ public class ValideringsRegler {
 
     public static Validation<String, Fnr> validerFnr(String fnr) {
         if (fnr != null && fnr.matches("\\d{11}")) {
-            return valid(new Fnr(fnr));
+            return valid(Fnr.ofValidFnr(fnr));
         }
         return invalid(format("%s er ikke et gyldig fnr", fnr));
     }

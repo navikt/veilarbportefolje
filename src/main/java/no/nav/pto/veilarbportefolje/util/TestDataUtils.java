@@ -10,7 +10,7 @@ import static java.util.concurrent.ThreadLocalRandom.current;
 public class TestDataUtils {
 
     public static Fnr randomFnr() {
-        return Fnr.of(randomDigits(11));
+        return Fnr.ofValidFnr(randomDigits(11));
     }
 
 
