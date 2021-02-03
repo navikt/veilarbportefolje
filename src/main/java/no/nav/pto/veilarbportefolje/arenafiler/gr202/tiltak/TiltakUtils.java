@@ -2,12 +2,10 @@ package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
-import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
@@ -20,7 +18,6 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.etterFilterDato;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.not;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 
 public class TiltakUtils {
 
@@ -55,7 +52,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(randomAktorId())
+                .setAktoerid(null)
                 .setAktivitetType(TILTAK)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)
@@ -81,7 +78,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(randomAktorId())
+                .setAktoerid(null)
                 .setAktivitetType(GRUPPEAKTIVITET)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)
@@ -104,7 +101,7 @@ public class TiltakUtils {
 
         return new AktivitetStatus()
                 .setPersonid(personId)
-                .setAktoerid(randomAktorId())
+                .setAktoerid(null)
                 .setAktivitetType(UTDANNINGAKTIVITET)
                 .setAktiv(true)
                 .setNesteStart(nesteStartDato)
