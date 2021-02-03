@@ -4,13 +4,12 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,9 +165,9 @@ class RegistreringServiceTest extends EndToEndTest {
     }
 
     private void populateElastic(String enhet) {
-        final AktoerId aktoerId1 = TestDataUtils.randomAktoerId();
-        final AktoerId aktoerId2 = TestDataUtils.randomAktoerId();
-        final AktoerId aktoerId3 = TestDataUtils.randomAktoerId();
+        final AktoerId aktoerId1 = randomAktoerId();
+        final AktoerId aktoerId2 = randomAktoerId();
+        final AktoerId aktoerId3 = randomAktoerId();
 
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()

@@ -33,12 +33,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.domene.AAPMaxtidUkeFasettMapping.UKE_UNDER12;
 import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_UNDER2;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -89,12 +89,6 @@ public class BrukerRepositoryTest {
 
         final Optional<OppfolgingsBruker> bruker = brukerRepository.hentBrukerFraView(fnr);
         assertThat(bruker).isPresent();
-    }
-
-    @Test
-    public void skal_returnere_riktig_antall_brukere_under_oppfolging() {
-        List<OppfolgingsBruker> brukereUnderOppfolging = brukerRepository.hentAlleBrukereUnderOppfolging(0, ANTALL_LINJER_I_TESTDATA);
-        assertThat(brukereUnderOppfolging.size()).isEqualTo(ANTALL_OPPFOLGINGSBRUKERE_I_TESTDATA);
     }
 
     @Test

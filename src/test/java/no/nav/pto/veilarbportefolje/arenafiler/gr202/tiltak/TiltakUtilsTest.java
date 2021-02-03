@@ -1,19 +1,18 @@
 package no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak;
 
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import lombok.SneakyThrows;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
 import no.nav.melding.virksomhet.tiltakogaktiviteterforbrukere.v1.*;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils;
+import no.nav.pto.veilarbportefolje.aktiviteter.UtdanningaktivitetTyper;
+import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -24,7 +23,7 @@ import java.util.GregorianCalendar;
 import static java.lang.System.setProperty;
 import static junit.framework.TestCase.assertTrue;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TiltakUtilsTest {
