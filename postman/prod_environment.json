@@ -22,7 +22,7 @@
 		},
 		{
 			"key": "indeks",
-			"value": "brukerindeks_p",
+			"value": "brukerindeks",
 			"description": "",
 			"enabled": true
 		}

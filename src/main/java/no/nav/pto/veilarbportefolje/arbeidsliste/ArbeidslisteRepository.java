@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -99,12 +98,6 @@ public class ArbeidslisteRepository {
     public int slettArbeidsliste(AktorId aktoerId) {
         return SqlUtils.delete(db, TABLE_NAME)
                 .where(WhereClause.equals(AKTOERID, aktoerId.get()))
-                .execute();
-    }
-
-    public int slettArbeidsliste(Fnr fnr) {
-        return SqlUtils.delete(db, TABLE_NAME)
-                .where(WhereClause.equals(FNR, fnr.toString()))
                 .execute();
     }
 

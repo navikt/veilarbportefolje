@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -22,7 +22,6 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
-import static no.nav.pto.veilarbportefolje.util.CollectionUtils.mapOf;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
@@ -720,7 +719,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setAktiviteter(mapOf(Pair.of("SOKEAVTALE", JA)));
+                .setAktiviteter(Map.of("SOKEAVTALE", JA));
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -769,7 +768,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setAktiviteter(mapOf(Pair.of("SOKEAVTALE", AktivitetFiltervalg.NEI)));
+                .setAktiviteter(Map.of("SOKEAVTALE", AktivitetFiltervalg.NEI));
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -817,7 +816,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setAktiviteter(mapOf(Pair.of("TILTAK", JA)));
+                .setAktiviteter(Map.of("TILTAK", JA));
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,
@@ -866,7 +865,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         val filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setAktiviteter(mapOf(Pair.of("TILTAK", AktivitetFiltervalg.NEI)));
+                .setAktiviteter(Map.of("TILTAK", AktivitetFiltervalg.NEI));
 
         val response = elasticService.hentBrukere(
                 TEST_ENHET,

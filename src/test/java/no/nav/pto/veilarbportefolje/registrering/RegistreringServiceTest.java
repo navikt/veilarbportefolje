@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.Filtervalg;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,20 +165,20 @@ class RegistreringServiceTest extends EndToEndTest {
     }
 
     private void populateElastic(String enhet) {
-        final AktorId aktoerId1 = TestDataUtils.randomAktorId();
-        final AktorId aktoerId2 = TestDataUtils.randomAktorId();
-        final AktorId aktoerId3 = TestDataUtils.randomAktorId();
+        final AktorId aktoerId1 = randomAktorId();
+        final AktorId aktoerId2 = randomAktorId();
+        final AktorId aktoerId3 = randomAktorId();
 
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
-                        .setAktoer_id(aktoerId1.toString())
+                        .setAktoer_id(aktoerId1.get())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("NEI"),
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(aktoerId2.toString())
+                        .setAktoer_id(aktoerId2.get())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("JA")
@@ -187,7 +186,7 @@ class RegistreringServiceTest extends EndToEndTest {
                         .setUtdanning("GRUNNSKOLE"),
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(aktoerId3.toString())
+                        .setAktoer_id(aktoerId3.get())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")

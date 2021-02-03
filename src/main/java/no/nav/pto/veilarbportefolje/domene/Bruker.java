@@ -13,7 +13,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static no.nav.pto.veilarbportefolje.util.CollectionUtils.toList;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -69,6 +68,7 @@ public class Bruker {
     boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
+    String sisteEndringAktivitetId;
 
     public static Bruker of(OppfolgingsBruker bruker, boolean erVedtakstottePilotPa) {
 
@@ -115,7 +115,7 @@ public class Bruker {
                 .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
                 .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
-                .setBrukertiltak(toList(bruker.getTiltak()))
+                .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
@@ -124,6 +124,7 @@ public class Bruker {
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .setSisteEndringKategori(bruker.getAggregert_siste_endring_kategori())
                 .setSisteEndringTidspunkt(bruker.getAggregert_siste_endring_tidspunkt())
+                .setSisteEndringAktivitetId(bruker.getAggregert_siste_endring_aktivitetId())
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))

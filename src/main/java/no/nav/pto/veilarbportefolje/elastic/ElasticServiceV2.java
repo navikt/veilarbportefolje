@@ -34,10 +34,6 @@ public class ElasticServiceV2 {
         this.indexName = indexName;
     }
 
-    public IndexName getIndexName() {
-        return indexName;
-    }
-
     @SneakyThrows
     public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent utdanningEvent) {
         final XContentBuilder content = jsonBuilder()

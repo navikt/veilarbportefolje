@@ -6,7 +6,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.apache.http.util.EntityUtils;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -72,13 +71,6 @@ public class ElasticTestClient {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName.getValue());
         return restHighLevelClient.indices().delete(deleteIndexRequest, DEFAULT);
     }
-
-    @SneakyThrows
-    public void createIndex() {
-        CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexName.getValue());
-        restHighLevelClient.indices().create(createIndexRequest, DEFAULT);
-    }
-
 
     @SneakyThrows
     public int countDocuments() {

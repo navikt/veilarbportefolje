@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.cv;
 
-import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.util.TestUtil;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;

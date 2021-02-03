@@ -73,14 +73,6 @@ public class ValideringsRegler {
         test("sortField", sortField, sortFields.contains(sortField));
     }
 
-    public static void harYtelsesFilter(Filtervalg filtervalg) {
-        test("ytelsesfilter", filtervalg.ytelse, filtervalg.ytelse != null);
-    }
-
-    public static void sjekkFnr(String fnr) {
-        test("fnr", fnr, fnr.matches("\\d{11}"));
-    }
-
     private static void test(String navn, Object data, Supplier<Boolean> matches) {
         test(navn, data, matches.get());
     }

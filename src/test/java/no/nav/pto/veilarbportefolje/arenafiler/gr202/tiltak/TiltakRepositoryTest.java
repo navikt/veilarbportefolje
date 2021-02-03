@@ -25,7 +25,7 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static no.nav.pto.veilarbportefolje.TestUtil.setupInMemoryDatabase;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

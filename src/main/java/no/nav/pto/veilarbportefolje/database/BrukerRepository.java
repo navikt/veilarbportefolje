@@ -5,7 +5,6 @@ import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
@@ -15,7 +14,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.CollectionUtils;
+import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -31,7 +30,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -39,7 +37,6 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTOERID_TO_PERSONID;
 import static no.nav.pto.veilarbportefolje.database.Table.Kolonner.SIST_INDEKSERT_ES;
-import static no.nav.pto.veilarbportefolje.database.Table.METADATA;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO.FODSELSNR;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.*;
@@ -61,52 +58,6 @@ public class BrukerRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-    public void oppdaterSistIndeksertElastic(Timestamp tidsstempel) {
-        Integer oppdaterteRader = update(db, METADATA)
-                .set(SIST_INDEKSERT_ES, tidsstempel)
-                .execute();
-
-        if (oppdaterteRader != 1) {
-            throw new RuntimeException("Klarte ikke å oppdaterer tidsstempel for sist indeksert i elastic");
-        }
-    }
-
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
-        db.setFetchSize(10_000);
-
-        return SqlUtils
-                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
-                .column("*")
-                .executeToList()
-                .stream()
-                .filter(Objects::nonNull)
-                .collect(toList());
-    }
-
-    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging(int fromExclusive, int toInclusive) {
-        int fetchSize = 1000;
-        db.setFetchSize(fetchSize);
-
-        log.info("Henter ut fra {} til {}", fromExclusive, toInclusive);
-        List<String> fnr = hentFnrFraOppfolgingBrukerTabell(fromExclusive, toInclusive);
-
-        log.info("Hent ut {} fnr fra OPPFOLGINGSBRUKER", fnr.size());
-
-        String sql = "SELECT * FROM"
-                     + " VW_PORTEFOLJE_INFO"
-                     + " WHERE FODSELSNR IN (:fnr)";
-
-        List<OppfolgingsBruker> brukere = namedParameterJdbcTemplate.query(
-                sql,
-                CollectionUtils.mapOf(Pair.of("fnr", fnr)),
-                (rs, rowNum) -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null
-        );
-
-        log.info("Hentet ut {} brukere fra VW_PORTEFOLJE_INFO", brukere.size());
-
-        return brukere.stream().filter(Objects::nonNull).collect(toList());
-    }
-
     public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
         String sql = "SELECT FODSELSNR "
                      + "FROM (SELECT "
@@ -122,46 +73,13 @@ public class BrukerRepository {
                      + ")"
                      + "WHERE rn > :from ";
 
-        Map<String, Integer> parameters = CollectionUtils.mapOf(
-                Pair.of("from", fromExclusive),
-                Pair.of("to", toInclusive)
+        Map<String, Integer> parameters = Map.of(
+                "from", fromExclusive,
+                "to", toInclusive
         );
 
         return namedParameterJdbcTemplate.queryForList(sql, parameters, String.class);
     }
-
-    public List<OppfolgingEnhetDTO> hentBrukereUnderOppfolging(int pageNumber, int pageSize) {
-        int rowNum = pageNumber * pageSize;
-        int offset = rowNum - pageSize;
-
-        log.info("rowNum: {}, offset: {}, pageSize: {}", rowNum, offset, pageSize);
-
-        return SqlUtils.select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, BrukerRepository::mapTilOppfolgingEnhetDTO)
-                .column("AKTOERID")
-                .column("FODSELSNR")
-                .column("PERSON_ID")
-                .column("NAV_KONTOR")
-                .where(WhereClause.equals("FORMIDLINGSGRUPPEKODE", "ARBS")
-                        .or(WhereClause.equals("OPPFOLGING", "J"))
-                        .or(
-                                WhereClause.equals("FORMIDLINGSGRUPPEKODE", "IARBS")
-                                        .and(in("KVALIFISERINGSGRUPPEKODE", asList("BATT", "BFORM", "VARIG", "IKVAL", "VURDU", "OPPFI")))
-                        )
-                )
-                .limit(offset, pageSize)
-                .executeToList();
-    }
-
-    @SneakyThrows
-    private static OppfolgingEnhetDTO mapTilOppfolgingEnhetDTO(ResultSet rs) {
-        return new OppfolgingEnhetDTO(
-                rs.getString("FODSELSNR"),
-                rs.getString("AKTOERID"),
-                rs.getString("NAV_KONTOR"),
-                rs.getString("PERSON_ID")
-        );
-    }
-
 
     public Optional<Integer> hentAntallBrukereUnderOppfolging() {
         Integer count = db.query(countOppfolgingsBrukereSql(), rs -> {
@@ -187,14 +105,14 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
     }
 
     public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
-        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -202,17 +120,8 @@ public class BrukerRepository {
         return Optional.ofNullable(bruker);
     }
 
-    public Optional<String> hentFnrView(AktorId aktoerId) {
-        final String fnr = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> rs.getString("fodselsnr"))
-                .column("*")
-                .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                .execute();
-
-        return Optional.ofNullable(fnr);
-    }
-
     public Optional<OppfolgingsBruker> hentBrukerFraView(Fnr fnr) {
-        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> mapTilOppfolgingsBruker(rs))
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                 .execute();
@@ -262,12 +171,10 @@ public class BrukerRepository {
     @Deprecated
     public Try<VeilederId> retrieveVeileder(AktorId aktoerId) {
         return Try.of(
-                () -> {
-                    return select(db, "OPPFOLGING_DATA", this::mapToVeilederId)
-                            .column("VEILEDERIDENT")
-                            .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
-                            .execute();
-                }
+                () -> select(db, "OPPFOLGING_DATA", this::mapToVeilederId)
+                        .column("VEILEDERIDENT")
+                        .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
+                        .execute()
         ).onFailure(e -> log.warn("Fant ikke veileder for bruker med aktoerId {}", aktoerId));
     }
 
@@ -292,23 +199,19 @@ public class BrukerRepository {
     @Deprecated
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
-                () -> {
-                    return select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
-                            .column("NAV_KONTOR")
-                            .where(WhereClause.equals("FODSELSNR", fnr.toString()))
-                            .execute();
-                }
+                () -> select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
+                        .column("NAV_KONTOR")
+                        .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                        .execute()
         ).onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker"));
     }
 
     public Try<String> retrieveNavKontor(PersonId personId) {
         return Try.of(
-                () -> {
-                    return select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
-                            .column("NAV_KONTOR")
-                            .where(WhereClause.equals("PERSON_ID", personId.toString()))
-                            .execute();
-                }
+                () -> select(db, "OPPFOLGINGSBRUKER", this::mapToEnhet)
+                        .column("NAV_KONTOR")
+                        .where(WhereClause.equals("PERSON_ID", personId.toString()))
+                        .execute()
         )
                 .onFailure(e -> log.warn("Fant ikke oppfølgingsenhet for bruker med personId {}", personId.toString()));
     }
@@ -443,11 +346,6 @@ public class BrukerRepository {
                 .forEach((ikkeFunnetBruker) -> brukere.put(ikkeFunnetBruker, empty()));
 
         return brukere;
-    }
-
-    public void setAktiviteterSistOppdatert(Timestamp sistOppdatert) {
-        String sql = "UPDATE METADATA SET aktiviteter_sist_oppdatert = ?";
-        db.update(sql, sistOppdatert);
     }
 
     public void insertOrUpdateBrukerdata(List<Brukerdata> brukerdata, Collection<String> finnesIDb) {

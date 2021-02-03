@@ -1,9 +1,9 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
-import no.nav.pto.veilarbportefolje.TestUtil;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.junit.Before;
 import org.junit.Test;
