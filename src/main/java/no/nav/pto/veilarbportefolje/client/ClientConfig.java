@@ -45,11 +45,9 @@ public class ClientConfig {
     @Bean
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
-        return new VeilarbPep(
-                serviceUserCredentials.username,
-                new AbacCachedClient(new AbacHttpClient(properties.getAbacUrl(), serviceUserCredentials.username, serviceUserCredentials.password)),
-                new NimbusSubjectProvider(),
-                new AuditConfig(new AuditLogger(), new SpringAuditRequestInfoSupplier(),null)
+        return VeilarbPepFactory.get(
+                properties.getAbacUrl(), serviceUserCredentials.username,
+                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
     }
 
