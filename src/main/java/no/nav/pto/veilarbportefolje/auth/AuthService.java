@@ -5,6 +5,7 @@ import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class AuthService {
 
     //TODO ER DETTA RIKTIGT ??
     public void tilgangTilBruker(String fnr) {
-        AuthUtils.test("tilgangTilBruker", fnr, veilarbPep.harTilgangTilPerson(AuthUtils.getInnloggetBrukerToken(), ActionId.READ, (EksternBrukerId) EksternBrukerId.of(fnr)));
+        AuthUtils.test("tilgangTilBruker", fnr, veilarbPep.harTilgangTilPerson(AuthUtils.getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr)));
     }
 
     public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
