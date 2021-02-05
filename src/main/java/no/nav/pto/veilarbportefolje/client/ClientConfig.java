@@ -16,15 +16,16 @@ import org.springframework.context.annotation.Configuration;
 
 import java.net.http.HttpClient;
 import static no.nav.common.utils.NaisUtils.getCredentials;
+import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 
 @Configuration
 public class ClientConfig {
 
     @Bean
-    public AktorOppslagClient aktorOppslagClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
+    public AktorOppslagClient aktorOppslagClient(SystemUserTokenProvider systemUserTokenProvider) {
         AktorOppslagClient aktorOppslagClient =  new PdlAktorOppslagClient(
-                properties.getPdlUrl(),
+                createServiceUrl("pdl-api", "default", false),
                 AuthUtils::getInnloggetBrukerToken,
                 systemUserTokenProvider::getSystemUserToken
         );
