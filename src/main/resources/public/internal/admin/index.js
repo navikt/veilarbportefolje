@@ -22,11 +22,11 @@ function handleFjernOppfolgingsbruker(e) {
 }
 
 const aktoerIdForm = document.getElementById('brukerident')
-aktoerIdForm.addEventListener('submit', handleAktoerId);
+aktoerIdForm.addEventListener('submit', handleAktorId);
 
 const aktoerIdInput = document.getElementById('aktoerIdInput')
 
-function handleAktoerId(e) {
+function handleAktorId(e) {
     e.preventDefault()
 
     const fnr = aktoerIdInput.value;

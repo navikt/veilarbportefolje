@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.Value;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 
 @Value
 public class NyForVeilederDTO {
-    AktoerId aktorId;
+    AktorId aktorId;
     boolean nyForVeileder;
 }

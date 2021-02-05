@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.sisteendring;
 
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class SisteEndringRepositoryTest {
 
     private SisteEndringRepository sisteEndringRepository;
-    private static AktoerId AKTORID = AktoerId.of("123456789");
+    private static AktorId AKTORID = AktorId.of("123456789");
 
     @Before
     public void setup() {
@@ -48,7 +48,7 @@ public class SisteEndringRepositoryTest {
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);
 
-        OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.getValue());
+        OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.get());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
 
         assertThat(bruker.getSiste_endringer().get("ny_ijobb").getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));

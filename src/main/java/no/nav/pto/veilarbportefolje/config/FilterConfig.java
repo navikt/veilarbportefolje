@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
-import no.nav.common.auth.subject.IdentType;
 import no.nav.common.auth.utils.ServiceUserTokenFinder;
 import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
@@ -32,7 +32,7 @@ public class FilterConfig {
                 .withDiscoveryUrl(environmentProperties.getAzureAdDiscoveryUrl())
                 .withClientId(environmentProperties.getAzureAdClientId())
                 .withIdTokenCookieName(AZURE_AD_ID_TOKEN_COOKIE_NAME)
-                .withIdentType(IdentType.InternBruker);
+                .withUserRole(UserRole.INTERN);
     }
 
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
@@ -40,13 +40,13 @@ public class FilterConfig {
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
                 .withClientId(properties.getOpenAmClientId())
                 .withIdTokenFinder(new ServiceUserTokenFinder())
-                .withIdentType(IdentType.Systemressurs);
+                .withUserRole(UserRole.SYSTEM);
     }
     private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getStsDiscoveryUrl())
                 .withClientIds(ALLOWED_SERVICE_USERS)
-                .withIdentType(IdentType.Systemressurs);
+                .withUserRole(UserRole.SYSTEM);
     }
 
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
@@ -57,7 +57,7 @@ public class FilterConfig {
                 .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
                 .withIdTokenFinder(new UserTokenFinder())
                 .withRefreshUrl(properties.getOpenAmRefreshUrl())
-                .withIdentType(IdentType.InternBruker);
+                .withUserRole(UserRole.INTERN);
     }
 
     @Bean

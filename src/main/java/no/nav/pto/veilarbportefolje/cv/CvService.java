@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class CvService implements KafkaConsumerService<String> {
 
     @Value
     static class Melding {
-        AktoerId aktoerId;
+        AktorId aktoerId;
         Fnr fnr;
         MeldingType meldingType;
         Ressurs ressurs;
@@ -61,7 +61,7 @@ public class CvService implements KafkaConsumerService<String> {
     @Override
     public void behandleKafkaMelding(String payload) {
         Melding melding = fromJson(payload, Melding.class);
-        AktoerId aktoerId = melding.getAktoerId();
+        AktorId aktoerId = melding.getAktoerId();
 
         if (melding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktoerId);

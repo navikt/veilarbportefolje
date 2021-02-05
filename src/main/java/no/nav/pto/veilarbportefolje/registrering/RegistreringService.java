@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.registrering;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +27,11 @@ public class RegistreringService implements KafkaConsumerService<ArbeidssokerReg
     public void behandleKafkaMelding(ArbeidssokerRegistrertEvent kafkaRegistreringMelding) {
         registreringRepository.upsertBrukerRegistrering(kafkaRegistreringMelding);
 
-        final AktoerId aktoerId = AktoerId.of(kafkaRegistreringMelding.getAktorid());
+        final AktorId aktoerId = AktorId.of(kafkaRegistreringMelding.getAktorid());
         elastic.updateRegistering(aktoerId, kafkaRegistreringMelding);
     }
 
-    public void slettRegistering(AktoerId aktoerId) {
+    public void slettRegistering(AktorId aktoerId) {
         registreringRepository.slettBrukerRegistrering(aktoerId);
     }
 

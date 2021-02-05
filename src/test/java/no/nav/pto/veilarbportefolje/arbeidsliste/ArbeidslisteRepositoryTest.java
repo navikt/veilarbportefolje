@@ -1,9 +1,9 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.util.TestUtil;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,16 +24,16 @@ public class ArbeidslisteRepositoryTest {
 
         repo = new ArbeidslisteRepository(jdbcTemplate);
 
-        data = new ArbeidslisteDTO(new Fnr("01010101010"))
-                .setAktoerId(AktoerId.of("22222222"))
+        data = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+                .setAktorId(AktorId.of("22222222"))
                 .setVeilederId(VeilederId.of("X11111"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar")
                 .setOverskrift("Dette er en overskrift")
                 .setKategori(Arbeidsliste.Kategori.BLA);
 
-        ArbeidslisteDTO data2 = new ArbeidslisteDTO(new Fnr("01010101011"))
-                .setAktoerId(AktoerId.of("22222223"))
+        ArbeidslisteDTO data2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
+                .setAktorId(AktorId.of("22222223"))
                 .setVeilederId(VeilederId.of("X11112"))
                 .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
                 .setKommentar("Dette er en kommentar")
@@ -49,26 +49,26 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalKunneHenteArbeidsliste() {
-        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktorId());
         assertThat(result.isSuccess()).isTrue();
         assertThat(data.getVeilederId()).isEqualTo(result.get().getSistEndretAv());
     }
 
     @Test
     public void skalKunneOppdatereKategori() {
-        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktorId());
         assertThat(Arbeidsliste.Kategori.BLA).isEqualTo(result.get().getKategori());
 
         Try<Arbeidsliste> updatedArbeidsliste = result
-                .map(arbeidsliste -> new ArbeidslisteDTO(Fnr.of("01010101010"))
-                        .setAktoerId(data.getAktoerId())
+                .map(arbeidsliste -> new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
+                        .setAktorId(data.getAktorId())
                         .setVeilederId(data.getVeilederId())
                         .setEndringstidspunkt(data.getEndringstidspunkt())
                         .setFrist(data.getFrist())
                         .setKommentar(data.getKommentar())
                         .setKategori(Arbeidsliste.Kategori.LILLA))
                 .flatMap(oppdatertArbeidsliste -> repo.updateArbeidsliste(oppdatertArbeidsliste))
-                .flatMap(arbeidslisteDTO -> repo.retrieveArbeidsliste(arbeidslisteDTO.getAktoerId()));
+                .flatMap(arbeidslisteDTO -> repo.retrieveArbeidsliste(arbeidslisteDTO.getAktorId()));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(Arbeidsliste.Kategori.LILLA).isEqualTo(updatedArbeidsliste.get().getKategori());
@@ -80,7 +80,7 @@ public class ArbeidslisteRepositoryTest {
         VeilederId expected = VeilederId.of("TEST_ID");
         repo.updateArbeidsliste(data.setVeilederId(expected));
 
-        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktoerId());
+        Try<Arbeidsliste> result = repo.retrieveArbeidsliste(data.getAktorId());
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(expected).isEqualTo(result.get().getSistEndretAv());
@@ -88,19 +88,19 @@ public class ArbeidslisteRepositoryTest {
 
     @Test
     public void skalSletteEksisterendeArbeidsliste() {
-        final Integer rowsUpdated = repo.slettArbeidsliste(data.getAktoerId());
+        final Integer rowsUpdated = repo.slettArbeidsliste(data.getAktorId());
         assertThat(rowsUpdated);
     }
 
     @Test
     public void skalReturnereFailureVedFeil() {
-        Try<ArbeidslisteDTO> result = repo.insertArbeidsliste(data.setAktoerId(null));
+        Try<ArbeidslisteDTO> result = repo.insertArbeidsliste(data.setAktorId(null));
         assertThat(result.isFailure()).isTrue();
     }
 
     @Test
     public void skalSletteArbeidslisteForAktoerids() {
-        AktoerId aktoerId1 = AktoerId.of("22222222");
+        AktorId aktoerId1 = AktorId.of("22222222");
         Try<Arbeidsliste> arbeidsliste = repo.retrieveArbeidsliste(aktoerId1);
         assertThat(arbeidsliste.isSuccess()).isTrue();
         assertThat(arbeidsliste.get()).isNotNull();

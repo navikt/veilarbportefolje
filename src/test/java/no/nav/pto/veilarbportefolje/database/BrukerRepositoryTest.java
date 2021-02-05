@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.database;
 import com.google.common.base.Joiner;
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -308,7 +308,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteVeilederForBruker() {
-        AktoerId aktoerId = AktoerId.of("101010");
+        AktorId aktoerId = AktorId.of("101010");
         VeilederId expectedVeilederId = VeilederId.of("X11111");
 
         insert(jdbcTemplate, "OPPFOLGING_DATA")
@@ -323,7 +323,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHenteEnhetForBruker() {
-        Fnr fnr = new Fnr("12345678900");
+        Fnr fnr = Fnr.ofValidFnr("12345678900");
         String expectedEnhet = "123";
 
         insert(jdbcTemplate, "OPPFOLGINGSBRUKER")
@@ -339,7 +339,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalHentePersonIdFraDatabase() throws Exception {
-        Fnr fnr = new Fnr("12345678900");
+        Fnr fnr = Fnr.ofValidFnr("12345678900");
 
         PersonId expectedPersonId = PersonId.of("123456");
         insertOppfolgingsbrukerForPersonIdToFnrMapping(fnr, expectedPersonId);
@@ -359,7 +359,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skalIkkeFeileOmIngenPersonIdFinnes() throws Exception {
-        Fnr fnr = new Fnr("99999999999");
+        Fnr fnr = Fnr.ofValidFnr("99999999999");
         Try<PersonId> result = brukerRepository.retrievePersonidFromFnr(fnr);
 
         assertTrue(result.get() == null);
@@ -369,7 +369,7 @@ public class BrukerRepositoryTest {
     public void skalHenteFnrForPersonIdFraDatabase() throws Exception {
         PersonId personId = PersonId.of("123456");
 
-        Fnr expectedFnr = new Fnr("12345678900");
+        Fnr expectedFnr = Fnr.ofValidFnr("12345678900");
 
         insertOppfolgingsbrukerForPersonIdToFnrMapping(expectedFnr, personId);
 

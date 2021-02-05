@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.Fnr;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,7 +16,7 @@ public class FnrTest {
     @Test
     public void skalReturnereStreng() throws Exception {
         String expected = "12345678900";
-        Fnr fnr = new Fnr(expected);
+        Fnr fnr = Fnr.ofValidFnr(expected);
         String result = fnr.toString();
         assertEquals(expected, result);
     }
@@ -24,8 +24,8 @@ public class FnrTest {
     @Test
     public void skalSammenligneBasertPaaVerdi() throws Exception {
         String fnr = "12345678900";
-        Fnr fnr1 = new Fnr(fnr);
-        Fnr fnr2 = new Fnr(fnr);
+        Fnr fnr1 = Fnr.ofValidFnr(fnr);
+        Fnr fnr2 = Fnr.ofValidFnr(fnr);
         assertTrue(fnr1.equals(fnr2));
     }
 
@@ -33,13 +33,13 @@ public class FnrTest {
     public void skalKasteExceptionVedUgyldigFnr() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         String fnr = "123";
-        new Fnr(fnr);
+        Fnr.ofValidFnr(fnr);
     }
 
     @Test
     public void skalBareGodtaNumeriskeStrenger() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         String fnr = "aaaaaaaaaaa";
-        new Fnr(fnr);
+        Fnr.ofValidFnr(fnr);
     }
 }

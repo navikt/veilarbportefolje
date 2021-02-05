@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.cv;
 
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -23,7 +23,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {
-        AktoerId aktoerId = AktoerId.of("00000000000");
+        AktorId aktoerId = AktorId.of("00000000000");
 
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
@@ -50,7 +50,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_dokumentet_i_db_og_elastic() {
-        AktoerId aktoerId = AktoerId.of("00000000000");
+        AktorId aktoerId = AktorId.of("00000000000");
 
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
@@ -80,7 +80,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_behandle_meldinger_som_har_meldingstype_arbeidsgiver_generell() {
-        AktoerId aktoerId = AktoerId.of("00000000000");
+        AktorId aktoerId = AktorId.of("00000000000");
 
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
@@ -107,7 +107,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_behandle_meldinger_som_har_meldingstype_cv_generell() {
-        AktoerId aktoerId = AktoerId.of("00000000000");
+        AktorId aktoerId = AktorId.of("00000000000");
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("har_delt_cv", false)
@@ -133,7 +133,7 @@ class CvServiceTest extends EndToEndTest {
 
     @Test
     void skal_ignorere_tilfeller_hvor_dokumentet_ikke_finnes_i_elastic() {
-        AktoerId aktoerId = AktoerId.of("00000000000");
+        AktorId aktoerId = AktorId.of("00000000000");
         String payload = new JSONObject()
                 .put("aktoerId", aktoerId)
                 .put("meldingType", "SAMTYKKE_OPPRETTET")

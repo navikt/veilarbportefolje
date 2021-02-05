@@ -6,7 +6,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRequest;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.Fnr;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -125,7 +125,7 @@ public class ValideringsRegler {
 
     public static Validation<String, Fnr> validerFnr(String fnr) {
         if (fnr != null && fnr.matches("\\d{11}")) {
-            return valid(new Fnr(fnr));
+            return valid(Fnr.ofValidFnr(fnr));
         }
         return invalid(format("%s er ikke et gyldig fnr", fnr));
     }

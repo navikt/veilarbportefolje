@@ -3,11 +3,11 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.pdl.AktorOppslagClient;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -35,19 +35,18 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerService brukerService;
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorOppslagClient aktorOppslagClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
             BrukerService brukerService,
-            AktorregisterClient aktorregisterClient,
-            AuthService authService
+            AktorOppslagClient aktorOppslagClient, AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorOppslagClient = aktorOppslagClient;
         this.authService = authService;
 
     }
@@ -64,7 +63,7 @@ public class ArbeidsListeController {
         RestResponse<String> response = new RestResponse<>(new ArrayList<>(), new ArrayList<>());
 
         arbeidsliste.forEach(request -> {
-            RestResponse<AktoerId> opprettArbeidsliste = opprettArbeidsliste(request);
+            RestResponse<AktorId> opprettArbeidsliste = opprettArbeidsliste(request);
             if (opprettArbeidsliste.containsError()) {
                 response.addError(request.getFnr());
             } else {
@@ -81,8 +80,8 @@ public class ArbeidsListeController {
 
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
-        Fnr fnr = new Fnr(fnrString);
-        Try<AktoerId> aktoerId = Try.of(()-> AktoerId.of(aktorregisterClient.hentAktorId(fnr.toString())));
+        Fnr fnr = Fnr.ofValidFnr(fnrString);
+        Try<AktorId> aktoerId = Try.of(()-> aktorOppslagClient.hentAktorId(fnr));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
@@ -103,13 +102,13 @@ public class ArbeidsListeController {
     public Arbeidsliste opprettArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
-        sjekkTilgangTilEnhet(new Fnr(fnr));
+        sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        arbeidslisteService.createArbeidsliste(data(body, new Fnr(fnr)))
+        arbeidslisteService.createArbeidsliste(data(body, Fnr.ofValidFnr(fnr)))
                 .onFailure(e -> log.warn("Kunne ikke opprette arbeidsliste: {}", e.getMessage()))
                 .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
 
-        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(new Fnr(fnr)).get()
+        Arbeidsliste arbeidsliste = arbeidslisteService.getArbeidsliste(Fnr.ofValidFnr(fnr)).get()
                 .setHarVeilederTilgang(true)
                 .setIsOppfolgendeVeileder(true);
 
@@ -119,7 +118,7 @@ public class ArbeidsListeController {
     @PutMapping("{fnr}")
     public Arbeidsliste oppdaterArbeidsListe(@RequestBody ArbeidslisteRequest body, @PathVariable("fnr") String fnrString) {
         validerOppfolgingOgBruker(fnrString);
-        Fnr fnr = new Fnr(fnrString);
+        Fnr fnr = Fnr.ofValidFnr(fnrString);
         sjekkTilgangTilEnhet(fnr);
         validerArbeidsliste(body, true);
 
@@ -139,9 +138,9 @@ public class ArbeidsListeController {
     public Arbeidsliste deleteArbeidsliste(@PathVariable("fnr") String fnr) {
         validerOppfolgingOgBruker(fnr);
         validerErVeilederForBruker(fnr);
-        sjekkTilgangTilEnhet(new Fnr(fnr));
+        sjekkTilgangTilEnhet(Fnr.ofValidFnr(fnr));
 
-        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(new Fnr(fnr));
+        final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(Fnr.ofValidFnr(fnr));
         if (antallRaderSlettet != 1) {
             throw new IllegalStateException("Kunne ikke slette. Fant ikke arbeidsliste for bruker");
         }
@@ -158,7 +157,7 @@ public class ArbeidsListeController {
 
             java.util.List<Fnr> fnrs = arbeidslisteData
                     .stream()
-                    .map(data -> new Fnr(data.getFnr()))
+                    .map(data -> Fnr.ofValidFnr(data.getFnr()))
                     .collect(Collectors.toList());
 
             Validation<List<Fnr>, List<Fnr>> validerFnrs = ValideringsRegler.validerFnrs(fnrs);
@@ -170,8 +169,8 @@ public class ArbeidsListeController {
             validerFnrs.get().forEach(fnr -> {
                 final int antallRaderSlettet = arbeidslisteService.slettArbeidsliste(fnr);
 
-                final AktoerId aktoerId = brukerService.hentAktoerId(fnr)
-                        .orElse(new AktoerId("uten aktør-ID"));
+                final AktorId aktoerId = brukerService.hentAktorId(fnr)
+                        .orElse(new AktorId("uten aktør-ID"));
 
                 if (antallRaderSlettet != 1) {
                     feiledeFnrs.add(fnr.toString());
@@ -212,7 +211,7 @@ public class ArbeidsListeController {
                 .collect(Collectors.toList());
     }
 
-    private RestResponse<AktoerId> opprettArbeidsliste(ArbeidslisteRequest arbeidslisteRequest) {
+    private RestResponse<AktorId> opprettArbeidsliste(ArbeidslisteRequest arbeidslisteRequest) {
         return validerArbeidsliste(arbeidslisteRequest, false)
                 .map(arbeidslisteService::createArbeidsliste)
                 .fold(
@@ -221,7 +220,7 @@ public class ArbeidsListeController {
                             if (result.isFailure()) {
                                 return RestResponse.of(result.getCause().getMessage());
                             }
-                            return RestResponse.of(result.get().getAktoerId());
+                            return RestResponse.of(result.get().getAktorId());
 
                         }
                 );

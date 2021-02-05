@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.sbl.sql.SqlUtils;
@@ -31,28 +31,28 @@ public class SisteEndringRepository {
 
     public void upsert(SisteEndringDTO sisteEndringDTO) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
-                .set(AKTOERID, sisteEndringDTO.getAktoerId().getValue())
+                .set(AKTOERID, sisteEndringDTO.getAktoerId().get())
                 .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
                 .set(AKTIVITETID, sisteEndringDTO.getAktivtetId())
-                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().getValue()).and(
+                .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().get()).and(
                         WhereClause.equals(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 )).execute();
     }
 
-    public Timestamp getSisteEndringTidspunkt(AktoerId aktoerId, SisteEndringsKategori kategori) {
+    public Timestamp getSisteEndringTidspunkt(AktorId aktoerId, SisteEndringsKategori kategori) {
         return SqlUtils
                 .select(jdbcTemplate, TABLE_NAME, rs -> rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT))
                 .column(SISTE_ENDRING_TIDSPUNKT)
-                .where(WhereClause.equals(AKTOERID, aktoerId.getValue()).and(
+                .where(WhereClause.equals(AKTOERID, aktoerId.get()).and(
                         WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.name())
                 )).execute();
     }
 
 
-    public void slettSisteEndringer(AktoerId aktoerId) {
+    public void slettSisteEndringer(AktorId aktoerId) {
         SqlUtils.delete(jdbcTemplate, TABLE_NAME)
-                .where(WhereClause.equals(AKTOERID, aktoerId.getValue())).execute();
+                .where(WhereClause.equals(AKTOERID, aktoerId.get())).execute();
     }
 
     public void setAlleSisteEndringTidspunkter(List<OppfolgingsBruker> oppfolgingsBrukere) {
@@ -66,7 +66,7 @@ public class SisteEndringRepository {
 
     @SneakyThrows
     private void mapDbTilOppfolgingsBruker(OppfolgingsBruker oppfolgingsBrukere) {
-        oppfolgingsBrukere.setSiste_endringer(jdbcTemplate.query(getAlleKategorierForAktoerId(oppfolgingsBrukere.getAktoer_id()), rs -> {
+        oppfolgingsBrukere.setSiste_endringer(jdbcTemplate.query(getAlleKategorierForAktorId(oppfolgingsBrukere.getAktoer_id()), rs -> {
             Map<String, Endring> sisteEndring = new HashMap<>();
             while(rs.next()){
                 sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(),new Endring()
@@ -77,7 +77,7 @@ public class SisteEndringRepository {
         }));
     }
 
-    private String getAlleKategorierForAktoerId(String aktorID) {
+    private String getAlleKategorierForAktorId(String aktorID) {
         return "SELECT " +
                 SISTE_ENDRING_KATEGORI + ", " +
                 SISTE_ENDRING_TIDSPUNKT + ", " +

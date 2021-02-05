@@ -1,14 +1,14 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 
 class DialogKafkaConsumerTest extends EndToEndTest {
 
@@ -23,7 +23,7 @@ class DialogKafkaConsumerTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_dialog_datoer() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
 
         elasticTestClient.createUserInElastic(aktoerId);
 

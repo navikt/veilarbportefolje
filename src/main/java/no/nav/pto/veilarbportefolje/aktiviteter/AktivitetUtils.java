@@ -4,8 +4,8 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -28,7 +28,7 @@ public class AktivitetUtils {
 
     public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
                                                                            BrukerService brukerService) {
-        AktoerId aktoerId = AktoerId.of(aktoerAktiviteter.getAktoerid());
+        AktorId aktoerId = AktorId.of(aktoerAktiviteter.getAktoerid());
 
         Try<PersonId> personid = brukerService.hentPersonidFraAktoerid(aktoerId)
                 .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerId.toString(), e));
@@ -40,7 +40,7 @@ public class AktivitetUtils {
 
 
     private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter,
-                                                                            AktoerId aktoerId,
+                                                                            AktorId aktoerId,
                                                                             PersonId personId) {
 
         Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId);
@@ -70,7 +70,7 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktoerId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO) {
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO) {
         AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId);
         return konverterTilBrukerOppdatering(aktiviteter, brukerService);
     }
@@ -113,7 +113,7 @@ public class AktivitetUtils {
                 .findFirst();
     }
 
-    public static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktoerId aktoerId, PersonId personId) {
+    public static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktorId aktoerId, PersonId personId) {
         Set<AktivitetStatus> aktiveAktiviteter = new HashSet<>();
 
         aktivitetTyperFraAktivitetsplanList

@@ -1,10 +1,21 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
+import lombok.SneakyThrows;
 import no.nav.common.abac.Pep;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContext;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
@@ -16,10 +27,11 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
 import java.util.Collections;
 
-
-import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -39,14 +51,16 @@ public class EnhetControllerTest {
     }
 
     @Test
+    @SneakyThrows
     public void skal_hent_portefolje_fra_indeks_dersom_tilgang() {
         when(pep.harVeilederTilgangTilModia(anyString())).thenReturn(true);
-        when(pep.harVeilederTilgangTilEnhet(anyString(), anyString())).thenReturn(true);
+        when(pep.harVeilederTilgangTilEnhet(any(NavIdent.class), any(EnhetId.class))).thenReturn(true);
         when(elasticService.hentBrukere(any(), any(), any(), any() , any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
-        SubjectHandler.withSubject(
-                new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
-                () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg()));
+        AuthContextHolder.withContext(
+                new AuthContext(UserRole.INTERN, generateMockJWT()),
+                () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg())
+        );
         verify(elasticService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
@@ -56,9 +70,10 @@ public class EnhetControllerTest {
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(true);
         when(elasticService.hentBrukere(any(), any(), any(), any() , any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
-        SubjectHandler.withSubject(
-                new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
-                () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg()));
+        AuthContextHolder.withContext(
+                new AuthContext(UserRole.INTERN, generateMockJWT()),
+                () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg())
+        );
         verify(elasticService, times(1)).hentBrukere(any(), any(), any(), any(), any(), any(), any());
     }
 
@@ -67,11 +82,10 @@ public class EnhetControllerTest {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(true);
         when(elasticService.hentBrukere(any(), any(), any(), any() , any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
-
-        SubjectHandler.withSubject(
-                new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
-                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg()));
-
+        AuthContextHolder.withContext(
+                new AuthContext(UserRole.INTERN, generateMockJWT()),
+                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
+        );
 
         verify(elasticService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
     }
@@ -79,9 +93,24 @@ public class EnhetControllerTest {
     @Test(expected = ResponseStatusException.class)
     public void skal_ikke_hente_noe_hvis_mangler_tilgang() {
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(false);
+        AuthContextHolder.withContext(
+                new AuthContext(UserRole.INTERN, generateMockJWT()),
+                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
+        );
+    }
 
-        SubjectHandler.withSubject(
-                new Subject("testident", InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
-                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg()));
+    @SneakyThrows
+    private JWT generateMockJWT() {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().claim("NAVident", "A111111").build();
+        JWSHeader header = new JWSHeader.Builder(new JWSAlgorithm("RS256"))
+                .type(JOSEObjectType.JWT)
+                .build();
+        SignedJWT jwt = new SignedJWT(header, claimsSet);
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048, new SecureRandom("mock_key".getBytes()));
+        KeyPair keyPair = generator.generateKeyPair();
+        jwt.sign(new RSASSASigner(keyPair.getPrivate()));
+
+        return JWTParser.parse(jwt.serialize());
     }
 }

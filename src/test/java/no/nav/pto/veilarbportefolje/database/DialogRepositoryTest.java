@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class DialogRepositoryTest {
         dialogRepository = new DialogRepository(new JdbcTemplate(setupInMemoryDatabase()));
     }
 
-    private static final AktoerId AKTOER_ID = AktoerId.of("1111");
+    private static final AktorId AKTOER_ID = AktorId.of("1111");
 
     @Test
     public void oppdaterDialogInfoForBruker_skal_sette_inn_i_tabell_og_vare_tilgjengelig_i_dialogview() {

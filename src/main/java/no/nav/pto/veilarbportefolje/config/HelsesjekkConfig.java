@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.abac.Pep;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
@@ -27,7 +27,7 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.FORVENTET_MINIM
 public class HelsesjekkConfig {
 
     @Bean
-    public SelfTestChecks selfTestChecks(AktorregisterClient aktorregisterClient,
+    public SelfTestChecks selfTestChecks(AktorOppslagClient aktorOppslagClient,
                                          Pep veilarbPep,
                                          TiltakHandler tiltakHandler,
                                          KopierGR199FraArena kopierGR199FraArena,
@@ -36,7 +36,7 @@ public class HelsesjekkConfig {
         List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, ElasticConfig::checkHealth),
                 new SelfTestCheck("Database for portefolje", true, () -> dbPinger(jdbcTemplate)),
-                new SelfTestCheck("Aktorregister", true, aktorregisterClient),
+                new SelfTestCheck("Aktorregister pdl", true, aktorOppslagClient),
                 new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient()),
                 new SelfTestCheck("Sjekker henting av tiltaksfil fra arena over sftp", true, tiltakHandler::sftpTiltakPing),
                 new SelfTestCheck("Sjekker henting av ytelser-fil fra arena over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing),

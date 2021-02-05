@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class SisteEndringService {
         }
     }
 
-    public void slettSisteEndringer(AktoerId aktoerId) {
+    public void slettSisteEndringer(AktorId aktoerId) {
         sisteEndringRepository.slettSisteEndringer(aktoerId);
     }
 
