@@ -169,6 +169,9 @@ public class ElasticServiceV2 {
         } catch (ElasticsearchException e) {
             if (e.status() == RestStatus.NOT_FOUND) {
                 log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
+            } else {
+                final String message = String.format("Det skjedde en feil ved oppdatering av elastic for bruker %s", aktoerId.toString());
+                log.warn(message, e);
             }
         }
     }
