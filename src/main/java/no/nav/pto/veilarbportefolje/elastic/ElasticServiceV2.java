@@ -162,6 +162,7 @@ public class ElasticServiceV2 {
         updateRequest.type("_doc");
         updateRequest.id(aktoerId.getValue());
         updateRequest.doc(content);
+        updateRequest.retryOnConflict(6);
 
         try {
             final UpdateResponse update = restHighLevelClient.update(updateRequest, DEFAULT);
