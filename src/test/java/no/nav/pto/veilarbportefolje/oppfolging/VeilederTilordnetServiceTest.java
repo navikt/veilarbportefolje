@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.ZonedDateTime;
+
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -30,7 +32,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
                 .put("veilederId", nyVeileder.getValue())
                 .toString();
 
-        testDataClient.setupBruker(aktoerId, randomNavKontor(), randomVeilederId());
+        testDataClient.setupBruker(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
 
         veilederTilordnetService.behandleKafkaMelding(payload);
 
@@ -52,7 +54,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
                 .put("veilederId", nyVeileder.getValue())
                 .toString();
 
-        testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId());
+        testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
         testDataClient.endreNavKontorForBruker(aktoerId, randomNavKontor());
         final boolean arbeidslisteAktiv = arbeidslisteAktiv(aktoerId);
         assertThat(arbeidslisteAktiv).isTrue();

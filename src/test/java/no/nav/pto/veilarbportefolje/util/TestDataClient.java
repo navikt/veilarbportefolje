@@ -9,6 +9,9 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+
 import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.Table.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE;
 import static no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER.FODSELSNR;
@@ -36,18 +39,18 @@ public class TestDataClient {
                 .execute();
     }
 
-    public void setupBrukerMedArbeidsliste(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId) {
+    public void setupBrukerMedArbeidsliste(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
         SqlUtils.insert(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME)
                 .value(AKTOERID, aktoerId.get())
                 .value(NAV_KONTOR_FOR_ARBEIDSLISTE, navKontor.getValue())
                 .execute();
 
-        setupBruker(aktoerId, navKontor, veilederId);
+        setupBruker(aktoerId, navKontor, veilederId, startDato);
 
         elasticTestClient.oppdaterArbeidsliste(aktoerId, true);
     }
 
-    public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId) {
+    public void setupBruker(AktorId aktoerId, NavKontor navKontor, VeilederId veilederId, ZonedDateTime startDato) {
         final PersonId personId = TestDataUtils.randomPersonId();
         final Fnr fnr = TestDataUtils.randomFnr();
 
@@ -67,6 +70,7 @@ public class TestDataClient {
                 .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
                 .value(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.getValue())
+                .value(Table.OPPFOLGING_DATA.STARTDATO, Timestamp.from(startDato.toInstant()))
                 .execute();
 
         SqlUtils.insert(jdbcTemplate, Table.BRUKER_REGISTRERING.TABLE_NAME)

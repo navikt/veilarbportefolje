@@ -27,7 +27,7 @@
         <flyway.version>4.0.3</flyway.version>
         <prometheus.version>0.4.0</prometheus.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <testcontainers.version>1.15.0-rc2</testcontainers.version>
+        <testcontainers.version>1.15.1</testcontainers.version>
 
         <sonar.projectKey>navikt_veilarbportefolje</sonar.projectKey>
         <sonar.organization>navit</sonar.organization>

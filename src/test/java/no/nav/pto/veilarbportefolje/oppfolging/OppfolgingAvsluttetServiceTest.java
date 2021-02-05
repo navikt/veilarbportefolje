@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -30,7 +31,7 @@ class OppfolgingAvsluttetServiceTest extends EndToEndTest {
     void skal_slette_arbeidsliste_registrering_og_avslutte_oppfølging() {
         final AktorId aktoerId = randomAktorId();
 
-        testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId());
+        testDataClient.setupBrukerMedArbeidsliste(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now());
 
         String payload = new JSONObject()
                 .put("aktorId", aktoerId.toString())

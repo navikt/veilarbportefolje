@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
@@ -64,6 +65,16 @@ public class OppfolgingRepository {
                 .set(Table.OPPFOLGING_DATA.OPPFOLGING, safeToJaNei(false))
                 .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
                 .execute();
+    }
+
+    public Optional<ZonedDateTime> hentStartdato(AktorId aktoerId) {
+        final ZonedDateTime startDato = SqlUtils
+                .select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> toZonedDateTime(rs.getTimestamp(Table.OPPFOLGING_DATA.STARTDATO)))
+                .column(Table.OPPFOLGING_DATA.STARTDATO)
+                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
+                .execute();
+
+        return Optional.ofNullable(startDato);
     }
 
     public static String safeToJaNei(Boolean aBoolean) {
