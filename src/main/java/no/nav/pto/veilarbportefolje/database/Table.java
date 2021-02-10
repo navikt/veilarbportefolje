@@ -105,4 +105,11 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
+    public static final class PDL_DATA {
+        public static final String TABLE_NAME = "PDL_DATA";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String FODSELSDAG = "FODSELSDAG";
+    }
+
+
 }

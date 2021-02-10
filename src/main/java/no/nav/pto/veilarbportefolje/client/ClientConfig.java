@@ -2,9 +2,7 @@ package no.nav.pto.veilarbportefolje.client;
 
 import no.nav.common.abac.*;
 import no.nav.common.abac.audit.*;
-import no.nav.common.client.pdl.AktorOppslagClient;
-import no.nav.common.client.pdl.CachedAktorOppslagClient;
-import no.nav.common.client.pdl.PdlAktorOppslagClient;
+import no.nav.common.client.pdl.*;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -30,6 +28,15 @@ public class ClientConfig {
                 systemUserTokenProvider::getSystemUserToken
         );
         return new CachedAktorOppslagClient(aktorOppslagClient);
+    }
+
+    @Bean
+    public PdlClient pdlClient(SystemUserTokenProvider systemUserTokenProvider){
+        return new PdlClientImpl(
+                createServiceUrl("pdl-api", "default", false),
+                systemUserTokenProvider::getSystemUserToken,
+                systemUserTokenProvider::getSystemUserToken
+                );
     }
 
     @Bean
