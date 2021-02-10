@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,6 +89,21 @@ public class VedtakServiceTest {
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(kafkaVedtakSendtTilBruker);
         assertThat(endringer.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void testJsonDesrializationForVeilederInfo(){
+        String inputJsonWithoutVeilederInfo = "{\"vedtakId\":1,\"aktorId\":\"1\",\"vedtakStatusEndring\":\"UTKAST_OPPRETTET\",\"timestamp\":\"2021-02-09T22:24:12.373356+01:00\"}";
+        KafkaVedtakStatusEndring kafkaVedtakStatusEndring = fromJson(inputJsonWithoutVeilederInfo, KafkaVedtakStatusEndring.class);
+
+        assertThat(kafkaVedtakStatusEndring.aktorId).isEqualTo("1");
+        assertThat(kafkaVedtakStatusEndring.veilederIdent).isNull();
+        assertThat(kafkaVedtakStatusEndring.veilederNavn).isNull();
+
+        String inputJsonWithVeilederInfo = "{\"vedtakId\":1,\"aktorId\":\"1\",\"vedtakStatusEndring\":\"UTKAST_OPPRETTET\",\"timestamp\":\"2021-02-09T22:24:12.373356+01:00\", \"veilederIdent\":\"Z1234\", \"veilederNavn\":\"Test123\"}";
+        kafkaVedtakStatusEndring = fromJson(inputJsonWithVeilederInfo, KafkaVedtakStatusEndring.class);
+        assertThat(kafkaVedtakStatusEndring.veilederNavn).isEqualTo("Test123");
+        assertThat(kafkaVedtakStatusEndring.veilederIdent).isEqualTo("Z1234");
 
     }
 }

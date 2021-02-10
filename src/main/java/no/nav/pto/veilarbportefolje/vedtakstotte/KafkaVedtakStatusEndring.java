@@ -42,6 +42,8 @@ public class KafkaVedtakStatusEndring {
     LocalDateTime timestamp;
     Innsatsgruppe innsatsgruppe;
     Hovedmal hovedmal;
+    String veilederIdent;
+    String veilederNavn;
 
     //DENNE TRENGER VI FOR ATT SORETINGREKKEFOLGEN SKA BLI RIKTIG
     public static String vedtakStatusTilTekst(VedtakStatusEndring vedtakStatusEndring) {
