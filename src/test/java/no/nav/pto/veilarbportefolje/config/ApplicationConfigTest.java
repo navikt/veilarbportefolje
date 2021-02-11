@@ -1,10 +1,13 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.client.pdl.AktorOppslagClient;
+import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
+import no.nav.pto.veilarbportefolje.pdldata.PdlDataService;
+import no.nav.pto.veilarbportefolje.pdldata.PdlRepository;
 import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -96,6 +99,8 @@ import static org.mockito.Mockito.when;
         NyForVeilederService.class,
         VeilederTilordnetService.class,
         OppfolgingStartetService.class,
+        PdlDataService.class,
+        PdlRepository.class,
         SisteEndringService.class,
         SisteEndringRepository.class,
         MalService.class
@@ -217,5 +222,10 @@ public class ApplicationConfigTest {
     @Bean
     public VeilarbVeilederClient veilarbVeilederClient() {
         return mock(VeilarbVeilederClient.class);
+    }
+
+    @Bean
+    public PdlClient pdlClient() {
+        return mock(PdlClient.class);
     }
 }

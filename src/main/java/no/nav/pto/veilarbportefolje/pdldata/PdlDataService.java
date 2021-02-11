@@ -18,7 +18,7 @@ public class PdlDataService {
         this.pdlClient = pdlClient;
     }
 
-    public void inititerBruker(AktorId aktorId){
+    public void initBruker(AktorId aktorId){
         String fodselsdag = pdlClient.rawRequest("fin fodselsdag på fnr");
         pdlRepository.upsert(aktorId, Timestamp.valueOf(fodselsdag));
     }
