@@ -2,10 +2,9 @@ package no.nav.pto.veilarbportefolje.pdldata;
 
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
 
 @Service
 public class PdlDataService {
@@ -18,9 +17,9 @@ public class PdlDataService {
         this.pdlClient = pdlClient;
     }
 
-    public void initBruker(AktorId aktorId){
+    public void lastInnPdlData(AktorId aktorId){
         String fodselsdag = pdlClient.rawRequest("fin fodselsdag på fnr");
-        pdlRepository.upsert(aktorId, Timestamp.valueOf(fodselsdag));
+        pdlRepository.upsert(aktorId, DateUtils.dateToTimestamp(fodselsdag));
     }
 
 }
