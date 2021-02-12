@@ -36,7 +36,7 @@ public class HelsesjekkConfig {
         List<SelfTestCheck> asyncSelftester = List.of(
                 new SelfTestCheck(String.format("Sjekker at antall dokumenter > %s", FORVENTET_MINIMUM_ANTALL_DOKUMENTER), false, ElasticConfig::checkHealth),
                 new SelfTestCheck("Database for portefolje", true, () -> dbPinger(jdbcTemplate)),
-                new SelfTestCheck("Aktorregister pdl", true, aktorClient),
+                new SelfTestCheck("Aktorregister", true, aktorClient),
                 new SelfTestCheck("ABAC", true, veilarbPep.getAbacClient()),
                 new SelfTestCheck("Sjekker henting av tiltaksfil fra arena over sftp", true, tiltakHandler::sftpTiltakPing),
                 new SelfTestCheck("Sjekker henting av ytelser-fil fra arena over sftp", true, kopierGR199FraArena::sftpLopendeYtelserPing),
