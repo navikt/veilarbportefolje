@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -88,6 +89,10 @@ public class DateUtils {
 
     public static Timestamp dateToTimestamp(String date) {
         return Optional.ofNullable(date).map(x -> ZonedDateTime.parse(x).toInstant()).map(Timestamp::from).orElse(null);
+    }
+
+    public static Time dateToTime(String date){
+        return Optional.ofNullable(date).map(Time::valueOf).orElse(null);
     }
 
     public static boolean isFarInTheFutureDate(Timestamp utlopsdato) {
