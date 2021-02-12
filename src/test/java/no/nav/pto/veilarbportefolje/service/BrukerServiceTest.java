@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
-import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class BrukerServiceTest {
 
     private BrukerRepository brukerRepository;
 
-    private AktorOppslagClient aktorOppslagClient;
+    private AktorClient aktorClient;
 
 
     private String FNR_FRA_SOAP_TJENESTE = "11111111111";
@@ -44,8 +44,8 @@ public class BrukerServiceTest {
 
         db = new JdbcTemplate(setupInMemoryDatabase());
         brukerRepository = new BrukerRepository(db, null);
-        aktorOppslagClient = mock(AktorOppslagClient.class);
-        brukerService = new BrukerService(brukerRepository, aktorOppslagClient);
+        aktorClient = mock(AktorClient.class);
+        brukerService = new BrukerService(brukerRepository, aktorClient);
 
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
@@ -57,8 +57,8 @@ public class BrukerServiceTest {
     }
 
     public void skalFinnePersonIdFraDatabase() {
-        when(aktorOppslagClient.hentFnr(any(AktorId.class))).thenReturn(Fnr.ofValidFnr(FNR_FRA_SOAP_TJENESTE));
-        when(aktorOppslagClient.hentAktorId(any(Fnr.class))).thenReturn(AktorId.of(AKTOERID_FRA_SOAP_TJENESTE));
+        when(aktorClient.hentFnr(any(AktorId.class))).thenReturn(Fnr.ofValidFnr(FNR_FRA_SOAP_TJENESTE));
+        when(aktorClient.hentAktorId(any(Fnr.class))).thenReturn(AktorId.of(AKTOERID_FRA_SOAP_TJENESTE));
 
         AktorId aktoerId = AktorId.of("111");
         PersonId personId = PersonId.of("222");
@@ -71,7 +71,7 @@ public class BrukerServiceTest {
         assertTrue(updated > 0);
 
         Try<PersonId> result = brukerService.hentPersonidFraAktoerid(aktoerId);
-        verify(aktorOppslagClient, never()).hentFnr(any(AktorId.class));
+        verify(aktorClient, never()).hentFnr(any(AktorId.class));
         assertTrue(result.isSuccess());
         assertEquals(personId, result.get());
     }
@@ -87,8 +87,8 @@ public class BrukerServiceTest {
 
         AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorOppslagClient.hentFnr(nyAktorId)).thenReturn(Fnr.ofValidFnr(FNR));
-        when(aktorOppslagClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
+        when(aktorClient.hentFnr(nyAktorId)).thenReturn(Fnr.ofValidFnr(FNR));
+        when(aktorClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
 
         brukerService.hentPersonidFraAktoerid(nyAktorId);
 
@@ -107,8 +107,8 @@ public class BrukerServiceTest {
 
         AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorOppslagClient.hentFnr(aktoerId)).thenReturn(Fnr.ofValidFnr(FNR));
-        when(aktorOppslagClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
+        when(aktorClient.hentFnr(aktoerId)).thenReturn(Fnr.ofValidFnr(FNR));
+        when(aktorClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
 
         brukerService.hentPersonidFraAktoerid(aktoerId);
 
