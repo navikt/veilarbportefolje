@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.sql.Timestamp;
 
 import static no.nav.pto.veilarbportefolje.database.Table.PDL_DATA.*;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.AKTOERID;
+import static no.nav.pto.veilarbportefolje.database.Table.SISTE_ENDRING.TABLE_NAME;
 
 @Slf4j
 @Repository
@@ -30,4 +32,8 @@ public class PdlRepository {
                 .execute();
     }
 
+    public void slettPdlData(AktorId aktorId) {
+        SqlUtils.delete(jdbcTemplate, TABLE_NAME)
+                .where(WhereClause.equals(AKTOERID, aktorId.get())).execute();
+    }
 }

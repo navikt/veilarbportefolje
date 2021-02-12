@@ -22,4 +22,13 @@ public class PdlDataService {
         pdlRepository.upsert(aktorId, DateUtils.dateToTimestamp(fodselsdag));
     }
 
+    public void slettPdlData(AktorId aktorId){
+        pdlRepository.slettPdlData(aktorId);
+    }
+
+    public void lastInnPdlDataPaAlleBrukereUtenData(){
+        String fodselsdager = pdlClient.rawRequest("fin fodselsdag på fnr");
+        //pdlRepository.upsert(aktorId, DateUtils.dateToTimestamp(fodselsdag));
+    }
+
 }
