@@ -64,7 +64,6 @@ public class Bruker {
     LocalDateTime moteSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
     String vedtakStatus;
-    String ansvarligVeilederForVedtak;
     LocalDateTime vedtakStatusEndret;
     boolean trengerRevurdering;
     String sisteEndringKategori;
@@ -122,7 +121,6 @@ public class Bruker {
                 .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
                 .setVedtakStatus(bruker.getVedtak_status())
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
-                .setAnsvarligVeilederForVedtak(bruker.getAnsvarlig_veileder_for_vedtak())
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .setSisteEndringKategori(bruker.getAggregert_siste_endring_kategori())
                 .setSisteEndringTidspunkt(bruker.getAggregert_siste_endring_tidspunkt())

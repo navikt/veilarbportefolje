@@ -10,7 +10,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,16 +25,14 @@ public class AdminController {
     private final NyForVeilederService nyForVeilederService;
     private final AktivitetService aktivitetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
-    private final VedtakService vedtakService;
 
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorOppslagClient aktorOppslagClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService, VedtakService vedtakService) {
+    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorOppslagClient aktorOppslagClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService) {
         this.admins = environmentProperties.getAdmins();
         this.registreringService = registreringService;
         this.aktorOppslagClient = aktorOppslagClient;
         this.nyForVeilederService = nyForVeilederService;
         this.aktivitetService = aktivitetService;
         this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
-        this.vedtakService = vedtakService;
     }
 
     @PostMapping("/aktoerId")
@@ -63,13 +60,6 @@ public class AdminController {
         authorizeAdmin();
         aktivitetService.setRewind(true);
         return "Rewind av aktivteter har startet";
-    }
-
-    @PostMapping("/rewind/vedtak")
-    public String rewindVedtak() {
-        authorizeAdmin();
-        vedtakService.setRewind(true);
-        return "Rewind av vedtak har startet";
     }
 
     @DeleteMapping("/oppfolgingsbruker")
