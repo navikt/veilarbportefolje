@@ -49,6 +49,7 @@ public class ValideringsRegler {
             "oppfolging_startdato",
             "veileder_id",
             "vedtakstatus",
+            "ansvarligveilederforvedtak",
             "vedtak_status_endret",
             "arbeidslistekategori",
             "siste_endring_tidspunkt"
