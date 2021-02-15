@@ -67,20 +67,6 @@ function handleRewindAktiviteter(e) {
     }
 }
 
-const vedtakForm = document.getElementById('vedtak');
-vedtakForm.addEventListener('submit', handleRewindVedtak);
-
-function handleRewindVedtak(e) {
-    e.preventDefault();
-    if (window.confirm('Dette vil lese inn alle kafka meldinger fra vedtak fra starten av.')) {
-        fetchData(
-            '/veilarbportefolje/api/admin/rewind/vedtak',
-            {method: 'POST', credentials: 'same-origin'},
-            'vedtakResponse'
-        );
-    }
-}
-
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

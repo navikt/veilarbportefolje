@@ -93,16 +93,4 @@ public class Table {
         public static final String VERSION = "VERSION";
     }
 
-    public static final class VEDTAK {
-        public static final String TABLE_NAME = "VEDTAKSTATUS_DATA";
-        public static final String VEDTAKID = "VEDTAKID";
-        public static final String VEDTAKSTATUS = "VEDTAKSTATUS";
-        public static final String INNSATSGRUPPE = "INNSATSGRUPPE";
-        public static final String HOVEDMAL = "HOVEDMAL";
-        public static final String VEDTAK_STATUS_ENDRET_TIDSPUNKT = "VEDTAK_STATUS_ENDRET_TIDSPUNKT";
-        public static final String AKTOERID = "AKTOERID";
-        public static final String ANSVARLIG_VEILEDER_IDENT = "ANSVARLIG_VEILEDER_IDENT";
-        public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
-    }
-
 }
