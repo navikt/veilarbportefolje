@@ -2,10 +2,10 @@ package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -25,12 +25,12 @@ import static java.util.stream.Collectors.toList;
 public class BrukerService {
 
     private final BrukerRepository brukerRepository;
-    private final AktorOppslagClient aktorOppslagClient;
+    private final AktorClient aktorClient;
 
     @Autowired
-    public BrukerService(BrukerRepository brukerRepository, AktorOppslagClient aktorOppslagClient) {
+    public BrukerService(BrukerRepository brukerRepository, AktorClient aktorClient) {
         this.brukerRepository = brukerRepository;
-        this.aktorOppslagClient = aktorOppslagClient;
+        this.aktorClient = aktorClient;
     }
 
     public Optional<AktorId> hentAktorId(Fnr fnr) {
@@ -65,12 +65,12 @@ public class BrukerService {
 
 
     public PersonId getPersonIdFromFnr(AktorId aktoerId) {
-        Fnr fnr = aktorOppslagClient.hentFnr(aktoerId);
+        Fnr fnr = aktorClient.hentFnr(aktoerId);
 
         PersonId nyPersonId = brukerRepository.retrievePersonidFromFnr(fnr).get();
 
         AktorId nyAktorIdForPersonId = Try.of(() ->
-                aktorOppslagClient.hentAktorId(fnr))
+                aktorClient.hentAktorId(fnr))
                 .get();
 
         updateGjeldeFlaggOgInsertAktoeridPaNyttMapping(aktoerId, nyPersonId, nyAktorIdForPersonId);
@@ -97,7 +97,7 @@ public class BrukerService {
 
     private Optional<Fnr> hentFnrFraAktoerregister(AktorId aktoerId) {
             return Optional
-                    .ofNullable(aktorOppslagClient.hentFnr(aktoerId));
+                    .ofNullable(aktorClient.hentFnr(aktoerId));
     }
 
 }
