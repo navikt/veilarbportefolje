@@ -43,7 +43,8 @@ public class VedtakService implements KafkaConsumerService<String> {
             case BLI_BESLUTTER:
             case GODKJENT_AV_BESLUTTER:
             case KLAR_TIL_BESLUTTER:
-            case KLAR_TIL_VEILEDER: {
+            case KLAR_TIL_VEILEDER:
+            case OVERTA_FOR_VEILEDER:{
                 oppdaterUtkast(vedtakStatusEndring);
                 break;
             }
