@@ -15,14 +15,12 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.AktorOppslagClientWraper;
-import no.nav.pto.veilarbportefolje.domene.AktorregisterClientWrapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.http.HttpClient;
+
 import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.common.utils.UrlUtils.createServiceUrl;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_NAME;
@@ -32,21 +30,17 @@ import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.APPLICATION_
 public class ClientConfig {
 
     @Bean
-    public AktorClient aktorClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, UnleashService unleashService){
-        if(erPdlPa(unleashService)) {
-            AktorOppslagClient aktorOppslagClient =  new PdlAktorOppslagClient(
-                    createServiceUrl("pdl-api", "default", false),
-                    AuthUtils::getInnloggetBrukerToken,
-                    systemUserTokenProvider::getSystemUserToken
-            );
-            return new AktorOppslagClientWraper(new CachedAktorOppslagClient(aktorOppslagClient));
-        }
-
+    public AktorClient aktorClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, UnleashService unleashService) {
+        AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(
+                createServiceUrl("pdl-api", "default", false),
+                AuthUtils::getInnloggetBrukerToken,
+                systemUserTokenProvider::getSystemUserToken
+        );
         AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
                 properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
         );
-        return new AktorregisterClientWrapper(new CachedAktorregisterClient(aktorregisterClient));
 
+        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorregisterClient(aktorregisterClient), unleashService);
     }
 
     @Bean
@@ -71,10 +65,6 @@ public class ClientConfig {
     @Bean
     public HttpClient httpClient() {
         return HttpClient.newBuilder().build();
-    }
-
-    private boolean erPdlPa(UnleashService unleashService) {
-        return unleashService.isEnabled(FeatureToggle.PDL);
     }
 
 }
