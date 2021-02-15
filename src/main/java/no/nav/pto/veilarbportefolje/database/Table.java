@@ -111,5 +111,4 @@ public class Table {
         public static final String FODSELSDAG = "FODSELSDAG";
     }
 
-
 }

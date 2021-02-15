@@ -30,7 +30,6 @@ public class DbUtils {
         String fornavn = kapitaliser(rs.getString("fornavn"));
         String etternavn = kapitaliser(rs.getString("etternavn"));
         String vedtakstatus = rs.getString("VEDTAKSTATUS");
-        String ansvarligVeilederForVedtak = rs.getString("ANSVARLIG_VEILEDER_NAVN");
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setPerson_id(numberToString(rs.getBigDecimal("person_id")))
@@ -80,7 +79,6 @@ public class DbUtils {
                 .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
                 .setVedtak_status(Optional.ofNullable(vedtakstatus).map(KafkaVedtakStatusEndring.VedtakStatusEndring::valueOf).map(KafkaVedtakStatusEndring::vedtakStatusTilTekst).orElse(null))
                 .setVedtak_status_endret(toIsoUTC(rs.getTimestamp("VEDTAK_STATUS_ENDRET_TIDSPUNKT")))
-                .setAnsvarlig_veileder_for_vedtak(ansvarligVeilederForVedtak)
                 .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus))
                 .setProfilering_resultat(rs.getString("profilering_resultat"))
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))

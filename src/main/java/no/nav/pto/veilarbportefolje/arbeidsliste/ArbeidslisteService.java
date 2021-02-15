@@ -2,12 +2,12 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
-import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -29,7 +29,7 @@ import static java.lang.String.format;
 public class ArbeidslisteService {
     private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
 
-    private final AktorOppslagClient aktorOppslagClient;
+    private final AktorClient aktorClient;
     private final ArbeidslisteRepository arbeidslisteRepository;
     private final BrukerService brukerService;
     private final ElasticServiceV2 elasticServiceV2;
@@ -37,13 +37,13 @@ public class ArbeidslisteService {
 
     @Autowired
     public ArbeidslisteService(
-            AktorOppslagClient aktorOppslagClient,
+            AktorClient aktorClient,
             ArbeidslisteRepository arbeidslisteRepository,
             BrukerService brukerService,
             ElasticServiceV2 elasticServiceV2,
             MetricsClient metricsClient
     ) {
-        this.aktorOppslagClient = aktorOppslagClient;
+        this.aktorClient = aktorClient;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.brukerService = brukerService;
         this.elasticServiceV2 = elasticServiceV2;
@@ -104,7 +104,7 @@ public class ArbeidslisteService {
     }
 
     private Try<AktorId> hentAktorId(Fnr fnr) {
-        return Try.of(() -> aktorOppslagClient.hentAktorId(fnr));
+        return Try.of(() -> aktorClient.hentAktorId(fnr));
     }
 
     public Validation<String, List<Fnr>> erVeilederForBrukere(List<Fnr> fnrs) {

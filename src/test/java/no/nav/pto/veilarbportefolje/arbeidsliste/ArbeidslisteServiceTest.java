@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import lombok.Value;
-import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.*;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -30,20 +30,20 @@ class ArbeidslisteServiceTest {
 
     private final ArbeidslisteService arbeidslisteService;
     private final JdbcTemplate jdbcTemplate;
-    private final AktorOppslagClient aktorOppslagClient;
+    private final AktorClient aktorClient;
     private AktorId aktoerId;
 
     @Autowired
-    public ArbeidslisteServiceTest(ArbeidslisteService arbeidslisteService, JdbcTemplate jdbcTemplate, AktorOppslagClient aktorOppslagClient) {
+    public ArbeidslisteServiceTest(ArbeidslisteService arbeidslisteService, JdbcTemplate jdbcTemplate, AktorClient aktorClient) {
         this.arbeidslisteService = arbeidslisteService;
         this.jdbcTemplate = jdbcTemplate;
-        this.aktorOppslagClient = aktorOppslagClient;
+        this.aktorClient = aktorClient;
     }
 
     @BeforeEach
     void setup() {
         aktoerId = TestDataUtils.randomAktorId();
-        when(aktorOppslagClient.hentAktorId(any(Fnr.class))).thenReturn(aktoerId);
+        when(aktorClient.hentAktorId(any(Fnr.class))).thenReturn(aktoerId);
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.ARBEIDSLISTE.TABLE_NAME);
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.OPPFOLGINGSBRUKER.TABLE_NAME);
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
