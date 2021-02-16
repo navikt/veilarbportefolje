@@ -1,9 +1,10 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,6 @@ import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.never;
 
@@ -33,7 +33,7 @@ public class BrukerServiceTest {
 
     private BrukerRepository brukerRepository;
 
-    private AktorregisterClient aktorregisterClient;
+    private AktorClient aktorClient;
 
 
     private String FNR_FRA_SOAP_TJENESTE = "11111111111";
@@ -44,8 +44,8 @@ public class BrukerServiceTest {
 
         db = new JdbcTemplate(setupInMemoryDatabase());
         brukerRepository = new BrukerRepository(db, null);
-        aktorregisterClient = mock(AktorregisterClient.class);
-        brukerService = new BrukerService(brukerRepository, aktorregisterClient);
+        aktorClient = mock(AktorClient.class);
+        brukerService = new BrukerService(brukerRepository, aktorClient);
 
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
@@ -57,10 +57,10 @@ public class BrukerServiceTest {
     }
 
     public void skalFinnePersonIdFraDatabase() {
-        when(aktorregisterClient.hentFnr(anyString())).thenReturn(FNR_FRA_SOAP_TJENESTE);
-        when(aktorregisterClient.hentAktorId(anyString())).thenReturn(AKTOERID_FRA_SOAP_TJENESTE);
+        when(aktorClient.hentFnr(any(AktorId.class))).thenReturn(Fnr.ofValidFnr(FNR_FRA_SOAP_TJENESTE));
+        when(aktorClient.hentAktorId(any(Fnr.class))).thenReturn(AktorId.of(AKTOERID_FRA_SOAP_TJENESTE));
 
-        AktoerId aktoerId = AktoerId.of("111");
+        AktorId aktoerId = AktorId.of("111");
         PersonId personId = PersonId.of("222");
         int updated =
                 insert(db, "AKTOERID_TO_PERSONID")
@@ -71,13 +71,13 @@ public class BrukerServiceTest {
         assertTrue(updated > 0);
 
         Try<PersonId> result = brukerService.hentPersonidFraAktoerid(aktoerId);
-        verify(aktorregisterClient, never()).hentFnr(anyString());
+        verify(aktorClient, never()).hentFnr(any(AktorId.class));
         assertTrue(result.isSuccess());
         assertEquals(personId, result.get());
     }
 
     @Test
-    public void skalSetteGamleAktorIdTilIkkeGjeldeOgSetteNyeAktoerIdTilGjeldene() {
+    public void skalSetteGamleAktorIdTilIkkeGjeldeOgSetteNyeAktorIdTilGjeldene() {
 
         insert(db, "AKTOERID_TO_PERSONID")
                 .value("AKTOERID", AKTOER_ID)
@@ -85,45 +85,45 @@ public class BrukerServiceTest {
                 .value("GJELDENE", 1)
                 .execute();
 
-        AktoerId nyAktoerId = AktoerId.of("11111");
+        AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorregisterClient.hentFnr(nyAktoerId.toString())).thenReturn(FNR);
-        when(aktorregisterClient.hentAktorId(FNR)).thenReturn(nyAktoerId.toString());
+        when(aktorClient.hentFnr(nyAktorId)).thenReturn(Fnr.ofValidFnr(FNR));
+        when(aktorClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
 
-        brukerService.hentPersonidFraAktoerid(nyAktoerId);
+        brukerService.hentPersonidFraAktoerid(nyAktorId);
 
-        Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
+        Try<String> gamleAktorId = getGamleAktorId(PERSON_ID);
         assertEquals(gamleAktorId.get(), AKTOER_ID);
 
-        Try<String> resultatNyAktoerId = getGjeldeneAktoerId(PERSON_ID);
-        assertEquals(resultatNyAktoerId.get(), nyAktoerId.toString());
+        Try<String> resultatNyAktorId = getGjeldeneAktorId(PERSON_ID);
+        assertEquals(resultatNyAktorId.get(), nyAktorId.toString());
 
     }
 
     @Test
     public void skalSetteGamleAktorIdTilIkkeGjeldene() {
 
-        AktoerId aktoerId = AktoerId.of("99999");
+        AktorId aktoerId = AktorId.of("99999");
 
-        AktoerId nyAktoerId = AktoerId.of("11111");
+        AktorId nyAktorId = AktorId.of("11111");
 
-        when(aktorregisterClient.hentFnr(aktoerId.toString())).thenReturn(FNR);
-        when(aktorregisterClient.hentAktorId(FNR)).thenReturn(nyAktoerId.toString());
+        when(aktorClient.hentFnr(aktoerId)).thenReturn(Fnr.ofValidFnr(FNR));
+        when(aktorClient.hentAktorId(Fnr.ofValidFnr(FNR))).thenReturn(nyAktorId);
 
         brukerService.hentPersonidFraAktoerid(aktoerId);
 
-        Try<String> gamleAktorId = getGamleAktoerId(PERSON_ID);
+        Try<String> gamleAktorId = getGamleAktorId(PERSON_ID);
         assertEquals(gamleAktorId.get(), aktoerId.toString());
     }
 
-    private Try<String> getGjeldeneAktoerId(String personId) {
+    private Try<String> getGjeldeneAktorId(String personId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ? AND GJELDENE = 1",
                 new Object[]{personId},
                 (rs, rowNum) -> rs.getString("AKTOERID")));
     }
 
-    private Try<String> getGamleAktoerId(String personId) {
+    private Try<String> getGamleAktorId(String personId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT AKTOERID FROM AKTOERID_TO_PERSONID WHERE PERSONID = ? AND GJELDENE = 0",
                 new Object[]{personId},

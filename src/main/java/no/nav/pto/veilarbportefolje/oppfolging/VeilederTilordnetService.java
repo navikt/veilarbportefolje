@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         final VeilederTilordnetDTO dto = JsonUtils.fromJson(kafkaMelding, VeilederTilordnetDTO.class);
-        final AktoerId aktoerId = dto.getAktorId();
+        final AktorId aktoerId = dto.getAktorId();
 
         oppfolgingRepository.settVeileder(aktoerId, dto.getVeilederId());
         elasticServiceV2.oppdaterVeileder(aktoerId, dto.getVeilederId());

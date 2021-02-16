@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.InsertBatchQuery;
@@ -19,7 +19,7 @@ import java.util.Optional;
 @Accessors(chain = true)
 public class AktivitetStatus {
     PersonId personid;
-    AktoerId aktoerid;
+    AktorId aktoerid;
     String aktivitetType;
     boolean aktiv;
     Timestamp nesteUtlop;
@@ -68,7 +68,7 @@ public class AktivitetStatus {
 
     private String aktoeridOrElseNull() {
         return Optional.ofNullable(aktoerid)
-                .map(AktoerId::toString)
+                .map(AktorId::toString)
                 .orElse(null);
     }
 }

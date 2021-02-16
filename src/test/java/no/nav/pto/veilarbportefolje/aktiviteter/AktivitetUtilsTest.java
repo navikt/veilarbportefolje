@@ -4,8 +4,8 @@ import io.vavr.control.Try;
 import lombok.val;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -157,7 +157,7 @@ public class AktivitetUtilsTest {
 
     @Test
     public void skalReturnereSetMedAlleAktivitetstyper() {
-        Set<AktivitetStatus> statuser = lagAktivitetSet(Collections.emptyList(), LocalDate.now(), AktoerId.of("aktoerid"), PersonId.of("personid"));
+        Set<AktivitetStatus> statuser = lagAktivitetSet(Collections.emptyList(), LocalDate.now(), AktorId.of("aktoerid"), PersonId.of("personid"));
         assertThat(statuser.size()).isEqualTo(aktivitetTyperFraAktivitetsplanList.size());
         statuser.forEach((status) -> {
             assertThat(status.isAktiv()).isFalse();
@@ -174,7 +174,7 @@ public class AktivitetUtilsTest {
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t1);
         AktivitetDTO a2 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t2);
 
-        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktoerId.of("aktoerid"), PersonId.of("personid"));
+        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktorId.of("aktoerid"), PersonId.of("personid"));
         assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
 
     }
@@ -187,7 +187,7 @@ public class AktivitetUtilsTest {
         AktivitetDTO a1 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS);
         AktivitetDTO a2 = new AktivitetDTO().setAktivitetType(aktivitetstype).setStatus(IKKE_FULLFORT_STATUS).setTilDato(t1);
 
-        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktoerId.of("aktoerid"), PersonId.of("personid"));
+        Set<AktivitetStatus> statuser = lagAktivitetSet(asList(a1, a2), LocalDate.ofEpochDay(0), AktorId.of("aktoerid"), PersonId.of("personid"));
         assertThat(statuser.stream().filter((a) -> a.getAktivitetType().equals(aktivitetstype)).findFirst().get().getNesteUtlop()).isEqualTo(t1);
     }
 
@@ -198,8 +198,8 @@ public class AktivitetUtilsTest {
     private List<Brukertiltak> tiltakData(String dato1, String dato2) {
         List<Brukertiltak> tiltak = new ArrayList<>();
 
-        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T1", parseDato(dato1)));
-        tiltak.add(Brukertiltak.of(new Fnr("12345678910"), "T2", parseDato(dato2)));
+        tiltak.add(Brukertiltak.of(Fnr.ofValidFnr("12345678910"), "T1", parseDato(dato1)));
+        tiltak.add(Brukertiltak.of(Fnr.ofValidFnr("12345678910"), "T2", parseDato(dato2)));
 
         return tiltak;
     }

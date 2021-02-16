@@ -5,8 +5,8 @@ import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -44,7 +44,7 @@ public class AktivitetDAO {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-    public AktoerId getAktoerId(String aktivitetId) {
+    public AktorId getAktorId(String aktivitetId) {
         return SqlUtils
                 .select(db, Table.AKTIVITETER.TABLE_NAME, rs -> rs.getString(AKTOERID))
                 .column(AKTOERID)
@@ -52,7 +52,7 @@ public class AktivitetDAO {
                 .executeToList()
                 .stream()
                 .findFirst()
-                .map(AktoerId::of)
+                .map(AktorId::of)
                 .orElseThrow(IllegalStateException::new);
     }
 
@@ -68,7 +68,7 @@ public class AktivitetDAO {
         db.execute("DELETE FROM BRUKERSTATUS_AKTIVITETER WHERE AKTIVITETTYPE = '" + aktivitettype + "'");
     }
 
-    public AktoerAktiviteter getAktiviteterForAktoerid(AktoerId aktoerid) {
+    public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
 
         List<AktivitetDTO> queryResult = SqlUtils.select(db,  Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
                 .column(AKTOERID)
@@ -161,7 +161,7 @@ public class AktivitetDAO {
                         }));
     }
 
-    public List<String> getDistinctAktoerIdsFromAktivitet() {
+    public List<String> getDistinctAktorIdsFromAktivitet() {
         return db.queryForList("SELECT DISTINCT AKTOERID FROM AKTIVITETER")
                 .stream()
                 .map(map -> (String) map.get(AKTOERID))
@@ -178,7 +178,7 @@ public class AktivitetDAO {
                 .queryForList(hentBrukertiltakForListeAvFnrSQL(), params)
                 .stream()
                 .map(row -> Brukertiltak.of(
-                        Fnr.of((String) row.get("FNR")),
+                        Fnr.ofValidFnr((String) row.get("FNR")),
                         (String) row.get("TILTAK"),
                         (Timestamp) row.get("TILDATO"))
                 )
@@ -212,7 +212,7 @@ public class AktivitetDAO {
     public static AktivitetStatus mapAktivitetStatus (Map<String, Object> row) {
         return new AktivitetStatus()
                 .setPersonid(PersonId.of((String) row.get("PERSONID")))
-                .setAktoerid(AktoerId.of((String) row.get("AKTOERID")))
+                .setAktoerid(AktorId.of((String) row.get("AKTOERID")))
                 .setAktivitetType((String) row.get("AKTIVITETTYPE"))
                 .setAktiv(parse0OR1((String) row.get("STATUS")))
                 .setNesteStart((Timestamp) row.get("NESTE_STARTDATO"))

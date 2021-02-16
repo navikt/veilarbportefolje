@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.control.Try;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.junit.Before;
@@ -64,10 +64,10 @@ public class AktivitetServiceTest {
 
         String ikkeFullfortStatus = "ikkeFullfortStatus";
 
-        when(aktivitetDAO.getDistinctAktoerIdsFromAktivitet()).thenReturn(aktoerids);
+        when(aktivitetDAO.getDistinctAktorIdsFromAktivitet()).thenReturn(aktoerids);
 
-        when(aktivitetDAO.getAktiviteterForAktoerid(any(AktoerId.class))).thenAnswer(invocationOnMock -> {
-                    AktoerId aktoer = (AktoerId) invocationOnMock.getArguments()[0];
+        when(aktivitetDAO.getAktiviteterForAktoerid(any(AktorId.class))).thenAnswer(invocationOnMock -> {
+                    AktorId aktoer = (AktorId) invocationOnMock.getArguments()[0];
                     return new AktoerAktiviteter(aktoer.toString()).setAktiviteter(singletonList(new AktivitetDTO()
                             .setTilDato(Timestamp.from(Instant.now()))
                             .setFraDato(Timestamp.from(Instant.now()))
@@ -76,7 +76,7 @@ public class AktivitetServiceTest {
                 });
 
         when(brukerService
-                .hentPersonidFraAktoerid(any(AktoerId.class)))
+                .hentPersonidFraAktoerid(any(AktorId.class)))
                 .thenAnswer(args -> Try.success(PersonId.of(args.getArgument(0).toString())));
 
         aktivitetService.utledOgLagreAlleAktivitetstatuser();
@@ -105,7 +105,7 @@ public class AktivitetServiceTest {
 
         ArgumentCaptor<List<AktivitetBrukerOppdatering>> captor = ArgumentCaptor.forClass((Class) List.class);
 
-        when(aktivitetDAO.getDistinctAktoerIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
+        when(aktivitetDAO.getDistinctAktorIdsFromAktivitet()).thenReturn(singletonList(AKTOERID_TEST));
         when(aktivitetDAO.getAktiviteterForAktoerid(any())).thenReturn(aktiviteter);
         when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.success(PersonId.of(PERSONID_TEST)));
 

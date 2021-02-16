@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import org.elasticsearch.ElasticsearchException;
@@ -35,7 +35,7 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void updateRegistering(AktoerId aktoerId, ArbeidssokerRegistrertEvent utdanningEvent) {
+    public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent utdanningEvent) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("brukers_situasjon", utdanningEvent.getBrukersSituasjon())
@@ -63,7 +63,7 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void updateHarDeltCv(AktoerId aktoerId, boolean harDeltCv) {
+    public void updateHarDeltCv(AktorId aktoerId, boolean harDeltCv) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("har_delt_cv", harDeltCv)
@@ -73,7 +73,7 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void markerBrukerSomSlettet(AktoerId aktoerId) {
+    public void markerBrukerSomSlettet(AktorId aktoerId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("oppfolging", false)
@@ -83,7 +83,7 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void settManuellStatus(AktoerId aktoerId, String manuellStatus) {
+    public void settManuellStatus(AktorId aktoerId, String manuellStatus) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("manuell_bruker", manuellStatus)
@@ -93,7 +93,7 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void oppdaterNyForVeileder(AktoerId aktoerId, boolean nyForVeileder) {
+    public void oppdaterNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("ny_for_veileder", nyForVeileder)
@@ -103,7 +103,7 @@ public class ElasticServiceV2 {
     }
 
     @SneakyThrows
-    public void oppdaterVeileder(AktoerId aktoerId, VeilederId veilederId) {
+    public void oppdaterVeileder(AktorId aktoerId, VeilederId veilederId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("veileder_id", veilederId.toString())
@@ -122,7 +122,7 @@ public class ElasticServiceV2 {
                 .field("venterpasvarfranav", toIsoUTC(melding.getTidspunktEldsteUbehandlede()))
                 .endObject();
 
-        update(AktoerId.of(melding.getAktorId()), content);
+        update(AktorId.of(melding.getAktorId()), content);
     }
 
     @SneakyThrows
@@ -137,11 +137,11 @@ public class ElasticServiceV2 {
                 .field("arbeidsliste_endringstidspunkt", toIsoUTC(arbeidslisteDTO.getEndringstidspunkt()))
                 .field("arbeidsliste_kategori", arbeidslisteDTO.getKategori().name())
                 .endObject();
-        update(arbeidslisteDTO.getAktoerId(), content);
+        update(arbeidslisteDTO.getAktorId(), content);
     }
 
     @SneakyThrows
-    public void slettArbeidsliste(AktoerId aktoerId) {
+    public void slettArbeidsliste(AktorId aktoerId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv", false)
@@ -156,11 +156,11 @@ public class ElasticServiceV2 {
         update(aktoerId, content);
     }
 
-    private void update(AktoerId aktoerId, XContentBuilder content) throws IOException {
+    private void update(AktorId aktoerId, XContentBuilder content) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
         updateRequest.type("_doc");
-        updateRequest.id(aktoerId.getValue());
+        updateRequest.id(aktoerId.get());
         updateRequest.doc(content);
         updateRequest.retryOnConflict(6);
 

@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.util;
 
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.apache.http.util.EntityUtils;
@@ -42,14 +42,14 @@ public class ElasticTestClient {
         this.indexName = indexName;
     }
 
-    public OppfolgingsBruker hentBrukerFraElastic(AktoerId aktoerId) {
+    public OppfolgingsBruker hentBrukerFraElastic(AktorId aktoerId) {
         return getDocument(aktoerId)
                 .map(resp -> JsonUtils.fromJson(resp.getSourceAsString(), OppfolgingsBruker.class))
                 .orElseThrow();
     }
 
     @SneakyThrows
-    public GetResponse fetchDocument(AktoerId aktoerId) {
+    public GetResponse fetchDocument(AktorId aktoerId) {
         GetRequest getRequest = new GetRequest();
         getRequest.index(indexName.getValue());
         getRequest.id(aktoerId.toString());
@@ -57,7 +57,7 @@ public class ElasticTestClient {
     }
 
     @SneakyThrows
-    public IndexResponse createDocument(AktoerId aktoerId, String json) {
+    public IndexResponse createDocument(AktorId aktoerId, String json) {
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());
         indexRequest.type("_doc");
@@ -80,7 +80,7 @@ public class ElasticTestClient {
         return new JSONObject(entity).getInt("count");
     }
 
-    public void createUserInElastic(AktoerId aktoerId) {
+    public void createUserInElastic(AktorId aktoerId) {
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("oppfolging", true)
@@ -119,14 +119,14 @@ public class ElasticTestClient {
             throw new RuntimeException(e);
         }
 
-        final AktoerId aktoerId = AktoerId.of(bruker.getAktoer_id());
+        final AktorId aktoerId = AktorId.of(bruker.getAktoer_id());
         final Optional<GetResponse> getResponse = getDocument(aktoerId);
 
         assertThat(getResponse).isPresent();
         assertThat(getResponse.get().isExists()).isTrue();
     }
 
-    public Optional<GetResponse> getDocument(AktoerId aktoerId) {
+    public Optional<GetResponse> getDocument(AktorId aktoerId) {
         GetRequest getRequest = new GetRequest();
         getRequest.index(indexName.getValue());
         getRequest.id(aktoerId.toString());
@@ -153,7 +153,7 @@ public class ElasticTestClient {
     }
 
     @SneakyThrows
-    public void oppdaterArbeidsliste(AktoerId aktoerId, boolean isAktiv) {
+    public void oppdaterArbeidsliste(AktorId aktoerId, boolean isAktiv) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv", isAktiv)

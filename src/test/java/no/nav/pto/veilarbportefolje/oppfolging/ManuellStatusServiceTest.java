@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus.MANUELL;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -31,7 +31,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         elasticTestClient.createUserInElastic(aktoerId);
 
@@ -50,7 +50,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
 
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_digital_oppfølging() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         elasticTestClient.createUserInElastic(aktoerId);
 

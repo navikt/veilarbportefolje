@@ -6,8 +6,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
@@ -106,7 +106,7 @@ public class ElasticIndexer {
         });
     }
 
-    public void indekser(AktoerId aktoerId) {
+    public void indekser(AktorId aktoerId) {
         brukerRepository.hentBrukerFraView(aktoerId).ifPresent(this::indekserBruker);
     }
 

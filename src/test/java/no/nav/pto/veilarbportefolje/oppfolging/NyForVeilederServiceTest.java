@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -30,10 +30,10 @@ class NyForVeilederServiceTest extends EndToEndTest {
 
     @Test
     void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() {
-        final AktoerId aktoerId = TestDataUtils.randomAktoerId();
+        final AktorId aktoerId = TestDataUtils.randomAktorId();
 
         SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue())
+                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
                 .value(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER,"J")
                 .execute();
@@ -41,7 +41,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         elasticTestClient.createUserInElastic(aktoerId);
 
         String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("nyForVeileder", false)
                 .toString();
 
@@ -57,10 +57,10 @@ class NyForVeilederServiceTest extends EndToEndTest {
 
     @Test
     void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() {
-        final AktoerId aktoerId = TestDataUtils.randomAktoerId();
+        final AktorId aktoerId = TestDataUtils.randomAktorId();
 
         SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.getValue())
+                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .value(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
                 .value(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER,"N")
                 .execute();
@@ -68,7 +68,7 @@ class NyForVeilederServiceTest extends EndToEndTest {
         elasticTestClient.createUserInElastic(aktoerId);
 
         String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("nyForVeileder", true)
                 .toString();
 

@@ -4,8 +4,8 @@ import com.google.common.base.Joiner;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.BrukerRepositoryTest;
 
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -59,12 +59,12 @@ public class AktivitetDAOTest {
 
     @Test(expected = IllegalStateException.class)
     public void skal_kaste_exception_ved_manglende_aktoer_id() {
-        aktivitetDAO.getAktoerId("finnes_ikke");
+        aktivitetDAO.getAktorId("finnes_ikke");
     }
 
     @Test
     public void skal_hente_aktoerid_for_aktivitet() {
-        String expectedAktoerId = "aktoer_id_test_1";
+        String expectedAktorId = "aktoer_id_test_1";
         String aktivitetId = "aktivitet_id_test_1";
 
         KafkaAktivitetMelding aktivitet1 = new KafkaAktivitetMelding()
@@ -102,9 +102,9 @@ public class AktivitetDAOTest {
         aktivitetDAO.upsertAktivitet(aktivitet2);
         aktivitetDAO.upsertAktivitet(aktivitet3);
 
-        String actualAktoerId = aktivitetDAO.getAktoerId(aktivitetId).toString();
+        String actualAktorId = aktivitetDAO.getAktorId(aktivitetId).toString();
 
-        assertThat(actualAktoerId).isEqualTo(expectedAktoerId);
+        assertThat(actualAktorId).isEqualTo(expectedAktorId);
     }
 
     @Test
@@ -184,7 +184,7 @@ public class AktivitetDAOTest {
         aktivitetDAO.upsertAktivitet(aktivitet1);
         aktivitetDAO.upsertAktivitet(aktivitet2);
 
-        assertThat(aktivitetDAO.getDistinctAktoerIdsFromAktivitet()).containsExactly("aktoerid");
+        assertThat(aktivitetDAO.getDistinctAktorIdsFromAktivitet()).containsExactly("aktoerid");
     }
 
     @Test
@@ -207,7 +207,7 @@ public class AktivitetDAOTest {
 
         aktivitetDAO.upsertAktivitet(asList(aktivitet1, aktivitet2));
 
-        AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktoerId.of("aktoerid"));
+        AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktorId.of("aktoerid"));
 
         assertThat(aktoerAktiviteter.getAktiviteter().size()).isEqualTo(2);
         assertThat(aktoerAktiviteter.getAktoerid()).isEqualTo("aktoerid");
@@ -219,7 +219,7 @@ public class AktivitetDAOTest {
 
         statuser.add(new AktivitetStatus()
                 .setPersonid(PersonId.of("pid1"))
-                .setAktoerid( AktoerId.of("aid1"))
+                .setAktoerid( AktorId.of("aid1"))
                 .setAktivitetType("a1")
                 .setAktiv(true)
                 .setNesteStart(new Timestamp(0))
@@ -227,7 +227,7 @@ public class AktivitetDAOTest {
 
         statuser.add(new AktivitetStatus()
                 .setPersonid(PersonId.of("pid2"))
-                .setAktoerid( AktoerId.of("aid2"))
+                .setAktoerid( AktorId.of("aid2"))
                 .setAktivitetType("a2")
                 .setAktiv(true)
                 .setNesteStart(new Timestamp(0))
@@ -244,8 +244,8 @@ public class AktivitetDAOTest {
 
     @Test
     public void skalHenteBrukertiltakForListeAvFnr() {
-        Fnr fnr1 = Fnr.of("11111111111");
-        Fnr fnr2 = Fnr.of("22222222222");
+        Fnr fnr1 = Fnr.ofValidFnr("11111111111");
+        Fnr fnr2 = Fnr.ofValidFnr("22222222222");
 
         List<Brukertiltak> brukertiltak = aktivitetDAO.hentBrukertiltak(asList(fnr1, fnr2));
 

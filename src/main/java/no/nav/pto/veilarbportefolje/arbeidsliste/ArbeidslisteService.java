@@ -2,14 +2,13 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
@@ -30,7 +29,7 @@ import static java.lang.String.format;
 public class ArbeidslisteService {
     private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
 
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorClient aktorClient;
     private final ArbeidslisteRepository arbeidslisteRepository;
     private final BrukerService brukerService;
     private final ElasticServiceV2 elasticServiceV2;
@@ -38,12 +37,13 @@ public class ArbeidslisteService {
 
     @Autowired
     public ArbeidslisteService(
-            AktorregisterClient aktorregisterClient,
+            AktorClient aktorClient,
             ArbeidslisteRepository arbeidslisteRepository,
             BrukerService brukerService,
-            ElasticServiceV2 elasticServiceV2, MetricsClient metricsClient
+            ElasticServiceV2 elasticServiceV2,
+            MetricsClient metricsClient
     ) {
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorClient = aktorClient;
         this.arbeidslisteRepository = arbeidslisteRepository;
         this.brukerService = brukerService;
         this.elasticServiceV2 = elasticServiceV2;
@@ -51,10 +51,10 @@ public class ArbeidslisteService {
     }
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
-        return hentAktoerId(fnr).map(this::getArbeidsliste).get();
+        return hentAktorId(fnr).map(this::getArbeidsliste).get();
     }
 
-    public Try<Arbeidsliste> getArbeidsliste(AktoerId aktoerId) {
+    public Try<Arbeidsliste> getArbeidsliste(AktorId aktoerId) {
         return arbeidslisteRepository.retrieveArbeidsliste(aktoerId);
     }
 
@@ -62,11 +62,11 @@ public class ArbeidslisteService {
 
         metricsClient.report((new Event("arbeidsliste.opprettet")));
 
-        Try<AktoerId> aktoerId = hentAktoerId(dto.getFnr());
+        Try<AktorId> aktoerId = hentAktorId(dto.getFnr());
         if (aktoerId.isFailure()) {
             return Try.failure(aktoerId.getCause());
         }
-        dto.setAktoerId(aktoerId.get());
+        dto.setAktorId(aktoerId.get());
 
         String navKontorForBruker = brukerService.hentNavKontorFraDbLinkTilArena(dto.getFnr()).orElseThrow();
         dto.setNavKontorForArbeidsliste(navKontorForBruker);
@@ -76,17 +76,17 @@ public class ArbeidslisteService {
     }
 
     public Try<ArbeidslisteDTO> updateArbeidsliste(ArbeidslisteDTO data) {
-        Try<AktoerId> aktoerId = hentAktoerId(data.getFnr());
+        Try<AktorId> aktoerId = hentAktorId(data.getFnr());
         if (aktoerId.isFailure()) {
             return Try.failure(aktoerId.getCause());
         }
 
         return arbeidslisteRepository
-                .updateArbeidsliste(data.setAktoerId(aktoerId.get()))
+                .updateArbeidsliste(data.setAktorId(aktoerId.get()))
                 .onSuccess(elasticServiceV2::updateArbeidsliste);
     }
 
-    public int slettArbeidsliste(AktoerId aktoerId) {
+    public int slettArbeidsliste(AktorId aktoerId) {
         final int rowsUpdated = arbeidslisteRepository.slettArbeidsliste(aktoerId);
         if (rowsUpdated == 1) {
             elasticServiceV2.slettArbeidsliste(aktoerId);
@@ -95,7 +95,7 @@ public class ArbeidslisteService {
     }
 
     public int slettArbeidsliste(Fnr fnr) {
-        Optional<AktoerId> aktoerId = brukerService.hentAktoerId(fnr);
+        Optional<AktorId> aktoerId = brukerService.hentAktorId(fnr);
         if (aktoerId.isPresent()) {
             return slettArbeidsliste(aktoerId.get());
         }
@@ -103,8 +103,8 @@ public class ArbeidslisteService {
         return -1;
     }
 
-    private Try<AktoerId> hentAktoerId(Fnr fnr) {
-        return Try.of(() -> AktoerId.of(aktorregisterClient.hentAktorId(fnr.toString())));
+    private Try<AktorId> hentAktorId(Fnr fnr) {
+        return Try.of(() -> aktorClient.hentAktorId(fnr));
     }
 
     public Validation<String, List<Fnr>> erVeilederForBrukere(List<Fnr> fnrs) {
@@ -129,30 +129,30 @@ public class ArbeidslisteService {
                         .getOrElse(false);
 
         if (erVeilederForBruker) {
-            return valid(new Fnr(fnr));
+            return valid(Fnr.ofValidFnr(fnr));
         }
         return invalid(format("Veileder %s er ikke veileder for bruker med fnr %s", veilederId, fnr));
     }
 
 
     public Boolean erVeilederForBruker(Fnr fnr, VeilederId veilederId) {
-        return hentAktoerId(fnr)
+        return hentAktorId(fnr)
                 .map(aktoerId -> erVeilederForBruker(aktoerId, veilederId))
                 .getOrElse(false);
     }
 
-    public Boolean erVeilederForBruker(AktoerId aktoerId, VeilederId veilederId) {
+    public Boolean erVeilederForBruker(AktorId aktoerId, VeilederId veilederId) {
         return brukerService
                 .hentVeilederForBruker(aktoerId)
                 .map(currentVeileder -> currentVeileder.equals(veilederId))
                 .orElse(false);
     }
 
-    public Optional<String> hentNavKontorForArbeidsliste(AktoerId aktoerId) {
+    public Optional<String> hentNavKontorForArbeidsliste(AktorId aktoerId) {
         return arbeidslisteRepository.hentNavKontorForArbeidsliste(aktoerId);
     }
 
-    public boolean brukerHarByttetNavKontor(AktoerId aktoerId) {
+    public boolean brukerHarByttetNavKontor(AktorId aktoerId) {
         Optional<String> navKontorForArbeidsliste = hentNavKontorForArbeidsliste(aktoerId);
 
         if (navKontorForArbeidsliste.isEmpty()) {

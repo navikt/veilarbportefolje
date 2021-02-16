@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.database;
 
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Personinfo;
-import no.nav.pto.veilarbportefolje.domene.value.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -30,7 +30,7 @@ class PersonRepositoryTest {
 
     @Test
     void skalIkkeTryneOmBrukerIkkeFinnes() {
-        Optional<Personinfo> finnesikke = personRepository.hentPersoninfoForFnr(Fnr.of("11111111111"));
+        Optional<Personinfo> finnesikke = personRepository.hentPersoninfoForFnr(Fnr.ofValidFnr("11111111111"));
         assertThat(finnesikke).isNotPresent();
     }
 

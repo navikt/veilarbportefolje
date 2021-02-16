@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -36,9 +36,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void skal_sette_bruker_under_oppfølging_i_databasen() {
-        final AktoerId aktoerId = TestDataUtils.randomAktoerId();
+        final AktorId aktoerId = TestDataUtils.randomAktorId();
         final String payload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("oppfolgingStartet", "2020-12-01T00:00:00+02:00")
                 .toString();
 
@@ -51,7 +51,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void skal_slette_arbeidsliste_registrering_og_avslutte_oppfølging() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
 
         testDataClient.setupBrukerMedArbeidsliste(
                 aktoerId,
@@ -70,7 +70,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         String arbeidsliste = SqlUtils
                 .select(jdbcTemplate, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(Table.ARBEIDSLISTE.AKTOERID))
                 .column(Table.ARBEIDSLISTE.AKTOERID)
-                .where(WhereClause.equals(Table.ARBEIDSLISTE.AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(Table.ARBEIDSLISTE.AKTOERID, aktoerId.get()))
                 .execute();
 
         assertThat(arbeidsliste).isNull();
@@ -78,7 +78,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         String registrering = SqlUtils
                 .select(jdbcTemplate, Table.BRUKER_REGISTRERING.TABLE_NAME, rs -> rs.getString(Table.BRUKER_REGISTRERING.AKTOERID))
                 .column(Table.BRUKER_REGISTRERING.AKTOERID)
-                .where(WhereClause.equals(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.getValue()))
+                .where(WhereClause.equals(Table.BRUKER_REGISTRERING.AKTOERID, aktoerId.get()))
                 .execute();
 
         assertThat(registrering).isNull();
@@ -108,7 +108,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Test
     void skal_ikke_avslutte_bruker_som_ikke_finnes() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
 
         String oppfolgingAvsluttePayload = new JSONObject()
                 .put("aktorId", aktoerId.toString())
@@ -119,10 +119,10 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     private Optional<BrukerOppdatertInformasjon> startOgAvsluttBruker(String startDato, String sluttDato) {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
 
         final String oppfolgingStartetPayload = new JSONObject()
-                .put("aktorId", aktoerId.getValue())
+                .put("aktorId", aktoerId.get())
                 .put("oppfolgingStartet", startDato)
                 .toString();
 

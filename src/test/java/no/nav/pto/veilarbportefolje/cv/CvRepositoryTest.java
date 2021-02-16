@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.TestUtil;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class CvRepositoryTest {
 
     @Test
     public void skal_upserte_database() {
-        AktoerId aktoerId = AktoerId.of("0");
+        AktorId aktoerId = AktorId.of("0");
 
         cvRepository.upsert(aktoerId, true);
         assertThat(cvRepository.harDeltCv(aktoerId)).isEqualTo("J");

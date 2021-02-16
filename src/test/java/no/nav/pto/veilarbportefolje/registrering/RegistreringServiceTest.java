@@ -4,9 +4,9 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.arbeid.soker.registrering.UtdanningBestattSvar;
 import no.nav.arbeid.soker.registrering.UtdanningGodkjentSvar;
 import no.nav.arbeid.soker.registrering.UtdanningSvar;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.value.AktoerId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -22,7 +22,7 @@ import java.util.List;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktoerId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class RegistreringServiceTest extends EndToEndTest {
@@ -38,7 +38,7 @@ class RegistreringServiceTest extends EndToEndTest {
 
     @Test
     void utdanning_full_integration() {
-        final AktoerId aktoerId = randomAktoerId();
+        final AktorId aktoerId = randomAktorId();
 
         elasticTestClient.createUserInElastic(aktoerId);
 
@@ -165,20 +165,20 @@ class RegistreringServiceTest extends EndToEndTest {
     }
 
     private void populateElastic(String enhet) {
-        final AktoerId aktoerId1 = randomAktoerId();
-        final AktoerId aktoerId2 = randomAktoerId();
-        final AktoerId aktoerId3 = randomAktoerId();
+        final AktorId aktoerId1 = randomAktorId();
+        final AktorId aktoerId2 = randomAktorId();
+        final AktorId aktoerId3 = randomAktorId();
 
         List<OppfolgingsBruker> brukere = List.of(
                 new OppfolgingsBruker()
-                        .setAktoer_id(aktoerId1.toString())
+                        .setAktoer_id(aktoerId1.get())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")
                         .setUtdanning_godkjent("NEI"),
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(aktoerId2.toString())
+                        .setAktoer_id(aktoerId2.get())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("JA")
@@ -186,7 +186,7 @@ class RegistreringServiceTest extends EndToEndTest {
                         .setUtdanning("GRUNNSKOLE"),
 
                 new OppfolgingsBruker()
-                        .setAktoer_id(aktoerId3.toString())
+                        .setAktoer_id(aktoerId3.get())
                         .setOppfolging(true)
                         .setEnhet_id(enhet)
                         .setUtdanning_bestatt("NEI")

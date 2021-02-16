@@ -1,9 +1,11 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import lombok.Value;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.*;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -20,7 +22,7 @@ import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -28,20 +30,20 @@ class ArbeidslisteServiceTest {
 
     private final ArbeidslisteService arbeidslisteService;
     private final JdbcTemplate jdbcTemplate;
-    private final AktorregisterClient aktorregisterClient;
-    private AktoerId aktoerId;
+    private final AktorClient aktorClient;
+    private AktorId aktoerId;
 
     @Autowired
-    public ArbeidslisteServiceTest(ArbeidslisteService arbeidslisteService, JdbcTemplate jdbcTemplate, AktorregisterClient aktorregisterClient) {
+    public ArbeidslisteServiceTest(ArbeidslisteService arbeidslisteService, JdbcTemplate jdbcTemplate, AktorClient aktorClient) {
         this.arbeidslisteService = arbeidslisteService;
         this.jdbcTemplate = jdbcTemplate;
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorClient = aktorClient;
     }
 
     @BeforeEach
     void setup() {
-        aktoerId = TestDataUtils.randomAktoerId();
-        when(aktorregisterClient.hentAktorId(anyString())).thenReturn(aktoerId.toString());
+        aktoerId = TestDataUtils.randomAktorId();
+        when(aktorClient.hentAktorId(any(Fnr.class))).thenReturn(aktoerId);
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.ARBEIDSLISTE.TABLE_NAME);
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.OPPFOLGINGSBRUKER.TABLE_NAME);
         jdbcTemplate.execute("TRUNCATE TABLE " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
@@ -65,7 +67,7 @@ class ArbeidslisteServiceTest {
         assertThat(actualNavKontor).isEqualTo(excpectedNavKontor);
     }
 
-    private FnrOgNavKontor setUpInitialState(AktoerId aktoerId, NavKontor navKontor) {
+    private FnrOgNavKontor setUpInitialState(AktorId aktoerId, NavKontor navKontor) {
         Fnr fnr = randomFnr();
         PersonId personId = randomPersonId();
 
@@ -85,7 +87,7 @@ class ArbeidslisteServiceTest {
 
         ArbeidslisteDTO dto = new ArbeidslisteDTO(fnr)
                 .setNavKontorForArbeidsliste("0000")
-                .setAktoerId(aktoerId)
+                .setAktorId(aktoerId)
                 .setVeilederId(VeilederId.of("0"))
                 .setFrist(Timestamp.from(now()))
                 .setKategori(Arbeidsliste.Kategori.BLA)
