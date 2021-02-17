@@ -9,6 +9,7 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
+import okhttp3.OkHttpClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,5 +61,9 @@ public class ApplicationConfig {
     @Bean
     public LeaderElectionClient leaderElectionClient() {
         return new LeaderElectionHttpClient();
+    }
+
+    @Bean public OkHttpClient okHttpClient(){
+        return new OkHttpClient();
     }
 }
