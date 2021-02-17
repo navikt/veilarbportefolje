@@ -80,7 +80,8 @@
             "raw": {
               "type": "keyword"
             },
-          "normalizer": "ansvarlig_veileder_normalizer"
+            "analyzer": "fullt_navn_sok"
+          }
         },
         "fullt_navn": {
           "type": "text",
