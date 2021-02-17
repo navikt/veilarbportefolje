@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -88,6 +89,9 @@ public class PdlDataService {
     }
 
     private static PdlDto parseGqlJsonResponse(String gqlJsonResponse) throws JsonProcessingException {
+        if (gqlJsonResponse == null) {
+            return null;
+        }
         ObjectMapper mapper = JsonUtils.getMapper();
         JsonNode gqlResponseNode = mapper.readTree(gqlJsonResponse);
         JsonNode errorsNode = gqlResponseNode.get("errors");
@@ -101,11 +105,12 @@ public class PdlDataService {
     }
 
     private static String getFodselsdato(PdlDto person) {
-        var fodsel = person.getHentPerson().foedsel.stream().findFirst().orElse(null);
-        if (fodsel == null) {
+        if (person == null) {
             return null;
         }
-        return fodsel.getFoedselsdato();
+
+        Optional<PdlDto.Foedsel> fodsel = person.getHentPerson().foedsel.stream().findFirst();
+        return fodsel.map(PdlDto.Foedsel::getFoedselsdato).orElse(null);
     }
 
     @SneakyThrows
