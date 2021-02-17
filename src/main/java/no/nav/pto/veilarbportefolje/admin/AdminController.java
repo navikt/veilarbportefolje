@@ -28,7 +28,7 @@ public class AdminController {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final VedtakService vedtakService;
 
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorOppslagClient aktorOppslagClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService, VedtakService vedtakService) {
+    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorClient aktorClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService, VedtakService vedtakService) {
         this.admins = environmentProperties.getAdmins();
         this.registreringService = registreringService;
         this.aktorClient = aktorClient;
