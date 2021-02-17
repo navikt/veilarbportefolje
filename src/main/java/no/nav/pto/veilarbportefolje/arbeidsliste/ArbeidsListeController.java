@@ -3,11 +3,11 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
@@ -35,18 +35,18 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerService brukerService;
-    private final AktorOppslagClient aktorOppslagClient;
+    private final AktorClient aktorClient;
     private final AuthService authService;
 
     @Autowired
     public ArbeidsListeController(
             ArbeidslisteService arbeidslisteService,
             BrukerService brukerService,
-            AktorOppslagClient aktorOppslagClient, AuthService authService
+            AktorClient aktorClient, AuthService authService
     ) {
         this.arbeidslisteService = arbeidslisteService;
         this.brukerService = brukerService;
-        this.aktorOppslagClient = aktorOppslagClient;
+        this.aktorClient = aktorClient;
         this.authService = authService;
 
     }
@@ -81,7 +81,7 @@ public class ArbeidsListeController {
         String innloggetVeileder = AuthUtils.getInnloggetVeilederIdent().toString();
 
         Fnr fnr = Fnr.ofValidFnr(fnrString);
-        Try<AktorId> aktoerId = Try.of(()-> aktorOppslagClient.hentAktorId(fnr));
+        Try<AktorId> aktoerId = Try.of(()-> aktorClient.hentAktorId(fnr));
 
         boolean harVeilederTilgang = brukerService.hentNavKontorFraDbLinkTilArena(fnr)
                 .map(enhet -> authService.harVeilederTilgangTilEnhet(innloggetVeileder, enhet))
