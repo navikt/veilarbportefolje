@@ -38,12 +38,6 @@
             "digit"
           ]
         }
-      },
-      "normalizer": {
-        "ansvarlig_veileder_normalizer": {
-          "type": "custom",
-          "filter": ["lowercase", "asciifolding"]
-        }
       }
     }
   },
