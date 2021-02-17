@@ -75,7 +75,11 @@
           "type": "keyword"
         },
         "ansvarlig_veileder_for_vedtak": {
-          "type": "keyword",
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            },
           "normalizer": "ansvarlig_veileder_normalizer"
         },
         "fullt_navn": {
