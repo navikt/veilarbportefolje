@@ -18,7 +18,7 @@ public class KafkaVedtakStatusEndring {
         BESLUTTER_PROSESS_STARTET,
         BLI_BESLUTTER,
         OVERTA_FOR_BESLUTTER, // DENNE SKA VI INTE HANTERA ENN SÅ LENGE
-        OVERTA_FOR_VEILEDER, // DENNE SKA VI INTE HANTERA ENN SÅ LENGE
+        OVERTA_FOR_VEILEDER,
         GODKJENT_AV_BESLUTTER,
         KLAR_TIL_BESLUTTER,
         KLAR_TIL_VEILEDER
@@ -59,6 +59,8 @@ public class KafkaVedtakStatusEndring {
                 return "Klar til utsendelse";
             case KLAR_TIL_VEILEDER:
                 return "Venter på veileder";
+            case OVERTA_FOR_VEILEDER:
+                return "Utkast";
             default:
                 return null;
         }
