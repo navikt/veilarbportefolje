@@ -67,6 +67,25 @@ function handleRewindAktiviteter(e) {
     }
 }
 
+const nyFodselsDatoForm = document.getElementById('nyFodselsDato')
+nyFodselsDatoForm.addEventListener('submit', handleLastInnFodselsDatoTilNyTabell);
+
+function handleLastInnFodselsDatoTilNyTabell(e) {
+    e.preventDefault()
+
+    if (!window.confirm('Advarsel dette kan overskrive verdier tatt fra PDL og skape forsinkelser i databsen.')) {
+        return;
+    }
+
+    if (aktoerId && aktoerId.length > 0) {
+        fetchData(
+            '/veilarbportefolje/api/admin/fodselsDatatilNyTabell',
+            {method: 'POST', credentials: 'same-origin'},
+            'nyFodselsDatoRespons'
+        )
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
