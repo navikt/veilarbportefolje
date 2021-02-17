@@ -75,13 +75,7 @@
           "type": "keyword"
         },
         "ansvarlig_veileder_for_vedtak": {
-          "type": "text",
-          "fields": {
-            "raw": {
-              "type": "keyword"
-            }
-          },
-          "analyzer": "fullt_navn_sok"
+          "type": "keyword"
         },
         "fullt_navn": {
           "type": "text",
