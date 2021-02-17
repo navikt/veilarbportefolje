@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -881,6 +882,79 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         assertThat(userExistsInResponse(brukerMedBehandling, response)).isTrue();
         assertThat(userExistsInResponse(brukerUtenAktiviteter, response)).isTrue();
         assertThat(userExistsInResponse(brukerMedTiltak, response)).isFalse();
+    }
+
+    @Test
+    public void skal_hente_alle_brukere_som_har_vedtak(){
+        val brukerMedVedtak = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setVedtak_status("Utkast")
+                .setVedtak_status_endret("2021-01-01T12:57:41+00:00")
+                .setAnsvarlig_veileder_for_vedtak("BVeileder");
+
+        val brukerMedVedtak1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setVedtak_status("Venter på tilbakemelding")
+                .setVedtak_status_endret("2021-03-01T15:13:41+00:00")
+                .setAnsvarlig_veileder_for_vedtak("CVeileder");
+
+        val brukerMedVedtak2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setVedtak_status("Venter på tilbakemelding")
+                .setVedtak_status_endret("2021-06-11T13:13:33+00:00")
+                .setAnsvarlig_veileder_for_vedtak("AVeileder");
+
+        val brukerUtenVedtak = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setAktiviteter(Set.of("egen"));
+
+        val liste = List.of(brukerMedVedtak, brukerMedVedtak1, brukerMedVedtak2, brukerUtenVedtak);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+
+        val filterValg = new Filtervalg()
+                .setFerdigfilterListe(List.of(UNDER_VURDERING));
+
+        val response = elasticService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                "ascending",
+                "ansvarligveilederforvedtak",
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertThat(userExistsInResponse(brukerMedVedtak, response)).isTrue();
+        assertThat(userExistsInResponse(brukerMedVedtak1, response)).isTrue();
+        assertThat(userExistsInResponse(brukerMedVedtak2, response)).isTrue();
+
+        assertThat(response.getBrukere().get(0).getAnsvarligVeilederForVedtak()).isEqualTo("AVeileder");
+        assertThat(response.getBrukere().get(1).getAnsvarligVeilederForVedtak()).isEqualTo("BVeileder");
+        assertThat(response.getBrukere().get(2).getAnsvarligVeilederForVedtak()).isEqualTo("CVeileder");
     }
 
     private boolean veilederExistsInResponse(String veilederId, BrukereMedAntall brukere) {

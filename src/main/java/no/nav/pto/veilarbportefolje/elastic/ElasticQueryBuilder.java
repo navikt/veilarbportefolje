@@ -17,9 +17,7 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
