@@ -9,6 +9,7 @@ import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -46,14 +47,15 @@ public class PdlDataService {
     private final AktorClient aktorClient;
 
     @Autowired
-    public PdlDataService(PdlRepository pdlRepository, PdlClient pdlClient, BrukerRepository brukerRepository, UnleashService unleashService, OkHttpClient client, AktorClient aktorClient) {
+    public PdlDataService(PdlRepository pdlRepository, PdlClient pdlClient, BrukerRepository brukerRepository, UnleashService unleashService, AktorClient aktorClient) {
         this.brukerRepository = brukerRepository;
         this.pdlRepository = pdlRepository;
         this.pdlClient = pdlClient;
         this.unleashService = unleashService;
-        this.client = client;
         this.aktorClient = aktorClient;
         this.hentPersonQuery = FileUtils.getResourceFileAsString("graphql/hentPersonFodselsdag.gql");
+
+        this.client = RestClient.baseClient();
     }
 
     public void lastInnPdlData(AktorId aktorId) {
