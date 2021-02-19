@@ -19,6 +19,8 @@ spec:
     - https://app-{{namespace}}.dev.adeo.no/veilarbportefolje
     - https://veilarbportefolje-{{namespace}}.dev.adeo.no
   webproxy: true
+  secureLogs:
+    enabled: true
   vault:
     enabled: true
     paths:
