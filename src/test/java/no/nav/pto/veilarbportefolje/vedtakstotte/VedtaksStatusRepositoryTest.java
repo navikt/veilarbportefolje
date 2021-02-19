@@ -42,11 +42,18 @@ public class VedtaksStatusRepositoryTest {
                 .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS)
                 .setTimestamp(time)
                 .setAktorId(AKTORID)
+                .setVeilederNavn("Test Veilder")
+                .setVeilederIdent("Z12345")
                 .setVedtakId(VEDTAKID);
 
         vedtakStatusRepository.upsertVedtak(vedtakStatusEndring);
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
+        assertThat(endringer.get(0).veilederIdent).isEqualTo("Z12345");
+        assertThat(endringer.get(0).veilederNavn).isEqualTo("Test Veilder");
+        assertThat(endringer.get(0).aktorId).isEqualTo(AKTORID);
+        assertThat(endringer.get(0).vedtakId).isEqualTo(VEDTAKID);
+        assertThat(endringer.get(0).getTimestamp()).isEqualTo(time);
     }
 
 
