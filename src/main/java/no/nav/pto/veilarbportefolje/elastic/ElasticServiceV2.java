@@ -116,6 +116,13 @@ public class ElasticServiceV2 {
 
     @SneakyThrows
     public void updateDialog(Dialogdata melding) {
+        log.info("Oppdaterer dialogdata i elastic for {}, venter på svar fra bruker: {}, venter på svar fra nav: {}, siste endring: {}",
+                melding.getAktorId(),
+                melding.getTidspunktEldsteVentende(),
+                melding.getTidspunktEldsteUbehandlede(),
+                melding.getSisteEndring()
+        );
+
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("venterpasvarfrabruker", toIsoUTC(melding.getTidspunktEldsteVentende()))
@@ -127,6 +134,7 @@ public class ElasticServiceV2 {
 
     @SneakyThrows
     public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
+        log.info("Oppdater arbeidsliste for {} med frist {}", arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getFrist());
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("arbeidsliste_aktiv",true)
