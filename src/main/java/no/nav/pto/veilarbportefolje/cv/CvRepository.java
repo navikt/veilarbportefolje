@@ -25,7 +25,7 @@ public class CvRepository {
 
     public void upsert(AktorId aktoerId, boolean harDeltCv) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
-                .set(AKTOERID, aktoerId.toString())
+                .set(AKTOERID, aktoerId.get())
                 .set(HAR_DELT_CV, boolToJaNei(harDeltCv))
                 .set(SISTE_MELDING_MOTTATT, Timestamp.from(now()))
                 .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
