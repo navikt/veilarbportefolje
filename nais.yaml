@@ -17,6 +17,8 @@ spec:
     - https://veilarbportefolje.nais.adeo.no
     - https://app.adeo.no/veilarbportefolje
   webproxy: true
+  secureLogs:
+    enabled: true
   vault:
     enabled: true
     paths:
