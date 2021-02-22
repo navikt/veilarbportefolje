@@ -20,6 +20,8 @@ public class VedtakServiceTest {
     private VedtakService vedtakService;
     private static final String AKTORID = "123456789";
     private static final long VEDTAKID = 1;
+    private static final String VEILEDER_IDENT = "Z1234";
+    private static final String VEILEDER_NAVN = "Veileder 1234";
 
     private static final KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
             .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.UTKAST_OPPRETTET)
@@ -27,10 +29,12 @@ public class VedtakServiceTest {
             .setAktorId(AKTORID)
             .setVedtakId(VEDTAKID)
             .setHovedmal(null)
-            .setInnsatsgruppe(null);
+            .setInnsatsgruppe(null)
+            .setVeilederIdent(VEILEDER_IDENT)
+            .setVeilederNavn(VEILEDER_NAVN);
 
     @Before
-    public void setup (){
+    public void setup() {
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
         ElasticIndexer elasticIndexer = mock(ElasticIndexer.class);
@@ -39,7 +43,7 @@ public class VedtakServiceTest {
     }
 
     @Test
-    public void skallSetteInUtkast()  {
+    public void skallSetteInUtkast() {
         vedtakService.behandleKafkaMelding(toJson(vedtakStatusEndring));
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.get(0)).isEqualTo(vedtakStatusEndring);
@@ -47,7 +51,7 @@ public class VedtakServiceTest {
     }
 
     @Test
-    public void skallOppdatereUtkast()  {
+    public void skallOppdatereUtkast() {
         vedtakService.behandleKafkaMelding(toJson(vedtakStatusEndring));
         LocalDateTime time = LocalDateTime.now();
         KafkaVedtakStatusEndring kafkaVedtakSendtTilBeslutter = new KafkaVedtakStatusEndring()
@@ -83,7 +87,6 @@ public class VedtakServiceTest {
                 .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
                 .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.VARIG_TILPASSET_INNSATS);
 
-
         vedtakService.behandleKafkaMelding(toJson(kafkaVedtakSendtTilBruker));
 
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
@@ -92,7 +95,7 @@ public class VedtakServiceTest {
     }
 
     @Test
-    public void testJsonDesrializationForVeilederInfo(){
+    public void testJsonDesrializationForVeilederInfo() {
         String inputJsonWithoutVeilederInfo = "{\"vedtakId\":1,\"aktorId\":\"1\",\"vedtakStatusEndring\":\"UTKAST_OPPRETTET\",\"timestamp\":\"2021-02-09T22:24:12.373356+01:00\"}";
         KafkaVedtakStatusEndring kafkaVedtakStatusEndring = fromJson(inputJsonWithoutVeilederInfo, KafkaVedtakStatusEndring.class);
 

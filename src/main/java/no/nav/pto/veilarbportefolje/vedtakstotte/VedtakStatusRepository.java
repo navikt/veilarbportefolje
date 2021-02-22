@@ -46,6 +46,21 @@ public class VedtakStatusRepository {
                 .set(VEDTAK.HOVEDMAL, hovedmal.map(Enum::name).orElse(null))
                 .set(VEDTAK.VEDTAK_STATUS_ENDRET_TIDSPUNKT, Timestamp.valueOf(vedtakStatusEndring.getTimestamp()))
                 .set(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId())
+                .where(WhereClause.equals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId()))
+                .execute();
+    }
+
+    public void upsertVedtakMedAnsvarligVeileder (KafkaVedtakStatusEndring vedtakStatusEndring) {
+        Optional<KafkaVedtakStatusEndring.Hovedmal> hovedmal = Optional.ofNullable(vedtakStatusEndring.getHovedmal());
+        Optional<KafkaVedtakStatusEndring.Innsatsgruppe> innsatsgruppe =  Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe());
+
+        SqlUtils.upsert(db, VEDTAK.TABLE_NAME)
+                .set(VEDTAK.AKTOERID, vedtakStatusEndring.getAktorId())
+                .set(VEDTAK.VEDTAKSTATUS, vedtakStatusEndring.getVedtakStatusEndring().name())
+                .set(VEDTAK.INNSATSGRUPPE, innsatsgruppe.map(Enum::name).orElse(null))
+                .set(VEDTAK.HOVEDMAL, hovedmal.map(Enum::name).orElse(null))
+                .set(VEDTAK.VEDTAK_STATUS_ENDRET_TIDSPUNKT, Timestamp.valueOf(vedtakStatusEndring.getTimestamp()))
+                .set(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId())
                 .set(VEDTAK.ANSVARLIG_VEILEDER_IDENT, vedtakStatusEndring.getVeilederIdent())
                 .set(VEDTAK.ANSVARLIG_VEILEDER_NAVN, vedtakStatusEndring.getVeilederNavn())
                 .where(WhereClause.equals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId()))
