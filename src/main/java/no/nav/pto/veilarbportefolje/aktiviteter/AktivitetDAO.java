@@ -210,9 +210,10 @@ public class AktivitetDAO {
     }
 
     public static AktivitetStatus mapAktivitetStatus (Map<String, Object> row) {
+        AktorId aktorId = row.get("AKTOERID") == null ? null : AktorId.of((String) row.get("AKTOERID"));
         return new AktivitetStatus()
                 .setPersonid(PersonId.of((String) row.get("PERSONID")))
-                .setAktoerid(AktorId.of((String) row.get("AKTOERID")))
+                .setAktoerid(aktorId)
                 .setAktivitetType((String) row.get("AKTIVITETTYPE"))
                 .setAktiv(parse0OR1((String) row.get("STATUS")))
                 .setNesteStart((Timestamp) row.get("NESTE_STARTDATO"))
