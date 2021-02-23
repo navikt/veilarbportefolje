@@ -44,6 +44,7 @@ public class VedtakService implements KafkaConsumerService<String> {
                 break;
             }
             case BESLUTTER_PROSESS_STARTET:
+            case BESLUTTER_PROSESS_AVBRUTT:
             case BLI_BESLUTTER:
             case GODKJENT_AV_BESLUTTER:
             case KLAR_TIL_BESLUTTER:
