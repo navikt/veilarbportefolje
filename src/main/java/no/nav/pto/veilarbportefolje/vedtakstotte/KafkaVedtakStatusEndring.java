@@ -50,6 +50,7 @@ public class KafkaVedtakStatusEndring {
     public static String vedtakStatusTilTekst(VedtakStatusEndring vedtakStatusEndring) {
         switch(vedtakStatusEndring) {
             case UTKAST_OPPRETTET:
+            case BESLUTTER_PROSESS_AVBRUTT:
             return "Utkast";
             case BESLUTTER_PROSESS_STARTET:
                 return "Trenger kvalitetssikring";
