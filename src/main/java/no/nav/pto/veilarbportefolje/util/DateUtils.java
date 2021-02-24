@@ -119,6 +119,13 @@ public class DateUtils {
         }
     }
 
+    public static LocalDate getLocalDateFromSimpleISODate(String simpleISODate) {
+        if (simpleISODate == null) {
+            return null;
+        }
+        return LocalDate.parse(simpleISODate, DateTimeFormatter.ofPattern("uuuu-MM-dd"));
+    }
+
     public static SimpleDateFormat getISODateFormatter() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         simpleDateFormat.setLenient(false);

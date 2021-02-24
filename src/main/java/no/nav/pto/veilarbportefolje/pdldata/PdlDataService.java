@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
@@ -67,7 +66,7 @@ public class PdlDataService {
             Fnr fnr = aktorClient.hentFnr(aktorId);
             fodselsdag = hentFodseldagFraVeilarbPeron(fnr);
         }
-        pdlRepository.upsert(aktorId, DateUtils.dateToTime(fodselsdag));
+        pdlRepository.upsert(aktorId, DateUtils.getLocalDateFromSimpleISODate(fodselsdag));
     }
 
     public void slettPdlData(AktorId aktorId) {
