@@ -68,6 +68,9 @@
         "vedtak_status": {
           "type": "keyword"
         },
+        "ansvarlig_veileder_for_vedtak": {
+          "type": "keyword"
+        },
         "fullt_navn": {
           "type": "text",
           "analyzer": "fullt_navn_sok",

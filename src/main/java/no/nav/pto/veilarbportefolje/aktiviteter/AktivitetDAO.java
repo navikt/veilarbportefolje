@@ -27,7 +27,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.database.Table.AKTIVITETER.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.dateToTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
 @Slf4j
@@ -70,16 +69,16 @@ public class AktivitetDAO {
 
     public AktoerAktiviteter getAktiviteterForAktoerid(AktorId aktoerid) {
 
-        List<AktivitetDTO> queryResult = SqlUtils.select(db,  Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
+        List<AktivitetDTO> queryResult = SqlUtils.select(db, Table.AKTIVITETER.TABLE_NAME, AktivitetDAO::mapToAktivitetDTO)
                 .column(AKTOERID)
                 .column(AKTIVITETTYPE)
                 .column(STATUS)
                 .column(FRADATO)
                 .column(TILDATO)
-                .where(WhereClause.equals(AKTOERID, aktoerid.toString()))
+                .where(WhereClause.equals(AKTOERID, aktoerid.get()))
                 .executeToList();
 
-        return new AktoerAktiviteter(aktoerid.toString()).setAktiviteter(queryResult);
+        return new AktoerAktiviteter(aktoerid.get()).setAktiviteter(queryResult);
     }
 
     private static AktivitetDTO mapToAktivitetDTO(ResultSet res) throws SQLException {
@@ -91,7 +90,7 @@ public class AktivitetDAO {
     }
 
     public void upsertAktivitet(KafkaAktivitetMelding aktivitet) {
-        SqlUtils.upsert(db,  Table.AKTIVITETER.TABLE_NAME)
+        SqlUtils.upsert(db, Table.AKTIVITETER.TABLE_NAME)
                 .set(AKTOERID, aktivitet.getAktorId())
                 .set(AKTIVITETTYPE, aktivitet.getAktivitetType().name().toLowerCase())
                 .set(AVTALT, aktivitet.isAvtalt())
@@ -107,7 +106,7 @@ public class AktivitetDAO {
 
     public void deleteById(String aktivitetid) {
         log.info("Sletter alle aktiviteter med id {}", aktivitetid);
-        SqlUtils.delete(db,  Table.AKTIVITETER.TABLE_NAME)
+        SqlUtils.delete(db, Table.AKTIVITETER.TABLE_NAME)
                 .where(WhereClause.equals(AKTIVITETID, aktivitetid))
                 .execute();
     }
@@ -117,7 +116,7 @@ public class AktivitetDAO {
     }
 
     public void insertAktivitetstatuser(List<AktivitetStatus> statuser) {
-        io.vavr.collection.List.ofAll(statuser).sliding(1000,1000)
+        io.vavr.collection.List.ofAll(statuser).sliding(1000, 1000)
                 .forEach((statuserBatch) -> {
                     try {
                         AktivitetStatus.batchInsert(db, statuserBatch.toJavaList());
@@ -149,6 +148,7 @@ public class AktivitetDAO {
         Map<String, Object> params = new HashMap<>();
         params.put("personids", personIds.stream().map(PersonId::toString).collect(toList()));
 
+        // TODO: fiks bug: aktør id på noen tiltakk er null og vil derfor ikke påvirke elastic.
         return namedParameterJdbcTemplate
                 .queryForList(getAktivitetStatuserForListOfPersonIds(), params)
                 .stream()
@@ -209,10 +209,11 @@ public class AktivitetDAO {
                         "PERSONID in (:personids)";
     }
 
-    public static AktivitetStatus mapAktivitetStatus (Map<String, Object> row) {
+    public static AktivitetStatus mapAktivitetStatus(Map<String, Object> row) {
+        AktorId aktorId = row.get("AKTOERID") == null ? null : AktorId.of((String) row.get("AKTOERID"));
         return new AktivitetStatus()
                 .setPersonid(PersonId.of((String) row.get("PERSONID")))
-                .setAktoerid(AktorId.of((String) row.get("AKTOERID")))
+                .setAktoerid(aktorId)
                 .setAktivitetType((String) row.get("AKTIVITETTYPE"))
                 .setAktiv(parse0OR1((String) row.get("STATUS")))
                 .setNesteStart((Timestamp) row.get("NESTE_STARTDATO"))
@@ -221,11 +222,11 @@ public class AktivitetDAO {
 
     public boolean erNyVersjonAvAktivitet(KafkaAktivitetMelding aktivitet) {
         Long kommendeVersjon = aktivitet.getVersion();
-        if(kommendeVersjon == null){
+        if (kommendeVersjon == null) {
             return false;
         }
         Long databaseVersjon = getVersjon(aktivitet.getAktivitetId());
-        if(databaseVersjon == null ){
+        if (databaseVersjon == null) {
             return true;
         }
         return kommendeVersjon.compareTo(databaseVersjon) > 0;

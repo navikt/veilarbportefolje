@@ -81,7 +81,7 @@ class CvKafkaConsumerTest extends EndToEndTest {
 
     private void createCvDocument(AktorId aktoerId) {
         String document = new JSONObject()
-                .put("aktoer_id", aktoerId.toString())
+                .put("aktoer_id", aktoerId.get())
                 .put("har_delt_cv", false)
                 .toString();
 

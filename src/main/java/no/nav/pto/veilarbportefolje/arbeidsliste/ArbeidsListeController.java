@@ -173,11 +173,11 @@ public class ArbeidsListeController {
                         .orElse(new AktorId("uten aktør-ID"));
 
                 if (antallRaderSlettet != 1) {
-                    feiledeFnrs.add(fnr.toString());
-                    log.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.toString());
+                    feiledeFnrs.add(fnr.get());
+                    log.warn("Kunne ikke slette arbeidsliste for bruker {} ", aktoerId.get());
                 } else {
-                    okFnrs.add(fnr.toString());
-                    log.info("Arbeidsliste for aktoerid {} slettet", aktoerId.toString());
+                    okFnrs.add(fnr.get());
+                    log.info("Arbeidsliste for aktoerid {} slettet", aktoerId.get());
                 }
             });
 

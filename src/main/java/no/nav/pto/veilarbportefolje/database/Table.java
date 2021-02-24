@@ -110,5 +110,4 @@ public class Table {
         public static final String AKTOERID = "AKTOERID";
         public static final String FODSELSDAG = "FODSELSDAG";
     }
-
 }
