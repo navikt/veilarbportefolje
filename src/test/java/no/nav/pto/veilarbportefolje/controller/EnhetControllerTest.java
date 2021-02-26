@@ -46,7 +46,7 @@ public class EnhetControllerTest {
         elasticService = mock(ElasticService.class);
         pep = mock(Pep.class);
         AuthService authService = new AuthService(pep);
-        enhetController = new EnhetController(elasticService, authService, mock(MetricsClient.class), mock(TiltakService.class));
+        enhetController = new EnhetController(elasticService, authService, mock(TiltakService.class), mock(MetricsClient.class));
 
     }
 
