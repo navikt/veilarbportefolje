@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.common.types.identer.AktorId;
@@ -19,9 +20,9 @@ import static java.time.ZoneId.of;
 import static java.time.ZonedDateTime.ofInstant;
 
 @Service
+@RequiredArgsConstructor
 public class OppfolgingAvsluttetService implements KafkaConsumerService<String> {
     private static final Logger log = LoggerFactory.getLogger(OppfolgingAvsluttetService.class);
-
 
     private final ArbeidslisteService arbeidslisteService;
     private final OppfolgingRepository oppfolgingRepository;
@@ -29,20 +30,6 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
     private final ElasticServiceV2 elasticServiceV2;
     private final SisteEndringService sisteEndringService;
     private final PdlDataService pdlDataService;
-
-    public OppfolgingAvsluttetService(ArbeidslisteService arbeidslisteService,
-                                      OppfolgingRepository oppfolgingRepository,
-                                      RegistreringService registreringService,
-                                      ElasticServiceV2 elasticServiceV2,
-                                      SisteEndringService sisteEndringService,
-                                      PdlDataService pdlDataService) {
-        this.arbeidslisteService = arbeidslisteService;
-        this.oppfolgingRepository = oppfolgingRepository;
-        this.registreringService = registreringService;
-        this.elasticServiceV2 = elasticServiceV2;
-        this.sisteEndringService = sisteEndringService;
-        this.pdlDataService = pdlDataService;
-    }
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {

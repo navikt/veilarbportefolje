@@ -60,5 +60,4 @@ public class ApplicationConfig {
     public LeaderElectionClient leaderElectionClient() {
         return new LeaderElectionHttpClient();
     }
-
 }
