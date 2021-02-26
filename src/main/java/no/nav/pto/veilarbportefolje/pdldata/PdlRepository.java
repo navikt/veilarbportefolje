@@ -17,7 +17,6 @@ import java.util.List;
 
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.database.Table.PDL_DATA.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toSqlDateOrNull;
 
 @Slf4j

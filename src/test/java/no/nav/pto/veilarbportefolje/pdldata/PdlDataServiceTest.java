@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.pdldata;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.common.client.pdl.PdlClient;
+import no.nav.common.client.utils.graphql.GraphqlError;
 import no.nav.common.client.utils.graphql.GraphqlRequest;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
@@ -17,13 +17,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.opensaml.xmlsec.signature.P;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -69,6 +67,7 @@ public class PdlDataServiceTest {
                         )
                 )
         );
+        mockRespons.setErrors(emptyList());
         when(pdlClient.request(Mockito.any(GraphqlRequest.class),Mockito.any())).thenReturn(mockRespons);
         pdlDataService.lastInnPdlData(AKTOERID_TEST);
 
@@ -86,11 +85,30 @@ public class PdlDataServiceTest {
  */
     }
 
-    @SneakyThrows
-    private String getPdlMockRespons() {
-        val URI = getClass().getResource("/graphql/mockreponsHentFodselsdag.json").toURI();
-        val encodedBytes = Files.readAllBytes(Paths.get(URI));
-        return new String(encodedBytes, UTF_8).trim();
+    @Test
+    public void graphql_respons_has_errors(){
+        PdlFodselsRespons mockRespons = new PdlFodselsRespons();
+        mockRespons.setErrors(List.of(new GraphqlError()));
+
+        assertThat(PdlDataService.hasErrors(mockRespons)).isTrue();
     }
 
+    @Test
+    public void graphql_respons_has_no_Errors(){
+        PdlFodselsRespons mockRespons = new PdlFodselsRespons();
+        mockRespons.setErrors(emptyList());
+
+        assertThat(PdlDataService.hasErrors(mockRespons)).isFalse();
+    }
+
+    @Test
+    public void graphql_respons_is_null(){
+        PdlFodselsRespons mockRespons = new PdlFodselsRespons();
+        mockRespons.setErrors(null);
+
+        assertThat(PdlDataService.hasErrors(mockRespons)).isTrue();
+        assertThat(PdlDataService.hasErrors(null)).isTrue();
+
+
+    }
 }
