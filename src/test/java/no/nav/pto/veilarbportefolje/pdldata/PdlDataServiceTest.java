@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.pdldata;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.client.pdl.PdlClient;
+import no.nav.common.client.utils.graphql.GraphqlRequest;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
@@ -16,9 +17,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opensaml.xmlsec.signature.P;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.*;
@@ -54,10 +57,19 @@ public class PdlDataServiceTest {
     @Test
     @SneakyThrows
     public void parseDataFromPdl(){
-        String mockreponsHentFodselsdag = getPdlMockRespons();
-
         when(unleashService.isEnabled(FeatureToggle.PDL)).thenReturn(true);
-        when(pdlClient.rawRequest(Mockito.anyString())).thenReturn(mockreponsHentFodselsdag);
+
+        PdlFodselsRespons mockRespons = new PdlFodselsRespons();
+        mockRespons.setData(
+                new PdlFodselsRespons.HentFodselsResponseData().setHentPerson(
+                        new PdlFodselsRespons.HentFodselsResponseData.HentPersonDataResponsData().setFoedsel(
+                                List.of(
+                                        new PdlFodselsRespons.HentFodselsResponseData.HentPersonDataResponsData.Foedsel().setFoedselsdato("1980-12-03")
+                                )
+                        )
+                )
+        );
+        when(pdlClient.request(Mockito.any(GraphqlRequest.class),Mockito.any())).thenReturn(mockRespons);
         pdlDataService.lastInnPdlData(AKTOERID_TEST);
 
         verify(pdlRepository).upsert(AKTOERID_TEST, DateUtils.getLocalDateFromSimpleISODate("1980-12-03"));
@@ -65,12 +77,13 @@ public class PdlDataServiceTest {
 
     @Test
     @SneakyThrows
-    public void parseDataFromVeilarbPerson(){
-
+    public void parseDataFromTPS(){
+/*
         when(unleashService.isEnabled(FeatureToggle.PDL)).thenReturn(false);
         pdlDataService.lastInnPdlData(AKTOERID_TEST);
 
         verify(pdlRepository).upsert(AKTOERID_TEST, DateUtils.getLocalDateFromSimpleISODate("1980-12-03"));
+ */
     }
 
     @SneakyThrows

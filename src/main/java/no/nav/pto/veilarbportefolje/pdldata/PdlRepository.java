@@ -1,11 +1,8 @@
 package no.nav.pto.veilarbportefolje.pdldata;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
-import no.nav.arbeid.soker.profilering.ProfilertTil;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +10,15 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
-import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static no.nav.common.utils.CollectionUtils.partition;
 import static no.nav.pto.veilarbportefolje.database.Table.PDL_DATA.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toSqlDateOrNull;
 
 @Slf4j
 @Repository
@@ -52,7 +49,7 @@ public class PdlRepository {
                                 throws SQLException {
                             OppfolgingsBruker employee = brukerBatch.get(i);
                             ps.setString(1, employee.getAktoer_id());
-                            ps.setTime(2, DateUtils.dateToTime(employee.getFodselsdato()));
+                            ps.setDate(2, toSqlDateOrNull(employee.getFodselsdato()));
                         }
 
                         @Override

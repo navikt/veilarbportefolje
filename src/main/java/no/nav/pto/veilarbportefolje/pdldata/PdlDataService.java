@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.pdl.PdlClient;
+import no.nav.common.client.utils.graphql.GraphqlRequest;
+import no.nav.common.client.utils.graphql.GraphqlResponse;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
@@ -28,7 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -63,8 +64,7 @@ public class PdlDataService {
         if (erPdlPa(unleashService)) {
             fodselsdag = hentFodseldagFraPdl(aktorId);
         } else {
-            Fnr fnr = aktorClient.hentFnr(aktorId);
-            fodselsdag = hentFodseldagFraVeilarbPeron(fnr);
+            fodselsdag = hentFodseldagFraTps(aktorId);
         }
         pdlRepository.upsert(aktorId, DateUtils.getLocalDateFromSimpleISODate(fodselsdag));
     }
@@ -82,52 +82,35 @@ public class PdlDataService {
 
     @SneakyThrows
     private String hentFodseldagFraPdl(AktorId aktorId) {
-        GqlRequest<PdlPersonVariables.HentFodselsdag> request = new GqlRequest<>(hentPersonQuery, new PdlPersonVariables.HentFodselsdag(aktorId.get()));
-        PdlDto respons = parseGqlJsonResponse(pdlClient.rawRequest(JsonUtils.toJson(request)));
-        return getFodselsdato(respons);
-    }
-
-    private static PdlDto parseGqlJsonResponse(String gqlJsonResponse) throws JsonProcessingException {
-        if (gqlJsonResponse == null) {
-            return null;
-        }
-        ObjectMapper mapper = JsonUtils.getMapper();
-        JsonNode gqlResponseNode = mapper.readTree(gqlJsonResponse);
-        JsonNode errorsNode = gqlResponseNode.get("errors");
-
-        if (errorsNode != null) {
-            log.error("Kall mot PDL feilet:\n" + errorsNode.toPrettyString());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        GraphqlRequest<PdlPersonVariables.HentFodselsdag> request = new GraphqlRequest<>(hentPersonQuery, new PdlPersonVariables.HentFodselsdag(aktorId.get()));
+        PdlFodselsRespons respons = pdlClient.request(request, PdlFodselsRespons.class);
+        if(hasErrors(respons)){
+            throw new RuntimeException();
         }
 
-        return mapper.treeToValue(gqlResponseNode.get("data"), PdlDto.class);
+        return respons.getData()
+                .getHentPerson()
+                .getFoedsel()
+                .stream()
+                .findFirst()
+                .map(fodselsdag-> fodselsdag.getFoedselsdato())
+                .orElseThrow();
     }
 
-    private static String getFodselsdato(PdlDto person) {
-        if (person == null) {
-            return null;
-        }
-
-        Optional<PdlDto.Foedsel> fodsel = person.getHentPerson().foedsel.stream().findFirst();
-        return fodsel.map(PdlDto.Foedsel::getFoedselsdato).orElse(null);
-    }
 
     @SneakyThrows
-    private String hentFodseldagFraVeilarbPeron(Fnr fnr) {
-        Request request = new Request.Builder()
-                .url(joinPaths("/veilarbperson/api/person/", fnr.get()))
-                .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, AuthUtils.getInnloggetBrukerToken()) // TODO: Denne vil ikke være tilgjengelig
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponseOrThrow(response, PersonData.class).getFodselsdato();
-        }
+    private String hentFodseldagFraTps(AktorId aktorId) {
+        return null;
     }
 
     private boolean erPdlPa(UnleashService unleashService) {
         return unleashService.isEnabled(FeatureToggle.PDL);
     }
 
+    public static <T> boolean hasErrors(GraphqlResponse<T> response){
+        if(response.getErrors() == null){
+            return false;
+        }
+        return !response.getErrors().isEmpty();
+    }
 }

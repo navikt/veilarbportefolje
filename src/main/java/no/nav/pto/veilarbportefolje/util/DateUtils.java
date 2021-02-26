@@ -14,6 +14,7 @@ public class DateUtils {
 
     private static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
     private static final String EPOCH_0 = "1970-01-01T00:00:00Z";
+    private static final String DATO_POSTFIX = "T00:00:00Z";
 
     public static Duration calculateTimeElapsed(Instant instant) {
         return Duration.between(instant, Instant.now());
@@ -142,4 +143,28 @@ public class DateUtils {
         }
         return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
     }
+
+    public static java.sql.Date toSqlDateOrNull(String date){
+        if (date == null) {
+            return null;
+        }
+        return java.sql.Date.valueOf(LocalDate.parse(date));
+    }
+
+
+    public static String lagISOFromSimpleDateFormate(java.sql.Date fodselsdag) {
+        if(fodselsdag == null){
+            return null;
+        }
+        LocalDate localDate = fodselsdag.toLocalDate();
+        return localDate.getYear() + "-" + moreThenOneChar(localDate.getMonthValue()) + "-" + moreThenOneChar(localDate.getDayOfMonth()) + DATO_POSTFIX;
+    }
+
+    private static String moreThenOneChar(int number){
+        if(number < 10){
+            return "0"+number;
+        }
+        return String.valueOf(number);
+    }
+
 }

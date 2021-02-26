@@ -52,8 +52,8 @@ public class DbUtils {
                 .setEr_doed(parseJaNei(rs.getString("er_doed"), "er_doed"))
                 .setDoed_fra_dato(toIsoUTC(rs.getTimestamp("doed_fra_dato")))
                 .setVeileder_id(rs.getString("veilederident"))
-                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr"))))
-                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr")))
+                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")))) // TODO: bruk PDL tabbel
+                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr"))) // TODO: bruk PDL tabbel
                 .setKjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))
                 .setYtelse(rs.getString("ytelse"))
                 .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
