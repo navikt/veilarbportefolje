@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
@@ -9,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,18 +21,11 @@ import static java.util.stream.Collectors.toMap;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class PersistentOppdatering {
     private final ElasticIndexer elasticIndexer;
     private final BrukerRepository brukerRepository;
     private final AktivitetDAO aktivitetDAO;
-
-    @Autowired
-    public PersistentOppdatering(ElasticIndexer elasticIndexer, BrukerRepository brukerRepository, AktivitetDAO aktivitetDAO){
-        this.elasticIndexer = elasticIndexer;
-        this.brukerRepository = brukerRepository;
-        this.aktivitetDAO = aktivitetDAO;
-    }
-
 
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);

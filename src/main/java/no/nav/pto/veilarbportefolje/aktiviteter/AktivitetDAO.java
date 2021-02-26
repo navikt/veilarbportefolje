@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.Brukertiltak;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -11,7 +12,6 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -31,17 +31,10 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.parse0OR1;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class AktivitetDAO {
-
-
     private final JdbcTemplate db;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Autowired
-    public AktivitetDAO(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.db = db;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-    }
 
     public AktorId getAktorId(String aktivitetId) {
         return SqlUtils

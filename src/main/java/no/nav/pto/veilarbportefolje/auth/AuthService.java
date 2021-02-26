@@ -1,14 +1,13 @@
 package no.nav.pto.veilarbportefolje.auth;
 
 import io.vavr.Tuple;
+import lombok.RequiredArgsConstructor;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
-import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +16,10 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.config.CacheConfig.TILGANG_TIL_ENHET;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final Pep veilarbPep;
-
-    @Autowired
-    public AuthService(Pep veilarbPep) {
-        this.veilarbPep = veilarbPep;
-    }
 
     public void tilgangTilOppfolging() {
         AuthUtils.test("oppfølgingsbruker", AuthUtils.getInnloggetVeilederIdent(), veilarbPep.harVeilederTilgangTilModia(AuthUtils.getInnloggetBrukerToken()));

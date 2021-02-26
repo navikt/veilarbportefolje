@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -12,7 +13,6 @@ import no.nav.pto.veilarbportefolje.domene.RestResponse;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,26 +31,13 @@ import static no.nav.pto.veilarbportefolje.util.ValideringsRegler.validerArbeids
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/arbeidsliste")
 public class ArbeidsListeController {
     private final ArbeidslisteService arbeidslisteService;
     private final BrukerService brukerService;
     private final AktorClient aktorClient;
     private final AuthService authService;
-
-    @Autowired
-    public ArbeidsListeController(
-            ArbeidslisteService arbeidslisteService,
-            BrukerService brukerService,
-            AktorClient aktorClient, AuthService authService
-    ) {
-        this.arbeidslisteService = arbeidslisteService;
-        this.brukerService = brukerService;
-        this.aktorClient = aktorClient;
-        this.authService = authService;
-
-    }
-
 
     @PostMapping
     public ResponseEntity opprettArbeidsListe(@RequestBody List<ArbeidslisteRequest> arbeidsliste) {

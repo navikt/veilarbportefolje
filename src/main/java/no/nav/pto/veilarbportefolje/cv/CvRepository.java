@@ -1,9 +1,9 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -14,14 +14,10 @@ import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.*;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.boolToJaNei;
 
 @Repository
+@RequiredArgsConstructor
 public class CvRepository {
 
     private final JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public CvRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     public void upsert(AktorId aktoerId, boolean harDeltCv) {
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)

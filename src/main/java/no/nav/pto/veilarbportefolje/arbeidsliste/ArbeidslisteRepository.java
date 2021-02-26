@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -8,7 +9,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -23,14 +23,10 @@ import static no.nav.sbl.sql.SqlUtils.*;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class ArbeidslisteRepository {
 
     private final JdbcTemplate db;
-
-    @Autowired
-    public ArbeidslisteRepository(JdbcTemplate db) {
-        this.db = db;
-    }
 
     public Optional<String> hentNavKontorForArbeidsliste(AktorId aktoerId) {
         String navKontor = select(db, Table.ARBEIDSLISTE.TABLE_NAME, rs -> rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE))

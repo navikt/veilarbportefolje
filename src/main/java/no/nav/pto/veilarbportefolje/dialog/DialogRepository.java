@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
 import io.vavr.control.Try;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,13 +18,9 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class DialogRepository {
     private final JdbcTemplate db;
-
-    @Autowired
-    public DialogRepository(JdbcTemplate db) {
-        this.db = db;
-    }
 
     public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
         SqlUtils.upsert(db, "DIALOG")

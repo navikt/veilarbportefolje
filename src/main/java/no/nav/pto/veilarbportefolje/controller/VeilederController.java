@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -10,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.common.metrics.Event;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,23 +19,12 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/api/veileder")
+@RequiredArgsConstructor
 public class VeilederController {
 
-    private ElasticService elasticService;
-    private AuthService authService;
-    private MetricsClient metricsClient;
-
-    @Autowired
-    public VeilederController(
-            ElasticService elasticIndexer,
-            AuthService authService,
-            MetricsClient metricsClient
-    ) {
-
-        this.elasticService = elasticIndexer;
-        this.authService = authService;
-        this.metricsClient = metricsClient;
-    }
+    private final ElasticService elasticService;
+    private final AuthService authService;
+    private final MetricsClient metricsClient;
 
     @PostMapping("/{veilederident}/portefolje")
     public Portefolje hentPortefoljeForVeileder(

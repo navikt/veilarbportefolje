@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.admin;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -15,28 +16,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/admin")
 public class AdminController {
-    private final List<String> admins;
+    private final EnvironmentProperties environmentProperties;
     private final RegistreringService registreringService;
     private final AktorClient aktorClient;
     private final NyForVeilederService nyForVeilederService;
     private final AktivitetService aktivitetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final VedtakService vedtakService;
-
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorClient aktorClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService, VedtakService vedtakService) {
-        this.admins = environmentProperties.getAdmins();
-        this.registreringService = registreringService;
-        this.aktorClient = aktorClient;
-        this.nyForVeilederService = nyForVeilederService;
-        this.aktivitetService = aktivitetService;
-        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
-        this.vedtakService = vedtakService;
-    }
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -81,7 +71,7 @@ public class AdminController {
 
     private void authorizeAdmin() {
         final String ident = AuthContextHolder.getNavIdent().map(Id::toString).orElseThrow();
-        if (!admins.contains(ident)) {
+        if (!environmentProperties.getAdmins().contains(ident)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
