@@ -1,16 +1,16 @@
 package no.nav.pto.veilarbportefolje.util;
 
-class FodselsnummerUtils {
+public class FodselsnummerUtils {
     private static final String DATO_POSTFIX = "T00:00:00Z";
 
-    static String lagFodselsdagIMnd(String fnr) {
+    public static String lagFodselsdagIMnd(String fnr) {
         if(erDNummer(fnr)) {
             fnr = konverterDNummerTilFodselsnummer(fnr);
         }
         return fnr.substring(0,2);
     }
 
-    static String lagFodselsdato(String fnr) {
+    public static String lagFodselsdato(String fnr) {
         if(erDNummer(fnr)) {
             fnr = konverterDNummerTilFodselsnummer(fnr);
         }

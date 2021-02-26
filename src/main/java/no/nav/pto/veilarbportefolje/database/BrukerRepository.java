@@ -3,8 +3,11 @@ package no.nav.pto.veilarbportefolje.database;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
@@ -18,7 +21,6 @@ import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -47,16 +49,12 @@ import static no.nav.sbl.sql.where.WhereClause.in;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class BrukerRepository {
 
     private final JdbcTemplate db;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Autowired
-    public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.db = db;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-    }
+    private final UnleashService unleashService;
 
     public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
         String sql = "SELECT FODSELSNR "
@@ -85,7 +83,7 @@ public class BrukerRepository {
         db.setFetchSize(10_000);
 
         return SqlUtils
-                .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, erPdlPa()) : null)
                 .column("*")
                 .executeToList()
                 .stream()
@@ -117,14 +115,14 @@ public class BrukerRepository {
                 .execute();
 
         return SqlUtils
-                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> DbUtils.mapTilOppfolgingsBruker(rs, erPdlPa()))
                 .column("*")
                 .where(gt("TIDSSTEMPEL", sistIndeksert))
                 .executeToList();
     }
 
     public Optional<OppfolgingsBruker> hentBrukerFraView(AktorId aktoerId) {
-        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> DbUtils.mapTilOppfolgingsBruker(rs, erPdlPa()))
                 .column("*")
                 .where(WhereClause.equals("AKTOERID", aktoerId.toString()))
                 .execute();
@@ -133,7 +131,7 @@ public class BrukerRepository {
     }
 
     public Optional<OppfolgingsBruker> hentBrukerFraView(Fnr fnr) {
-        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> DbUtils.mapTilOppfolgingsBruker(rs, erPdlPa()))
                 .column("*")
                 .where(WhereClause.equals("FODSELSNR", fnr.toString()))
                 .execute();
@@ -145,7 +143,7 @@ public class BrukerRepository {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
         return SqlUtils
-                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs, erPdlPa()) : null)
                 .column("*")
                 .where(in("PERSON_ID", ids))
                 .executeToList()
@@ -449,6 +447,10 @@ public class BrukerRepository {
 
     private DagpengerUkeFasettMapping dagpengerUkeFasettMappingOrNull(String string) {
         return string != null ? DagpengerUkeFasettMapping.valueOf(string) : null;
+    }
+
+    private boolean erPdlPa() {
+        return unleashService.isEnabled(FeatureToggle.PDL);
     }
 
 }

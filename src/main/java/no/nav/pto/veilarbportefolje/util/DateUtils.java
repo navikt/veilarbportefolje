@@ -148,7 +148,8 @@ public class DateUtils {
         if (date == null) {
             return null;
         }
-        return java.sql.Date.valueOf(LocalDate.parse(date));
+
+        return java.sql.Date.valueOf(ZonedDateTime.parse(date).toLocalDate());
     }
 
 
@@ -157,10 +158,10 @@ public class DateUtils {
             return null;
         }
         LocalDate localDate = fodselsdag.toLocalDate();
-        return localDate.getYear() + "-" + moreThenOneChar(localDate.getMonthValue()) + "-" + moreThenOneChar(localDate.getDayOfMonth()) + DATO_POSTFIX;
+        return localDate.getYear() + "-" + moreThanOneChar(localDate.getMonthValue()) + "-" + moreThanOneChar(localDate.getDayOfMonth()) + DATO_POSTFIX;
     }
 
-    private static String moreThenOneChar(int number){
+    private static String moreThanOneChar(int number){
         if(number < 10){
             return "0"+number;
         }

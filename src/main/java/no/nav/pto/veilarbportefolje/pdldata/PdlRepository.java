@@ -37,7 +37,7 @@ public class PdlRepository {
         final int batchSize = 1000;
         jdbcTemplate.execute("truncate table "+TABLE_NAME);
         partition(oppfolgingsBrukerList, batchSize).forEach(brukerBatch -> {
-            jdbcTemplate.batchUpdate("INSERT INTO "+TABLE_NAME+" ("+AKTOERID+", "+FODSELSDAG+") values(?,?) ON CONFLICT DO NOTHING",
+            jdbcTemplate.batchUpdate("INSERT INTO "+TABLE_NAME+" ("+AKTOERID+", "+FODSELSDAG+") values(?,?)",
                     new BatchPreparedStatementSetter() {
                         @Override
                         public void setValues(PreparedStatement ps, int i)

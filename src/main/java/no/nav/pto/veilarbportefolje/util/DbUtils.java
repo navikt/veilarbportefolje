@@ -8,12 +8,14 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
+import static no.nav.pto.veilarbportefolje.database.Table.PDL_DATA.FODSELSDAG;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
@@ -22,7 +24,7 @@ import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
 public class DbUtils {
 
     @SneakyThrows
-    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+    public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean brukPDL) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
         String kvalifiseringsgruppekode = rs.getString("kvalifiseringsgruppekode");
         String brukersSituasjon = rs.getString("BRUKERS_SITUASJON");
@@ -52,8 +54,8 @@ public class DbUtils {
                 .setEr_doed(parseJaNei(rs.getString("er_doed"), "er_doed"))
                 .setDoed_fra_dato(toIsoUTC(rs.getTimestamp("doed_fra_dato")))
                 .setVeileder_id(rs.getString("veilederident"))
-                .setFodselsdag_i_mnd(Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")))) // TODO: bruk PDL tabbel
-                .setFodselsdato(FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr"))) // TODO: bruk PDL tabbel
+                .setFodselsdag_i_mnd(getFodselsdag_i_mnd(rs, brukPDL))
+                .setFodselsdato(getFodselsdato(rs, brukPDL))
                 .setKjonn(FodselsnummerUtils.lagKjonn(rs.getString("fodselsnr")))
                 .setYtelse(rs.getString("ytelse"))
                 .setUtlopsdato(toIsoUTC(rs.getTimestamp("utlopsdato")))
@@ -175,5 +177,25 @@ public class DbUtils {
 
     public static <T> Predicate<T> not(Predicate<T> predicate) {
         return (T t) -> !predicate.test(t);
+    }
+
+    private static String getFodselsdato(ResultSet rs, boolean brukPDL) throws SQLException {
+        if(brukPDL) {
+            return DateUtils.lagISOFromSimpleDateFormate(rs.getDate(FODSELSDAG));
+        }
+        return FodselsnummerUtils.lagFodselsdato(rs.getString("fodselsnr"));
+    }
+
+    private static int getFodselsdag_i_mnd(ResultSet rs, boolean brukPDL) throws SQLException{
+        if(brukPDL) {
+            java.sql.Date fodselsdag = rs.getDate(FODSELSDAG);
+            if(fodselsdag == null) {
+                log.warn("Fant ikke fodselsdag pa bruker: "+rs.getString("aktoerid"));
+                return 1;
+            }
+            return fodselsdag.toLocalDate().getDayOfMonth();
+
+        }
+        return Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(rs.getString("fodselsnr")));
     }
 }

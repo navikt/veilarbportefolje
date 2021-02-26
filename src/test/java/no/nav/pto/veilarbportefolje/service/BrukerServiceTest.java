@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.common.types.identer.AktorId;
@@ -43,7 +44,7 @@ public class BrukerServiceTest {
     public void setUp() {
 
         db = new JdbcTemplate(setupInMemoryDatabase());
-        brukerRepository = new BrukerRepository(db, null);
+        brukerRepository = new BrukerRepository(db, null,  mock(UnleashService.class));
         aktorClient = mock(AktorClient.class);
         brukerService = new BrukerService(brukerRepository, aktorClient);
 

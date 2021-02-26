@@ -4,11 +4,7 @@ import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.utils.graphql.GraphqlError;
 import no.nav.common.client.utils.graphql.GraphqlRequest;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
-import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,26 +24,17 @@ import static org.mockito.Mockito.*;
 public class PdlDataServiceTest {
 
     @Mock
-    private BrukerRepository brukerRepository;
-
-    @Mock
     private PdlRepository pdlRepository;
 
     @Mock
     private PdlClient pdlClient;
-
-    @Mock
-    private UnleashService unleashService;
-
-    @Mock
-    private AktorClient aktorClient;
 
     @InjectMocks
     private PdlDataService pdlDataService;
 
     @Before
     public void resetMock() {
-        reset(brukerRepository, pdlRepository, pdlClient, unleashService, aktorClient);
+        reset(pdlRepository, pdlClient);
     }
 
     private static final AktorId AKTOERID_TEST = AktorId.of("000000000");
@@ -55,8 +42,6 @@ public class PdlDataServiceTest {
     @Test
     @SneakyThrows
     public void parseDataFromPdl(){
-        when(unleashService.isEnabled(FeatureToggle.PDL)).thenReturn(true);
-
         PdlFodselsRespons mockRespons = new PdlFodselsRespons();
         mockRespons.setData(
                 new PdlFodselsRespons.HentFodselsResponseData().setHentPerson(
@@ -72,17 +57,6 @@ public class PdlDataServiceTest {
         pdlDataService.lastInnPdlData(AKTOERID_TEST);
 
         verify(pdlRepository).upsert(AKTOERID_TEST, DateUtils.getLocalDateFromSimpleISODate("1980-12-03"));
-    }
-
-    @Test
-    @SneakyThrows
-    public void parseDataFromTPS(){
-/*
-        when(unleashService.isEnabled(FeatureToggle.PDL)).thenReturn(false);
-        pdlDataService.lastInnPdlData(AKTOERID_TEST);
-
-        verify(pdlRepository).upsert(AKTOERID_TEST, DateUtils.getLocalDateFromSimpleISODate("1980-12-03"));
- */
     }
 
     @Test
@@ -108,7 +82,5 @@ public class PdlDataServiceTest {
 
         assertThat(PdlDataService.hasErrors(mockRespons)).isTrue();
         assertThat(PdlDataService.hasErrors(null)).isTrue();
-
-
     }
 }
