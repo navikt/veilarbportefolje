@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
@@ -24,15 +25,11 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ElasticServiceV2 {
 
-    private final IndexName indexName;
     private final RestHighLevelClient restHighLevelClient;
-
-    public ElasticServiceV2(RestHighLevelClient restHighLevelClient, IndexName indexName) {
-        this.restHighLevelClient = restHighLevelClient;
-        this.indexName = indexName;
-    }
+    private final IndexName indexName;
 
     @SneakyThrows
     public void updateRegistering(AktorId aktoerId, ArbeidssokerRegistrertEvent utdanningEvent) {

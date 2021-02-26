@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.internal;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.health.selftest.SelfTestChecks;
@@ -9,7 +10,6 @@ import no.nav.common.health.selftest.SelftestHtmlGenerator;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,18 +26,12 @@ import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 
 @RestController
 @RequestMapping("/internal")
+@RequiredArgsConstructor
 public class InternalController {
 
     private final SelfTestChecks selfTestChecks;
+    private final MetricsClient metricsClient;
     private final JdbcTemplate db;
-    private MetricsClient metricsClient;
-
-    @Autowired
-    public InternalController(SelfTestChecks selfTestChecks, JdbcTemplate db, MetricsClient metricsClient) {
-        this.selfTestChecks = selfTestChecks;
-        this.metricsClient = metricsClient;
-        this.db = db;
-    }
 
     @GetMapping("/isReady")
     public void isReady() {

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -41,29 +42,16 @@ import static org.elasticsearch.client.RequestOptions.DEFAULT;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ElasticIndexer {
 
     static final int BATCH_SIZE = 1000;
     static final int BATCH_SIZE_LIMIT = 1000;
-    private final RestHighLevelClient restHighLevelClient;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerRepository brukerRepository;
-    private final IndexName alias;
+    private final RestHighLevelClient restHighLevelClient;
     private final SisteEndringRepository sisteEndringRepository;
-
-    public ElasticIndexer(
-            AktivitetDAO aktivitetDAO,
-            BrukerRepository brukerRepository,
-            RestHighLevelClient restHighLevelClient,
-            SisteEndringRepository sisteEndringRepository,
-            IndexName alias) {
-
-        this.aktivitetDAO = aktivitetDAO;
-        this.brukerRepository = brukerRepository;
-        this.restHighLevelClient = restHighLevelClient;
-        this.sisteEndringRepository = sisteEndringRepository;
-        this.alias = alias;
-    }
+    private final IndexName alias;
 
     static int utregnTil(int from, int batchSize) {
         if (from < 0 || batchSize < 0) {

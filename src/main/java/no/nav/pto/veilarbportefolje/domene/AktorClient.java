@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.pdl.AktorOppslagClient;
 import no.nav.common.featuretoggle.UnleashService;
@@ -9,17 +10,12 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 
+@RequiredArgsConstructor
 public class AktorClient implements HealthCheck {
 
     private final AktorOppslagClient aktorOppslagClient;
     private final AktorregisterClient aktorregisterClient;
     private final UnleashService unleashService;
-
-    public AktorClient(AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, UnleashService unleashService) {
-        this.aktorOppslagClient = aktorOppslagClient;
-        this.aktorregisterClient = aktorregisterClient;
-        this.unleashService = unleashService;
-    }
 
     public Fnr hentFnr(AktorId aktorId) {
         if (erPdlPa(unleashService)) {

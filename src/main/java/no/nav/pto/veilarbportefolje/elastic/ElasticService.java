@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
@@ -24,18 +25,12 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+@RequiredArgsConstructor
 public class ElasticService {
-    RestHighLevelClient restHighLevelClient;
-    VeilarbVeilederClient veilarbVeilederClient;
-    UnleashService unleashService;
-    IndexName indexName;
-
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, IndexName indexName) {
-        this.restHighLevelClient = restHighLevelClient;
-        this.veilarbVeilederClient = veilarbVeilederClient;
-        this.unleashService = unleashService;
-        this.indexName = indexName;
-    }
+    private final RestHighLevelClient restHighLevelClient;
+    private final VeilarbVeilederClient veilarbVeilederClient;
+    private final UnleashService unleashService;
+    private final IndexName indexName;
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
 
