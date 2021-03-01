@@ -105,4 +105,11 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
+    public static final class SIST_LEST_AKTIVITETSPLANEN {
+        public static final String TABLE_NAME = "SIST_LEST_AKTIVITETSPLANEN";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String SIST_LEST_AKTIVITETSPLANEN = "SIST_LEST_AKTIVITETSPLANEN";
+
+    }
+
 }
