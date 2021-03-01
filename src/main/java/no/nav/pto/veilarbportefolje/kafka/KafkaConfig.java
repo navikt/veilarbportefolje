@@ -52,7 +52,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 sistLestService,
                 unleashService,
-                KafkaProperties.kafkaMedAvroProperties(KafkaAutoOffset.EARLIEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
                 Topic.SIST_LEST,
                 metricsClient
         );
