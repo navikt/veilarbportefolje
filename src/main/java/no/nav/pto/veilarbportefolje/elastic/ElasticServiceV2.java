@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
+import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -166,6 +167,16 @@ public class ElasticServiceV2 {
                 .endObject();
 
         update(aktoerId, content, "Sletter arbeidsliste");
+    }
+
+    @SneakyThrows
+    public void updateSistLest(SistLestKafkaMelding melding) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("sist_lest_aktivitetsplanen", toIsoUTC(melding.getHarLestTidspunkt()))
+                .endObject();
+
+        update(melding.getAktorId(), content, "Oppdaterer sist lest");
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {

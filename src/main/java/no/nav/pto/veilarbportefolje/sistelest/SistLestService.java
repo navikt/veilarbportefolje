@@ -27,13 +27,13 @@ public class SistLestService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
         SistLestKafkaMelding melding = fromJson(kafkaMelding, SistLestKafkaMelding.class);
         log.info("Aktivitetsplanen for {} ble lest av {}, lest: {}", melding.getAktorId(), melding.getVeilederId(), melding.getHarLestTidspunkt());
-        Optional<VeilederId> veilederId = brukerService.hentVeilederForBruker(melding.aktorId);
+        Optional<VeilederId> veilederId = brukerService.hentVeilederForBruker(melding.getAktorId());
         if(veilederId.isEmpty()){
             return;
         }
         if (veilederId.get().equals(melding.getVeilederId())) {
             sistLestRepository.upsert(melding);
-            //elasticServiceV2.updateSistLest(melding);
+            elasticServiceV2.updateSistLest(melding);
         }
     }
 
