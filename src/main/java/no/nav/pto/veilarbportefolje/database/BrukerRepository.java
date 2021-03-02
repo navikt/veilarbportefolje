@@ -278,7 +278,7 @@ public class BrukerRepository {
 
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
-        return VeilederId.of(rs.getString("VEILEDERIDENT"));
+        return rs.getString("VEILEDERIDENT") == null ? null : VeilederId.of(rs.getString("VEILEDERIDENT"));
     }
 
     @SneakyThrows
