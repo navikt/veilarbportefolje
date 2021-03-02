@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -18,9 +19,7 @@ import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -84,6 +83,10 @@ public class ElasticQueryBuilder {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
         }
 
+        if(filtervalg.harUlesteEndringerFilter()){
+            byggUlestEndringsFilter(filtervalg.sisteEndringKategori, queryBuilder);
+        }
+
         if (filtervalg.harSisteEndringFilter()) {
             byggSisteEndringFilter(filtervalg.sisteEndringKategori, queryBuilder);
         }
@@ -97,6 +100,21 @@ public class ElasticQueryBuilder {
             }
         }
 
+    }
+
+    private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
+        BoolQueryBuilder subQuery = boolQuery();
+        List<String> relvanteKategorier;
+        if(sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
+            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.values()).map(SisteEndringsKategori::name)).collect(toList());
+        } else {
+            relvanteKategorier = sisteEndringKategori;
+        }
+
+        relvanteKategorier.forEach(kategori -> subQuery.should(
+                        QueryBuilders.rangeQuery("siste_endringer."+kategori.toLowerCase())
+                                .gt("sist_lest_aktivitetsplanen")));
+        queryBuilder.must(subQuery);
     }
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
