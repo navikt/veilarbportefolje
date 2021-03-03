@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -59,10 +60,25 @@ public class ElasticServiceV2 {
                         .startObject(kategori)
                             .field("tidspunkt", tidspunkt)
                             .field("aktivtetId", dto.getAktivtetId())
+                            .field("er_sett", "N")
                         .endObject()
                     .endObject()
                 .endObject();
         update(dto.getAktoerId(), content, format("Oppdaterte siste endring med tidspunkt: %s", tidspunkt));
+    }
+
+
+    @SneakyThrows
+    public void updateSisteEndring(AktorId aktorId, SisteEndringsKategori kategori, boolean erSett) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                    .startObject("siste_endringer")
+                        .startObject(kategori.name().toLowerCase())
+                            .field("er_sett", "J")
+                        .endObject()
+                    .endObject()
+                .endObject();
+        update(aktorId, content, format("Oppdaterte siste endring, kategori %s er nå sett",kategori.name().toLowerCase()));
     }
 
     @SneakyThrows
@@ -167,16 +183,6 @@ public class ElasticServiceV2 {
                 .endObject();
 
         update(aktoerId, content, "Sletter arbeidsliste");
-    }
-
-    @SneakyThrows
-    public void updateSistLest(SistLestKafkaMelding melding) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("sist_lest_aktivitetsplanen", toIsoUTC(melding.getHarLestTidspunkt()))
-                .endObject();
-
-        update(melding.getAktorId(), content, "Oppdaterer sist lest");
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {

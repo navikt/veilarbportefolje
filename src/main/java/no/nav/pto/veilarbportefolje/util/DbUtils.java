@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
-import static no.nav.pto.veilarbportefolje.database.Table.SIST_LEST_AKTIVITETSPLANEN.SIST_LEST_AKTIVITETSPLANEN;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
@@ -87,8 +86,7 @@ public class DbUtils {
                 .setHar_delt_cv(parseJaNei(rs.getString(HAR_DELT_CV), HAR_DELT_CV))
                 .setUtdanning(rs.getString("UTDANNING"))
                 .setUtdanning_bestatt(rs.getString("UTDANNING_BESTATT"))
-                .setUtdanning_godkjent(rs.getString("UTDANNING_GODKJENT"))
-                .setSist_lest_aktivitetsplanen(toIsoUTC(rs.getTimestamp(SIST_LEST_AKTIVITETSPLANEN)));
+                .setUtdanning_godkjent(rs.getString("UTDANNING_GODKJENT"));
 
 
         boolean brukerHarArbeidsliste = parseJaNei(rs.getString("ARBEIDSLISTE_AKTIV"), "ARBEIDSLISTE_AKTIV");

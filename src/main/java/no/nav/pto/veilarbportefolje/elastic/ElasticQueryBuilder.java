@@ -112,8 +112,8 @@ public class ElasticQueryBuilder {
         }
 
         relvanteKategorier.forEach(kategori -> subQuery.should(
-                        QueryBuilders.rangeQuery("siste_endringer."+kategori.toLowerCase())
-                                .gt("sist_lest_aktivitetsplanen")));
+                        QueryBuilders.matchQuery("siste_endringer."+kategori.toLowerCase()+"?.er_sett", "J")
+        ));
         queryBuilder.must(subQuery);
     }
 

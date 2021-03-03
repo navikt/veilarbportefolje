@@ -91,7 +91,6 @@ public class OppfolgingsBruker {
     String utdanning;
     String utdanning_bestatt;
     String utdanning_godkjent;
-    String sist_lest_aktivitetsplanen;
     String aggregert_siste_endring_aktivitetId;
     String aggregert_siste_endring_kategori;
     LocalDateTime aggregert_siste_endring_tidspunkt;

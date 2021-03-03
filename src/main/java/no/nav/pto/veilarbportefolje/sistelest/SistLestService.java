@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,7 +21,7 @@ import static no.nav.common.json.JsonUtils.fromJson;
 public class SistLestService implements KafkaConsumerService<String> {
     private final SistLestRepository sistLestRepository;
     private final BrukerService brukerService;
-    private final ElasticServiceV2 elasticServiceV2;
+    private final SisteEndringService sisteEndringService;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
 
     @Override
@@ -28,12 +29,12 @@ public class SistLestService implements KafkaConsumerService<String> {
         SistLestKafkaMelding melding = fromJson(kafkaMelding, SistLestKafkaMelding.class);
         log.info("Aktivitetsplanen for {} ble lest av {}, lest: {}", melding.getAktorId(), melding.getVeilederId(), melding.getHarLestTidspunkt());
         Optional<VeilederId> veilederId = brukerService.hentVeilederForBruker(melding.getAktorId());
-        if(veilederId.isEmpty()){
+        if (veilederId.isEmpty()) {
             return;
         }
         if (veilederId.get().equals(melding.getVeilederId())) {
             sistLestRepository.upsert(melding);
-            elasticServiceV2.updateSistLest(melding);
+            sisteEndringService.veilederHarSett(melding.getAktorId(), melding.getHarLestTidspunkt());
         }
     }
 

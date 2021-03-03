@@ -16,6 +16,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -132,13 +134,18 @@ public class ElasticService {
         return new FacetResults(buckets);
     }
 
-    @SneakyThrows
     private <T> T search(SearchSourceBuilder searchSourceBuilder, String indexAlias, Class<T> clazz) {
         SearchRequest request = new SearchRequest()
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = null;
+        try {
+            response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            System.out.println(e);
+            e.printStackTrace();
+        }
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
