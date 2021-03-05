@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConfig.Topic;
 import no.nav.pto.veilarbportefolje.util.JobUtils;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
@@ -24,8 +23,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.time.Duration.ofSeconds;
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
@@ -61,28 +58,7 @@ public class KafkaConsumerRunnable<T> implements Runnable {
 
     @Override
     public void run() {
-        try {
-            log.info("Starter konsument for {}", topic);
-            consumer.subscribe(singletonList(topic), getRebalanceListener());
-            while (!shutdown.get()) {
-                ConsumerRecords<String, T> records = consumer.poll(ofSeconds(1));
-                records.forEach(this::process);
-                if (kafkaService.shouldRewind()) {
-                    this.rewind();
-                }
-            }
-        } catch (Exception e) {
-            String mld = String.format(
-                    "%s under poll() eller subscribe() for topic %s",
-                    e.getClass().getSimpleName(),
-                    topic
-            );
-            log.error(mld, e);
-        } finally {
-            consumer.close();
-            shutdownLatch.countDown();
-            log.info("Lukket konsument for topic {}", topic);
-        }
+        log.info("Konsumering av kafka-meldinger er slått av");
     }
 
     @SneakyThrows
