@@ -33,6 +33,7 @@ public class Filtervalg {
     public List<String> utdanningGodkjent = new ArrayList<>();
     public List<String> arbeidslisteKategori = new ArrayList<>();
     public List<String> sisteEndringKategori = new ArrayList<>();
+    public List<String> aktiviteterForenklet = new ArrayList<>();
     public CVjobbprofil cvJobbprofil;
 
     public boolean harAktiveFilter() {
@@ -55,6 +56,7 @@ public class Filtervalg {
                 !utdanningGodkjent.isEmpty() ||
                 !sisteEndringKategori.isEmpty() ||
                 !arbeidslisteKategori.isEmpty() ||
+                !aktiviteterForenklet.isEmpty() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
                 harNavnEllerFnrQuery();
