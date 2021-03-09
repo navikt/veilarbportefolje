@@ -134,18 +134,13 @@ public class ElasticService {
         return new FacetResults(buckets);
     }
 
+    @SneakyThrows
     private <T> T search(SearchSourceBuilder searchSourceBuilder, String indexAlias, Class<T> clazz) {
         SearchRequest request = new SearchRequest()
                 .indices(indexAlias)
                 .source(searchSourceBuilder);
 
-        SearchResponse response = null;
-        try {
-            response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            System.out.println(e);
-            e.printStackTrace();
-        }
+        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 

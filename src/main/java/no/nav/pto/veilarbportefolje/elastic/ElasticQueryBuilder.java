@@ -112,7 +112,7 @@ public class ElasticQueryBuilder {
         }
 
         relvanteKategorier.forEach(kategori -> subQuery.should(
-                        QueryBuilders.matchQuery("siste_endringer."+kategori.toLowerCase()+"?.er_sett", "J")
+                        QueryBuilders.matchQuery("siste_endringer."+kategori.toLowerCase()+".er_sett", "N")
         ));
         queryBuilder.must(subQuery);
     }

@@ -27,15 +27,15 @@ public class SisteEndringService {
     private final SisteEndringRepository sisteEndringRepository;
 
     public void veilederHarSett(AktorId aktorId, ZonedDateTime time){
-        LocalDateTime localDateTime = time.toLocalDateTime();
+        LocalDateTime veilederharsett = time.toLocalDateTime();
         Map<String, Endring> sisteEndringer = sisteEndringRepository.getSisteEndringer(aktorId);
         sisteEndringer.forEach((kategori, endring) -> {
             if(endring.getEr_sett().equals("J")){
                 return;
             }
-            if(localDateTime.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))){
-                sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori),true);
-                elasticServiceV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori), true);
+            if(veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))){
+                sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori.toUpperCase()),true);
+                elasticServiceV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori.toUpperCase()));
             }
         });
     }

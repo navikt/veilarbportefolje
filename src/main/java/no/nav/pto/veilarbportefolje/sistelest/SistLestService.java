@@ -2,9 +2,7 @@ package no.nav.pto.veilarbportefolje.sistelest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -19,7 +17,6 @@ import static no.nav.common.json.JsonUtils.fromJson;
 @Slf4j
 @RequiredArgsConstructor
 public class SistLestService implements KafkaConsumerService<String> {
-    private final SistLestRepository sistLestRepository;
     private final BrukerService brukerService;
     private final SisteEndringService sisteEndringService;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
@@ -33,13 +30,8 @@ public class SistLestService implements KafkaConsumerService<String> {
             return;
         }
         if (veilederId.get().equals(melding.getVeilederId())) {
-            sistLestRepository.upsert(melding);
             sisteEndringService.veilederHarSett(melding.getAktorId(), melding.getHarLestTidspunkt());
         }
-    }
-
-    public void slettSistLest(AktorId aktorId) {
-        sistLestRepository.slettSistLest(aktorId);
     }
 
     @Override

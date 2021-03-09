@@ -41,15 +41,16 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final ElasticService elasticService;
     private final SistLestService sistLestService;
     private final VeilederId veilederId = VeilederId.of("Z123456");
+    private final String testEnhet = "0000";
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService, SistLestService sistLestService) {
-        this.sistLestService = sistLestService;
+    public SisteEndringIntegrationTest(MalService malService, ElasticService elasticService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, SisteEndringService sisteEndringService) {
         brukerService = Mockito.mock(BrukerService.class);
         Mockito.when(brukerService.hentPersonidFraAktoerid(any())).thenReturn(Try.of(TestDataUtils::randomPersonId));
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
 
         this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering,  brukerService, sisteEndringService);
+        this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.elasticService = elasticService;
         this.malService = malService;
     }
@@ -113,7 +114,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     @Test
     public void siste_endring_filter_test() {
-        final String testEnhet = "0000";
         final AktorId aktoerId = randomAktorId();
         String endretTid = "2019-05-28T09:47:42.48+02:00";
         String endretTid_ny = "2020-05-28T09:47:42.48+02:00";
@@ -186,19 +186,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     }
 
+
     @Test
-    public void siste_endring_ulest_filter_test() {
-        final String testEnhet = "0000";
+    public void siste_endring_ulest_skal_ikke_krasje_med_null_verdier() {
         final AktorId aktoerId = randomAktorId();
-        String endretTid = "2019-05-28T09:47:42.48+02:00";
-        String endretTid_ny = "2020-05-28T09:47:42.48+02:00";
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(endretTid);
-        ZonedDateTime zonedDateTime_NY_IJOBB = ZonedDateTime.parse(endretTid_ny);
-
-        String lestAvVeilederTid = "2012-07-28T09:47:42.48+02:00";
-
         populateElastic(aktoerId.toString());
-
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
                     testEnhet,
@@ -211,17 +203,49 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
             return brukereMedAntall.getAntall() == 1;
         });
-        send_sett_aktiitetsplan(aktoerId,lestAvVeilederTid);
+        
+        var responseBrukere = elasticService.hentBrukere(
+                testEnhet,
+                empty(),
+                "asc",
+                "ikke_satt",
+                getFiltervalg(FULLFORT_IJOBB, true),
+                null,
+                null);
 
-        send_aktvitet_melding(aktoerId, endretTid_ny, KafkaAktivitetMelding.EndringsType.OPPRETTET,
+        assertThat(responseBrukere.getAntall()).isEqualTo(0);
+    }
+
+    @Test
+    public void siste_endring_ulest_filter_test() {
+        final AktorId aktoerId = randomAktorId();
+        String endretTid_FULLFORT_IJOBB = "2019-05-28T09:47:42.48+02:00";
+        String endretTid_NY_IJOBB = "2020-05-28T09:47:42.48+02:00";
+
+        String lestAvVeilederTid = "2019-07-28T09:47:42.48+02:00";
+
+        populateElastic(aktoerId.toString());
+        pollElasticUntil(() -> {
+            final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+                    testEnhet,
+                    empty(),
+                    "asc",
+                    "ikke_satt",
+                    new Filtervalg(),
+                    null,
+                    null);
+
+            return brukereMedAntall.getAntall() == 1;
+        });
+
+        send_aktvitet_melding(aktoerId, endretTid_NY_IJOBB,
+                KafkaAktivitetMelding.EndringsType.OPPRETTET,
                 KafkaAktivitetMelding.AktivitetStatus.PLANLAGT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
-        send_aktvitet_melding(aktoerId, endretTid, KafkaAktivitetMelding.EndringsType.FLYTTET,
+        send_aktvitet_melding(aktoerId, endretTid_FULLFORT_IJOBB,
+                KafkaAktivitetMelding.EndringsType.FLYTTET,
                 KafkaAktivitetMelding.AktivitetStatus.FULLFORT,
                 KafkaAktivitetMelding.AktivitetTypeData.IJOBB);
-
-        GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
-        assertThat(getResponse.isExists()).isTrue();
 
         pollElasticUntil(() -> {
             final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
@@ -232,11 +256,24 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     getFiltervalg(NY_IJOBB),
                     null,
                     null);
-
             return brukereMedAntall.getAntall() == 1;
         });
 
-        var responseBrukere = elasticService.hentBrukere(
+        send_sett_aktivitetsplan(aktoerId, lestAvVeilederTid);
+
+        pollElasticUntil(() -> {
+            final BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+                    testEnhet,
+                    empty(),
+                    "asc",
+                    "ikke_satt",
+                    getFiltervalg(FULLFORT_IJOBB, true),
+                    null,
+                    null);
+            return brukereMedAntall.getAntall() == 0;
+        });
+
+        var responseBrukere1 = elasticService.hentBrukere(
                 testEnhet,
                 empty(),
                 "asc",
@@ -245,28 +282,22 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null,
                 null);
 
-        assertThat(responseBrukere.getAntall()).isEqualTo(1);
-        assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
+        assertThat(responseBrukere1.getAntall()).isEqualTo(1);
 
-        var responseBrukere_2 = elasticService.hentBrukere(
+        var responseBrukere2 = elasticService.hentBrukere(
                 testEnhet,
                 empty(),
                 "asc",
                 "ikke_satt",
-                getFiltervalg(NY_IJOBB, FULLFORT_IJOBB),
+                getFiltervalg(FULLFORT_IJOBB, true),
                 null,
                 null);
-        assertThat(responseBrukere_2.getAntall()).isEqualTo(1);
-        var respons_tidspunkt = responseBrukere_2.getBrukere().get(0).getSisteEndringTidspunkt();
 
-        assertThat(respons_tidspunkt).isNotNull();
-        assertThat(respons_tidspunkt).isEqualTo(zonedDateTime_NY_IJOBB.toLocalDateTime());
-
+        assertThat(responseBrukere2.getAntall()).isEqualTo(0);
     }
 
     @Test
     public void siste_endring_sortering_test() {
-        final String testEnhet = "0000";
         final AktorId aktoerId_1 = randomAktorId();
         final AktorId aktoerId_2 = randomAktorId();
         final AktorId aktoerId_3 = randomAktorId();
@@ -420,7 +451,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
 
-    private void send_sett_aktiitetsplan(AktorId aktoerId, String settDato) {
+    private void send_sett_aktivitetsplan(AktorId aktoerId, String settDato) {
         String sistLestKafkaMelding = "{" +
                 "\"aktorId\":\""+aktoerId.get()+"\"," +
                 "\"harLestTidspunkt\":\""+settDato+"\"," +
@@ -482,7 +513,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
             brukere.add( new OppfolgingsBruker()
                     .setAktoer_id(aktoerId)
                     .setOppfolging(true)
-                    .setEnhet_id("0000")
+                    .setEnhet_id(testEnhet)
                     .setVeileder_id(veilederId.getValue())
                     );
         }

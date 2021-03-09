@@ -69,7 +69,7 @@ public class ElasticServiceV2 {
 
 
     @SneakyThrows
-    public void updateSisteEndring(AktorId aktorId, SisteEndringsKategori kategori, boolean erSett) {
+    public void updateSisteEndring(AktorId aktorId, SisteEndringsKategori kategori) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                     .startObject("siste_endringer")
