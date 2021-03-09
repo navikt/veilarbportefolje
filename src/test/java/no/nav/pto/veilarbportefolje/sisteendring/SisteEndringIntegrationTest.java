@@ -203,7 +203,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
             return brukereMedAntall.getAntall() == 1;
         });
-        
+
         var responseBrukere = elasticService.hentBrukere(
                 testEnhet,
                 empty(),
