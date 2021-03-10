@@ -102,13 +102,13 @@ public class OppfolgingsBruker {
         }
 
         for (String kategori : kategorier) {
-            Endring endring = siste_endringer.get(kategori.toLowerCase());
+            Endring endring = siste_endringer.get(kategori);
             if(endring != null){
                 LocalDateTime tidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
                 if(tidspunkt != null && (aggregert_siste_endring_tidspunkt == null || tidspunkt.isAfter(aggregert_siste_endring_tidspunkt))){
                     aggregert_siste_endring_tidspunkt = tidspunkt;
                     aggregert_siste_endring_kategori = kategori;
-                    aggregert_siste_endring_aktivitetId = siste_endringer.get(kategori.toLowerCase()).getAktivtetId();
+                    aggregert_siste_endring_aktivitetId = siste_endringer.get(kategori).getAktivtetId();
                 }
             }
         }

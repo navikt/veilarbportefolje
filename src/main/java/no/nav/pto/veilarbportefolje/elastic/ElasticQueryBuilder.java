@@ -113,14 +113,14 @@ public class ElasticQueryBuilder {
         }
 
         relvanteKategorier.forEach(kategori -> subQuery.should(
-                        QueryBuilders.matchQuery("siste_endringer."+kategori.toLowerCase()+".er_sett", "N")
+                        QueryBuilders.matchQuery("siste_endringer."+kategori+".er_sett", "N")
         ));
         queryBuilder.must(subQuery);
     }
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         BoolQueryBuilder subQuery = boolQuery();
-        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer."+kategori.toLowerCase())));
+        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer."+kategori)));
         queryBuilder.must(subQuery);
       }
 
@@ -204,11 +204,11 @@ public class ElasticQueryBuilder {
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expresion = null;
         if(filtervalg.sisteEndringKategori.size() == 1) {
-            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0).toLowerCase() + ".tidspunkt']?.value.getMillis()";
+            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.getMillis()";
         } else if(filtervalg.sisteEndringKategori.size() > 1) {
             StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
             for (String kategori : filtervalg.sisteEndringKategori) {
-                expresionJoiner.add("doc['siste_endringer." + kategori.toLowerCase()  + ".tidspunkt']?.value.getMillis()");
+                expresionJoiner.add("doc['siste_endringer." + kategori  + ".tidspunkt']?.value.getMillis()");
             }
             expresion = expresionJoiner.toString();
         }

@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -33,7 +34,7 @@ public class SisteEndringRepositoryTest {
         String tidspunkt_1 = zonedDateTime_1.toOffsetDateTime().toString();
         SisteEndringDTO dto_1 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_1))
-                .setKategori(SisteEndringsKategori.NY_IJOBB)
+                .setKategori(NY_IJOBB)
                 .setAktoerId(AKTORID)
                 .setAktivtetId("1");
 
@@ -41,7 +42,7 @@ public class SisteEndringRepositoryTest {
         String tidspunkt_2 = zonedDateTime_2.toOffsetDateTime().toString();
         SisteEndringDTO dto_2 = new SisteEndringDTO()
                 .setTidspunkt(ZonedDateTime.parse(tidspunkt_2))
-                .setKategori(SisteEndringsKategori.AVBRUTT_EGEN)
+                .setKategori(AVBRUTT_EGEN)
                 .setAktoerId(AKTORID)
                 .setAktivtetId("2");
 
@@ -51,10 +52,10 @@ public class SisteEndringRepositoryTest {
         OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.get());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
 
-        assertThat(bruker.getSiste_endringer().get("ny_ijobb").getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));
-        assertThat(bruker.getSiste_endringer().get("ny_ijobb").getAktivtetId()).isEqualTo(dto_1.getAktivtetId());
-        assertThat(bruker.getSiste_endringer().get("avbrutt_egen").getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
-        assertThat(bruker.getSiste_endringer().get("avbrutt_egen").getAktivtetId()).isEqualTo(dto_2.getAktivtetId());
+        assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));
+        assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getAktivtetId()).isEqualTo(dto_1.getAktivtetId());
+        assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
+        assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getAktivtetId()).isEqualTo(dto_2.getAktivtetId());
     }
 
 

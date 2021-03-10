@@ -34,8 +34,8 @@ public class SisteEndringService {
                 return;
             }
             if(veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))){
-                sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori.toUpperCase()),true);
-                elasticServiceV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori.toUpperCase()));
+                sisteEndringRepository.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori),true);
+                elasticServiceV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori));
             }
         });
     }
