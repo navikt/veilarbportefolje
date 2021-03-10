@@ -63,6 +63,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt");
         byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
         byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
+        byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
 
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
