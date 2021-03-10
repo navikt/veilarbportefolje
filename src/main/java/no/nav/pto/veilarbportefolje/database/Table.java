@@ -78,6 +78,7 @@ public class Table {
 
         public static final String SISTE_ENDRING_KATEGORI = "SISTE_ENDRING_KATEGORI";
         public static final String SISTE_ENDRING_TIDSPUNKT = "SISTE_ENDRING_TIDSPUNKT";
+        public static final String ER_SETT = "ER_SETT";
     }
 
     public static final class AKTIVITETER {
@@ -103,13 +104,6 @@ public class Table {
         public static final String AKTOERID = "AKTOERID";
         public static final String ANSVARLIG_VEILEDER_IDENT = "ANSVARLIG_VEILEDER_IDENT";
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
-    }
-
-    public static final class SIST_LEST_AKTIVITETSPLANEN {
-        public static final String TABLE_NAME = "SIST_LEST_AKTIVITETSPLANEN";
-        public static final String AKTOERID = "AKTOERID";
-        public static final String SIST_LEST_AKTIVITETSPLANEN = "SIST_LEST_AKTIVITETSPLANEN";
-
     }
 
 }
