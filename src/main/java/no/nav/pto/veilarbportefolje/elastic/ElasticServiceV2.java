@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -201,6 +202,26 @@ public class ElasticServiceV2 {
                 log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
             } else {
                 final String message = format("Det skjedde en feil ved oppdatering av elastic for bruker %s", aktoerId.toString());
+                log.error(message, e);
+            }
+        }
+    }
+
+    @SneakyThrows
+    public void delete(AktorId aktoerId) throws IOException {
+        DeleteRequest deleteRequest = new DeleteRequest();
+        deleteRequest.index(indexName.getValue());
+        deleteRequest.type("_doc");
+        deleteRequest.id(aktoerId.get());
+
+        try {
+            restHighLevelClient.delete(deleteRequest, DEFAULT);
+            log.info("Slettet dokument for {} ", aktoerId);
+        } catch (ElasticsearchException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                log.warn("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.toString());
+            } else {
+                final String message = format("Det skjedde en feil ved sletting i elastic for bruker %s", aktoerId.toString());
                 log.error(message, e);
             }
         }

@@ -1,3 +1,24 @@
+const slettElasticForm = document.getElementById('slettElasticForm')
+slettElasticForm.addEventListener('submit', handleslettElastic);
+const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')
+
+function handleslettElastic(e) {
+    e.preventDefault()
+    const aktoerId = aktoerIdInputSlett.value;
+    if (!window.confirm('Dette vil fjerne brukeren fra elastic, er du sikker på at du vil fortsette?')) {
+        return;
+    }
+
+    if (aktoerId && aktoerId.length > 0) {
+        fetchData(
+            '/veilarbportefolje/api/admin/fjernBrukerElastic',
+            {method: 'DELETE', credentials: 'same-origin', body: aktoerId},
+            'slettingResponse'
+        )
+    }
+}
+
+
 const oppfolgingsbrukerForm = document.getElementById('oppfolgingsbruker')
 oppfolgingsbrukerForm.addEventListener('submit', handleFjernOppfolgingsbruker);
 
