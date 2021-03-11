@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
@@ -8,8 +9,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,16 +23,12 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BrukerService {
 
     private final BrukerRepository brukerRepository;
     private final AktorClient aktorClient;
-
-    @Autowired
-    public BrukerService(BrukerRepository brukerRepository, AktorClient aktorClient) {
-        this.brukerRepository = brukerRepository;
-        this.aktorClient = aktorClient;
-    }
+    private final ElasticServiceV2 elasticServiceV2;
 
     public Optional<AktorId> hentAktorId(Fnr fnr) {
         return brukerRepository.hentBrukerFraView(fnr)
@@ -89,6 +86,7 @@ public class BrukerService {
             brukerRepository.setGjeldeneFlaggTilNull(personId);
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
+        brukerRepository.henGamleAktorIder(personId).ifPresent(elasticServiceV2::slettDokumenter);
     }
 
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
@@ -96,8 +94,7 @@ public class BrukerService {
     }
 
     private Optional<Fnr> hentFnrFraAktoerregister(AktorId aktoerId) {
-            return Optional
-                    .ofNullable(aktorClient.hentFnr(aktoerId));
+            return Optional.ofNullable(aktorClient.hentFnr(aktoerId));
     }
 
 }

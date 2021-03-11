@@ -240,6 +240,17 @@ public class BrukerRepository {
                 .execute();
     }
 
+    public Optional<List<AktorId>> henGamleAktorIder(PersonId personId) {
+        return Optional.ofNullable(SqlUtils
+                .select(db, AKTOERID_TO_PERSONID.TABLE_NAME, rs -> rs == null ? null : AktorId.of(rs.getString(AKTOERID_TO_PERSONID.AKTOERID)))
+                .column(AKTOERID_TO_PERSONID.AKTOERID)
+                .where(
+                    WhereClause.equals(AKTOERID_TO_PERSONID.PERSONID, personId.getValue())
+                    .and(
+                    WhereClause.equals(AKTOERID_TO_PERSONID.GJELDENE,0))
+                ).executeToList());
+    }
+
     public Try<PersonId> retrievePersonid(AktorId aktoerId) {
         return Try.of(
                 () -> select(db, AKTOERID_TO_PERSONID.TABLE_NAME, this::mapToPersonIdFromAktorIdToPersonId)
