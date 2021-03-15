@@ -86,7 +86,7 @@ public class BrukerService {
             brukerRepository.setGjeldeneFlaggTilNull(personId);
             brukerRepository.insertAktoeridToPersonidMapping(aktoerId, personId);
         }
-        brukerRepository.henGamleAktorIder(personId).ifPresent(elasticServiceV2::slettDokumenter);
+        brukerRepository.hentGamleAktorIder(personId).ifPresent(elasticServiceV2::slettDokumenter);
     }
 
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {

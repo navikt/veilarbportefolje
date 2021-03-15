@@ -240,7 +240,7 @@ public class BrukerRepository {
                 .execute();
     }
 
-    public Optional<List<AktorId>> henGamleAktorIder(PersonId personId) {
+    public Optional<List<AktorId>> hentGamleAktorIder(PersonId personId) {
         return Optional.ofNullable(SqlUtils
                 .select(db, AKTOERID_TO_PERSONID.TABLE_NAME, rs -> rs == null ? null : AktorId.of(rs.getString(AKTOERID_TO_PERSONID.AKTOERID)))
                 .column(AKTOERID_TO_PERSONID.AKTOERID)
