@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.admin;
 
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -7,6 +9,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
@@ -19,24 +22,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
+@RequiredArgsConstructor
 public class AdminController {
-    private final List<String> admins;
+    private final EnvironmentProperties environmentProperties;
     private final RegistreringService registreringService;
     private final AktorClient aktorClient;
     private final NyForVeilederService nyForVeilederService;
     private final AktivitetService aktivitetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final VedtakService vedtakService;
-
-    public AdminController(EnvironmentProperties environmentProperties, RegistreringService registreringService, AktorClient aktorClient, NyForVeilederService nyForVeilederService, AktivitetService aktivitetService, OppfolgingAvsluttetService oppfolgingAvsluttetService, VedtakService vedtakService) {
-        this.admins = environmentProperties.getAdmins();
-        this.registreringService = registreringService;
-        this.aktorClient = aktorClient;
-        this.nyForVeilederService = nyForVeilederService;
-        this.aktivitetService = aktivitetService;
-        this.oppfolgingAvsluttetService = oppfolgingAvsluttetService;
-        this.vedtakService = vedtakService;
-    }
+    private final ElasticServiceV2 elasticServiceV2;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -79,9 +74,17 @@ public class AdminController {
         return "Slettet oppfølgingsbruker " + aktoerId;
     }
 
+    @DeleteMapping("/fjernBrukerElastic")
+    @SneakyThrows
+    public String fjernBrukerFraElastic(@RequestBody String aktoerId) {
+        authorizeAdmin();
+        elasticServiceV2.delete(AktorId.of(aktoerId));
+        return "Slettet oppfølgingsbruker " + aktoerId;
+    }
+
     private void authorizeAdmin() {
         final String ident = AuthContextHolder.getNavIdent().map(Id::toString).orElseThrow();
-        if (!admins.contains(ident)) {
+        if (!environmentProperties.getAdmins().contains(ident)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }

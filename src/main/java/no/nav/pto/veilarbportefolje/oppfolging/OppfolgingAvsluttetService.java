@@ -52,7 +52,6 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         registreringService.slettRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId);
         sisteEndringService.slettSisteEndringer(aktoerId);
-        sistLestService.slettSistLest(aktoerId);
         elasticServiceV2.markerBrukerSomSlettet(aktoerId);
     }
 
