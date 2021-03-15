@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.database;
 
+import com.sun.el.stream.Stream;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
@@ -124,6 +125,15 @@ public class BrukerRepository {
         final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
                 .column("*")
                 .where(WhereClause.equals("FODSELSNR", fnr.toString()))
+                .execute();
+
+        return Optional.ofNullable(bruker);
+    }
+
+    public Optional<OppfolgingsBruker> hentBrukerFraView(PersonId personid) {
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
+                .column("*")
+                .where(WhereClause.equals("PERSON_ID", personid.toString()))
                 .execute();
 
         return Optional.ofNullable(bruker);
