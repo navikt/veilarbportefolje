@@ -57,7 +57,7 @@ public class Filtervalg {
                 !utdanningGodkjent.isEmpty() ||
                 !sisteEndringKategori.isEmpty() ||
                 !arbeidslisteKategori.isEmpty() ||
-                !aktiviteterForenklet.isEmpty() ||
+                harAktiviteterForenklet() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
                 harNavnEllerFnrQuery();
@@ -89,6 +89,10 @@ public class Filtervalg {
 
     public boolean harManuellBrukerStatus() {
         return manuellBrukerStatus != null && !manuellBrukerStatus.isEmpty();
+    }
+
+    public boolean harAktiviteterForenklet(){
+        return !aktiviteterForenklet.isEmpty();
     }
 
     public boolean harNavnEllerFnrQuery() {
