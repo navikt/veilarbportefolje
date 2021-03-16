@@ -4,15 +4,16 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,6 +31,7 @@ public class PersistentOppdatering {
     private final BrukerRepository brukerRepository;
     private final AktivitetDAO aktivitetDAO;
     private final BrukerService brukerService;
+    private final UnleashService unleashService;
 
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
@@ -93,12 +95,15 @@ public class PersistentOppdatering {
                     aktivitetDAO.getAktivitetstatusForBrukere(personIds)
                             .forEach((key, value) -> aktivitetstatuserIDb.addAll(value));
 
-                    statuserBatchJavaList.forEach(aktivitetStatus -> {
-                        if (aktivitetStatus.getAktoerid() == null) {
-                            Optional<AktorId> aktorId = brukerService.hentAktorId(aktivitetStatus.getPersonid());
-                            aktorId.ifPresent(aktivitetStatus::setAktoerid);
-                        }
-                    });
+                    if(unleashService.isEnabled(FeatureToggle.AUTO_AKTOR_ID_MAPPING)){
+                        statuserBatchJavaList.forEach(aktivitetStatus -> {
+                            if (aktivitetStatus.getAktoerid() == null) {
+                                Optional<AktorId> aktorId = brukerService.hentAktorId(aktivitetStatus.getPersonid());
+                                aktorId.ifPresent(aktivitetStatus::setAktoerid);
+                                log.info("AktivitetStatus: Oppdatert til aktorId {}", aktorId.orElse(null));
+                            }
+                        });
+                    }
 
                     List<Tuple2<PersonId, String>> finnesIDb = aktivitetstatuserIDb
                             .stream()
