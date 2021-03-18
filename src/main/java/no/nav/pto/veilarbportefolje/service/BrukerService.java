@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;

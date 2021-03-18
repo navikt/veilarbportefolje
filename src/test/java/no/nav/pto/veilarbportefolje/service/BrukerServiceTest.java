@@ -1,7 +1,9 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -40,7 +42,6 @@ public class BrukerServiceTest {
 
     private AktorClient aktorClient;
 
-
     private String FNR_FRA_SOAP_TJENESTE = "11111111111";
     private String AKTOERID_FRA_SOAP_TJENESTE = "2222";
 
@@ -50,8 +51,11 @@ public class BrukerServiceTest {
         db = new JdbcTemplate(setupInMemoryDatabase());
         brukerRepository = new BrukerRepository(db, null);
         aktorClient = mock(AktorClient.class);
+        UnleashService unleashService = mock(UnleashService.class);
+        when(unleashService.isEnabled(FeatureToggle.AUTO_SLETT)).thenReturn(true);
+
         elasticServiceV2 = mock(ElasticServiceV2.class);
-        brukerService = new BrukerService(brukerRepository, aktorClient, elasticServiceV2);
+        brukerService = new BrukerService(brukerRepository, aktorClient, elasticServiceV2, unleashService);
 
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
