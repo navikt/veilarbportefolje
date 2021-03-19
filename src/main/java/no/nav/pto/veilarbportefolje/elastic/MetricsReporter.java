@@ -31,8 +31,11 @@ public class MetricsReporter {
     }
 
     private Number sjekkIndeksSistOpprettet() {
+        log.info("sjekkIndeksSistOpprettet 1");
         String indeksNavn = elasticIndexer.hentGammeltIndeksNavn().orElseThrow(IllegalStateException::new);
+        log.info("sjekkIndeksSistOpprettet 2");
         LocalDateTime tidspunktForSisteHovedIndeksering = hentIndekseringsdato(indeksNavn);
+        log.info("sjekkIndeksSistOpprettet 3");
         return hoursSinceLastChanged(tidspunktForSisteHovedIndeksering);
     }
 
