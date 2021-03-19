@@ -32,7 +32,7 @@ public class VeilarbVeilederClient {
     @Cacheable(VEILARBVEILEDER)
     @SneakyThrows
     public List<String> hentVeilederePaaEnhet(String enhet) {
-        String path = format("/api/enhet/%s/identer", enhet);
+        String path = format("/enhet/%s/identer", enhet);
 
 
         Request request  = new Request.Builder()
