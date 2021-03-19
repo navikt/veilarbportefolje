@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Metrics;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import static io.micrometer.prometheus.PrometheusConfig.DEFAULT;
 
@@ -25,8 +24,10 @@ public class MetricsReporter {
     public MetricsReporter(ElasticIndexer elasticIndexer) {
         this.elasticIndexer = elasticIndexer;
 
-        Gauge.builder("veilarbelastic_number_of_docs", ()-> ElasticUtils.getCount()).register(getMeterRegistry());
-        Gauge.builder("portefolje_indeks_sist_opprettet", ()-> this.sjekkIndeksSistOpprettet()).register(getMeterRegistry());
+        prometheusMeterRegistry.gauge("veilarbelastic_number_of_docs", ElasticUtils.getCount());
+        prometheusMeterRegistry.gauge("portefolje_indeks_sist_opprettet", this.sjekkIndeksSistOpprettet());
+        //Gauge.builder("veilarbelastic_number_of_docs", ()-> ElasticUtils.getCount()).register(getMeterRegistry());
+        //Gauge.builder("portefolje_indeks_sist_opprettet", ()-> this.sjekkIndeksSistOpprettet()).register(getMeterRegistry());
     }
 
     private Number sjekkIndeksSistOpprettet() {
