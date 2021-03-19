@@ -67,7 +67,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
-        String endring_mal= getValueFromNestedObject(getResponse, "mal");
+        String endring_mal= getValueFromNestedObject(getResponse, MAL);
 
         assertThat(endring_mal).isNotNull();
         assertThat(endring_mal).isEqualTo(endretTidZonedDateTime.toString());
@@ -94,8 +94,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
 
-        String endring_fullfort_ijobb = getValueFromNestedObject(getResponse, "fullfort_ijobb");
-        String endring_ny_ijobb = getValueFromNestedObject(getResponse, "ny_ijobb");
+        String endring_fullfort_ijobb = getValueFromNestedObject(getResponse, FULLFORT_IJOBB);
+        String endring_ny_ijobb = getValueFromNestedObject(getResponse, NY_IJOBB);
 
         assertThat(endring_fullfort_ijobb).isEqualTo(endretTidZonedDateTime.toString());
 
@@ -108,7 +108,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         GetResponse getResponse_2 = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse_2.isExists()).isTrue();
 
-        String endring_fullfort_ijobb_2 = getValueFromNestedObject(getResponse_2, "fullfort_ijobb");
+        String endring_fullfort_ijobb_2 = getValueFromNestedObject(getResponse_2, FULLFORT_IJOBB);
         assertThat(endring_fullfort_ijobb_2).isEqualTo(endretTidNyZonedDateTime.toString());
     }
 
@@ -498,11 +498,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         return filtervalg;
     }
 
-    private String getValueFromNestedObject(GetResponse respons, String field){
+    private String getValueFromNestedObject(GetResponse respons, SisteEndringsKategori field){
         assertThat(respons).isNotNull();
         Object nestedObject = respons.getSourceAsMap().get("siste_endringer");
         if(nestedObject instanceof Map) {
-            return  ((Map<String, Map<String, String>>) nestedObject).get(field).get("tidspunkt");
+            return  ((Map<String, Map<String, String>>) nestedObject).get(field.name()).get("tidspunkt");
         }
         return null;
     }

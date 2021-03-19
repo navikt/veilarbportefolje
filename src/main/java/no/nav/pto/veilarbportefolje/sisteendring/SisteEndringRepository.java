@@ -90,7 +90,7 @@ public class SisteEndringRepository {
     private Map<String, Endring> mapResultatTilKategoriOgEndring(ResultSet rs){
         Map<String, Endring> sisteEndring = new HashMap<>();
         while(rs.next()){
-            sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(),new Endring()
+            sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI),new Endring()
                     .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
                     .setEr_sett(rs.getString(ER_SETT))
                     .setAktivtetId(rs.getString(AKTIVITETID)));

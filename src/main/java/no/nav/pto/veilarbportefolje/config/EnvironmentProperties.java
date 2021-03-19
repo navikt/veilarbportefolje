@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @ConfigurationProperties(prefix = "app.env")
 public class EnvironmentProperties {
-
+    private String veilarbVeilederUrl;
     private String abacUrl;
     private String difiUrl;
     private String aktorregisterUrl;

@@ -52,7 +52,7 @@ public class ElasticServiceV2 {
 
     @SneakyThrows
     public void updateSisteEndring(SisteEndringDTO dto) {
-        String kategori = dto.getKategori().name().toLowerCase();
+        String kategori = dto.getKategori().name();
         final String tidspunkt = toIsoUTC(dto.getTidspunkt());
 
         final XContentBuilder content = jsonBuilder()
@@ -74,12 +74,12 @@ public class ElasticServiceV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                     .startObject("siste_endringer")
-                        .startObject(kategori.name().toLowerCase())
+                        .startObject(kategori.name())
                             .field("er_sett", "J")
                         .endObject()
                     .endObject()
                 .endObject();
-        update(aktorId, content, format("Oppdaterte siste endring, kategori %s er nå sett",kategori.name().toLowerCase()));
+        update(aktorId, content, format("Oppdaterte siste endring, kategori %s er nå sett",kategori.name()));
     }
 
     @SneakyThrows
