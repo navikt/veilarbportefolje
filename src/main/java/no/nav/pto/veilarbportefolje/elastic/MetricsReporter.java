@@ -23,12 +23,10 @@ public class MetricsReporter {
     private static MeterRegistry prometheusMeterRegistry = new ProtectedPrometheusMeterRegistry();
 
     public MetricsReporter(ElasticIndexer elasticIndexer) {
-        log.info("MetricsReporter");
         this.elasticIndexer = elasticIndexer;
 
-        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
-        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
-
+        Gauge.builder("veilarbelastic_number_of_docs", ()-> ElasticUtils.getCount()).register(getMeterRegistry());
+        Gauge.builder("portefolje_indeks_sist_opprettet", ()-> this.sjekkIndeksSistOpprettet()).register(getMeterRegistry());
     }
 
     private Number sjekkIndeksSistOpprettet() {
