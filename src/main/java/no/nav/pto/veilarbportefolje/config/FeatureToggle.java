@@ -7,4 +7,6 @@ public class FeatureToggle {
     public static final String VEDTAKSTOTTE_PILOT = "pto.vedtaksstotte.pilot";
 
     public static final String PDL = "veilarbmaofs.personalia.pdl.persondata";
+
+    public static final String AUTO_SLETT = "pto.slett_gamle_aktorer_elastic";
 }
