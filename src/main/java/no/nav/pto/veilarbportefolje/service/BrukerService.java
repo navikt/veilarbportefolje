@@ -39,6 +39,12 @@ public class BrukerService {
                 .map(AktorId::new);
     }
 
+    public Optional<AktorId> hentAktorId(PersonId personid) {
+        return brukerRepository.hentBrukerFraView(personid)
+                .map(OppfolgingsBruker::getAktoer_id)
+                .map(AktorId::new);
+    }
+
     public Optional<String> hentNavKontor(AktorId aktoerId) {
         return brukerRepository
                 .hentNavKontorFraView(aktoerId)

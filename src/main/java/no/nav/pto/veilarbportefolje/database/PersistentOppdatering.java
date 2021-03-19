@@ -2,14 +2,18 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatering;
 import no.nav.pto.veilarbportefolje.domene.Brukerdata;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
-import org.springframework.beans.factory.annotation.Autowired;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,18 +25,13 @@ import static java.util.stream.Collectors.toMap;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class PersistentOppdatering {
     private final ElasticIndexer elasticIndexer;
     private final BrukerRepository brukerRepository;
     private final AktivitetDAO aktivitetDAO;
-
-    @Autowired
-    public PersistentOppdatering(ElasticIndexer elasticIndexer, BrukerRepository brukerRepository, AktivitetDAO aktivitetDAO){
-        this.elasticIndexer = elasticIndexer;
-        this.brukerRepository = brukerRepository;
-        this.aktivitetDAO = aktivitetDAO;
-    }
-
+    private final BrukerService brukerService;
+    private final UnleashService unleashService;
 
     public void lagreBrukeroppdateringerIDBogIndekser(List<? extends BrukerOppdatering> brukerOppdateringer) {
         lagreBrukeroppdateringerIDB(brukerOppdateringer);
@@ -82,7 +81,7 @@ public class PersistentOppdatering {
         brukerRepository.insertOrUpdateBrukerdata(brukere, brukerdata.keySet());
     }
 
-    void lagreAktivitetstatuser(List<AktivitetStatus> aktivitetStatuser) {
+    public void lagreAktivitetstatuser(List<AktivitetStatus> aktivitetStatuser) {
         io.vavr.collection.List.ofAll(aktivitetStatuser)
                 .sliding(1000, 1000)
                 .forEach((statuserBatch) -> {
@@ -95,6 +94,16 @@ public class PersistentOppdatering {
 
                     aktivitetDAO.getAktivitetstatusForBrukere(personIds)
                             .forEach((key, value) -> aktivitetstatuserIDb.addAll(value));
+
+                    if(unleashService.isEnabled(FeatureToggle.AUTO_AKTOR_ID_MAPPING)){
+                        statuserBatchJavaList.forEach(aktivitetStatus -> {
+                            if (aktivitetStatus.getAktoerid() == null) {
+                                Optional<AktorId> aktorId = brukerService.hentAktorId(aktivitetStatus.getPersonid());
+                                aktorId.ifPresent(aktivitetStatus::setAktoerid);
+                                log.info("AktivitetStatus: Oppdatert til aktorId {}", aktorId.orElse(null));
+                            }
+                        });
+                    }
 
                     List<Tuple2<PersonId, String>> finnesIDb = aktivitetstatuserIDb
                             .stream()

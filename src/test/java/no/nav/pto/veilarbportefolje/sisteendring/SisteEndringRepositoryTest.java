@@ -45,9 +45,9 @@ public class SisteEndringRepositoryTest {
                 .setAktoerId(AKTORID)
                 .setAktivtetId("2");
 
-        sisteEndringRepository.oppdaterHarSett(dto_1.getAktoerId(), SisteEndringsKategori.NY_IJOBB,true);
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);
+        sisteEndringRepository.oppdaterHarSett(dto_1.getAktoerId(), SisteEndringsKategori.NY_IJOBB,true);
 
         OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.get());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
