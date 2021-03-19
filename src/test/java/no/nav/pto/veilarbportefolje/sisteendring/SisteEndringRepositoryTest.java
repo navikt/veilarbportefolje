@@ -48,6 +48,7 @@ public class SisteEndringRepositoryTest {
 
         sisteEndringRepository.upsert(dto_1);
         sisteEndringRepository.upsert(dto_2);
+        sisteEndringRepository.oppdaterHarSett(dto_1.getAktoerId(), SisteEndringsKategori.NY_IJOBB,true);
 
         OppfolgingsBruker bruker = new OppfolgingsBruker().setAktoer_id(AKTORID.get());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
@@ -56,6 +57,8 @@ public class SisteEndringRepositoryTest {
         assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getAktivtetId()).isEqualTo(dto_1.getAktivtetId());
         assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
         assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getAktivtetId()).isEqualTo(dto_2.getAktivtetId());
+        assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getEr_sett()).isEqualTo("J");
+        assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getEr_sett()).isEqualTo("N");
     }
 
 

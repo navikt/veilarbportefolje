@@ -42,7 +42,7 @@ public class SisteEndringRepository {
                 )).execute();
     }
 
-    public void oppdaterHarSett(AktorId aktorId, SisteEndringsKategori kategori,boolean erSett) {
+    public void oppdaterHarSett(AktorId aktorId, SisteEndringsKategori kategori, boolean erSett) {
         String erSettChar = erSett ? "J" : "N";
 
         SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
