@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.database;
 
+import com.sun.el.stream.Stream;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
@@ -129,6 +130,15 @@ public class BrukerRepository {
         return Optional.ofNullable(bruker);
     }
 
+    public Optional<OppfolgingsBruker> hentBrukerFraView(PersonId personid) {
+        final OppfolgingsBruker bruker = select(db, VW_PORTEFOLJE_INFO.TABLE_NAME, DbUtils::mapTilOppfolgingsBruker)
+                .column("*")
+                .where(WhereClause.equals("PERSON_ID", personid.toString()))
+                .execute();
+
+        return Optional.ofNullable(bruker);
+    }
+
     public List<OppfolgingsBruker> hentBrukereFraView(List<PersonId> personIds) {
         db.setFetchSize(1000);
         List<Integer> ids = personIds.stream().map(PersonId::toInteger).collect(toList());
@@ -238,6 +248,17 @@ public class BrukerRepository {
                 .set("GJELDENE", 0)
                 .whereEquals("PERSONID", personId.toString())
                 .execute();
+    }
+
+    public Optional<List<AktorId>> hentGamleAktorIder(PersonId personId) {
+        return Optional.ofNullable(SqlUtils
+                .select(db, AKTOERID_TO_PERSONID.TABLE_NAME, rs -> rs == null ? null : AktorId.of(rs.getString(AKTOERID_TO_PERSONID.AKTOERID)))
+                .column(AKTOERID_TO_PERSONID.AKTOERID)
+                .where(
+                    WhereClause.equals(AKTOERID_TO_PERSONID.PERSONID, personId.getValue())
+                    .and(
+                    WhereClause.equals(AKTOERID_TO_PERSONID.GJELDENE,0))
+                ).executeToList());
     }
 
     public Try<PersonId> retrievePersonid(AktorId aktoerId) {

@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
-import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -18,6 +17,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -186,6 +186,14 @@ public class ElasticServiceV2 {
         update(aktoerId, content, "Sletter arbeidsliste");
     }
 
+    @SneakyThrows
+    public void slettDokumenter(List<AktorId> aktorIds) {
+        log.info("Sletter gamle aktorIder {}", aktorIds);
+        for (AktorId aktorId : aktorIds) {
+            delete(aktorId);
+        }
+    }
+
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
@@ -207,8 +215,7 @@ public class ElasticServiceV2 {
         }
     }
 
-    @SneakyThrows
-    public void delete(AktorId aktoerId) throws IOException {
+    private void delete(AktorId aktoerId) throws IOException {
         DeleteRequest deleteRequest = new DeleteRequest();
         deleteRequest.index(indexName.getValue());
         deleteRequest.type("_doc");
