@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -35,8 +36,21 @@ public class SisteEndringRepository {
                 .set(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
                 .set(SISTE_ENDRING_TIDSPUNKT, Timestamp.from(sisteEndringDTO.getTidspunkt().toInstant()))
                 .set(AKTIVITETID, sisteEndringDTO.getAktivtetId())
+                .set(ER_SETT, "N")
                 .where(WhereClause.equals(AKTOERID, sisteEndringDTO.getAktoerId().get()).and(
                         WhereClause.equals(SISTE_ENDRING_KATEGORI, sisteEndringDTO.getKategori().name())
+                )).execute();
+    }
+
+    public void oppdaterHarSett(AktorId aktorId, SisteEndringsKategori kategori, boolean erSett) {
+        String erSettChar = erSett ? "J" : "N";
+
+        SqlUtils.upsert(jdbcTemplate, TABLE_NAME)
+                .set(AKTOERID, aktorId.get())
+                .set(SISTE_ENDRING_KATEGORI, kategori.name())
+                .set(ER_SETT, erSettChar)
+                .where(WhereClause.equals(AKTOERID, aktorId.get()).and(
+                        WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.name())
                 )).execute();
     }
 
@@ -48,7 +62,6 @@ public class SisteEndringRepository {
                         WhereClause.equals(SISTE_ENDRING_KATEGORI, kategori.name())
                 )).execute();
     }
-
 
     public void slettSisteEndringer(AktorId aktoerId) {
         SqlUtils.delete(jdbcTemplate, TABLE_NAME)
@@ -66,21 +79,30 @@ public class SisteEndringRepository {
 
     @SneakyThrows
     private void mapDbTilOppfolgingsBruker(OppfolgingsBruker oppfolgingsBrukere) {
-        oppfolgingsBrukere.setSiste_endringer(jdbcTemplate.query(getAlleKategorierForAktorId(oppfolgingsBrukere.getAktoer_id()), rs -> {
-            Map<String, Endring> sisteEndring = new HashMap<>();
-            while(rs.next()){
-                sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(),new Endring()
-                                .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
-                                .setAktivtetId(rs.getString(AKTIVITETID)));
-            }
-            return sisteEndring;
-        }));
+        oppfolgingsBrukere.setSiste_endringer(getSisteEndringer(AktorId.of(oppfolgingsBrukere.getAktoer_id())));
+    }
+
+    public Map<String, Endring> getSisteEndringer(AktorId aktoerId) {
+        return jdbcTemplate.query(getAlleKategorierForAktorId(aktoerId.get()), this::mapResultatTilKategoriOgEndring);
+    }
+
+    @SneakyThrows
+    private Map<String, Endring> mapResultatTilKategoriOgEndring(ResultSet rs){
+        Map<String, Endring> sisteEndring = new HashMap<>();
+        while(rs.next()){
+            sisteEndring.put(rs.getString(SISTE_ENDRING_KATEGORI).toLowerCase(),new Endring()
+                    .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
+                    .setEr_sett(rs.getString(ER_SETT))
+                    .setAktivtetId(rs.getString(AKTIVITETID)));
+        }
+        return sisteEndring;
     }
 
     private String getAlleKategorierForAktorId(String aktorID) {
         return "SELECT " +
                 SISTE_ENDRING_KATEGORI + ", " +
                 SISTE_ENDRING_TIDSPUNKT + ", " +
+                ER_SETT + ", " +
                 AKTIVITETID +
                 " FROM " + TABLE_NAME +
                 " WHERE " +

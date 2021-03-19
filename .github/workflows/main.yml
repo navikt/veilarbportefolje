@@ -50,8 +50,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -s settings.xml -P github  -B verify
-  test-build-and-push:
-    name: Test, build and push
+  build-and-push:
+    name: Build and push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
     steps:
@@ -79,7 +79,7 @@ jobs:
   deploy-q1:
     name: Deploy application to Q1
     if: github.ref == 'refs/heads/dev'
-    needs: test-build-and-push
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -94,7 +94,7 @@ jobs:
   deploy-prod:
     name: Deploy application to prod
     if: github.ref == 'refs/heads/master'
-    needs: test-build-and-push
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

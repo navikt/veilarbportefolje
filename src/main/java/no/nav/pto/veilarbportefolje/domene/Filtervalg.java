@@ -33,6 +33,8 @@ public class Filtervalg {
     public List<String> utdanningGodkjent = new ArrayList<>();
     public List<String> arbeidslisteKategori = new ArrayList<>();
     public List<String> sisteEndringKategori = new ArrayList<>();
+    public List<String> aktiviteterForenklet = new ArrayList<>();
+    public String ulesteEndringer;
     public CVjobbprofil cvJobbprofil;
 
     public boolean harAktiveFilter() {
@@ -55,6 +57,7 @@ public class Filtervalg {
                 !utdanningGodkjent.isEmpty() ||
                 !sisteEndringKategori.isEmpty() ||
                 !arbeidslisteKategori.isEmpty() ||
+                harAktiviteterForenklet() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
                 harNavnEllerFnrQuery();
@@ -88,8 +91,16 @@ public class Filtervalg {
         return manuellBrukerStatus != null && !manuellBrukerStatus.isEmpty();
     }
 
+    public boolean harAktiviteterForenklet(){
+        return !aktiviteterForenklet.isEmpty();
+    }
+
     public boolean harNavnEllerFnrQuery() {
-        return navnEllerFnrQuery != null && StringUtils.isNotBlank(navnEllerFnrQuery);
+        return StringUtils.isNotBlank(navnEllerFnrQuery);
+    }
+
+    public boolean harUlesteEndringerFilter() {
+        return StringUtils.isNotBlank(ulesteEndringer);
     }
 
     public boolean valider() {

@@ -16,6 +16,7 @@ public class KafkaVedtakStatusEndring {
         UTKAST_SLETTET,
         VEDTAK_SENDT,
         BESLUTTER_PROSESS_STARTET,
+        BESLUTTER_PROSESS_AVBRUTT,
         BLI_BESLUTTER,
         OVERTA_FOR_BESLUTTER, // DENNE SKA VI INTE HANTERA ENN SÅ LENGE
         OVERTA_FOR_VEILEDER,
@@ -49,6 +50,7 @@ public class KafkaVedtakStatusEndring {
     public static String vedtakStatusTilTekst(VedtakStatusEndring vedtakStatusEndring) {
         switch(vedtakStatusEndring) {
             case UTKAST_OPPRETTET:
+            case BESLUTTER_PROSESS_AVBRUTT:
             return "Utkast";
             case BESLUTTER_PROSESS_STARTET:
                 return "Trenger kvalitetssikring";

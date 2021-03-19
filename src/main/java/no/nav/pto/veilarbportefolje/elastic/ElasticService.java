@@ -16,6 +16,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 

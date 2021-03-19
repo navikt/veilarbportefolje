@@ -28,6 +28,7 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
             oppfolgingRepository.settNyForVeileder(dto.getAktorId(), false);
             elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), false);
         }
+        // Vi trenger ikke å opppdatere db/indeks når bruker er ny for veileder, siden dette gjøres i VeilederTilordnetService
     }
 
     @Override
