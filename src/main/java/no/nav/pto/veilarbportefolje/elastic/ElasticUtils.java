@@ -91,6 +91,7 @@ public class ElasticUtils {
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             log.info("get count 2");
+            log.info(response.toString());
            return RestUtils.parseJsonResponse(response, CountResponse.class)
                    .map(CountResponse::getCount)
                    .orElse(0L);
