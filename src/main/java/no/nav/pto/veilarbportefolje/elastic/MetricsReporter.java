@@ -25,8 +25,8 @@ public class MetricsReporter {
     public MetricsReporter(ElasticIndexer elasticIndexer) {
         this.elasticIndexer = elasticIndexer;
 
-        Gauge.builder("veilarbelastic_number_of_docs", () -> 1.0).register(getMeterRegistry());
-        Gauge.builder("portefolje_indeks_sist_opprettet", () -> 10.0).register(getMeterRegistry());
+        Gauge.builder("veilarbelastic_number_of_docs", ElasticUtils::getCount).register(getMeterRegistry());
+        Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
 
     }
 
