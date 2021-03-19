@@ -79,6 +79,7 @@ public class ElasticUtils {
 
     @SneakyThrows
     public static long getCount() {
+        log.info("get count 1");
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
         OkHttpClient client = no.nav.common.rest.client.RestClient.baseClient();
 
@@ -89,6 +90,7 @@ public class ElasticUtils {
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
+            log.info("get count 2");
            return RestUtils.parseJsonResponse(response, CountResponse.class)
                    .map(CountResponse::getCount)
                    .orElse(0L);
