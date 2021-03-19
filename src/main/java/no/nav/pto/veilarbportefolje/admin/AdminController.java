@@ -78,7 +78,7 @@ public class AdminController {
     @SneakyThrows
     public String fjernBrukerFraElastic(@RequestBody String aktoerId) {
         authorizeAdmin();
-        elasticServiceV2.delete(AktorId.of(aktoerId));
+        elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
         return "Slettet oppfølgingsbruker " + aktoerId;
     }
 

@@ -1,16 +1,21 @@
 package no.nav.pto.veilarbportefolje.service;
 
 import io.vavr.control.Try;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static no.nav.sbl.sql.SqlUtils.insert;
@@ -33,8 +38,9 @@ public class BrukerServiceTest {
 
     private BrukerRepository brukerRepository;
 
-    private AktorClient aktorClient;
+    private ElasticServiceV2 elasticServiceV2;
 
+    private AktorClient aktorClient;
 
     private String FNR_FRA_SOAP_TJENESTE = "11111111111";
     private String AKTOERID_FRA_SOAP_TJENESTE = "2222";
@@ -45,7 +51,11 @@ public class BrukerServiceTest {
         db = new JdbcTemplate(setupInMemoryDatabase());
         brukerRepository = new BrukerRepository(db, null);
         aktorClient = mock(AktorClient.class);
-        brukerService = new BrukerService(brukerRepository, aktorClient);
+        UnleashService unleashService = mock(UnleashService.class);
+        when(unleashService.isEnabled(FeatureToggle.AUTO_SLETT)).thenReturn(true);
+
+        elasticServiceV2 = mock(ElasticServiceV2.class);
+        brukerService = new BrukerService(brukerRepository, aktorClient, elasticServiceV2, unleashService);
 
         db.execute("TRUNCATE TABLE OPPFOLGINGSBRUKER");
         db.execute("truncate table AKTOERID_TO_PERSONID");
@@ -56,6 +66,7 @@ public class BrukerServiceTest {
                 .execute();
     }
 
+    @Test
     public void skalFinnePersonIdFraDatabase() {
         when(aktorClient.hentFnr(any(AktorId.class))).thenReturn(Fnr.ofValidFnr(FNR_FRA_SOAP_TJENESTE));
         when(aktorClient.hentAktorId(any(Fnr.class))).thenReturn(AktorId.of(AKTOERID_FRA_SOAP_TJENESTE));
@@ -72,6 +83,7 @@ public class BrukerServiceTest {
 
         Try<PersonId> result = brukerService.hentPersonidFraAktoerid(aktoerId);
         verify(aktorClient, never()).hentFnr(any(AktorId.class));
+        verify(elasticServiceV2, never()).slettDokumenter(any());
         assertTrue(result.isSuccess());
         assertEquals(personId, result.get());
     }
@@ -98,6 +110,7 @@ public class BrukerServiceTest {
         Try<String> resultatNyAktorId = getGjeldeneAktorId(PERSON_ID);
         assertEquals(resultatNyAktorId.get(), nyAktorId.toString());
 
+        verify(elasticServiceV2).slettDokumenter(List.of(AktorId.of(AKTOER_ID)));
     }
 
     @Test
@@ -114,6 +127,8 @@ public class BrukerServiceTest {
 
         Try<String> gamleAktorId = getGamleAktorId(PERSON_ID);
         assertEquals(gamleAktorId.get(), aktoerId.toString());
+
+        verify(elasticServiceV2).slettDokumenter(List.of(aktoerId));
     }
 
     private Try<String> getGjeldeneAktorId(String personId) {
