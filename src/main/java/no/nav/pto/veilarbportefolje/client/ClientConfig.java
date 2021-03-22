@@ -5,9 +5,7 @@ import no.nav.common.abac.audit.*;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.aktorregister.AktorregisterHttpClient;
 import no.nav.common.client.aktorregister.CachedAktorregisterClient;
-import no.nav.common.client.pdl.AktorOppslagClient;
-import no.nav.common.client.pdl.CachedAktorOppslagClient;
-import no.nav.common.client.pdl.PdlAktorOppslagClient;
+import no.nav.common.client.pdl.*;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
@@ -41,6 +39,15 @@ public class ClientConfig {
         );
 
         return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorregisterClient(aktorregisterClient), unleashService);
+    }
+
+    @Bean
+    public PdlClient pdlClient(SystemUserTokenProvider systemUserTokenProvider){
+        return new PdlClientImpl(
+                createServiceUrl("pdl-api", "default", false),
+                systemUserTokenProvider::getSystemUserToken,
+                systemUserTokenProvider::getSystemUserToken
+                );
     }
 
     @Bean

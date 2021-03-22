@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import com.google.common.base.Joiner;
 import io.vavr.control.Try;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -41,8 +42,8 @@ import static no.nav.pto.veilarbportefolje.domene.DagpengerUkeFasettMapping.UKE_
 import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
 import static no.nav.sbl.sql.SqlUtils.insert;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 
 public class BrukerRepositoryTest {
@@ -57,7 +58,7 @@ public class BrukerRepositoryTest {
         SingleConnectionDataSource ds = setupInMemoryDatabase();
 
         jdbcTemplate = new JdbcTemplate(ds);
-        brukerRepository = new BrukerRepository(jdbcTemplate, new NamedParameterJdbcTemplate(ds));
+        brukerRepository = new BrukerRepository(jdbcTemplate, new NamedParameterJdbcTemplate(ds), mock(UnleashService.class));
     }
 
     @Before
@@ -118,7 +119,7 @@ public class BrukerRepositoryTest {
 
     @Test
     public void skal_returnere_true_for_bruker_som_har_oppfolgingsflagg_satt() throws SQLException {
-        ResultSet rsMock = Mockito.mock(ResultSet.class);
+        ResultSet rsMock = mock(ResultSet.class);
         Mockito.when(rsMock.getString("formidlingsgruppekode")).thenReturn("foo");
         Mockito.when(rsMock.getString("kvalifiseringsgruppekode")).thenReturn("bar");
         Mockito.when(rsMock.getString("OPPFOLGING")).thenReturn("J");

@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.pdldata.PdlDataService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ public class AdminController {
     private final NyForVeilederService nyForVeilederService;
     private final AktivitetService aktivitetService;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
+    private final PdlDataService pdlDataService;
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
 
@@ -72,6 +74,13 @@ public class AdminController {
         authorizeAdmin();
         oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(aktoerId));
         return "Slettet oppfølgingsbruker " + aktoerId;
+    }
+
+    @PostMapping("/fodselsDatatilNyTabell")
+    public String flyttFodselsDagDataTilNyTabell() {
+        authorizeAdmin();
+        pdlDataService.lastInnDataFraDbLinkTilPdlDataTabell();
+        return "Overføring har startet...";
     }
 
     @DeleteMapping("/fjernBrukerElastic")

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,6 +14,7 @@ public class DateUtils {
 
     private static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
     private static final String EPOCH_0 = "1970-01-01T00:00:00Z";
+    private static final String DATO_POSTFIX = "T00:00:00Z";
 
     public static Duration calculateTimeElapsed(Instant instant) {
         return Duration.between(instant, Instant.now());
@@ -90,6 +92,10 @@ public class DateUtils {
         return Optional.ofNullable(date).map(x -> ZonedDateTime.parse(x).toInstant()).map(Timestamp::from).orElse(null);
     }
 
+    public static Time dateToTime(String date){
+        return Optional.ofNullable(date).map(Time::valueOf).orElse(null);
+    }
+
     public static boolean isFarInTheFutureDate(Timestamp utlopsdato) {
         return timestampFromISO8601(FAR_IN_THE_FUTURE_DATE).equals(utlopsdato);
     }
@@ -114,6 +120,13 @@ public class DateUtils {
         }
     }
 
+    public static LocalDate getLocalDateFromSimpleISODate(String simpleISODate) {
+        if (simpleISODate == null) {
+            return null;
+        }
+        return LocalDate.parse(simpleISODate, DateTimeFormatter.ofPattern("uuuu-MM-dd"));
+    }
+
     public static SimpleDateFormat getISODateFormatter() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         simpleDateFormat.setLenient(false);
@@ -130,4 +143,29 @@ public class DateUtils {
         }
         return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
     }
+
+    public static java.sql.Date toSqlDateOrNull(String date){
+        if (date == null) {
+            return null;
+        }
+
+        return java.sql.Date.valueOf(ZonedDateTime.parse(date).toLocalDate());
+    }
+
+
+    public static String lagISOFromSimpleDateFormate(java.sql.Date fodselsdag) {
+        if(fodselsdag == null){
+            return null;
+        }
+        LocalDate localDate = fodselsdag.toLocalDate();
+        return localDate.getYear() + "-" + moreThanOneChar(localDate.getMonthValue()) + "-" + moreThanOneChar(localDate.getDayOfMonth()) + DATO_POSTFIX;
+    }
+
+    private static String moreThanOneChar(int number){
+        if(number < 10){
+            return "0"+number;
+        }
+        return String.valueOf(number);
+    }
+
 }

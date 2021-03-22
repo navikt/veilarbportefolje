@@ -49,7 +49,7 @@ public class BrukerServiceTest {
     public void setUp() {
 
         db = new JdbcTemplate(setupInMemoryDatabase());
-        brukerRepository = new BrukerRepository(db, null);
+        brukerRepository = new BrukerRepository(db, null,  mock(UnleashService.class));
         aktorClient = mock(AktorClient.class);
         UnleashService unleashService = mock(UnleashService.class);
         when(unleashService.isEnabled(FeatureToggle.AUTO_SLETT)).thenReturn(true);
