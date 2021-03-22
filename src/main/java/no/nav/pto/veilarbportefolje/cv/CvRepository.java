@@ -40,4 +40,10 @@ public class CvRepository {
                 .execute();
     }
 
+    public void slettCVData(AktorId aktoerId) {
+        SqlUtils.delete(jdbcTemplate, TABLE_NAME)
+                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
+                .execute();
+    }
+
 }
