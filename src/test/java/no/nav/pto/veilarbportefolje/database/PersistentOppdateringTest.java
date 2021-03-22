@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
 import no.nav.common.types.identer.AktorId;
@@ -31,6 +32,9 @@ public class PersistentOppdateringTest {
 
     @Mock
     private AktivitetDAO aktivitetDAO;
+
+    @Mock
+    private UnleashService unleashService;
 
     @InjectMocks
     private PersistentOppdatering persistentOppdatering;

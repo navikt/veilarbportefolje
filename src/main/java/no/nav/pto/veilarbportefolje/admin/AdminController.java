@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.admin;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -8,6 +9,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.pdldata.PdlDataService;
@@ -16,6 +18,8 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -29,6 +33,7 @@ public class AdminController {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final PdlDataService pdlDataService;
     private final VedtakService vedtakService;
+    private final ElasticServiceV2 elasticServiceV2;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -78,6 +83,13 @@ public class AdminController {
         return "Overføring har startet...";
     }
 
+    @DeleteMapping("/fjernBrukerElastic")
+    @SneakyThrows
+    public String fjernBrukerFraElastic(@RequestBody String aktoerId) {
+        authorizeAdmin();
+        elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
+        return "Slettet oppfølgingsbruker " + aktoerId;
+    }
 
     private void authorizeAdmin() {
         final String ident = AuthContextHolder.getNavIdent().map(Id::toString).orElseThrow();

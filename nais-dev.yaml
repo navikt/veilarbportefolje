@@ -3,32 +3,34 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: veilarbportefolje
-  namespace: default
+  namespace: pto
   labels:
     team: pto
 spec:
   image: docker.pkg.github.com/navikt/veilarbportefolje/veilarbportefolje:{{version}}
   replicas:
-    min: 3
-    max: 3
+    min: 1
+    max: 1
     cpuThresholdPercentage: 50
   port: 8080
   ingresses:
-    - https://veilarbportefolje.nais.adeo.no
-    - https://app.adeo.no/veilarbportefolje
+    - https://veilarbportefolje-q1.nais.preprod.local
+    - https://app-q1.adeo.no/veilarbportefolje
+    - https://app-q1.dev.adeo.no/veilarbportefolje
+    - https://veilarbportefolje-q1.dev.adeo.no
   webproxy: true
   secureLogs:
     enabled: true
   vault:
     enabled: true
     paths:
-      - kvPath: /serviceuser/data/prod/srvveilarbportefolje
+      - kvPath: /serviceuser/data/dev/srvveilarbportefolje
         mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /oracle/data/prod/creds/veilarbportefolje-user
+      - kvPath: /oracle/data/dev/creds/veilarbportefolje_q1-user
         mountPath: /var/run/secrets/nais.io/oracle_creds
-      - kvPath: /kv/prod/fss/veilarbportefolje/default
+      - kvPath: /kv/preprod/fss/veilarbportefolje/q1
         mountPath: /var/run/secrets/nais.io/vault
-      - kvPath: /oracle/data/prod/config/veilarbportefolje
+      - kvPath: /oracle/data/dev/config/veilarbportefolje_q1
         mountPath: /var/run/secrets/nais.io/oracle_config
   envFrom:
     - configmap: pto-config
@@ -47,10 +49,10 @@ spec:
   resources:
     limits:
       cpu: "4"
-      memory: 10Gi
+      memory: 8Gi
     requests:
       cpu: "1"
       memory: 4Gi
   env:
     - name: JAVA_OPTS
-      value: "-Xms4096m -Xmx10144m"
+      value: "-Xms4098m -Xmx8096m"

@@ -6,11 +6,13 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.cv.CvService;
+import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
+import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties;
 import no.nav.pto.veilarbportefolje.util.KafkaProperties.KafkaAutoOffset;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
@@ -35,13 +37,25 @@ public class KafkaConfig {
         ENDRING_PAA_NY_FOR_VEILEDER("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_STARTET("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
-        ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-"+ requireKafkaTopicPostfix());
+        ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-"+ requireKafkaTopicPostfix()),
+        SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1");
 
         final String topicName;
 
         Topic(String topicName) {
             this.topicName = topicName;
         }
+    }
+
+    @Bean
+    public KafkaConsumerRunnable<String> kafkaConsumerSistLest(SistLestService sistLestService, UnleashService unleashService, MetricsClient metricsClient) {
+        return new KafkaConsumerRunnable<>(
+                sistLestService,
+                unleashService,
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
+                Topic.SIST_LEST,
+                metricsClient
+        );
     }
 
     @Bean
@@ -170,7 +184,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 malService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.ENDRING_PA_MAL,
                 metricsClient
         );

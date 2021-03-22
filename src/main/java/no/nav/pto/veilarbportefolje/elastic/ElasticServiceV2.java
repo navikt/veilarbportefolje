@@ -8,13 +8,16 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestStatus;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -49,7 +52,7 @@ public class ElasticServiceV2 {
 
     @SneakyThrows
     public void updateSisteEndring(SisteEndringDTO dto) {
-        String kategori = dto.getKategori().name().toLowerCase();
+        String kategori = dto.getKategori().name();
         final String tidspunkt = toIsoUTC(dto.getTidspunkt());
 
         final XContentBuilder content = jsonBuilder()
@@ -58,10 +61,25 @@ public class ElasticServiceV2 {
                         .startObject(kategori)
                             .field("tidspunkt", tidspunkt)
                             .field("aktivtetId", dto.getAktivtetId())
+                            .field("er_sett", "N")
                         .endObject()
                     .endObject()
                 .endObject();
         update(dto.getAktoerId(), content, format("Oppdaterte siste endring med tidspunkt: %s", tidspunkt));
+    }
+
+
+    @SneakyThrows
+    public void updateSisteEndring(AktorId aktorId, SisteEndringsKategori kategori) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                    .startObject("siste_endringer")
+                        .startObject(kategori.name())
+                            .field("er_sett", "J")
+                        .endObject()
+                    .endObject()
+                .endObject();
+        update(aktorId, content, format("Oppdaterte siste endring, kategori %s er nå sett",kategori.name()));
     }
 
     @SneakyThrows
@@ -168,6 +186,14 @@ public class ElasticServiceV2 {
         update(aktoerId, content, "Sletter arbeidsliste");
     }
 
+    @SneakyThrows
+    public void slettDokumenter(List<AktorId> aktorIds) {
+        log.info("Sletter gamle aktorIder {}", aktorIds);
+        for (AktorId aktorId : aktorIds) {
+            delete(aktorId);
+        }
+    }
+
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.index(indexName.getValue());
@@ -184,6 +210,25 @@ public class ElasticServiceV2 {
                 log.warn("Kunne ikke finne dokument for bruker {} ved oppdatering av indeks", aktoerId.toString());
             } else {
                 final String message = format("Det skjedde en feil ved oppdatering av elastic for bruker %s", aktoerId.toString());
+                log.error(message, e);
+            }
+        }
+    }
+
+    private void delete(AktorId aktoerId) throws IOException {
+        DeleteRequest deleteRequest = new DeleteRequest();
+        deleteRequest.index(indexName.getValue());
+        deleteRequest.type("_doc");
+        deleteRequest.id(aktoerId.get());
+
+        try {
+            restHighLevelClient.delete(deleteRequest, DEFAULT);
+            log.info("Slettet dokument for {} ", aktoerId);
+        } catch (ElasticsearchException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                log.warn("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.toString());
+            } else {
+                final String message = format("Det skjedde en feil ved sletting i elastic for bruker %s", aktoerId.toString());
                 log.error(message, e);
             }
         }

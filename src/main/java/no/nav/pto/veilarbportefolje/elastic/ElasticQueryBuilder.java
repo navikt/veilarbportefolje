@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
 import no.nav.pto.veilarbportefolje.domene.Brukerstatus;
 import no.nav.pto.veilarbportefolje.domene.CVjobbprofil;
 import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -18,9 +19,7 @@ import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -63,6 +62,7 @@ public class ElasticQueryBuilder {
         byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt");
         byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
         byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
+        byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
 
         if (filtervalg.harYtelsefilter()) {
             BoolQueryBuilder subQuery = boolQuery();
@@ -84,6 +84,10 @@ public class ElasticQueryBuilder {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
         }
 
+        if(filtervalg.harUlesteEndringerFilter()){
+            byggUlestEndringsFilter(filtervalg.sisteEndringKategori, queryBuilder);
+        }
+
         if (filtervalg.harSisteEndringFilter()) {
             byggSisteEndringFilter(filtervalg.sisteEndringKategori, queryBuilder);
         }
@@ -99,9 +103,24 @@ public class ElasticQueryBuilder {
 
     }
 
+    private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
+        BoolQueryBuilder subQuery = boolQuery();
+        List<String> relvanteKategorier;
+        if(sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
+            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.values()).map(SisteEndringsKategori::name)).collect(toList());
+        } else {
+            relvanteKategorier = sisteEndringKategori;
+        }
+
+        relvanteKategorier.forEach(kategori -> subQuery.should(
+                        QueryBuilders.matchQuery("siste_endringer."+kategori+".er_sett", "N")
+        ));
+        queryBuilder.must(subQuery);
+    }
+
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         BoolQueryBuilder subQuery = boolQuery();
-        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer."+kategori.toLowerCase())));
+        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer."+kategori)));
         queryBuilder.must(subQuery);
       }
 
@@ -185,11 +204,11 @@ public class ElasticQueryBuilder {
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expresion = null;
         if(filtervalg.sisteEndringKategori.size() == 1) {
-            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0).toLowerCase() + ".tidspunkt']?.value.getMillis()";
+            expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.getMillis()";
         } else if(filtervalg.sisteEndringKategori.size() > 1) {
             StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
             for (String kategori : filtervalg.sisteEndringKategori) {
-                expresionJoiner.add("doc['siste_endringer." + kategori.toLowerCase()  + ".tidspunkt']?.value.getMillis()");
+                expresionJoiner.add("doc['siste_endringer." + kategori  + ".tidspunkt']?.value.getMillis()");
             }
             expresion = expresionJoiner.toString();
         }
@@ -217,12 +236,17 @@ public class ElasticQueryBuilder {
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
-        filtervalg.aktiviteter.entrySet().stream()
-                .filter(entry -> JA.equals(entry.getValue()))
-                .map(Map.Entry::getKey)
-                .map(aktivitet -> format("aktivitet_%s_utlopsdato", aktivitet.toLowerCase()))
-                .forEach(aktivitet -> builder.sort(aktivitet, order));
-
+        if(filtervalg.harAktiviteterForenklet()){
+            filtervalg.aktiviteterForenklet.stream()
+                    .map(aktivitet -> format("aktivitet_%s_utlopsdato", aktivitet.toLowerCase()))
+                    .forEach(aktivitet -> builder.sort(aktivitet, order));
+        } else {
+            filtervalg.aktiviteter.entrySet().stream()
+                    .filter(entry -> JA.equals(entry.getValue()))
+                    .map(Map.Entry::getKey)
+                    .map(aktivitet -> format("aktivitet_%s_utlopsdato", aktivitet.toLowerCase()))
+                    .forEach(aktivitet -> builder.sort(aktivitet, order));
+        }
         return builder;
     }
 

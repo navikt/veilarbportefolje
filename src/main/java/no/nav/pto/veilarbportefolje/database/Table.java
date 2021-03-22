@@ -78,6 +78,7 @@ public class Table {
 
         public static final String SISTE_ENDRING_KATEGORI = "SISTE_ENDRING_KATEGORI";
         public static final String SISTE_ENDRING_TIDSPUNKT = "SISTE_ENDRING_TIDSPUNKT";
+        public static final String ER_SETT = "ER_SETT";
     }
 
     public static final class AKTIVITETER {
