@@ -91,26 +91,6 @@ public class OppfolgingsBruker {
     String utdanning;
     String utdanning_bestatt;
     String utdanning_godkjent;
-    String aggregert_siste_endring_aktivitetId;
-    String aggregert_siste_endring_kategori;
-    LocalDateTime aggregert_siste_endring_tidspunkt;
     Map<String, Endring> siste_endringer;
 
-    public void kalkulerSisteEndring(List<String> kategorier){
-        if(siste_endringer == null ){
-            return;
-        }
-
-        for (String kategori : kategorier) {
-            Endring endring = siste_endringer.get(kategori);
-            if(endring != null){
-                LocalDateTime tidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
-                if(tidspunkt != null && (aggregert_siste_endring_tidspunkt == null || tidspunkt.isAfter(aggregert_siste_endring_tidspunkt))){
-                    aggregert_siste_endring_tidspunkt = tidspunkt;
-                    aggregert_siste_endring_kategori = kategori;
-                    aggregert_siste_endring_aktivitetId = siste_endringer.get(kategori).getAktivtetId();
-                }
-            }
-        }
-    }
 }

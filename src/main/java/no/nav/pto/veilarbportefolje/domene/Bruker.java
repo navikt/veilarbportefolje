@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
@@ -13,9 +14,12 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Slf4j
 @Data
@@ -58,6 +62,7 @@ public class Bruker {
     LocalDateTime nesteAktivitetStart;
     LocalDateTime forrigeAktivitetStart;
     LocalDateTime oppfolgingStartdato;
+    LocalDateTime nesteUtlopsdatoAktivitet;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
@@ -124,9 +129,6 @@ public class Bruker {
                 .setVedtakStatusEndret(toLocalDateTimeOrNull(bruker.getVedtak_status_endret()))
                 .setAnsvarligVeilederForVedtak(bruker.getAnsvarlig_veileder_for_vedtak())
                 .setOppfolgingStartdato(oppfolgingStartDato)
-                .setSisteEndringKategori(bruker.getAggregert_siste_endring_kategori())
-                .setSisteEndringTidspunkt(bruker.getAggregert_siste_endring_tidspunkt())
-                .setSisteEndringAktivitetId(bruker.getAggregert_siste_endring_aktivitetId())
                 .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
                 .addAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
@@ -137,7 +139,6 @@ public class Bruker {
                 .addAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
                 .addAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
-
     }
 
     private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
@@ -148,14 +149,57 @@ public class Bruker {
         return this;
     }
 
+    public void kalkulerSisteEndring(List<String> kategorier, Map<String, Endring> siste_endringer){
+        if(siste_endringer == null ){
+            return;
+        }
+
+        for (String kategori : kategorier) {
+            Endring endring = siste_endringer.get(kategori);
+            if(endring != null){
+                LocalDateTime tidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
+                if(tidspunkt != null && (sisteEndringTidspunkt == null || tidspunkt.isAfter(sisteEndringTidspunkt))){
+                    sisteEndringTidspunkt = tidspunkt;
+                    sisteEndringKategori = kategori;
+                    sisteEndringAktivitetId = siste_endringer.get(kategori).getAktivtetId();
+                }
+            }
+        }
+    }
+
+    public void kalkulerNesteUtlopsdatoAvValgtAktivitet(Filtervalg filtervalg) {
+        if (filtervalg.harAktiviteterForenklet()) {
+            filtervalg.aktiviteterForenklet.forEach(navnPaaAktivitet -> {
+                setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet));
+            });
+        } else if (filtervalg.harAktivitetFilter()) {
+            filtervalg.aktiviteter.forEach((navnPaaAktivitet, valg) -> {
+                if (JA.equals(valg)) {
+                    setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet));
+                }
+            });
+        }
+    }
+
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
     }
 
     private static boolean trengerRevurdering(OppfolgingsBruker oppfolgingsBruker, boolean erVedtakstottePilotPa) {
-        if(erVedtakstottePilotPa) {
+        if (erVedtakstottePilotPa) {
             return oppfolgingsBruker.isTrenger_revurdering();
         }
         return false;
+    }
+
+    private void setNesteUtlopsdatoAktivitetHvisNyest(Timestamp aktivitetUlopsdato) {
+        if (aktivitetUlopsdato == null) {
+            return;
+        }
+        if (nesteUtlopsdatoAktivitet == null) {
+            nesteUtlopsdatoAktivitet = aktivitetUlopsdato.toLocalDateTime();
+        } else if (nesteUtlopsdatoAktivitet.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
+            nesteUtlopsdatoAktivitet = aktivitetUlopsdato.toLocalDateTime();
+        }
     }
 }
