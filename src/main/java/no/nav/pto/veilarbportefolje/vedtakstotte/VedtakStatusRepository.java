@@ -91,10 +91,10 @@ public class VedtakStatusRepository {
     }
 
     public void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring vedtakStatusEndring) {
-        SqlUtils.upsert(db, VEDTAK.TABLE_NAME)
+        SqlUtils.update(db, VEDTAK.TABLE_NAME)
                 .set(VEDTAK.ANSVARLIG_VEILEDER_IDENT, vedtakStatusEndring.getVeilederIdent())
                 .set(VEDTAK.ANSVARLIG_VEILEDER_NAVN, vedtakStatusEndring.getVeilederNavn())
-                .where(WhereClause.equals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId()))
+                .whereEquals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId())
                 .execute();
     }
 }
