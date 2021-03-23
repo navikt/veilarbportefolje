@@ -50,7 +50,7 @@ public class VedtakStatusRepository {
                 .execute();
     }
 
-    public void upsertVedtakMedAnsvarligVeileder (KafkaVedtakStatusEndring vedtakStatusEndring) {
+    public void opprettUtkast (KafkaVedtakStatusEndring vedtakStatusEndring) {
         Optional<KafkaVedtakStatusEndring.Hovedmal> hovedmal = Optional.ofNullable(vedtakStatusEndring.getHovedmal());
         Optional<KafkaVedtakStatusEndring.Innsatsgruppe> innsatsgruppe =  Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe());
 
@@ -88,5 +88,13 @@ public class VedtakStatusRepository {
                 .setAktorId(rs.getString(VEDTAK.AKTOERID))
                 .setVeilederIdent(rs.getString(VEDTAK.ANSVARLIG_VEILEDER_IDENT))
                 .setVeilederNavn(rs.getString(VEDTAK.ANSVARLIG_VEILEDER_NAVN));
+    }
+
+    public void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring vedtakStatusEndring) {
+        SqlUtils.upsert(db, VEDTAK.TABLE_NAME)
+                .set(VEDTAK.ANSVARLIG_VEILEDER_IDENT, vedtakStatusEndring.getVeilederIdent())
+                .set(VEDTAK.ANSVARLIG_VEILEDER_NAVN, vedtakStatusEndring.getVeilederNavn())
+                .where(WhereClause.equals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId()))
+                .execute();
     }
 }
