@@ -46,7 +46,7 @@ public class VedtaksStatusRepositoryTest {
                 .setVeilederIdent(VEILEDER_IDENT)
                 .setVedtakId(VEDTAKID);
 
-        vedtakStatusRepository.upsertVedtakMedAnsvarligVeileder(vedtakStatusEndring);
+        vedtakStatusRepository.oppdaterAnsvarligVeileder(vedtakStatusEndring);
         List<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
         assertThat(endringer.size()).isEqualTo(1);
         assertThat(endringer.get(0).veilederIdent).isEqualTo(VEILEDER_IDENT);
@@ -68,7 +68,7 @@ public class VedtaksStatusRepositoryTest {
                 .setInnsatsgruppe(null)
                 .setVeilederNavn(VEILEDER_NAVN)
                 .setVeilederIdent(VEILEDER_IDENT);
-        vedtakStatusRepository.upsertVedtakMedAnsvarligVeileder(vedtakStatusEndring);
+        vedtakStatusRepository.opprettUtkast(vedtakStatusEndring);
     }
 
 }

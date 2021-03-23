@@ -39,10 +39,11 @@ public class VedtakService implements KafkaConsumerService<String> {
                 break;
             }
             case UTKAST_OPPRETTET:
-            case OVERTA_FOR_VEILEDER:{
-                oppdaterUtkastMedAnsvarligVeileder(vedtakStatusEndring);
+                opprettUtkast(vedtakStatusEndring);
                 break;
-            }
+            case OVERTA_FOR_VEILEDER:
+                oppdaterAnsvarligVeileder(vedtakStatusEndring);
+                break;
             case BESLUTTER_PROSESS_STARTET:
             case BESLUTTER_PROSESS_AVBRUTT:
             case BLI_BESLUTTER:
@@ -72,8 +73,12 @@ public class VedtakService implements KafkaConsumerService<String> {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
     }
 
-    private void oppdaterUtkastMedAnsvarligVeileder(KafkaVedtakStatusEndring melding) {
-        vedtakStatusRepository.upsertVedtakMedAnsvarligVeileder(melding);
+    private void opprettUtkast(KafkaVedtakStatusEndring melding) {
+        vedtakStatusRepository.opprettUtkast(melding);
+    }
+
+    private void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring melding) {
+        vedtakStatusRepository.oppdaterAnsvarligVeileder(melding);
     }
 
 
