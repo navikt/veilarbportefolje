@@ -15,11 +15,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Slf4j
 @Data

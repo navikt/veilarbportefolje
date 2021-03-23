@@ -4,13 +4,10 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.Set;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptySet;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 
 
 @Data
