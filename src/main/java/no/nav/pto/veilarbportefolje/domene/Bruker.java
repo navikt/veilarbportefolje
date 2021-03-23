@@ -147,7 +147,7 @@ public class Bruker {
         return this;
     }
 
-    public void kalkulerSisteEndring(List<String> kategorier, Map<String, Endring> siste_endringer){
+    public void kalkulerSisteEndring(Map<String, Endring> siste_endringer, List<String> kategorier){
         if(siste_endringer == null ){
             return;
         }
@@ -165,18 +165,22 @@ public class Bruker {
         }
     }
 
-    public void kalkulerNesteUtlopsdatoAvValgtAktivitet(Filtervalg filtervalg) {
-        if (filtervalg.harAktiviteterForenklet()) {
-            filtervalg.aktiviteterForenklet.forEach(navnPaaAktivitet -> {
-                setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet));
-            });
-        } else if (filtervalg.harAktivitetFilter()) {
-            filtervalg.aktiviteter.forEach((navnPaaAktivitet, valg) -> {
-                if (JA.equals(valg)) {
-                    setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet));
-                }
-            });
+    public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
+        if (aktiviteterForenklet == null) {
+            return;
         }
+        aktiviteterForenklet.forEach(navnPaaAktivitet -> setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet)));
+    }
+
+    public void kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(Map<String, AktivitetFiltervalg> aktiviteterAvansert) {
+        if (aktiviteterAvansert == null) {
+            return;
+        }
+        aktiviteterAvansert.forEach((navnPaaAktivitet, valg) -> {
+            if (JA.equals(valg)) {
+                setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet));
+            }
+        });
     }
 
     public boolean erKonfidensiell() {

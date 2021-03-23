@@ -146,11 +146,14 @@ public class ElasticService {
     private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, Filtervalg filtervalg) {
         Bruker bruker = Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
 
-        if(filtervalg.harAktivitetFilter() || filtervalg.harAktiviteterForenklet()) {
-            bruker.kalkulerNesteUtlopsdatoAvValgtAktivitet(filtervalg);
+        if (filtervalg.harAktiviteterForenklet()) {
+            bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
+        }
+        if (filtervalg.harAktivitetFilter()) {
+            bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(filtervalg.aktiviteter);
         }
         if (filtervalg.harSisteEndringFilter()) {
-            bruker.kalkulerSisteEndring(filtervalg.sisteEndringKategori, oppfolgingsBruker.getSiste_endringer());
+            bruker.kalkulerSisteEndring(oppfolgingsBruker.getSiste_endringer(), filtervalg.sisteEndringKategori);
         }
         return bruker;
     }
