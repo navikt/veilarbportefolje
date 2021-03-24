@@ -169,7 +169,7 @@ public class Bruker {
         if (aktiviteterForenklet == null) {
             return;
         }
-        aktiviteterForenklet.forEach(navnPaaAktivitet -> setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet)));
+        aktiviteterForenklet.forEach(navnPaaAktivitet -> setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet.toLowerCase())));
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(Map<String, AktivitetFiltervalg> aktiviteterAvansert) {
@@ -178,7 +178,7 @@ public class Bruker {
         }
         aktiviteterAvansert.forEach((navnPaaAktivitet, valg) -> {
             if (JA.equals(valg)) {
-                setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet));
+                setNesteUtlopsdatoAktivitetHvisNyest(aktiviteter.get(navnPaaAktivitet.toLowerCase()));
             }
         });
     }
