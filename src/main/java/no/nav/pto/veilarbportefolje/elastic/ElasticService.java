@@ -17,7 +17,6 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,7 +85,7 @@ public class ElasticService {
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg.sisteEndringKategori))
+                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -144,11 +143,19 @@ public class ElasticService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> sisteEndringKategori) {
-        if (sisteEndringKategori != null && !sisteEndringKategori.isEmpty()) {
-            oppfolgingsBruker.kalkulerSisteEndring(sisteEndringKategori);
+    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, Filtervalg filtervalg) {
+        Bruker bruker = Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
+
+        if (filtervalg.harAktiviteterForenklet()) {
+            bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
         }
-        return Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
+        if (filtervalg.harAktivitetFilter()) {
+            bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(filtervalg.aktiviteter);
+        }
+        if (filtervalg.harSisteEndringFilter()) {
+            bruker.kalkulerSisteEndring(oppfolgingsBruker.getSiste_endringer(), filtervalg.sisteEndringKategori);
+        }
+        return bruker;
     }
 
 
