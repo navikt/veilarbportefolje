@@ -25,6 +25,7 @@ public class KafkaVedtakStatusEndring {
         KLAR_TIL_VEILEDER
     }
 
+
     public enum Hovedmal {
         SKAFFE_ARBEID, BEHOLDE_ARBEID
     }
