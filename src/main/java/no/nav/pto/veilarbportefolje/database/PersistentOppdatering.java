@@ -95,15 +95,13 @@ public class PersistentOppdatering {
                     aktivitetDAO.getAktivitetstatusForBrukere(personIds)
                             .forEach((key, value) -> aktivitetstatuserIDb.addAll(value));
 
-                    if(unleashService.isEnabled(FeatureToggle.AUTO_AKTOR_ID_MAPPING)){
-                        statuserBatchJavaList.forEach(aktivitetStatus -> {
-                            if (aktivitetStatus.getAktoerid() == null) {
-                                Optional<AktorId> aktorId = brukerService.hentAktorId(aktivitetStatus.getPersonid());
-                                aktorId.ifPresent(aktivitetStatus::setAktoerid);
-                                log.info("AktivitetStatus: Oppdatert til aktorId {}", aktorId.orElse(null));
-                            }
-                        });
-                    }
+                    statuserBatchJavaList.forEach(aktivitetStatus -> {
+                        if (aktivitetStatus.getAktoerid() == null) {
+                            Optional<AktorId> aktorId = brukerService.hentAktorId(aktivitetStatus.getPersonid());
+                            aktorId.ifPresent(aktivitetStatus::setAktoerid);
+                            log.info("AktivitetStatus: Oppdatert til aktorId {}", aktorId.orElse(null));
+                        }
+                    });
 
                     List<Tuple2<PersonId, String>> finnesIDb = aktivitetstatuserIDb
                             .stream()

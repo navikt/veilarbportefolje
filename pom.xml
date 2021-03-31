@@ -93,7 +93,6 @@
         </dependency>
 
         <!-- Virksomhetstjenester -->
-
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>nav-virksomhet-loependeYtelser-v1-meldingsdefinisjon</artifactId>
@@ -102,11 +101,6 @@
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>nav-virksomhet-tiltakOgAktiviteterForBrukere-v1-meldingsdefinisjon</artifactId>
-            <version>${no.nav.tjenestespesifikasjoner.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>enhet-v1-tjenestespesifikasjon</artifactId>
             <version>${no.nav.tjenestespesifikasjoner.version}</version>
         </dependency>
 
