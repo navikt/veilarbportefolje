@@ -60,7 +60,7 @@ public class TiltakHandler {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerRepository = brukerRepository;
         this.environmentProperties = environmentProperties;
-        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", this::sjekkArenaAktiviteterSistOppdatert).strongReference(true).register(getMeterRegistry());
+        Gauge.builder("portefolje_arena_fil_aktiviteter_sist_oppdatert", this::sjekkArenaAktiviteterSistOppdatert).register(getMeterRegistry());
     }
 
     public FilmottakConfig.SftpConfig lopendeAktiviteter() {
