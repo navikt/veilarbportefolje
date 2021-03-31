@@ -71,8 +71,13 @@ public class TiltakHandler {
     }
 
     public long sjekkArenaAktiviteterSistOppdatert() {
-        Long millis = getLastModifiedTimeInMillis(lopendeAktiviteter()).getOrElseThrow(() -> new RuntimeException());
-        return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.of("Europe/Oslo")));
+        try {
+            Long millis = getLastModifiedTimeInMillis(lopendeAktiviteter()).getOrElseThrow(() -> new RuntimeException());
+            return hoursSinceLastChanged(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.of("Europe/Oslo")));
+        }
+        catch (Exception e){
+            return 0;
+        }
     }
 
     public HealthCheckResult sftpTiltakPing() {

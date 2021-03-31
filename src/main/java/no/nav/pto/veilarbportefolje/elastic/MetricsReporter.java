@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Random;
 
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.arenafiler.FilmottakFileUtils.hoursSinceLastChanged;
@@ -25,7 +24,7 @@ public class MetricsReporter {
     public MetricsReporter(ElasticIndexer elasticIndexer) {
         this.elasticIndexer = elasticIndexer;
 
-        Gauge.builder("veilarbelastic_number_of_docs", ()-> 10.0).register(getMeterRegistry());
+        Gauge.builder("veilarbelastic_number_of_docs", ()->ElasticUtils.getCount()).register(getMeterRegistry());
         Gauge.builder("portefolje_indeks_sist_opprettet", this::sjekkIndeksSistOpprettet).register(getMeterRegistry());
     }
 
