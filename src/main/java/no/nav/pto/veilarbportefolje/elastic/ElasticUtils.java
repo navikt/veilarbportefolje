@@ -93,7 +93,7 @@ public class ElasticUtils {
                    .orElse(0L);
         }
         catch (Exception e){
-            log.warn("Error getCount ", e);
+            log.warn("Can not get count from elasticsearch", e);
             return 0;
         }
     }
