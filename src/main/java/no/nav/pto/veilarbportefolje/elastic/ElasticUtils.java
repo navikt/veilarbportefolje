@@ -77,9 +77,7 @@ public class ElasticUtils {
         };
     }
 
-    @SneakyThrows
     public static long getCount() {
-        log.info("getCount 1");
         String url = ElasticUtils.getAbsoluteUrl() + "_doc/_count";
         OkHttpClient client = no.nav.common.rest.client.RestClient.baseClient();
 
@@ -88,13 +86,15 @@ public class ElasticUtils {
                 .addHeader("Authorization", getAuthHeaderValue())
                 .build();
 
-        log.info("getCount 2");
-
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
            return RestUtils.parseJsonResponse(response, CountResponse.class)
                    .map(CountResponse::getCount)
                    .orElse(0L);
+        }
+        catch (Exception e){
+            log.warn("Error getCount ", e);
+            return 0;
         }
     }
 
