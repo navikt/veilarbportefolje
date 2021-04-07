@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -8,12 +7,15 @@ import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
+import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import okhttp3.OkHttpClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_PASSWORD_PROPERTY;
 import static no.nav.pto.veilarbportefolje.config.ApplicationConfig.ELASTICSEARCH_USERNAME_PROPERTY;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticUtils.*;
@@ -55,8 +57,8 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService) {
-        return new ElasticService(restHighLevelClient, veilarbVeilederClient, unleashService, new IndexName(getAlias()));
+    public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, VedtakstottePilotRequest vedtakstottePilotRequest) {
+        return new ElasticService(restHighLevelClient, veilarbVeilederClient, new IndexName(getAlias()), vedtakstottePilotRequest);
     }
 
 

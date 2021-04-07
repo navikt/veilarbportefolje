@@ -16,6 +16,7 @@ import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -51,6 +52,11 @@ public class ClientConfig {
     @Bean
     public VeilarbVeilederClient veilarbVeilederClient(EnvironmentProperties environmentProperties) {
         return new VeilarbVeilederClient(environmentProperties);
+    }
+
+    @Bean
+    public VedtakstottePilotRequest vedtakstottePilotRequest() {
+        return new VedtakstottePilotRequest();
     }
 
     @Bean

@@ -1,13 +1,12 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -26,16 +25,16 @@ import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 public class ElasticService {
-    RestHighLevelClient restHighLevelClient;
-    VeilarbVeilederClient veilarbVeilederClient;
-    UnleashService unleashService;
-    IndexName indexName;
+    private final RestHighLevelClient restHighLevelClient;
+    private final VeilarbVeilederClient veilarbVeilederClient;
+    private final VedtakstottePilotRequest vedtakstottePilotRequest;
+    private final IndexName indexName;
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, IndexName indexName) {
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, VedtakstottePilotRequest vedtakstottePilotRequest) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
-        this.unleashService = unleashService;
         this.indexName = indexName;
+        this.vedtakstottePilotRequest = vedtakstottePilotRequest;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
@@ -166,6 +165,6 @@ public class ElasticService {
 
 
     private boolean erVedtakstottePilotPa() {
-        return unleashService.isEnabled(FeatureToggle.VEDTAKSTOTTE_PILOT);
+        return vedtakstottePilotRequest.erVedtakstottePilotPa();
     }
 }
