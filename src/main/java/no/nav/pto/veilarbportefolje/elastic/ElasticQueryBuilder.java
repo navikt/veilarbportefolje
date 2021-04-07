@@ -299,8 +299,8 @@ public class ElasticQueryBuilder {
             case UNDER_VURDERING:
                 if (erVedtakstottePilotPa) {
                     queryBuilder = existsQuery("vedtak_status");
-                    break;
                 }
+                break;
             case PERMITTERTE_ETTER_NIENDE_MARS:
                 queryBuilder = byggPermittertFilter();
                 break;
