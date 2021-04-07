@@ -57,8 +57,7 @@ public class ElasticConfig {
 
     @Bean
     public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient) {
-        String baseUrl = (isProduction().orElse(false)) ? "https://app.adeo.no/" : "https://app-q1.dev.adeo.no/";
-        return new ElasticService(restHighLevelClient, veilarbVeilederClient, new IndexName(getAlias()), baseUrl);
+        return new ElasticService(restHighLevelClient, veilarbVeilederClient, new IndexName(getAlias()));
     }
 
 

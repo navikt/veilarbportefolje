@@ -28,6 +28,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -38,12 +39,12 @@ public class ElasticService {
     private final OkHttpClient client;
     private final String baseURL;
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, String baseURL) {
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.indexName = indexName;
-        this.client = no.nav.common.rest.client.RestClient.baseClient();;
-        this.baseURL = baseURL;
+        this.client = no.nav.common.rest.client.RestClient.baseClient();
+        this.baseURL = (isProduction().orElse(false)) ? "https://app.adeo.no/" : "https://app-q1.dev.adeo.no/";
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
