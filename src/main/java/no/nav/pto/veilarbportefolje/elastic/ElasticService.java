@@ -1,13 +1,16 @@
 package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.rest.client.RestUtils;
+import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -17,25 +20,30 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
+import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.*;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 public class ElasticService {
-    RestHighLevelClient restHighLevelClient;
-    VeilarbVeilederClient veilarbVeilederClient;
-    UnleashService unleashService;
-    IndexName indexName;
+    private final RestHighLevelClient restHighLevelClient;
+    private final VeilarbVeilederClient veilarbVeilederClient;
+    private final IndexName indexName;
+    private final OkHttpClient client;
+    private final String baseURL;
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, UnleashService unleashService, IndexName indexName) {
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, OkHttpClient client, String baseURL) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
-        this.unleashService = unleashService;
         this.indexName = indexName;
+        this.client = client;
+        this.baseURL = baseURL;
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, Optional<String> veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
@@ -166,6 +174,16 @@ public class ElasticService {
 
 
     private boolean erVedtakstottePilotPa() {
-        return unleashService.isEnabled(FeatureToggle.VEDTAKSTOTTE_PILOT);
+        Request request = new Request.Builder()
+                .url(UrlUtils.joinPaths(baseURL,"/veilarbvedtaksstotte/api/utrulling/tilhorerVeilederUtrulletKontor"))
+                .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            throwIfNotSuccessful(response);
+            return RestUtils.parseJsonResponseOrThrow(response, Boolean.class);
+        }catch ( Exception exception){
+            return false;
+        }
     }
 }
