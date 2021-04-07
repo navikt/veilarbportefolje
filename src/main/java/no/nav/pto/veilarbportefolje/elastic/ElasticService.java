@@ -38,11 +38,11 @@ public class ElasticService {
     private final OkHttpClient client;
     private final String baseURL;
 
-    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, OkHttpClient client, String baseURL) {
+    public ElasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, IndexName indexName, String baseURL) {
         this.restHighLevelClient = restHighLevelClient;
         this.veilarbVeilederClient = veilarbVeilederClient;
         this.indexName = indexName;
-        this.client = client;
+        this.client = no.nav.common.rest.client.RestClient.baseClient();;
         this.baseURL = baseURL;
     }
 
