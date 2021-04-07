@@ -102,6 +102,20 @@ function handleRewindVedtak(e) {
     }
 }
 
+const cleanupAktoerIdToPersonIdForm = document.getElementById('cleanupAktoerIdToPersonId');
+cleanupAktoerIdToPersonIdForm.addEventListener('submit', handleCleanupAktoerIdToPersonId);
+
+function handleCleanupAktoerIdToPersonId(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil kjøre cleanup i AKTOERID_TO_PERSONID.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/runCleanupAktoerIdToPersonId',
+            {method: 'POST', credentials: 'same-origin'},
+            'cleanupAktoerIdToPersonIdResponse'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

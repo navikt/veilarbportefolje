@@ -32,6 +32,7 @@ public class AdminController {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
+    private final CleanupService cleanupService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -80,6 +81,13 @@ public class AdminController {
         authorizeAdmin();
         elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
         return "Slettet oppfølgingsbruker " + aktoerId;
+    }
+
+    @PostMapping("/runCleanupAktoerIdToPersonId")
+    public String runCleanupAktoerIdToPersonId() {
+        authorizeAdmin();
+        cleanupService.runCleanup();
+        return "Cleanup AktoerIdToPersonId er ferdig";
     }
 
     private void authorizeAdmin() {

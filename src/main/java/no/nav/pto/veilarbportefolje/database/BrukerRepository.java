@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.database;
 
-import com.sun.el.stream.Stream;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
@@ -19,6 +18,7 @@ import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import oracle.ucp.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -206,6 +206,14 @@ public class BrukerRepository {
         return Optional.ofNullable(navKontor);
     }
 
+    public Try<List<OppfolgingBrukerDto>> getAllFnrsFromArena(){
+        return Try.of(
+                () -> select(db, OPPFOLGINGSBRUKER.TABLE_NAME, this::mapOppfolgingBrukerDto)
+                        .column(OPPFOLGINGSBRUKER.FODSELSNR+","+OPPFOLGINGSBRUKER.PERSON_ID)
+                        .executeToList()
+        ).onFailure(e -> log.warn("Fant ikke fnr for brukere"));
+    }
+
     @Deprecated
     public Try<String> retrieveEnhet(Fnr fnr) {
         return Try.of(
@@ -271,6 +279,14 @@ public class BrukerRepository {
                 .onFailure(e -> log.warn("Fant ikke personid for aktoerid: " + aktoerId, e));
     }
 
+    public Try<Integer> slettAlleAktorIdToPersonId(){
+        return Try.of(
+                () -> delete(db, AKTOERID_TO_PERSONID.TABLE_NAME)
+                        .execute()
+        )
+                .onFailure(e -> log.warn("Cant delete aktoerId to personId mappings: " + e, e));
+    }
+
     public Try<PersonId> retrievePersonidFromFnr(Fnr fnr) {
         return Try.of(() ->
                 select(db, "OPPFOLGINGSBRUKER", this::mapPersonIdFromOppfolgingsbruker)
@@ -295,6 +311,11 @@ public class BrukerRepository {
     @SneakyThrows
     private String mapToEnhet(ResultSet rs) {
         return rs.getString("NAV_KONTOR");
+    }
+
+    @SneakyThrows
+    private OppfolgingBrukerDto mapOppfolgingBrukerDto(ResultSet rs) {
+        return new OppfolgingBrukerDto(rs.getString(OPPFOLGINGSBRUKER.FODSELSNR), rs.getString(OPPFOLGINGSBRUKER.PERSON_ID)) ;
     }
 
     @SneakyThrows
