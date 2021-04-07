@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,10 +44,6 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
     @Autowired
     private VeilarbVeilederClient veilarbVeilederClientMock;
-
-    @Autowired
-    private VedtakstottePilotRequest vedtakstottePilotRequest;
-
 
     @Test
     void skal_kun_hente_ut_brukere_under_oppfolging() {

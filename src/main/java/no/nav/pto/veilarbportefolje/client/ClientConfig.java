@@ -59,7 +59,6 @@ public class ClientConfig {
         return new VedtakstottePilotRequest();
     }
 
-
     @Bean
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = getCredentials("service_user");
