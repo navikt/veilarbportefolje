@@ -37,6 +37,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
+import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -162,6 +163,11 @@ public class ApplicationConfigTest {
     @Bean
     public ElasticTestClient elasticTestClient(RestHighLevelClient restHighLevelClient, IndexName indexName) {
         return new ElasticTestClient(restHighLevelClient, indexName);
+    }
+
+    @Bean
+    public VedtakstottePilotRequest vedtakstottePilotRequest(){
+        return mock(VedtakstottePilotRequest.class);
     }
 
     @Bean

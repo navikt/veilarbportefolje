@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.config.DatabaseConfig;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.ElasticClientConfig;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
+import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import okhttp3.OkHttpClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
@@ -56,8 +57,8 @@ public class ElasticConfig {
     }
 
     @Bean
-    public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient) {
-        return new ElasticService(restHighLevelClient, veilarbVeilederClient, new IndexName(getAlias()));
+    public ElasticService elasticService(RestHighLevelClient restHighLevelClient, VeilarbVeilederClient veilarbVeilederClient, VedtakstottePilotRequest vedtakstottePilotRequest) {
+        return new ElasticService(restHighLevelClient, veilarbVeilederClient, new IndexName(getAlias()), vedtakstottePilotRequest);
     }
 
 

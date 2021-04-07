@@ -20,6 +20,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.givenThat;
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
