@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.utils.UrlUtils;
+import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -27,6 +28,7 @@ public class VedtakstottePilotRequest {
         Request request = new Request.Builder()
                 .url(UrlUtils.joinPaths(baseURL, "/veilarbvedtaksstotte/api/utrulling/tilhorerVeilederUtrulletKontor"))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
+                .header("Authorization","Bearer " + AuthUtils.getInnloggetBrukerToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

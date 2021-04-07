@@ -167,7 +167,9 @@ public class ApplicationConfigTest {
 
     @Bean
     public VedtakstottePilotRequest vedtakstottePilotRequest(){
-        return mock(VedtakstottePilotRequest.class);
+        VedtakstottePilotRequest vedtakstottePilotRequest = mock(VedtakstottePilotRequest.class);
+        when(vedtakstottePilotRequest.erVedtakstottePilotPa()).thenReturn(true);
+        return vedtakstottePilotRequest;
     }
 
     @Bean
