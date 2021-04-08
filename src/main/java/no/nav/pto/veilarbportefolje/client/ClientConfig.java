@@ -57,7 +57,7 @@ public class ClientConfig {
                 properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
         );
 
-        return new ComparatorForAktorIdClients(aktorOppslagClient, aktorregisterClient, brukerRepository);
+        return new ComparatorForAktorIdClients(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorregisterClient(aktorregisterClient), brukerRepository);
     }
 
     @Bean
