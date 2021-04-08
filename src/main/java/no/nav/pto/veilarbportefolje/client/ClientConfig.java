@@ -13,8 +13,10 @@ import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
+import no.nav.pto.veilarbportefolje.admin.ComparatorForAktorIdClients;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +44,20 @@ public class ClientConfig {
         );
 
         return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorregisterClient(aktorregisterClient), unleashService);
+    }
+
+    @Bean
+    public ComparatorForAktorIdClients comparatorForAktorIdClients(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, BrukerRepository brukerRepository){
+        AktorOppslagClient aktorOppslagClient = new PdlAktorOppslagClient(
+                createServiceUrl("pdl-api", "default", false),
+                AuthUtils::getInnloggetBrukerToken,
+                systemUserTokenProvider::getSystemUserToken
+        );
+        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
+                properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
+        );
+
+        return new ComparatorForAktorIdClients(aktorOppslagClient, aktorregisterClient, brukerRepository);
     }
 
     @Bean
