@@ -206,12 +206,13 @@ public class BrukerRepository {
         return Optional.ofNullable(navKontor);
     }
 
-    public Try<List<OppfolgingBrukerDto>> getAllFnrsFromArena(){
+    public Try<List<String>> getAllAktoerIds(){
         return Try.of(
-                () -> select(db, OPPFOLGINGSBRUKER.TABLE_NAME, this::mapOppfolgingBrukerDto)
-                        .column(OPPFOLGINGSBRUKER.FODSELSNR+","+OPPFOLGINGSBRUKER.PERSON_ID)
+                () -> select(db, OPPFOLGING_DATA.TABLE_NAME, this::mapAktoerId)
+                        .column(OPPFOLGING_DATA.AKTOERID)
+                        .where(WhereClause.equals(OPPFOLGING_DATA.OPPFOLGING, 'J'))
                         .executeToList()
-        ).onFailure(e -> log.warn("Fant ikke fnr for brukere"));
+        ).onFailure(e -> log.warn("Hent ikke aktoerIds " +e, e));
     }
 
     @Deprecated
@@ -313,14 +314,15 @@ public class BrukerRepository {
         return rs.getString("NAV_KONTOR");
     }
 
-    @SneakyThrows
-    private OppfolgingBrukerDto mapOppfolgingBrukerDto(ResultSet rs) {
-        return new OppfolgingBrukerDto(rs.getString(OPPFOLGINGSBRUKER.FODSELSNR), rs.getString(OPPFOLGINGSBRUKER.PERSON_ID)) ;
-    }
 
     @SneakyThrows
     private VeilederId mapToVeilederId(ResultSet rs) {
         return rs.getString("VEILEDERIDENT") == null ? null : VeilederId.of(rs.getString("VEILEDERIDENT"));
+    }
+
+    @SneakyThrows
+    private String mapAktoerId(ResultSet rs){
+        return rs.getString(OPPFOLGING_DATA.AKTOERID);
     }
 
     @SneakyThrows

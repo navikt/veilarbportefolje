@@ -7,9 +7,7 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.OppfolgingBrukerDto;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
-import oracle.ucp.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,10 +23,16 @@ public class CleanupService {
         try{
             log.info("Starting cleanup aktoerId to personId ");
             brukerRepository.slettAlleAktorIdToPersonId();
-            Try<List<OppfolgingBrukerDto>> allFnrsFromArena = brukerRepository.getAllFnrsFromArena();
-            allFnrsFromArena.get().stream().forEach(oppfolgingBrukerDto -> {
-                AktorId aktorId = aktorregisterClient.hentAktorId(Fnr.of(oppfolgingBrukerDto.getFnr()));
-                brukerRepository.insertAktoeridToPersonidMapping(aktorId, PersonId.of(oppfolgingBrukerDto.getPersonId()));
+            Try<List<String>> allAktoerIds = brukerRepository.getAllAktoerIds();
+            allAktoerIds.get().stream().forEach(aktoerId -> {
+                Fnr fnr = aktorregisterClient.hentFnr(AktorId.of(aktoerId));
+                Try<PersonId> personIdOptional = brukerRepository.retrievePersonidFromFnr(fnr);
+                PersonId personId = personIdOptional.getOrNull();
+                if (personId != null){
+                    brukerRepository.insertAktoeridToPersonidMapping(AktorId.of(aktoerId), personId);
+                }else{
+                    log.warn("Cant get personId for aktoerid during cleanup " + aktoerId);
+                }
             });
             log.info("Cleanup aktoerId to personId er ferdig!");
             return true;
