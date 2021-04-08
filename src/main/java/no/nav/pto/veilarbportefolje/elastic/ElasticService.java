@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.elastic;
 
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.domene.*;
@@ -60,7 +61,7 @@ public class ElasticService {
         List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
         if (filtervalg.harAktiveFilter()) {
-            boolean erVedtakstottePilotPa = erVedtakstottePilotPa();
+            boolean erVedtakstottePilotPa = erVedtakstottePilotPa(EnhetId.of(enhetId));
             filtervalg.ferdigfilterListe.forEach(
                     filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa))
             );
@@ -84,7 +85,7 @@ public class ElasticService {
         List<Bruker> brukere = response.getHits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> setNyForEnhet(oppfolgingsBruker, veiledereMedTilgangTilEnhet))
-                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg))
+                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, filtervalg, enhetId))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -97,12 +98,12 @@ public class ElasticService {
         ElasticSearchResponse response = search(request, indexName.getValue(), ElasticSearchResponse.class);
 
         return response.getHits().getHits().stream()
-                .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa()))
+                .map(hit -> Bruker.of(hit.get_source(), erVedtakstottePilotPa(EnhetId.of(enhetId))))
                 .collect(toList());
     }
 
     public StatusTall hentStatusTallForVeileder(String veilederId, String enhetId) {
-        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
+        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         SearchSourceBuilder request =
                 byggStatusTallForVeilederQuery(enhetId, veilederId, emptyList(), vedtakstottePilotErPa);
@@ -115,7 +116,7 @@ public class ElasticService {
     public StatusTall hentStatusTallForEnhet(String enhetId) {
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
 
-        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa();
+        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         SearchSourceBuilder request =
                 byggStatusTallForEnhetQuery(enhetId, veilederPaaEnhet, vedtakstottePilotErPa);
@@ -142,8 +143,8 @@ public class ElasticService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, Filtervalg filtervalg) {
-        Bruker bruker = Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa());
+    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, Filtervalg filtervalg, String enhetId) {
+        Bruker bruker = Bruker.of(oppfolgingsBruker, erVedtakstottePilotPa(EnhetId.of(enhetId)));
 
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
@@ -164,7 +165,7 @@ public class ElasticService {
     }
 
 
-    private boolean erVedtakstottePilotPa() {
-        return vedtakstottePilotRequest.erVedtakstottePilotPa();
+    private boolean erVedtakstottePilotPa(EnhetId enhetId) {
+        return vedtakstottePilotRequest.erVedtakstottePilotPa(enhetId);
     }
 }

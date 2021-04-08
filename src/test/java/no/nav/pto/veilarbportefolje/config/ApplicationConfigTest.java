@@ -65,6 +65,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.elasticsearch.client.RestClient.builder;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -168,7 +169,7 @@ public class ApplicationConfigTest {
     @Bean
     public VedtakstottePilotRequest vedtakstottePilotRequest(){
         VedtakstottePilotRequest vedtakstottePilotRequest = mock(VedtakstottePilotRequest.class);
-        when(vedtakstottePilotRequest.erVedtakstottePilotPa()).thenReturn(true);
+        when(vedtakstottePilotRequest.erVedtakstottePilotPa(any())).thenReturn(true);
         return vedtakstottePilotRequest;
     }
 
