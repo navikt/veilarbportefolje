@@ -102,6 +102,21 @@ function handleRewindVedtak(e) {
     }
 }
 
+const compareAktoridsForm = document.getElementById('compareAktoridsForm');
+compareAktoridsForm.addEventListener('submit', handleCompareAktorIds);
+const numberOfFnrsToCompare = document.getElementById('numberOfFnrsToCompare')
+
+function handleCompareAktorIds(e) {
+    e.preventDefault();
+    if (window.confirm('Run comparing of aktorIds?')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/compareAktorIds',
+            {method: 'POST', credentials: 'same-origin', body: numberOfFnrsToCompare},
+            'compareAktorIdsResponse'
+        );
+    }
+}
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);
