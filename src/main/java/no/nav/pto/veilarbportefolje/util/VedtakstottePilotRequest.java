@@ -30,7 +30,7 @@ public class VedtakstottePilotRequest {
             return false;
         }
         Request request = new Request.Builder()
-                .url(UrlUtils.joinPaths(baseURL, "/veilarbvedtaksstotte/api/utrulling/" + enhetId.get()))
+                .url(UrlUtils.joinPaths(baseURL, "/veilarbvedtaksstotte/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
                 .header("Authorization", "Bearer " + AuthUtils.getInnloggetBrukerToken())
                 .build();
