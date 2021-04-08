@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class CleanupService {
     private final BrukerRepository brukerRepository;
 
     public boolean runCleanup(){
+        AtomicInteger counter = new AtomicInteger();
         try{
             log.info("Starting cleanup aktoerId to personId ");
             brukerRepository.slettAlleAktorIdToPersonId();
@@ -32,6 +34,15 @@ public class CleanupService {
                     brukerRepository.insertAktoeridToPersonidMapping(AktorId.of(aktoerId), personId);
                 }else{
                     log.warn("Cant get personId for aktoerid during cleanup " + aktoerId);
+                }
+                counter.getAndIncrement();
+
+                if (counter.get() % 100 == 0){
+                    try {
+                        log.info("Cleanup count: " + counter.get());
+                        Thread.currentThread().sleep(2000);
+                    } catch (InterruptedException e) {
+                    }
                 }
             });
             log.info("Cleanup aktoerId to personId er ferdig!");
