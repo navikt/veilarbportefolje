@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class ComparatorForAktorIdClients {
