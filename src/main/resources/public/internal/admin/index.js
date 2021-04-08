@@ -104,7 +104,7 @@ function handleRewindVedtak(e) {
 
 const compareAktoridsForm = document.getElementById('compareAktoridsForm');
 compareAktoridsForm.addEventListener('submit', handleCompareAktorIds);
-const numberOfFnrsToCompare = document.getElementById('numberOfFnrsToCompare')
+const numberOfFnrsToCompare = document.getElementById('numberOfFnrsToCompare').value;
 
 function handleCompareAktorIds(e) {
     e.preventDefault();
