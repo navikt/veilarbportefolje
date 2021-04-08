@@ -32,6 +32,7 @@ public class AdminController {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
+    private final ComparatorForAktorIdClients comparatorForAktorIdClients;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -80,6 +81,13 @@ public class AdminController {
         authorizeAdmin();
         elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
         return "Slettet oppfølgingsbruker " + aktoerId;
+    }
+
+    @PostMapping("/compareAktorIds")
+    public String compareAktorIds(@RequestBody String numberOfFnrsToCompare) {
+        authorizeAdmin();
+        comparatorForAktorIdClients.testAktorIds(Integer.valueOf(numberOfFnrsToCompare));
+        return "Comparing of aktorIds is done";
     }
 
     private void authorizeAdmin() {

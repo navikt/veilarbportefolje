@@ -18,6 +18,7 @@ import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DbUtils;
 import no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler;
 import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -175,6 +176,15 @@ public class BrukerRepository {
                 .execute();
 
         return Optional.ofNullable(veilederId);
+    }
+
+    public Try<List<Fnr>> hentRandomFnrs(int numberOfFnrsToTest) {
+        return Try.of(() ->
+                select(db, OPPFOLGINGSBRUKER.TABLE_NAME, this::mapFnrFromOppfolgingsbruker)
+                        .column(OPPFOLGINGSBRUKER.FODSELSNR)
+                        .limit(numberOfFnrsToTest)
+                        .executeToList()
+        ).onFailure(e -> log.warn("Hent ikke aktorId : " + e, e));
     }
 
 
