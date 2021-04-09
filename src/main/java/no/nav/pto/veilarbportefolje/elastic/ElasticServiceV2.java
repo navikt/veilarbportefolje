@@ -190,7 +190,9 @@ public class ElasticServiceV2 {
     public void slettDokumenter(List<AktorId> aktorIds) {
         log.info("Sletter gamle aktorIder {}", aktorIds);
         for (AktorId aktorId : aktorIds) {
-            delete(aktorId);
+            if(aktorId != null){
+                delete(aktorId);
+            }
         }
     }
 
