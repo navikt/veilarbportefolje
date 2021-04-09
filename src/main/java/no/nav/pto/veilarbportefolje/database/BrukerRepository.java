@@ -178,16 +178,6 @@ public class BrukerRepository {
         return Optional.ofNullable(veilederId);
     }
 
-    public Try<List<Fnr>> hentRandomFnrs(int numberOfFnrsToTest) {
-        return Try.of(() ->
-                select(db, OPPFOLGINGSBRUKER.TABLE_NAME, this::mapFnrFromOppfolgingsbruker)
-                        .column(OPPFOLGINGSBRUKER.FODSELSNR)
-                        .limit(numberOfFnrsToTest)
-                        .executeToList()
-        ).onFailure(e -> log.warn("Hent ikke aktorId : " + e, e));
-    }
-
-
     @Deprecated
     public Try<VeilederId> retrieveVeileder(AktorId aktoerId) {
         return Try.of(

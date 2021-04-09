@@ -20,26 +20,19 @@ public class ComparatorForAktorIdClients {
     private final AktorregisterClient aktorregisterClient;
     private final BrukerRepository brukerRepository;
 
-    public void testAktorIds(Integer totalFnrsToTest){
-        AtomicInteger counter = new AtomicInteger(0);
-        AtomicInteger failed = new AtomicInteger(0);
-        Try<List<Fnr>> listFnrs = brukerRepository.hentRandomFnrs(totalFnrsToTest);
-
+    public Boolean erAktorIdsErSamme(String fnr){
         log.info("Testing difference between actorIds....");
-        listFnrs.get().stream().forEach(fnr -> {
-            try{
-                AktorId aktorId1 = aktorOppslagClient.hentAktorId(fnr);
-                AktorId aktorId2 = aktorregisterClient.hentAktorId(fnr);
-                if (!aktorId1.equals(aktorId2)){
-                    counter.getAndIncrement();
-                }
+        try{
+            AktorId aktorId1 = aktorOppslagClient.hentAktorId(Fnr.of(fnr));
+            AktorId aktorId2 = aktorregisterClient.hentAktorId(Fnr.of(fnr));
+            if (!aktorId1.equals(aktorId2)){
+                return false;
             }
-            catch (Exception e){
-                failed.getAndIncrement();
-                log.warn("Error testAktorIds: "+e, e);
-            }
-        });
-
-        log.info("Different actorIds: {} from: {} tested, failed: {}", counter.get(), totalFnrsToTest, failed.get());
+            return true;
+        }
+        catch (Exception e){
+            log.warn("Error erAktorIdsErSamme: "+e, e);
+            return null;
+        }
     }
 }

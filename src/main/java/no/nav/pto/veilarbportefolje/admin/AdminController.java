@@ -84,10 +84,9 @@ public class AdminController {
     }
 
     @PostMapping("/compareAktorIds")
-    public String compareAktorIds(@RequestBody String numberOfFnrsToCompare) {
+    public Boolean compareAktorIds(@RequestBody String fnrToCompare) {
         authorizeAdmin();
-        comparatorForAktorIdClients.testAktorIds(Integer.valueOf(numberOfFnrsToCompare));
-        return "Comparing of aktorIds is done";
+        return comparatorForAktorIdClients.erAktorIdsErSamme(fnrToCompare);
     }
 
     private void authorizeAdmin() {

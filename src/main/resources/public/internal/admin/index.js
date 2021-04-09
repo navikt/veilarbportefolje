@@ -104,16 +104,16 @@ function handleRewindVedtak(e) {
 
 const compareAktoridsForm = document.getElementById('compareAktoridsForm');
 compareAktoridsForm.addEventListener('submit', handleCompareAktorIds);
-const numberOfFnrsToCompare = document.getElementById('numberOfFnrsToCompare');
+const fnrToCompare = document.getElementById('fnrToCompare');
 
 function handleCompareAktorIds(e) {
 
-    const numberOfFnr = numberOfFnrsToCompare.value;
+    const fnrValue = fnrToCompare.value;
     e.preventDefault();
     if (window.confirm('Run comparing of aktorIds?')) {
         fetchData(
             '/veilarbportefolje/api/admin/compareAktorIds',
-            {method: 'POST', credentials: 'same-origin', body: numberOfFnr},
+            {method: 'POST', credentials: 'same-origin', body: fnrValue},
             'compareAktorIdsResponse'
         );
     }
