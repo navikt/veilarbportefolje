@@ -2,8 +2,10 @@ package no.nav.pto.veilarbportefolje.config;
 
 import lombok.SneakyThrows;
 import org.flywaydb.core.api.resolver.BaseMigrationResolver;
+import org.flywaydb.core.api.resolver.Context;
+import org.flywaydb.core.api.resolver.MigrationResolver;
 import org.flywaydb.core.api.resolver.ResolvedMigration;
-import org.flywaydb.core.internal.dbsupport.DbSupport;
+import org.flywaydb.core.internal.resolver.DbSupport;
 import org.flywaydb.core.internal.dbsupport.DbSupportFactory;
 import org.flywaydb.core.internal.resolver.ResolvedMigrationComparator;
 import org.flywaydb.core.internal.resolver.sql.SqlMigrationResolver;
@@ -12,9 +14,10 @@ import org.flywaydb.core.internal.util.PlaceholderReplacer;
 import org.flywaydb.core.internal.util.scanner.Scanner;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class MergeMigrationResolver extends BaseMigrationResolver {
+public class MergeMigrationResolverImpl implements MigrationResolver {
     private DbSupport dbSupport;
     private Scanner scanner;
     private PlaceholderReplacer placeholderReplacer;
@@ -33,7 +36,7 @@ public class MergeMigrationResolver extends BaseMigrationResolver {
     }
 
     @Override
-    public List<ResolvedMigration> resolveMigrations() {
+    public List<ResolvedMigration> resolveMigrations(Context context) {
         init();
 
         List<ResolvedMigration> migrations = new ArrayList<>();
@@ -68,6 +71,4 @@ public class MergeMigrationResolver extends BaseMigrationResolver {
         }
         return false;
     }
-
-
 }

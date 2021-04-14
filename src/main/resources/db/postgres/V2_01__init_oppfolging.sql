@@ -1,0 +1,11 @@
+CREATE TABLE OPPFOLGING_DATA
+(
+    AKTOERID        VARCHAR(20) NOT NULL,
+    VEILEDERID      VARCHAR(20),
+    OPPFOLGING      boolean DEFAULT false,
+    NY_FOR_VEILEDER boolean DEFAULT false,
+    MANUELL         boolean DEFAULT false,
+    STARTDATO       TIMESTAMP,
+
+    PRIMARY KEY (AKTOERID)
+);
