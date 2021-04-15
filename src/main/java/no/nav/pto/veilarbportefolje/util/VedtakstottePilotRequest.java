@@ -30,8 +30,7 @@ public class VedtakstottePilotRequest {
     @Autowired
     public VedtakstottePilotRequest() {
         this.client = no.nav.common.rest.client.RestClient.baseClient();
-        this.baseURL = (isProduction().orElse(false)) ? "https://app.adeo.no/" : "https://app-q1.dev.adeo.no/";
-
+        this.baseURL = UrlUtils.createServiceUrl("veilarbvedtaksstotte", "pto", true);
 
         this.hentVedtakstotteCache = Caffeine.newBuilder()
                 .expireAfterWrite(5, TimeUnit.MINUTES)
