@@ -44,6 +44,7 @@ public class TestUtil {
         */
         Flyway.configure()
                 .dataSource(ds)
+                .locations("testmigration")
                 .skipDefaultResolvers(false)
                 .load()
                 .migrate();

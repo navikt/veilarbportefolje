@@ -63,7 +63,7 @@ public class DbConfigPostgres implements DatabaseConfig{
         Flyway.configure()
                 .dataSource(dataSource)
                 .locations("db/postgres")
-                .initSql("SET ROLE ADMIN;")
+                .initSql("SET ROLE ADMIN")
                 .baselineOnMigrate(true)
                 .load()
                 .migrate();
