@@ -30,8 +30,7 @@ public class VedtakstottePilotRequest {
     @Autowired
     public VedtakstottePilotRequest() {
         this.client = no.nav.common.rest.client.RestClient.baseClient();
-        this.baseURL = (isProduction().orElse(false)) ? "https://app.adeo.no/" : "https://app-q1.dev.adeo.no/";
-
+        this.baseURL = UrlUtils.createServiceUrl("veilarbvedtaksstotte", "pto", true);
 
         this.hentVedtakstotteCache = Caffeine.newBuilder()
                 .expireAfterWrite(5, TimeUnit.MINUTES)
@@ -48,7 +47,7 @@ public class VedtakstottePilotRequest {
             return false;
         }
         Request request = new Request.Builder()
-                .url(UrlUtils.joinPaths(baseURL, "/veilarbvedtaksstotte/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
+                .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
                 .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
                 .header("Authorization", "Bearer " + AuthUtils.getInnloggetBrukerToken())
                 .build();
