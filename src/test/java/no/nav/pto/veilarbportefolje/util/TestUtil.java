@@ -35,13 +35,6 @@ public class TestUtil {
     }
 
     private static void migrateDb(DriverManagerDataSource ds) {
-        /*
-        Flyway flyway = new Flyway();
-        flyway.setSkipDefaultResolvers(true);
-        flyway.setResolvers(new MergeMigrationResolver());
-        flyway.setDataSource(ds);
-        flyway.migrate();
-        */
         Flyway.configure()
                 .dataSource(ds)
                 .locations("testmigration")

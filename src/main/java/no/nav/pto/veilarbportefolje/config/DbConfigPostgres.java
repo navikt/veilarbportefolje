@@ -9,6 +9,7 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -19,8 +20,9 @@ import javax.sql.DataSource;
 
 import static no.nav.pto.veilarbportefolje.util.DbUtils.createDataSource;
 
-@RequiredArgsConstructor
 @Slf4j
+@Configuration
+@RequiredArgsConstructor
 public class DbConfigPostgres implements DatabaseConfig{
     private final EnvironmentProperties environmentProperties;
 
@@ -30,19 +32,19 @@ public class DbConfigPostgres implements DatabaseConfig{
         return createDataSource(environmentProperties.getDbUrl());
     }
 
-    @Bean("Postgres")
+    @Bean(name="PostgresJdbc")
     @Override
     public JdbcTemplate db(@Qualifier("Postgres") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
-    @Bean("Postgres")
+    @Bean("PostgresNamedJdbc")
     @Override
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("Postgres")DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
-    @Bean("Postgres")
+    @Bean("PostgresTransactionManager")
     @Override
     public PlatformTransactionManager transactionManager(@Qualifier("Postgres") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
@@ -53,12 +55,6 @@ public class DbConfigPostgres implements DatabaseConfig{
     public void migrateDb() {
         log.info("Starting database migration...");
         DataSource dataSource = createDataSource(environmentProperties.getDbUrl());
-        /*
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.setLocations("db/postgres");
-        flyway.setBaselineOnMigrate(true);
-        flyway.migrate();*/
 
         Flyway.configure()
                 .dataSource(dataSource)

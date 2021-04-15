@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
@@ -21,6 +22,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
 
 @Slf4j
+@Repository
 public class OppfolgingRepository {
 
     private final JdbcTemplate db;
