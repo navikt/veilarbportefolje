@@ -1,5 +1,5 @@
 package no.nav.pto.veilarbportefolje.config;
-
+/*
 import lombok.SneakyThrows;
 import org.flywaydb.core.api.resolver.BaseMigrationResolver;
 import org.flywaydb.core.api.resolver.Context;
@@ -71,4 +71,4 @@ public class MergeMigrationResolverImpl implements MigrationResolver {
         }
         return false;
     }
-}
+}*/

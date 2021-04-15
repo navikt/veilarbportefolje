@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.pto.veilarbportefolje.config.MergeMigrationResolverImpl;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -45,7 +44,7 @@ public class TestUtil {
         */
         Flyway.configure()
                 .dataSource(ds)
-                .resolvers(new MergeMigrationResolverImpl())
+                .skipDefaultResolvers(false)
                 .load()
                 .migrate();
     }
