@@ -229,4 +229,10 @@ public class ApplicationConfigTest {
     public VeilarbVeilederClient veilarbVeilederClient() {
         return mock(VeilarbVeilederClient.class);
     }
+
+    @Bean
+    public OppfolgingRepositoryV2 oppfolgingRepositoryV2() {
+        return mock(OppfolgingRepositoryV2.class);
+    }
+
 }
