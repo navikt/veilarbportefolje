@@ -20,6 +20,7 @@ public class OppfolgingStartetService implements KafkaConsumerService<String> {
         final OppfolgingStartetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingStartetDTO.class);
         oppfolgingRepository.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
         oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
+
         elasticIndexer.indekser(dto.getAktorId());
     }
 

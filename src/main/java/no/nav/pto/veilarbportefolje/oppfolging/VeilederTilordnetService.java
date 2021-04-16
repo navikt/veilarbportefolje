@@ -24,6 +24,7 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
 
         oppfolgingRepository.settVeileder(aktoerId, dto.getVeilederId());
         oppfolgingRepositoryV2.settVeileder(aktoerId, dto.getVeilederId());
+
         elasticServiceV2.oppdaterVeileder(aktoerId, dto.getVeilederId());
 
         final boolean harByttetNavKontor = arbeidslisteService.brukerHarByttetNavKontor(aktoerId);
