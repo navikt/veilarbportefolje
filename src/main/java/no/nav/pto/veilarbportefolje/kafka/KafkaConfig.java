@@ -37,7 +37,8 @@ public class KafkaConfig {
         OPPFOLGING_STARTET("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-"+ requireKafkaTopicPostfix()),
-        SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1");
+        SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
+        ENDRING_PAA_OPPFOLGINGSBRUKER("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireKafkaTopicPostfix());
 
         final String topicName;
 
