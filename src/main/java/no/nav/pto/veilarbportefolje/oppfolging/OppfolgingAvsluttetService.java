@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import static java.time.Instant.EPOCH;
 import static java.time.ZoneId.of;
@@ -53,7 +54,8 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         arbeidslisteService.slettArbeidsliste(aktoerId);
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepository.slettCVData(aktoerId);
-        elasticServiceV2.markerBrukerSomSlettet(aktoerId);
+
+        elasticServiceV2.slettDokumenter(List.of(aktoerId));
     }
 
     @Override
