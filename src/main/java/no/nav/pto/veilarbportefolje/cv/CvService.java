@@ -81,4 +81,10 @@ public class CvService implements KafkaConsumerService<String> {
                 log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktoerId);
         }
     }
+
+    public void setCVSamtykke(AktorId aktoerId) {
+        cvRepository.upsert(aktoerId, true);
+        elasticServiceV2.updateHarDeltCv(aktoerId,true);
+
+    }
 }
