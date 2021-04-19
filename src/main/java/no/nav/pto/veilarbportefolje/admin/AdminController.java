@@ -73,11 +73,8 @@ public class AdminController {
 
     @PostMapping("/settSamtykkeCV")
     public String settharDeltCV(@RequestBody String aktoerId) {
-        log.info("settSamtykkeCV: {} er ikke autorisert", aktoerId);
         authorizeAdmin();
-        log.info("settSamtykkeCV: {} er autorisert", aktoerId);
         cvService.setCVSamtykke(AktorId.of(aktoerId));
-        log.info("settSamtykkeCV: {} setCVSamtykke gjennomført", aktoerId);
         return "Feltet har HAR_DELT_CV oppdatert for aktørId: " + aktoerId;
     }
 
