@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
+import no.nav.pto.veilarbportefolje.postgres.PostgresService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -19,11 +20,10 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class EnhetControllerV2 {
-
-    private final ElasticService elasticService;
     private final AuthService authService;
     private final TiltakService tiltakService;
     private final MetricsClient metricsClient;
+    private final PostgresService postgresService;
 
     @PostMapping("v2/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
@@ -43,7 +43,7 @@ public class EnhetControllerV2 {
         String ident = AuthUtils.getInnloggetVeilederIdent().toString();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall = postgresService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
@@ -64,7 +64,7 @@ public class EnhetControllerV2 {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticService.hentPortefoljestorrelser(enhet);
+        return postgresService.hentPortefoljestorrelser(enhet);
     }
 
     @GetMapping("v2/{enhet}/statustall")
@@ -72,7 +72,7 @@ public class EnhetControllerV2 {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
 
-        return elasticService.hentStatusTallForEnhet(enhet);
+        return postgresService.hentStatusTallForEnhet(enhet);
 
     }
 
