@@ -111,11 +111,13 @@ function handleSamtykkeDeltCV(e) {
 
     const aktoerIdSamtykke = aktoerIdSamtykkeInput.value;
     if (aktoerIdSamtykke && aktoerIdSamtykke > 0) {
-        fetchData(
-            '/veilarbportefolje/api/admin/settSamtykkeCV',
-            {method: 'POST', credentials: 'same-origin', body: aktoerIdSamtykke},
-            'aktoerIdSamtykkeResponse'
-        )
+        if (window.confirm(`Dette vil sette HAR_DELT_CV for: ${aktoerIdSamtykke}`)) {
+            fetchData(
+                '/veilarbportefolje/api/admin/settSamtykkeCV',
+                {method: 'POST', credentials: 'same-origin', body: aktoerIdSamtykke},
+                'aktoerIdSamtykkeResponse'
+            )
+        }
     }
 }
 

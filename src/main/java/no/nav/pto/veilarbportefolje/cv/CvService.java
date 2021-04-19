@@ -85,6 +85,5 @@ public class CvService implements KafkaConsumerService<String> {
     public void setCVSamtykke(AktorId aktoerId) {
         cvRepository.upsert(aktoerId, true);
         elasticServiceV2.updateHarDeltCv(aktoerId,true);
-
     }
 }

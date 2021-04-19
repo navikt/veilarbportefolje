@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -71,8 +73,11 @@ public class AdminController {
 
     @PostMapping("/settSamtykkeCV")
     public String settharDeltCV(@RequestBody String aktoerId) {
+        log.info("settSamtykkeCV: {} er ikke autorisert", aktoerId);
         authorizeAdmin();
+        log.info("settSamtykkeCV: {} er autorisert", aktoerId);
         cvService.setCVSamtykke(AktorId.of(aktoerId));
+        log.info("settSamtykkeCV: {} setCVSamtykke gjennomført", aktoerId);
         return "Feltet har HAR_DELT_CV oppdatert for aktørId: " + aktoerId;
     }
 
