@@ -18,8 +18,8 @@ public class OppfolginsbrukerService implements KafkaConsumerService<String> {
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
-        OppfolgingsbrukerKafkaMelding melding = fromJson(kafkaMelding, OppfolgingsbrukerKafkaMelding.class);
-        OppfolginsbrukerRepositoryV2.LeggTilOppfolgingsbruker();
+        OppfolgingsbrukerKafkaDTO oppfolginsbruker = fromJson(kafkaMelding, OppfolgingsbrukerKafkaDTO.class);
+        OppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(oppfolginsbruker);
     }
 
     @Override

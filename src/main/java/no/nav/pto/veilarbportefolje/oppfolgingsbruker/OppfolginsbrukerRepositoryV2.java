@@ -13,9 +13,9 @@ public class OppfolginsbrukerRepositoryV2 {
         this.db = db;
     }
 
-    public boolean LeggTilOppfolgingsbruker() {
+    public void LeggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
         // TODO: Legg til oppfolgingsbruker i DB
-        return true;
+        log.info("LeggTilEllerEndreOppfolginsbruker");
     }
 
 }

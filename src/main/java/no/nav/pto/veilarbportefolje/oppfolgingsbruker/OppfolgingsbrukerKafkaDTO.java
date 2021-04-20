@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
-public class OppfolgingsbrukerKafkaMelding {
+public class OppfolgingsbrukerKafkaDTO {
     String aktoerid;
     String fodselsnr;
     String formidlingsgruppekode;
