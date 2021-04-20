@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.common.types.identer.AktorId;
@@ -8,14 +9,11 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ManuellStatusService implements KafkaConsumerService<String> {
     private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ElasticServiceV2 elasticServiceV2;
-
-    public ManuellStatusService(OppfolgingRepository oppfolgingRepository, ElasticServiceV2 elasticServiceV2) {
-        this.oppfolgingRepository = oppfolgingRepository;
-        this.elasticServiceV2 = elasticServiceV2;
-    }
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
@@ -23,6 +21,7 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
         final AktorId aktoerId = AktorId.of(dto.getAktorId());
 
         oppfolgingRepository.settManuellStatus(aktoerId, dto.isErManuell());
+        oppfolgingRepositoryV2.settManuellStatus(aktoerId, dto.isErManuell());
 
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
 

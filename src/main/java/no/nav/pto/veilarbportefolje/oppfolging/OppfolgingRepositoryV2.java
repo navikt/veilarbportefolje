@@ -1,14 +1,14 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.database.Table;
+import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -16,7 +16,6 @@ import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static java.lang.Boolean.TRUE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.DbUtils.parseJaNei;
@@ -26,100 +25,83 @@ public class OppfolgingRepositoryV2 {
 
     private final JdbcTemplate db;
 
-    public OppfolgingRepositoryV2(@Qualifier("Postgres") JdbcTemplate db) {
+    @Autowired
+    public OppfolgingRepositoryV2(@Qualifier("PostgresJdbc") JdbcTemplate db) {
         this.db = db;
     }
 
     public boolean settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
-        return SqlUtils.upsert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .set(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
-                .set(Table.OPPFOLGING_DATA.OPPFOLGING, "J")
-                .set(Table.OPPFOLGING_DATA.STARTDATO, toTimestamp(startDato))
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
+        return SqlUtils.upsert(db, OPPFOLGING_DATA.TABLE_NAME)
+                .set(OPPFOLGING_DATA.AKTOERID, aktoerId.get())
+                .set(OPPFOLGING_DATA.OPPFOLGING, true)
+                .set(OPPFOLGING_DATA.STARTDATO, toTimestamp(startDato))
+                .where(WhereClause.equals(OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
                 .execute();
     }
 
     public int settVeileder(AktorId aktorId, VeilederId veilederId) {
-        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
-                .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, "J")
-                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktorId.toString())
+        return SqlUtils.update(db, OPPFOLGING_DATA.TABLE_NAME)
+                .set(OPPFOLGING_DATA.VEILEDERID, veilederId.getValue())
+                .set(OPPFOLGING_DATA.NY_FOR_VEILEDER, true)
+                .whereEquals(OPPFOLGING_DATA.AKTOERID, aktorId.get())
                 .execute();
     }
 
     public int settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
-        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .set(Table.OPPFOLGING_DATA.NY_FOR_VEILEDER, safeToJaNei(nyForVeileder))
-                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+        return SqlUtils.update(db, OPPFOLGING_DATA.TABLE_NAME)
+                .set(OPPFOLGING_DATA.NY_FOR_VEILEDER, nyForVeileder)
+                .whereEquals(OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .execute();
     }
 
     public int settManuellStatus(AktorId aktoerId, boolean manuellStatus) {
-        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .set(Table.OPPFOLGING_DATA.MANUELL, manuellStatus)
-                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+        return SqlUtils.update(db, OPPFOLGING_DATA.TABLE_NAME)
+                .set(OPPFOLGING_DATA.MANUELL, manuellStatus)
+                .whereEquals(OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .execute();
     }
 
     public int settOppfolgingTilFalse(AktorId aktoerId) {
-        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .set(Table.OPPFOLGING_DATA.OPPFOLGING, false)
-                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+        return SqlUtils.update(db, OPPFOLGING_DATA.TABLE_NAME)
+                .set(OPPFOLGING_DATA.OPPFOLGING, false)
+                .whereEquals(OPPFOLGING_DATA.AKTOERID, aktoerId.get())
                 .execute();
     }
 
     public Optional<ZonedDateTime> hentStartdato(AktorId aktoerId) {
         final ZonedDateTime startDato = SqlUtils
-                .select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> toZonedDateTime(rs.getTimestamp(Table.OPPFOLGING_DATA.STARTDATO)))
-                .column(Table.OPPFOLGING_DATA.STARTDATO)
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
+                .select(db, OPPFOLGING_DATA.TABLE_NAME, rs -> toZonedDateTime(rs.getTimestamp(OPPFOLGING_DATA.STARTDATO)))
+                .column(OPPFOLGING_DATA.STARTDATO)
+                .where(WhereClause.equals(OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
                 .execute();
 
         return Optional.ofNullable(startDato);
     }
 
-    public static String safeToJaNei(Boolean aBoolean) {
-        return TRUE.equals(aBoolean) ? "J" : "N";
+    public void slettOppfolgingData(AktorId aktoerId) {
+        SqlUtils.delete(db, OPPFOLGING_DATA.TABLE_NAME)
+                .where(WhereClause.equals(OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
+                .execute();
     }
 
     public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
-        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, Table.OPPFOLGING_DATA.TABLE_NAME, rs -> mapToBrukerOppdatertInformasjon(rs))
+        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, OPPFOLGING_DATA.TABLE_NAME, rs -> mapToBrukerOppdatertInformasjon(rs))
                 .column("*")
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
+                .where(WhereClause.equals(OPPFOLGING_DATA.AKTOERID, aktoerId.toString()))
                 .execute();
 
         return Optional.ofNullable(oppfolging);
     }
 
-    @Deprecated
-    public Try<BrukerOppdatertInformasjon> retrieveOppfolgingData(AktorId aktoerId) {
-        String id = aktoerId.toString();
-        return Try.of(() -> db.queryForObject(
-                "SELECT * FROM OPPFOLGING_DATA WHERE AKTOERID = ?",
-                new Object[]{id},
-                this::mapToBrukerOppdatertInformasjon)
-        ).onFailure(e -> log.info("Fant ikke oppfølgingsdata for bruker med aktoerId {}", id));
-    }
-
-    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet resultSet) {
-        return mapToBrukerOppdatertInformasjon(resultSet, 0);
-    }
-
     @SneakyThrows
-    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
+    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs) {
         return new BrukerOppdatertInformasjon()
-                .setAktoerid(rs.getString("AKTOERID"))
-                .setEndretTimestamp(rs.getTimestamp("OPPDATERT_KILDESYSTEM"))
-                .setNyForVeileder(parseJaNei(rs.getString("NY_FOR_VEILEDER"), "NY_FOR_VEILEDER"))
-                .setOppfolging(parseJaNei(rs.getString("OPPFOLGING"), "OPPFOLGING"))
-                .setVeileder(rs.getString("VEILEDERIDENT"))
-                .setManuell(parseJaNei(rs.getString("MANUELL"), "MANUELL"))
-                .setStartDato(rs.getTimestamp("STARTDATO"));
+                .setAktoerid(rs.getString(OPPFOLGING_DATA.AKTOERID))
+                .setNyForVeileder(rs.getBoolean(OPPFOLGING_DATA.NY_FOR_VEILEDER))
+                .setOppfolging(rs.getBoolean(OPPFOLGING_DATA.OPPFOLGING))
+                .setVeileder(rs.getString(OPPFOLGING_DATA.VEILEDERID))
+                .setManuell(rs.getBoolean(OPPFOLGING_DATA.MANUELL))
+                .setStartDato(rs.getTimestamp(OPPFOLGING_DATA.STARTDATO));
     }
 
-    public void slettOppfolgingData(AktorId aktoerId) {
-        SqlUtils.delete(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .where(WhereClause.equals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.get()))
-                .execute();
-    }
 }

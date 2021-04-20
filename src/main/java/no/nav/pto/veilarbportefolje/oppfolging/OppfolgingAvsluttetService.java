@@ -24,9 +24,9 @@ import static java.time.ZonedDateTime.ofInstant;
 public class OppfolgingAvsluttetService implements KafkaConsumerService<String> {
     private static final Logger log = LoggerFactory.getLogger(OppfolgingAvsluttetService.class);
 
-
     private final ArbeidslisteService arbeidslisteService;
     private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final RegistreringService registreringService;
     private final CvRepository cvRepository;
     private final ElasticServiceV2 elasticServiceV2;
@@ -37,7 +37,10 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
         final OppfolgingAvsluttetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingAvsluttetDTO.class);
         final AktorId aktoerId = dto.getAktorId();
 
+
+        // TODO: bruk toggle for oppfolgingRepositoryV2
         final ZonedDateTime startDato = oppfolgingRepository.hentStartdato(aktoerId).orElse(ofInstant(EPOCH, of("Europe/Oslo")));
+
         final ZonedDateTime sluttDato = dto.getSluttdato();
         if (startDato.isAfter(sluttDato)) {
             log.warn("Lagret startdato for oppfølging er etter mottatt sluttdato for bruker {}", aktoerId);
@@ -49,6 +52,7 @@ public class OppfolgingAvsluttetService implements KafkaConsumerService<String> 
 
     public void avsluttOppfolging(AktorId aktoerId) {
         oppfolgingRepository.slettOppfolgingData(aktoerId);
+        oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
         registreringService.slettRegistering(aktoerId);
         arbeidslisteService.slettArbeidsliste(aktoerId);
         sisteEndringService.slettSisteEndringer(aktoerId);
