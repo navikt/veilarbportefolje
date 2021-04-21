@@ -46,10 +46,7 @@ public class OppfolgingRepositoryTestV2 {
     @Test
     public void skal_sette_ny_veileder() {
         VeilederId veilederId = VeilederId.of("Z12345");
-        SqlUtils.insert(db, Table.OPPFOLGING_DATA.TABLE_NAME)
-                .value(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
-                .execute();
-
+        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
 
         BrukerOppdatertInformasjon brukerOppdatertInformasjon = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
