@@ -23,5 +23,4 @@ public class PostgresTable {
         public static final String STARTDATO = "STARTDATO";
     }
 
-
 }

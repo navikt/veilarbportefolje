@@ -43,7 +43,7 @@ public class EnhetControllerV2 {
         String ident = AuthUtils.getInnloggetVeilederIdent().toString();
         String identHash = DigestUtils.md5Hex(ident).toUpperCase();
 
-        BrukereMedAntall brukereMedAntall = postgresService.hentBrukere(enhet, Optional.empty(), sortDirection, sortField, filtervalg, fra, antall);
+        BrukereMedAntall brukereMedAntall = postgresService.hentBrukere(enhet, null, sortDirection, sortField, filtervalg, fra, antall);
         List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         Portefolje portefolje = PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
