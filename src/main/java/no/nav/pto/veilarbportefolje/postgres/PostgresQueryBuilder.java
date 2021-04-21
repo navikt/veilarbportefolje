@@ -16,8 +16,10 @@ public class PostgresQueryBuilder {
     private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE " ,";");
     private final JdbcTemplate db;
 
-    public PostgresQueryBuilder(JdbcTemplate jdbcTemplate) {
+    public PostgresQueryBuilder(JdbcTemplate jdbcTemplate, String navKontor) {
         this.db = jdbcTemplate;
+        whereStatement.add(eq(NAV_KONTOR, navKontor));
+        whereStatement.add(eq(OPPFOLGING, "TRUE"));
     }
 
     public BrukereMedAntall search(Integer fra, Integer antall){
@@ -47,7 +49,11 @@ public class PostgresQueryBuilder {
     private Bruker mapTilBruker(Map<String, Object> row){
         return new Bruker()
                 .setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
-                .setVeilederId((String) row.get(VEILEDERID));
+                .setVeilederId((String) row.get(VEILEDERID))
+                .setDiskresjonskode((String) row.get(DISKRESJONSKODE))
+                .setFnr((String) row.get(FODSELSNR))
+                .setFornavn((String) row.get(FORNAVN))
+                .setEtternavn((String) row.get(ETTERNAVN));
     }
 
     private String eq(String one, String two){
