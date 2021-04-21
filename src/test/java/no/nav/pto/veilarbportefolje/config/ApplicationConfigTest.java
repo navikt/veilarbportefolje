@@ -5,6 +5,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
@@ -233,6 +234,11 @@ public class ApplicationConfigTest {
     @Bean
     public OppfolgingRepositoryV2 oppfolgingRepositoryV2() {
         return mock(OppfolgingRepositoryV2.class);
+    }
+
+    @Bean
+    public OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2() {
+        return mock(OppfolginsbrukerRepositoryV2.class);
     }
 
 }
