@@ -26,6 +26,7 @@ import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -34,6 +35,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
+import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
@@ -172,19 +174,23 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public String opprettNyIndeks(String navn) {
-
+    public IndexName opprettNyIndeks(String navn) {
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
-        CreateIndexRequest request = new CreateIndexRequest(navn)
-                .source(json, XContentType.JSON);
-
-        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
+        CreateIndexResponse response = null;
+        try {
+            CreateIndexRequest request = new CreateIndexRequest(navn).source(json, XContentType.JSON);
+            response = restHighLevelClient.indices().create(request, DEFAULT);
+        } catch (Exception e) {
+            IndexName newIndex = new IndexName(generateId());
+            CreateIndexRequest request = new CreateIndexRequest(newIndex.getValue()).source(json, XContentType.JSON);
+            response = restHighLevelClient.indices().create(request, DEFAULT);
+        }
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();
         }
 
-        return navn;
+        return new IndexName(navn);
     }
 
     private void validateBatchSize(List<OppfolgingsBruker> brukere) {

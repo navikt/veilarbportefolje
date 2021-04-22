@@ -28,8 +28,7 @@ public abstract class EndToEndTest {
     @BeforeEach
     void setUp() {
         try {
-            indexName = new IndexName(generateId());
-            elasticIndexer.opprettNyIndeks(indexName.getValue());
+            indexName = elasticIndexer.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
             elasticTestClient.deleteIndex(indexName);
             elasticIndexer.opprettNyIndeks(indexName.getValue());
