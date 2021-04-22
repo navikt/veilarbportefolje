@@ -1,8 +1,11 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
 import lombok.SneakyThrows;
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
+import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -16,10 +19,11 @@ public class PostgresQueryBuilder {
     private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE " ,";");
     private final JdbcTemplate db;
 
-    public PostgresQueryBuilder(JdbcTemplate jdbcTemplate, String navKontor) {
+    public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor) {
         this.db = jdbcTemplate;
         whereStatement.add(eq(NAV_KONTOR, navKontor));
         whereStatement.add(eq(OPPFOLGING, "TRUE"));
+
     }
 
     public BrukereMedAntall search(Integer fra, Integer antall){
@@ -45,6 +49,20 @@ public class PostgresQueryBuilder {
         whereStatement.add(NY_FOR_VEILEDER + " = TRUE");
     }
 
+    public void ikkeServiceBehov() {
+        //TODO: gjør noe smart med view etc... da FORMIDLINGSGRUPPEKODE ikke er en del av hoved viewet
+        whereStatement.add(PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORMIDLINGSGRUPPEKODE + " = ISERV");
+    }
+
+
+    public void navnOgFodselsnummerSok(String soketekst){
+        if(StringUtils.isNumeric(soketekst)){
+            whereStatement.add(FODSELSNR + " LIKE "+ soketekst+"%");
+        }else{
+            whereStatement.add("("+FORNAVN + " LIKE %"+ soketekst+"% OR " +ETTERNAVN + "LIKE %" + soketekst+"%)");
+        }
+    }
+
     @SneakyThrows
     private Bruker mapTilBruker(Map<String, Object> row){
         return new Bruker()
@@ -59,4 +77,5 @@ public class PostgresQueryBuilder {
     private String eq(String one, String two){
         return one + " = " +two;
     }
+
 }
