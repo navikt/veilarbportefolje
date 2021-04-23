@@ -5,8 +5,10 @@ import com.zaxxer.hikari.HikariDataSource;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.utils.Credentials;
 import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -28,7 +30,8 @@ public class DbConfigOracle implements DatabaseConfig {
     }
 
 
-    @Bean
+    @Bean()
+    @Primary
     public DataSource dataSource() {
         Credentials oracleCredentials = getCredentials("oracle_creds");
         HikariConfig config = new HikariConfig();
@@ -44,18 +47,21 @@ public class DbConfigOracle implements DatabaseConfig {
     }
 
     @Bean
+    @Primary
     @Override
     public JdbcTemplate db(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean
+    @Primary
     @Override
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
     @Bean
+    @Primary
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
