@@ -194,6 +194,7 @@ public class ElasticServiceV2 {
                 delete(aktorId);
             }
         }
+
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
