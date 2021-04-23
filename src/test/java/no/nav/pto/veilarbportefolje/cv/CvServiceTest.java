@@ -7,12 +7,9 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
-@DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
 class CvServiceTest extends EndToEndTest {
 
     @Autowired

@@ -87,7 +87,7 @@ public class OppfolginsbrukerRepositoryV2 {
                 .setRettighetsgruppekode(rs.getString(RETTIGHETSGRUPPEKODE))
                 .setHovedmaalkode(rs.getString(HOVEDMAALKODE))
                 .setSikkerhetstiltak_type_kode(rs.getString(SIKKERHETSTILTAK_TYPE_KODE))
-                .setFr_kode(rs.getString(FR_KODE))
+                .setFr_kode(rs.getString(DISKRESJONSKODE))
                 .setHar_oppfolgingssak(rs.getBoolean(HAR_OPPFOLGINGSSAK))
                 .setSperret_ansatt(rs.getBoolean(SPERRET_ANSATT))
                 .setEr_doed(rs.getBoolean(ER_DOED))

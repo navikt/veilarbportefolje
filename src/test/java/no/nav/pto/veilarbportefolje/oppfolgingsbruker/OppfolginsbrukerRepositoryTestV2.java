@@ -1,7 +1,10 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.where.WhereClause;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,6 +22,10 @@ public class OppfolginsbrukerRepositoryTestV2 {
     public void setup() {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
         oppfolginsbrukerRepositoryV2 = new OppfolginsbrukerRepositoryV2(db);
+
+        SqlUtils.delete(db, PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME)
+                .where(WhereClause.equals(PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID, aktoerId.get()))
+                .execute();
     }
 
     @Test

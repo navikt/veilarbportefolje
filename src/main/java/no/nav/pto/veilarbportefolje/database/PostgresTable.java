@@ -5,6 +5,7 @@ public class PostgresTable {
     public static final class BRUKER_VIEW {
         public static final String TABLE_NAME = "BRUKER";
 
+        public static final String DISKRESJONSKODE = "DISKRESJONSKODE";
         public static final String FODSELSNR = "FODSELSNR";
         public static final String ETTERNAVN = "ETTERNAVN";
         public static final String FORNAVN = "FORNAVN";
@@ -13,7 +14,6 @@ public class PostgresTable {
         public static final String OPPFOLGING = "OPPFOLGING";
         public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
         public static final String NAV_KONTOR = "NAV_KONTOR";
-
     }
 
     public static final class OPPFOLGING_DATA {
@@ -41,7 +41,7 @@ public class PostgresTable {
         public static final String RETTIGHETSGRUPPEKODE = "RETTIGHETSGRUPPEKODE";
         public static final String HOVEDMAALKODE = "HOVEDMAALKODE";
         public static final String SIKKERHETSTILTAK_TYPE_KODE = "SIKKERHETSTILTAK_TYPE_KODE";
-        public static final String FR_KODE = "FR_KODE";
+        public static final String DISKRESJONSKODE = "DISKRESJONSKODE";
         public static final String HAR_OPPFOLGINGSSAK = "HAR_OPPFOLGINGSSAK";
         public static final String SPERRET_ANSATT = "SPERRET_ANSATT";
         public static final String ER_DOED = "ER_DOED";
@@ -60,7 +60,7 @@ public class PostgresTable {
                         ", " + RETTIGHETSGRUPPEKODE +
                         ", " + HOVEDMAALKODE +
                         ", " + SIKKERHETSTILTAK_TYPE_KODE +
-                        ", " + FR_KODE +
+                        ", " + DISKRESJONSKODE +
                         ", " + HAR_OPPFOLGINGSSAK +
                         ", " + SPERRET_ANSATT +
                         ", " + ER_DOED +
@@ -78,13 +78,12 @@ public class PostgresTable {
                         ", " + RETTIGHETSGRUPPEKODE +
                         ", " + HOVEDMAALKODE +
                         ", " + SIKKERHETSTILTAK_TYPE_KODE +
-                        ", " + FR_KODE +
+                        ", " + DISKRESJONSKODE +
                         ", " + HAR_OPPFOLGINGSSAK +
                         ", " + SPERRET_ANSATT +
                         ", " + ER_DOED +
                         ", " + DOED_FRA_DATO +
                         ", " + ENDRET_DATO;
     }
-
 
 }
