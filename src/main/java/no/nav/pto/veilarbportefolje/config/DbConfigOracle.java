@@ -30,7 +30,7 @@ public class DbConfigOracle implements DatabaseConfig {
     }
 
 
-    @Bean()
+    @Bean
     @Primary
     public DataSource dataSource() {
         Credentials oracleCredentials = getCredentials("oracle_creds");
@@ -80,6 +80,6 @@ public class DbConfigOracle implements DatabaseConfig {
         Flyway.configure()
                 .dataSource(dataSource)
                 .load()
-                .repair();
+                .migrate();
     }
 }
