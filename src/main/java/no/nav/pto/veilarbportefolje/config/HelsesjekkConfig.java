@@ -20,7 +20,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
-import static no.nav.pto.veilarbportefolje.config.DatabaseConfig.dbPinger;
+import static no.nav.pto.veilarbportefolje.config.DbConfigOracle.dbPinger;
 import static no.nav.pto.veilarbportefolje.elastic.ElasticConfig.FORVENTET_MINIMUM_ANTALL_DOKUMENTER;
 
 @Configuration

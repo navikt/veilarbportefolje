@@ -1,10 +1,10 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.pto.veilarbportefolje.config.MergeMigrationResolver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -25,12 +25,22 @@ public class TestUtil {
         return ds;
     }
 
+    public static void testMigrate (DataSource dataSource) {
+        Flyway.configure()
+                .dataSource(dataSource)
+                .locations("db/postgres")
+                .baselineOnMigrate(true)
+                .load()
+                .migrate();
+    }
+
     private static void migrateDb(DriverManagerDataSource ds) {
-        Flyway flyway = new Flyway();
-        flyway.setSkipDefaultResolvers(true);
-        flyway.setResolvers(new MergeMigrationResolver());
-        flyway.setDataSource(ds);
-        flyway.migrate();
+        Flyway.configure()
+                .dataSource(ds)
+                .locations("testmigration")
+                .skipDefaultResolvers(false)
+                .load()
+                .migrate();
     }
 
 

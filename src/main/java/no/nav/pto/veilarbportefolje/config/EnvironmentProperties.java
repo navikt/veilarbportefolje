@@ -25,5 +25,6 @@ public class EnvironmentProperties {
     private String azureAdClientId;
     private String openAmRefreshUrl;
     private String soapStsUrl;
+    private String dbUrl;
     private List<String> admins;
 }
