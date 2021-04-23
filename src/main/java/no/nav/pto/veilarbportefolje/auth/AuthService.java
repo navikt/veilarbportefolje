@@ -1,29 +1,38 @@
 package no.nav.pto.veilarbportefolje.auth;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.vavr.Tuple;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
-import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.config.CacheConfig.TILGANG_TIL_ENHET;
+import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 
 @Service
 public class AuthService {
 
     private final Pep veilarbPep;
+    private final Cache<VeilederPaEnhet, Boolean > harVeilederTilgangTilEnhetCache;
 
     @Autowired
     public AuthService(Pep veilarbPep) {
         this.veilarbPep = veilarbPep;
+        this.harVeilederTilgangTilEnhetCache = Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .maximumSize(6000)
+                .build();
     }
 
     public void tilgangTilOppfolging() {
@@ -35,9 +44,9 @@ public class AuthService {
         AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
     }
 
-    @Cacheable(TILGANG_TIL_ENHET)
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
-        return veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet));
+        return tryCacheFirst(harVeilederTilgangTilEnhetCache, new VeilederPaEnhet(veilederId,enhet),
+                () -> veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet)));
     }
 
     //TODO ER DETTA RIKTIGT ??
@@ -71,6 +80,13 @@ public class AuthService {
         }
         return bruker;
 
+    }
+
+    @Data
+    @Accessors(chain = true)
+    class VeilederPaEnhet {
+        private final String veilederId;
+        private final String enhetId;
     }
 
 }
