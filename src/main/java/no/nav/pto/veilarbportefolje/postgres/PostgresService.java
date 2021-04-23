@@ -24,7 +24,7 @@ public class PostgresService {
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, String veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
         boolean vedtaksPilot = erVedtakstottePilotPa(EnhetId.of(enhetId));
 
         PostgresQueryBuilder query = new PostgresQueryBuilder(jdbcTemplate, enhetId);
