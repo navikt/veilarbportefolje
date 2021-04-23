@@ -102,6 +102,26 @@ function handleRewindVedtak(e) {
     }
 }
 
+const aktoerIdSamtykkeForm = document.getElementById('aktoerIdSamtykkeForm');
+aktoerIdSamtykkeForm.addEventListener('submit', handleSamtykkeDeltCV);
+const aktoerIdSamtykkeInput = document.getElementById('aktoerIdSamtykkeInput');
+
+function handleSamtykkeDeltCV(e) {
+    e.preventDefault()
+
+    const aktoerIdSamtykke = aktoerIdSamtykkeInput.value;
+    if (aktoerIdSamtykke && aktoerIdSamtykke > 0) {
+        if (window.confirm(`Dette vil sette HAR_DELT_CV for: ${aktoerIdSamtykke}`)) {
+            fetchData(
+                '/veilarbportefolje/api/admin/settSamtykkeCV',
+                {method: 'POST', credentials: 'same-origin', body: aktoerIdSamtykke},
+                'aktoerIdSamtykkeResponse'
+            )
+        }
+    }
+}
+
+
 function sjekkStatus(resp) {
     if (!resp.ok) {
         console.log('resp', resp);

@@ -68,7 +68,7 @@ public class OppfolgingRepositoryV2 {
                 .execute();
     }
 
-    public Optional<ZonedDateTime> hentStartdRato(AktorId aktoerId) {
+    public Optional<ZonedDateTime> hentStartdato(AktorId aktoerId) {
         final ZonedDateTime startDato = SqlUtils
                 .select(db, TABLE_NAME, rs -> toZonedDateTime(rs.getTimestamp(STARTDATO)))
                 .column(STARTDATO)
@@ -85,9 +85,9 @@ public class OppfolgingRepositoryV2 {
     }
 
     public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
-        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, TABLE_NAME, rs -> mapToBrukerOppdatertInformasjon(rs))
+        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, TABLE_NAME, this::mapToBrukerOppdatertInformasjon)
                 .column("*")
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
                 .execute();
 
         return Optional.ofNullable(oppfolging);
@@ -95,6 +95,9 @@ public class OppfolgingRepositoryV2 {
 
     @SneakyThrows
     private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs) {
+        if(rs == null || rs.getString(AKTOERID) == null){
+            return null;
+        }
         return new BrukerOppdatertInformasjon()
                 .setAktoerid(rs.getString(AKTOERID))
                 .setNyForVeileder(rs.getBoolean(NY_FOR_VEILEDER))

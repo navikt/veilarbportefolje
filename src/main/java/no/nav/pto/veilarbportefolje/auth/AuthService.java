@@ -40,7 +40,6 @@ public class AuthService {
         return veilarbPep.harVeilederTilgangTilEnhet(NavIdent.of(veilederId), EnhetId.of(enhet));
     }
 
-    //TODO ER DETTA RIKTIGT ??
     public void tilgangTilBruker(String fnr) {
         AuthUtils.test("tilgangTilBruker", fnr, veilarbPep.harTilgangTilPerson(AuthUtils.getInnloggetBrukerToken(), ActionId.READ, Fnr.of(fnr)));
     }
