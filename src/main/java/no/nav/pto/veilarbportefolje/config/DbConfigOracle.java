@@ -7,11 +7,11 @@ import no.nav.common.utils.Credentials;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
@@ -19,6 +19,7 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.common.utils.NaisUtils.getFileContent;
 
 @Configuration
+@EnableTransactionManagement
 public class DbConfigOracle implements DatabaseConfig {
     private final String oracleURL;
 
@@ -28,7 +29,6 @@ public class DbConfigOracle implements DatabaseConfig {
 
 
     @Bean
-    @Override
     public DataSource dataSource() {
         Credentials oracleCredentials = getCredentials("oracle_creds");
         HikariConfig config = new HikariConfig();
@@ -56,7 +56,6 @@ public class DbConfigOracle implements DatabaseConfig {
     }
 
     @Bean
-    @Override
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
