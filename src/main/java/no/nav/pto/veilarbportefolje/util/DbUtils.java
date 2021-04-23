@@ -53,7 +53,6 @@ public class DbUtils {
     Oracle
     ***/
 
-
     @SneakyThrows
     public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
         String formidlingsgruppekode = rs.getString("formidlingsgruppekode");
