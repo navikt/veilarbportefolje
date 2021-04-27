@@ -8,10 +8,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Service
 public class PostgresService {
     private final VedtakstottePilotRequest vedtakstottePilotRequest;
     private final VeilarbVeilederClient veilarbVeilederClient;
