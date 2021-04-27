@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerService;
 import no.nav.pto.veilarbportefolje.profilering.ProfileringService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -186,6 +187,17 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 Topic.ENDRING_PA_MAL,
+                metricsClient
+        );
+    }
+
+    @Bean
+    public KafkaConsumerRunnable<String> kafkaEndringOppfolgingsbruker(OppfolginsbrukerService oppfolginsbrukerService, UnleashService unleashService, MetricsClient metricsClient) {
+        return new KafkaConsumerRunnable<>(
+                oppfolginsbrukerService,
+                unleashService,
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
+                Topic.ENDRING_PAA_OPPFOLGINGSBRUKER,
                 metricsClient
         );
     }
