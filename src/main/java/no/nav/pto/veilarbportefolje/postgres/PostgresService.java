@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.leggTilFerdigFilter;
-
 @Service
 public class PostgresService {
     private final VedtakstottePilotRequest vedtakstottePilotRequest;
