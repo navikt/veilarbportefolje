@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -22,16 +23,25 @@ public class PostgresQueryBuilder {
     public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor) {
         this.db = jdbcTemplate;
         whereStatement.add(eq(NAV_KONTOR, navKontor));
-        whereStatement.add(eq(OPPFOLGING, "TRUE"));
+        whereStatement.add(eq(OPPFOLGING, true));
 
     }
 
     public BrukereMedAntall search(Integer fra, Integer antall){
         List<Map<String, Object>> resultat = db.queryForList("SELECT * FROM " + TABLE_NAME + whereStatement.toString());
-        return new BrukereMedAntall(resultat.size(),
-                resultat.subList(fra, fra+antall).stream()
-                .map(this::mapTilBruker)
-                .collect(toList()));
+        List<Bruker> avskjertResultat;
+
+        if(resultat.size() <= fra){
+            avskjertResultat = new LinkedList<>();
+        }else {
+            int tilIndex = (resultat.size() <= fra + antall) ? resultat.size() - 1 : fra + antall;
+            avskjertResultat = resultat.subList(fra, tilIndex)
+                    .stream()
+                    .map(this::mapTilBruker)
+                    .collect(toList());
+        }
+
+        return new BrukereMedAntall(resultat.size(), avskjertResultat);
     }
 
     public void minOversiktFilter(String veilederId){
@@ -39,8 +49,10 @@ public class PostgresQueryBuilder {
     }
 
     public void ufordeltBruker(List<String> veiledereMedTilgangTilEnhet){
-        StringJoiner veiledere = new StringJoiner(", ", "( "+VEILEDERID + " IS NULL OR " + VEILEDERID + " NOT IN (" ,"))");
-        veiledereMedTilgangTilEnhet.forEach(veiledere::add);
+        StringJoiner veiledere = new StringJoiner(", ", "("+VEILEDERID + " IS NULL OR " + VEILEDERID + " NOT IN (" ,"))");
+        for (String s : veiledereMedTilgangTilEnhet) {
+            veiledere.add("'" + s + "'");
+        }
 
         whereStatement.add(veiledere.toString());
     }
@@ -74,8 +86,22 @@ public class PostgresQueryBuilder {
                 .setEtternavn((String) row.get(ETTERNAVN));
     }
 
-    private String eq(String one, String two){
-        return one + " = " +two;
+
+    private String eq(String kolonne, boolean verdi){
+        if(verdi){
+            return kolonne + " = TRUE";
+        } else {
+            return kolonne + " = FALSE";
+        }
+    }
+
+
+    private String eq(String kolonne, String verdi){
+        return kolonne + " = '" + verdi + "'";
+    }
+
+    private String eq(String kolonne, int verdi){
+        return kolonne + " = " +verdi;
     }
 
 }
