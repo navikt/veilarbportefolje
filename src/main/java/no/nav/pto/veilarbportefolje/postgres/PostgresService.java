@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.elastic.ElasticQueryBuilder.leggTilFerdigFilter;
+
 @Service
 public class PostgresService {
     private final VedtakstottePilotRequest vedtakstottePilotRequest;
@@ -36,14 +38,16 @@ public class PostgresService {
             query.minOversiktFilter(veilederIdent);
         }
         if (filtervalg.harAktiveFilter()) {
-            leggTilFerdigFilter(query, filtervalg.brukerstatus, veiledereMedTilgangTilEnhet, vedtaksPilot);
-
-            if(filtervalg.harNavnEllerFnrQuery()){
+            filtervalg.ferdigfilterListe.forEach(
+                    filter -> leggTilFerdigFilter(query, filter, veiledereMedTilgangTilEnhet, vedtaksPilot)
+            );
+            if (filtervalg.harNavnEllerFnrQuery()) {
                 query.navnOgFodselsnummerSok(filtervalg.getNavnEllerFnrQuery());
             }
-            //TODO: legg til resterende "filtervalg filter"
         }
-        return query.search(fra, antall);
+
+        //TODO: legg til resterende "filtervalg filter"
+        return query.search(fra,antall);
     }
 
 
@@ -120,11 +124,11 @@ public class PostgresService {
     }
 
     public StatusTall hentStatusTallForEnhet(String enhetId) {
-       return null;
+        return null;
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
-         return null;
+        return null;
     }
 
     private boolean erVedtakstottePilotPa(EnhetId enhetId) {
