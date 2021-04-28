@@ -12,9 +12,10 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
@@ -28,13 +29,11 @@ public class DialogRepositoryV2 {
     }
 
     public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
-        SqlUtils.upsert(db, "DIALOG")
-                .set("VENTER_PA_BRUKER", toTimestamp(dialog.getTidspunktEldsteVentende()))
-                .set("VENTER_PA_NAV", toTimestamp(dialog.getTidspunktEldsteUbehandlede()))
-                .set("OPPDATERT_KILDESYSTEM", toTimestamp(dialog.getSisteEndring()))
-                .set("OPPDATERT_PORTEFOLJE", Timestamp.from(Instant.now()))
-                .set("AKTOERID", dialog.getAktorId())
-                .where(WhereClause.equals("AKTOERID", dialog.getAktorId())).execute();
+        if(getEndretDato().isPresent())
+        db.update("INSERT INTO "+ TABLE_NAME
+        + " ("+SQLINSERT_STRING+") " +
+                "VALUES ("+dialog.toSqlInsertString()+ ") " +
+                "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + dialog.toSqlUpdateString() + ")");
     }
 
     public Try<Dialogdata> retrieveDialogData(String aktoerId) {
@@ -45,12 +44,18 @@ public class DialogRepositoryV2 {
         ).onFailure(e -> {});
     }
 
+    private Optional<Timestamp> getEndretDato(String aktorId) {
+        return Optional.ofNullable(
+                db.queryForObject("SELECT * FROM DIALOG WHERE AKTOERID = "+aktorId, Timestamp.class)
+        );
+    }
+
     @SneakyThrows
     private Dialogdata mapToDialogData(ResultSet rs, int i) {
         return new Dialogdata()
-                .setAktorId(rs.getString("AKTOERID"))
-                .setSisteEndring(toZonedDateTime(rs.getTimestamp("OPPDATERT_KILDESYSTEM")))
-                .setTidspunktEldsteUbehandlede(toZonedDateTime(rs.getTimestamp("VENTER_PA_NAV")))
-                .setTidspunktEldsteVentende(toZonedDateTime(rs.getTimestamp("VENTER_PA_BRUKER")));
+                .setAktorId(rs.getString(AKTOERID))
+                .setSisteEndring(toZonedDateTime(rs.getTimestamp(SIST_OPPDATERT)))
+                .setTidspunktEldsteUbehandlede(toZonedDateTime(rs.getTimestamp(VENTER_PA_NAV)))
+                .setTidspunktEldsteVentende(toZonedDateTime(rs.getTimestamp(VENTER_PA_BRUKER)));
     }
 }

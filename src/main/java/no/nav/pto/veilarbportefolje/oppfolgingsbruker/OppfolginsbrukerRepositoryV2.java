@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -40,7 +41,7 @@ public class OppfolginsbrukerRepositoryV2 {
         }
 
         return db.update("INSERT INTO " + TABLE_NAME
-                + "(" + SQLINSERT_STRING + ") " +
+                + " (" + SQLINSERT_STRING + ") " +
                 "VALUES(" + oppfolgingsbruker.toSqlInsertString() + ") " +
                 "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + oppfolgingsbruker.toSqlUpdateString() + ")");
     }
@@ -55,11 +56,10 @@ public class OppfolginsbrukerRepositoryV2 {
         return Optional.ofNullable(oppfolgingsbruker);
     }
 
-    private Optional<ZonedDateTime> getEndretDato(String aktorId) {
-        return Optional.ofNullable(SqlUtils.select(db, TABLE_NAME, this::mapTilEndretDato)
-                .column("*")
-                .where(WhereClause.equals(AKTOERID, aktorId))
-                .execute());
+    private Optional<Timestamp> getEndretDato(String aktorId) {
+        return Optional.ofNullable(
+                db.queryForObject("SELECT * FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = "+aktorId, Timestamp.class)
+        );;
     }
 
     @SneakyThrows
