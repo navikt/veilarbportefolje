@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.dialog;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.*;
@@ -29,24 +26,26 @@ public class DialogRepositoryV2 {
     }
 
     public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
-        if(getEndretDato().isPresent())
-        db.update("INSERT INTO "+ TABLE_NAME
-        + " ("+SQLINSERT_STRING+") " +
-                "VALUES ("+dialog.toSqlInsertString()+ ") " +
-                "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + dialog.toSqlUpdateString() + ")");
+        Optional<Timestamp> endretDato = getEndretDato(dialog.getAktorId());
+        if (dialog.getSisteEndring() == null || (endretDato.isPresent() && endretDato.get().toInstant().isAfter(dialog.getSisteEndring().toInstant()))) {
+            db.update("INSERT INTO " + TABLE_NAME +
+                    " (" + SQLINSERT_STRING + ") " +
+                    "VALUES (" + dialog.toSqlInsertString() + ") " +
+                    "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + dialog.toSqlUpdateString() + ")");
+        }
     }
 
     public Try<Dialogdata> retrieveDialogData(String aktoerId) {
         return Try.of(() -> db.queryForObject(
                 "SELECT * FROM DIALOG WHERE AKTOERID = ?",
-                new Object[] {aktoerId},
+                new Object[]{aktoerId},
                 this::mapToDialogData)
         ).onFailure(e -> {});
     }
 
     private Optional<Timestamp> getEndretDato(String aktorId) {
         return Optional.ofNullable(
-                db.queryForObject("SELECT * FROM DIALOG WHERE AKTOERID = "+aktorId, Timestamp.class)
+                db.queryForObject("SELECT * FROM DIALOG WHERE AKTOERID = " + aktorId, Timestamp.class)
         );
     }
 

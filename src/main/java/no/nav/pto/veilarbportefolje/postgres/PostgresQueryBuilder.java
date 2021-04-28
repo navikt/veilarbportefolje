@@ -17,8 +17,11 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 
 public class PostgresQueryBuilder {
-    private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE " ,";");
+    private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE ", ";");
     private final JdbcTemplate db;
+
+    private boolean filtererPaDialog = false;
+    private boolean filtererPaOppfolgingArena = false;
 
     public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor) {
         this.db = jdbcTemplate;
@@ -27,13 +30,20 @@ public class PostgresQueryBuilder {
 
     }
 
-    public BrukereMedAntall search(Integer fra, Integer antall){
-        List<Map<String, Object>> resultat = db.queryForList("SELECT * FROM " + TABLE_NAME + whereStatement.toString());
+    public BrukereMedAntall search(Integer fra, Integer antall) {
+        String tablesInUse = TABLE_NAME;
+
+        if (filtererPaDialog)
+            tablesInUse += " INNER JOIN " + PostgresTable.DIALOG.TABLE_NAME + " D WHERE D.AKTOERID=BRUKER.AKTOERID";
+        if (filtererPaOppfolgingArena)
+            tablesInUse += " INNER JOIN " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " OA WHERE OA.AKTOERID=BRUKER.AKTOERID";
+
+        List<Map<String, Object>> resultat = db.queryForList("SELECT * FROM " + tablesInUse + whereStatement.toString());
         List<Bruker> avskjertResultat;
 
-        if(resultat.size() <= fra){
+        if (resultat.size() <= fra) {
             avskjertResultat = new LinkedList<>();
-        }else {
+        } else {
             int tilIndex = (resultat.size() <= fra + antall) ? resultat.size() - 1 : fra + antall;
             avskjertResultat = resultat.subList(fra, tilIndex)
                     .stream()
@@ -44,12 +54,12 @@ public class PostgresQueryBuilder {
         return new BrukereMedAntall(resultat.size(), avskjertResultat);
     }
 
-    public void minOversiktFilter(String veilederId){
+    public void minOversiktFilter(String veilederId) {
         whereStatement.add(eq(VEILEDERID, veilederId));
     }
 
-    public void ufordeltBruker(List<String> veiledereMedTilgangTilEnhet){
-        StringJoiner veiledere = new StringJoiner(", ", "("+VEILEDERID + " IS NULL OR " + VEILEDERID + " NOT IN (" ,"))");
+    public void ufordeltBruker(List<String> veiledereMedTilgangTilEnhet) {
+        StringJoiner veiledere = new StringJoiner(", ", "(" + VEILEDERID + " IS NULL OR " + VEILEDERID + " NOT IN (", "))");
         for (String s : veiledereMedTilgangTilEnhet) {
             veiledere.add("'" + s + "'");
         }
@@ -57,26 +67,35 @@ public class PostgresQueryBuilder {
         whereStatement.add(veiledere.toString());
     }
 
-    public void nyForVeileder(){
+    public void nyForVeileder() {
         whereStatement.add(NY_FOR_VEILEDER + " = TRUE");
     }
 
     public void ikkeServiceBehov() {
-        //TODO: gjør noe smart med view etc... da FORMIDLINGSGRUPPEKODE ikke er en del av hoved viewet
-        whereStatement.add(PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORMIDLINGSGRUPPEKODE + " = ISERV");
+        filtererPaOppfolgingArena = true;
+        whereStatement.add("OA." + PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORMIDLINGSGRUPPEKODE + " = ISERV");
     }
 
+    public void venterPaSvarFraBruker() {
+        filtererPaDialog = true;
+        whereStatement.add("D." + PostgresTable.DIALOG.VENTER_PA_BRUKER + " IS NOT NULL");
+    }
 
-    public void navnOgFodselsnummerSok(String soketekst){
-        if(StringUtils.isNumeric(soketekst)){
-            whereStatement.add(FODSELSNR + " LIKE "+ soketekst+"%");
-        }else{
-            whereStatement.add("("+FORNAVN + " LIKE %"+ soketekst+"% OR " +ETTERNAVN + "LIKE %" + soketekst+"%)");
+    public void venterPaSvarFraNav() {
+        filtererPaDialog = true;
+        whereStatement.add("D." + PostgresTable.DIALOG.VENTER_PA_NAV + " IS NOT NULL");
+    }
+
+    public void navnOgFodselsnummerSok(String soketekst) {
+        if (StringUtils.isNumeric(soketekst)) {
+            whereStatement.add(FODSELSNR + " LIKE " + soketekst + "%");
+        } else {
+            whereStatement.add("(" + FORNAVN + " LIKE %" + soketekst + "% OR " + ETTERNAVN + "LIKE %" + soketekst + "%)");
         }
     }
 
     @SneakyThrows
-    private Bruker mapTilBruker(Map<String, Object> row){
+    private Bruker mapTilBruker(Map<String, Object> row) {
         return new Bruker()
                 .setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
                 .setVeilederId((String) row.get(VEILEDERID))
@@ -87,8 +106,8 @@ public class PostgresQueryBuilder {
     }
 
 
-    private String eq(String kolonne, boolean verdi){
-        if(verdi){
+    private String eq(String kolonne, boolean verdi) {
+        if (verdi) {
             return kolonne + " = TRUE";
         } else {
             return kolonne + " = FALSE";
@@ -96,12 +115,12 @@ public class PostgresQueryBuilder {
     }
 
 
-    private String eq(String kolonne, String verdi){
+    private String eq(String kolonne, String verdi) {
         return kolonne + " = '" + verdi + "'";
     }
 
-    private String eq(String kolonne, int verdi){
-        return kolonne + " = " +verdi;
+    private String eq(String kolonne, int verdi) {
+        return kolonne + " = " + verdi;
     }
 
 }

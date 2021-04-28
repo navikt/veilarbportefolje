@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -30,12 +28,12 @@ public class OppfolginsbrukerRepositoryV2 {
     }
 
     public int LeggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
-        if(oppfolgingsbruker == null || oppfolgingsbruker.getAktoerid() == null){
+        if (oppfolgingsbruker == null || oppfolgingsbruker.getAktoerid() == null) {
             return 0;
         }
 
-        Optional<ZonedDateTime> sistEndretDato = getEndretDato(oppfolgingsbruker.getAktoerid());
-        if (oppfolgingsbruker.getEndret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.getEndret_dato()))) {
+        Optional<Timestamp> sistEndretDato = getEndretDato(oppfolgingsbruker.getAktoerid());
+        if (oppfolgingsbruker.getEndret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().toInstant().isAfter(oppfolgingsbruker.getEndret_dato().toInstant()))) {
             log.info("Oppdaterer ikke oppfolgingsbruker: {}", oppfolgingsbruker.getAktoerid());
             return 0;
         }
@@ -58,16 +56,8 @@ public class OppfolginsbrukerRepositoryV2 {
 
     private Optional<Timestamp> getEndretDato(String aktorId) {
         return Optional.ofNullable(
-                db.queryForObject("SELECT * FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = "+aktorId, Timestamp.class)
-        );;
-    }
-
-    @SneakyThrows
-    private ZonedDateTime mapTilEndretDato(ResultSet rs) {
-        if (rs == null || rs.getString(ENDRET_DATO) == null) {
-            return null;
-        }
-        return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
+                db.queryForObject("SELECT * FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = " + aktorId, Timestamp.class)
+        );
     }
 
     @SneakyThrows
