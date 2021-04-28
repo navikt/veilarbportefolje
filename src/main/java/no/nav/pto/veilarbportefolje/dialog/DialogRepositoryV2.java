@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.dialog;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,9 +11,13 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
@@ -26,8 +31,8 @@ public class DialogRepositoryV2 {
     }
 
     public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
-        Optional<Timestamp> endretDato = getEndretDato(dialog.getAktorId());
-        if (dialog.getSisteEndring() == null || (endretDato.isPresent() && endretDato.get().toInstant().isAfter(dialog.getSisteEndring().toInstant()))) {
+        Optional<ZonedDateTime> endretDato = getEndretDato(dialog.getAktorId());
+        if (dialog.getSisteEndring() == null || (endretDato.isPresent() && endretDato.get().isAfter(dialog.getSisteEndring()))) {
             db.update("INSERT INTO " + TABLE_NAME +
                     " (" + SQLINSERT_STRING + ") " +
                     "VALUES (" + dialog.toSqlInsertString() + ") " +
@@ -36,17 +41,23 @@ public class DialogRepositoryV2 {
     }
 
     public Try<Dialogdata> retrieveDialogData(String aktoerId) {
+        String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
         return Try.of(() -> db.queryForObject(
-                "SELECT * FROM DIALOG WHERE AKTOERID = ?",
-                new Object[]{aktoerId},
+                sql, new Object[]{aktoerId},
                 this::mapToDialogData)
         ).onFailure(e -> {});
     }
 
-    private Optional<Timestamp> getEndretDato(String aktorId) {
+    private Optional<ZonedDateTime> getEndretDato(String aktorId) {
+        String sql = String.format("SELECT %s FROM %s WHERE %s = ?", SIST_OPPDATERT, TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
-                db.queryForObject("SELECT * FROM DIALOG WHERE AKTOERID = " + aktorId, Timestamp.class)
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, aktorId))
         );
+    }
+
+    @SneakyThrows
+    private ZonedDateTime mapTilZonedDateTime(ResultSet rs, int row){
+        return  toZonedDateTime(rs.getTimestamp(SIST_OPPDATERT));
     }
 
     @SneakyThrows

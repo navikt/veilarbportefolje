@@ -34,9 +34,9 @@ public class PostgresQueryBuilder {
         String tablesInUse = TABLE_NAME;
 
         if (filtererPaDialog)
-            tablesInUse += " INNER JOIN " + PostgresTable.DIALOG.TABLE_NAME + " D WHERE D.AKTOERID=BRUKER.AKTOERID";
+            tablesInUse += " INNER JOIN " + PostgresTable.DIALOG.TABLE_NAME + " D ON D.AKTOERID=BRUKER.AKTOERID";
         if (filtererPaOppfolgingArena)
-            tablesInUse += " INNER JOIN " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " OA WHERE OA.AKTOERID=BRUKER.AKTOERID";
+            tablesInUse += " INNER JOIN " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " OA ON OA.AKTOERID=BRUKER.AKTOERID";
 
         List<Map<String, Object>> resultat = db.queryForList("SELECT * FROM " + tablesInUse + whereStatement.toString());
         List<Bruker> avskjertResultat;

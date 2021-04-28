@@ -12,8 +12,10 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.*;
 
@@ -32,8 +34,8 @@ public class OppfolginsbrukerRepositoryV2 {
             return 0;
         }
 
-        Optional<Timestamp> sistEndretDato = getEndretDato(oppfolgingsbruker.getAktoerid());
-        if (oppfolgingsbruker.getEndret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().toInstant().isAfter(oppfolgingsbruker.getEndret_dato().toInstant()))) {
+        Optional<ZonedDateTime> sistEndretDato = getEndretDato(oppfolgingsbruker.getAktoerid());
+        if (oppfolgingsbruker.getEndret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.getEndret_dato()))) {
             log.info("Oppdaterer ikke oppfolgingsbruker: {}", oppfolgingsbruker.getAktoerid());
             return 0;
         }
@@ -54,10 +56,25 @@ public class OppfolginsbrukerRepositoryV2 {
         return Optional.ofNullable(oppfolgingsbruker);
     }
 
-    private Optional<Timestamp> getEndretDato(String aktorId) {
+    /*
+    private Optional<ZonedDateTime> getEndretDato(String aktorId) {
+        String sql = String.format("SELECT %s FROM %s WHERE %s = ?", SIST_OPPDATERT, TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
-                db.queryForObject("SELECT * FROM OPPFOLGINGSBRUKER_ARENA WHERE AKTOERID = " + aktorId, Timestamp.class)
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, aktorId))
         );
+    }
+     */
+
+    private Optional<ZonedDateTime> getEndretDato(String aktorId) {
+        String sql = String.format("SELECT %s FROM %s WHERE %s=? ", ENDRET_DATO, TABLE_NAME, AKTOERID);
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, aktorId))
+        );
+    }
+
+    @SneakyThrows
+    private ZonedDateTime mapTilZonedDateTime(ResultSet rs, int row) {
+        return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
     }
 
     @SneakyThrows
