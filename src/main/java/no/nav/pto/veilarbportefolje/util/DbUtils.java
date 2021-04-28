@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.apache.commons.lang3.text.WordUtils;
-import org.flywaydb.core.Flyway;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -39,9 +38,14 @@ public class DbUtils {
         return config;
     }
 
+    public static String getSqlRole() {
+        boolean isProd = isProduction().orElse(false);
+        return (isProd ? "veilarbportefolje-prod-admin" : "veilarbportefolje-dev-admin");
+    }
+
     @SneakyThrows
     private static DataSource createVaultRefreshDataSource(HikariConfig config) {
-        return HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(config, getMountPath(), "ADMIN");
+        return HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(config, getMountPath(), getSqlRole());
     }
 
     private static String getMountPath() {
@@ -52,7 +56,6 @@ public class DbUtils {
     /***
     Oracle
     ***/
-
 
     @SneakyThrows
     public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {

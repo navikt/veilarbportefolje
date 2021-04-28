@@ -87,11 +87,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         Map<String, Object> source = elasticTestClient.fetchDocument(aktoerId).getSourceAsMap();
 
-        boolean arbeidslisteAktiv = (boolean) source.get("arbeidsliste_aktiv");
-        assertThat(arbeidslisteAktiv).isFalse();
-
-        boolean oppfolging = (boolean) source.get("oppfolging");
-        assertThat(oppfolging).isFalse();
+        assertThat(source).isNull();
     }
 
     @Test

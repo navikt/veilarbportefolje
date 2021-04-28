@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

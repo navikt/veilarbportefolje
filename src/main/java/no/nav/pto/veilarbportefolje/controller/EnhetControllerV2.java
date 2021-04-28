@@ -7,17 +7,17 @@ import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.AuthUtils;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
+@RestController
+@RequestMapping("/api/v2/enhet")
 @RequiredArgsConstructor
 public class EnhetControllerV2 {
     private final AuthService authService;
@@ -25,7 +25,7 @@ public class EnhetControllerV2 {
     private final MetricsClient metricsClient;
     private final PostgresService postgresService;
 
-    @PostMapping("v2/{enhet}/portefolje")
+    @PostMapping("/{enhet}/portefolje")
     public Portefolje hentPortefoljeForEnhet(
             @PathVariable("enhet") String enhet,
             @RequestParam(value = "fra", required = false) Integer fra,
@@ -59,7 +59,7 @@ public class EnhetControllerV2 {
     }
 
 
-    @GetMapping("v2/{enhet}/portefoljestorrelser")
+    @GetMapping("/{enhet}/portefoljestorrelser")
     public FacetResults hentPortefoljestorrelser(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
@@ -67,7 +67,7 @@ public class EnhetControllerV2 {
         return postgresService.hentPortefoljestorrelser(enhet);
     }
 
-    @GetMapping("v2/{enhet}/statustall")
+    @GetMapping("/{enhet}/statustall")
     public StatusTall hentStatusTall(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);
@@ -76,7 +76,7 @@ public class EnhetControllerV2 {
 
     }
 
-    @GetMapping("v2/{enhet}/tiltak")
+    @GetMapping("/{enhet}/tiltak")
     public EnhetTiltak hentTiltak(@PathVariable("enhet") String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.tilgangTilEnhet(enhet);

@@ -8,10 +8,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Service
 public class PostgresService {
     private final VedtakstottePilotRequest vedtakstottePilotRequest;
     private final VeilarbVeilederClient veilarbVeilederClient;
@@ -24,18 +26,26 @@ public class PostgresService {
     }
 
     public BrukereMedAntall hentBrukere(String enhetId, String veilederIdent, String sortOrder, String sortField, Filtervalg filtervalg, Integer fra, Integer antall) {
-        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(enhetId);
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
         boolean vedtaksPilot = erVedtakstottePilotPa(EnhetId.of(enhetId));
 
-        PostgresQueryBuilder query = new PostgresQueryBuilder(jdbcTemplate);
+        PostgresQueryBuilder query = new PostgresQueryBuilder(jdbcTemplate, enhetId);
 
         boolean kallesFraMinOversikt = StringUtils.isNotBlank(veilederIdent);
         if (kallesFraMinOversikt) {
             query.minOversiktFilter(veilederIdent);
         }
+        if (filtervalg.harAktiveFilter()) {
+            filtervalg.ferdigfilterListe.forEach(
+                    filter -> leggTilFerdigFilter(query, filter, veiledereMedTilgangTilEnhet, vedtaksPilot)
+            );
+            if (filtervalg.harNavnEllerFnrQuery()) {
+                query.navnOgFodselsnummerSok(filtervalg.getNavnEllerFnrQuery());
+            }
+        }
 
-        leggTilFerdigFilter(query, filtervalg.brukerstatus, veiledereMedTilgangTilEnhet, vedtaksPilot);
-        return query.search(fra, antall);
+        //TODO: legg til resterende "filtervalg filter"
+        return query.search(fra,antall);
     }
 
 
@@ -49,7 +59,7 @@ public class PostgresService {
                 query.nyForVeileder();
                 break;
             case INAKTIVE_BRUKERE:
-                // matchQuery("formidlingsgruppekode", "ISERV");
+                query.ikkeServiceBehov();
                 break;
             case VENTER_PA_SVAR_FRA_NAV:
                 // existsQuery("venterpasvarfranav");
@@ -77,7 +87,6 @@ public class PostgresService {
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
                 // byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
                 break;
-
             case TRENGER_VURDERING:
                 // byggTrengerVurderingFilter(erVedtakstottePilotPa);
                 break;
@@ -113,11 +122,11 @@ public class PostgresService {
     }
 
     public StatusTall hentStatusTallForEnhet(String enhetId) {
-       return null;
+        return null;
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
-         return null;
+        return null;
     }
 
     private boolean erVedtakstottePilotPa(EnhetId enhetId) {

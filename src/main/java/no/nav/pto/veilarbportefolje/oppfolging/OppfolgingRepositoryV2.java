@@ -10,6 +10,7 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
@@ -20,6 +21,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
+@Repository
 public class OppfolgingRepositoryV2 {
 
     private final JdbcTemplate db;
@@ -68,7 +70,7 @@ public class OppfolgingRepositoryV2 {
                 .execute();
     }
 
-    public Optional<ZonedDateTime> hentStartdRato(AktorId aktoerId) {
+    public Optional<ZonedDateTime> hentStartdato(AktorId aktoerId) {
         final ZonedDateTime startDato = SqlUtils
                 .select(db, TABLE_NAME, rs -> toZonedDateTime(rs.getTimestamp(STARTDATO)))
                 .column(STARTDATO)
@@ -85,9 +87,9 @@ public class OppfolgingRepositoryV2 {
     }
 
     public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
-        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, TABLE_NAME, rs -> mapToBrukerOppdatertInformasjon(rs))
+        final BrukerOppdatertInformasjon oppfolging = SqlUtils.select(db, TABLE_NAME, this::mapToBrukerOppdatertInformasjon)
                 .column("*")
-                .where(WhereClause.equals(AKTOERID, aktoerId.toString()))
+                .where(WhereClause.equals(AKTOERID, aktoerId.get()))
                 .execute();
 
         return Optional.ofNullable(oppfolging);
@@ -95,6 +97,9 @@ public class OppfolgingRepositoryV2 {
 
     @SneakyThrows
     private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs) {
+        if(rs == null || rs.getString(AKTOERID) == null){
+            return null;
+        }
         return new BrukerOppdatertInformasjon()
                 .setAktoerid(rs.getString(AKTOERID))
                 .setNyForVeileder(rs.getBoolean(NY_FOR_VEILEDER))

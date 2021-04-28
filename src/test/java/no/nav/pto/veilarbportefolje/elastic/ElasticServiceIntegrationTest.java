@@ -26,6 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUnt
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -191,7 +192,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                         .setVeileder_id(null)
         );
 
-        when(veilarbVeilederClientMock.hentVeilederePaaEnhet(anyString())).thenReturn(List.of(TEST_VEILEDER_0));
+        when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
         skrivBrukereTilTestindeks(brukere);
 
@@ -339,7 +340,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
 
         pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
 
-        when(veilarbVeilederClientMock.hentVeilederePaaEnhet(anyString())).thenReturn(List.of(TEST_VEILEDER_0));
+        when(veilarbVeilederClientMock.hentVeilederePaaEnhet(any())).thenReturn(List.of(TEST_VEILEDER_0));
 
         val statustall = elasticService.hentStatusTallForEnhet(TEST_ENHET);
         assertThat(statustall.getUfordelteBrukere()).isEqualTo(1);
