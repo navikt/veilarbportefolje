@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.StringJoiner;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 
 public class PostgresQueryBuilder {
     private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE ", ";");
@@ -40,11 +42,15 @@ public class PostgresQueryBuilder {
 
         List<Map<String, Object>> resultat = db.queryForList("SELECT * FROM " + tablesInUse + whereStatement.toString());
         List<Bruker> avskjertResultat;
+        List<Map<String, Object>> resultat2 = db.queryForList("SELECT * FROM " + tablesInUse);
+        List<Map<String, Object>> resultat3 = db.queryForList("SELECT * FROM DIALOG");
+        List<Map<String, Object>> resultat4 = db.queryForList("SELECT * FROM OPPFOLGINGSBRUKER_ARENA" );
+        List<Map<String, Object>> resultat5 = db.queryForList("SELECT * FROM OPPFOLGING_DATA" );
 
         if (resultat.size() <= fra) {
             avskjertResultat = new LinkedList<>();
         } else {
-            int tilIndex = (resultat.size() <= fra + antall) ? resultat.size() - 1 : fra + antall;
+            int tilIndex = (resultat.size() <= fra + antall) ? resultat.size() : fra + antall;
             avskjertResultat = resultat.subList(fra, tilIndex)
                     .stream()
                     .map(this::mapTilBruker)
@@ -90,19 +96,34 @@ public class PostgresQueryBuilder {
         if (StringUtils.isNumeric(soketekst)) {
             whereStatement.add(FODSELSNR + " LIKE " + soketekst + "%");
         } else {
-            whereStatement.add("(" + FORNAVN + " LIKE %" + soketekst + "% OR " + ETTERNAVN + "LIKE %" + soketekst + "%)");
+            whereStatement.add("(" + FORNAVN + " LIKE %" + soketekst + "% OR " + ETTERNAVN + " LIKE %" + soketekst + "%)");
         }
     }
 
     @SneakyThrows
     private Bruker mapTilBruker(Map<String, Object> row) {
-        return new Bruker()
+        Bruker bruker = new Bruker();
+        if(filtererPaDialog){
+            mapDialog(bruker, row);
+        }
+        if(filtererPaOppfolgingArena){
+            //mapArena(bruker, row);
+        }
+        return bruker
                 .setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
                 .setVeilederId((String) row.get(VEILEDERID))
                 .setDiskresjonskode((String) row.get(DISKRESJONSKODE))
                 .setFnr((String) row.get(FODSELSNR))
                 .setFornavn((String) row.get(FORNAVN))
                 .setEtternavn((String) row.get(ETTERNAVN));
+    }
+
+
+    @SneakyThrows
+    private Bruker mapDialog(Bruker bruker, Map<String, Object> row) {
+        return bruker
+                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(PostgresTable.DIALOG.VENTER_PA_BRUKER)))
+                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(PostgresTable.DIALOG.VENTER_PA_NAV)));
     }
 
 
