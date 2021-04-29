@@ -174,23 +174,18 @@ public class ElasticIndexer {
     }
 
     @SneakyThrows
-    public IndexName opprettNyIndeks(String navn) {
+    public String opprettNyIndeks(String navn) {
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
-        CreateIndexResponse response = null;
-        try {
-            CreateIndexRequest request = new CreateIndexRequest(navn).source(json, XContentType.JSON);
-            response = restHighLevelClient.indices().create(request, DEFAULT);
-        } catch (Exception e) {
-            IndexName newIndex = new IndexName(generateId());
-            CreateIndexRequest request = new CreateIndexRequest(newIndex.getValue()).source(json, XContentType.JSON);
-            response = restHighLevelClient.indices().create(request, DEFAULT);
-        }
+        CreateIndexRequest request = new CreateIndexRequest(navn)
+                .source(json, XContentType.JSON);
+
+        CreateIndexResponse response = restHighLevelClient.indices().create(request, DEFAULT);
         if (!response.isAcknowledged()) {
             log.error("Kunne ikke opprette ny indeks {}", navn);
             throw new RuntimeException();
         }
 
-        return new IndexName(navn);
+        return navn;
     }
 
     private void validateBatchSize(List<OppfolgingsBruker> brukere) {

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static no.nav.common.utils.IdUtils.generateId;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public abstract class EndToEndTest {
@@ -28,7 +27,7 @@ public abstract class EndToEndTest {
     @BeforeEach
     void setUp() {
         try {
-            indexName = elasticIndexer.opprettNyIndeks(indexName.getValue());
+            elasticIndexer.opprettNyIndeks(indexName.getValue());
         } catch (Exception e) {
             elasticTestClient.deleteIndex(indexName);
             elasticIndexer.opprettNyIndeks(indexName.getValue());
