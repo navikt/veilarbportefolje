@@ -33,11 +33,11 @@ public class DialogRepositoryV2 {
 
     public int oppdaterDialogInfoForBruker(Dialogdata dialog) {
         Optional<ZonedDateTime> endretDato = getEndretDato(dialog.getAktorId());
-        if (dialog.getSisteEndring() == null || (endretDato.isPresent() && endretDato.get().isAfter(dialog.getSisteEndring()))) {
+        if (dialog.getSisteEndring() != null && endretDato.isPresent() && endretDato.get().isAfter(dialog.getSisteEndring())) {
             log.info("Oppdaterer ikke dialog i postgres for: {}", dialog.getAktorId());
             return 0;
         }
-        log.info("Oppdaterer dialog i postgres for: {}", dialog.getAktorId());
+        log.info("Oppdaterer dialog i postgres for: {}, med sist endret: {}", dialog.getAktorId(), dialog.getSisteEndring());
         return db.update("INSERT INTO " + TABLE_NAME +
                 " (" + SQLINSERT_STRING + ") " +
                 "VALUES (" + dialog.toSqlInsertString() + ") " +
