@@ -36,9 +36,11 @@ public class PostgresService {
             query.minOversiktFilter(veilederIdent);
         }
         if (filtervalg.harAktiveFilter()) {
-            filtervalg.ferdigfilterListe.forEach(
-                    filter -> leggTilFerdigFilter(query, filter, veiledereMedTilgangTilEnhet, vedtaksPilot)
-            );
+            if(filtervalg.harFerdigFilter()) {
+                filtervalg.ferdigfilterListe.forEach(
+                        filter -> leggTilFerdigFilter(query, filter, veiledereMedTilgangTilEnhet, vedtaksPilot)
+                );
+            }
             if (filtervalg.harNavnEllerFnrQuery()) {
                 query.navnOgFodselsnummerSok(filtervalg.getNavnEllerFnrQuery());
             }

@@ -55,6 +55,17 @@ public class PostgresServiceTest {
 
     }
 
+
+    @Test
+    public void sok_pa_tekst(){
+        when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345","Z12346"));
+
+        Filtervalg teskt = new Filtervalg().setNavnEllerFnrQuery("test");
+        Filtervalg fnr = new Filtervalg().setNavnEllerFnrQuery("123");
+        postgresService.hentBrukere("1234",null, null,null, teskt, 0, 10);
+        postgresService.hentBrukere("1234",null, null,null, fnr, 0, 10);
+    }
+
     @Test
     public void sok_pa_dialog(){
         AktorId aktorId = AktorId.of("123456789");

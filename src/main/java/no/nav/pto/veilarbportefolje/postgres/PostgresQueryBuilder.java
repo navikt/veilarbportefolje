@@ -89,9 +89,10 @@ public class PostgresQueryBuilder {
 
     public void navnOgFodselsnummerSok(String soketekst) {
         if (StringUtils.isNumeric(soketekst)) {
-            whereStatement.add(FODSELSNR + " LIKE " + soketekst + "%");
+            whereStatement.add(FODSELSNR + " LIKE '" + soketekst + "%'");
         } else {
-            whereStatement.add("(" + FORNAVN + " LIKE %" + soketekst + "% OR " + ETTERNAVN + " LIKE %" + soketekst + "%)");
+            String soketekstUpper = soketekst.toUpperCase();
+            whereStatement.add("( UPPER(" + FORNAVN + ") LIKE '%" + soketekstUpper + "%' OR  UPPER(" + ETTERNAVN + ") LIKE '%" + soketekstUpper + "%')");
         }
     }
 
