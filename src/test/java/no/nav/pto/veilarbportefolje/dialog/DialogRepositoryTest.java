@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.database;
+package no.nav.pto.veilarbportefolje.dialog;
 
 
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;

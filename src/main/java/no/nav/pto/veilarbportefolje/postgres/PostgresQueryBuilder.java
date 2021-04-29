@@ -42,11 +42,6 @@ public class PostgresQueryBuilder {
 
         List<Map<String, Object>> resultat = db.queryForList("SELECT * FROM " + tablesInUse + whereStatement.toString());
         List<Bruker> avskjertResultat;
-        List<Map<String, Object>> resultat2 = db.queryForList("SELECT * FROM " + tablesInUse);
-        List<Map<String, Object>> resultat3 = db.queryForList("SELECT * FROM DIALOG");
-        List<Map<String, Object>> resultat4 = db.queryForList("SELECT * FROM OPPFOLGINGSBRUKER_ARENA" );
-        List<Map<String, Object>> resultat5 = db.queryForList("SELECT * FROM OPPFOLGING_DATA" );
-
         if (resultat.size() <= fra) {
             avskjertResultat = new LinkedList<>();
         } else {
