@@ -26,7 +26,6 @@ import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -35,7 +34,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
-import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.filtrerBrukertiltak;
 import static no.nav.pto.veilarbportefolje.elastic.IndekseringUtils.finnBruker;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
@@ -175,6 +173,7 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public String opprettNyIndeks(String navn) {
+        
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);

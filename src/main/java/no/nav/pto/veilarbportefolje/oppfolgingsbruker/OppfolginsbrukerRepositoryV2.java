@@ -3,15 +3,12 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -48,22 +45,12 @@ public class OppfolginsbrukerRepositoryV2 {
 
 
     public Optional<OppfolgingsbrukerKafkaDTO> getOppfolgingsBruker(AktorId aktorId) {
-        final OppfolgingsbrukerKafkaDTO oppfolgingsbruker = SqlUtils.select(db, TABLE_NAME, this::mapTilOppfolgingsbruker)
-                .column("*")
-                .where(WhereClause.equals(AKTOERID, aktorId.get()))
-                .execute();
-
-        return Optional.ofNullable(oppfolgingsbruker);
-    }
-
-    /*
-    private Optional<ZonedDateTime> getEndretDato(String aktorId) {
-        String sql = String.format("SELECT %s FROM %s WHERE %s = ?", SIST_OPPDATERT, TABLE_NAME, AKTOERID);
+        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, aktorId))
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilOppfolgingsbruker, aktorId))
         );
     }
-     */
+
 
     private Optional<ZonedDateTime> getEndretDato(String aktorId) {
         String sql = String.format("SELECT %s FROM %s WHERE %s=? ", ENDRET_DATO, TABLE_NAME, AKTOERID);
@@ -78,7 +65,7 @@ public class OppfolginsbrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private OppfolgingsbrukerKafkaDTO mapTilOppfolgingsbruker(ResultSet rs) {
+    private OppfolgingsbrukerKafkaDTO mapTilOppfolgingsbruker(ResultSet rs, int row) {
         if (rs == null || rs.getString(AKTOERID) == null) {
             return null;
         }
