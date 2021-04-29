@@ -130,4 +130,11 @@ public class DateUtils {
         }
         return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.of("Europe/Oslo"));
     }
+
+    public static LocalDateTime toLocalDateTimeOrNull(Timestamp date) {
+        if (date == null) {
+            return null;
+        }
+        return date.toLocalDateTime();
+    }
 }

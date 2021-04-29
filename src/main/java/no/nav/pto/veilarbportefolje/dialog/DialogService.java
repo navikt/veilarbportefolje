@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.dialog;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
@@ -12,23 +13,19 @@ import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class DialogService implements KafkaConsumerService<String> {
 
     private final DialogRepository dialogRepository;
     private final ElasticServiceV2 elasticServiceV2;
-    private final AtomicBoolean rewind;
-
-    @Autowired
-    public DialogService(DialogRepository dialogRepository, ElasticServiceV2 elasticServiceV2) {
-        this.dialogRepository = dialogRepository;
-        this.elasticServiceV2 = elasticServiceV2;
-        this.rewind = new AtomicBoolean();
-    }
+    private final DialogRepositoryV2 dialogRepositoryV2;
+    private final AtomicBoolean rewind = new AtomicBoolean();
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
         Dialogdata melding = fromJson(kafkaMelding, Dialogdata.class);
         dialogRepository.oppdaterDialogInfoForBruker(melding);
+        dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
         elasticServiceV2.updateDialog(melding);
     }
 

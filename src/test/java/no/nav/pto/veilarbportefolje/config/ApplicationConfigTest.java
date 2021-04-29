@@ -4,6 +4,7 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
+import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -239,6 +240,11 @@ public class ApplicationConfigTest {
     @Bean
     public OppfolginsbrukerRepositoryV2 oppfolginsbrukerRepositoryV2() {
         return mock(OppfolginsbrukerRepositoryV2.class);
+    }
+
+    @Bean
+    public DialogRepositoryV2 dialogRepositoryV2(){
+        return mock(DialogRepositoryV2.class);
     }
 
 }

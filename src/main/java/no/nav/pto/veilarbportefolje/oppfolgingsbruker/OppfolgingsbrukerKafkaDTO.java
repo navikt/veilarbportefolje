@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Data
@@ -66,12 +67,5 @@ public class OppfolgingsbrukerKafkaDTO {
                 safeNull(getEr_doed()) + ", " +
                 safeNull(toTimestamp(getDoed_fra_dato())) + ", " +
                 safeNull(toTimestamp(getEndret_dato()));
-    }
-
-    private String safeNull(Object o) {
-        if (o == null) {
-            return "NULL";
-        }
-        return "'" + o.toString() + "'";
     }
 }

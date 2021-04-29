@@ -3,9 +3,6 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +12,7 @@ import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.*;
 
@@ -29,7 +27,7 @@ public class OppfolginsbrukerRepositoryV2 {
     }
 
     public int LeggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
-        if(oppfolgingsbruker == null || oppfolgingsbruker.getAktoerid() == null){
+        if (oppfolgingsbruker == null || oppfolgingsbruker.getAktoerid() == null) {
             return 0;
         }
 
@@ -40,38 +38,34 @@ public class OppfolginsbrukerRepositoryV2 {
         }
 
         return db.update("INSERT INTO " + TABLE_NAME
-                + "(" + SQLINSERT_STRING + ") " +
+                + " (" + SQLINSERT_STRING + ") " +
                 "VALUES(" + oppfolgingsbruker.toSqlInsertString() + ") " +
                 "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + oppfolgingsbruker.toSqlUpdateString() + ")");
     }
 
 
     public Optional<OppfolgingsbrukerKafkaDTO> getOppfolgingsBruker(AktorId aktorId) {
-        final OppfolgingsbrukerKafkaDTO oppfolgingsbruker = SqlUtils.select(db, TABLE_NAME, this::mapTilOppfolgingsbruker)
-                .column("*")
-                .where(WhereClause.equals(AKTOERID, aktorId.get()))
-                .execute();
-
-        return Optional.ofNullable(oppfolgingsbruker);
+        String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, AKTOERID);
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilOppfolgingsbruker, aktorId))
+        );
     }
 
+
     private Optional<ZonedDateTime> getEndretDato(String aktorId) {
-        return Optional.ofNullable(SqlUtils.select(db, TABLE_NAME, this::mapTilEndretDato)
-                .column("*")
-                .where(WhereClause.equals(AKTOERID, aktorId))
-                .execute());
+        String sql = String.format("SELECT %s FROM %s WHERE %s=? ", ENDRET_DATO, TABLE_NAME, AKTOERID);
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, aktorId))
+        );
     }
 
     @SneakyThrows
-    private ZonedDateTime mapTilEndretDato(ResultSet rs) {
-        if (rs == null || rs.getString(ENDRET_DATO) == null) {
-            return null;
-        }
+    private ZonedDateTime mapTilZonedDateTime(ResultSet rs, int row) {
         return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
     }
 
     @SneakyThrows
-    private OppfolgingsbrukerKafkaDTO mapTilOppfolgingsbruker(ResultSet rs) {
+    private OppfolgingsbrukerKafkaDTO mapTilOppfolgingsbruker(ResultSet rs, int row) {
         if (rs == null || rs.getString(AKTOERID) == null) {
             return null;
         }

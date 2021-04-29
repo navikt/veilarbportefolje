@@ -62,10 +62,10 @@ public class PostgresService {
                 query.ikkeServiceBehov();
                 break;
             case VENTER_PA_SVAR_FRA_NAV:
-                // existsQuery("venterpasvarfranav");
+                query.venterPaSvarFraNav();
                 break;
             case VENTER_PA_SVAR_FRA_BRUKER:
-                // existsQuery("venterpasvarfrabruker");
+                query.venterPaSvarFraBruker();
                 break;
             case I_AVTALT_AKTIVITET:
                 // existsQuery("aktiviteter");
