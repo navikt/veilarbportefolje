@@ -80,6 +80,10 @@ public class DbConfigOracle implements DatabaseConfig {
         Flyway.configure()
                 .dataSource(dataSource)
                 .load()
+                .repair();
+        Flyway.configure()
+                .dataSource(dataSource)
+                .load()
                 .migrate();
     }
 }
