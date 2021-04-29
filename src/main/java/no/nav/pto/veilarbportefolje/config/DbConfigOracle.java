@@ -81,9 +81,5 @@ public class DbConfigOracle implements DatabaseConfig {
                 .dataSource(dataSource)
                 .load()
                 .repair();
-        Flyway.configure()
-                .dataSource(dataSource)
-                .load()
-                .migrate();
     }
 }
