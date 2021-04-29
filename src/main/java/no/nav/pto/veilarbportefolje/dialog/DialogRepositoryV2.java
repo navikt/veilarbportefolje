@@ -31,12 +31,14 @@ public class DialogRepositoryV2 {
         this.db = db;
     }
 
-    public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
+    public int oppdaterDialogInfoForBruker(Dialogdata dialog) {
         Optional<ZonedDateTime> endretDato = getEndretDato(dialog.getAktorId());
         if (dialog.getSisteEndring() == null || (endretDato.isPresent() && endretDato.get().isAfter(dialog.getSisteEndring()))) {
-            return;
+            log.info("Oppdaterer ikke dialog i postgres for: {}", dialog.getAktorId());
+            return 0;
         }
-        db.update("INSERT INTO " + TABLE_NAME +
+        log.info("Oppdaterer dialog i postgres for: {}", dialog.getAktorId());
+        return db.update("INSERT INTO " + TABLE_NAME +
                 " (" + SQLINSERT_STRING + ") " +
                 "VALUES (" + dialog.toSqlInsertString() + ") " +
                 "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + dialog.toSqlUpdateString() + ")");

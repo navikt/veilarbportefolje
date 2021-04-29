@@ -25,7 +25,9 @@ public class DialogService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
         Dialogdata melding = fromJson(kafkaMelding, Dialogdata.class);
         dialogRepository.oppdaterDialogInfoForBruker(melding);
-        dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
+        int rader = dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
+        log.info("Oppdatert dialog i postgres rader pavirket: {}", rader);
+
         elasticServiceV2.updateDialog(melding);
     }
 
