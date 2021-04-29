@@ -173,7 +173,7 @@ public class ElasticIndexer {
 
     @SneakyThrows
     public String opprettNyIndeks(String navn) {
-        
+
         String json = IOUtils.toString(getClass().getResource("/elastic_settings.json"), Charset.forName("UTF-8"));
         CreateIndexRequest request = new CreateIndexRequest(navn)
                 .source(json, XContentType.JSON);
