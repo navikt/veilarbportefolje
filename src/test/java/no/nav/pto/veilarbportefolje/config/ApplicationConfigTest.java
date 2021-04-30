@@ -102,7 +102,8 @@ import static org.mockito.Mockito.when;
         SisteEndringService.class,
         SisteEndringRepository.class,
         SistLestService.class,
-        MalService.class
+        MalService.class,
+        OppfolgingService.class
 })
 public class ApplicationConfigTest {
 

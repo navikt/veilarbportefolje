@@ -38,6 +38,13 @@ public class OppfolgingRepository {
                 .execute();
     }
 
+    public int oppdaterStartdato(AktorId aktoerId, ZonedDateTime startDato) {
+        return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
+                .set(Table.OPPFOLGING_DATA.STARTDATO, toTimestamp(startDato))
+                .whereEquals(Table.OPPFOLGING_DATA.AKTOERID, aktoerId.toString())
+                .execute();
+    }
+
     public int settVeileder(AktorId aktorId, VeilederId veilederId) {
         return SqlUtils.update(db, Table.OPPFOLGING_DATA.TABLE_NAME)
                 .set(Table.OPPFOLGING_DATA.VEILEDERIDENT, veilederId.toString())
