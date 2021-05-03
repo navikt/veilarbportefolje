@@ -68,11 +68,10 @@ public class OppfolgingService {
         Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
 
         if (oppfolgingPeriode.isPresent()) {
-            LocalDateTime korrektStartDato = oppfolgingPeriode.get().startDato;
+            ZonedDateTime korrektStartDato = oppfolgingPeriode.get().startDato;
             if (korrektStartDato != null) {
-                ZonedDateTime zonedDateTime = ZonedDateTime.of(korrektStartDato, ZoneId.of("Europe/Oslo"));
-                log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), zonedDateTime);
-                int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), zonedDateTime);
+                log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
+                int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
                 if(rows != 1){
                     log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
                 }

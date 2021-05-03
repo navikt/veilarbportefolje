@@ -6,7 +6,6 @@ import lombok.val;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import org.junit.Before;
@@ -14,13 +13,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -29,6 +26,7 @@ import java.util.Optional;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -66,7 +64,7 @@ public class OppfolgingServiceTest {
         ZonedDateTime startDato_portefolje = ZonedDateTime.now();
         String startDato_portefolje_string =  toIsoUTC(startDato_portefolje);
 
-        LocalDateTime startDato_oppfolging = LocalDateTime.parse("2020-01-18T09:48:58.762");
+        ZonedDateTime startDato_oppfolging = ZonedDateTime.parse("2021-04-27T10:40:02.110297+02:00");
 
         when(systemUserTokenProvider.getSystemUserToken()).thenReturn("SYSTEM_TOKEN");
         when(brukerRepository.hentAlleBrukereUnderOppfolging()).thenReturn(
@@ -88,7 +86,7 @@ public class OppfolgingServiceTest {
         oppfolgingService.lastInnDataPaNytt();
 
         Optional<BrukerOppdatertInformasjon> oppfolgingsData = oppfolgingRepository.hentOppfolgingData(AktorId.of(AKTORID));
-        assertThat(oppfolgingsData.get().getStartDato().toLocalDateTime()).isEqualTo(startDato_oppfolging);
+        assertThat(oppfolgingsData.get().getStartDato()).isEqualTo(toTimestamp(startDato_oppfolging));
 
     }
 

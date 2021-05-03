@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -230,4 +231,10 @@ public class ApplicationConfigTest {
     public VeilarbVeilederClient veilarbVeilederClient() {
         return mock(VeilarbVeilederClient.class);
     }
+
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider(){
+        return mock(SystemUserTokenProvider.class);
+    }
+
 }
