@@ -5,15 +5,44 @@ public class PostgresTable {
     public static final class BRUKER_VIEW {
         public static final String TABLE_NAME = "BRUKER";
 
-        public static final String DISKRESJONSKODE = "DISKRESJONSKODE";
-        public static final String FODSELSNR = "FODSELSNR";
-        public static final String ETTERNAVN = "ETTERNAVN";
-        public static final String FORNAVN = "FORNAVN";
         public static final String AKTOERID = "AKTOERID";
-        public static final String VEILEDERID = "VEILEDERID";
         public static final String OPPFOLGING = "OPPFOLGING";
+        public static final String STARTDATO = "STARTDATO";
         public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
+        public static final String VEILEDERID = "VEILEDERID";
+        public static final String MANUELL = "MANUELL";
+        public static final String FODSELSNR = "FODSELSNR";
+        public static final String FORNAVN = "FORNAVN";
+        public static final String ETTERNAVN = "ETTERNAVN";
         public static final String NAV_KONTOR = "NAV_KONTOR";
+        public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
+        public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
+        public static final String KVALIFISERINGSGRUPPEKODE = "KVALIFISERINGSGRUPPEKODE";
+        public static final String RETTIGHETSGRUPPEKODE = "RETTIGHETSGRUPPEKODE";
+        public static final String HOVEDMAALKODE = "HOVEDMAALKODE";
+        public static final String SIKKERHETSTILTAK_TYPE_KODE = "SIKKERHETSTILTAK_TYPE_KODE";
+        public static final String DISKRESJONSKODE = "DISKRESJONSKODE";
+        public static final String HAR_OPPFOLGINGSSAK = "HAR_OPPFOLGINGSSAK";
+        public static final String SPERRET_ANSATT = "SPERRET_ANSATT";
+        public static final String DOED_FRA_DATO = "DOED_FRA_DATO";
+        public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
+        public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
+    }
+
+
+    public static final class ESSENSIELL_BRUKER_VIEW {
+        public static final String TABLE_NAME = "BRUKER";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String OPPFOLGING = "OPPFOLGING";
+        public static final String STARTDATO = "STARTDATO";
+        public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
+        public static final String VEILEDERID = "VEILEDERID";
+        public static final String FODSELSNR = "FODSELSNR";
+        public static final String FORNAVN = "FORNAVN";
+        public static final String ETTERNAVN = "ETTERNAVN";
+        public static final String NAV_KONTOR = "NAV_KONTOR";
+        public static final String DISKRESJONSKODE = "DISKRESJONSKODE";
     }
 
     public static final class OPPFOLGING_DATA {
