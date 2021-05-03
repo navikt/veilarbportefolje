@@ -6,6 +6,7 @@ import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
@@ -57,6 +58,18 @@ public class BrukerRepository {
     public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
+
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
+        db.setFetchSize(10_000);
+
+        return SqlUtils
+                .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .column("*")
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
     }
 
     public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
@@ -153,7 +166,7 @@ public class BrukerRepository {
     }
 
     public boolean erUnderOppfolging(ResultSet rs) {
-        return harOppfolgingsFlaggSatt(rs) || erUnderOppfolgingIArena(rs);
+        return harOppfolgingsFlaggSatt(rs);
     }
 
     @SneakyThrows

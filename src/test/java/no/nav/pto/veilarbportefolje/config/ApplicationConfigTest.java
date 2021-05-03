@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
@@ -104,7 +105,8 @@ import static org.mockito.Mockito.when;
         SisteEndringService.class,
         SisteEndringRepository.class,
         SistLestService.class,
-        MalService.class
+        MalService.class,
+        OppfolgingService.class
 })
 public class ApplicationConfigTest {
 
@@ -245,6 +247,11 @@ public class ApplicationConfigTest {
     @Bean
     public DialogRepositoryV2 dialogRepositoryV2(){
         return mock(DialogRepositoryV2.class);
+    }
+
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider(){
+        return mock(SystemUserTokenProvider.class);
     }
 
 }
