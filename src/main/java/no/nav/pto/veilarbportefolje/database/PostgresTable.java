@@ -121,17 +121,14 @@ public class PostgresTable {
         public static final String AKTOERID = "AKTOERID";
         public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
         public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
-        public static final String SIST_OPPDATERT = "SIST_OPPDATERT";
 
         public static final String SQLINSERT_STRING =
-                AKTOERID +
-                        ", " + SIST_OPPDATERT +
+                        AKTOERID +
                         ", " + VENTER_PA_BRUKER +
                         ", " + VENTER_PA_NAV;
 
         public static final String SQLUPDATE_STRING =
-                SIST_OPPDATERT +
-                        ", " + VENTER_PA_BRUKER +
+                        VENTER_PA_BRUKER +
                         ", " + VENTER_PA_NAV;
 
     }
