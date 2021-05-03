@@ -1,12 +1,10 @@
 package no.nav.pto.veilarbportefolje.database;
 
-import com.sun.el.stream.Stream;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.utils.Pair;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGINGSBRUKER;
 import no.nav.pto.veilarbportefolje.database.Table.OPPFOLGING_DATA;
 import no.nav.pto.veilarbportefolje.database.Table.VW_PORTEFOLJE_INFO;
@@ -166,7 +164,7 @@ public class BrukerRepository {
     }
 
     public boolean erUnderOppfolging(ResultSet rs) {
-        return harOppfolgingsFlaggSatt(rs);
+        return harOppfolgingsFlaggSatt(rs) || erUnderOppfolgingIArena(rs);
     }
 
     @SneakyThrows
