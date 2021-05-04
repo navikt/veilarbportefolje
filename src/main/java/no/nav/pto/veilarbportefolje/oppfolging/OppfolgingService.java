@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -64,7 +65,14 @@ public class OppfolgingService {
         oppfolgingsBruker.forEach(this::oppdaterBruker);
     }
 
-    private void oppdaterBruker(OppfolgingsBruker bruker){
+    private void oppdaterBruker(OppfolgingsBruker bruker) {
+        if (bruker.getAktoer_id() == null) {
+            log.error("Fnr var null pa bruker: " + bruker.getAktoer_id());
+            return;
+        }
+        if (bruker.getFnr() == null) {
+            return;
+        }
         Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
 
         if (oppfolgingPeriode.isPresent()) {
@@ -72,7 +80,7 @@ public class OppfolgingService {
             if (korrektStartDato != null) {
                 log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
                 int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
-                if(rows != 1){
+                if (rows != 1) {
                     log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
                 }
             } else {
@@ -82,6 +90,7 @@ public class OppfolgingService {
             log.error("OppfolgingsJobb: Fant ikke oppfolgingsperiode for: " + bruker.getAktoer_id());
         }
     }
+
     @SneakyThrows
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(String fnr) {
         Request request = new Request.Builder()
@@ -94,11 +103,16 @@ public class OppfolgingService {
             return RestUtils.getBodyStr(response)
                     .map((bodyStr) -> JsonUtils.fromJsonArray(bodyStr, OppfolgingPeriodeDTO.class))
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
+        } catch (RuntimeException exception) {
+            return null;
         }
     }
 
     public Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
         List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
+        if (oppfolgingPerioder == null) {
+            return Optional.empty();
+        }
 
         return oppfolgingPerioder.stream().min((o1, o2) -> {
             if (o1.sluttDato == null) {
