@@ -71,10 +71,12 @@ public class OppfolgingService {
             ZonedDateTime korrektStartDato = oppfolgingPeriode.get().startDato;
             if (korrektStartDato != null) {
                 log.info("OppfolgingsJobb: skal bytte startdato fra: {}, til:{} ", bruker.getOppfolging_startdato(), korrektStartDato);
+                /*
                 int rows = oppfolgingRepository.oppdaterStartdato(AktorId.of(bruker.getAktoer_id()), korrektStartDato);
                 if(rows != 1){
                     log.error("OppfolgingsJobb: feil antall rader påvirket ({}) pa bruker: {} ", rows, bruker.getAktoer_id());
                 }
+                */
             } else {
                 log.error("OppfolgingsJobb: startdato fra veialrboppfolging var null pa bruker: {} ", bruker.getAktoer_id());
             }
