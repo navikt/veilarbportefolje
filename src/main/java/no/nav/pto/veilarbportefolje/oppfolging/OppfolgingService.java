@@ -1,14 +1,11 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import lombok.Data;
 import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.utils.UrlUtils;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
@@ -20,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +60,13 @@ public class OppfolgingService {
     }
 
     private void oppdaterBruker(OppfolgingsBruker bruker){
+        if(bruker.getAktoer_id() == null){
+            log.error("Fnr var null pa bruker: " + bruker.getAktoer_id());
+            return;
+        }
+        if(bruker.getFnr() == null){
+            return;
+        }
         Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
 
         if (oppfolgingPeriode.isPresent()) {
@@ -96,11 +98,16 @@ public class OppfolgingService {
             return RestUtils.getBodyStr(response)
                     .map((bodyStr) -> JsonUtils.fromJsonArray(bodyStr, OppfolgingPeriodeDTO.class))
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
+        }catch (RuntimeException exception){
+            return null;
         }
     }
 
     public Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
         List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
+        if(oppfolgingPerioder == null){
+            return Optional.empty();
+        }
 
         return oppfolgingPerioder.stream().min((o1, o2) -> {
             if (o1.sluttDato == null) {
