@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
@@ -13,18 +14,13 @@ import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class VedtakService implements KafkaConsumerService<String> {
 
     private final VedtakStatusRepository vedtakStatusRepository;
+    private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
     private final ElasticIndexer elasticIndexer;
-    private final AtomicBoolean rewind;
-
-    @Autowired
-    public VedtakService(VedtakStatusRepository vedtakStatusRepository, ElasticIndexer elasticIndexer) {
-        this.vedtakStatusRepository = vedtakStatusRepository;
-        this.elasticIndexer = elasticIndexer;
-        this.rewind = new AtomicBoolean();
-    }
+    private final AtomicBoolean rewind = new AtomicBoolean();
 
     public void behandleKafkaMelding(String melding) {
         KafkaVedtakStatusEndring vedtakStatusEndring = fromJson(melding, KafkaVedtakStatusEndring.class);
@@ -71,24 +67,35 @@ public class VedtakService implements KafkaConsumerService<String> {
 
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
+
+        vedtakStatusRepositoryV2.slettVedtakUtkast(melding.getVedtakId());
     }
 
     private void opprettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.opprettUtkast(melding);
+
+        vedtakStatusRepositoryV2.opprettUtkast(melding);
     }
 
     private void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.oppdaterAnsvarligVeileder(melding);
+
+        vedtakStatusRepositoryV2.oppdaterAnsvarligVeileder(melding);
     }
 
 
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
+
+        vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
+
+        vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
+        vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
 }

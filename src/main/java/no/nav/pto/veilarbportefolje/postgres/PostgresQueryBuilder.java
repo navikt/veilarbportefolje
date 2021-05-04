@@ -83,6 +83,16 @@ public class PostgresQueryBuilder {
         whereStatement.add(VENTER_PA_NAV + " IS NOT NULL");
     }
 
+    public void trengerVurdering() {
+        brukKunEssensiellInfo = false;
+        //whereStatement.add(TRENGER_VURDERING + " = TRUE");
+    }
+
+    public void underVurdering() {
+        brukKunEssensiellInfo = false;
+        //whereStatement.add(UNDER_VURDERING + " = TRUE");
+    }
+
     public void navnOgFodselsnummerSok(String soketekst) {
         if (StringUtils.isNumeric(soketekst)) {
             whereStatement.add(FODSELSNR + " LIKE '" + soketekst + "%'");

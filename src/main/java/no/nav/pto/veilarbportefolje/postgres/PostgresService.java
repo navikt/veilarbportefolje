@@ -90,9 +90,12 @@ public class PostgresService {
                 // byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
                 break;
             case TRENGER_VURDERING:
+                query.trengerVurdering();
                 // byggTrengerVurderingFilter(erVedtakstottePilotPa);
                 break;
-            case UNDER_VURDERING:/*
+            case UNDER_VURDERING:
+                query.underVurdering();
+                /*
                 if (erVedtakstottePilotPa) {
                     queryBuilder = existsQuery("vedtak_status");
                 } else {
