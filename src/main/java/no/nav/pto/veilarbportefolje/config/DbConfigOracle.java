@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.utils.Credentials;
 import org.flywaydb.core.Flyway;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;

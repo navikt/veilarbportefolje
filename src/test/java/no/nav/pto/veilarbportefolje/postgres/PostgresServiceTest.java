@@ -70,7 +70,7 @@ public class PostgresServiceTest {
     public void sok_pa_dialog(){
         AktorId aktorId = AktorId.of("123456789");
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()));
+        oppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
         ZonedDateTime venter_tidspunkt = ZonedDateTime.now();
         dialogRepositoryV2.oppdaterDialogInfoForBruker(
                 new Dialogdata()

@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeBool;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
@@ -42,9 +43,9 @@ public class OppfolgingsbrukerKafkaDTO {
                 safeNull(getHovedmaalkode()) + ", " +
                 safeNull(getSikkerhetstiltak_type_kode()) + ", " +
                 safeNull(getFr_kode()) + ", " +
-                safeNull(getHar_oppfolgingssak()) + ", " +
-                safeNull(getSperret_ansatt()) + ",  " +
-                safeNull(getEr_doed()) + ", " +
+                safeBool(getHar_oppfolgingssak()) + ", " +
+                safeBool(getSperret_ansatt()) + ",  " +
+                safeBool(getEr_doed()) + ", " +
                 safeNull(toTimestamp(getDoed_fra_dato())) + ", " +
                 safeNull(toTimestamp(getEndret_dato()));
 
@@ -62,9 +63,9 @@ public class OppfolgingsbrukerKafkaDTO {
                 safeNull(getHovedmaalkode()) + ", " +
                 safeNull(getSikkerhetstiltak_type_kode()) + ", " +
                 safeNull(getFr_kode()) + ", " +
-                safeNull(getHar_oppfolgingssak()) + ", " +
-                safeNull(getSperret_ansatt()) + ",  " +
-                safeNull(getEr_doed()) + ", " +
+                safeBool(getHar_oppfolgingssak()) + ", " +
+                safeBool(getSperret_ansatt()) + ",  " +
+                safeBool(getEr_doed()) + ", " +
                 safeNull(toTimestamp(getDoed_fra_dato())) + ", " +
                 safeNull(toTimestamp(getEndret_dato()));
     }
