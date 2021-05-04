@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -65,6 +66,13 @@ public class OppfolgingService {
     }
 
     private void oppdaterBruker(OppfolgingsBruker bruker){
+        if(bruker.getAktoer_id() == null){
+            log.error("Fnr var null pa bruker: " + bruker.getAktoer_id());
+            return;
+        }
+        if(bruker.getFnr() == null){
+            return;
+        }
         Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
 
         if (oppfolgingPeriode.isPresent()) {
@@ -96,11 +104,16 @@ public class OppfolgingService {
             return RestUtils.getBodyStr(response)
                     .map((bodyStr) -> JsonUtils.fromJsonArray(bodyStr, OppfolgingPeriodeDTO.class))
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
+        }catch (RuntimeException exception){
+            return null;
         }
     }
 
     public Optional<OppfolgingPeriodeDTO> hentSisteOppfolgingsPeriode(String fnr) {
         List<OppfolgingPeriodeDTO> oppfolgingPerioder = hentOppfolgingsperioder(fnr);
+        if(oppfolgingPerioder == null){
+            return Optional.empty();
+        }
 
         return oppfolgingPerioder.stream().min((o1, o2) -> {
             if (o1.sluttDato == null) {
