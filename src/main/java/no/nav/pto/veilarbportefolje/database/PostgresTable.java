@@ -24,7 +24,7 @@ public class PostgresTable {
         public static final String DISKRESJONSKODE = "DISKRESJONSKODE";
         public static final String HAR_OPPFOLGINGSSAK = "HAR_OPPFOLGINGSSAK";
         public static final String SPERRET_ANSATT = "SPERRET_ANSATT";
-        public static final String DOED_FRA_DATO = "DOED_FRA_DATO";
+        public static final String ER_DOED = "ER_DOED";
         public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
         public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
     }

@@ -27,9 +27,9 @@ CREATE TABLE OPPFOLGINGSBRUKER_ARENA
     HOVEDMAALKODE              varchar(30),
     SIKKERHETSTILTAK_TYPE_KODE varchar(12),
     DISKRESJONSKODE            varchar(6),
-    HAR_OPPFOLGINGSSAK         boolean DEFAULT false,
-    SPERRET_ANSATT             boolean DEFAULT false,
-    ER_DOED                    boolean DEFAULT false,
+    HAR_OPPFOLGINGSSAK         boolean DEFAULT false NOT NULL,
+    SPERRET_ANSATT             boolean DEFAULT false NOT NULL,
+    ER_DOED                    boolean DEFAULT false NOT NULL,
     DOED_FRA_DATO              TIMESTAMP,
     ENDRET_DATO                TIMESTAMP,
 
