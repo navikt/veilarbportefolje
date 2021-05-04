@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -16,14 +15,12 @@ import java.util.StringJoiner;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 
 public class PostgresQueryBuilder {
     private final StringJoiner whereStatement = new StringJoiner(" AND ", " WHERE ", ";");
     private final JdbcTemplate db;
 
-    private boolean filtererPaDialog = false;
-    private boolean filtererPaOppfolgingArena = false;
+    private boolean brukKunEssensiellInfo = true;
 
     public PostgresQueryBuilder(@Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, String navKontor) {
         this.db = jdbcTemplate;
@@ -33,14 +30,13 @@ public class PostgresQueryBuilder {
     }
 
     public BrukereMedAntall search(Integer fra, Integer antall) {
-        String tablesInUse = TABLE_NAME;
+        List<Map<String, Object>> resultat;
+        if (brukKunEssensiellInfo) {
+            resultat = db.queryForList("SELECT * FROM " + PostgresTable.OPTIMALISER_BRUKER_VIEW.TABLE_NAME + whereStatement.toString());
+        } else {
+            resultat = db.queryForList("SELECT * FROM " + TABLE_NAME + whereStatement.toString());
+        }
 
-        if (filtererPaDialog)
-            tablesInUse += " INNER JOIN " + PostgresTable.DIALOG.TABLE_NAME + " D ON D.AKTOERID=BRUKER.AKTOERID";
-        if (filtererPaOppfolgingArena)
-            tablesInUse += " INNER JOIN " + PostgresTable.OPPFOLGINGSBRUKER_ARENA.TABLE_NAME + " OA ON OA.AKTOERID=BRUKER.AKTOERID";
-
-        List<Map<String, Object>> resultat = db.queryForList("SELECT * FROM " + tablesInUse + whereStatement.toString());
         List<Bruker> avskjertResultat;
         if (resultat.size() <= fra) {
             avskjertResultat = new LinkedList<>();
@@ -73,18 +69,18 @@ public class PostgresQueryBuilder {
     }
 
     public void ikkeServiceBehov() {
-        filtererPaOppfolgingArena = true;
-        whereStatement.add("OA." + PostgresTable.OPPFOLGINGSBRUKER_ARENA.FORMIDLINGSGRUPPEKODE + " = ISERV");
+        brukKunEssensiellInfo = false;
+        whereStatement.add(FORMIDLINGSGRUPPEKODE + " = ISERV");
     }
 
     public void venterPaSvarFraBruker() {
-        filtererPaDialog = true;
-        whereStatement.add("D." + PostgresTable.DIALOG.VENTER_PA_BRUKER + " IS NOT NULL");
+        brukKunEssensiellInfo = false;
+        whereStatement.add(VENTER_PA_BRUKER + " IS NOT NULL");
     }
 
     public void venterPaSvarFraNav() {
-        filtererPaDialog = true;
-        whereStatement.add("D." + PostgresTable.DIALOG.VENTER_PA_NAV + " IS NOT NULL");
+        brukKunEssensiellInfo = false;
+        whereStatement.add(VENTER_PA_NAV + " IS NOT NULL");
     }
 
     public void navnOgFodselsnummerSok(String soketekst) {
@@ -99,29 +95,12 @@ public class PostgresQueryBuilder {
     @SneakyThrows
     private Bruker mapTilBruker(Map<String, Object> row) {
         Bruker bruker = new Bruker();
-        if(filtererPaDialog){
-            mapDialog(bruker, row);
+        if (brukKunEssensiellInfo) {
+            return bruker.fraEssensiellInfo(row);
+        } else {
+            return bruker.fraBrukerView(row);
         }
-        if(filtererPaOppfolgingArena){
-            //mapArena(bruker, row);
-        }
-        return bruker
-                .setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
-                .setVeilederId((String) row.get(VEILEDERID))
-                .setDiskresjonskode((String) row.get(DISKRESJONSKODE))
-                .setFnr((String) row.get(FODSELSNR))
-                .setFornavn((String) row.get(FORNAVN))
-                .setEtternavn((String) row.get(ETTERNAVN));
     }
-
-
-    @SneakyThrows
-    private Bruker mapDialog(Bruker bruker, Map<String, Object> row) {
-        return bruker
-                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(PostgresTable.DIALOG.VENTER_PA_BRUKER)))
-                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(PostgresTable.DIALOG.VENTER_PA_NAV)));
-    }
-
 
     private String eq(String kolonne, boolean verdi) {
         if (verdi) {

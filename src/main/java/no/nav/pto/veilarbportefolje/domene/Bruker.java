@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov;
@@ -147,16 +148,16 @@ public class Bruker {
         return this;
     }
 
-    public void kalkulerSisteEndring(Map<String, Endring> siste_endringer, List<String> kategorier){
-        if(siste_endringer == null ){
+    public void kalkulerSisteEndring(Map<String, Endring> siste_endringer, List<String> kategorier) {
+        if (siste_endringer == null) {
             return;
         }
 
         for (String kategori : kategorier) {
             Endring endring = siste_endringer.get(kategori);
-            if(endring != null){
+            if (endring != null) {
                 LocalDateTime tidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
-                if(tidspunkt != null && (sisteEndringTidspunkt == null || tidspunkt.isAfter(sisteEndringTidspunkt))){
+                if (tidspunkt != null && (sisteEndringTidspunkt == null || tidspunkt.isAfter(sisteEndringTidspunkt))) {
                     sisteEndringTidspunkt = tidspunkt;
                     sisteEndringKategori = kategori;
                     sisteEndringAktivitetId = siste_endringer.get(kategori).getAktivtetId();
@@ -204,4 +205,49 @@ public class Bruker {
             nesteUtlopsdatoAktivitet = aktivitetUlopsdato.toLocalDateTime();
         }
     }
+
+    public Bruker fraEssensiellInfo(Map<String, Object> row) {
+        String diskresjonskode = (String) row.get(DISKRESJONSKODE);
+        String formidlingsgruppekode = (String) row.get(FORMIDLINGSGRUPPEKODE);
+
+        return setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
+                .setVeilederId((String) row.get(VEILEDERID))
+                .setDiskresjonskode((String) row.get(DISKRESJONSKODE))
+                .setFnr((String) row.get(FODSELSNR))
+                .setFornavn((String) row.get(FORNAVN))
+                .setEtternavn((String) row.get(ETTERNAVN))
+                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
+                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)));
+
+    }
+
+    public Bruker fraBrukerView(Map<String, Object> row) {
+        String diskresjonskode = (String) row.get(DISKRESJONSKODE);
+        String kvalifiseringsgruppekode = (String) row.get(KVALIFISERINGSGRUPPEKODE);
+        return setNyForVeileder((boolean) row.get(NY_FOR_VEILEDER))
+                .setVeilederId((String) row.get(VEILEDERID))
+                .setDiskresjonskode((String) row.get(DISKRESJONSKODE))
+                .setFnr((String) row.get(FODSELSNR))
+                .setFornavn((String) row.get(FORNAVN))
+                .setEtternavn((String) row.get(ETTERNAVN))
+                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
+                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
+                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_BRUKER)))
+                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_NAV)))
+                .setEgenAnsatt((boolean) row.get(SPERRET_ANSATT))
+                .setErDoed((boolean) row.get(ER_DOED));
+
+        //TODO: utledd manuell
+    }
+    // TODO: sjekk om disse feltene er i bruk, de kan være nødvendige for statuser eller filtere
+    /*
+        public static final String MANUELL = "MANUELL";
+        public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
+        public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
+        public static final String KVALIFISERINGSGRUPPEKODE = "KVALIFISERINGSGRUPPEKODE";
+        public static final String RETTIGHETSGRUPPEKODE = "RETTIGHETSGRUPPEKODE";
+        public static final String HOVEDMAALKODE = "HOVEDMAALKODE";
+        public static final String SIKKERHETSTILTAK_TYPE_KODE = "SIKKERHETSTILTAK_TYPE_KODE";
+        public static final String HAR_OPPFOLGINGSSAK = "HAR_OPPFOLGINGSSAK";
+     */
 }

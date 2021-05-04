@@ -17,16 +17,14 @@ public class Dialogdata {
     public ZonedDateTime tidspunktEldsteUbehandlede;
 
     public String toSqlInsertString() {
-        return safeNull(getAktorId()) + ", " +
-                safeNull(toTimestamp(getSisteEndring())) + ",  " +
+        return  safeNull(getAktorId()) + ", " +
                 safeNull(toTimestamp(getTidspunktEldsteVentende())) + ", " +
                 safeNull(toTimestamp(getTidspunktEldsteUbehandlede()));
 
     }
 
     public String toSqlUpdateString() {
-        return safeNull(toTimestamp(getSisteEndring())) + ", " +
-                safeNull(toTimestamp(getTidspunktEldsteVentende())) + ", " +
+        return  safeNull(toTimestamp(getTidspunktEldsteVentende())) + ", " +
                 safeNull(toTimestamp(getTidspunktEldsteUbehandlede()));
     }
 }
