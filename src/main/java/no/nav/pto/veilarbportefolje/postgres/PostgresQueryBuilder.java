@@ -32,7 +32,7 @@ public class PostgresQueryBuilder {
     public BrukereMedAntall search(Integer fra, Integer antall) {
         List<Map<String, Object>> resultat;
         if (brukKunEssensiellInfo) {
-            resultat = db.queryForList("SELECT * FROM " + PostgresTable.ESSENSIELL_BRUKER_VIEW.TABLE_NAME + whereStatement.toString());
+            resultat = db.queryForList("SELECT * FROM " + PostgresTable.OPTIMALISER_BRUKER_VIEW.TABLE_NAME + whereStatement.toString());
         } else {
             resultat = db.queryForList("SELECT * FROM " + TABLE_NAME + whereStatement.toString());
         }

@@ -30,8 +30,8 @@ public class PostgresTable {
     }
 
 
-    public static final class ESSENSIELL_BRUKER_VIEW {
-        public static final String TABLE_NAME = "BRUKER";
+    public static final class OPTIMALISER_BRUKER_VIEW {
+        public static final String TABLE_NAME = "OPTIMALISER_BRUKER";
 
         public static final String AKTOERID = "AKTOERID";
         public static final String OPPFOLGING = "OPPFOLGING";
