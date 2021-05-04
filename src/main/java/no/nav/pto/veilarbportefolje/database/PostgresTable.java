@@ -140,4 +140,11 @@ public class PostgresTable {
         }
         return "'" + o.toString() + "'";
     }
+
+    public static String safeBool(Object o) {
+        if (o == null) {
+            return "false";
+        }
+        return "'" + o.toString() + "'";
+    }
 }
