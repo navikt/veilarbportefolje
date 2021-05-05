@@ -10,6 +10,10 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 
 import java.sql.Timestamp;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeBool;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+
 @Data
 @Accessors(chain = true)
 public class ArbeidslisteDTO {
@@ -32,5 +36,15 @@ public class ArbeidslisteDTO {
                         .setKommentar(kommentar)
                         .setKategori(kategori)
                         .setFrist(frist);
+    }
+
+    public String toSqlUpdateString() {
+        return safeNull(getVeilederId().getValue()) + ", " +
+                safeNull(getEndringstidspunkt()) + ", " +
+                safeNull(getOverskrift()) + ", " +
+                safeNull(getKommentar()) + ", " +
+                safeNull(getFrist()) + ", " +
+                safeNull(getKategori()) + ", " +
+                safeNull(getNavKontorForArbeidsliste());
     }
 }

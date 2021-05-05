@@ -22,7 +22,7 @@ public class ArbeidslisteRepositoryTest {
     public void setUp() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(TestUtil.setupInMemoryDatabase());
 
-        repo = new ArbeidslisteRepository(jdbcTemplate);
+        repo = new ArbeidslisteRepositoryV1(jdbcTemplate);
 
         data = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
                 .setAktorId(AktorId.of("22222222"))

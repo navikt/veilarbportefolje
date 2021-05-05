@@ -123,16 +123,35 @@ public class PostgresTable {
         public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
 
         public static final String SQLINSERT_STRING =
-                        AKTOERID +
+                AKTOERID +
                         ", " + VENTER_PA_BRUKER +
                         ", " + VENTER_PA_NAV;
 
         public static final String SQLUPDATE_STRING =
-                        VENTER_PA_BRUKER +
+                VENTER_PA_BRUKER +
                         ", " + VENTER_PA_NAV;
 
     }
 
+    public static final class ARBEIDSLISTE {
+        public static final String TABLE_NAME = "ARBEIDSLISTE";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String SIST_ENDRET_AV_VEILEDERIDENT = "SIST_ENDRET_AV_VEILEDERIDENT";
+        public static final String ENDRINGSTIDSPUNKT = "ENDRINGSTIDSPUNKT";
+        public static final String OVERSKRIFT = "OVERSKRIFT";
+        public static final String KOMMENTAR = "KOMMENTAR";
+        public static final String FRIST = "FRIST";
+        public static final String KATEGORI = "KATEGORI";
+        public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
+        public static final String UPDATE_STRING = SIST_ENDRET_AV_VEILEDERIDENT +
+                            ", " + ENDRINGSTIDSPUNKT +
+                            ", " + OVERSKRIFT +
+                            ", " + KOMMENTAR +
+                            ", " + FRIST +
+                            ", " + KATEGORI +
+                            ", " + NAV_KONTOR_FOR_ARBEIDSLISTE;
+    }
 
     public static String safeNull(Object o) {
         if (o == null) {
