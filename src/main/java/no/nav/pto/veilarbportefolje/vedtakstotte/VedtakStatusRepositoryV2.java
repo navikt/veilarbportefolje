@@ -2,20 +2,15 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.database.Table;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.database.Table.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.VEDTAKSTATUS.*;
 
 @Slf4j
 @Repository
@@ -28,101 +23,52 @@ public class VedtakStatusRepositoryV2 {
         this.db = db;
     }
 
-    public void slettVedtakUtkast(long id) {
-        /*
-        SqlUtils.delete(db, VEDTAK.TABLE_NAME)
-                .where(WhereClause.equals(VEDTAK.VEDTAKID, id))
-                .execute();
-
-         */
-    }
-
     public void slettGamleVedtakOgUtkast(String aktorId) {
-        /*
-
-        SqlUtils.delete(db, VEDTAK.TABLE_NAME)
-                .where(WhereClause.equals(VEDTAK.AKTOERID, aktorId))
-                .execute();
-
-         */
+        if (aktorId == null) {
+            return;
+        }
+        log.info("Sletter vedtak og utkast pa bruker: {}", aktorId);
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktorId);
     }
 
-    public void upsertVedtak(KafkaVedtakStatusEndring vedtakStatusEndring) {
-        Optional<KafkaVedtakStatusEndring.Hovedmal> hovedmal = Optional.ofNullable(vedtakStatusEndring.getHovedmal());
-        Optional<KafkaVedtakStatusEndring.Innsatsgruppe> innsatsgruppe = Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe());
-
-        /*
-        SqlUtils.upsert(db, VEDTAK.TABLE_NAME)
-                .set(VEDTAK.AKTOERID, vedtakStatusEndring.getAktorId())
-                .set(VEDTAK.VEDTAKSTATUS, vedtakStatusEndring.getVedtakStatusEndring().name())
-                .set(VEDTAK.INNSATSGRUPPE, innsatsgruppe.map(Enum::name).orElse(null))
-                .set(VEDTAK.HOVEDMAL, hovedmal.map(Enum::name).orElse(null))
-                .set(VEDTAK.VEDTAK_STATUS_ENDRET_TIDSPUNKT, Timestamp.valueOf(vedtakStatusEndring.getTimestamp()))
-                .set(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId())
-                .where(WhereClause.equals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId()))
-                .execute();
-
-         */
+    public int upsertVedtak(KafkaVedtakStatusEndring vedtakStatusEndring) {
+        return db.update("INSERT INTO " + TABLE_NAME +
+                " (" + SQLINSERT_STRING + ") " +
+                "VALUES (" + vedtakStatusEndring.toSqlInsertString() + ") " +
+                "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + vedtakStatusEndring.toSqlUpdateString() + ")");
     }
 
-    public void opprettUtkast(KafkaVedtakStatusEndring vedtakStatusEndring) {
-        Optional<KafkaVedtakStatusEndring.Hovedmal> hovedmal = Optional.ofNullable(vedtakStatusEndring.getHovedmal());
-        Optional<KafkaVedtakStatusEndring.Innsatsgruppe> innsatsgruppe = Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe());
+    public Optional<KafkaVedtakStatusEndring> hentVedtak(String aktorId) {
+        String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
 
-        /*
-        SqlUtils.upsert(db, VEDTAK.TABLE_NAME)
-                .set(VEDTAK.AKTOERID, vedtakStatusEndring.getAktorId())
-                .set(VEDTAK.VEDTAKSTATUS, vedtakStatusEndring.getVedtakStatusEndring().name())
-                .set(VEDTAK.INNSATSGRUPPE, innsatsgruppe.map(Enum::name).orElse(null))
-                .set(VEDTAK.HOVEDMAL, hovedmal.map(Enum::name).orElse(null))
-                .set(VEDTAK.VEDTAK_STATUS_ENDRET_TIDSPUNKT, Timestamp.valueOf(vedtakStatusEndring.getTimestamp()))
-                .set(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId())
-                .set(VEDTAK.ANSVARLIG_VEILEDER_IDENT, vedtakStatusEndring.getVeilederIdent())
-                .set(VEDTAK.ANSVARLIG_VEILEDER_NAVN, vedtakStatusEndring.getVeilederNavn())
-                .where(WhereClause.equals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId()))
-                .execute();
-
-         */
-    }
-
-
-    public List<KafkaVedtakStatusEndring> hentVedtak(String aktorId) {
-        /*
-        return SqlUtils.select(db, VEDTAK.TABLE_NAME, VedtakStatusRepository::mapKafkaVedtakStatusEndring)
-                .where(WhereClause.equals(VEDTAK.AKTOERID, aktorId))
-                .column("*")
-                .executeToList();
-
-         */
+        return Optional.ofNullable(db.queryForObject(
+                sql, new Object[]{aktorId},
+                this::mapKafkaVedtakStatusEndring)
+        );
     }
 
     @SneakyThrows
-    private static KafkaVedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs) {
-        Optional<String> hovedmal = Optional.ofNullable(rs.getString(VEDTAK.HOVEDMAL));
-        Optional<String> innsatsgruppe = Optional.ofNullable(rs.getString(VEDTAK.INNSATSGRUPPE));
+    private KafkaVedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs, int rows) {
+        Optional<String> hovedmal = Optional.ofNullable(rs.getString(HOVEDMAL));
+        Optional<String> innsatsgruppe = Optional.ofNullable(rs.getString(INNSATSGRUPPE));
 
-        /*
         return new KafkaVedtakStatusEndring()
-                .setVedtakId(rs.getInt(VEDTAK.VEDTAKID))
+                .setVedtakId(rs.getInt(VEDTAKID))
                 .setHovedmal(hovedmal.map(KafkaVedtakStatusEndring.Hovedmal::valueOf).orElse(null))
                 .setInnsatsgruppe(innsatsgruppe.map(KafkaVedtakStatusEndring.Innsatsgruppe::valueOf).orElse(null))
-                .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.valueOf(rs.getString(VEDTAK.VEDTAKSTATUS)))
-                .setTimestamp(rs.getTimestamp(VEDTAK.VEDTAK_STATUS_ENDRET_TIDSPUNKT).toLocalDateTime())
-                .setAktorId(rs.getString(VEDTAK.AKTOERID))
-                .setVeilederIdent(rs.getString(VEDTAK.ANSVARLIG_VEILEDER_IDENT))
-                .setVeilederNavn(rs.getString(VEDTAK.ANSVARLIG_VEILEDER_NAVN));
-
-         */
+                .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.valueOf(rs.getString(VEDTAKSTATUS)))
+                .setTimestamp(rs.getTimestamp(ENDRET_TIDSPUNKT).toLocalDateTime())
+                .setAktorId(rs.getString(AKTOERID))
+                .setVeilederIdent(rs.getString(ANSVARLIG_VEILDERIDENT))
+                .setVeilederNavn(rs.getString(ANSVARLIG_VEILDERNAVN));
     }
 
     public void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring vedtakStatusEndring) {
-        /*
-        SqlUtils.update(db, VEDTAK.TABLE_NAME)
-                .set(VEDTAK.ANSVARLIG_VEILEDER_IDENT, vedtakStatusEndring.getVeilederIdent())
-                .set(VEDTAK.ANSVARLIG_VEILEDER_NAVN, vedtakStatusEndring.getVeilederNavn())
-                .whereEquals(VEDTAK.VEDTAKID, vedtakStatusEndring.getVedtakId())
-                .execute();
-
-         */
+        String sql = String.format(
+                "UPDATE %s SET %s = ?, %s = ? WHERE %s = ?",
+                TABLE_NAME, ANSVARLIG_VEILDERIDENT, ANSVARLIG_VEILDERNAVN, AKTOERID
+        );
+        int rows = db.update(sql, vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(), vedtakStatusEndring.getAktorId());
+        log.info("Oppdaterte veilder til: {} for bruker {}, rader: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId(), rows);
     }
 }

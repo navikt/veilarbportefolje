@@ -68,13 +68,13 @@ public class VedtakService implements KafkaConsumerService<String> {
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
 
-        vedtakStatusRepositoryV2.slettVedtakUtkast(melding.getVedtakId());
+        vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
     }
 
     private void opprettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.opprettUtkast(melding);
 
-        vedtakStatusRepositoryV2.opprettUtkast(melding);
+        vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
     private void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring melding) {
