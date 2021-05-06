@@ -100,7 +100,7 @@ public class AdminController {
     public String lastInnOppfolgingsData() {
         authorizeAdmin();
         oppfolgingService.lastInnDataPaNytt();
-        return "Rewind av vedtak har startet";
+        return "Innlastning av oppfolgingsdata har startet";
     }
 
     private void authorizeAdmin() {

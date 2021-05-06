@@ -1,8 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import lombok.Data;
 import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
@@ -10,6 +8,8 @@ import no.nav.common.rest.client.RestUtils;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.utils.UrlUtils;
+import no.nav.common.utils.job.JobUtils;
+import no.nav.common.utils.job.RunningJob;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import okhttp3.OkHttpClient;
@@ -20,9 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -57,12 +54,15 @@ public class OppfolgingService {
     }
 
     public void lastInnDataPaNytt() {
-        String jobId = generateId();
-        MDC.put("jobId", jobId);
-        log.info("Startet oppfolgingsjobb med id: {}", jobId);
+        RunningJob job = JobUtils.runAsyncJob(
+                () -> {
+                    String jobId = generateId();
+                    MDC.put("jobId", jobId);
+                    log.info("Startet oppfolgingsjobb med id: {}", jobId);
 
-        List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
-        oppfolgingsBruker.forEach(this::oppdaterBruker);
+                    List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
+                    oppfolgingsBruker.forEach(this::oppdaterBruker);
+                });
     }
 
     private void oppdaterBruker(OppfolgingsBruker bruker) {
