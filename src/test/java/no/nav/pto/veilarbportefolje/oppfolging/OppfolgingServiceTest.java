@@ -83,7 +83,8 @@ public class OppfolgingServiceTest {
 
         oppfolgingRepository.settUnderOppfolging(AktorId.of(AKTORID), startDato_portefolje);
 
-        oppfolgingService.lastInnDataPaNytt();
+        List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
+        oppfolgingsBruker.forEach(oppfolgingService::oppdaterBruker);
 
         Optional<BrukerOppdatertInformasjon> oppfolgingsData = oppfolgingRepository.hentOppfolgingData(AktorId.of(AKTORID));
         assertThat(oppfolgingsData.get().getStartDato()).isEqualTo(toTimestamp(startDato_oppfolging));

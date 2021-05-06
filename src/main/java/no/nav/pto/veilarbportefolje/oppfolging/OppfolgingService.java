@@ -65,7 +65,7 @@ public class OppfolgingService {
                 });
     }
 
-    private void oppdaterBruker(OppfolgingsBruker bruker) {
+    public void oppdaterBruker(OppfolgingsBruker bruker) {
         if (bruker.getAktoer_id() == null) {
             return;
         }
