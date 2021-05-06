@@ -1,3 +1,17 @@
+const oppfolgingRefreshForm = document.getElementById('oppfolgingRefresh');
+oppfolgingRefreshForm.addEventListener('submit', handleOppfolgingRefreshForm);
+
+function handleOppfolgingRefreshForm(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil hente inn data pa nytt for alle brukere under oppfolging.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/lastInnOppfolging',
+            {method: 'POST', credentials: 'same-origin'},
+            'oppfolgingRefreshResponse'
+        );
+    }
+}
+
 const slettElasticForm = document.getElementById('slettElasticForm')
 slettElasticForm.addEventListener('submit', handleslettElastic);
 const aktoerIdInputSlett = document.getElementById('aktoerIdInputSlett')

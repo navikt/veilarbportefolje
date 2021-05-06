@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,7 @@ public class AdminController {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
+    private final OppfolgingService oppfolgingService;
     private final CvService cvService;
 
     @PostMapping("/aktoerId")
@@ -91,6 +93,14 @@ public class AdminController {
         authorizeAdmin();
         elasticServiceV2.slettDokumenter(List.of(AktorId.of(aktoerId)));
         return "Slettet oppfølgingsbruker " + aktoerId;
+    }
+
+
+    @PostMapping("/lastInnOppfolging")
+    public String lastInnOppfolgingsData() {
+        authorizeAdmin();
+        oppfolgingService.lastInnDataPaNytt();
+        return "Innlastning av oppfolgingsdata har startet";
     }
 
     private void authorizeAdmin() {

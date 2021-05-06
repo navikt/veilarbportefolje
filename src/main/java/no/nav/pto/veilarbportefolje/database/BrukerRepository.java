@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.database;
 
-import com.sun.el.stream.Stream;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
@@ -57,6 +56,18 @@ public class BrukerRepository {
     public BrukerRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.db = db;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
+
+    public List<OppfolgingsBruker> hentAlleBrukereUnderOppfolging() {
+        db.setFetchSize(10_000);
+
+        return SqlUtils
+                .select(db, Table.VW_PORTEFOLJE_INFO.TABLE_NAME, rs -> erUnderOppfolging(rs) ? mapTilOppfolgingsBruker(rs) : null)
+                .column("*")
+                .executeToList()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(toList());
     }
 
     public List<String> hentFnrFraOppfolgingBrukerTabell(int fromExclusive, int toInclusive) {
