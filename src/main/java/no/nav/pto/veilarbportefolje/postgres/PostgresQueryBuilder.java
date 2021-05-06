@@ -83,14 +83,21 @@ public class PostgresQueryBuilder {
         whereStatement.add(VENTER_PA_NAV + " IS NOT NULL");
     }
 
-    public void trengerVurdering() {
+    public void trengerVurdering(boolean erVedtakstottePilotPa) {
         brukKunEssensiellInfo = false;
-        //whereStatement.add(TRENGER_VURDERING + " = TRUE");
+        whereStatement.add(FORMIDLINGSGRUPPEKODE + " != 'ISERV' AND " + KVALIFISERINGSGRUPPEKODE + " IN ('IVURD', 'BKART')");
+        if(erVedtakstottePilotPa) {
+            whereStatement.add(VEDTAKSTATUS + " IS NULL");
+        }
     }
 
-    public void underVurdering() {
+    public void underVurdering(boolean erVedtakstottePilotPa) {
         brukKunEssensiellInfo = false;
-        //whereStatement.add(UNDER_VURDERING + " = TRUE");
+        if (erVedtakstottePilotPa) {
+            whereStatement.add(VEDTAKSTATUS + " IS NOT NULL");
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     public void navnOgFodselsnummerSok(String soketekst) {

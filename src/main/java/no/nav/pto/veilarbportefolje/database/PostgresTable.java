@@ -153,7 +153,8 @@ public class PostgresTable {
                 ", " + ANSVARLIG_VEILDERNAVN +
                 ", " + ENDRET_TIDSPUNKT;
 
-        public static final String SQLUPDATE_STRING = VEDTAKID +
+        public static final String SQLUPDATE_STRING =
+                VEDTAKID +
                 ", " + VEDTAKSTATUS +
                 ", " + INNSATSGRUPPE +
                 ", " + HOVEDMAL +

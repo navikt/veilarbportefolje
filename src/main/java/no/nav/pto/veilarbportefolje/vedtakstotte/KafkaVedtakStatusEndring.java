@@ -77,6 +77,7 @@ public class KafkaVedtakStatusEndring {
 
     public String toSqlUpdateString() {
         return  safeNull(getVedtakId()) + ", " +
+                safeNull(getVedtakStatusEndring().name()) + ", " +
                 safeNull(Optional.ofNullable(getInnsatsgruppe()).map(Enum::name).orElse(null)) + ", " +
                 safeNull(Optional.ofNullable(getHovedmal()).map(Enum::name).orElse(null)) + ", " +
                 safeNull(getVeilederIdent()) + ", " +
