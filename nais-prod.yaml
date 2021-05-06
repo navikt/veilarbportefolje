@@ -19,6 +19,8 @@ spec:
   webproxy: true
   secureLogs:
     enabled: true
+  kafka:
+    pool: nav-prod
   vault:
     enabled: true
     paths:
