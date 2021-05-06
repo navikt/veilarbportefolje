@@ -67,10 +67,10 @@ public class OppfolgingService {
 
     private void oppdaterBruker(OppfolgingsBruker bruker) {
         if (bruker.getAktoer_id() == null) {
-            log.error("Fnr var null pa bruker: " + bruker.getAktoer_id());
             return;
         }
         if (bruker.getFnr() == null) {
+            log.error("Fnr var null pa bruker: " + bruker.getAktoer_id());
             return;
         }
         Optional<OppfolgingPeriodeDTO> oppfolgingPeriode = hentSisteOppfolgingsPeriode(bruker.getFnr());
