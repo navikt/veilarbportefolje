@@ -1,16 +1,16 @@
 package no.nav.pto.veilarbportefolje.util;
 
-class FodselsnummerUtils {
+public class FodselsnummerUtils {
     private static final String DATO_POSTFIX = "T00:00:00Z";
 
-    static String lagFodselsdagIMnd(String fnr) {
+     static String lagFodselsdagIMnd(String fnr) {
         if(erDNummer(fnr)) {
             fnr = konverterDNummerTilFodselsnummer(fnr);
         }
         return fnr.substring(0,2);
     }
 
-    static String lagFodselsdato(String fnr) {
+    public static String lagFodselsdato(String fnr) {
         if(erDNummer(fnr)) {
             fnr = konverterDNummerTilFodselsnummer(fnr);
         }
@@ -20,7 +20,7 @@ class FodselsnummerUtils {
         return lagAarstallFraFodselsnummer(fnr) + "-" + maaned + "-" + lagFodselsdagIMnd(fnr) + DATO_POSTFIX;
     }
 
-    static String lagKjonn(String fnr) {
+    public static String lagKjonn(String fnr) {
         int kjonnsNr = Integer.parseInt(fnr.substring(8,9));
         return kjonnsNr % 2 == 0 ? "K" : "M";
     }
