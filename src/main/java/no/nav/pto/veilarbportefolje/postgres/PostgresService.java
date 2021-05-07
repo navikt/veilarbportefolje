@@ -87,7 +87,7 @@ public class PostgresService {
                         .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));*/
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
-                // byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
+                query.erSykmeldtMedArbeidsgiver(erVedtakstottePilotPa);
                 break;
             case TRENGER_VURDERING:
                 query.trengerVurdering(erVedtakstottePilotPa);

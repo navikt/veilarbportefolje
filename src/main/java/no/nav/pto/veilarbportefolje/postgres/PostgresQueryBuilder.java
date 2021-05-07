@@ -86,7 +86,7 @@ public class PostgresQueryBuilder {
     public void trengerVurdering(boolean erVedtakstottePilotPa) {
         brukKunEssensiellInfo = false;
         whereStatement.add(FORMIDLINGSGRUPPEKODE + " != 'ISERV' AND " + KVALIFISERINGSGRUPPEKODE + " IN ('IVURD', 'BKART')");
-        if(erVedtakstottePilotPa) {
+        if (erVedtakstottePilotPa) {
             whereStatement.add(VEDTAKSTATUS + " IS NULL");
         }
     }
@@ -97,6 +97,14 @@ public class PostgresQueryBuilder {
             whereStatement.add(VEDTAKSTATUS + " IS NOT NULL");
         } else {
             throw new IllegalStateException();
+        }
+    }
+
+    public void erSykmeldtMedArbeidsgiver(boolean erVedtakstottePilotPa) {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(FORMIDLINGSGRUPPEKODE + " = 'IARBS' AND " + KVALIFISERINGSGRUPPEKODE + " NOT IN ('BATT', 'BFORM', 'IKVAL', 'VURDU', 'OPPFI', 'VARIG')");
+        if (erVedtakstottePilotPa) {
+            whereStatement.add(VEDTAKSTATUS + " IS NULL");
         }
     }
 
