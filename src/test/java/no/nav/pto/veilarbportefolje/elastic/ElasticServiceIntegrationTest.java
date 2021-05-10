@@ -391,13 +391,12 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         String tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1));
         String tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2));
         String tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3));
-        String tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4));
 
         val tidligstfristBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
-                .setAktivitet_egen_utlopsdato(tidspunkt4)
+                .setAktivitet_egen_utlopsdato(tidspunkt3)
                 .setAktivitet_mote_utlopsdato(tidspunkt1)
                 .setAktiviteter(Set.of("EGEN", "MOTE"));
 
@@ -406,7 +405,6 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setAktivitet_egen_utlopsdato(tidspunkt2)
-                .setAktivitet_mote_startdato(tidspunkt3)
                 .setAktiviteter(Set.of("EGEN", "MOTE"));
 
         val nullBruker = new OppfolgingsBruker()

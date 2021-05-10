@@ -1,5 +1,10 @@
 {
-  "aktivitet_behandling_utlopsdato": {
-    "order": "asc"
+  "_script" : {
+    "script" : {
+      "source" : "Math.min(doc['aktivitet_behandling_utlopsdato']?.value.toInstant().toEpochMilli())",
+      "lang" : "painless"
+    },
+    "type" : "number",
+    "order" : "asc"
   }
 }
