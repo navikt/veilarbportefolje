@@ -1,7 +1,7 @@
 {
   "_script" : {
     "script" : {
-      "source" : "Math.min(doc['aktivitet_behandling_utlopsdato']?.value.toInstant().toEpochMilli())",
+      "source" : "Math.min(doc['aktivitet_behandling_utlopsdato']?.value.getMillis())",
       "lang" : "painless"
     },
     "type" : "number",

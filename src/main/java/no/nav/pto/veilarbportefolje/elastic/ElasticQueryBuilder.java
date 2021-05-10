@@ -236,13 +236,13 @@ public class ElasticQueryBuilder {
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
-        StringJoiner script = new StringJoiner(",", "Math.min(", ")");
+        StringJoiner script = new StringJoiner(", ", "Math.min(", ")");
         if (filtervalg.harAktiviteterForenklet()) {
             if(filtervalg.aktiviteterForenklet.isEmpty()){
                 return builder;
             }
             filtervalg.aktiviteterForenklet
-                    .forEach(aktivitet -> script.add(format("doc['aktivitet_%s_utlopsdato']?.value.toInstant().toEpochMilli()", aktivitet.toLowerCase())));
+                    .forEach(aktivitet -> script.add(format("doc['aktivitet_%s_utlopsdato']?.value.getMillis()", aktivitet.toLowerCase())));
         } else {
             if(filtervalg.aktiviteter.isEmpty()){
                 return builder;
@@ -250,7 +250,7 @@ public class ElasticQueryBuilder {
             filtervalg.aktiviteter.entrySet().stream()
                     .filter(entry -> JA.equals(entry.getValue()))
                     .map(Map.Entry::getKey)
-                    .forEach(aktivitet -> script.add(format("doc['aktivitet_%s_utlopsdato']?.value.toInstant().toEpochMilli()", aktivitet.toLowerCase())));
+                    .forEach(aktivitet -> script.add(format("doc['aktivitet_%s_utlopsdato']?.value.getMillis()", aktivitet.toLowerCase())));
         }
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(new Script(script.toString()), ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
