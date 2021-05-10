@@ -236,22 +236,21 @@ public class ElasticQueryBuilder {
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
-        StringJoiner script = new StringJoiner(", ", "Math.min(", ")");
+        List<String> sorterings_aktiviter;
         if (filtervalg.harAktiviteterForenklet()) {
-            if(filtervalg.aktiviteterForenklet.isEmpty()){
-                return builder;
-            }
-            filtervalg.aktiviteterForenklet
-                    .forEach(aktivitet -> script.add(format("doc['aktivitet_%s_utlopsdato']?.value.getMillis()", aktivitet.toLowerCase())));
+            sorterings_aktiviter = filtervalg.aktiviteterForenklet;
         } else {
-            if(filtervalg.aktiviteter.isEmpty()){
-                return builder;
-            }
-            filtervalg.aktiviteter.entrySet().stream()
+            sorterings_aktiviter = filtervalg.aktiviteter.entrySet().stream()
                     .filter(entry -> JA.equals(entry.getValue()))
                     .map(Map.Entry::getKey)
-                    .forEach(aktivitet -> script.add(format("doc['aktivitet_%s_utlopsdato']?.value.getMillis()", aktivitet.toLowerCase())));
+                    .collect(toList());
         }
+
+        if (sorterings_aktiviter.isEmpty()) {
+            return builder;
+        }
+        StringJoiner script = new StringJoiner("", "List l = new ArrayList(); ", "return l.stream().sorted().findFirst().get();");
+        sorterings_aktiviter.forEach(aktivitet -> script.add(format("l.add(doc['aktivitet_%s_utlopsdato']?.value.getMillis()); ", aktivitet.toLowerCase())));
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(new Script(script.toString()), ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
