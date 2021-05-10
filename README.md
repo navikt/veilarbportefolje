@@ -67,8 +67,8 @@ select * from dba_scheduler_jobs;
 
 ## PostgreSQL
 Innloggingsinformasjon til databasen:  
-Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin` 
-Prod: `vault read postgresql/preprod-fss/creds/veilarbportefolje-prod-admin` 
+* Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin` 
+* Prod: `vault read postgresql/preprod-fss/creds/veilarbportefolje-prod-admin` 
 
 ## Plugin til IntelliJ
 Dette prosjektet benytter seg av [lombok](https://projectlombok.org).
