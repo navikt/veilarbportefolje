@@ -3,8 +3,11 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Data
 @Accessors(chain = true)
@@ -65,6 +68,22 @@ public class KafkaVedtakStatusEndring {
             default:
                 return null;
         }
+    }
+
+    public String toSqlInsertString() {
+        return safeNull(getAktorId()) + ", " +
+                toSqlUpdateString();
+    }
+
+    public String toSqlUpdateString() {
+        return  safeNull(getVedtakId()) + ", " +
+                safeNull(getVedtakStatusEndring().name()) + ", " +
+                safeNull(Optional.ofNullable(getInnsatsgruppe()).map(Enum::name).orElse(null)) + ", " +
+                safeNull(Optional.ofNullable(getHovedmal()).map(Enum::name).orElse(null)) + ", " +
+                safeNull(getVeilederIdent()) + ", " +
+                safeNull(getVeilederNavn()) + ", " +
+                safeNull(toTimestamp(getTimestamp()));
+
     }
 
 }

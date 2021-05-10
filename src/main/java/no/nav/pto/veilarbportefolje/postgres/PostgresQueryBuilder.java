@@ -83,6 +83,31 @@ public class PostgresQueryBuilder {
         whereStatement.add(VENTER_PA_NAV + " IS NOT NULL");
     }
 
+    public void trengerVurdering(boolean erVedtakstottePilotPa) {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(FORMIDLINGSGRUPPEKODE + " != 'ISERV' AND " + KVALIFISERINGSGRUPPEKODE + " IN ('IVURD', 'BKART')");
+        if (erVedtakstottePilotPa) {
+            whereStatement.add(VEDTAKSTATUS + " IS NULL");
+        }
+    }
+
+    public void underVurdering(boolean erVedtakstottePilotPa) {
+        brukKunEssensiellInfo = false;
+        if (erVedtakstottePilotPa) {
+            whereStatement.add(VEDTAKSTATUS + " IS NOT NULL");
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
+    public void erSykmeldtMedArbeidsgiver(boolean erVedtakstottePilotPa) {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(FORMIDLINGSGRUPPEKODE + " = 'IARBS' AND " + KVALIFISERINGSGRUPPEKODE + " NOT IN ('BATT', 'BFORM', 'IKVAL', 'VURDU', 'OPPFI', 'VARIG')");
+        if (erVedtakstottePilotPa) {
+            whereStatement.add(VEDTAKSTATUS + " IS NULL");
+        }
+    }
+
     public void navnOgFodselsnummerSok(String soketekst) {
         if (StringUtils.isNumeric(soketekst)) {
             whereStatement.add(FODSELSNR + " LIKE '" + soketekst + "%'");

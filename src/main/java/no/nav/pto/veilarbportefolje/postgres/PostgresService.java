@@ -87,17 +87,13 @@ public class PostgresService {
                         .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));*/
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
-                // byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
+                query.erSykmeldtMedArbeidsgiver(erVedtakstottePilotPa);
                 break;
             case TRENGER_VURDERING:
-                // byggTrengerVurderingFilter(erVedtakstottePilotPa);
+                query.trengerVurdering(erVedtakstottePilotPa);
                 break;
-            case UNDER_VURDERING:/*
-                if (erVedtakstottePilotPa) {
-                    queryBuilder = existsQuery("vedtak_status");
-                } else {
-                    throw new IllegalStateException();
-                }*/
+            case UNDER_VURDERING:
+                query.underVurdering(erVedtakstottePilotPa);
                 break;
             case NYE_BRUKERE:                       // Ikke lengre bruk???
                 break;

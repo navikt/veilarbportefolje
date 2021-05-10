@@ -65,6 +65,13 @@ public class DateUtils {
         return Timestamp.from(zonedDateTime.toInstant());
     }
 
+    public static Timestamp toTimestamp(LocalDateTime localDateTime) {
+        if(localDateTime == null){
+            return null;
+        }
+        return Timestamp.valueOf(localDateTime);
+    }
+
     public static String toIsoUTC(ZonedDateTime zonedDateTime) {
         if(Objects.isNull(zonedDateTime)) {
             return null;

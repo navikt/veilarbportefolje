@@ -41,6 +41,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -247,6 +248,11 @@ public class ApplicationConfigTest {
     @Bean
     public DialogRepositoryV2 dialogRepositoryV2(){
         return mock(DialogRepositoryV2.class);
+    }
+
+    @Bean
+    public VedtakStatusRepositoryV2 vedtakStatusRepositoryV2(){
+        return  mock(VedtakStatusRepositoryV2.class);
     }
 
     @Bean
