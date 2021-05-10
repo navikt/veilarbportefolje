@@ -142,32 +142,6 @@ public class Bruker {
                 .addAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()));
     }
 
-    private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
-        if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
-            return this;
-        }
-        aktiviteter.put(type, utlopsdato);
-        return this;
-    }
-
-    public void kalkulerSisteEndring(Map<String, Endring> siste_endringer, List<String> kategorier) {
-        if (siste_endringer == null) {
-            return;
-        }
-
-        for (String kategori : kategorier) {
-            Endring endring = siste_endringer.get(kategori);
-            if (endring != null) {
-                LocalDateTime tidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
-                if (tidspunkt != null && (sisteEndringTidspunkt == null || tidspunkt.isAfter(sisteEndringTidspunkt))) {
-                    sisteEndringTidspunkt = tidspunkt;
-                    sisteEndringKategori = kategori;
-                    sisteEndringAktivitetId = siste_endringer.get(kategori).getAktivtetId();
-                }
-            }
-        }
-    }
-
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
         if (aktiviteterForenklet == null) {
             return;
@@ -188,6 +162,35 @@ public class Bruker {
 
     public boolean erKonfidensiell() {
         return (isNotEmpty(this.diskresjonskode)) || (this.egenAnsatt);
+    }
+
+    public void kalkulerSisteEndring(Map<String, Endring> siste_endringer, List<String> kategorier) {
+        if (siste_endringer == null) {
+            return;
+        }
+        kategorier.stream().filter(kategori -> erNyesteKategori(siste_endringer, kategori))
+                .forEach(kategori -> {
+                    Endring endring = siste_endringer.get(kategori);
+                    sisteEndringKategori = kategori;
+                    sisteEndringTidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
+                    sisteEndringAktivitetId = endring.getAktivtetId();
+                });
+    }
+
+    private boolean erNyesteKategori(Map<String, Endring> siste_endringer, String kategori) {
+        if (siste_endringer.get(kategori) == null) {
+            return false;
+        }
+        LocalDateTime tidspunkt = toLocalDateTimeOrNull(siste_endringer.get(kategori).getTidspunkt());
+        return sisteEndringTidspunkt == null || (tidspunkt != null && tidspunkt.isAfter(sisteEndringTidspunkt));
+    }
+
+    private Bruker addAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
+        if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
+            return this;
+        }
+        aktiviteter.put(type, utlopsdato);
+        return this;
     }
 
     private static boolean trengerRevurdering(OppfolgingsBruker oppfolgingsBruker, boolean erVedtakstottePilotPa) {
