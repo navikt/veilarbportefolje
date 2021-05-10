@@ -11,10 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.time.ZonedDateTime;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -22,6 +20,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.ElasticTestClient.pollElasticUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
@@ -385,6 +384,79 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
         assertThat(brukere.get(0).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.LILLA);
         assertThat(brukere.get(1).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.BLA);
 
+    }
+
+    @Test
+    void skal_sortere_brukere_pa_aktivteter() {
+        String tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1));
+        String tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2));
+        String tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3));
+
+        val tidligstfristBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAktivitet_egen_utlopsdato(tidspunkt3)
+                .setAktivitet_mote_utlopsdato(tidspunkt1)
+                .setAktiviteter(Set.of("EGEN", "MOTE"));
+
+        val senestFristBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAktivitet_egen_utlopsdato(tidspunkt2)
+                .setAktiviteter(Set.of("EGEN", "MOTE"));
+
+        val nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET);
+
+        val liste = List.of(tidligstfristBruker, senestFristBruker, nullBruker);
+
+        skrivBrukereTilTestindeks(tidligstfristBruker, senestFristBruker, nullBruker);
+
+        pollElasticUntil(() -> elasticTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg1 = new Filtervalg()
+                .setAktiviteterForenklet(List.of("EGEN", "MOTE"))
+                .setFerdigfilterListe(List.of());
+        Filtervalg filtervalg2 = new Filtervalg()
+                .setAktiviteterForenklet(List.of("MOTE", "EGEN"))
+                .setFerdigfilterListe(List.of());
+
+        BrukereMedAntall brukereMedAntall = elasticService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                "desc",
+                "valgteaktiviteter",
+                filtervalg1,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = elasticService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                "desc",
+                "valgteaktiviteter",
+                filtervalg2,
+                null,
+                null
+        );
+
+        List<Bruker> brukere1 = brukereMedAntall.getBrukere();
+        List<Bruker> brukere2 = brukereMedAntall2.getBrukere();
+
+        // brukere1 Filter: List.of("EGEN", "MOTE"))
+        // brukere2 Filter: List.of("MOTE", "EGEN"))
+        assertThat(brukere1.size()).isEqualTo(2);
+        assertThat(brukere1.get(1).getFnr()).isEqualTo(brukere2.get(1).getFnr());
+        assertThat(brukere1.get(0).getFnr()).isEqualTo(brukere2.get(0).getFnr());
+
+        // Generell sortering:
+        assertThat(brukere1.size()).isEqualTo(2);
+        assertThat(brukere1.get(1).getFnr()).isEqualTo(tidligstfristBruker.getFnr());
+        assertThat(brukere1.get(0).getFnr()).isEqualTo(senestFristBruker.getFnr());
     }
 
     @Test
@@ -885,7 +957,7 @@ class ElasticServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_hente_alle_brukere_som_har_vedtak(){
+    public void skal_hente_alle_brukere_som_har_vedtak() {
         val brukerMedVedtak = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
