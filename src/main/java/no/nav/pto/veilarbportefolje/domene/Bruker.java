@@ -249,10 +249,10 @@ public class Bruker {
                         .setKjonn(FodselsnummerUtils.lagKjonn(fodselsnummer))
                         .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_NAV)))
                         .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_BRUKER)))
-                        .setVedtakStatus(VEDTAKSTATUS)
+                        .setVedtakStatus(vedtakstatus)
                         .setVedtakStatusEndret(toLocalDateTimeOrNull((Timestamp) row.get(VEDTAKSTATUS_ENDRET_TIDSPUNKT)))
                         .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                        .setAnsvarligVeilederForVedtak(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN)
+                        .setAnsvarligVeilederForVedtak((String) row.get(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
                         .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
                         .setTrengerRevurdering(trengerRevurdering);
         //TODO: utledd manuell
