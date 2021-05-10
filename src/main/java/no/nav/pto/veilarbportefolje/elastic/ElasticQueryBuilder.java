@@ -236,7 +236,7 @@ public class ElasticQueryBuilder {
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
-        StringJoiner script = new StringJoiner(", ", "Math.min(", ")");
+        StringJoiner script = new StringJoiner("); l.add(", "List l = new ArrayList(); l.add(", "); return l.stream().sorted().findFirst().get();");
         if (filtervalg.harAktiviteterForenklet()) {
             if(filtervalg.aktiviteterForenklet.isEmpty()){
                 return builder;
