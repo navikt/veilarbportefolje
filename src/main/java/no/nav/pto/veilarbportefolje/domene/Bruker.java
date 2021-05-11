@@ -168,12 +168,13 @@ public class Bruker {
         if (siste_endringer == null) {
             return;
         }
-        kategorier.stream().filter(kategori -> erNyesteKategori(siste_endringer, kategori))
-                .forEach(kategori -> {
-                    Endring endring = siste_endringer.get(kategori);
-                    sisteEndringKategori = kategori;
-                    sisteEndringTidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
-                    sisteEndringAktivitetId = endring.getAktivtetId();
+        kategorier.forEach(kategori -> {
+                    if(erNyesteKategori(siste_endringer, kategori)){
+                        Endring endring = siste_endringer.get(kategori);
+                        sisteEndringKategori = kategori;
+                        sisteEndringTidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
+                        sisteEndringAktivitetId = endring.getAktivtetId();
+                    }
                 });
     }
 
