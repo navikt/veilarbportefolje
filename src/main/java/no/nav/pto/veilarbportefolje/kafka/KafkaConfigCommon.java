@@ -7,7 +7,7 @@ import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
-import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
+import no.nav.common.kafka.consumer.feilhandtering.OracleConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.ConsumerUtils;
@@ -20,6 +20,7 @@ import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,13 +32,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
-import static org.apache.kafka.clients.CommonClientConfigs.CLIENT_ID_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 
 @Configuration
 @EnableConfigurationProperties({KafkaAivenProperties.class})
 public class KafkaConfigCommon {
-    public final static String CONSUMER_GROUP_ID = "veilarbportefolje-consumer";
+    public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
+    public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer-1";
     public final static String CV_TOPIC = "teampam.samtykke-status-1";
 
     @Autowired
@@ -52,8 +53,8 @@ public class KafkaConfigCommon {
     }
 
     @Bean
-    public KafkaConsumerRepository kafkaConsumerRepository(DataSource dataSource) {
-        return new PostgresConsumerRepository(dataSource);
+    public KafkaConsumerRepository kafkaConsumerRepository(@Qualifier("Postgres") DataSource dataSource) {
+        return new OracleConsumerRepository(dataSource);
     }
 
     @Bean
@@ -90,7 +91,7 @@ public class KafkaConfigCommon {
     public Properties kafkaAivenProperties(KafkaAivenProperties kafkaProperties) {
         Properties props = new Properties();
 
-        props.put(CLIENT_ID_CONFIG, CONSUMER_GROUP_ID);
+        props.put(CLIENT_ID_CONFIG, CLIENT_ID_CONFIG);
         props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSecurityProtocol());
         props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getKafkaBrokers());
 
@@ -105,8 +106,9 @@ public class KafkaConfigCommon {
         props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 500000);
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 10000);
         props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3000);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, new StringDeserializer());
 
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, CONSUMER_GROUP_ID);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID_CONFIG);
 
         return props;
     }
@@ -130,7 +132,7 @@ public class KafkaConfigCommon {
 
     @PostConstruct
     public void start() {
-        //consumerRecordProcessor.start();
-        //consumerClient.start();
+        consumerRecordProcessor.start();
+        consumerClient.start();
     }
 }
