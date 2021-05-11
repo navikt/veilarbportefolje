@@ -78,7 +78,8 @@ public class DbConfigOracle implements DatabaseConfig {
     private static void migrateDb(DataSource dataSource) {
         Flyway.configure()
                 .dataSource(dataSource)
+                .table("schema_version")
                 .load()
-                .repair();
+                .migrate();
     }
 }
