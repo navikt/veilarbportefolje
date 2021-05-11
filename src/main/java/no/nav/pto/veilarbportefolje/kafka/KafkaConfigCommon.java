@@ -7,7 +7,7 @@ import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
-import no.nav.common.kafka.consumer.feilhandtering.OracleConsumerRepository;
+import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.ConsumerUtils;
@@ -18,6 +18,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -37,7 +38,7 @@ import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CON
 @EnableConfigurationProperties({KafkaAivenProperties.class})
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer-1";
+    public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_TOPIC = "teampam.samtykke-status-1";
 
     @Autowired
@@ -53,7 +54,7 @@ public class KafkaConfigCommon {
 
     @Bean
     public KafkaConsumerRepository kafkaConsumerRepository(@Qualifier("Postgres") DataSource dataSource) {
-        return new OracleConsumerRepository(dataSource);
+        return new PostgresConsumerRepository(dataSource);
     }
 
     @Bean
@@ -124,6 +125,7 @@ public class KafkaConfigCommon {
                 .withProps(kafkaAivenProperties)
                 .withRepository(kafkaConsumerRepository)
                 .withStoreOnFailureConsumers(topicConsumers)
+                .withSerializers(new StringSerializer(), new StringSerializer())
                 .withMetrics(meterRegistry)
                 .withLogging()
                 .build();
@@ -131,7 +133,7 @@ public class KafkaConfigCommon {
 
     @PostConstruct
     public void start() {
-        //consumerRecordProcessor.start();
-        //consumerClient.start();
+        consumerRecordProcessor.start();
+        consumerClient.start();
     }
 }
