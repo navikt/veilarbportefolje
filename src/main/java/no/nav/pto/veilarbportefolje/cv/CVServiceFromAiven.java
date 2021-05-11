@@ -13,18 +13,19 @@ import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class CVServiceFromAiven{
+public class CVServiceFromAiven {
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
 
     public void behandleKafkaMelding(CVMelding melding) {
+        log.info("aiven kafka melding...");
         AktorId aktoerId = melding.getAktoerId();
 
         if (melding.getRessurs() != CV_HJEMMEL) {
             log.info("Ignorer melding for ressurs {} for bruker {}", melding.getRessurs(), aktoerId);
             return;
         }
-
+        
         switch (melding.getMeldingType()) {
             case SAMTYKKE_OPPRETTET:
                 cvRepository.upsert(aktoerId, true);
