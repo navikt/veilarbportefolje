@@ -18,8 +18,8 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +37,7 @@ import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CON
 @EnableConfigurationProperties({KafkaAivenProperties.class})
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer-1";
+    public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_TOPIC = "teampam.samtykke-status-1";
 
     @Autowired
@@ -52,7 +52,7 @@ public class KafkaConfigCommon {
     }
 
     @Bean
-    public KafkaConsumerRepository kafkaConsumerRepository(@Qualifier("Postgres") DataSource dataSource) {
+    public KafkaConsumerRepository kafkaConsumerRepository(DataSource dataSource) {
         return new OracleConsumerRepository(dataSource);
     }
 
@@ -124,6 +124,7 @@ public class KafkaConfigCommon {
                 .withProps(kafkaAivenProperties)
                 .withRepository(kafkaConsumerRepository)
                 .withStoreOnFailureConsumers(topicConsumers)
+                .withSerializers(new StringSerializer(), new StringSerializer())
                 .withMetrics(meterRegistry)
                 .withLogging()
                 .build();
@@ -131,7 +132,7 @@ public class KafkaConfigCommon {
 
     @PostConstruct
     public void start() {
-        //consumerRecordProcessor.start();
-        //consumerClient.start();
+        consumerRecordProcessor.start();
+        consumerClient.start();
     }
 }
