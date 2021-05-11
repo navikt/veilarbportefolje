@@ -68,8 +68,10 @@ public class DatabaseConfig {
 
 
     private static void migrateDb(DataSource dataSource) {
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.migrate();
+        Flyway.configure()
+                .dataSource(dataSource)
+                .table("schema_version")
+                .load()
+                .repair();
     }
 }
