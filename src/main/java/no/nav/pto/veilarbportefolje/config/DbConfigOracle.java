@@ -80,6 +80,6 @@ public class DbConfigOracle implements DatabaseConfig {
                 .dataSource(dataSource)
                 .table("schema_version")
                 .load()
-                .repair();
+                .migrate();
     }
 }
