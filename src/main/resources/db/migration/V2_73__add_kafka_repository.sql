@@ -1,0 +1,27 @@
+CREATE TABLE FEILET_KAFKA_MELDING
+(
+    ID             NUMBER                         NOT NULL PRIMARY KEY,
+    TOPIC          VARCHAR(100)                   NOT NULL,
+    KEY            VARCHAR(40)                    NOT NULL,
+    PAYLOAD        VARCHAR2(2000)                 NOT NULL,
+    MESSAGE_TYPE   VARCHAR2(10) CHECK (MESSAGE_TYPE IN ('PRODUCED', 'CONSUMED')),
+    MESSAGE_OFFSET NUMBER,
+    CREATED_AT     TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL
+);
+
+CREATE TABLE KAFKA_CONSUMER_RECORD
+(
+    ID               NUMBER                         NOT NULL,
+    TOPIC            CHARACTER VARYING(100)         NOT NULL,
+    PARTITION        INTEGER                        NOT NULL,
+    RECORD_OFFSET    NUMBER                         NOT NULL,
+    RETRIES          INTEGER   DEFAULT 0            NOT NULL,
+    LAST_RETRY       TIMESTAMP,
+    KEY              BLOB,
+    VALUE            BLOB,
+    HEADERS_JSON     VARCHAR2(500),
+    RECORD_TIMESTAMP NUMBER,
+    CREATED_AT       TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
+    UNIQUE (TOPIC, PARTITION, RECORD_OFFSET)
+);
+
