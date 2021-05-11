@@ -18,6 +18,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -124,6 +125,7 @@ public class KafkaConfigCommon {
                 .withProps(kafkaAivenProperties)
                 .withRepository(kafkaConsumerRepository)
                 .withStoreOnFailureConsumers(topicConsumers)
+                .withSerializers(new StringSerializer(), new StringSerializer())
                 .withMetrics(meterRegistry)
                 .withLogging()
                 .build();
@@ -131,7 +133,7 @@ public class KafkaConfigCommon {
 
     @PostConstruct
     public void start() {
-        //consumerRecordProcessor.start();
-        //consumerClient.start();
+        consumerRecordProcessor.start();
+        consumerClient.start();
     }
 }
