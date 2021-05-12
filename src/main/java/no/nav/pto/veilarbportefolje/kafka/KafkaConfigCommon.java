@@ -7,7 +7,7 @@ import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
-import no.nav.common.kafka.consumer.feilhandtering.PostgresConsumerRepository;
+import no.nav.common.kafka.consumer.feilhandtering.OracleConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.ConsumerUtils;
@@ -20,7 +20,6 @@ import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,8 +52,8 @@ public class KafkaConfigCommon {
     }
 
     @Bean
-    public KafkaConsumerRepository kafkaConsumerRepository(@Qualifier("Postgres") DataSource dataSource) {
-        return new PostgresConsumerRepository(dataSource);
+    public KafkaConsumerRepository kafkaConsumerRepository(DataSource dataSource) {
+        return new OracleConsumerRepository(dataSource);
     }
 
     @Bean
