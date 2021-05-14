@@ -18,7 +18,6 @@ import javax.sql.DataSource;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -83,10 +82,11 @@ public class OppfolgingServiceTest {
 
         oppfolgingRepository.settUnderOppfolging(AktorId.of(AKTORID), startDato_portefolje);
 
-        oppfolgingService.lastInnDataPaNytt();
+        List<OppfolgingsBruker> oppfolgingsBruker = brukerRepository.hentAlleBrukereUnderOppfolging();
+        oppfolgingsBruker.forEach(oppfolgingService::oppdaterBruker);
 
         Optional<BrukerOppdatertInformasjon> oppfolgingsData = oppfolgingRepository.hentOppfolgingData(AktorId.of(AKTORID));
-        //assertThat(oppfolgingsData.get().getStartDato()).isEqualTo(toTimestamp(startDato_oppfolging));
+        assertThat(oppfolgingsData.get().getStartDato()).isEqualTo(toTimestamp(startDato_oppfolging));
 
     }
 

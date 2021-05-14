@@ -1,5 +1,10 @@
 {
-  "aktivitet_behandling_utlopsdato": {
-    "order": "asc"
+  "_script" : {
+    "script" : {
+      "source" : "List l = new ArrayList(); l.add(doc['aktivitet_behandling_utlopsdato']?.value.getMillis()); return l.stream().sorted().findFirst().get();",
+      "lang" : "painless"
+    },
+    "type" : "number",
+    "order" : "asc"
   }
 }

@@ -84,7 +84,7 @@ public class ElasticQueryBuilder {
             byggAktivitetFilterQuery(filtervalg, queryBuilder);
         }
 
-        if(filtervalg.harUlesteEndringerFilter()){
+        if (filtervalg.harUlesteEndringerFilter()) {
             byggUlestEndringsFilter(filtervalg.sisteEndringKategori, queryBuilder);
         }
 
@@ -106,23 +106,23 @@ public class ElasticQueryBuilder {
     private static void byggUlestEndringsFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         BoolQueryBuilder subQuery = boolQuery();
         List<String> relvanteKategorier;
-        if(sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
+        if (sisteEndringKategori == null || sisteEndringKategori.isEmpty()) {
             relvanteKategorier = (Arrays.stream(SisteEndringsKategori.values()).map(SisteEndringsKategori::name)).collect(toList());
         } else {
             relvanteKategorier = sisteEndringKategori;
         }
 
         relvanteKategorier.forEach(kategori -> subQuery.should(
-                        QueryBuilders.matchQuery("siste_endringer."+kategori+".er_sett", "N")
+                QueryBuilders.matchQuery("siste_endringer." + kategori + ".er_sett", "N")
         ));
         queryBuilder.must(subQuery);
     }
 
     private static void byggSisteEndringFilter(List<String> sisteEndringKategori, BoolQueryBuilder queryBuilder) {
         BoolQueryBuilder subQuery = boolQuery();
-        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer."+kategori)));
+        sisteEndringKategori.forEach(kategori -> subQuery.should(QueryBuilders.existsQuery("siste_endringer." + kategori)));
         queryBuilder.must(subQuery);
-      }
+    }
 
     static List<BoolQueryBuilder> byggAktivitetFilterQuery(Filtervalg filtervalg, BoolQueryBuilder queryBuilder) {
         return filtervalg.aktiviteter.entrySet().stream()
@@ -203,16 +203,16 @@ public class ElasticQueryBuilder {
 
     static void sorterSisteEndringTidspunkt(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expresion = null;
-        if(filtervalg.sisteEndringKategori.size() == 1) {
+        if (filtervalg.sisteEndringKategori.size() == 1) {
             expresion = "doc['siste_endringer." + filtervalg.sisteEndringKategori.get(0) + ".tidspunkt']?.value.getMillis()";
-        } else if(filtervalg.sisteEndringKategori.size() > 1) {
+        } else if (filtervalg.sisteEndringKategori.size() > 1) {
             StringJoiner expresionJoiner = new StringJoiner(",", "Math.max(", ")");
             for (String kategori : filtervalg.sisteEndringKategori) {
-                expresionJoiner.add("doc['siste_endringer." + kategori  + ".tidspunkt']?.value.getMillis()");
+                expresionJoiner.add("doc['siste_endringer." + kategori + ".tidspunkt']?.value.getMillis()");
             }
             expresion = expresionJoiner.toString();
         }
-        if(expresion != null){
+        if (expresion != null) {
             Script script = new Script(expresion);
             ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
             scriptBuilder.order(order);
@@ -236,17 +236,25 @@ public class ElasticQueryBuilder {
     }
 
     static SearchSourceBuilder sorterValgteAktiviteter(Filtervalg filtervalg, SearchSourceBuilder builder, SortOrder order) {
-        if(filtervalg.harAktiviteterForenklet()){
-            filtervalg.aktiviteterForenklet.stream()
-                    .map(aktivitet -> format("aktivitet_%s_utlopsdato", aktivitet.toLowerCase()))
-                    .forEach(aktivitet -> builder.sort(aktivitet, order));
+        List<String> sorterings_aktiviter;
+        if (filtervalg.harAktiviteterForenklet()) {
+            sorterings_aktiviter = filtervalg.aktiviteterForenklet;
         } else {
-            filtervalg.aktiviteter.entrySet().stream()
+            sorterings_aktiviter = filtervalg.aktiviteter.entrySet().stream()
                     .filter(entry -> JA.equals(entry.getValue()))
                     .map(Map.Entry::getKey)
-                    .map(aktivitet -> format("aktivitet_%s_utlopsdato", aktivitet.toLowerCase()))
-                    .forEach(aktivitet -> builder.sort(aktivitet, order));
+                    .collect(toList());
         }
+
+        if (sorterings_aktiviter.isEmpty()) {
+            return builder;
+        }
+        StringJoiner script = new StringJoiner("", "List l = new ArrayList(); ", "return l.stream().sorted().findFirst().get();");
+        sorterings_aktiviter.forEach(aktivitet -> script.add(format("l.add(doc['aktivitet_%s_utlopsdato']?.value.getMillis()); ", aktivitet.toLowerCase())));
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(new Script(script.toString()), ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+
         return builder;
     }
 
