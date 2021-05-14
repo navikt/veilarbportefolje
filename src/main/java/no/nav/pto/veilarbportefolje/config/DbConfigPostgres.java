@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.config;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.util.DbUtils.getSqlRole;
 @Configuration
 @RequiredArgsConstructor
 @EnableTransactionManagement
-public class DbConfigPostgres implements DatabaseConfig{
+public class DbConfigPostgres implements DatabaseConfig {
     private final EnvironmentProperties environmentProperties;
 
     @Bean("Postgres")
@@ -33,7 +32,7 @@ public class DbConfigPostgres implements DatabaseConfig{
         return createDataSource(environmentProperties.getDbUrl());
     }
 
-    @Bean(name="PostgresJdbc")
+    @Bean(name = "PostgresJdbc")
     @Override
     public JdbcTemplate db(@Qualifier("Postgres") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
@@ -41,7 +40,7 @@ public class DbConfigPostgres implements DatabaseConfig{
 
     @Bean("PostgresNamedJdbc")
     @Override
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("Postgres")DataSource dataSource) {
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("Postgres") DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
@@ -60,10 +59,10 @@ public class DbConfigPostgres implements DatabaseConfig{
         Flyway.configure()
                 .dataSource(dataSource)
                 .locations("db/postgres")
-                .initSql("SET ROLE '" + getSqlRole()+"';")
+                .initSql("SET ROLE '" + getSqlRole() + "';")
                 .baselineOnMigrate(true)
                 .load()
-                .migrate();
+                .repair();
 
         dataSource.getConnection().close();
     }
