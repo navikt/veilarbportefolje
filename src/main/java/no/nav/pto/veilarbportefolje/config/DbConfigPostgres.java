@@ -62,7 +62,7 @@ public class DbConfigPostgres implements DatabaseConfig {
                 .initSql("SET ROLE '" + getSqlRole() + "';")
                 .baselineOnMigrate(true)
                 .load()
-                .repair();
+                .migrate();
 
         dataSource.getConnection().close();
     }
