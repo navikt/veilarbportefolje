@@ -22,7 +22,6 @@
         <jsch.version>0.1.54</jsch.version>
         <elastic.version>6.5.2</elastic.version>
         <confluent.version>5.0.2</confluent.version>
-        <avro.version>1.8.2</avro.version>
         <veilarbregistrering.skjema.version>1.202010190947-866fe12</veilarbregistrering.skjema.version>
         <prometheus.version>0.4.0</prometheus.version>
         <jaxb.version>2.3.1</jaxb.version>
@@ -105,12 +104,6 @@
 
         <!-- database -->
         <dependency>
-            <groupId>com.oracle.ojdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
-            <version>19.3.0.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>3.2.0</version>
@@ -143,11 +136,6 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
         </dependency>
 
         <dependency>
@@ -235,12 +223,6 @@
             <version>${common.version}</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-        </dependency>
-
         <!--Logging-->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -299,18 +281,8 @@
             <artifactId>jaxb-api</artifactId>
             <version>${jaxb.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>${jaxb.version}</version>
-        </dependency>
 
         <!--Diverse-->
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-            <version>${jsch.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -326,25 +298,7 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz</artifactId>
-            <version>2.3.2</version>
-        </dependency>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>26.0-jre</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -376,6 +330,10 @@
         </dependency>
 
         <!--TEST-->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
