@@ -6,7 +6,8 @@ public enum AktivitetTyperFraAktivitetspan {
     sokeavtale,
     behandling,
     ijobb,
-    mote;
+    mote,
+    samtalereferat;
 
     public static boolean contains(String value) {
         try {
