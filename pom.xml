@@ -108,6 +108,11 @@
             <artifactId>HikariCP</artifactId>
             <version>3.2.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.oracle.ojdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>19.3.0.0</version>
+        </dependency>
 
         <dependency>
             <groupId>no.nav</groupId>
@@ -380,8 +385,12 @@
                 <repository>
                     <id>central</id>
                     <url>https://repo1.maven.org/maven2</url>
-                    <releases><enabled>true</enabled></releases>
-                    <snapshots><enabled>true</enabled></snapshots>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
                 </repository>
                 <repository>
                     <id>github</id>
