@@ -25,17 +25,12 @@ public class CVServiceFromAiven {
             return;
         }
 
-        switch (melding.getMeldingType()) {
-            case SAMTYKKE_OPPRETTET:
-                cvRepository.upsert(aktoerId, true);
-                elasticServiceV2.updateHarDeltCv(aktoerId, true);
-                break;
-            case SAMTYKKE_SLETTET:
-                cvRepository.upsert(aktoerId, false);
-                elasticServiceV2.updateHarDeltCv(aktoerId, false);
-                break;
-            default:
-                log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktoerId);
+        if (melding.getSlettetDato() != null) {
+            cvRepository.upsert(aktoerId, false);
+            elasticServiceV2.updateHarDeltCv(aktoerId, false);
+        } else {
+            cvRepository.upsert(aktoerId, true);
+            elasticServiceV2.updateHarDeltCv(aktoerId, true);
         }
     }
 }

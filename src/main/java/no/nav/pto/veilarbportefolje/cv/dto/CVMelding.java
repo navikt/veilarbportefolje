@@ -8,6 +8,6 @@ import no.nav.common.types.identer.Fnr;
 public class CVMelding {
     AktorId aktoerId;
     Fnr fnr;
-    MeldingType meldingType;
     Ressurs ressurs;
+    String slettetDato;
 }
