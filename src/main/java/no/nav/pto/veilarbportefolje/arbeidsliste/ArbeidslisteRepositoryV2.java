@@ -54,11 +54,9 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
                     AktorId aktoerId = Optional
                             .ofNullable(dto.getAktorId())
                             .orElseThrow(() -> new RuntimeException("Fant ikke aktør-ID"));
+                    dto.setAktorId(aktoerId);
 
-                    db.update("INSERT INTO " + TABLE_NAME
-                            + " (" + AKTOERID+", "+ UPDATE_STRING + ") " +
-                            "VALUES(" + aktoerId.get()+", "+ dto.toSqlUpdateString() + ") " +
-                            "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + UPDATE_STRING + ") = (" + dto.toSqlUpdateString() + ")");
+                    upsert(aktoerId.get(), dto);
                     return dto;
                 }
         ).onFailure(e -> log.warn("Kunne ikke inserte arbeidsliste til db", e));
@@ -76,7 +74,7 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
         return Try.of(
                 () -> {
                     int rows = db.update(updateSql, data.getVeilederId().getValue(), endringsTidspunkt, data.getOverskrift(),
-                                    data.getKommentar(), data.getFrist(), data.getKategori(), data.getAktorId().get());
+                                    data.getKommentar(), data.getFrist(), data.getKategori().name(), data.getAktorId().get());
 
                     log.info("Oppdaterte arbeidsliste pa bruker {}, rader: {}", data.getAktorId().get(), rows);
                     return data.setEndringstidspunkt(endringsTidspunkt);
@@ -104,4 +102,26 @@ public class ArbeidslisteRepositoryV2 implements ArbeidslisteRepository {
         );
     }
 
+    private int upsert(String aktoerId, ArbeidslisteDTO dto){
+        return db.update("INSERT INTO " + TABLE_NAME
+                + " (" + AKTOERID +
+                ", " + SIST_ENDRET_AV_VEILEDERIDENT +
+                ", " + ENDRINGSTIDSPUNKT +
+                ", " + OVERSKRIFT +
+                ", " + KOMMENTAR +
+                ", " + FRIST +
+                ", " + KATEGORI +
+                ", " + NAV_KONTOR_FOR_ARBEIDSLISTE + ") " +
+                "VALUES(?,?,?,?,?,?,?,?) " +
+                "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" +
+                    SIST_ENDRET_AV_VEILEDERIDENT +
+                    ", " + ENDRINGSTIDSPUNKT +
+                    ", " + OVERSKRIFT +
+                    ", " + KOMMENTAR +
+                    ", " + FRIST +
+                    ", " + KATEGORI +
+                    ", " + NAV_KONTOR_FOR_ARBEIDSLISTE + ")" +
+                    " = (?,?,?,?,?,?,?)", aktoerId, dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste(),
+                    dto.getVeilederId().getValue(), dto.getEndringstidspunkt(), dto.getOverskrift(), dto.getKommentar(), dto.getFrist(), dto.getKategori().toString(), dto.getNavKontorForArbeidsliste());
+    }
 }

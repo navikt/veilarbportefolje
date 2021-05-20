@@ -258,7 +258,8 @@ public class Bruker {
                         .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
                         .setAnsvarligVeilederForVedtak((String) row.get(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
                         .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                        .setTrengerRevurdering(trengerRevurdering);
+                        .setTrengerRevurdering(trengerRevurdering)
+                        .setArbeidsliste(Arbeidsliste.of(row));
         //TODO: utledd manuell
     }
     // TODO: sjekk om disse feltene er i bruk, de kan være nødvendige for statuser eller filtere
