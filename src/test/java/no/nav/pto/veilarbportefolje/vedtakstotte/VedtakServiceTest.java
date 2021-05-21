@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +13,9 @@ import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class VedtakServiceTest {
 
@@ -35,11 +38,14 @@ public class VedtakServiceTest {
 
     @Before
     public void setup() {
+        UnleashService mock = mock(UnleashService.class);
+        when(mock.isEnabled(anyString())).thenReturn(true);
+
         JdbcTemplate db = new JdbcTemplate(setupInMemoryDatabase());
         this.vedtakStatusRepository = new VedtakStatusRepository(db);
         ElasticIndexer elasticIndexer = mock(ElasticIndexer.class);
         VedtakStatusRepositoryV2 vedtakStatusRepositoryV2 = mock(VedtakStatusRepositoryV2.class);
-        this.vedtakService = new VedtakService(vedtakStatusRepository, vedtakStatusRepositoryV2, elasticIndexer);
+        this.vedtakService = new VedtakService(vedtakStatusRepository, vedtakStatusRepositoryV2, elasticIndexer, mock);
         vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
     }
 
