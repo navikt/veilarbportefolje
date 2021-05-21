@@ -1,7 +1,9 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
@@ -14,6 +16,7 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
     private final OppfolgingRepository oppfolgingRepository;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ElasticServiceV2 elasticServiceV2;
+    private final UnleashService unleashService;
 
     @Override
     public void behandleKafkaMelding(String kafkaMelding) {
@@ -21,8 +24,9 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
         final AktorId aktoerId = AktorId.of(dto.getAktorId());
 
         oppfolgingRepository.settManuellStatus(aktoerId, dto.isErManuell());
-        oppfolgingRepositoryV2.settManuellStatus(aktoerId, dto.isErManuell());
-
+        if (erPostgresPa()) {
+            oppfolgingRepositoryV2.settManuellStatus(aktoerId, dto.isErManuell());
+        }
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
 
         elasticServiceV2.settManuellStatus(aktoerId, manuellStatus);
@@ -36,5 +40,9 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
     @Override
     public void setRewind(boolean rewind) {
 
+    }
+
+    private boolean erPostgresPa() {
+        return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
 }

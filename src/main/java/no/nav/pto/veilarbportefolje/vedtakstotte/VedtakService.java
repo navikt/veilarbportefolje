@@ -2,7 +2,9 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +22,14 @@ public class VedtakService implements KafkaConsumerService<String> {
     private final VedtakStatusRepository vedtakStatusRepository;
     private final VedtakStatusRepositoryV2 vedtakStatusRepositoryV2;
     private final ElasticIndexer elasticIndexer;
+    private final UnleashService unleashService;
     private final AtomicBoolean rewind = new AtomicBoolean();
 
     public void behandleKafkaMelding(String melding) {
         KafkaVedtakStatusEndring vedtakStatusEndring = fromJson(melding, KafkaVedtakStatusEndring.class);
         KafkaVedtakStatusEndring.VedtakStatusEndring vedtakStatus = vedtakStatusEndring.getVedtakStatusEndring();
         switch (vedtakStatus) {
-            case UTKAST_SLETTET : {
+            case UTKAST_SLETTET: {
                 slettUtkast(vedtakStatusEndring);
                 break;
             }
@@ -45,8 +48,7 @@ public class VedtakService implements KafkaConsumerService<String> {
             case BLI_BESLUTTER:
             case GODKJENT_AV_BESLUTTER:
             case KLAR_TIL_BESLUTTER:
-            case KLAR_TIL_VEILEDER:
-            {
+            case KLAR_TIL_VEILEDER: {
                 oppdaterUtkast(vedtakStatusEndring);
                 break;
             }
@@ -68,34 +70,44 @@ public class VedtakService implements KafkaConsumerService<String> {
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
 
-        vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
+        if (erPostgresPa())
+            vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
     }
 
     private void opprettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.opprettUtkast(melding);
 
-        vedtakStatusRepositoryV2.upsertVedtak(melding);
+        if (erPostgresPa())
+            vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
     private void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.oppdaterAnsvarligVeileder(melding);
 
-        vedtakStatusRepositoryV2.oppdaterAnsvarligVeileder(melding);
+        if (erPostgresPa())
+            vedtakStatusRepositoryV2.oppdaterAnsvarligVeileder(melding);
     }
 
 
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
 
-        vedtakStatusRepositoryV2.upsertVedtak(melding);
+        if (erPostgresPa())
+            vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
 
-        vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
-        vedtakStatusRepositoryV2.upsertVedtak(melding);
+        if (erPostgresPa()) {
+            vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
+            vedtakStatusRepositoryV2.upsertVedtak(melding);
+        }
+    }
+
+    private boolean erPostgresPa() {
+        return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
 
 }
