@@ -48,8 +48,7 @@ public class ApplicationConfig {
 
     @Bean
     public Credentials serviceUserCredentials() {
-        Credentials serviceUserCredentials = getCredentials("service_user");
-        return serviceUserCredentials;
+        return getCredentials("service_user");
     }
 
     @Bean
