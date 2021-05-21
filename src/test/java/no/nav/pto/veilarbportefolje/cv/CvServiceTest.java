@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.cv;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
+import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -16,7 +18,7 @@ class CvServiceTest extends EndToEndTest {
     private CvRepository cvRepository;
 
     @Autowired
-    private CvService cvService;
+    private CVServiceFromAiven cvService;
 
     @Test
     void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {
@@ -30,13 +32,11 @@ class CvServiceTest extends EndToEndTest {
         IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
-        String payload = new JSONObject()
-                .put("aktoerId", "00000000000")
-                .put("meldingType", "SAMTYKKE_OPPRETTET")
-                .put("ressurs", "CV_HJEMMEL")
-                .toString();
+        CVMelding cvMelding = new CVMelding();
+        cvMelding.setAktoerId(AktorId.of("00000000000"));
+        cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
-        cvService.behandleKafkaMelding(payload);
+        cvService.behandleKafkaMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -57,13 +57,11 @@ class CvServiceTest extends EndToEndTest {
         IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
-        String payload = new JSONObject()
-                .put("aktoerId", aktoerId.toString())
-                .put("meldingType", "SAMTYKKE_OPPRETTET")
-                .put("ressurs", "CV_HJEMMEL")
-                .toString();
+        CVMelding cvMelding = new CVMelding();
+        cvMelding.setAktoerId(aktoerId);
+        cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
-        cvService.behandleKafkaMelding(payload);
+        cvService.behandleKafkaMelding(cvMelding);
 
         String harDeltCvDb = cvRepository.harDeltCv(aktoerId);
         assertThat(harDeltCvDb).isEqualTo("J");
@@ -87,13 +85,11 @@ class CvServiceTest extends EndToEndTest {
         IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
-        String payload = new JSONObject()
-                .put("aktoerId", "00000000000")
-                .put("meldingType", "SAMTYKKE_OPPRETTET")
-                .put("ressurs", "ARBEIDSGIVER_GENERELL")
-                .toString();
+        CVMelding cvMelding = new CVMelding();
+        cvMelding.setAktoerId(aktoerId);
+        cvMelding.setRessurs(Ressurs.ARBEIDSGIVER_GENERELL);
 
-        cvService.behandleKafkaMelding(payload);
+        cvService.behandleKafkaMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -113,13 +109,11 @@ class CvServiceTest extends EndToEndTest {
         IndexResponse indexResponse = elasticTestClient.createDocument(aktoerId, document);
         assertThat(indexResponse.status().getStatus()).isEqualTo(201);
 
-        String payload = new JSONObject()
-                .put("aktoerId", aktoerId.toString())
-                .put("meldingType", "SAMTYKKE_OPPRETTET")
-                .put("ressurs", "CV_GENERELL")
-                .toString();
+        CVMelding cvMelding = new CVMelding();
+        cvMelding.setAktoerId(aktoerId);
+        cvMelding.setRessurs(Ressurs.CV_GENERELL);
 
-        cvService.behandleKafkaMelding(payload);
+        cvService.behandleKafkaMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -131,13 +125,12 @@ class CvServiceTest extends EndToEndTest {
     @Test
     void skal_ignorere_tilfeller_hvor_dokumentet_ikke_finnes_i_elastic() {
         AktorId aktoerId = AktorId.of("00000000000");
-        String payload = new JSONObject()
-                .put("aktoerId", aktoerId)
-                .put("meldingType", "SAMTYKKE_OPPRETTET")
-                .put("ressurs", "CV_HJEMMEL")
-                .toString();
 
-        cvService.behandleKafkaMelding(payload);
+        CVMelding cvMelding = new CVMelding();
+        cvMelding.setAktoerId(aktoerId);
+        cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
+
+        cvService.behandleKafkaMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isFalse();

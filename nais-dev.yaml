@@ -21,6 +21,8 @@ spec:
   webproxy: true
   secureLogs:
     enabled: true
+  kafka:
+    pool: nav-dev
   vault:
     enabled: true
     paths:
