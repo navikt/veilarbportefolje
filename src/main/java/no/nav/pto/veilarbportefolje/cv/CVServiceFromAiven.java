@@ -25,12 +25,12 @@ public class CVServiceFromAiven {
             return;
         }
 
-        if (melding.getSlettetDato() != null) {
-            cvRepository.upsert(aktoerId, false);
-            elasticServiceV2.updateHarDeltCv(aktoerId, false);
-        } else {
+        if (melding.getSlettetDato() == null) {
             cvRepository.upsert(aktoerId, true);
             elasticServiceV2.updateHarDeltCv(aktoerId, true);
+        } else {
+            cvRepository.upsert(aktoerId, false);
+            elasticServiceV2.updateHarDeltCv(aktoerId, false);
         }
     }
 
