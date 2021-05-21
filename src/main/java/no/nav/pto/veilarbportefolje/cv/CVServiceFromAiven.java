@@ -33,4 +33,9 @@ public class CVServiceFromAiven {
             elasticServiceV2.updateHarDeltCv(aktoerId, true);
         }
     }
+
+    public void setCVSamtykke(AktorId aktoerId) {
+        cvRepository.upsert(aktoerId, true);
+        elasticServiceV2.updateHarDeltCv(aktoerId, true);
+    }
 }
