@@ -4,8 +4,6 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.cv.dto.MeldingType;
-import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
+import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 
 @Slf4j
 @Service
@@ -23,6 +21,17 @@ public class CvService implements KafkaConsumerService<String> {
     private final CvRepository cvRepository;
 
     private final AtomicBoolean rewind;
+
+    enum Ressurs {
+        CV_HJEMMEL,
+        CV_GENERELL,
+        ARBEIDSGIVER_GENERELL
+    }
+
+    enum MeldingType {
+        SAMTYKKE_OPPRETTET,
+        SAMTYKKE_SLETTET
+    }
 
     @Value
     static class Melding {
