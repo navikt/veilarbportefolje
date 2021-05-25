@@ -3,12 +3,13 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
         final AktorId aktoerId = AktorId.of(dto.getAktorId());
 
         oppfolgingRepository.settManuellStatus(aktoerId, dto.isErManuell());
-        if (erPostgresPa()) {
+        if (erPostgresPa(unleashService)) {
             oppfolgingRepositoryV2.settManuellStatus(aktoerId, dto.isErManuell());
         }
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
@@ -42,7 +43,4 @@ public class ManuellStatusService implements KafkaConsumerService<String> {
 
     }
 
-    private boolean erPostgresPa() {
-        return unleashService.isEnabled(FeatureToggle.POSTGRES);
-    }
 }

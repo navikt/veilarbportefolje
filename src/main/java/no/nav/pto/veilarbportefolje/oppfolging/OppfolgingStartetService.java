@@ -3,10 +3,11 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class OppfolgingStartetService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
         final OppfolgingStartetDTO dto = JsonUtils.fromJson(kafkaMelding, OppfolgingStartetDTO.class);
         oppfolgingRepository.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
-        if(erPostgresPa()) {
+        if(erPostgresPa(unleashService)) {
             oppfolgingRepositoryV2.settUnderOppfolging(dto.getAktorId(), dto.getOppfolgingStartet());
         }
         elasticIndexer.indekser(dto.getAktorId());
@@ -35,9 +36,5 @@ public class OppfolgingStartetService implements KafkaConsumerService<String> {
     @Override
     public void setRewind(boolean rewind) {
 
-    }
-
-    private boolean erPostgresPa() {
-        return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
 }

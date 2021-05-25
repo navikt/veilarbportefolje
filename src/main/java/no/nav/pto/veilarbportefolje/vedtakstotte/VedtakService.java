@@ -4,15 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Slf4j
 @Service
@@ -70,21 +69,21 @@ public class VedtakService implements KafkaConsumerService<String> {
     private void slettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.slettVedtakUtkast(melding.getVedtakId());
 
-        if (erPostgresPa())
+        if (erPostgresPa(unleashService))
             vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
     }
 
     private void opprettUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.opprettUtkast(melding);
 
-        if (erPostgresPa())
+        if (erPostgresPa(unleashService))
             vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
     private void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.oppdaterAnsvarligVeileder(melding);
 
-        if (erPostgresPa())
+        if (erPostgresPa(unleashService))
             vedtakStatusRepositoryV2.oppdaterAnsvarligVeileder(melding);
     }
 
@@ -92,7 +91,7 @@ public class VedtakService implements KafkaConsumerService<String> {
     private void oppdaterUtkast(KafkaVedtakStatusEndring melding) {
         vedtakStatusRepository.upsertVedtak(melding);
 
-        if (erPostgresPa())
+        if (erPostgresPa(unleashService))
             vedtakStatusRepositoryV2.upsertVedtak(melding);
     }
 
@@ -100,14 +99,10 @@ public class VedtakService implements KafkaConsumerService<String> {
         vedtakStatusRepository.slettGamleVedtakOgUtkast(melding.getAktorId());
         vedtakStatusRepository.upsertVedtak(melding);
 
-        if (erPostgresPa()) {
+        if (erPostgresPa(unleashService)) {
             vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
             vedtakStatusRepositoryV2.upsertVedtak(melding);
         }
-    }
-
-    private boolean erPostgresPa() {
-        return unleashService.isEnabled(FeatureToggle.POSTGRES);
     }
 
 }

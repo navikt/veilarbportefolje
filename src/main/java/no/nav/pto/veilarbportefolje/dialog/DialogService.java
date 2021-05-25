@@ -3,15 +3,14 @@ package no.nav.pto.veilarbportefolje.dialog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Slf4j
 @Service
@@ -28,7 +27,7 @@ public class DialogService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
         Dialogdata melding = fromJson(kafkaMelding, Dialogdata.class);
         dialogRepository.oppdaterDialogInfoForBruker(melding);
-        if(erPostgresPa()){
+        if(erPostgresPa(unleashService)){
             int rader = dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
             log.info("Oppdatert dialog for bruker: {}, i postgres rader pavirket: {}",melding.getAktorId(), rader);
         }
@@ -46,7 +45,4 @@ public class DialogService implements KafkaConsumerService<String> {
         this.rewind.set(rewind);
     }
 
-    private boolean erPostgresPa() {
-        return unleashService.isEnabled(FeatureToggle.POSTGRES);
-    }
 }
