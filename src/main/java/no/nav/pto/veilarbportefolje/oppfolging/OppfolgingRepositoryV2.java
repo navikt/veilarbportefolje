@@ -23,7 +23,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Slf4j
 @Repository
 public class OppfolgingRepositoryV2 {
-
     private final JdbcTemplate db;
 
     @Autowired
