@@ -23,7 +23,7 @@ public class OppfolginsbrukerService implements KafkaConsumerService<String> {
     public void behandleKafkaMelding(String kafkaMelding) {
         if(erPostgresPa()){
             OppfolgingsbrukerKafkaDTO oppfolginsbruker = fromJson(kafkaMelding, OppfolgingsbrukerKafkaDTO.class);
-            int rader = OppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(oppfolginsbruker);
+            int rader = OppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(oppfolginsbruker);
             log.info("Oppdatert oppfolginsbruker info for bruker: {}, i postgres rader pavirket: {}",oppfolginsbruker.getAktoerid(), rader);
         }
     }
