@@ -67,7 +67,7 @@ public class Filtervalg {
         return cvJobbprofil != null;
     }
 
-    private boolean harFerdigFilter() {
+    public boolean harFerdigFilter() {
         return brukerstatus != null || (ferdigfilterListe != null && !ferdigfilterListe.isEmpty());
     }
 

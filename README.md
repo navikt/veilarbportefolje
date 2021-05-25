@@ -65,6 +65,11 @@ Les i jobbtabellen til oracle for å undersøke statusen på den automatisk oppd
 select * from dba_scheduler_jobs;
 ```
 
+## PostgreSQL
+Innloggingsinformasjon til databasen:  
+* Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin` 
+* Prod: `vault read postgresql/preprod-fss/creds/veilarbportefolje-prod-admin` 
+
 ## Plugin til IntelliJ
 Dette prosjektet benytter seg av [lombok](https://projectlombok.org).
 
@@ -75,4 +80,3 @@ Opprett en issue i GitHub for eventuelle spørsmål.
 
 
 Er du ansatt i NAV kan du stille spørsmål på Slack i kanalen #pto.
-

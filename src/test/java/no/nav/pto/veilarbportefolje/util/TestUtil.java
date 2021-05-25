@@ -4,6 +4,7 @@ import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,6 +23,15 @@ public class TestUtil {
         setHsqlToOraSyntax(ds);
         migrateDb(ds);
         return ds;
+    }
+
+    public static void testMigrate (DataSource dataSource) {
+        Flyway.configure()
+                .dataSource(dataSource)
+                .locations("db/postgres")
+                .baselineOnMigrate(true)
+                .load()
+                .migrate();
     }
 
     private static void migrateDb(DriverManagerDataSource ds) {

@@ -1,11 +1,14 @@
 package no.nav.pto.veilarbportefolje.util;
 
+import com.zaxxer.hikari.HikariConfig;
+import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.vedtakstotte.KafkaVedtakStatusEndring;
 import org.apache.commons.lang3.text.WordUtils;
 
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.HashSet;
@@ -13,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
 import static no.nav.pto.veilarbportefolje.database.Table.BRUKER_CV.HAR_DELT_CV;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
@@ -20,6 +24,38 @@ import static no.nav.pto.veilarbportefolje.util.OppfolgingUtils.isNyForEnhet;
 
 @Slf4j
 public class DbUtils {
+
+    public static DataSource createDataSource(String dbUrl) {
+        HikariConfig config = createDataSourceConfig(dbUrl);
+        return createVaultRefreshDataSource(config);
+    }
+
+    public static HikariConfig createDataSourceConfig(String dbUrl) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(dbUrl);
+        config.setMaximumPoolSize(5);
+        config.setMinimumIdle(1);
+        return config;
+    }
+
+    public static String getSqlRole() {
+        boolean isProd = isProduction().orElse(false);
+        return (isProd ? "veilarbportefolje-prod-admin" : "veilarbportefolje-dev-admin");
+    }
+
+    @SneakyThrows
+    private static DataSource createVaultRefreshDataSource(HikariConfig config) {
+        return HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(config, getMountPath(), getSqlRole());
+    }
+
+    private static String getMountPath() {
+        boolean isProd = isProduction().orElse(false);
+        return "postgresql/" + (isProd ? "prod-fss" : "preprod-fss");
+    }
+
+    /***
+    Oracle
+    ***/
 
     @SneakyThrows
     public static OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {

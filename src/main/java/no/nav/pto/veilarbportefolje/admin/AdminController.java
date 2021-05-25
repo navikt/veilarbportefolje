@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.cv.CvService;
+import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
@@ -37,7 +37,7 @@ public class AdminController {
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
     private final OppfolgingService oppfolgingService;
-    private final CvService cvService;
+    private final CVServiceFromAiven cvService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
