@@ -33,8 +33,7 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
                 oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), false);
             }
             elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), false);
-        }
-        if (unleashService.isEnabled(FeatureToggle.FIKS_NY_FOR_VEILEDER) && !brukerIkkeErNyForVeileder) {
+        } else if (unleashService.isEnabled(FeatureToggle.FIKS_NY_FOR_VEILEDER)) {
             oppfolgingRepository.settNyForVeileder(dto.getAktorId(), true);
             if (erPostgresPa(unleashService)) {
                 oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), true);
