@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,12 @@ public class NyForVeilederService implements KafkaConsumerService<String> {
                 oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), false);
             }
             elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), false);
+        } else if (unleashService.isEnabled(FeatureToggle.FIKS_NY_FOR_VEILEDER)) {
+            oppfolgingRepository.settNyForVeileder(dto.getAktorId(), true);
+            if (erPostgresPa(unleashService)) {
+                oppfolgingRepositoryV2.settNyForVeileder(dto.getAktorId(), true);
+            }
+            elasticServiceV2.oppdaterNyForVeileder(dto.getAktorId(), true);
         }
         // Vi trenger ikke å opppdatere db/indeks når bruker er ny for veileder, siden dette gjøres i VeilederTilordnetService
     }
