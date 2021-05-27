@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ public class AdminController {
     private final ElasticServiceV2 elasticServiceV2;
     private final OppfolgingService oppfolgingService;
     private final CVService cvService;
+    private final VeilederTilordnetService veilederTilordnetService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -71,6 +73,13 @@ public class AdminController {
         authorizeAdmin();
         vedtakService.setRewind(true);
         return "Rewind av vedtak har startet";
+    }
+
+    @PostMapping("/rewind/veilederTilordnet")
+    public String rewindVeilederTilordnet() {
+        authorizeAdmin();
+        veilederTilordnetService.setRewind(true);
+        return "Rewind av 'veileder tilordnet' har startet";
     }
 
     @PostMapping("/settSamtykkeCV")
