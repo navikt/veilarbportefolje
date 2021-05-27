@@ -143,24 +143,6 @@ public class PostgresTable {
         public static final String ANSVARLIG_VEILDERIDENT = "ANSVARLIG_VEILDERIDENT";
         public static final String ANSVARLIG_VEILDERNAVN = "ANSVARLIG_VEILDERNAVN";
         public static final String ENDRET_TIDSPUNKT = "ENDRET_TIDSPUNKT";
-
-        public static final String SQLINSERT_STRING = AKTOERID +
-                ", " + VEDTAKID +
-                ", " + VEDTAKSTATUS +
-                ", " + INNSATSGRUPPE +
-                ", " + HOVEDMAL +
-                ", " + ANSVARLIG_VEILDERIDENT +
-                ", " + ANSVARLIG_VEILDERNAVN +
-                ", " + ENDRET_TIDSPUNKT;
-
-        public static final String SQLUPDATE_STRING =
-                VEDTAKID +
-                ", " + VEDTAKSTATUS +
-                ", " + INNSATSGRUPPE +
-                ", " + HOVEDMAL +
-                ", " + ANSVARLIG_VEILDERIDENT +
-                ", " + ANSVARLIG_VEILDERNAVN +
-                ", " + ENDRET_TIDSPUNKT;
     }
 
     public static String safeNull(Object o) {

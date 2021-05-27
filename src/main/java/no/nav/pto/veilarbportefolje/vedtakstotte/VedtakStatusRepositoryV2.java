@@ -33,18 +33,58 @@ public class VedtakStatusRepositoryV2 {
 
     public int upsertVedtak(KafkaVedtakStatusEndring vedtakStatusEndring) {
         return db.update("INSERT INTO " + TABLE_NAME +
-                " (" + SQLINSERT_STRING + ") " +
-                "VALUES (" + vedtakStatusEndring.toSqlInsertString() + ") " +
-                "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + vedtakStatusEndring.toSqlUpdateString() + ")");
+                        " (" + AKTOERID +
+                        ", " + VEDTAKID +
+                        ", " + VEDTAKSTATUS +
+                        ", " + INNSATSGRUPPE +
+                        ", " + HOVEDMAL +
+                        ", " + ANSVARLIG_VEILDERIDENT +
+                        ", " + ANSVARLIG_VEILDERNAVN +
+                        ", " + ENDRET_TIDSPUNKT + ") " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (" + AKTOERID + ") DO UPDATE SET" +
+                        " (" + VEDTAKID +
+                        ", " + VEDTAKSTATUS +
+                        ", " + INNSATSGRUPPE +
+                        ", " + HOVEDMAL +
+                        ", " + ANSVARLIG_VEILDERIDENT +
+                        ", " + ANSVARLIG_VEILDERNAVN +
+                        ", " + ENDRET_TIDSPUNKT + ") = (?, ?, ?, ?, ?, ?, ?)", vedtakStatusEndring.getAktorId(),
+                vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVedtakStatusEndring().name(),
+                Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe()).map(Enum::name).orElse(null),
+                Optional.ofNullable(vedtakStatusEndring.getHovedmal()).map(Enum::name).orElse(null),
+                vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(),
+                vedtakStatusEndring.getTimestamp(),
+
+                vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVedtakStatusEndring().name(),
+                Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe()).map(Enum::name).orElse(null),
+                Optional.ofNullable(vedtakStatusEndring.getHovedmal()).map(Enum::name).orElse(null),
+                vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(),
+                vedtakStatusEndring.getTimestamp()
+        );
+    }
+
+    public int updateVedtak(KafkaVedtakStatusEndring vedtakStatusEndring) {
+        if (erIkkeLagretUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
+            log.info("Oppdaterte ikke vedtak pa bruker {}, gjelder vedtak: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
+            return 0;
+        }
+        return db.update("UPDATE " + TABLE_NAME + " SET (" + VEDTAKSTATUS +
+                        ", " + INNSATSGRUPPE +
+                        ", " + HOVEDMAL +
+                        ", " + ANSVARLIG_VEILDERIDENT +
+                        ", " + ANSVARLIG_VEILDERNAVN +
+                        ", " + ENDRET_TIDSPUNKT + ") = (?, ?, ?, ?, ?, ?) WHERE " + AKTOERID+" = ?",
+                vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVedtakStatusEndring().name(),
+                Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe()).map(Enum::name).orElse(null),
+                Optional.ofNullable(vedtakStatusEndring.getHovedmal()).map(Enum::name).orElse(null),
+                vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(),
+                vedtakStatusEndring.getTimestamp(), vedtakStatusEndring.getAktorId()
+        );
     }
 
     public Optional<KafkaVedtakStatusEndring> hentVedtak(String aktorId) {
         String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
-
-        return Optional.ofNullable(db.queryForObject(
-                sql, new Object[]{aktorId},
-                this::mapKafkaVedtakStatusEndring)
-        );
+        return Optional.ofNullable(db.queryForObject(sql, this::mapKafkaVedtakStatusEndring, aktorId));
     }
 
     @SneakyThrows
@@ -64,11 +104,19 @@ public class VedtakStatusRepositoryV2 {
     }
 
     public void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring vedtakStatusEndring) {
+        if (erIkkeLagretUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
+            log.info("Oppdaterte ikke vedtak pa bruker {}, gjelder vedtak: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
+            return;
+        }
         String sql = String.format(
                 "UPDATE %s SET %s = ?, %s = ? WHERE %s = ?",
                 TABLE_NAME, ANSVARLIG_VEILDERIDENT, ANSVARLIG_VEILDERNAVN, AKTOERID
         );
         int rows = db.update(sql, vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(), vedtakStatusEndring.getAktorId());
         log.info("Oppdaterte veilder til: {} for bruker {}, rader: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId(), rows);
+    }
+
+    private boolean erIkkeLagretUtkast(String aktorId, long vedtakId) {
+        return hentVedtak(aktorId).map(other -> other.getVedtakId() != vedtakId).orElse(true);
     }
 }
