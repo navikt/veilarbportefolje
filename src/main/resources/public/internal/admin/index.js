@@ -116,6 +116,7 @@ function handleRewindVedtak(e) {
     }
 }
 
+
 const nyForVeiledereForm = document.getElementById('nyForVeileder');
 nyForVeiledereForm.addEventListener('submit', handleRewindNyForVeiledere);
 
