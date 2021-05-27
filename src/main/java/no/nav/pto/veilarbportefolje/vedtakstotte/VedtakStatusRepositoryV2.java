@@ -4,13 +4,17 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA.AKTOERID;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.VEDTAKSTATUS.*;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Repository
@@ -71,24 +75,26 @@ public class VedtakStatusRepositoryV2 {
         return db.update("UPDATE " + TABLE_NAME + " SET (" + VEDTAKSTATUS +
                         ", " + INNSATSGRUPPE +
                         ", " + HOVEDMAL +
-                        ", " + ANSVARLIG_VEILDERIDENT +
-                        ", " + ANSVARLIG_VEILDERNAVN +
-                        ", " + ENDRET_TIDSPUNKT + ") = (?, ?, ?, ?, ?, ?) WHERE " + AKTOERID+" = ?",
-                vedtakStatusEndring.getVedtakId(), vedtakStatusEndring.getVedtakStatusEndring().name(),
+                        ", " + ENDRET_TIDSPUNKT + ") = (?, ?, ?, ?) WHERE " + AKTOERID+" = ?",
+                vedtakStatusEndring.getVedtakStatusEndring().name(),
                 Optional.ofNullable(vedtakStatusEndring.getInnsatsgruppe()).map(Enum::name).orElse(null),
                 Optional.ofNullable(vedtakStatusEndring.getHovedmal()).map(Enum::name).orElse(null),
-                vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getVeilederNavn(),
                 vedtakStatusEndring.getTimestamp(), vedtakStatusEndring.getAktorId()
         );
     }
 
     public Optional<KafkaVedtakStatusEndring> hentVedtak(String aktorId) {
         String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
-        return Optional.ofNullable(db.queryForObject(sql, this::mapKafkaVedtakStatusEndring, aktorId));
+        return Optional.ofNullable(
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapKafkaVedtakStatusEndring, aktorId))
+        );
     }
 
     @SneakyThrows
     private KafkaVedtakStatusEndring mapKafkaVedtakStatusEndring(ResultSet rs, int rows) {
+        if (rs == null || rs.getString(AKTOERID) == null) {
+            return null;
+        }
         Optional<String> hovedmal = Optional.ofNullable(rs.getString(HOVEDMAL));
         Optional<String> innsatsgruppe = Optional.ofNullable(rs.getString(INNSATSGRUPPE));
 
