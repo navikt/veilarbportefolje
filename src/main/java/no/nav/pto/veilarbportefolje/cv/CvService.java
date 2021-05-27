@@ -1,66 +1,23 @@
 package no.nav.pto.veilarbportefolje.cv;
 
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
 
-import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.cv.CvService.Ressurs.CV_HJEMMEL;
 
-@Slf4j
+@RequiredArgsConstructor
 @Service
-public class CvService implements KafkaConsumerService<String> {
+@Slf4j
+public class CVService {
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
 
-    private final AtomicBoolean rewind;
-
-    enum Ressurs {
-        CV_HJEMMEL,
-        CV_GENERELL,
-        ARBEIDSGIVER_GENERELL
-    }
-
-    enum MeldingType {
-        SAMTYKKE_OPPRETTET,
-        SAMTYKKE_SLETTET
-    }
-
-    @Value
-    static class Melding {
-        AktorId aktoerId;
-        Fnr fnr;
-        MeldingType meldingType;
-        Ressurs ressurs;
-    }
-
-    @Autowired
-    public CvService(ElasticServiceV2 elasticServiceV2, CvRepository cvRepository) {
-        this.elasticServiceV2 = elasticServiceV2;
-        this.cvRepository = cvRepository;
-        this.rewind = new AtomicBoolean();
-    }
-
-    @Override
-    public boolean shouldRewind() {
-        return rewind.get();
-    }
-
-    @Override
-    public void setRewind(boolean rewind) {
-        this.rewind.set(rewind);
-    }
-
-    @Override
-    public void behandleKafkaMelding(String payload) {
-        Melding melding = fromJson(payload, Melding.class);
+    public void behandleKafkaMelding(CVMelding melding) {
         AktorId aktoerId = melding.getAktoerId();
 
         if (melding.getRessurs() != CV_HJEMMEL) {
@@ -68,17 +25,12 @@ public class CvService implements KafkaConsumerService<String> {
             return;
         }
 
-        switch (melding.meldingType) {
-            case SAMTYKKE_OPPRETTET:
-                cvRepository.upsert(aktoerId, true);
-                elasticServiceV2.updateHarDeltCv(aktoerId, true);
-                break;
-            case SAMTYKKE_SLETTET:
-                cvRepository.upsert(aktoerId, false);
-                elasticServiceV2.updateHarDeltCv(aktoerId, false);
-                break;
-            default:
-                log.info("Ignorer melding av type {} for bruker {}", melding.getMeldingType(), aktoerId);
+        if (melding.getSlettetDato() == null) {
+            cvRepository.upsert(aktoerId, true);
+            elasticServiceV2.updateHarDeltCv(aktoerId, true);
+        } else {
+            cvRepository.upsert(aktoerId, false);
+            elasticServiceV2.updateHarDeltCv(aktoerId, false);
         }
     }
 

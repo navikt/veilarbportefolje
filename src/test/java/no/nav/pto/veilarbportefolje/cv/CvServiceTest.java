@@ -18,7 +18,7 @@ class CvServiceTest extends EndToEndTest {
     private CvRepository cvRepository;
 
     @Autowired
-    private CVServiceFromAiven cvService;
+    private CVService cvService;
 
     @Test
     void skal_hente_fnr_fra_aktoertjenesten_om_fnr_mangler_i_melding() {

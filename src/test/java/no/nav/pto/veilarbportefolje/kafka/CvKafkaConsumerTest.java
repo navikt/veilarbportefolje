@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CvKafkaConsumerTest extends EndToEndTest {
 
     @Autowired
-    private CVServiceFromAiven cvService;
+    private CVService cvService;
 
     @Test
     void skal_populere_elastic_med_cv_og_spole_tilbake() throws ExecutionException, InterruptedException {

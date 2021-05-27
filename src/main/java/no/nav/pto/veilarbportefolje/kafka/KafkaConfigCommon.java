@@ -12,7 +12,7 @@ import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.ConsumerUtils;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -79,7 +79,7 @@ public class KafkaConfigCommon {
 
     @Bean
     public Map<String, TopicConsumer<String, String>> topicConsumers(
-            CVServiceFromAiven cvService
+            CVService cvService
     ) {
         return Map.of(
                 CV_TOPIC,

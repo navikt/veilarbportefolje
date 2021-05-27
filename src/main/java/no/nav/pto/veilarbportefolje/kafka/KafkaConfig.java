@@ -5,7 +5,6 @@ import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
@@ -30,14 +29,13 @@ public class KafkaConfig {
         DIALOG_CONSUMER_TOPIC("aapen-fo-endringPaaDialog-v1-" + requireKafkaTopicPostfix()),
         KAFKA_REGISTRERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-registrert-" + requireKafkaTopicPostfix()),
         KAFKA_AKTIVITER_CONSUMER_TOPIC("aapen-fo-endringPaaAktivitet-v4-" + requireKafkaTopicPostfix()),
-        PAM_SAMTYKKE_ENDRET_V1("aapen-pam-samtykke-endret-v1"),
         KAFKA_PROFILERING_CONSUMER_TOPIC("aapen-arbeid-arbeidssoker-profilert-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_MANUELL_STATUS("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + requireKafkaTopicPostfix()),
         VEILEDER_TILORDNET("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PAA_NY_FOR_VEILEDER("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_STARTET("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + requireKafkaTopicPostfix()),
         OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
-        ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-"+ requireKafkaTopicPostfix()),
+        ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-" + requireKafkaTopicPostfix()),
         SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
         ENDRING_PAA_OPPFOLGINGSBRUKER("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireKafkaTopicPostfix());
 
@@ -110,17 +108,6 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
                 KafkaConfig.Topic.DIALOG_CONSUMER_TOPIC,
-                metricsClient
-        );
-    }
-
-    @Bean
-    public KafkaConsumerRunnable<String> kafkaCvConsumer(CvService cvService, UnleashService unleashService, MetricsClient metricsClient){
-        return new KafkaConsumerRunnable<>(
-                cvService,
-                unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.NONE),
-                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
                 metricsClient
         );
     }
