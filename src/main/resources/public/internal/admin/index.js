@@ -131,6 +131,20 @@ function handleRewindNyForVeiledere(e) {
     }
 }
 
+const tilordnetVeilederForm = document.getElementById('tilordnetVeileder');
+tilordnetVeilederForm.addEventListener('submit', handleRewindTilordnetVeileder);
+
+function handleRewindTilordnetVeileder(e) {
+    e.preventDefault();
+    if (window.confirm('Dette vil lese inn alle kafka meldinger fra topiken fra starten av.')) {
+        fetchData(
+            '/veilarbportefolje/api/admin/rewind/veilederTilordnet',
+            {method: 'POST', credentials: 'same-origin'},
+            'tilordnetVeilederResponse'
+        );
+    }
+}
+
 const aktoerIdSamtykkeForm = document.getElementById('aktoerIdSamtykkeForm');
 aktoerIdSamtykkeForm.addEventListener('submit', handleSamtykkeDeltCV);
 const aktoerIdSamtykkeInput = document.getElementById('aktoerIdSamtykkeInput');
