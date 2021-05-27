@@ -56,10 +56,10 @@ public class OppfolginsbrukerRepositoryTestV2 {
                 .setEr_doed(false)
                 .setEndret_dato(ZonedDateTime.now().minusDays(5));
 
-        oppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(msg);
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
 
-        oppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(old_msg);
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(old_msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isNotEqualTo(old_msg);
     }
 
@@ -81,10 +81,10 @@ public class OppfolginsbrukerRepositoryTestV2 {
                 .setEr_doed(false)
                 .setEndret_dato(ZonedDateTime.now());
 
-        oppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(msg);
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(msg);
 
-        oppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(new_msg);
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new_msg);
         assertThat(oppfolginsbrukerRepositoryV2.getOppfolgingsBruker(aktoerId).get()).isEqualTo(new_msg);
     }
 }
