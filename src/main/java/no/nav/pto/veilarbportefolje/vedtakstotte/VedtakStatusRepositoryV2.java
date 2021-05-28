@@ -123,6 +123,6 @@ public class VedtakStatusRepositoryV2 {
     }
 
     private boolean erIkkeLagretUtkast(String aktorId, long vedtakId) {
-        return hentVedtak(aktorId).map(other -> other.getVedtakId() != vedtakId).orElse(true);
+        return hentVedtak(aktorId).map(lagretVedtak -> lagretVedtak.getVedtakId() != vedtakId).orElse(true);
     }
 }
