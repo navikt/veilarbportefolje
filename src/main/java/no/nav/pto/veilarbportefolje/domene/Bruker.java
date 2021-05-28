@@ -238,7 +238,7 @@ public class Bruker {
         boolean trengerRevurdering = OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus);
         boolean erSykmeldtMedArbeidsgiver = OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode);
         return
-                setFnr((String) row.get(fodselsnummer))
+                setFnr(fodselsnummer)
                         .setNyForVeileder(PostgresUtils.safeBool((boolean) row.get(NY_FOR_VEILEDER)))
                         .setTrengerVurdering(trengerVurdering)
                         .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej;

@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 
 import java.time.ZonedDateTime;
 
@@ -47,7 +48,9 @@ public class OppfolgingsbrukerKafkaDTO {
                 safeBool(getSperret_ansatt()) + ",  " +
                 safeBool(getEr_doed()) + ", " +
                 safeNull(toTimestamp(getDoed_fra_dato())) + ", " +
-                safeNull(toTimestamp(getEndret_dato()));
+                safeNull(toTimestamp(getEndret_dato())) + ", " +
+                safeNull(FodselsnummerUtils.lagKjonn(getFodselsnr()))+ ", " +
+                safeNull(FodselsnummerUtils.lagFodselsdato(getFodselsnr()));
 
     }
 
@@ -67,6 +70,8 @@ public class OppfolgingsbrukerKafkaDTO {
                 safeBool(getSperret_ansatt()) + ",  " +
                 safeBool(getEr_doed()) + ", " +
                 safeNull(toTimestamp(getDoed_fra_dato())) + ", " +
-                safeNull(toTimestamp(getEndret_dato()));
+                safeNull(toTimestamp(getEndret_dato()))+ ", " +
+                safeNull(FodselsnummerUtils.lagKjonn(getFodselsnr()))+ ", " +
+                safeNull(FodselsnummerUtils.lagFodselsdato(getFodselsnr()));
     }
 }

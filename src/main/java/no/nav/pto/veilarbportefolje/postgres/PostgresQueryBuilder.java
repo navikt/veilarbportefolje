@@ -5,6 +5,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -49,6 +50,24 @@ public class PostgresQueryBuilder {
         }
 
         return new BrukereMedAntall(resultat.size(), avskjertResultat);
+    }
+
+    public <T> void leggTilListeFilter(List<T> filtervalgsListe, String columnName) {
+        if (!filtervalgsListe.isEmpty()) {
+            brukKunEssensiellInfo = false;
+            StringJoiner orStatement = new StringJoiner(" OR ", "(", ")");
+            filtervalgsListe.forEach(filtervalg -> orStatement.add(columnName + " = '" + filtervalg + "'"));
+            whereStatement.add(orStatement.toString());
+        }
+    }
+
+    public void leggTilFodselsdagFilter(List<Integer> fodselsdager) {
+        if (!fodselsdager.isEmpty()) {
+            brukKunEssensiellInfo = false;
+            StringJoiner orStatement = new StringJoiner(" OR ", "(", ")");
+            fodselsdager.forEach(fodselsDag -> orStatement.add("date_part('DAY',"+FODSELS_DATO+")" + " = " + fodselsDag));
+            whereStatement.add(orStatement.toString());
+        }
     }
 
     public void minOversiktFilter(String veilederId) {
@@ -122,6 +141,33 @@ public class PostgresQueryBuilder {
         }
     }
 
+    public void alderFilter(String alder) {
+        brukKunEssensiellInfo = false;
+        /*
+        if ("19-og-under".equals(alder)) {
+            whereStatement.add(FODSELSNR + " LIKE ");
+            queryBuilder.should(
+                    rangeQuery("fodselsdato")
+                            .lte("now")
+                            .gt("now-20y-1d")
+            );
+        } else {
+            String[] fraTilAlder = alder.split("-");
+            int fraAlder = parseInt(fraTilAlder[0]);
+            int tilAlder = parseInt(fraTilAlder[1]);
+            queryBuilder.should(
+                    rangeQuery("fodselsdato")
+                            .lte(format("now-%sy/d", fraAlder))
+                            .gt(format("now-%sy-1d", tilAlder + 1))
+            );
+        }*/
+    }
+
+    public void kjonnfilter(Kjonn kjonn) {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(KJONN + " = '" + kjonn.name()+"'");
+    }
+
     @SneakyThrows
     private Bruker mapTilBruker(Map<String, Object> row) {
         Bruker bruker = new Bruker();
@@ -139,7 +185,6 @@ public class PostgresQueryBuilder {
             return kolonne + " = FALSE";
         }
     }
-
 
     private String eq(String kolonne, String verdi) {
         return kolonne + " = '" + verdi + "'";
