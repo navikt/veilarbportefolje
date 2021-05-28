@@ -5,48 +5,44 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
-import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.util.*;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.cv.CvRepository;
-import no.nav.pto.veilarbportefolje.cv.CvService;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepository;
+import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
+import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.ElasticService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.elastic.IndexName;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerRunnable;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.mock.MetricsClientMock;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolginsbrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
+import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
+import no.nav.pto.veilarbportefolje.util.*;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -97,7 +93,7 @@ import static org.mockito.Mockito.when;
         DialogRepository.class,
         ElasticIndexer.class,
         CvRepository.class,
-        CvService.class,
+        CVServiceFromAiven.class,
         RegistreringRepository.class,
         PersonRepository.class,
         NyForVeilederService.class,
@@ -143,16 +139,6 @@ public class ApplicationConfigTest {
         return properties;
     }
 
-    @Bean
-    public KafkaConsumerRunnable<String> kafkaCvConsumer(CvService cvService, UnleashService unleashService, MetricsClient metricsClient){
-        return new KafkaConsumerRunnable<>(
-                cvService,
-                unleashService,
-                ApplicationConfigTest.kafkaConsumerProperties(),
-                KafkaConfig.Topic.PAM_SAMTYKKE_ENDRET_V1,
-                metricsClient
-        );
-    }
 
     @Bean
     public KafkaProducer<String, String> kafkaProducer() {
@@ -174,7 +160,7 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public VedtakstottePilotRequest vedtakstottePilotRequest(){
+    public VedtakstottePilotRequest vedtakstottePilotRequest() {
         VedtakstottePilotRequest vedtakstottePilotRequest = mock(VedtakstottePilotRequest.class);
         when(vedtakstottePilotRequest.erVedtakstottePilotPa(any())).thenReturn(true);
         return vedtakstottePilotRequest;
@@ -203,7 +189,9 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public MetricsClient metricsClient() { return new MetricsClientMock(); }
+    public MetricsClient metricsClient() {
+        return new MetricsClientMock();
+    }
 
     @Bean
     @Primary
@@ -251,17 +239,17 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public DialogRepositoryV2 dialogRepositoryV2(){
+    public DialogRepositoryV2 dialogRepositoryV2() {
         return mock(DialogRepositoryV2.class);
     }
 
     @Bean
-    public VedtakStatusRepositoryV2 vedtakStatusRepositoryV2(){
-        return  mock(VedtakStatusRepositoryV2.class);
+    public VedtakStatusRepositoryV2 vedtakStatusRepositoryV2() {
+        return mock(VedtakStatusRepositoryV2.class);
     }
 
     @Bean
-    public SystemUserTokenProvider systemUserTokenProvider(){
+    public SystemUserTokenProvider systemUserTokenProvider() {
         return mock(SystemUserTokenProvider.class);
     }
 

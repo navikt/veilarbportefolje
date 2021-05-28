@@ -1,12 +1,16 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.json.JsonUtils;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erPostgresPa;
 
 @Service
 public class VeilederTilordnetService implements KafkaConsumerService<String> {
@@ -15,14 +19,17 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final ArbeidslisteService arbeidslisteService;
     private final ArbeidslisteService arbeidslisteServicePostgres;
+    private final UnleashService unleashService;
     private final ElasticServiceV2 elasticServiceV2;
 
-    public VeilederTilordnetService(OppfolgingRepository oppfolgingRepository, OppfolgingRepositoryV2 oppfolgingRepositoryV2, ArbeidslisteService arbeidslisteService, ElasticServiceV2 elasticServiceV2,@Qualifier("PostgresArbeidslisteService") ArbeidslisteService arbeidslisteServicePostgres) {
+    @Autowired
+    public VeilederTilordnetService(@Qualifier("PostgresArbeidslisteService") ArbeidslisteService arbeidslisteServicePostgres, OppfolgingRepository oppfolgingRepository, OppfolgingRepositoryV2 oppfolgingRepositoryV2, ArbeidslisteService arbeidslisteService, ElasticServiceV2 elasticServiceV2, UnleashService unleashService) {
         this.oppfolgingRepository = oppfolgingRepository;
         this.oppfolgingRepositoryV2 = oppfolgingRepositoryV2;
         this.arbeidslisteService = arbeidslisteService;
         this.arbeidslisteServicePostgres = arbeidslisteServicePostgres;
         this.elasticServiceV2 = elasticServiceV2;
+        this.unleashService = unleashService;
     }
 
     @Override
@@ -31,7 +38,9 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
         final AktorId aktoerId = dto.getAktorId();
 
         oppfolgingRepository.settVeileder(aktoerId, dto.getVeilederId());
-        oppfolgingRepositoryV2.settVeileder(aktoerId, dto.getVeilederId());
+        if (erPostgresPa(unleashService)) {
+            oppfolgingRepositoryV2.settVeileder(aktoerId, dto.getVeilederId());
+        }
 
         elasticServiceV2.oppdaterVeileder(aktoerId, dto.getVeilederId());
 
@@ -54,6 +63,5 @@ public class VeilederTilordnetService implements KafkaConsumerService<String> {
 
     @Override
     public void setRewind(boolean rewind) {
-
     }
 }

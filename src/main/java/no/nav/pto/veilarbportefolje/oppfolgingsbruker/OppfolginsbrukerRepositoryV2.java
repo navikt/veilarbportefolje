@@ -26,7 +26,7 @@ public class OppfolginsbrukerRepositoryV2 {
         this.db = db;
     }
 
-    public int LeggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
+    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerKafkaDTO oppfolgingsbruker) {
         if (oppfolgingsbruker == null || oppfolgingsbruker.getAktoerid() == null) {
             return 0;
         }
