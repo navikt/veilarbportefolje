@@ -82,7 +82,7 @@ public class PostgresServiceTest {
         AktorId aktorId = AktorId.of("123456789");
         Fnr fnr = Fnr.ofValidFnr("01010101010");
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolginsbrukerRepositoryV2.LeggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
+        oppfolginsbrukerRepositoryV2.leggTilEllerEndreOppfolgingsbruker(new OppfolgingsbrukerKafkaDTO().setAktoerid(aktorId.get()).setNav_kontor(enhetId).setEndret_dato(ZonedDateTime.now()).setSperret_ansatt(true));
 
         Filtervalg filtervalg = new Filtervalg().setFerdigfilterListe(List.of(MIN_ARBEIDSLISTE));
         BrukereMedAntall brukereMedAntall_pre = postgresService.hentBrukere(enhetId, null, null, null, filtervalg, 0, 10);
