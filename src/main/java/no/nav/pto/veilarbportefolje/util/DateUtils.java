@@ -144,4 +144,11 @@ public class DateUtils {
         }
         return date.toLocalDateTime();
     }
+
+    public static LocalDateTime toLocalDateTimeOrNull(java.sql.Date date) {
+        if(date == null){
+            return null;
+        }
+        return date.toLocalDate().atStartOfDay();
+    }
 }
