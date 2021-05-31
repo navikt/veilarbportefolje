@@ -79,7 +79,7 @@ public class PostgresService {
                 // existsQuery("nyesteutlopteaktivitet");
                 break;
             case MIN_ARBEIDSLISTE:
-                // matchQuery("arbeidsliste_aktiv", true);
+                query.harArbeidsliste();
                 break;
             case MOTER_IDAG:
                 /* = rangeQuery("aktivitet_mote_startdato")

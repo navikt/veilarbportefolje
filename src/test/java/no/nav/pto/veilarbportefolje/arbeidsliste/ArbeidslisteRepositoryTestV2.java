@@ -3,8 +3,9 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.util.TestUtil;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
+import no.nav.pto.veilarbportefolje.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,15 +15,14 @@ import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ArbeidslisteRepositoryTest {
-    private ArbeidslisteRepositoryV1 repo;
+public class ArbeidslisteRepositoryTestV2 {
+    private ArbeidslisteRepositoryV2 repo;
     private ArbeidslisteDTO data;
 
     @Before
     public void setUp() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(TestUtil.setupInMemoryDatabase());
-
-        repo = new ArbeidslisteRepositoryV1(jdbcTemplate);
+        JdbcTemplate jdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate();
+        repo = new ArbeidslisteRepositoryV2(jdbcTemplate);
 
         data = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
                 .setAktorId(AktorId.of("22222222"))
