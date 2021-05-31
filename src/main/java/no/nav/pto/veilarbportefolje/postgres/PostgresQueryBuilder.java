@@ -9,11 +9,13 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
+import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 
@@ -65,7 +67,7 @@ public class PostgresQueryBuilder {
         if (!fodselsdager.isEmpty()) {
             brukKunEssensiellInfo = false;
             StringJoiner orStatement = new StringJoiner(" OR ", "(", ")");
-            fodselsdager.forEach(fodselsDag -> orStatement.add("date_part('DAY',"+FODSELS_DATO+")" + " = " + fodselsDag));
+            fodselsdager.forEach(fodselsDag -> orStatement.add("date_part('DAY'," + FODSELS_DATO + ")" + " = " + fodselsDag));
             whereStatement.add(orStatement.toString());
         }
     }
@@ -141,31 +143,32 @@ public class PostgresQueryBuilder {
         }
     }
 
-    public void alderFilter(String alder) {
+    public void kjonnfilter(Kjonn kjonn) {
         brukKunEssensiellInfo = false;
-        /*
+        whereStatement.add(KJONN + " = '" + kjonn.name() + "'");
+    }
+
+    public void alderFilter(List<String> aldere) {
+        brukKunEssensiellInfo = false;
+        StringJoiner orStatement = new StringJoiner(" OR ", "(", ")");
+        aldere.forEach(alder -> alderFilter(alder, orStatement));
+        whereStatement.add(orStatement.toString());
+    }
+
+    private void alderFilter(String alder, StringJoiner orStatement){
+        var today = LocalDate.now();
         if ("19-og-under".equals(alder)) {
-            whereStatement.add(FODSELSNR + " LIKE ");
-            queryBuilder.should(
-                    rangeQuery("fodselsdato")
-                            .lte("now")
-                            .gt("now-20y-1d")
-            );
+            LocalDate nittenOgUnder = today.minusYears(20).minusDays(1);
+            orStatement.add(FODSELS_DATO + " >= '" + nittenOgUnder.toString() + "'::date");
         } else {
             String[] fraTilAlder = alder.split("-");
             int fraAlder = parseInt(fraTilAlder[0]);
             int tilAlder = parseInt(fraTilAlder[1]);
-            queryBuilder.should(
-                    rangeQuery("fodselsdato")
-                            .lte(format("now-%sy/d", fraAlder))
-                            .gt(format("now-%sy-1d", tilAlder + 1))
-            );
-        }*/
-    }
 
-    public void kjonnfilter(Kjonn kjonn) {
-        brukKunEssensiellInfo = false;
-        whereStatement.add(KJONN + " = '" + kjonn.name()+"'");
+            LocalDate fraAlderDate = today.minusYears(fraAlder);
+            LocalDate tilAlderDate = today.minusYears(tilAlder + 1).minusDays(1);
+            orStatement.add("("+FODSELS_DATO + " <= '" + fraAlderDate.toString() + "'::date AND "+FODSELS_DATO + " >= '" + tilAlderDate.toString() + "'::date"+")");
+        }
     }
 
     @SneakyThrows

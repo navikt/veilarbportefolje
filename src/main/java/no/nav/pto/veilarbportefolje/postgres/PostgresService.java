@@ -76,7 +76,7 @@ public class PostgresService {
             query.navnOgFodselsnummerSok(filtervalg.getNavnEllerFnrQuery());
         }
         if (!filtervalg.alder.isEmpty()) {
-            filtervalg.alder.forEach(query::alderFilter);
+           query.alderFilter(filtervalg.alder);
         }
         if (filtervalg.harKjonnfilter()) {
             query.kjonnfilter(filtervalg.kjonn);

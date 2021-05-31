@@ -121,12 +121,11 @@ public class PostgresServiceTest {
         assertThat(mann_respons.getBrukere().get(0).getKjonn()).isEqualTo("M");
     }
 
-    /*
     @Test
     public void skal_filtrere_pa_alder(){
         when(veilarbVeilederClient.hentVeilederePaaEnhet(any())).thenReturn(List.of("Z12345","Z12346"));
         lastOppBruker(Fnr.of("01091964488"), AktorId.of("123")); // under_21
-        lastOppBruker(Fnr.of("12031240141"), AktorId.of("321")); // Mann
+        lastOppBruker(Fnr.of("09118714501"), AktorId.of("321")); // Mann: 33
 
         Filtervalg alder_type_1 = new Filtervalg().setFerdigfilterListe(List.of()).setAlder(List.of("19-og-under"));
         Filtervalg alder_type_2 = new Filtervalg().setFerdigfilterListe(List.of()).setAlder(List.of("20-24", "30-39"));
@@ -135,10 +134,9 @@ public class PostgresServiceTest {
         BrukereMedAntall alder_respons_type_2 = postgresService.hentBrukere(enhetId, null, null, null, alder_type_2, 0, 10);
 
         assertThat(alder_respons_type_1.getAntall()).isEqualTo(1);
-        assertThat(alder_respons_type_2.getBrukere().get(0).getFnr()).isEqualTo("01091964488");
-
-        assertThat(alder_respons_type_2.getAntall()).isEqualTo(0);
-    }*/
+        assertThat(alder_respons_type_2.getAntall()).isEqualTo(1);
+        assertThat(alder_respons_type_2.getBrukere().get(0).getFnr()).isEqualTo("09118714501");
+    }
 
     @Test
     public void skal_filtrere_pa_fodselsdag(){
