@@ -164,10 +164,10 @@ public class PostgresQueryBuilder {
             String[] fraTilAlder = alder.split("-");
             int fraAlder = parseInt(fraTilAlder[0]);
             int tilAlder = parseInt(fraTilAlder[1]);
+            LocalDate nyesteFodselsdag = today.minusYears(fraAlder);
+            LocalDate eldsteFodselsDag = today.minusYears(tilAlder + 1).plusDays(1);
 
-            LocalDate fraAlderDate = today.minusYears(fraAlder);
-            LocalDate tilAlderDate = today.minusYears(tilAlder + 1).minusDays(1);
-            orStatement.add("("+FODSELS_DATO + " <= '" + fraAlderDate.toString() + "'::date AND "+FODSELS_DATO + " >= '" + tilAlderDate.toString() + "'::date"+")");
+            orStatement.add("("+FODSELS_DATO + " <= '" + nyesteFodselsdag.toString() + "'::date AND "+FODSELS_DATO + " >= '" + eldsteFodselsDag.toString() + "'::date"+")");
         }
     }
 
