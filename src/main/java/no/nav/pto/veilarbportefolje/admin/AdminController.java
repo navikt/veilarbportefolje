@@ -9,12 +9,12 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakService;
 import org.springframework.http.HttpStatus;
@@ -37,7 +37,7 @@ public class AdminController {
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
     private final OppfolgingService oppfolgingService;
-    private final CVServiceFromAiven cvService;
+    private final VeilederTilordnetService veilederTilordnetService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -73,11 +73,11 @@ public class AdminController {
         return "Rewind av vedtak har startet";
     }
 
-    @PostMapping("/settSamtykkeCV")
-    public String settharDeltCV(@RequestBody String aktoerId) {
+    @PostMapping("/rewind/veilederTilordnet")
+    public String rewindTilordnetVeileder() {
         authorizeAdmin();
-        cvService.setCVSamtykke(AktorId.of(aktoerId));
-        return "Feltet har HAR_DELT_CV oppdatert for aktørId: " + aktoerId;
+        veilederTilordnetService.setRewind(true);
+        return "Rewind av tilordnet veileder har startet";
     }
 
     @DeleteMapping("/oppfolgingsbruker")

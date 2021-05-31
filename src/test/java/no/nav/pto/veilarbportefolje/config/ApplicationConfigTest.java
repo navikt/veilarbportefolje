@@ -7,7 +7,8 @@ import no.nav.common.utils.Credentials;
 import no.nav.common.utils.IdUtils;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepository;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
+import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
@@ -35,19 +36,18 @@ import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.util.ElasticTestClient;
-import no.nav.pto.veilarbportefolje.util.TestDataClient;
-import no.nav.pto.veilarbportefolje.util.TestUtil;
-import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
+import no.nav.pto.veilarbportefolje.util.*;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtakStatusRepositoryV2;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -88,8 +88,6 @@ import static org.mockito.Mockito.when;
         AktivitetDAO.class,
         BrukerRepository.class,
         OppfolgingRepository.class,
-        ArbeidslisteService.class,
-        ArbeidslisteRepository.class,
         ManuellStatusService.class,
         DialogService.class,
         DialogRepository.class,
@@ -105,7 +103,9 @@ import static org.mockito.Mockito.when;
         SisteEndringRepository.class,
         SistLestService.class,
         MalService.class,
-        OppfolgingService.class
+        OppfolgingService.class,
+        ArbeidslisteRepositoryV1.class,
+        ArbeidslisteRepositoryV2.class
 })
 public class ApplicationConfigTest {
 
@@ -194,17 +194,20 @@ public class ApplicationConfigTest {
     }
 
     @Bean
+    @Primary
     public DataSource hsqldbDataSource() {
         return TestUtil.setupInMemoryDatabase();
     }
 
 
     @Bean
+    @Primary
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean
+    @Primary
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
@@ -248,6 +251,28 @@ public class ApplicationConfigTest {
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider() {
         return mock(SystemUserTokenProvider.class);
+    }
+
+    @Bean
+    @Primary
+    @Autowired
+    ArbeidslisteService arbeidslisteServiceOracle(AktorClient aktorClient, ArbeidslisteRepositoryV1 arbeidslisteRepository,
+                                                  BrukerService brukerService, ElasticServiceV2 elasticServiceV2,
+                                                  MetricsClient metricsClient) {
+        return new ArbeidslisteService(aktorClient, arbeidslisteRepository, brukerService, elasticServiceV2, metricsClient);
+    }
+
+    @Bean("PostgresArbeidslisteService")
+    @Autowired
+    ArbeidslisteService arbeidslisteService(AktorClient aktorClient, ArbeidslisteRepositoryV2 arbeidslisteRepository,
+                                            BrukerService brukerService,
+                                            ElasticServiceV2 elasticServiceV2, MetricsClient metricsClient) {
+        return new ArbeidslisteService(aktorClient, arbeidslisteRepository, brukerService, elasticServiceV2, metricsClient);
+    }
+
+    @Bean(name="PostgresJdbc")
+    public JdbcTemplate db() {
+        return SingletonPostgresContainer.init().createJdbcTemplate();
     }
 
 }

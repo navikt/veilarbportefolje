@@ -108,12 +108,17 @@ public class PostgresQueryBuilder {
         }
     }
 
+    public void harArbeidsliste() {
+        brukKunEssensiellInfo = false;
+        whereStatement.add(ARB_ENDRINGSTIDSPUNKT + " IS NOT NULL"); // TODO: diskuter dette.
+    }
+
     public void navnOgFodselsnummerSok(String soketekst) {
         if (StringUtils.isNumeric(soketekst)) {
             whereStatement.add(FODSELSNR + " LIKE '" + soketekst + "%'");
         } else {
             String soketekstUpper = soketekst.toUpperCase();
-            whereStatement.add("( UPPER(" + FORNAVN + ") LIKE '%" + soketekstUpper + "%' OR  UPPER(" + ETTERNAVN + ") LIKE '%" + soketekstUpper + "%')");
+            whereStatement.add("(UPPER(" + FORNAVN + ") LIKE '%" + soketekstUpper + "%' OR UPPER(" + ETTERNAVN + ") LIKE '%" + soketekstUpper + "%')");
         }
     }
 

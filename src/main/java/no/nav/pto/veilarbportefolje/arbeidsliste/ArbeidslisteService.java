@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
@@ -14,8 +15,6 @@ import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 
-@Service
+@RequiredArgsConstructor
 public class ArbeidslisteService {
     private static final Logger log = LoggerFactory.getLogger(ArbeidslisteService.class);
 
@@ -34,21 +33,6 @@ public class ArbeidslisteService {
     private final BrukerService brukerService;
     private final ElasticServiceV2 elasticServiceV2;
     private final MetricsClient metricsClient;
-
-    @Autowired
-    public ArbeidslisteService(
-            AktorClient aktorClient,
-            ArbeidslisteRepository arbeidslisteRepository,
-            BrukerService brukerService,
-            ElasticServiceV2 elasticServiceV2,
-            MetricsClient metricsClient
-    ) {
-        this.aktorClient = aktorClient;
-        this.arbeidslisteRepository = arbeidslisteRepository;
-        this.brukerService = brukerService;
-        this.elasticServiceV2 = elasticServiceV2;
-        this.metricsClient = metricsClient;
-    }
 
     public Try<Arbeidsliste> getArbeidsliste(Fnr fnr) {
         return hentAktorId(fnr).map(this::getArbeidsliste).get();

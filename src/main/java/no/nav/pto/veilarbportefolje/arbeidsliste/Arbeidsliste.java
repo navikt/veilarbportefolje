@@ -10,12 +10,15 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_VIEW.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 
@@ -25,7 +28,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @RequiredArgsConstructor
 public class Arbeidsliste {
 
-     public enum Kategori {
+    public enum Kategori {
         BLA, GRONN, GUL, LILLA
     }
 
@@ -61,6 +64,18 @@ public class Arbeidsliste {
 
         return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, arbeidslisteKategori)
                 .setArbeidslisteAktiv(arbeidslisteAktiv);
+    }
+
+    public static Arbeidsliste of(Map<String, Object> row) {
+        ZonedDateTime endringstidspunkt = toZonedDateTime((Timestamp) row.get(ARB_ENDRINGSTIDSPUNKT));
+        ZonedDateTime frist = toZonedDateTime((Timestamp) row.get(ARB_FRIST));
+        VeilederId sistEndretAv = VeilederId.of((String) row.get(ARB_SIST_ENDRET_AV_VEILEDERIDENT));
+        Kategori arbeidslisteKategori = Optional.ofNullable((String) row.get(ARB_KATEGORI)).map(Kategori::valueOf).orElse(null);
+        String overskrift = (String) row.get(ARB_OVERSKRIFT);
+        String kommentar = (String) row.get(ARB_KOMMENTAR);
+
+        return new Arbeidsliste(sistEndretAv, endringstidspunkt, overskrift, kommentar, frist, arbeidslisteKategori)
+                .setArbeidslisteAktiv(endringstidspunkt == null);
     }
 
     private static Date dateIfNotFarInTheFutureDate(Instant instant) {

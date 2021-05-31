@@ -30,6 +30,13 @@ public class PostgresTable {
         public static final String VEDTAKSTATUS = "VEDTAKSTATUS";
         public static final String VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
         public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
+
+        public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
+        public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";
+        public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
+        public static final String ARB_KOMMENTAR = "ARB_KOMMENTAR";
+        public static final String ARB_FRIST = "ARB_FRIST";
+        public static final String ARB_KATEGORI = "ARB_KATEGORI";
     }
 
 
@@ -87,6 +94,18 @@ public class PostgresTable {
         public static final String AKTOERID = "AKTOERID";
         public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
         public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
+    }
+
+    public static final class ARBEIDSLISTE {
+        public static final String TABLE_NAME = "ARBEIDSLISTE";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String SIST_ENDRET_AV_VEILEDERIDENT = "SIST_ENDRET_AV_VEILEDERIDENT";
+        public static final String ENDRINGSTIDSPUNKT = "ENDRINGSTIDSPUNKT";
+        public static final String OVERSKRIFT = "OVERSKRIFT";
+        public static final String KOMMENTAR = "KOMMENTAR";
+        public static final String FRIST = "FRIST";
+        public static final String KATEGORI = "KATEGORI";
+        public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
     }
 
     public static final class VEDTAKSTATUS {
