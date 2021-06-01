@@ -157,15 +157,10 @@ public class PostgresQueryBuilder {
 
     private void alderFilter(String alder, StringJoiner orStatement){
         LocalDate today = LocalDate.now();
-        int fraAlder, tilAlder;
-        if ("19-og-under".equals(alder)) {
-            fraAlder = 0;
-            tilAlder = 19;
-        } else {
-            String[] fraTilAlder = alder.split("-");
-            fraAlder = parseInt(fraTilAlder[0]);
-            tilAlder = parseInt(fraTilAlder[1]);
-        }
+        String[] fraTilAlder = alder.split("-");
+        int fraAlder = parseInt(fraTilAlder[0]);
+        int tilAlder = parseInt(fraTilAlder[1]);
+
         LocalDate nyesteFodselsdag = today.minusYears(fraAlder);
         LocalDate eldsteFodselsDag = today.minusYears(tilAlder + 1).plusDays(1);
         orStatement.add("("+FODSELS_DATO + " >= '" + eldsteFodselsDag.toString() + "'::date AND "+FODSELS_DATO + " <= '" + nyesteFodselsdag.toString() + "'::date"+")");
