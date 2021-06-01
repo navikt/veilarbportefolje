@@ -12,6 +12,8 @@ public class PostgresTable {
         public static final String VEILEDERID = "VEILEDERID";
         public static final String MANUELL = "MANUELL";
         public static final String FODSELSNR = "FODSELSNR";
+        public static final String FODSELS_DATO = "FODSELS_DATO";
+        public static final String KJONN = "KJONN";
         public static final String FORNAVN = "FORNAVN";
         public static final String ETTERNAVN = "ETTERNAVN";
         public static final String NAV_KONTOR = "NAV_KONTOR";
@@ -71,6 +73,8 @@ public class PostgresTable {
 
         public static final String AKTOERID = "AKTOERID";
         public static final String FODSELSNR = "FODSELSNR";
+        public static final String FODSELS_DATO = "FODSELS_DATO";
+        public static final String KJONN = "KJONN";
         public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
         public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
         public static final String ETTERNAVN = "ETTERNAVN";
