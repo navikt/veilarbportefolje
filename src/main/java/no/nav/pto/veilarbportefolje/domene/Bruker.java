@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.elastic.domene.Endring;
 import no.nav.pto.veilarbportefolje.elastic.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils;
-import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
@@ -169,13 +168,13 @@ public class Bruker {
             return;
         }
         kategorier.forEach(kategori -> {
-                    if(erNyesteKategori(siste_endringer, kategori)){
-                        Endring endring = siste_endringer.get(kategori);
-                        sisteEndringKategori = kategori;
-                        sisteEndringTidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
-                        sisteEndringAktivitetId = endring.getAktivtetId();
-                    }
-                });
+            if (erNyesteKategori(siste_endringer, kategori)) {
+                Endring endring = siste_endringer.get(kategori);
+                sisteEndringKategori = kategori;
+                sisteEndringTidspunkt = toLocalDateTimeOrNull(endring.getTidspunkt());
+                sisteEndringAktivitetId = endring.getAktivtetId();
+            }
+        });
     }
 
     private boolean erNyesteKategori(Map<String, Endring> siste_endringer, String kategori) {
@@ -228,7 +227,6 @@ public class Bruker {
     }
 
     public Bruker fraBrukerView(Map<String, Object> row) {
-        String fodselsnummer = (String) row.get(FODSELSNR);
         String diskresjonskode = (String) row.get(DISKRESJONSKODE);
         String kvalifiseringsgruppekode = (String) row.get(KVALIFISERINGSGRUPPEKODE);
         String formidlingsgruppekode = (String) row.get(FORMIDLINGSGRUPPEKODE);
@@ -237,31 +235,31 @@ public class Bruker {
         boolean trengerVurdering = OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode);
         boolean trengerRevurdering = OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, vedtakstatus);
         boolean erSykmeldtMedArbeidsgiver = OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode);
-        return
-                setFnr((String) row.get(fodselsnummer))
-                        .setNyForVeileder(PostgresUtils.safeBool((boolean) row.get(NY_FOR_VEILEDER)))
-                        .setTrengerVurdering(trengerVurdering)
-                        .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej;
-                        .setFornavn((String) row.get(FORNAVN))
-                        .setEtternavn((String) row.get(ETTERNAVN))
-                        .setVeilederId((String) row.get(VEILEDERID))
-                        .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
-                        .setEgenAnsatt(PostgresUtils.safeBool((boolean) row.get(SPERRET_ANSATT)))
-                        .setErDoed(PostgresUtils.safeBool((boolean) row.get(ER_DOED)))
-                        .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak))
-                        .setFodselsdato(toLocalDateTimeOrNull(FodselsnummerUtils.lagFodselsdato(fodselsnummer)))
-                        .setKjonn(FodselsnummerUtils.lagKjonn(fodselsnummer))
-                        .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_NAV)))
-                        .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_BRUKER)))
-                        .setVedtakStatus(vedtakstatus)
-                        .setVedtakStatusEndret(toLocalDateTimeOrNull((Timestamp) row.get(VEDTAKSTATUS_ENDRET_TIDSPUNKT)))
-                        .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                        .setAnsvarligVeilederForVedtak((String) row.get(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
-                        .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
-                        .setTrengerRevurdering(trengerRevurdering)
-                        .setArbeidsliste(Arbeidsliste.of(row));
+        return setFnr((String) row.get(FODSELSNR))
+                .setNyForVeileder(PostgresUtils.safeBool((boolean) row.get(NY_FOR_VEILEDER)))
+                .setTrengerVurdering(trengerVurdering)
+                .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej;
+                .setFornavn((String) row.get(FORNAVN))
+                .setEtternavn((String) row.get(ETTERNAVN))
+                .setVeilederId((String) row.get(VEILEDERID))
+                .setDiskresjonskode(("7".equals(diskresjonskode) || "6".equals(diskresjonskode)) ? diskresjonskode : null)
+                .setEgenAnsatt(PostgresUtils.safeBool((boolean) row.get(SPERRET_ANSATT)))
+                .setErDoed(PostgresUtils.safeBool((boolean) row.get(ER_DOED)))
+                .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak))
+                .setFodselsdato(toLocalDateTimeOrNull((java.sql.Date) row.get(FODSELS_DATO)))
+                .setKjonn((String) row.get(KJONN))
+                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_NAV)))
+                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull((Timestamp) row.get(VENTER_PA_BRUKER)))
+                .setVedtakStatus(vedtakstatus)
+                .setVedtakStatusEndret(toLocalDateTimeOrNull((Timestamp) row.get(VEDTAKSTATUS_ENDRET_TIDSPUNKT)))
+                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
+                .setAnsvarligVeilederForVedtak((String) row.get(VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN))
+                .setOppfolgingStartdato(toLocalDateTimeOrNull((Timestamp) row.get(STARTDATO)))
+                .setTrengerRevurdering(trengerRevurdering)
+                .setArbeidsliste(Arbeidsliste.of(row));
         //TODO: utledd manuell
     }
+
     // TODO: sjekk om disse feltene er i bruk, de kan være nødvendige for statuser eller filtere
     /*
         public static final String MANUELL = "MANUELL";

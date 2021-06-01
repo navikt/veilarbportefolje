@@ -234,11 +234,6 @@
             <version>2.2021.04.26_06.01-1ff0f73a2fa4</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-        </dependency>
-
         <!--Logging-->
         <dependency>
             <groupId>org.slf4j</groupId>
