@@ -9,7 +9,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
-import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
@@ -37,7 +36,6 @@ public class AdminController {
     private final VedtakService vedtakService;
     private final ElasticServiceV2 elasticServiceV2;
     private final OppfolgingService oppfolgingService;
-    private final CVServiceFromAiven cvService;
 
     @PostMapping("/aktoerId")
     public String aktoerId(@RequestBody String fnr) {
@@ -71,13 +69,6 @@ public class AdminController {
         authorizeAdmin();
         vedtakService.setRewind(true);
         return "Rewind av vedtak har startet";
-    }
-
-    @PostMapping("/settSamtykkeCV")
-    public String settharDeltCV(@RequestBody String aktoerId) {
-        authorizeAdmin();
-        cvService.setCVSamtykke(AktorId.of(aktoerId));
-        return "Feltet har HAR_DELT_CV oppdatert for aktørId: " + aktoerId;
     }
 
     @DeleteMapping("/oppfolgingsbruker")

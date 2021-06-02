@@ -23,7 +23,6 @@ public class ArbeidslisteDTO {
     Boolean isOppfolgendeVeileder;
     Arbeidsliste.Kategori kategori;
     String navKontorForArbeidsliste;
-
     public static ArbeidslisteDTO of(Fnr fnr, String overskrift, String kommentar, Timestamp frist, Arbeidsliste.Kategori kategori) {
         return
                 new ArbeidslisteDTO(fnr)

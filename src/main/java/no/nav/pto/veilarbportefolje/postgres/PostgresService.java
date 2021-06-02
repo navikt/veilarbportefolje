@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.postgres;
 
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.util.VedtakstottePilotRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class PostgresService {
@@ -41,13 +46,66 @@ public class PostgresService {
                         filter -> leggTilFerdigFilter(query, filter, veiledereMedTilgangTilEnhet, vedtaksPilot)
                 );
             }
-            if (filtervalg.harNavnEllerFnrQuery()) {
-                query.navnOgFodselsnummerSok(filtervalg.getNavnEllerFnrQuery());
-            }
+            leggTilManuelleFilter(query, filtervalg);
         }
 
-        //TODO: legg til resterende "filtervalg filter"
         return query.search(fra,antall);
+    }
+
+    private void leggTilManuelleFilter(PostgresQueryBuilder query, Filtervalg filtervalg) {
+        List<Integer> fodseldagIMndQuery = filtervalg.fodselsdagIMnd.stream().map(Integer::parseInt).collect(toList());
+        query.leggTilFodselsdagFilter(fodseldagIMndQuery);
+
+        query.leggTilListeFilter(filtervalg.arbeidslisteKategori, PostgresTable.BRUKER_VIEW.ARB_KATEGORI);
+        query.leggTilListeFilter(filtervalg.veiledere, PostgresTable.BRUKER_VIEW.VEILEDERID);
+        query.leggTilListeFilter(filtervalg.formidlingsgruppe,PostgresTable.BRUKER_VIEW.FORMIDLINGSGRUPPEKODE);
+        query.leggTilListeFilter(filtervalg.innsatsgruppe, PostgresTable.BRUKER_VIEW.KVALIFISERINGSGRUPPEKODE); // TODO: er det litt rart at disse to går mot samme felt?
+        query.leggTilListeFilter(filtervalg.servicegruppe, PostgresTable.BRUKER_VIEW.KVALIFISERINGSGRUPPEKODE); // TODO: er det litt rart at disse to går mot samme felt?
+        query.leggTilListeFilter(filtervalg.hovedmal, PostgresTable.BRUKER_VIEW.HOVEDMAALKODE);
+        query.leggTilListeFilter(filtervalg.rettighetsgruppe, PostgresTable.BRUKER_VIEW.RETTIGHETSGRUPPEKODE);
+        /*
+        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
+        byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
+        byggManuellFilter(filtervalg.registreringstype, queryBuilder, "brukers_situasjon");
+        byggManuellFilter(filtervalg.utdanning, queryBuilder, "utdanning");
+        byggManuellFilter(filtervalg.utdanningBestatt, queryBuilder, "utdanning_bestatt");
+        byggManuellFilter(filtervalg.utdanningGodkjent, queryBuilder, "utdanning_godkjent");
+        byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
+        */
+        if (filtervalg.harNavnEllerFnrQuery()) {
+            query.navnOgFodselsnummerSok(filtervalg.getNavnEllerFnrQuery());
+        }
+        if (!filtervalg.alder.isEmpty()) {
+           query.alderFilter(filtervalg.alder);
+        }
+        if (filtervalg.harKjonnfilter()) {
+            query.kjonnfilter(filtervalg.kjonn);
+        }
+
+        /*
+        if (filtervalg.harYtelsefilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.ytelse.underytelser.forEach(
+                    ytelse -> queryBuilder.must(subQuery.should(matchQuery("ytelse", ytelse.name())))
+            );
+        }
+
+        if (filtervalg.harCvFilter()) {
+            queryBuilder.filter(matchQuery("har_delt_cv", filtervalg.cvJobbprofil.equals(CVjobbprofil.HAR_DELT_CV)));
+        }
+
+        if (filtervalg.harAktivitetFilter()) {
+            byggAktivitetFilterQuery(filtervalg, queryBuilder);
+        }
+
+        if (filtervalg.harUlesteEndringerFilter()) {
+            byggUlestEndringsFilter(filtervalg.sisteEndringKategori, queryBuilder);
+        }
+
+        if (filtervalg.harSisteEndringFilter()) {
+            byggSisteEndringFilter(filtervalg.sisteEndringKategori, queryBuilder);
+        }
+         */
     }
 
 
@@ -79,7 +137,7 @@ public class PostgresService {
                 // existsQuery("nyesteutlopteaktivitet");
                 break;
             case MIN_ARBEIDSLISTE:
-                // matchQuery("arbeidsliste_aktiv", true);
+                query.harArbeidsliste();
                 break;
             case MOTER_IDAG:
                 /* = rangeQuery("aktivitet_mote_startdato")
