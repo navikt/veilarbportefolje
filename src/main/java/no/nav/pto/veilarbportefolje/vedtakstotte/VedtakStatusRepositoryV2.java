@@ -110,7 +110,7 @@ public class VedtakStatusRepositoryV2 {
     }
 
     public void oppdaterAnsvarligVeileder(KafkaVedtakStatusEndring vedtakStatusEndring) {
-        if (erIkkeLagretUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
+        if (erIkkeUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
             log.info("Oppdaterte ikke vedtak pa bruker {}, gjelder vedtak: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
             return;
         }
@@ -122,7 +122,7 @@ public class VedtakStatusRepositoryV2 {
         log.info("Oppdaterte veilder til: {} for bruker {}, rader: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId(), rows);
     }
 
-    private boolean erIkkeLagretUtkast(String aktorId, long vedtakId) {
+    private boolean erIkkeUtkast(String aktorId, long vedtakId) {
         return hentVedtak(aktorId).map(lagretVedtak -> lagretVedtak.getVedtakId() != vedtakId).orElse(true);
     }
 }
