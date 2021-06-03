@@ -4,9 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -68,7 +66,7 @@ public class VedtakStatusRepositoryV2 {
     }
 
     public int updateVedtak(KafkaVedtakStatusEndring vedtakStatusEndring) {
-        if (erIkkeLagretUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
+        if (erIkkeUtkast(vedtakStatusEndring.getAktorId(), vedtakStatusEndring.getVedtakId())) {
             log.info("Oppdaterte ikke vedtak pa bruker {}, gjelder vedtak: {}", vedtakStatusEndring.getVeilederIdent(), vedtakStatusEndring.getAktorId());
             return 0;
         }
