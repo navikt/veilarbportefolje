@@ -32,6 +32,7 @@ public class PostgresTable {
         public static final String VEDTAKSTATUS = "VEDTAKSTATUS";
         public static final String VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
         public static final String VEDTAKSTATUS_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
+        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
 
         public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
         public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";
@@ -123,6 +124,14 @@ public class PostgresTable {
         public static final String ANSVARLIG_VEILDERIDENT = "ANSVARLIG_VEILDERIDENT";
         public static final String ANSVARLIG_VEILDERNAVN = "ANSVARLIG_VEILDERNAVN";
         public static final String ENDRET_TIDSPUNKT = "ENDRET_TIDSPUNKT";
+    }
+
+    public static final class BRUKER_PROFILERING {
+        public static final String TABLE_NAME = "BRUKER_PROFILERING";
+
+        public static final String AKTOERID = "AKTOERID";
+        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
+        public static final String PROFILERING_TIDSPUNKT = "PROFILERING_TIDSPUNKT";
     }
 
     public static String safeNull(Object o) {

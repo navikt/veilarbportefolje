@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.*;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeNull;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
