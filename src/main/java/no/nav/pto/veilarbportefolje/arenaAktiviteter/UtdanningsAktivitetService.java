@@ -4,60 +4,41 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.*;
-import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
-import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
-import no.nav.pto.veilarbportefolje.service.BrukerService;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
-import no.nav.pto.veilarbportefolje.util.BatchConsumer;
-import org.springframework.beans.factory.annotation.Autowired;
+import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.GoldenGateDTO;
+import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.GoldenGateOperations;
+import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UtdanningsAktivitetService implements KafkaConsumerService<String> {
-
-    private final BrukerService brukerService;
+public class UtdanningsAktivitetService {
     private final AktivitetDAO aktivitetDAO;
-    private final PersistentOppdatering persistentOppdatering;
-    private final AtomicBoolean rewind = new AtomicBoolean();
+    private final ArenaAktivitetService arenaAktivitetService;
 
-    @Override
-    public void behandleKafkaMelding(String kafkaMelding) {
-        KafkaAktivitetMelding aktivitetData = fromJson(kafkaMelding, KafkaAktivitetMelding.class);
-        log.info(
-                "Behandler utdannings-aktivtet-melding på aktorId: {} med id: {}",
-                aktivitetData.getAktorId(),
-                aktivitetData.getAktivitetId()
-        );
+    public void behandleKafkaMelding(GoldenGateDTO kafkaMelding) {
+        log.info("Behandler utdannings-aktivtet-melding");
+        UtdanningsAktivitetInnhold innhold = (UtdanningsAktivitetInnhold) arenaAktivitetService.getInnhold(kafkaMelding);
+        if (innhold == null){
+            return;
+        }
 
-        aktivitetDAO.tryLagreAktivitetData(aktivitetData);
-        utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(aktivitetData.getAktorId()));
+        if(arenaAktivitetService.erGammelMelding(innhold.getAktivitetid(), innhold.getHendelseId())){
+            log.info("Fikk tilsendt gammel utdannings-aktivtet-melding");
+            return;
+        }
+
+        boolean skalSlettes = skalSlettes(kafkaMelding);
+        if(skalSlettes){
+            aktivitetDAO.deleteById(innhold.getAktivitetid());
+        }else{
+            AktorId aktorId = arenaAktivitetService.getAktorId(innhold.getFnr());
+            KafkaAktivitetMelding melding = arenaAktivitetService.mapTilKafkaAktivitetMelding(innhold, aktorId);
+            aktivitetDAO.upsertAktivitet(melding);
+        }
     }
 
-    public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
-        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO);
-        Optional.ofNullable(aktivitetBrukerOppdateringer)
-                .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));
+    private boolean skalSlettes(GoldenGateDTO kafkaMelding) {
+        return GoldenGateOperations.DELETE.equals(kafkaMelding.getOperationType());
     }
-
-
-    @Override
-    public boolean shouldRewind() {
-        return rewind.get();
-    }
-
-    @Override
-    public void setRewind(boolean rewind) {
-        this.rewind.set(rewind);
-    }
-
 }
