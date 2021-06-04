@@ -82,9 +82,10 @@ public class KafkaConfigCommon {
             CVServiceFromAiven cvService
     ) {
         return Map.of(
-                CV_TOPIC,
-                jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding)
+                CV_TOPIC, jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding)
         );
+        // TODO: få common til å støtte TypeReference:
+        //"topic-navn", jsonConsumer(new TypeReference<GoldenGateDTO<UtdanningsAktivitetInnhold>>(){}, utdanningsAktivitetService::behandleKafkaMelding)
     }
 
     @Bean

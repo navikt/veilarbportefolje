@@ -1,12 +1,12 @@
-package no.nav.pto.veilarbportefolje.arenaAktiviteter;
+package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.*;
-import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.GoldenGateDTO;
-import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.GoldenGateOperations;
-import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateDTO;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -16,9 +16,9 @@ public class UtdanningsAktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final ArenaAktivitetService arenaAktivitetService;
 
-    public void behandleKafkaMelding(GoldenGateDTO kafkaMelding) {
+    public void behandleKafkaMelding(GoldenGateDTO<UtdanningsAktivitetInnhold> kafkaMelding) {
         log.info("Behandler utdannings-aktivtet-melding");
-        UtdanningsAktivitetInnhold innhold = (UtdanningsAktivitetInnhold) arenaAktivitetService.getInnhold(kafkaMelding);
+        UtdanningsAktivitetInnhold innhold = arenaAktivitetService.getInnhold(kafkaMelding);
         if (innhold == null){
             return;
         }

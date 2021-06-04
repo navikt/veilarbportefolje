@@ -1,14 +1,14 @@
-package no.nav.pto.veilarbportefolje.arenaAktiviteter;
+package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.ArenaInnholdKafka;
-import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.GoldenGateDTO;
-import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.GoldenGateOperations;
-import no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaInnholdKafka;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateDTO;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +28,7 @@ public class ArenaAktivitetService {
         kafkaAktivitetMelding.setAktorId(aktorId.get());
         kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid());
         kafkaAktivitetMelding.setAvtalt(true);
+        kafkaAktivitetMelding.setHistorisk(false);
         kafkaAktivitetMelding.setVersion(-1L);
         kafkaAktivitetMelding.setFraDato(toZonedDateTime(melding.getAktivitetperiodeFra()));
         kafkaAktivitetMelding.setTilDato(toZonedDateTime(melding.getAktivitetperiodeTil()));
@@ -37,7 +38,7 @@ public class ArenaAktivitetService {
     }
 
 
-    public ArenaInnholdKafka getInnhold(GoldenGateDTO goldenGateDTO) {
+    public <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
         switch (goldenGateDTO.getOperationType()) {
             case GoldenGateOperations.DELETE:
                 return goldenGateDTO.getBefore();

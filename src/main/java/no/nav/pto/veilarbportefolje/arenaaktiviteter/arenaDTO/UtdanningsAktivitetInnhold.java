@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO;
+package no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;

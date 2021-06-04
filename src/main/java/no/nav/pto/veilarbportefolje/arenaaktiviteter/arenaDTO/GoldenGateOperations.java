@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arenaAktiviteter.arenaDTO;
+package no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO;
 
 public class GoldenGateOperations {
     public static final String UPDATE = "U";

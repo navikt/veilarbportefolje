@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV1;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenafiler.FilmottakConfig;
 import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakRepository;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
@@ -105,7 +107,9 @@ import static org.mockito.Mockito.when;
         MalService.class,
         OppfolgingService.class,
         ArbeidslisteRepositoryV1.class,
-        ArbeidslisteRepositoryV2.class
+        ArbeidslisteRepositoryV2.class,
+        UtdanningsAktivitetService.class,
+        ArenaAktivitetService.class
 })
 public class ApplicationConfigTest {
 
