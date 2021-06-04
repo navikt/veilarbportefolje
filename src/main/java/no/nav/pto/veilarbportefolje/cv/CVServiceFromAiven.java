@@ -18,6 +18,7 @@ public class CVServiceFromAiven {
     private final CvRepository cvRepository;
 
     public void behandleKafkaMelding(CVMelding melding) {
+        log.info("CV melding pa bruker: {}", melding.getAktoerId());
         AktorId aktoerId = melding.getAktoerId();
 
         if (melding.getRessurs() != CV_HJEMMEL) {

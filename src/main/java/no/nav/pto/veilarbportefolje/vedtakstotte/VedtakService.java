@@ -92,7 +92,7 @@ public class VedtakService implements KafkaConsumerService<String> {
         vedtakStatusRepository.upsertVedtak(melding);
 
         if (erPostgresPa(unleashService))
-            vedtakStatusRepositoryV2.upsertVedtak(melding);
+            vedtakStatusRepositoryV2.updateVedtak(melding);
     }
 
     private void setVedtakSendt(KafkaVedtakStatusEndring melding) {
@@ -101,7 +101,6 @@ public class VedtakService implements KafkaConsumerService<String> {
 
         if (erPostgresPa(unleashService)) {
             vedtakStatusRepositoryV2.slettGamleVedtakOgUtkast(melding.getAktorId());
-            vedtakStatusRepositoryV2.upsertVedtak(melding);
         }
     }
 

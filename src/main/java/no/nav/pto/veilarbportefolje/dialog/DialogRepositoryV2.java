@@ -12,6 +12,9 @@ import java.sql.ResultSet;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.DIALOG.*;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.safeNull;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
@@ -27,18 +30,22 @@ public class DialogRepositoryV2 {
     public int oppdaterDialogInfoForBruker(Dialogdata dialog) {
         log.info("Oppdaterer dialog i postgres for: {}, med sist endret: {}", dialog.getAktorId(), dialog.getSisteEndring());
         return db.update("INSERT INTO " + TABLE_NAME +
-                " (" + SQLINSERT_STRING + ") " +
-                "VALUES (" + dialog.toSqlInsertString() + ") " +
-                "ON CONFLICT (" + AKTOERID + ") DO UPDATE SET (" + SQLUPDATE_STRING + ") = (" + dialog.toSqlUpdateString() + ")");
+                        " (" + AKTOERID + ", " + VENTER_PA_BRUKER + ", " + VENTER_PA_NAV + ") " +
+                        "VALUES (?, ?, ?) " +
+                        "ON CONFLICT (" + AKTOERID + ") " +
+                        "DO UPDATE SET (" + VENTER_PA_BRUKER + ", " + VENTER_PA_NAV + ") = (?, ?)",
+                dialog.getAktorId(),
+                toTimestamp(dialog.getTidspunktEldsteVentende()), toTimestamp(dialog.getTidspunktEldsteUbehandlede()),
+                toTimestamp(dialog.getTidspunktEldsteVentende()), toTimestamp(dialog.getTidspunktEldsteUbehandlede())
+        );
+
     }
 
     public Optional<Dialogdata> retrieveDialogData(AktorId aktoerId) {
         String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
-                db.queryForObject(
-                        sql, new Object[]{aktoerId.get()},
-                        this::mapToDialogData)
-                );
+                queryForObjectOrNull(() -> db.queryForObject(sql, this::mapToDialogData, aktoerId.get()))
+        );
     }
 
     @SneakyThrows

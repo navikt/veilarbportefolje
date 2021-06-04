@@ -34,7 +34,7 @@ public class VedtaksStatusRepositoryTestv2 {
     }
 
     @Test
-    public void skallOppdatereVedtakMedAnsvarligVeileder() {
+    public void skallOppretteVedtak() {
         LocalDateTime time = LocalDateTime.now();
         KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.KLAR_TIL_BESLUTTER)
@@ -56,6 +56,61 @@ public class VedtaksStatusRepositoryTestv2 {
         assertThat(endringer.get().getTimestamp()).isEqualTo(time);
     }
 
+    @Test
+    public void skallOppdatereVedtakMedAnsvarligVeileder() {
+        insertVedtakIDB();
+
+        Optional<KafkaVedtakStatusEndring> endringer1 = vedtakStatusRepository.hentVedtak(AKTORID);
+        assertThat(endringer1.isPresent()).isTrue();
+        assertThat(endringer1.get().veilederIdent).isEqualTo(null);
+        assertThat(endringer1.get().veilederNavn).isEqualTo(null);
+
+        KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
+                .setAktorId(AKTORID)
+                .setVedtakId(VEDTAKID)
+                .setVeilederNavn(VEILEDER_NAVN)
+                .setVeilederIdent(VEILEDER_IDENT);
+
+        vedtakStatusRepository.oppdaterAnsvarligVeileder(vedtakStatusEndring);
+
+        Optional<KafkaVedtakStatusEndring> endringer2 = vedtakStatusRepository.hentVedtak(AKTORID);
+        assertThat(endringer2.isPresent()).isTrue();
+        assertThat(endringer2.get().veilederIdent).isEqualTo(VEILEDER_IDENT);
+        assertThat(endringer2.get().veilederNavn).isEqualTo(VEILEDER_NAVN);
+    }
+
+    @Test
+    public void skallSletteVedtak() {
+        insertVedtakIDB();
+        vedtakStatusRepository.slettGamleVedtakOgUtkast(AKTORID);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        assertThat(endringer.isEmpty()).isTrue();
+    }
+    @Test
+    public void skallOppdatereVedtak() {
+        insertVedtakIDB();
+
+        LocalDateTime time = LocalDateTime.now();
+        KafkaVedtakStatusEndring vedtakStatusEndring = new KafkaVedtakStatusEndring()
+                .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.KLAR_TIL_BESLUTTER)
+                .setHovedmal(KafkaVedtakStatusEndring.Hovedmal.SKAFFE_ARBEID)
+                .setInnsatsgruppe(KafkaVedtakStatusEndring.Innsatsgruppe.STANDARD_INNSATS)
+                .setTimestamp(time)
+                .setAktorId(AKTORID)
+                .setVeilederNavn(VEILEDER_NAVN)
+                .setVeilederIdent(VEILEDER_IDENT)
+                .setVedtakId(VEDTAKID);
+
+        vedtakStatusRepository.updateVedtak(vedtakStatusEndring);
+        Optional<KafkaVedtakStatusEndring> endringer = vedtakStatusRepository.hentVedtak(AKTORID);
+        assertThat(endringer.isPresent()).isTrue();
+        assertThat(endringer.get().veilederIdent).isEqualTo(null); //TODO: finn ut om dette er riktig.
+        assertThat(endringer.get().veilederNavn).isEqualTo(null);  // her som i den "gamle" versjonen oppdaters dette og forrige felt kun i funksjonen oppdaterAnsvarligVeileder()
+        assertThat(endringer.get().aktorId).isEqualTo(AKTORID);
+        assertThat(endringer.get().vedtakId).isEqualTo(VEDTAKID);
+        assertThat(endringer.get().getTimestamp()).isEqualTo(time);
+    }
+
 
     private void insertVedtakIDB() {
         LocalDateTime time = LocalDateTime.now();
@@ -66,8 +121,8 @@ public class VedtaksStatusRepositoryTestv2 {
                 .setVedtakId(VEDTAKID)
                 .setHovedmal(null)
                 .setInnsatsgruppe(null)
-                .setVeilederNavn(VEILEDER_NAVN)
-                .setVeilederIdent(VEILEDER_IDENT);
+                .setVeilederNavn(null)
+                .setVeilederIdent(null);
         vedtakStatusRepository.upsertVedtak(vedtakStatusEndring);
     }
 }
