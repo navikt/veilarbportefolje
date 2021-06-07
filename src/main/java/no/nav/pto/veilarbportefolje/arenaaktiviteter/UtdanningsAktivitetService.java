@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UtdanningsAktivitetService {
-    private final AktivitetDAO aktivitetDAO;
+    private final AktivitetService aktivitetService;
     private final ArenaAktivitetService arenaAktivitetService;
 
     public void behandleKafkaMelding(GoldenGateDTO<UtdanningsAktivitetInnhold> kafkaMelding) {
@@ -28,17 +28,16 @@ public class UtdanningsAktivitetService {
             return;
         }
 
-        boolean skalSlettes = skalSlettes(kafkaMelding);
-        if(skalSlettes){
-            aktivitetDAO.deleteById(innhold.getAktivitetid());
+        AktorId aktorId = arenaAktivitetService.getAktorId(innhold.getFnr());
+        if(skalSlettes(kafkaMelding)){
+            aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
         }else{
-            AktorId aktorId = arenaAktivitetService.getAktorId(innhold.getFnr());
             KafkaAktivitetMelding melding = arenaAktivitetService.mapTilKafkaAktivitetMelding(innhold, aktorId);
-            aktivitetDAO.upsertAktivitet(melding);
+            aktivitetService.upsertOgIndekserAktiviteter(melding);
         }
     }
 
-    private boolean skalSlettes(GoldenGateDTO kafkaMelding) {
+    private boolean skalSlettes(GoldenGateDTO<UtdanningsAktivitetInnhold> kafkaMelding) {
         return GoldenGateOperations.DELETE.equals(kafkaMelding.getOperationType());
     }
 }

@@ -84,6 +84,15 @@ public class AktivitetService implements KafkaConsumerService<String> {
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));
     }
 
+    public void slettAktivitet(String aktivitetid, AktorId aktorId) {
+        aktivitetDAO.deleteById(aktivitetid);
+        utledOgIndekserAktivitetstatuserForAktoerid(aktorId);
+    }
+
+    public void upsertOgIndekserAktiviteter(KafkaAktivitetMelding melding) {
+        aktivitetDAO.upsertAktivitet(melding);
+        utledOgIndekserAktivitetstatuserForAktoerid(AktorId.of(melding.getAktorId()));
+    }
 
     @Override
     public boolean shouldRewind() {

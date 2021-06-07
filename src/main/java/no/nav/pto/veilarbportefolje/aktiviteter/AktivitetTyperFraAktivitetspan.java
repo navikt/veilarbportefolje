@@ -6,7 +6,11 @@ public enum AktivitetTyperFraAktivitetspan {
     sokeavtale,
     behandling,
     ijobb,
-    mote;
+    mote,
+
+    tiltak,
+    gruppeaktivitet,
+    utdanningaktivitet; // TODO: her burde det være en toggle
 
     public static boolean contains(String value) {
         try {

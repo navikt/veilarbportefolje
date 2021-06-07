@@ -27,12 +27,15 @@ public class ArenaAktivitetService {
         KafkaAktivitetMelding kafkaAktivitetMelding = new KafkaAktivitetMelding();
         kafkaAktivitetMelding.setAktorId(aktorId.get());
         kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid());
-        kafkaAktivitetMelding.setAvtalt(true);
-        kafkaAktivitetMelding.setHistorisk(false);
-        kafkaAktivitetMelding.setVersion(-1L);
         kafkaAktivitetMelding.setFraDato(toZonedDateTime(melding.getAktivitetperiodeFra()));
         kafkaAktivitetMelding.setTilDato(toZonedDateTime(melding.getAktivitetperiodeTil()));
         kafkaAktivitetMelding.setEndretDato(toZonedDateTime(melding.getEndretDato()));
+
+        kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
+        kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET);
+        kafkaAktivitetMelding.setAvtalt(true);
+        kafkaAktivitetMelding.setHistorisk(false);
+        kafkaAktivitetMelding.setVersion(-1L);
 
         return kafkaAktivitetMelding;
     }
