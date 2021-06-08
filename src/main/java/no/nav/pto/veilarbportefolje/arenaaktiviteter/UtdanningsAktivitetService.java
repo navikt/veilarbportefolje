@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivite
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -19,6 +20,7 @@ public class UtdanningsAktivitetService {
     private final AktivitetService aktivitetService;
     private final AktorClient aktorClient;
 
+    @Transactional
     public void behandleKafkaMelding(UtdanningsAktivitetDTO kafkaMelding) {
         log.info("Behandler utdannings-aktivtet-melding");
         UtdanningsAktivitetInnhold innhold = (UtdanningsAktivitetInnhold) getInnhold(kafkaMelding);
