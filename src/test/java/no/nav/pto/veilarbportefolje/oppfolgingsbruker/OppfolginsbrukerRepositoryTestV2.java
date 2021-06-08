@@ -32,7 +32,7 @@ public class OppfolginsbrukerRepositoryTestV2 {
     public void skal_ikke_lagre_oppfolgingsbruker_med_eldre_endret_dato() {
         OppfolgingsbrukerKafkaDTO msg = new OppfolgingsbrukerKafkaDTO()
                 .setAktoerid(aktoerId.get())
-                .setFodselsnr("12345678912")
+                .setFodselsnr("12015678912")
                 .setFormidlingsgruppekode("TEST")
                 .setIserv_fra_dato(ZonedDateTime.now().minusDays(1))
                 .setFornavn("Tester")
