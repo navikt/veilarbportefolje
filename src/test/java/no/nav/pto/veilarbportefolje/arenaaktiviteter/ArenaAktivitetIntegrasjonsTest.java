@@ -21,8 +21,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -66,9 +65,9 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
                         .setAfter(
                         new UtdanningsAktivitetInnhold()
                                 .setFnr(fnr.get())
-                                .setAktivitetperiodeFra(new Date(120, Calendar.JANUARY, 1)) //2020-01-01
-                                .setAktivitetperiodeTil(new Date(130, Calendar.JANUARY, 1)) //2030-01-01
-                                .setEndretDato(new Date())
+                                .setAktivitetperiodeFra(LocalDate.of(2020,1,1)) //2020-01-01
+                                .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
+                                .setEndretDato(LocalDate.now())
                                 .setAktivitetid("UA-123456789")
                 )
         );
@@ -90,9 +89,9 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
                         .setAfter(
                                 new UtdanningsAktivitetInnhold()
                                         .setFnr(fnr.get())
-                                        .setAktivitetperiodeFra(new Date(120, Calendar.JANUARY, 1)) //2020-01-01
-                                        .setAktivitetperiodeTil(new Date(130, Calendar.JANUARY, 1)) //2030-01-01
-                                        .setEndretDato(new Date())
+                                        .setAktivitetperiodeFra(LocalDate.of(2020,1,1)) //2020-01-01
+                                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
+                                        .setEndretDato(LocalDate.now())
                                         .setAktivitetid("UA-123456789")
                         )
         );
@@ -103,9 +102,9 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
                         .setBefore(
                                 new UtdanningsAktivitetInnhold()
                                         .setFnr(fnr.get())
-                                        .setAktivitetperiodeFra(new Date(120, Calendar.JANUARY, 1)) //2020-01-01
-                                        .setAktivitetperiodeTil(new Date(130, Calendar.JANUARY, 1)) //2030-01-01
-                                        .setEndretDato(new Date())
+                                        .setAktivitetperiodeFra(LocalDate.of(2020,1,1)) //2020-01-01
+                                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
+                                        .setEndretDato(LocalDate.now())
                                         .setAktivitetid("UA-123456789")
                         )
         );

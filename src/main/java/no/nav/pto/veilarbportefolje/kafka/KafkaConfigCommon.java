@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -19,7 +20,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -35,17 +35,15 @@ import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 
 @Configuration
+@RequiredArgsConstructor
 @EnableConfigurationProperties({KafkaAivenProperties.class})
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_TOPIC = "teampam.samtykke-status-1";
 
-    @Autowired
-    KafkaConsumerClient<String, String> consumerClient;
-
-    @Autowired
-    KafkaConsumerRecordProcessor consumerRecordProcessor;
+    private final KafkaConsumerClient<String, String> consumerClient;
+    private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     @Bean
     public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
