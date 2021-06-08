@@ -7,8 +7,8 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
-public abstract class ArenaAktivitetService {
-    public ArenaInnholdKafka getInnhold(GoldenGateDTO goldenGateDTO) {
+public interface ArenaAktivitetUtils {
+    static ArenaInnholdKafka getInnhold(GoldenGateDTO goldenGateDTO) {
         switch (goldenGateDTO.getOperationType()) {
             case GoldenGateOperations.DELETE:
                 return goldenGateDTO.getBefore();
@@ -20,15 +20,15 @@ public abstract class ArenaAktivitetService {
         }
     }
 
-    public boolean skalSlettes(GoldenGateDTO kafkaMelding) {
+    static boolean skalSlettes(GoldenGateDTO kafkaMelding) {
         return GoldenGateOperations.DELETE.equals(kafkaMelding.getOperationType());
     }
 
-    public boolean erGammelMelding(String id, long hendelseId) {
+    static boolean erGammelMelding(String id, long hendelseId) {
         return false; // TODO: finn en logikk som fungerer
     }
 
-    public AktorId getAktorId(AktorClient aktorClient, String personident) {
+    static AktorId getAktorId(AktorClient aktorClient, String personident) {
         return aktorClient.hentAktorId(Fnr.ofValidFnr(personident));
     }
 }

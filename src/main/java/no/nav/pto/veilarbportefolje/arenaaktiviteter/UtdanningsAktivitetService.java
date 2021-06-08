@@ -9,12 +9,13 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivite
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
 
+import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UtdanningsAktivitetService extends ArenaAktivitetService{
+public class UtdanningsAktivitetService {
     private final AktivitetService aktivitetService;
     private final AktorClient aktorClient;
 
