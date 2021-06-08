@@ -16,10 +16,13 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraAktivitetsplanList;
+import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetData.aktivitetTyperFraKafka;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 
 @Slf4j
 public class AktivitetUtils {
@@ -27,23 +30,25 @@ public class AktivitetUtils {
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     public static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(AktoerAktiviteter aktoerAktiviteter,
-                                                                           BrukerService brukerService) {
+                                                                           BrukerService brukerService,
+                                                                           boolean erGR202PaKafka) {
         AktorId aktoerId = AktorId.of(aktoerAktiviteter.getAktoerid());
 
         Try<PersonId> personid = brukerService.hentPersonidFraAktoerid(aktoerId)
                 .onFailure((e) -> log.warn("Kunne ikke hente personid for aktoerid {}", aktoerId.toString(), e));
 
         return personid
-                .map(personId -> konverterTilBrukerOppdatering(aktoerAktiviteter.getAktiviteter(), aktoerId, personid.get()))
+                .map(personId -> konverterTilBrukerOppdatering(aktoerAktiviteter.getAktiviteter(), aktoerId, personid.get(), erGR202PaKafka))
                 .getOrNull();
     }
 
 
     private static AktivitetBrukerOppdatering konverterTilBrukerOppdatering(List<AktivitetDTO> aktiviteter,
                                                                             AktorId aktoerId,
-                                                                            PersonId personId) {
+                                                                            PersonId personId,
+                                                                            boolean erGR202PaKafka) {
 
-        Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId);
+        Set<AktivitetStatus> aktiveAktiviteter = lagAktivitetSet(aktiviteter, LocalDate.now(), aktoerId, personId, erGR202PaKafka);
         Optional<AktivitetDTO> nyesteUtlopteAktivitet = Optional.ofNullable(finnNyesteUtlopteAktivAktivitet(aktiviteter, LocalDate.now()));
 
         List<AktivitetDTO> aktiveAktivitetDTOList = aktiviteter
@@ -70,9 +75,9 @@ public class AktivitetUtils {
     }
 
 
-    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO) {
+    public static AktivitetBrukerOppdatering hentAktivitetBrukerOppdateringer(AktorId aktoerId, BrukerService brukerService, AktivitetDAO aktivitetDAO, boolean erGR202PaKafka) {
         AktoerAktiviteter aktiviteter = aktivitetDAO.getAktiviteterForAktoerid(aktoerId);
-        return konverterTilBrukerOppdatering(aktiviteter, brukerService);
+        return konverterTilBrukerOppdatering(aktiviteter, brukerService, erGR202PaKafka);
     }
 
     public static boolean erAktivitetIPeriode(AktivitetDTO aktivitet, LocalDate today) {
@@ -113,12 +118,10 @@ public class AktivitetUtils {
                 .findFirst();
     }
 
-    public static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktorId aktoerId, PersonId personId) {
+    public static Set<AktivitetStatus> lagAktivitetSet(List<AktivitetDTO> aktiviteter, LocalDate today, AktorId aktoerId, PersonId personId, boolean erGR202PaKafka) {
         Set<AktivitetStatus> aktiveAktiviteter = new HashSet<>();
 
-        aktivitetTyperFraAktivitetsplanList
-                .stream()
-                .map(Objects::toString)
+        kafkaAktiviteter(erGR202PaKafka)
                 .forEach(aktivitetstype -> {
 
                     List<AktivitetDTO> aktiviteterMedAktivtStatus = aktiviteter
@@ -200,5 +203,12 @@ public class AktivitetUtils {
 
     private static boolean harIkkeStatusFullfort(AktivitetDTO aktivitetDTO) {
         return !AktivitetIkkeAktivStatuser.contains(aktivitetDTO.getStatus());
+    }
+
+    private static Stream<String> kafkaAktiviteter(boolean erGR202PaKafka){
+        if(erGR202PaKafka){
+            return aktivitetTyperFraKafka.stream().map(Objects::toString);
+        }
+        return aktivitetTyperFraAktivitetsplanList.stream().map(Objects::toString);
     }
 }

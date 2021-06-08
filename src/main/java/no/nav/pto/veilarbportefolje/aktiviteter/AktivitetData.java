@@ -11,4 +11,6 @@ public class AktivitetData {
 
     public static final List<AktivitetTyperFraAktivitetspan> aktivitetTyperFraAktivitetsplanList = asList(AktivitetTyperFraAktivitetspan.values());
 
+    public static final List<AktivitetTyperFraKafka> aktivitetTyperFraKafka = asList(AktivitetTyperFraKafka.values());
+
 }

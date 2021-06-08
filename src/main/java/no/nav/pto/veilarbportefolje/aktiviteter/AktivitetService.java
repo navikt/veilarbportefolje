@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.erGR202PaKafka;
 import static no.nav.pto.veilarbportefolje.util.BatchConsumer.batchConsumer;
 
 @Slf4j
@@ -27,13 +29,15 @@ public class AktivitetService implements KafkaConsumerService<String> {
     private final PersistentOppdatering persistentOppdatering;
     private final AtomicBoolean rewind;
     private final SisteEndringService sisteEndringService;
+    private final UnleashService unleashService;
 
     @Autowired
-    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, BrukerService brukerService, SisteEndringService sisteEndringService, UnleashService unleashService) {
         this.aktivitetDAO = aktivitetDAO;
         this.brukerService = brukerService;
         this.persistentOppdatering = persistentOppdatering;
         this.sisteEndringService = sisteEndringService;
+        this.unleashService = unleashService;
         this.rewind = new AtomicBoolean();
     }
 
@@ -71,7 +75,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
     private void utledOgLagreAktivitetstatuser(List<String> aktoerider) {
         aktoerider.forEach(aktoerId -> {
             AktoerAktiviteter aktoerAktiviteter = aktivitetDAO.getAktiviteterForAktoerid(AktorId.of(aktoerId));
-            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService);
+            AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.konverterTilBrukerOppdatering(aktoerAktiviteter, brukerService, erGR202PaKafka(unleashService));
             Optional.ofNullable(aktivitetBrukerOppdateringer)
                     .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDB(Collections.singletonList(oppdatering)));
         });
@@ -79,7 +83,7 @@ public class AktivitetService implements KafkaConsumerService<String> {
     }
 
     public void utledOgIndekserAktivitetstatuserForAktoerid(AktorId aktoerId) {
-        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO);
+        AktivitetBrukerOppdatering aktivitetBrukerOppdateringer = AktivitetUtils.hentAktivitetBrukerOppdateringer(aktoerId, brukerService, aktivitetDAO, erGR202PaKafka(unleashService));
         Optional.ofNullable(aktivitetBrukerOppdateringer)
                 .ifPresent(oppdatering -> persistentOppdatering.lagreBrukeroppdateringerIDBogIndekser(Collections.singletonList(oppdatering)));
     }
