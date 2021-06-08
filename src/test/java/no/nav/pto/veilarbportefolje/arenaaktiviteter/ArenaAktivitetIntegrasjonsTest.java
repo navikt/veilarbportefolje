@@ -5,7 +5,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitet;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -79,8 +79,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         assertThat(nestedObject.isEmpty()).isTrue();
     }
 
-    private UtdanningsAktivitet getUtdanningsInsertDTO(){
-        UtdanningsAktivitet utdanningsAktivitet =  new UtdanningsAktivitet()
+    private UtdanningsAktivitetDTO getUtdanningsInsertDTO(){
+        UtdanningsAktivitetDTO utdanningsAktivitet =  new UtdanningsAktivitetDTO()
                 .setAfter(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
                         .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
@@ -92,8 +92,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         return utdanningsAktivitet;
     }
 
-    private UtdanningsAktivitet getUtdanningsDeleteDTO(){
-        UtdanningsAktivitet utdanningsAktivitet =  new UtdanningsAktivitet()
+    private UtdanningsAktivitetDTO getUtdanningsDeleteDTO(){
+        UtdanningsAktivitetDTO utdanningsAktivitet =  new UtdanningsAktivitetDTO()
                 .setBefore(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
                         .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01

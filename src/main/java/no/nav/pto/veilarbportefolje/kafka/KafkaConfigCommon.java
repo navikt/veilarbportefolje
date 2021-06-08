@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -15,7 +14,7 @@ import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProce
 import no.nav.common.kafka.consumer.util.ConsumerUtils;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitet;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -90,7 +89,7 @@ public class KafkaConfigCommon {
                 CV_TOPIC,
                 jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding),
                 UTDANNINGS_AKTIVITET_TOPIC,
-                jsonConsumer(UtdanningsAktivitet.class, utdanningsAktivitetService::behandleKafkaMelding)
+                jsonConsumer(UtdanningsAktivitetDTO.class, utdanningsAktivitetService::behandleKafkaMelding)
         );
      }
 

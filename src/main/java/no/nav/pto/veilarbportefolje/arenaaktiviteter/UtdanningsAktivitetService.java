@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.*;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitet;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class UtdanningsAktivitetService {
     private final AktivitetService aktivitetService;
     private final AktorClient aktorClient;
 
-    public void behandleKafkaMelding(UtdanningsAktivitet kafkaMelding) {
+    public void behandleKafkaMelding(UtdanningsAktivitetDTO kafkaMelding) {
         log.info("Behandler utdannings-aktivtet-melding");
         UtdanningsAktivitetInnhold innhold = (UtdanningsAktivitetInnhold) getInnhold(kafkaMelding);
         if (innhold == null) {
