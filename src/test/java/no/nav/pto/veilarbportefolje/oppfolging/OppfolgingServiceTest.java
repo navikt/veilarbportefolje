@@ -64,7 +64,7 @@ public class OppfolgingServiceTest {
         ZonedDateTime startDato_portefolje = ZonedDateTime.now();
         String startDato_portefolje_string =  toIsoUTC(startDato_portefolje);
 
-        ZonedDateTime startDato_oppfolging = ZonedDateTime.parse("2021-04-27T10:40:02.110297+02:00");
+        ZonedDateTime startDato_oppfolging = ZonedDateTime.parse("2021-04-27T10:40:02.110+02:00");
 
         when(systemUserTokenProvider.getSystemUserToken()).thenReturn("SYSTEM_TOKEN");
         when(brukerRepository.hentAlleBrukereUnderOppfolging()).thenReturn(
