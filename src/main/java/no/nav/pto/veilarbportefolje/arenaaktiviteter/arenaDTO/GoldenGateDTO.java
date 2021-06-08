@@ -6,13 +6,14 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class GoldenGateDTO<T> {
+public abstract class GoldenGateDTO {
     String table;
     @JsonAlias("op_type") String operationType;
     @JsonAlias("op_ts") String operationTimestamp;
     @JsonAlias("current_ts") String currentTimestamp;
     String pos;
-    T before;
-    T after;
+
+    public abstract ArenaInnholdKafka getAfter();
+    public abstract ArenaInnholdKafka getBefore();
 }
 

@@ -4,8 +4,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitet;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Table;
@@ -30,7 +30,6 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
     private final JdbcTemplate jdbcTemplate;
 
-    private final BrukerRepository brukerRepository;
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
     private final VeilederId veilederId = VeilederId.of("Z123456");
@@ -39,13 +38,11 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
 
     @Autowired
     public ArenaAktivitetIntegrasjonsTest(AktivitetService aktivitetService, JdbcTemplate jdbcTemplate, BrukerRepository brukerRepository) {
-        this.brukerRepository = brukerRepository;
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         this.jdbcTemplate = jdbcTemplate;
 
-        ArenaAktivitetService arenaAktivitetService = new ArenaAktivitetService(aktorClient);
-        this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, arenaAktivitetService);
+        this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient);
     }
 
     @BeforeEach
@@ -59,23 +56,12 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     @Test
     public void skal_komme_i_aktivitet() {
         insertBruker();
-        utdanningsAktivitetService.behandleKafkaMelding(
-                new GoldenGateDTO<UtdanningsAktivitetInnhold>()
-                        .setOperationType(GoldenGateOperations.INSERT)
-                        .setAfter(
-                        new UtdanningsAktivitetInnhold()
-                                .setFnr(fnr.get())
-                                .setAktivitetperiodeFra(LocalDate.of(2020,1,1)) //2020-01-01
-                                .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
-                                .setEndretDato(LocalDate.now())
-                                .setAktivitetid("UA-123456789")
-                )
-        );
+        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
         GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        assertThat(response.isExists()).isTrue();
-
         Object nestedObject = response.getSourceAsMap().get("aktiviteter");
+
+        assertThat(response.isExists()).isTrue();
         assertThat(nestedObject).isNotNull();
     }
 
@@ -83,31 +69,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     @Test
     public void skal_ut_av_aktivitet() {
         insertBruker();
-        utdanningsAktivitetService.behandleKafkaMelding(
-                new GoldenGateDTO<UtdanningsAktivitetInnhold>()
-                        .setOperationType(GoldenGateOperations.INSERT)
-                        .setAfter(
-                                new UtdanningsAktivitetInnhold()
-                                        .setFnr(fnr.get())
-                                        .setAktivitetperiodeFra(LocalDate.of(2020,1,1)) //2020-01-01
-                                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
-                                        .setEndretDato(LocalDate.now())
-                                        .setAktivitetid("UA-123456789")
-                        )
-        );
-
-        utdanningsAktivitetService.behandleKafkaMelding(
-                new GoldenGateDTO<UtdanningsAktivitetInnhold>()
-                        .setOperationType(GoldenGateOperations.DELETE)
-                        .setBefore(
-                                new UtdanningsAktivitetInnhold()
-                                        .setFnr(fnr.get())
-                                        .setAktivitetperiodeFra(LocalDate.of(2020,1,1)) //2020-01-01
-                                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
-                                        .setEndretDato(LocalDate.now())
-                                        .setAktivitetid("UA-123456789")
-                        )
-        );
+        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
+        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsDeleteDTO());
 
         GetResponse response = elasticTestClient.fetchDocument(aktorId);
         assertThat(response.isExists()).isTrue();
@@ -116,8 +79,33 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         assertThat(nestedObject.isEmpty()).isTrue();
     }
 
+    private UtdanningsAktivitet getUtdanningsInsertDTO(){
+        UtdanningsAktivitet utdanningsAktivitet =  new UtdanningsAktivitet()
+                .setAfter(new UtdanningsAktivitetInnhold()
+                        .setFnr(fnr.get())
+                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
+                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
+                        .setEndretDato(LocalDate.now())
+                        .setAktivitetid("UA-123456789")
+                );
+        utdanningsAktivitet.setOperationType(GoldenGateOperations.INSERT);
+        return utdanningsAktivitet;
+    }
 
-    private void insertBruker(){
+    private UtdanningsAktivitet getUtdanningsDeleteDTO(){
+        UtdanningsAktivitet utdanningsAktivitet =  new UtdanningsAktivitet()
+                .setBefore(new UtdanningsAktivitetInnhold()
+                        .setFnr(fnr.get())
+                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
+                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
+                        .setEndretDato(LocalDate.now())
+                        .setAktivitetid("UA-123456789")
+                );
+        utdanningsAktivitet.setOperationType(GoldenGateOperations.DELETE);
+        return utdanningsAktivitet;
+    }
+
+    private void insertBruker() {
         populateElastic(testEnhet, veilederId, aktorId.get());
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())

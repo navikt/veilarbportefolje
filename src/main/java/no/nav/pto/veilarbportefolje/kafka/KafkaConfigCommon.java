@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -13,6 +14,8 @@ import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.ConsumerUtils;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitet;
 import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -41,6 +44,9 @@ public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String GROUP_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_TOPIC = "teampam.samtykke-status-1";
+    public final static String TILTAK_TOPIC = "aapen-arena-tiltaksaktivitetendret-v1-q1";
+    public final static String UTDANNINGS_AKTIVITET_TOPIC = "aapen-arena-utdanningsaktivitetendret-v1-q1";
+    public final static String GRUPPE_AKTIVITET_TOPIC = "aapen-arena-gruppeaktivitetendret-v1-q1";
 
     private final KafkaConsumerClient<String, String> consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
@@ -77,14 +83,16 @@ public class KafkaConfigCommon {
 
     @Bean
     public Map<String, TopicConsumer<String, String>> topicConsumers(
-            CVServiceFromAiven cvService
+            CVServiceFromAiven cvService,
+            UtdanningsAktivitetService utdanningsAktivitetService
     ) {
         return Map.of(
-                CV_TOPIC, jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding)
+                CV_TOPIC,
+                jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding),
+                UTDANNINGS_AKTIVITET_TOPIC,
+                jsonConsumer(UtdanningsAktivitet.class, utdanningsAktivitetService::behandleKafkaMelding)
         );
-        // TODO: få common til å støtte TypeReference:
-        //"topic-navn", jsonConsumer(new TypeReference<GoldenGateDTO<UtdanningsAktivitetInnhold>>(){}, utdanningsAktivitetService::behandleKafkaMelding)
-    }
+     }
 
     @Bean
     public Properties kafkaAivenProperties(KafkaAivenProperties kafkaProperties) {
