@@ -24,7 +24,7 @@ public class GruppeAktivitetService {
     @Transactional
     public void behandleKafkaMelding(GruppeAktivitetDTO kafkaMelding) {
         log.info("Behandler utdannings-aktivtet-melding");
-        GruppeAktivitetInnhold innhold = (GruppeAktivitetInnhold) getInnhold(kafkaMelding);
+        GruppeAktivitetInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null) {
             return;
         }

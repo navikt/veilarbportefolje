@@ -24,7 +24,7 @@ public class TiltaksService {
     @Transactional
     public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
         log.info("Behandler utdannings-aktivtet-melding");
-        TiltakInnhold innhold = (TiltakInnhold) getInnhold(kafkaMelding);
+        TiltakInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null) {
             return;
         }

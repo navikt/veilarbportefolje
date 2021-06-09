@@ -23,7 +23,7 @@ public class UtdanningsAktivitetService {
     @Transactional
     public void behandleKafkaMelding(UtdanningsAktivitetDTO kafkaMelding) {
         log.info("Behandler utdannings-aktivtet-melding");
-        UtdanningsAktivitetInnhold innhold = (UtdanningsAktivitetInnhold) getInnhold(kafkaMelding);
+        UtdanningsAktivitetInnhold innhold = getInnhold(kafkaMelding);
         if (innhold == null) {
             return;
         }

@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperatio
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
 public interface ArenaAktivitetUtils {
-    static ArenaInnholdKafka getInnhold(GoldenGateDTO goldenGateDTO) {
+     static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
         switch (goldenGateDTO.getOperationType()) {
             case GoldenGateOperations.DELETE:
                 return goldenGateDTO.getBefore();
@@ -20,7 +20,7 @@ public interface ArenaAktivitetUtils {
         }
     }
 
-    static boolean skalSlettes(GoldenGateDTO kafkaMelding) {
+    static boolean skalSlettes(GoldenGateDTO<?> kafkaMelding) {
         return GoldenGateOperations.DELETE.equals(kafkaMelding.getOperationType());
     }
 

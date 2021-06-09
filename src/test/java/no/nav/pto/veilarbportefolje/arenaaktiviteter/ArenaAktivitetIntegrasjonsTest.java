@@ -1,13 +1,15 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
-import io.vavr.control.Try;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetTyperFraKafka;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.*;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -23,22 +25,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.GR202_PA_KAFKA;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
-public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
+@SpringBootTest(classes = ApplicationConfigTest.class)
+public class ArenaAktivitetIntegrasjonsTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
     private final GruppeAktivitetService gruppeAktivitetService;
     private final TiltaksService tiltaksService;
     private final JdbcTemplate jdbcTemplate;
     private final UnleashService unleashService;
     private final AktivitetService aktivitetService;
+    private final AktivitetDAO aktivitetDAO;
 
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
@@ -50,6 +57,7 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, UnleashService unleashService) {
         this.jdbcTemplate = jdbcTemplate;
         this.unleashService = unleashService;
+        this.aktivitetDAO = aktivitetDAO;
 
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
@@ -66,6 +74,7 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         jdbcTemplate.execute("truncate table " + Table.OPPFOLGINGSBRUKER.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.OPPFOLGING_DATA.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
+        jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
 
     }
 
@@ -91,12 +100,11 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
 
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
-        GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        String utdanningsAktivitet = (String) response.getSourceAsMap().get("aktivitet_utdanningaktivitet_utlopsdato");
-        String ijobbAktivitet = (String) response.getSourceAsMap().get("aktivitet_ijobb_utlopsdato");
+        Optional<AktivitetStatus> utdanningsAktivitet = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
+        Optional<AktivitetStatus> ijobbAktivitet = hentAktivitetStatus(AktivitetTyperFraKafka.ijobb);
 
-        assertThat(utdanningsAktivitet).isNotNull();
-        assertThat(ijobbAktivitet).isNotNull();
+        assertThat(utdanningsAktivitet).isPresent();
+        assertThat(ijobbAktivitet).isPresent();
     }
 
     @Test
@@ -113,11 +121,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         gruppeAktivitet.setOperationType(GoldenGateOperations.INSERT);
         gruppeAktivitetService.behandleKafkaMelding(gruppeAktivitet);
 
-        GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
-
-        assertThat(response.isExists()).isTrue();
-        assertThat(aktiviteter).isNotNull();
+        Optional<AktivitetStatus> gruppe = hentAktivitetStatus(AktivitetTyperFraKafka.gruppeaktivitet);
+        assertThat(gruppe).isPresent();
     }
 
     @Test
@@ -134,11 +139,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
         tiltaksService.behandleKafkaMelding(tiltakDTO);
 
-        GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
-
-        assertThat(response.isExists()).isTrue();
-        assertThat(aktiviteter).isNotNull();
+        Optional<AktivitetStatus> tiltak = hentAktivitetStatus(AktivitetTyperFraKafka.tiltak);
+        assertThat(tiltak).isPresent();
     }
 
     @Test
@@ -146,11 +148,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         insertBruker();
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
-        GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
-
-        assertThat(response.isExists()).isTrue();
-        assertThat(aktiviteter).isNotNull();
+        Optional<AktivitetStatus> utdanning = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
+        assertThat(utdanning).isPresent();
     }
 
 
@@ -158,13 +157,13 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     public void skal_ut_av_aktivitet() {
         insertBruker();
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
+
+        Optional<AktivitetStatus> utdanningPre = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsDeleteDTO());
+        Optional<AktivitetStatus> utdanningPost = hentAktivitetStatus(AktivitetTyperFraKafka.utdanningaktivitet);
 
-        GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
-
-        assertThat(response.isExists()).isTrue();
-        assertThat(aktiviteter.isEmpty()).isTrue();
+        assertThat(utdanningPre).isPresent();
+        assertThat(utdanningPost).isEmpty();
     }
 
     private UtdanningsAktivitetDTO getUtdanningsInsertDTO() {
@@ -193,8 +192,15 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         return utdanningsAktivitet;
     }
 
+    private Optional<AktivitetStatus> hentAktivitetStatus(AktivitetTyperFraKafka type) {
+        Set<AktivitetStatus> aktivitetstatusForBrukere = aktivitetDAO.getAktivitetstatusForBrukere(List.of(personId)).get(personId);
+        return aktivitetstatusForBrukere.stream()
+                .filter(AktivitetStatus::isAktiv)
+                .filter(x -> x.getAktivitetType().equals(type.name()))
+                .findFirst();
+    }
+
     private void insertBruker() {
-        populateElastic(testEnhet, veilederId, aktorId.get());
         SqlUtils.insert(jdbcTemplate, Table.OPPFOLGINGSBRUKER.TABLE_NAME)
                 .value(Table.OPPFOLGINGSBRUKER.FODSELSNR, fnr.toString())
                 .value(Table.OPPFOLGINGSBRUKER.NAV_KONTOR, testEnhet.toString())
