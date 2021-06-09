@@ -50,7 +50,7 @@ public class UtdanningsAktivitetService {
         kafkaAktivitetMelding.setAktorId(aktorId.get());
         kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid()); //TODO: Sjekk om denne er unik i forhold til de andre
         kafkaAktivitetMelding.setFraDato(toZonedDateTime(melding.getAktivitetperiodeFra()));
-        kafkaAktivitetMelding.setTilDato(toZonedDateTime(melding.getAktivitetperiodeTil()));
+        kafkaAktivitetMelding.setTilDato(toZonedDateTime(melding.getAktivitetperiodeTil()).plusDays(1)); // Til og med slutt dato
         kafkaAktivitetMelding.setEndretDato(toZonedDateTime(melding.getEndretDato()));
 
         kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);

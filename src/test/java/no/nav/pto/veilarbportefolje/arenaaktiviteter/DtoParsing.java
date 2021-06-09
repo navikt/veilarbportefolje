@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
-import lombok.val;
 import com.fasterxml.jackson.core.type.TypeReference;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
@@ -18,7 +17,7 @@ public class DtoParsing {
 
     @Test
     public void skal_bygge_korrekt_objekt_fra_json() {
-        val goldenGateDto = readFileAsJsonString("/goldenGateUtdanningsAktivitet.json", getClass());
+        String goldenGateDto = readFileAsJsonString("/goldenGateUtdanningsAktivitet.json", getClass());
         UtdanningsAktivitetDTO goldenGateDTO = fromJson(goldenGateDto, new TypeReference<>() {
         });
         assertThat(goldenGateDTO.getCurrentTimestamp()).isEqualTo("2021-05-21T14:57:16.390000");
