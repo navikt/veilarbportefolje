@@ -4,9 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.*;
 import no.nav.pto.veilarbportefolje.database.BrukerRepository;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -28,6 +26,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
+    private final GruppeAktivitetService gruppeAktivitetService;
+    private final TiltaksService tiltaksService;
     private final JdbcTemplate jdbcTemplate;
 
     private final AktorId aktorId = AktorId.of("1000123");
@@ -37,11 +37,14 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public ArenaAktivitetIntegrasjonsTest(AktivitetService aktivitetService, JdbcTemplate jdbcTemplate, BrukerRepository brukerRepository) {
-        AktorClient aktorClient = Mockito.mock(AktorClient.class);
-        Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
+    public ArenaAktivitetIntegrasjonsTest(AktivitetService aktivitetService, JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
 
+        AktorClient aktorClient = Mockito.mock(AktorClient.class);
+        Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
+
+        this.tiltaksService = new TiltaksService(aktivitetService, aktorClient);
+        this.gruppeAktivitetService = new GruppeAktivitetService(aktivitetService, aktorClient);
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient);
     }
 
@@ -54,15 +57,57 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_komme_i_aktivitet() {
+    public void skal_komme_i_gruppe_aktivitet() {
+        insertBruker();
+        GruppeAktivitetDTO gruppeAktivitet =  new GruppeAktivitetDTO()
+                .setAfter(new GruppeAktivitetInnhold()
+                        .setFnr(fnr.get())
+                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
+                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
+                        .setEndretDato(LocalDate.now())
+                        .setAktivitetid("UA-123456789")
+                );
+        gruppeAktivitet.setOperationType(GoldenGateOperations.INSERT);
+        gruppeAktivitetService.behandleKafkaMelding(gruppeAktivitet);
+
+        GetResponse response = elasticTestClient.fetchDocument(aktorId);
+        List<String> aktiviteter = (List<String>)response.getSourceAsMap().get("aktiviteter");
+
+        assertThat(response.isExists()).isTrue();
+        assertThat(aktiviteter).isNotNull();
+    }
+
+    @Test
+    public void skal_komme_i_tiltak() {
+        insertBruker();
+        TiltakDTO tiltakDTO =  new TiltakDTO()
+                .setAfter(new TiltakInnhold()
+                        .setFnr(fnr.get())
+                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
+                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
+                        .setEndretDato(LocalDate.now())
+                        .setAktivitetid("UA-123456789")
+                );
+        tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
+        tiltaksService.behandleKafkaMelding(tiltakDTO);
+
+        GetResponse response = elasticTestClient.fetchDocument(aktorId);
+        List<String> aktiviteter = (List<String>)response.getSourceAsMap().get("aktiviteter");
+
+        assertThat(response.isExists()).isTrue();
+        assertThat(aktiviteter).isNotNull();
+    }
+
+    @Test
+    public void skal_komme_i_utdannnings_aktivitet() {
         insertBruker();
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
         GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        Object nestedObject = response.getSourceAsMap().get("aktiviteter");
+        List<String> aktiviteter = (List<String>)response.getSourceAsMap().get("aktiviteter");
 
         assertThat(response.isExists()).isTrue();
-        assertThat(nestedObject).isNotNull();
+        assertThat(aktiviteter).isNotNull();
     }
 
 
@@ -73,10 +118,10 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsDeleteDTO());
 
         GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        assertThat(response.isExists()).isTrue();
+        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
 
-        List<String> nestedObject = (List<String>) response.getSourceAsMap().get("aktiviteter");
-        assertThat(nestedObject.isEmpty()).isTrue();
+        assertThat(response.isExists()).isTrue();
+        assertThat(aktiviteter.isEmpty()).isTrue();
     }
 
     private UtdanningsAktivitetDTO getUtdanningsInsertDTO(){
@@ -122,6 +167,5 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
                 .value(Table.AKTOERID_TO_PERSONID.PERSONID, personId.toString())
                 .value(Table.AKTOERID_TO_PERSONID.GJELDENE, 1)
                 .execute();
-
     }
 }

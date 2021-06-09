@@ -13,7 +13,11 @@ import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
 import no.nav.common.kafka.consumer.util.ConsumerUtils;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.GruppeAktivitetService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.TiltaksService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.UtdanningsAktivitetService;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
@@ -83,13 +87,15 @@ public class KafkaConfigCommon {
     @Bean
     public Map<String, TopicConsumer<String, String>> topicConsumers(
             CVServiceFromAiven cvService,
-            UtdanningsAktivitetService utdanningsAktivitetService
+            UtdanningsAktivitetService utdanningsAktivitetService,
+            GruppeAktivitetService gruppeAktivitetService,
+            TiltaksService tiltaksService
     ) {
         return Map.of(
-                CV_TOPIC,
-                jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding),
-                UTDANNINGS_AKTIVITET_TOPIC,
-                jsonConsumer(UtdanningsAktivitetDTO.class, utdanningsAktivitetService::behandleKafkaMelding)
+                CV_TOPIC, jsonConsumer(CVMelding.class, cvService::behandleKafkaMelding),
+                UTDANNINGS_AKTIVITET_TOPIC, jsonConsumer(UtdanningsAktivitetDTO.class, utdanningsAktivitetService::behandleKafkaMelding),
+                GRUPPE_AKTIVITET_TOPIC, jsonConsumer(GruppeAktivitetDTO.class, gruppeAktivitetService::behandleKafkaMelding),
+                TILTAK_TOPIC, jsonConsumer(TiltakDTO.class, tiltaksService::behandleKafkaMelding)
         );
      }
 
