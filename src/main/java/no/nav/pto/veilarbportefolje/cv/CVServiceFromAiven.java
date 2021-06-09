@@ -33,10 +33,10 @@ public class CVServiceFromAiven {
         }
 
         if (cvMelding.getSlettetDato() == null) {
-            cvRepository.upsert(aktoerId, true);
+            cvRepository.upsertHarDeltCv(aktoerId, true);
             elasticServiceV2.updateHarDeltCv(aktoerId, true);
         } else {
-            cvRepository.upsert(aktoerId, false);
+            cvRepository.upsertHarDeltCv(aktoerId, false);
             elasticServiceV2.updateHarDeltCv(aktoerId, false);
         }
     }

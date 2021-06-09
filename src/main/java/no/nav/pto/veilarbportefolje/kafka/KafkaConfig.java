@@ -4,6 +4,7 @@ import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
+import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
@@ -37,7 +38,8 @@ public class KafkaConfig {
         OPPFOLGING_AVSLUTTET("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + requireKafkaTopicPostfix()),
         ENDRING_PA_MAL("aapen-arbeidsrettetOppfolging-endringPaMal-v1-" + requireKafkaTopicPostfix()),
         SIST_LEST("aapen-fo-veilederHarLestAktivitetsplanen-v1"),
-        ENDRING_PAA_OPPFOLGINGSBRUKER("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireKafkaTopicPostfix());
+        ENDRING_PAA_OPPFOLGINGSBRUKER("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireKafkaTopicPostfix()),
+        CV_ENDRET("arbeid-pam-cv-endret-v6");
 
         final String topicName;
 
@@ -185,6 +187,17 @@ public class KafkaConfig {
                 unleashService,
                 KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
                 Topic.ENDRING_PAA_OPPFOLGINGSBRUKER,
+                metricsClient
+        );
+    }
+
+    @Bean
+    public KafkaConsumerRunnable<String> kafkaEndringCV(CVService cvService, UnleashService unleashService, MetricsClient metricsClient) {
+        return new KafkaConsumerRunnable<>(
+                cvService,
+                unleashService,
+                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
+                Topic.CV_ENDRET,
                 metricsClient
         );
     }
