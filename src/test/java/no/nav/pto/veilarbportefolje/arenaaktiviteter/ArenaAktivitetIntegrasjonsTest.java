@@ -1,17 +1,24 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
+import io.vavr.control.Try;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.*;
+import no.nav.pto.veilarbportefolje.database.PersistentOppdatering;
 import no.nav.pto.veilarbportefolje.database.Table;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.sbl.sql.SqlUtils;
 import org.elasticsearch.action.get.GetResponse;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,13 +28,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDate;
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.GR202_PA_KAFKA;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.when;
 
 public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     private final UtdanningsAktivitetService utdanningsAktivitetService;
     private final GruppeAktivitetService gruppeAktivitetService;
     private final TiltaksService tiltaksService;
     private final JdbcTemplate jdbcTemplate;
+    private final UnleashService unleashService;
+    private final AktivitetService aktivitetService;
 
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
@@ -36,12 +47,15 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     private final PersonId personId = PersonId.of("123");
 
     @Autowired
-    public ArenaAktivitetIntegrasjonsTest(AktivitetService aktivitetService, JdbcTemplate jdbcTemplate) {
+    public ArenaAktivitetIntegrasjonsTest(SisteEndringService sisteEndringService, BrukerService brukerService, AktivitetDAO aktivitetDAO, PersistentOppdatering persistentOppdatering, JdbcTemplate jdbcTemplate, UnleashService unleashService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.unleashService = unleashService;
 
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
+        Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
+        this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, unleashService);
         this.tiltaksService = new TiltaksService(aktivitetService, aktorClient);
         this.gruppeAktivitetService = new GruppeAktivitetService(aktivitetService, aktorClient);
         this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient);
@@ -56,9 +70,39 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     }
 
     @Test
+    public void skal_kunne_toggle_pa_GR202() {
+        insertBruker();
+        String melding = new JSONObject()
+                .put("aktivitetId", 1)
+                .put("aktorId", aktorId.get())
+                .put("fraDato", "2020-08-31T10:03:20+02:00")
+                .put("tilDato", "2040-08-31T10:03:20+02:00")
+                .put("endretDato", "2020-07-29T15:43:41.049+02:00")
+                .put("aktivitetType", "IJOBB")
+                .put("aktivitetStatus", "GJENNOMFORES")
+                .put("avtalt", true)
+                .put("historisk", false)
+                .put("version", 1)
+                .toString();
+
+        when(unleashService.isEnabled(GR202_PA_KAFKA)).thenReturn(false);
+        aktivitetService.behandleKafkaMelding(melding);
+        when(unleashService.isEnabled(GR202_PA_KAFKA)).thenReturn(true);
+
+        utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
+
+        GetResponse response = elasticTestClient.fetchDocument(aktorId);
+        String utdanningsAktivitet = (String) response.getSourceAsMap().get("aktivitet_utdanningaktivitet_utlopsdato");
+        String ijobbAktivitet = (String) response.getSourceAsMap().get("aktivitet_ijobb_utlopsdato");
+
+        assertThat(utdanningsAktivitet).isNotNull();
+        assertThat(ijobbAktivitet).isNotNull();
+    }
+
+    @Test
     public void skal_komme_i_gruppe_aktivitet() {
         insertBruker();
-        GruppeAktivitetDTO gruppeAktivitet =  new GruppeAktivitetDTO()
+        GruppeAktivitetDTO gruppeAktivitet = new GruppeAktivitetDTO()
                 .setAfter(new GruppeAktivitetInnhold()
                         .setFnr(fnr.get())
                         .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
@@ -70,7 +114,7 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         gruppeAktivitetService.behandleKafkaMelding(gruppeAktivitet);
 
         GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        List<String> aktiviteter = (List<String>)response.getSourceAsMap().get("aktiviteter");
+        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
 
         assertThat(response.isExists()).isTrue();
         assertThat(aktiviteter).isNotNull();
@@ -79,7 +123,7 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
     @Test
     public void skal_komme_i_tiltak() {
         insertBruker();
-        TiltakDTO tiltakDTO =  new TiltakDTO()
+        TiltakDTO tiltakDTO = new TiltakDTO()
                 .setAfter(new TiltakInnhold()
                         .setFnr(fnr.get())
                         .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
@@ -91,7 +135,7 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         tiltaksService.behandleKafkaMelding(tiltakDTO);
 
         GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        List<String> aktiviteter = (List<String>)response.getSourceAsMap().get("aktiviteter");
+        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
 
         assertThat(response.isExists()).isTrue();
         assertThat(aktiviteter).isNotNull();
@@ -103,7 +147,7 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         utdanningsAktivitetService.behandleKafkaMelding(getUtdanningsInsertDTO());
 
         GetResponse response = elasticTestClient.fetchDocument(aktorId);
-        List<String> aktiviteter = (List<String>)response.getSourceAsMap().get("aktiviteter");
+        List<String> aktiviteter = (List<String>) response.getSourceAsMap().get("aktiviteter");
 
         assertThat(response.isExists()).isTrue();
         assertThat(aktiviteter).isNotNull();
@@ -123,8 +167,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         assertThat(aktiviteter.isEmpty()).isTrue();
     }
 
-    private UtdanningsAktivitetDTO getUtdanningsInsertDTO(){
-        UtdanningsAktivitetDTO utdanningsAktivitet =  new UtdanningsAktivitetDTO()
+    private UtdanningsAktivitetDTO getUtdanningsInsertDTO() {
+        UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
                 .setAfter(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
                         .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
@@ -136,8 +180,8 @@ public class ArenaAktivitetIntegrasjonsTest extends EndToEndTest {
         return utdanningsAktivitet;
     }
 
-    private UtdanningsAktivitetDTO getUtdanningsDeleteDTO(){
-        UtdanningsAktivitetDTO utdanningsAktivitet =  new UtdanningsAktivitetDTO()
+    private UtdanningsAktivitetDTO getUtdanningsDeleteDTO() {
+        UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
                 .setBefore(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
                         .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
