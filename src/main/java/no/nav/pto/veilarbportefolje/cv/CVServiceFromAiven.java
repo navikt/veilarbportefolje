@@ -18,7 +18,7 @@ public class CVServiceFromAiven {
     private final CvRepository cvRepository;
 
     public void behandleKafkaMelding(CVMelding melding) {
-        log.info("CV melding pa bruker: {}", melding.getAktoerId());
+        log.info("CV melding for bruker: {}", melding.getAktoerId());
         AktorId aktoerId = melding.getAktoerId();
 
         if (melding.getRessurs() != CV_HJEMMEL) {
@@ -27,10 +27,10 @@ public class CVServiceFromAiven {
         }
 
         if (melding.getSlettetDato() == null) {
-            cvRepository.upsert(aktoerId, true);
+            cvRepository.upsertHarDeltCv(aktoerId, true);
             elasticServiceV2.updateHarDeltCv(aktoerId, true);
         } else {
-            cvRepository.upsert(aktoerId, false);
+            cvRepository.upsertHarDeltCv(aktoerId, false);
             elasticServiceV2.updateHarDeltCv(aktoerId, false);
         }
     }
