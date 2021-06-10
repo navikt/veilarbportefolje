@@ -5,17 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
-
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Service
@@ -23,17 +19,13 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class TiltaksService {
     private final AktivitetService aktivitetService;
     private final AktorClient aktorClient;
+    private final ArenaHendelseRepository arenaHendelseRepository;
 
     @Transactional
     public void behandleKafkaMelding(TiltakDTO kafkaMelding) {
         log.info("Behandler utdannings-aktivtet-melding");
         TiltakInnhold innhold = getInnhold(kafkaMelding);
-        if (innhold == null) {
-            return;
-        }
-
-        if (erGammelMelding(innhold.getAktivitetid(), innhold.getHendelseId())) {
-            log.info("Fikk tilsendt gammel utdannings-aktivtet-melding");
+        if (innhold == null || erGammelMelding(kafkaMelding, innhold)) {
             return;
         }
 
@@ -46,6 +38,17 @@ public class TiltaksService {
         }
     }
 
+    private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold ){
+        Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
+
+        if (erGammelHendelseBasertPaOperasjon(hendelseIDB, innhold.getHendelseId(), kafkaMelding.getOperationType())) {
+            log.info("Fikk tilsendt gammel tiltaks-melding");
+            return true;
+        }
+        arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
+        return false;
+    }
+
     private KafkaAktivitetMelding mapTilKafkaAktivitetMelding(TiltakInnhold melding, AktorId aktorId) {
         if(melding == null || aktorId == null){
             return null;
@@ -54,7 +57,7 @@ public class TiltaksService {
         kafkaAktivitetMelding.setAktorId(aktorId.get());
         kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid()); //TODO: Sjekk om denne er unik i forhold til de andre
         kafkaAktivitetMelding.setFraDato(getDateOrNull(melding.getAktivitetperiodeFra()));
-        kafkaAktivitetMelding.setTilDato(getDateOrNull(melding.getAktivitetperiodeTil()).plusDays(1)); // Til og med slutt dato
+        kafkaAktivitetMelding.setTilDato(getDateOrNull(melding.getAktivitetperiodeTil(), true));
         kafkaAktivitetMelding.setEndretDato(getDateOrNull(melding.getEndretDato()));
 
         kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);

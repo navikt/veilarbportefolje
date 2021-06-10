@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperatio
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 public interface ArenaAktivitetUtils {
      static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
@@ -27,17 +28,34 @@ public interface ArenaAktivitetUtils {
         return GoldenGateOperations.DELETE.equals(kafkaMelding.getOperationType());
     }
 
-    static boolean erGammelMelding(String id, long hendelseId) {
-        return false; // TODO: finn en logikk som fungerer
+    static boolean erGammelHendelseBasertPaOperasjon(Long hendelseFraDB, Long hendelseFraKafka, String operation) {
+        if(hendelseFraDB == null){
+            return false;
+        }
+        if(hendelseFraKafka == null){
+            return true;
+        }
+        if(GoldenGateOperations.DELETE.equals(operation)){
+            return hendelseFraKafka.compareTo(hendelseFraDB) < 0;
+        }
+        return hendelseFraKafka.compareTo(hendelseFraDB) < 1;
     }
 
     static AktorId getAktorId(AktorClient aktorClient, String personident) {
         return aktorClient.hentAktorId(Fnr.ofValidFnr(personident));
     }
 
+
     static ZonedDateTime getDateOrNull(ArenaDato date){
+        return getDateOrNull(date, false);
+    }
+
+    static ZonedDateTime getDateOrNull(ArenaDato date, boolean tilOgMedDato){
         if(date == null){
             return null;
+        }
+        if(tilOgMedDato){
+            return date.getDato().plusDays(1);
         }
         return date.getDato();
     }

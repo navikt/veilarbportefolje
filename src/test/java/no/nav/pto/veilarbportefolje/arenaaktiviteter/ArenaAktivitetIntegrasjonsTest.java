@@ -21,20 +21,20 @@ import no.nav.sbl.sql.SqlUtils;
 import org.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.GR202_PA_KAFKA;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -59,14 +59,16 @@ public class ArenaAktivitetIntegrasjonsTest {
         this.unleashService = unleashService;
         this.aktivitetDAO = aktivitetDAO;
 
+        ArenaHendelseRepository arenaHendelseRepository = mock(ArenaHendelseRepository.class);
+        Mockito.when(arenaHendelseRepository.upsertHendelse(anyString(), anyLong())).thenReturn(1);
         AktorClient aktorClient = Mockito.mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
 
         this.aktivitetService = new AktivitetService(aktivitetDAO, persistentOppdatering, brukerService, sisteEndringService, unleashService);
-        this.tiltaksService = new TiltaksService(aktivitetService, aktorClient);
-        this.gruppeAktivitetService = new GruppeAktivitetService(aktivitetService, aktorClient);
-        this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient);
+        this.tiltaksService = new TiltaksService(aktivitetService, aktorClient, arenaHendelseRepository);
+        this.gruppeAktivitetService = new GruppeAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
+        this.utdanningsAktivitetService = new UtdanningsAktivitetService(aktivitetService, aktorClient, arenaHendelseRepository);
     }
 
     @BeforeEach
@@ -114,6 +116,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         GruppeAktivitetDTO gruppeAktivitet = new GruppeAktivitetDTO()
                 .setAfter(new GruppeAktivitetInnhold()
                         .setFnr(fnr.get())
+                        .setHendelseId(1)
                         .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
                         .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
                         .setEndretDato(new ArenaDato("2021-01-01"))
@@ -132,6 +135,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         TiltakDTO tiltakDTO = new TiltakDTO()
                 .setAfter(new TiltakInnhold()
                         .setFnr(fnr.get())
+                        .setHendelseId(1)
                         .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
                         .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
                         .setEndretDato(new ArenaDato("2021-01-01"))
@@ -171,6 +175,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
                 .setAfter(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
+                        .setHendelseId(1)
                         .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
                         .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
                         .setEndretDato(new ArenaDato("2021-01-01"))
@@ -184,6 +189,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
                 .setBefore(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
+                        .setHendelseId(1)
                         .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
                         .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
                         .setEndretDato(new ArenaDato("2021-01-01"))
