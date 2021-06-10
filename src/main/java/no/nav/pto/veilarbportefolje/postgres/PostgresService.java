@@ -34,7 +34,7 @@ public class PostgresService {
         List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
         boolean vedtaksPilot = erVedtakstottePilotPa(EnhetId.of(enhetId));
 
-        PostgresQueryBuilder query = new PostgresQueryBuilder(jdbcTemplate, enhetId);
+        PostgresQueryBuilder query = new PostgresQueryBuilder(jdbcTemplate, enhetId, vedtaksPilot);
 
         boolean kallesFraMinOversikt = StringUtils.isNotBlank(veilederIdent);
         if (kallesFraMinOversikt) {
