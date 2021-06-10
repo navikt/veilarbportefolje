@@ -53,7 +53,7 @@ jobs:
   build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/CV-Fix'
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -78,7 +78,7 @@ jobs:
           docker push ${IMAGE}:${IMAGE_TAG}
   deploy-dev:
     name: Deploy application to dev
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/CV-Fix'
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
@@ -108,7 +108,7 @@ jobs:
           VAR: version=${{ env.IMAGE_TAG }}
   release-dev:
     name: Create dev release
-    needs:  deploy-dev
+    needs: deploy-dev
     runs-on: ubuntu-latest
     steps:
       - name: Create release
