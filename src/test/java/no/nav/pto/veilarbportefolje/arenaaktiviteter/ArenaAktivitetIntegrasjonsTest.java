@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.service.BrukerService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.sbl.sql.SqlUtils;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -78,6 +79,7 @@ public class ArenaAktivitetIntegrasjonsTest {
     }
 
     @Test
+    @Ignore
     public void skal_kunne_toggle_pa_GR202() {
         insertBruker();
         String melding = new JSONObject()
