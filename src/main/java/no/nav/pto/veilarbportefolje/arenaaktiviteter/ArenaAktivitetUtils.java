@@ -2,10 +2,13 @@ package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaInnholdKafka;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GoldenGateOperations;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+
+import java.time.ZonedDateTime;
 
 public interface ArenaAktivitetUtils {
      static <T extends ArenaInnholdKafka> T getInnhold(GoldenGateDTO<T> goldenGateDTO) {
@@ -30,5 +33,12 @@ public interface ArenaAktivitetUtils {
 
     static AktorId getAktorId(AktorClient aktorClient, String personident) {
         return aktorClient.hentAktorId(Fnr.ofValidFnr(personident));
+    }
+
+    static ZonedDateTime getDateOrNull(ArenaDato date){
+        if(date == null){
+            return null;
+        }
+        return date.getDato();
     }
 }

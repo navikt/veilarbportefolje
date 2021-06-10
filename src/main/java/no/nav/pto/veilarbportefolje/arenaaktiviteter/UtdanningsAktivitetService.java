@@ -49,9 +49,9 @@ public class UtdanningsAktivitetService {
         KafkaAktivitetMelding kafkaAktivitetMelding = new KafkaAktivitetMelding();
         kafkaAktivitetMelding.setAktorId(aktorId.get());
         kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid()); //TODO: Sjekk om denne er unik i forhold til de andre
-        kafkaAktivitetMelding.setFraDato(toZonedDateTime(melding.getAktivitetperiodeFra()));
-        kafkaAktivitetMelding.setTilDato(toZonedDateTime(melding.getAktivitetperiodeTil()).plusDays(1)); // Til og med slutt dato
-        kafkaAktivitetMelding.setEndretDato(toZonedDateTime(melding.getEndretDato()));
+        kafkaAktivitetMelding.setFraDato(getDateOrNull(melding.getAktivitetperiodeFra()));
+        kafkaAktivitetMelding.setTilDato(getDateOrNull(melding.getAktivitetperiodeTil()).plusDays(1)); // Til og med slutt dato
+        kafkaAktivitetMelding.setEndretDato(getDateOrNull(melding.getEndretDato()));
 
         kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
         kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.UTDANNINGAKTIVITET);

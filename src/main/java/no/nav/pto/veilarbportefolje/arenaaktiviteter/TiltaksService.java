@@ -5,11 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.ArenaDato;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.arenaaktiviteter.ArenaAktivitetUtils.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -50,9 +53,9 @@ public class TiltaksService {
         KafkaAktivitetMelding kafkaAktivitetMelding = new KafkaAktivitetMelding();
         kafkaAktivitetMelding.setAktorId(aktorId.get());
         kafkaAktivitetMelding.setAktivitetId(melding.getAktivitetid()); //TODO: Sjekk om denne er unik i forhold til de andre
-        kafkaAktivitetMelding.setFraDato(toZonedDateTime(melding.getAktivitetperiodeFra()));
-        kafkaAktivitetMelding.setTilDato(toZonedDateTime(melding.getAktivitetperiodeTil()).plusDays(1)); // Til og med slutt dato
-        kafkaAktivitetMelding.setEndretDato(toZonedDateTime(melding.getEndretDato()));
+        kafkaAktivitetMelding.setFraDato(getDateOrNull(melding.getAktivitetperiodeFra()));
+        kafkaAktivitetMelding.setTilDato(getDateOrNull(melding.getAktivitetperiodeTil()).plusDays(1)); // Til og med slutt dato
+        kafkaAktivitetMelding.setEndretDato(getDateOrNull(melding.getEndretDato()));
 
         kafkaAktivitetMelding.setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES);
         kafkaAktivitetMelding.setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.TILTAK);

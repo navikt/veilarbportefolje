@@ -14,13 +14,13 @@ public class UtdanningsAktivitetInnhold implements ArenaInnholdKafka {
 
     @JsonAlias("AKTIVITETSTYPE") String aktivitetstype;
     @JsonAlias("AKTIVITETSNAVN") String aktivitetsnavn;
-    @JsonAlias("AKTIVITETPERIODE_FOM") LocalDate aktivitetperiodeFra;
-    @JsonAlias("AKTIVITETPERIODE_TOM") LocalDate aktivitetperiodeTil;
+    @JsonAlias("AKTIVITETPERIODE_FOM") ArenaDato aktivitetperiodeFra;
+    @JsonAlias("AKTIVITETPERIODE_TOM") ArenaDato aktivitetperiodeTil;
     @JsonAlias("PERSON_ID") int personId;
     @JsonAlias("PERSONIDENT") String fnr; // eller dnr
     @JsonAlias("HENDELSE_ID") long hendelseId;
-    @JsonAlias("OPPRETTET_DATO") LocalDate opprettetDato;
+    @JsonAlias("OPPRETTET_DATO") ArenaDato opprettetDato;
     @JsonAlias("OPPRETTET_AV") String opprettetAv;
-    @JsonAlias("ENDRET_DATO") LocalDate endretDato;
+    @JsonAlias("ENDRET_DATO") ArenaDato endretDato;
     @JsonAlias("ENDRET_AV") String endretAv;
 }

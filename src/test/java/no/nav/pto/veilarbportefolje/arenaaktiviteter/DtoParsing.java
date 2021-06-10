@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arenaaktiviteter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;

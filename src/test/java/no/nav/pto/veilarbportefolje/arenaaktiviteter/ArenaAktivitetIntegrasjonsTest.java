@@ -112,9 +112,9 @@ public class ArenaAktivitetIntegrasjonsTest {
         GruppeAktivitetDTO gruppeAktivitet = new GruppeAktivitetDTO()
                 .setAfter(new GruppeAktivitetInnhold()
                         .setFnr(fnr.get())
-                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
-                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
-                        .setEndretDato(LocalDate.now())
+                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
+                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
+                        .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
         gruppeAktivitet.setOperationType(GoldenGateOperations.INSERT);
@@ -130,9 +130,9 @@ public class ArenaAktivitetIntegrasjonsTest {
         TiltakDTO tiltakDTO = new TiltakDTO()
                 .setAfter(new TiltakInnhold()
                         .setFnr(fnr.get())
-                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
-                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
-                        .setEndretDato(LocalDate.now())
+                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
+                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
+                        .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
         tiltakDTO.setOperationType(GoldenGateOperations.INSERT);
@@ -169,9 +169,9 @@ public class ArenaAktivitetIntegrasjonsTest {
         UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
                 .setAfter(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
-                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
-                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
-                        .setEndretDato(LocalDate.now())
+                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
+                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
+                        .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
         utdanningsAktivitet.setOperationType(GoldenGateOperations.INSERT);
@@ -182,9 +182,9 @@ public class ArenaAktivitetIntegrasjonsTest {
         UtdanningsAktivitetDTO utdanningsAktivitet = new UtdanningsAktivitetDTO()
                 .setBefore(new UtdanningsAktivitetInnhold()
                         .setFnr(fnr.get())
-                        .setAktivitetperiodeFra(LocalDate.of(2020, 1, 1)) //2020-01-01
-                        .setAktivitetperiodeTil(LocalDate.of(2030, 1, 1)) //2030-01-01
-                        .setEndretDato(LocalDate.now())
+                        .setAktivitetperiodeFra(new ArenaDato("2020-01-01"))
+                        .setAktivitetperiodeTil(new ArenaDato("2030-01-01"))
+                        .setEndretDato(new ArenaDato("2021-01-01"))
                         .setAktivitetid("UA-123456789")
                 );
         utdanningsAktivitet.setOperationType(GoldenGateOperations.DELETE);
