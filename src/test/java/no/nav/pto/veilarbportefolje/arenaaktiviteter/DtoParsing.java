@@ -17,9 +17,9 @@ public class DtoParsing {
 
     @Test
     public void skal_bygge_korrekt_objekt_fra_json() {
-        String goldenGateDto = readFileAsJsonString("/goldenGateUtdanningsAktivitet.json", getClass());
-        UtdanningsAktivitetDTO goldenGateDTO = fromJson(goldenGateDto, new TypeReference<>() {
-        });
+        String goldenGateDtoString = readFileAsJsonString("/goldenGateUtdanningsAktivitet.json", getClass());
+
+        UtdanningsAktivitetDTO goldenGateDTO = fromJson(goldenGateDtoString, UtdanningsAktivitetDTO.class);
         assertThat(goldenGateDTO.getCurrentTimestamp()).isEqualTo("2021-05-21T14:57:16.390000");
         assertThat(goldenGateDTO.getAfter().getClass()).isEqualTo(UtdanningsAktivitetInnhold.class);
         assertThat(goldenGateDTO.getAfter()).isNotNull();
