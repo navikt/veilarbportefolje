@@ -196,7 +196,7 @@ public class KafkaConfig {
         return new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
-                KafkaProperties.kafkaProperties(KafkaAutoOffset.EARLIEST),
+                KafkaProperties.kafkaMedAvroProperties(KafkaAutoOffset.EARLIEST),
                 Topic.CV_ENDRET,
                 metricsClient
         );

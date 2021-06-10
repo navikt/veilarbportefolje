@@ -12,13 +12,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static no.nav.common.json.JsonUtils.fromJson;
-
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class CVService implements KafkaConsumerService<String> {
+public class CVService implements KafkaConsumerService<Melding> {
     private final ElasticServiceV2 elasticServiceV2;
     private final CvRepository cvRepository;
     private final AtomicBoolean rewind = new AtomicBoolean(false);
@@ -28,13 +26,12 @@ public class CVService implements KafkaConsumerService<String> {
     }
 
     @Override
-    public void behandleKafkaMelding(String kafkaMelding) {
-        Melding melding = fromJson(kafkaMelding, Melding.class);
+    public void behandleKafkaMelding(Melding kafkaMelding) {
 
-        log.info("Fikk endring pa cv: {}, topic: {}", KafkaConfig.Topic.CV_ENDRET, melding.getAktoerId());
-        AktorId aktoerId = AktorId.of(melding.getAktoerId());
+        log.info("Fikk endring pa cv: {}, topic: {}", KafkaConfig.Topic.CV_ENDRET, kafkaMelding.getAktoerId());
+        AktorId aktoerId = AktorId.of(kafkaMelding.getAktoerId());
 
-        if (cvEksistere(melding)) {
+        if (cvEksistere(kafkaMelding)) {
             cvRepository.upsertCvEksistere(aktoerId, true);
             elasticServiceV2.updateCvEksistere(aktoerId, true);
         } else {
