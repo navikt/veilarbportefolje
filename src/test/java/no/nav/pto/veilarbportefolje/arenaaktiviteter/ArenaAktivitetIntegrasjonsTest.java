@@ -20,6 +20,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.sbl.sql.SqlUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,7 @@ public class ArenaAktivitetIntegrasjonsTest {
         jdbcTemplate.execute("truncate table " + Table.OPPFOLGINGSBRUKER.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.OPPFOLGING_DATA.TABLE_NAME);
         jdbcTemplate.execute("truncate table " + Table.AKTOERID_TO_PERSONID.TABLE_NAME);
+        jdbcTemplate.execute("truncate table " + Table.AKTIVITETER.TABLE_NAME);
         jdbcTemplate.execute("truncate table BRUKERSTATUS_AKTIVITETER");
     }
 
