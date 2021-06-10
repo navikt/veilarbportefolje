@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
 import no.nav.arbeid.soker.registrering.ArbeidssokerRegistrertEvent;
 import no.nav.common.featuretoggle.UnleashService;
@@ -192,7 +193,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerRunnable<String> kafkaEndringCV(CVService cvService, UnleashService unleashService, MetricsClient metricsClient) {
+    public KafkaConsumerRunnable<Melding> kafkaEndringCV(CVService cvService, UnleashService unleashService, MetricsClient metricsClient) {
         return new KafkaConsumerRunnable<>(
                 cvService,
                 unleashService,
