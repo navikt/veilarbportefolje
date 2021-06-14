@@ -106,4 +106,24 @@ public class Table {
         public static final String ANSVARLIG_VEILEDER_NAVN = "ANSVARLIG_VEILEDER_NAVN";
     }
 
+    public static final class TILTAKKODEVERK {
+        public static final String TABLE_NAME = "tiltakkodeverk";
+        public static final String KODE = "kode";
+        public static final String VERDI = "verdi";
+    }
+
+    public static final class ENHETTILTAK {
+        public static final String TABLE_NAME = "ENHETTILTAK";
+        public static final String ENHETID = "ENHETID";
+        public static final String TILTAKSKODE = "TILTAKSKODE";
+    }
+
+    public static final class BRUKERTILTAK {
+        public static final String TABLE_NAME = "ENHETTILTAK";
+        public static final String FODSELSNR = "FODSELSNR";
+        public static final String TILTAKSKODE = "TILTAKSKODE";
+        public static final String TILDATO = "TILDATO";
+
+    }
+
 }
