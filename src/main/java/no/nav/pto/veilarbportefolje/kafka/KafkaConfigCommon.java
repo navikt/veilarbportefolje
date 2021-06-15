@@ -40,36 +40,6 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, Properties kafkaAivenProperties, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
-        KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
-        MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
-
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                        .withLogging()
-                        .withMetrics(prometheusMeterRegistry)
-                        .withStoreOnFailure(consumerRepository)
-                        .withConsumerConfig(
-                                CV_TOPIC,
-                                Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(CVMelding.class),
-                                cvServiceFromAiven::behandleKafkaMelding
-                        ));
-
-        consumerClient = KafkaConsumerClientBuilder.<String, String>builder()
-                .withProperties(kafkaAivenProperties)
-                .withTopicConfigs(topicConfigs)
-                .build();
-
-        consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
-                .builder()
-                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
-                .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
-                .build();
-
-    }
-
     @Bean
     public Properties kafkaAivenProperties(KafkaAivenProperties kafkaProperties) {
         Properties props = new Properties();
@@ -95,6 +65,36 @@ public class KafkaConfigCommon {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID_CONFIG);
 
         return props;
+    }
+
+    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, Properties kafkaAivenProperties, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
+        KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
+        MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
+
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs =
+                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                CV_TOPIC,
+                                Deserializers.stringDeserializer(),
+                                Deserializers.jsonDeserializer(CVMelding.class),
+                                cvServiceFromAiven::behandleKafkaMelding
+                        ));
+
+        consumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(kafkaAivenProperties)
+                .withTopicConfigs(topicConfigs)
+                .build();
+
+        consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
+                .builder()
+                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
+                .withKafkaConsumerRepository(consumerRepository)
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
+                .build();
+
     }
 
 
