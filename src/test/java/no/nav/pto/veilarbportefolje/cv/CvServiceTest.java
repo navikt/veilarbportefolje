@@ -36,7 +36,7 @@ class CvServiceTest extends EndToEndTest {
         cvMelding.setAktoerId(AktorId.of("00000000000"));
         cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
-        cvService.behandleKafkaMelding(cvMelding);
+        cvService.behandleCVMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -61,7 +61,7 @@ class CvServiceTest extends EndToEndTest {
         cvMelding.setAktoerId(aktoerId);
         cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
-        cvService.behandleKafkaMelding(cvMelding);
+        cvService.behandleCVMelding(cvMelding);
 
         String harDeltCvDb = cvRepository.harDeltCv(aktoerId);
         assertThat(harDeltCvDb).isEqualTo("J");
@@ -89,7 +89,7 @@ class CvServiceTest extends EndToEndTest {
         cvMelding.setAktoerId(aktoerId);
         cvMelding.setRessurs(Ressurs.ARBEIDSGIVER_GENERELL);
 
-        cvService.behandleKafkaMelding(cvMelding);
+        cvService.behandleCVMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -113,7 +113,7 @@ class CvServiceTest extends EndToEndTest {
         cvMelding.setAktoerId(aktoerId);
         cvMelding.setRessurs(Ressurs.CV_GENERELL);
 
-        cvService.behandleKafkaMelding(cvMelding);
+        cvService.behandleCVMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isTrue();
@@ -130,7 +130,7 @@ class CvServiceTest extends EndToEndTest {
         cvMelding.setAktoerId(aktoerId);
         cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
-        cvService.behandleKafkaMelding(cvMelding);
+        cvService.behandleCVMelding(cvMelding);
 
         GetResponse getResponse = elasticTestClient.fetchDocument(aktoerId);
         assertThat(getResponse.isExists()).isFalse();

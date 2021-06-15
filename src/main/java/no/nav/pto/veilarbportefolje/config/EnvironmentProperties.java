@@ -27,4 +27,5 @@ public class EnvironmentProperties {
     private String soapStsUrl;
     private String dbUrl;
     private List<String> admins;
+    private String unleashUrl;
 }

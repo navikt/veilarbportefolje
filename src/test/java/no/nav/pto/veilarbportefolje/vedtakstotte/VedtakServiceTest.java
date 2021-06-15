@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -77,7 +77,7 @@ public class VedtakServiceTest {
     }
 
     @Test
-    public void skallSletteGamleVedtak()  {
+    public void skallSletteGamleVedtak() {
         vedtakStatusRepository.upsertVedtak(new KafkaVedtakStatusEndring()
                 .setVedtakStatusEndring(KafkaVedtakStatusEndring.VedtakStatusEndring.VEDTAK_SENDT)
                 .setTimestamp(LocalDateTime.now())

@@ -90,7 +90,7 @@ class CvKafkaConsumerTest extends EndToEndTest {
             cvMelding.setAktoerId(aktoerId);
             cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
 
-            cvService.behandleKafkaMelding(cvMelding);
+            cvService.behandleCVMelding(cvMelding);
         }
     }
 }

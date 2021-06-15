@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.02.03_08.08-9d0c8281f06b</common.version>
+        <common.version>2.2021.06.11_06.26-ecbd6c9186d9</common.version>
         <common1.version>1.2020.05.06_16.29-028d26fc1c42</common1.version>
         <no.nav.tjenestespesifikasjoner.version>1.2018.11.20-18.20-f058c54de62c</no.nav.tjenestespesifikasjoner.version>
         <jsch.version>0.1.54</jsch.version>
@@ -220,18 +220,13 @@
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
-            <artifactId>leader-election</artifactId>
-            <version>${common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
             <artifactId>log</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>kafka</artifactId>
-            <version>2.2021.04.26_06.01-1ff0f73a2fa4</version>
+            <version>${common.version}</version>
         </dependency>
 
         <!--Logging-->

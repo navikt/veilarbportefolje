@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.featuretoggle.UnleashService;
+
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 
 public class FeatureToggle {
     private FeatureToggle() {

@@ -1,13 +1,13 @@
 package no.nav.pto.veilarbportefolje.domene;
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.client.pdl.AktorOppslagClient;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 
 public class AktorClient implements HealthCheck {
 

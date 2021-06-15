@@ -1,14 +1,13 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.featuretoggle.UnleashService;
-import no.nav.common.featuretoggle.UnleashServiceConfig;
-import no.nav.common.leaderelection.LeaderElectionClient;
-import no.nav.common.leaderelection.LeaderElectionHttpClient;
+import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.common.featuretoggle.UnleashClientImpl;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.pto.veilarbportefolje.elastic.ElasticIndexer;
 import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,11 +34,6 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public UnleashService unleashService() {
-        return new UnleashService(UnleashServiceConfig.resolveFromEnvironment());
-    }
-
-    @Bean
     public TaskScheduler taskScheduler() {
         ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
         scheduler.setErrorHandler(new ScheduledErrorHandler());
@@ -57,7 +51,12 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public LeaderElectionClient leaderElectionClient() {
-        return new LeaderElectionHttpClient();
+    public UnleashClient unleashClient(EnvironmentProperties properties) {
+        return new UnleashClientImpl(properties.getUnleashUrl(), APPLICATION_NAME);
+    }
+
+    @Bean
+    public UnleashService unleashService(UnleashClient unleashClient) {
+        return new UnleashService(unleashClient);
     }
 }

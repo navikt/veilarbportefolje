@@ -25,7 +25,7 @@ public class VeilarbVeilederClient {
 
     private final String url;
     private final OkHttpClient client;
-    private final Cache<EnhetId, List<String> > hentVeilederePaaEnhetCache;
+    private final Cache<EnhetId, List<String>> hentVeilederePaaEnhetCache;
 
     public VeilarbVeilederClient(EnvironmentProperties environmentProperties) {
         this.url = environmentProperties.getVeilarbVeilederUrl();
@@ -45,7 +45,7 @@ public class VeilarbVeilederClient {
     private List<String> hentVeilederePaaEnhetQuery(EnhetId enhet) {
         String path = format("/enhet/%s/identer", enhet);
 
-        Request request  = new Request.Builder()
+        Request request = new Request.Builder()
                 .header(AUTHORIZATION, authHeaderMedSystemBruker())
                 .url(url + path)
                 .build();
