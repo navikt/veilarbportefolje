@@ -2,10 +2,9 @@ package no.nav.pto.veilarbportefolje.database;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetDAO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetStatus;
-import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,8 +32,6 @@ public class PersistentOppdateringTest {
     @Mock
     private AktivitetDAO aktivitetDAO;
 
-    @Mock
-    private UnleashService unleashService;
 
     @InjectMocks
     private PersistentOppdatering persistentOppdatering;
@@ -50,7 +47,7 @@ public class PersistentOppdateringTest {
                 .setAktivitetType("aktivitetstype1")
                 .setAktiv(true)
                 .setNesteStart(new Timestamp(0))
-                .setNesteUtlop( new Timestamp(0));
+                .setNesteUtlop(new Timestamp(0));
 
         AktivitetStatus a2 = new AktivitetStatus()
                 .setPersonid(personId)
@@ -58,7 +55,7 @@ public class PersistentOppdateringTest {
                 .setAktivitetType("aktivitetstype1")
                 .setAktiv(false)
                 .setNesteStart(new Timestamp(0))
-                .setNesteUtlop( new Timestamp(0));
+                .setNesteUtlop(new Timestamp(0));
 
 
         Map<PersonId, Set<AktivitetStatus>> returnStatuser = new HashMap<>();

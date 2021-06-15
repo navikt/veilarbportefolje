@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.profilering;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.soker.profilering.ArbeidssokerProfilertEvent;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConsumerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;

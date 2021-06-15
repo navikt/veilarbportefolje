@@ -1,16 +1,14 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import no.nav.common.abac.Pep;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
-import no.nav.pto.veilarbportefolje.arenafiler.gr199.ytelser.KopierGR199FraArena;
-import no.nav.pto.veilarbportefolje.arenafiler.gr202.tiltak.TiltakHandler;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.elastic.ElasticConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfig;
 import no.nav.pto.veilarbportefolje.kafka.KafkaHelsesjekk;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;

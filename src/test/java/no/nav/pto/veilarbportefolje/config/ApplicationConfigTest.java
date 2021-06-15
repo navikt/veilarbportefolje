@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -33,6 +34,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PersonRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringRepository;
 import no.nav.pto.veilarbportefolje.registrering.RegistreringService;
 import no.nav.pto.veilarbportefolje.service.BrukerService;
+import no.nav.pto.veilarbportefolje.service.UnleashService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepository;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -270,9 +272,14 @@ public class ApplicationConfigTest {
         return new ArbeidslisteService(aktorClient, arbeidslisteRepository, brukerService, elasticServiceV2, metricsClient);
     }
 
-    @Bean(name="PostgresJdbc")
+    @Bean(name = "PostgresJdbc")
     public JdbcTemplate db() {
         return SingletonPostgresContainer.init().createJdbcTemplate();
+    }
+
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
     }
 
 }

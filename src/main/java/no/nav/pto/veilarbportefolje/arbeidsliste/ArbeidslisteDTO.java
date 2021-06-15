@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.arbeidsliste;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -23,10 +23,12 @@ public class ArbeidslisteDTO {
     Boolean isOppfolgendeVeileder;
     Arbeidsliste.Kategori kategori;
     String navKontorForArbeidsliste;
+
     public static ArbeidslisteDTO of(Fnr fnr, String overskrift, String kommentar, Timestamp frist, Arbeidsliste.Kategori kategori) {
         return
                 new ArbeidslisteDTO(fnr)
-                        .setVeilederId(VeilederId.of(AuthContextHolder.getNavIdent().map(Id::toString).orElseThrow(IllegalStateException::new)))
+                        .setVeilederId(VeilederId.of(AuthContextHolderThreadLocal
+                                .instance().getNavIdent().map(Id::toString).orElseThrow(IllegalStateException::new)))
                         .setOverskrift(overskrift)
                         .setKommentar(kommentar)
                         .setKategori(kategori)
