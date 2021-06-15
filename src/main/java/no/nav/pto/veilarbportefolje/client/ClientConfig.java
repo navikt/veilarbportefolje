@@ -41,7 +41,8 @@ public class ClientConfig {
                 properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
         );
 
-        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), aktorregisterClient, unleashService);
+
+        return new AktorClient(new CachedAktorOppslagClient(aktorOppslagClient), new CachedAktorOppslagClient(aktorregisterClient), unleashService);
     }
 
     @Bean

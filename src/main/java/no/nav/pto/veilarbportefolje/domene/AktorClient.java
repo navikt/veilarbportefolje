@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene;
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
@@ -12,10 +11,10 @@ import no.nav.pto.veilarbportefolje.service.UnleashService;
 public class AktorClient implements HealthCheck {
 
     private final AktorOppslagClient aktorOppslagClient;
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorOppslagClient aktorregisterClient;
     private final UnleashService unleashService;
 
-    public AktorClient(AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, UnleashService unleashService) {
+    public AktorClient(AktorOppslagClient aktorOppslagClient, AktorOppslagClient aktorregisterClient, UnleashService unleashService) {
         this.aktorOppslagClient = aktorOppslagClient;
         this.aktorregisterClient = aktorregisterClient;
         this.unleashService = unleashService;

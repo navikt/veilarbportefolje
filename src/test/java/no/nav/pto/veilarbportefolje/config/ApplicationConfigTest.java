@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -273,6 +275,11 @@ public class ApplicationConfigTest {
     @Bean(name = "PostgresJdbc")
     public JdbcTemplate db() {
         return SingletonPostgresContainer.init().createJdbcTemplate();
+    }
+
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
     }
 
 }

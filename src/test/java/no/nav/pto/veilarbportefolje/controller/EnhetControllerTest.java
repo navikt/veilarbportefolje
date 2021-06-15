@@ -11,7 +11,7 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.SneakyThrows;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContext;
-import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.EnhetId;
@@ -40,6 +40,7 @@ public class EnhetControllerTest {
     private ElasticService elasticService;
     private EnhetController enhetController;
     private Pep pep;
+    private AuthContextHolder authContextHolder;
 
     @Before
     public void initController() {
@@ -57,8 +58,7 @@ public class EnhetControllerTest {
         when(pep.harVeilederTilgangTilEnhet(any(NavIdent.class), any(EnhetId.class))).thenReturn(true);
         when(elasticService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
-        AuthContextHolderThreadLocal
-                .instance().withContext(
+        authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateMockJWT()),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, 0, "ikke_satt", "ikke_satt", new Filtervalg())
         );
@@ -71,8 +71,7 @@ public class EnhetControllerTest {
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(true);
         when(elasticService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
 
-        AuthContextHolderThreadLocal
-                .instance().withContext(
+        authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateMockJWT()),
                 () -> enhetController.hentPortefoljeForEnhet("0001", 0, null, "ikke_satt", "ikke_satt", new Filtervalg())
         );
@@ -84,11 +83,11 @@ public class EnhetControllerTest {
         when(pep.harVeilederTilgangTilEnhet(any(), any())).thenReturn(true);
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(true);
         when(elasticService.hentBrukere(any(), any(), any(), any(), any(), any(), any())).thenReturn(new BrukereMedAntall(0, Collections.emptyList()));
-        AuthContextHolderThreadLocal
-                .instance().withContext(
-                new AuthContext(UserRole.INTERN, generateMockJWT()),
-                () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
-        );
+        authContextHolder
+                .withContext(
+                        new AuthContext(UserRole.INTERN, generateMockJWT()),
+                        () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
+                );
 
         verify(elasticService, times(1)).hentBrukere(any(), any(), any(), any(), any(), isNull(), any());
     }
@@ -96,8 +95,7 @@ public class EnhetControllerTest {
     @Test(expected = ResponseStatusException.class)
     public void skal_ikke_hente_noe_hvis_mangler_tilgang() {
         when(pep.harVeilederTilgangTilModia(any())).thenReturn(false);
-        AuthContextHolderThreadLocal
-                .instance().withContext(
+        authContextHolder.withContext(
                 new AuthContext(UserRole.INTERN, generateMockJWT()),
                 () -> enhetController.hentPortefoljeForEnhet("0001", null, 20, "ikke_satt", "ikke_satt", new Filtervalg())
         );

@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.featuretoggle.UnleashClientImpl;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
@@ -58,5 +60,10 @@ public class ApplicationConfig {
     @Bean
     public UnleashService unleashService(UnleashClient unleashClient) {
         return new UnleashService(unleashClient);
+    }
+
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
     }
 }
