@@ -11,6 +11,7 @@ import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.pto.veilarbportefolje.cv.CVServiceFromAiven;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
+import no.nav.pto.veilarbportefolje.elastic.MetricsReporter;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
@@ -39,13 +40,14 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, Properties kafkaAivenProperties, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, MeterRegistry meterRegistry) {
+    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, Properties kafkaAivenProperties, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate) {
         KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
+        MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs =
                 List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
                         .withLogging()
-                        .withMetrics(meterRegistry)
+                        .withMetrics(prometheusMeterRegistry)
                         .withStoreOnFailure(consumerRepository)
                         .withConsumerConfig(
                                 CV_TOPIC,
