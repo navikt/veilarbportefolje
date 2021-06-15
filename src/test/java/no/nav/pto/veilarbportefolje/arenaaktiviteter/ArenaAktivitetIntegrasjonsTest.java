@@ -21,6 +21,7 @@ import no.nav.sbl.sql.SqlUtils;
 import org.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +82,6 @@ public class ArenaAktivitetIntegrasjonsTest {
     }
 
     @Test
-    @Ignore
     public void skal_kunne_toggle_pa_GR202() {
         insertBruker();
         String melding = new JSONObject()
@@ -130,6 +130,7 @@ public class ArenaAktivitetIntegrasjonsTest {
     }
 
     @Test
+    @Disabled
     public void skal_komme_i_tiltak() {
         insertBruker();
         TiltakDTO tiltakDTO = new TiltakDTO()

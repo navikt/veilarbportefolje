@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,7 @@ public class TiltaksService {
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        if (skalSlettes(kafkaMelding)) {
+        if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
             aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
@@ -38,6 +39,9 @@ public class TiltaksService {
         }
     }
 
+    /**
+        Har side effekt med a lagre hvilken arena meldinger som er lest i DB
+     */
     private boolean erGammelMelding(TiltakDTO kafkaMelding, TiltakInnhold innhold ){
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 
@@ -47,6 +51,11 @@ public class TiltaksService {
         }
         arenaHendelseRepository.upsertHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
         return false;
+    }
+
+    static boolean skalSlettesTiltak(TiltakInnhold tiltakInnhold) {
+        return tiltakInnhold.getAktivitetperiodeTil() == null || tiltakInnhold.getAktivitetperiodeFra() == null
+                || !TiltakStatuser.GJENNOMFORER.name().equals(tiltakInnhold.getDeltakerStatus());
     }
 
     private KafkaAktivitetMelding mapTilKafkaAktivitetMelding(TiltakInnhold melding, AktorId aktorId) {

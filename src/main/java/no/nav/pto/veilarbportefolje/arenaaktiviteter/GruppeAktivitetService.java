@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakInnhold;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,7 @@ public class GruppeAktivitetService {
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        if (skalSlettes(kafkaMelding)) {
+        if (skalSlettesGoldenGate(kafkaMelding) || skalSletteGruppeAktivitet(innhold)) {
             aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
@@ -38,6 +40,13 @@ public class GruppeAktivitetService {
         }
     }
 
+    static boolean skalSletteGruppeAktivitet(GruppeAktivitetInnhold gruppeInnhold) {
+        return gruppeInnhold.getAktivitetperiodeTil() == null || gruppeInnhold.getAktivitetperiodeFra() == null;
+    }
+
+    /**
+     Har side effekt med a lagre hvilken arena meldinger som er lest i DB
+     */
     private boolean erGammelMelding(GruppeAktivitetDTO kafkaMelding, GruppeAktivitetInnhold innhold ){
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 

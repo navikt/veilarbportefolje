@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenaaktiviteter.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -29,7 +30,7 @@ public class UtdanningsAktivitetService {
         }
 
         AktorId aktorId = getAktorId(aktorClient, innhold.getFnr());
-        if (skalSlettes(kafkaMelding)) {
+        if (skalSlettesGoldenGate(kafkaMelding) || skalSletteUtdanningsAktivitet(innhold)) {
             aktivitetService.slettAktivitet(innhold.getAktivitetid(), aktorId);
         } else {
             KafkaAktivitetMelding melding = mapTilKafkaAktivitetMelding(innhold, aktorId);
@@ -37,6 +38,12 @@ public class UtdanningsAktivitetService {
         }
     }
 
+    static boolean skalSletteUtdanningsAktivitet(UtdanningsAktivitetInnhold utdanningsInnhold) {
+        return utdanningsInnhold.getAktivitetperiodeTil() == null || utdanningsInnhold.getAktivitetperiodeFra() == null;
+    }
+    /**
+     Har side effekt med a lagre hvilken arena meldinger som er lest i DB
+     */
     private boolean erGammelMelding(UtdanningsAktivitetDTO kafkaMelding, UtdanningsAktivitetInnhold innhold ){
         Long hendelseIDB = arenaHendelseRepository.retrieveHendelse(innhold.getAktivitetid());
 
