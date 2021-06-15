@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 
 @Configuration
@@ -84,7 +85,7 @@ public class KafkaConfigCommon {
                         ));
 
         consumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(kafkaAivenProperties)
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfigs(topicConfigs)
                 .build();
 
