@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
@@ -40,7 +39,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClient;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, Properties kafkaAivenProperties, @Qualifier("Postgres") DataSource dataSource, MeterRegistry meterRegistry, LockProvider lockProvider) {
+    public KafkaConfigCommon(CVServiceFromAiven cvServiceFromAiven, Properties kafkaAivenProperties, @Qualifier("Postgres") DataSource dataSource, @Qualifier("PostgresJdbc") JdbcTemplate jdbcTemplate, MeterRegistry meterRegistry) {
         KafkaConsumerRepository consumerRepository = new PostgresConsumerRepository(dataSource);
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs =
@@ -62,18 +61,13 @@ public class KafkaConfigCommon {
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
-                .withLockProvider(lockProvider)
+                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();
 
     }
 
-    @Bean
-    public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
-        return new JdbcTemplateLockProvider(jdbcTemplate);
-    }
-    
     @Bean
     public Properties kafkaAivenProperties(KafkaAivenProperties kafkaProperties) {
         Properties props = new Properties();
